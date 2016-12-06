@@ -1,0 +1,98 @@
+@rControls@>
+
+  Most keybindings can be redefined via the file keybindings.lua. The 
+  following set describes the standard layout.
+
+  Arrows -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
+  '.'    -- Wait
+  '?'    -- Run on-line help
+  '>'    -- Go down stairs (you won't be able to come back!)
+  'g'    -- Pick up item from floor
+  'z'    -- Swap weapon (with prepared weapon)
+  'd'    -- Drop item
+  'i'    -- Show inventory
+  'e'    -- Show or change equipment/show traits
+  'o'    -- Open door
+  'c'    -- Close door
+  'l'    -- Toggle LookMode (Escape to exit)
+  'f'    -- Fire of equipped weapon
+  'F'    -- Alternative Fire of equipped weapon (if available)
+  'r'    -- Reload equipped weapon
+  'R'    -- Special reload weapon (depending on weapon)
+  'u'    -- Use item from inventory (eg. Med-pack)/pull lever
+  'U'    -- Unload weapon from inventory/from ground
+  '@@'    -- Show screen with character info (parameters of player
+            and his equipment)
+  'T'    -- Show character traits
+  'A'    -- Show known assemblies
+  'S'    -- Save game (works ONLY on the stairs to the next level)
+  'Q'    -- Quit game (without saving)
+  'P'    -- Show previous messages
+  ','    -- Run command
+  TAB    -- change tactic
+  '0'..'9' Weapon quick keys:
+      0  : chainsaw
+      1  : combat knife
+      2  : pistol
+      3  : shotgun
+      4  : combat shotgun
+      5  : double shotgun
+      6  : chaingun
+      7  : rocket launcher
+      8  : plasma rifle
+      9  : BFG9000
+
+  '('    -- Toggle sound on and off
+  ')'    -- Toggle music on and off
+
+  F10    -- Makes screenshot (in graphics mode a png screenshot, in console 
+            an ASCII symbol screenshot) and places it in "Screenshot" folder
+  F9     -- Makes screenshot (in graphics mode a png screenshot, in console 
+            colorful screenshot in BB codes - useful if you want to post it 
+            on forum) and places it in "Screenshot" folder
+  SPACE  -- toggle grid view (only in graphics mode)
+
+
+@rKeys while targeting@>
+   
+  Arrows      -- move target line
+  TAB         -- toggle target
+  m           -- more information
+  f,SPACE,LMB -- fire
+  RMB,Escape  -- cancel
+
+
+@rMouse (in graphics mode)@>
+
+LMB, MMB, RMB is left/middle/right mouse button:
+
+  @<LMB@>             -- travel to given destination, open door if next to it, 
+                     melee attack if on enemy and next to him. Travel needs
+                     to target explored square, and is automatic as long as
+                     there are no enemies in sight, otherwise just one move
+  @<LMB@> on @<self@>     -- if on stairs, descend, if on lever - pull, if on item
+                     then pickup, else inventory
+  @<Alt-LMB@> on @<self@> -- inventory
+
+  @<RMB@>             -- fire at the targeted square or enemy, reload if 
+                     magazine empty
+  @<RMB@> on @<self@>     -- reload
+
+  @<MMB@>             -- swap weapon
+  @<MMB@> on @<self@>     -- equipment
+
+  @<SCROLLWHEEL@>     -- change weapon (enters quick weapon choice)
+
+
+@rInventory screen@>
+
+  Press item letter to do the default action on a given item. Wearable
+  items will switch if one is already worn.
+  
+  
+@rEquipment screen@>
+
+  Pressing the letter of a worn item will unequip it. Pressing the 
+  letter of a empty slot will let you choose an item. Note though, that
+  switching through the inventory screen is faster.
+  

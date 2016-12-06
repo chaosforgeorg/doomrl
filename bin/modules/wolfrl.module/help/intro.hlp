@@ -1,0 +1,18 @@
+@rIntroduction@>
+
+@rDoomRL@> (abbr. for Doom, the Roguelike) is, as the name implies, a
+roguelike game. If you don't know what a roguelike is... checkout 
+wikipedia -- @Bhttp://en.wikipedia.org/wiki/Roguelike@>.
+
+DoomRL is based on the world from id Software's(tm) game Doom(tm). You're
+the sole surviving marine from a squad sent to investigate a distress call
+from the moonbase of Phobos.  It turns out that all hell has broken loose
+on the plant... literally.
+
+Your quest in DoomRL is to descend into the moonbase complex, find the
+source of this evil outbreak, and destroy it at all costs.
+
+Unlike many other roguelikes, DoomRL is intended to be simple and easy to
+get into. To that end, there is a limited inventory, maps of the size of
+one screen, and one item per tile.  The number of keys you need to 
+remember is also quite small compared to many other games.
