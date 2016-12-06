@@ -14,7 +14,7 @@ This FreePascal source code release is provided as is. You can try compiling it 
 Detailed compilation instructions will appear at some later point after the Jupiter Hell Kickstarter finishes.
 
 All code is (C) 2003-2016 Kornel Kisielewicz, 
-Code is distributed under the GPL 3.0 license (see LICENSE file in this folder)
+Code is distributed under the GPL 2.0 license (see LICENSE file in this folder)
 
 All art is (C) 2003-2016 Derek Yu
 Art is distributed under the CC-BY-SA 4.0 license (see LICENSE file in the bin/graphics/ folder)
