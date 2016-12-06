@@ -9,6 +9,8 @@ https://www.kickstarter.com/projects/2020043306/jupiter-hell-a-modern-turn-based
 
 If you enjoy this Open Source release, please consider pledging!
 
+Parts of this codebase date back to 2002, please do not judge! :P
+
 This FreePascal source code release is provided as is. You can try compiling it using the latest version of Lazarus ( http://www.lazarus-ide.org/ ). You will also need the FPC Valkyrie library ( https://github.com/ChaosForge/fpcvalkyrie/ ). You will also probably need the binary files of the full game downloadable from http://drl.chaosforge.org/ (in particular the sound and music folder contents, and the premade doomrl.wad if you don't want to create it yourself).
 
 Detailed compilation instructions will appear at some later point after the Jupiter Hell Kickstarter finishes.
