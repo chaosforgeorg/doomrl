@@ -1,0 +1,244 @@
+@rGetting Started@>
+
+When you first start a game of DoomRL, you're presented with a menu screen
+with a few different options:
+
+@YNew game@> will, well, start a new game!
+@YChallenge game@> is initially locked, and becomes unlocked after you reach
+Corporal rank (need to survive 10 levels for it). Challenge games force you to
+play the game a certain way (e.g. using only melee), and you can raise your
+player rank in DoomRL by completing them. As your rank goes higher, more
+challenges will be made available to you.
+@YCustom game@> brings up a selection screen where you can view and load modules.
+Modules are player-created levels, episodes, or entirely new games that bring
+a completely new experience to the DoomRL engine.
+@YShow highscores@> displays the highscore list, not surprisingly.
+@YShow player@> displays your player statistics, which include your player 
+rank, number of kills, and number of wins. It has several screens which can 
+be scrolled with the arrow keys.
+@YHelp@> displays the help screen, which contains the info you are
+currently reading.
+
+For now, select @YNew game@> with the arrow keys and press ENTER to start
+your very first game of DoomRL!
+
+Before you start your game, you have to make a few decisions. The first is
+the difficulty level. At the beginning, only three difficulty levels are
+available: "I'm too young to die", "Hey, Not Too Rough", and "Hurt Me
+Plenty". At higher difficulties, more monsters appear and tougher monsters
+appear earlier. "Ultra-Violence" and "Nightmare!" difficulties are unlocked
+as your player rank rises. At Nightmare! difficulty, only the most insane
+DoomRL warriors will stand a chance!
+
+The second decision is choosing a character class. Classes differ by 
+starting perks, availability of one advanced trait as basic, and each of
+them has a different set of Master Traits.
+
+The third decision you have to make is what your name will be in the game.
+You can figure that much on your own, right? You can also leave it blank and
+wear the name of a random legendary warrior...
+
+The fourth and final choice to make is select a starting "trait". 
+Traits are upgrades or "perks" that you earn when you gain levels in DoomRL 
+(by killing monsters). Traits can raise your max health, let you run faster, 
+deal more damage per shot, or otherwise make you more awesome. Some traits
+can be levelled up individually.
+
+You'll notice a few traits aren't available. Some are "Advanced Traits", and
+require you to learn a normal trait first. Advanced Traits are more situational
+but quite effective, too. The rest are master traits, which require you to take
+a specific set of traits (and block off a few other traits) and give you some
+sort of great unique bonus. But hey, don't think about it too hard. Just pick
+one you like and move on.
+
+And that's it, you're ready to play the game! After a brief intro, you will
+be greeted with something like this:
+
+@d---------------------------------------------------------------------------@>
+ Welcome to the Doom Roguelike...
+ ##########
+ #@@.........
+ #..........
+ #.........
+ #.........
+ #........
+ #........
+ #.......
+ #......
+ #....
+ #..
+
+
+
+
+
+
+
+
+
+ @bDoomguy@d                    Armor : @lnone@d
+ @dHealth@r: 100%@d Exp:@l  1@d/@l0%@l    Weapon: @lpistol (2d4) [6/6]
+ cautious                                                    @rPhobos Base Entry
+@d---------------------------------------------------------------------------
+                             @bThe Starting Screen@>
+
+This is a map of the first level of the moonbase on Phobos. The whole level
+is exactly the size of the screen. Walk around (using the arrow keys or numpad)
+and get used to the interface. Don't get yourself killed!
+
+Take a look at the screen. It is divided into three parts. On top you have
+the "message area", made of two lines of text. Watch this space carefully -- it
+may notify you of impending danger or tell you that you're out of ammo (poor
+sob!).
+
+On the bottom you have the status bar. The top line displays your name, and
+below it is the most important stat -- your health. If this one drops
+below one percent, you're dead, dude - nothing can save you. Scanning 
+to the right you can see the experience indicator. The first number is your
+character level -- the higher it is, the tougher you are. The second number
+is your experience displayed as a percentage. Each character level requires
+a certain experience amount needed to achieve it.
+
+Below your health and experience is "tactics". By default your tactic is
+"cautious". This tactic gives no benefits or disadvantages. If you press TAB
+once, it will change to "running" (note that changing tactics takes some
+in-game time). With this tactic you have increased movement speed, dodge
+chance, and defense bonus, but have a smaller chance to hit and reduced melee
+damage. After some time spent running (or after pressing TAB again), you
+will get "tired". Being tired has no effects, positive or negative (like
+cautious), but while tired, you can't run again. You can return to the cautious
+tactic by leveling up, gaining health by most methods, or descending to next
+level. Since running is limited in this way, try not to waste it. At the same
+time, however, remember to use it, as they don't stockpile for later levels.
+
+In the column to the right of that, you have two indicators, "Armor" and
+"Weapon", that show you what armor and weapon you have equipped. For weapons, 
+the number in brackets indicates the damage that the weapon deals, and the two
+numbers in square brackets indicate the current-loaded ammo and clip size for
+that weapon (e.g., [4/6] means you have four bullets in a magazine that can
+hold six).
+
+Between the status bar and message bar, there's the map. The "@@" sign with
+the cursor below it -- that's you (aren't you ugly?). See any letters nearby?
+It may be a "T"ree, but chances are it's the enemy. Kill'em all. The "#" are 
+walls, "+" is a closed door, "/" an open door. Dots are normal floor. Red dots
+are either Phobos's ugly rock landscape (on the first level), or blood 
+(anywhere else).
+
+Press "i" to see your inventory. It's pretty empty, right? Your character
+starts equipped with a few things -- your trusty pistol (already equipped), a
+handful of ammo, and a couple of med-packs. To check equipped item, press "e"
+in-game to see the full list (which includes boots and a second weapon slot).
+
+Your pistol and ammo are not going to last you very long, though.  Press
+"g" to pick up new weapons (represented by "}") and ammo ("|").  If you
+walk around that first level you're likely to run into some small medkits
+(red "+") that you can pick up and add to your inventory. Later on you might
+find other consumable items, they're all "+"s. Press "u" at any time to use
+a consumable. If you ever want to drop something (usually to make room for
+new weapons or items), press "d" to open the drop menu.
+
+Along the way, you're bound to run into levers ("&") and barrels ("0"). To
+pull a lever, stand on it and press "u" to use them. The effects are random,
+so pull them at your own peril!  And if you've ever played Doom, you know
+what to expect with barrels: They all explode quite nicely, but with varying
+effects depending on the barrel. (Be aware that levers are activated with
+the same button as using items -- in this case, open up your inventory and use
+the item from there by selecting it and pressing ENTER.)
+
+As you go deeper into the base, you'll also find some power-ups ("^"). They are
+used as soon as you pick them up, and several contain powerful effect, so use
+them wisely.
+
+Oh, I almost forgot! To shoot, just press "f" -- you'll be asked for a target
+(if you have a gun and proper ammo, that is...). Use the arrow keys to choose a
+target, and press "f" again to fire. Or, you can press "m" to see an ASCII
+image and description of what you are aiming at. You can also press TAB (when
+targeting) to toggle between the targets. Some weapons allow an alternative
+fire mode, such as the chainfiring mode of the chaingun.
+
+Ok, I hear you cry -- "Out of ammo!" Don't panic. Press "r" to reload your
+weapon. (Some weapons allow you an alternative reload by pressing "R".)
+Reloading the correct ammo is automatic if you have it in your inventory. But
+what if you don't? You can try pounding on the enemy with your fists or a
+hand-to-hand weapon -- to do that just walk into him.  Pick up a Berserk
+Pack or a chainsaw (or at least a knife) and you can do some serious damage
+that way!
+
+Getting hit too frequently when trying to approach an enemy (or when
+running from him)? Try not to move in a straight line -- move diagonally, as 
+this increases your chance to dodge. If you don't want to approach or
+retreat from the enemy, but also don't want to be hit often, try moving
+from side-to-side, perpendicular to the direction of enemy, as this
+gives you the same bonus as moving diagonally). Sometimes, in emergencies,
+switching to the running tactic and using both of these tricks at once will
+give you a much greater chance to dodge than normal.
+
+In the equipment menu (remember, press "e") you'll see that you have a primary
+weapon equipped and a secondary weapon at hand.  By pressing "z" you can
+switch your primary out for your secondary.  This is faster than equipping
+a new weapon from your inventory and it saves you valuable space.  It's
+also quite useful in a firefight, when the situation can change at any
+moment!
+
+Hey, you think you're cool because you found some armor? Think again. Look,
+there are three numbers by the armor. The first two in square brackets are
+[current damage resistance/maximum damage resistance]. The second one is 
+your armor's health. 100% means it's undamaged, 1% is almost destroyed. The 
+more damaged an armor is, the lower its actual resistance is. Keep an eye on 
+those numbers!
+
+Additionally each armor may grant additional resistance to specific damage 
+types. This information can be obtained in the inventory and equipment 
+screens.
+
+Try to check out player information screen by pressing "@@" -- some useful
+information is written there. First, there are your main parameters: movement,
+firing, and reloading speeds, as well as your chance to hit with the weapon
+you currently have equipped (from point blank range). Next are the more passive
+statistics: your player and dungeon level, amount of played turns, and your
+score so far. At the bottom you can find parameters of equipment that you are
+currently wearing: damage, firing and reloading speeds, and accuracy for
+weapons; and protection value, durability, and movement and knockback
+modifiers for armor and boots (yes, armor and boots can affect your movement
+speed and chance to be knocked back by powerful attacks).
+
+There are five types of items in this game:
+
+1) @<Common@> - These items are... "common"? You will see them all across the
+game, and what you should rely on. Most are generated randomly, but you will
+find some are guaranteed in certain places (as a reward for completing a special
+level, for example). Common weapons and armor accept 1/1, 3/2, and 5/3 mods, 
+respectively, depending on the level of your Whizkid trait.
+
+2) @CAssemblies@> - These items can be assembled from other items, usually 
+common, by modding them with a specific set of mods. Experiment, as discovered
+(assembled) assemblies will be recorded in your player data and can be accessed 
+with the "A" key during the game.
+
+3) @VExotic@> - These items are rarer and more powerful than common items. They 
+can potentially appear more than once per game, but are more often than not 
+found in special levels. Exotic weapons and armor can hold the same amounts of 
+mods that their common counterparts do.
+
+4) @GUniques@> - Unique items, as the name suggests, can only appear once per
+game. Some of them just have cool stats, while others have special abilities,
+and each of them come with a unique name. No unique item is guaranteed, although
+they can appear in special levels, and they are quite rare otherwise. Most 
+uniques cannot be modded, but those that do can only be modded if the player 
+is playing the Technician class.
+
+5) @YArtifacts@> - Artifact items are similar to unique items, except that they
+can only appear in very specific special levels, while never appearing randomly.
+Finding and collecting these items is almost always a very challenging task.
+
+Mods (Displayed by a " symbol) are little packs that enhance your weaponry or
+armor. Most equipment you find can be modded, so try to cover up their
+weaknesses by modding them.
+
+Whenever you see something that you aren't familiar with, press "l" to
+trigger the Look command -- moving the cursor with the arrow keys will
+show what's under the cursor in the message bar. You can also press "?"
+in-game to open up the help menu.
+
+Happy fragging!

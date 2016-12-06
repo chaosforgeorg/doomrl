@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+# There doesn't seem to be any way to force konsole size.
+# --geometry=80x25 doesn't work at all, AFAI can see.
+# for older konsole versions, --vt_sz 80x25 should do the trick.
+
+konsole --workdir=`pwd` -e ./doomrl -console

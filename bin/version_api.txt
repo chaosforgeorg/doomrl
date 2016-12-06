@@ -1,0 +1,220 @@
+0.9.9.7 -> 0.9.9.8
+ * "res_" properties removed.  Use new resist table to access resistances. (e.g. resist.bullet)
+ * new prototype syntax for resistances -- resist = { resistance = value, ... }
+ * level:explosion and being:apply_damage takes source item as parameter
+ * kills.get and get_type only operate on string IDs
+ * kills tracks "melee" and "other" separately
+ * expanded kills object in Lua
+ * Shotgun range is now maxrange, range has new functionality.
+ * Missile/Shotgun range field determines targeting distance, maxrange limits missile distance.
+ * Changed default maxrange in template to 30 to maintain existing behavior with existing missiles.
+ * IF_SCATTER now works properly without MF_EXACT.
+ * IF_HALFKNOCK now works with ranged weapons.
+ * statistics.get_date added, returns the current system date/time in a table.  Fields are year, month, day, dayofweek, hour, minute, second, and millisecond.
+ * level.feeling property added; ui.msg_feel, ui.repeat_feel, and ui.clear_feel added:
+   msg_feel(msg) prints msg and adds it to the level feeling.
+   repeat_feel() prints the stored level feeling. (This is the function assigned to the SHIFT-L binding.)
+   clear_feel() clears out the stored level feeling.  Level feeling automatically clears at level start.
+ * new item blueprint field and property "rechargelimit" -- indicates where nano regeneration/natural regeneration stops.  0 = no limit (which is also the default).
+
+0.9.9.6 -> 0.9.9.7
+ * custom awards for modules now possible
+ * level:beings_in_range will now iterate over player too
+ * NEW CONSTRUCTOR SYNTAX (see Wiki for updates)
+ * get_being_list and get_item_list removed - use get_being_table and get_item_table (returns weight_table)
+ * weight_list_sum and roll_weight removed - use weight_table object
+ * level:roll_item syntax changed, level:roll_item_type removed (roll_item is a lot more powerfull now)
+ * level:flood_monster and flood_monsters syntax changed, level:random_monster changed to roll_monster and changed
+ * extended level:summon to possibly take a cell(set), empty flags and/or area
+ * removed level:area_summon - use level:summon{ being, (count), area = area }
+ * added core.bydiff or core.ifdiff
+ * removed diffchoice, use core.bydiff or core.ifdiff
+ * removed LEVEL global variable (not level) - use player.depth instead
+ * new damage type SPLASMA and new explosion flag EFNODISTANCEDROP
+ * Generator -> generator
+ * item:disassemble() -> module.disassemble( item )
+ * being OnPickUpItem hook added
+ * removed player:record_badge, use player_data.get_counted('badges','badge',id) instead
+ * removed player:found_item, assembled_item use new has_/add_/remove_ funcs ( __proto.assemblies and __.proto.items_found )
+ * removed player_data.badge_count and weapon_kills - count them manually
+ * styles -> Generator.styles
+ * removed ifvalue, use core.iif instead
+ * player data functions moved to player_data namespace (count, child_count), added (badge_count and weapon_kills)
+ * removed blood and all blooded versions of tiles, use LFBLOOD instead
+ * register_trait, register_klass and reset_trait_data removed from core, all
+   klass and trait data is now looked up in lua as needed (can modify on the fly!)
+ * disassemble is now a method of item
+ * removed flag_set from prototypes -- flags is converted to set!
+ * F_COSCOLOR, F_GLOW and F_OVERLAY flags remo1ved
+ * cell_proto.effect doesn't exist anymore - instead the flags CF_RAISABLE + cell_proto.raiseto is used
+ * Level functions - fill, scatter, scatter_put, scan, place_tile have been moved to Generator
+ * Level[c] no longer working - use .map[c] instead
+ * level.status value instead of Level.result() function
+ * Level -> level - level is an object, hence all functions need the object:execution
+ * :position returns position of thing, :displace moves it
+ * being:relocate moves the being animation aware
+ * thing:get_position removed, use now thing.position property!
+ * removed drunkard_walk -> use internal run_drunkard_walk (takes area as first param!)
+ * level has get_cell and set_cell operating on ID's, is_empty and is_empty_area
+
+
+0.9.9.6 BETA 1 -> 0.9.9.6 BETA 2
+ * ui.msg_clear added
+ * ui.draw_string and ui.clear removed, along with other immedate mode ui functions
+ * vision value in prototype now relative to player vision (not relative in self.vision)
+
+0.9.9.5 -> 0.9.9.6 BETA 1
+ * level.special_name removed, general level.id added
+ * beings and items are no longer indexed - any function operating on being/item
+   array indices wont work anymore, also level props being_array_size and
+   item_array_size have been removed
+ * prototype table renamed to __proto, custom table renamed to __props
+ * player.killedby removed -- now passed as an argument to print_mortem/OnMortemPrint
+ * BF_INV works for enemies.
+ * CF_PUSHABLE behavior determined by OnAct
+ * New function Level.push_cell(coord, target_coord, [quiet]) implements basic push behavior
+ * All player hooks have stubs and can be overridden.
+ * Built-in AIs will reload with not enough but non-zero ammo.
+ * Phobos tree destroys to phobos rock
+ * New being property decaymax split from bodybonus; integer percentage determines when hp decay starts (default 100)
+ * IF_RECHARGE and IF_NECROCHARGE now respect new item properties
+ * Valkyrie UID library added
+ * math ext library added (currently just math.clamp)
+ * being:unload added
+ * removed Level.clear_item -- use Level.try_destroy_item if uniques/nodestroy should survive self:destroy() otherwise
+ * Statistics are now updated on demand, so they can be checked at any time.
+ * New statistic real_time_ms (in milliseconds).
+ * IF_NOAMMO cleaned up -- items with this should no longer check/display ammo anywhere.
+
+0.9.9.5 BETA 2 -> 0.9.9.5
+ * level.items_in_range( coord/object, range ) and
+   level.beings_in_range( coord/object, range ) iterators added
+ * most of the level and being functions that accept a coord also accept a item or being and extract their 
+   position instead. This is also more effective because we don't need to construct a coord in lua.
+
+0.9.9.5 BETA 2 -> 0.9.9.5 BETA 3
+ * entity.id now returns a string id
+ * entity.sid is invalid
+ * entity id's are no longer limited to 20 chars
+ * table.toset is now table.to_set
+ * new table functions are now available table.toset, table.copy, table.icopy, table.merge, table.imerge,
+   table.reversed -- all table copying/merging is shallow!
+ * SHOTGUN_ and MISSILE_ constants are no more, id's changed to be unique. Use string id's for prototype
+   definitions and shotguns[ "" ].nid/missiles[ "" ].nid for changing ingame.
+ * Hooks - Challenge hook OnPowerUpCheck removed - OnPickupCheck working
+   Challenge hook OnBeingCreate is now OnCreate - works on items too, so remember to check!
+ * added thing:is_item() and thing:is_being() to thing API
+ * Hooks - Challenge hook OnLevelEnter/OnLevelExit is now OnEnter/OnExit
+ * Hooks - IsCompleted -> OnCompletedCheck
+ * player:remove_affect added
+ * being:quick_swap added
+ * being:drop added
+ * being:reload changed (will work with ammo packs and combat shotties)
+ * OnAltReload *must* return a boolean (success)
+ * being:alt_reload added (will work with all non-script alt-reloads, script ones will run, but will misbehave)
+ * IF_NOAMMO and IF_DESTROY should now work with shotguns
+ * technically a shotgun can now have ALT_CHAIN and work with Ammochain
+ * beings can now dualgun and have gunkata-reload if equiped with the proper flags
+ * beings use the full extent of the options that the player has when firing
+ * being:fire now returns a boolean (if false, no time is used up!)
+ * being:alt_fire added (be sure to use only with compatible objects!)
+ * item hook OnFire and OnAltFire revesed return (true continues, false breaks)
+ * challenge hook OnFire  takes (item,being)
+ * Level hook OnFire(item,being) added
+ * Level hook OnFired(item,being) added
+ * removed LF_MELEEONLY flag, use Level.OnFire instead
+ * introducing HookChains -- first such chain is Item-Level-Challenge hooks OnFire and OnFired
+ * HookChains for OnPickup and OnPickupCheck and OnFirstPickup (Item-Level-Challenge)
+ * OnPickup and OnPickupCheck are also executed for beings!
+ * beings use the same code to pickup as the player, so could be made to pickup e.g. powerups
+ * lever OnUse must return a boolean value (true)
+ * being:use is a full featured use - if passed nil, will attempt to use levers
+ * HookChains for OnUseCheck and OnUse (Item-Level-Challenge)
+ * OnUseCheck and OnUse are also executed for beings!
+ * Module Hooks added - inserted into the current HookChain - use ModuleID.HookName for any module
+ * OnKill, OnKillAll and OnEnter are now chained into Level, Module, Challenge
+ * OnCreate, OnDie, OnDieCheck are now chained into (Being/Item), Level, Module, Challenge
+ * Module API - use OnCreateEpisode hook instead of create_episode, OnGenerate instead of generate
+ * OnMortem is not used for printing (but for things to check before score finalization) use OnMortemPrint instead
+ * indexing the inventory will no longer work
+ * you can destroy inventory items that you iterate through - they will be removed from inventory
+ * thing methods now correctly can be ran through self:
+ * inventory rehaul
+ * LFPERMANENT *light*flag added, now controls permanency of walls per cell
+ * removed all permanent versions of cells (all starting with p)
+ * OnDieCheck can be properly hijacked (add)
+ * Level.play_sound for playing sound at coord added (add)
+ * beings OnAction is called before the AI
+
+Hook info:
+  OnCreate        // Being and Item -> Level, Module, Challenge, Core (Chained)
+  OnAction        // Being
+  OnAttacked      // Being
+  OnDie           // Being, Level, Module, Challenge, Core (Chained)
+  OnDieCheck      // Being, Level, Module, Challenge, Core (Chained)
+  OnPickup        // Item, Level, Module, Challenge, Core (Chained)
+  OnPickupCheck   // Item, Level, Module, Challenge, Core (Chained)
+  OnFirstPickup   // Item, Level, Module, Challenge, Core (Chained)
+  OnUse           // Item, Level, Module, Challenge, Core (Chained)
+  OnUseCheck      // Item, Level, Module, Challenge, Core (Chained)
+  OnAltFire       // Item
+  OnAltReload     // Item
+  OnEquip         // Item
+  OnRemove        // Item
+  OnKill          // Item (separate), Level, Module, Challenge, Core (Chained)
+  OnKillAll       // Level, Module, Challenge, Core (Chained)
+  OnHitBeing      // Item
+  OnReload        // Item
+  OnEquipTick     // Item
+  OnEquipCheck    // Item
+  OnEnter         // Item (separate),  Level, Module, Challenge, Core (chained)
+  OnFire          // Item, Level, Module, Challenge, Core (Chained)
+  OnFired         // Item, Level, Module, Challenge, Core (Chained)
+  OnExit          // Level, Module, Challenge, Core (Chained)
+  OnTick          // Level, Module, Challenge, Core (Chained)
+  OnCompletedCheck// Level, Module, Challenge, Core (Chained)
+  OnLoad          // Module, Challenge, Core (Chained)
+  OnLoaded        // Module, Challenge, Core (Chained)
+  OnUnLoad        // Module, Challenge, Core (Chained)
+  OnCreatePlayer  // Module, Challenge, Core (Chained)
+  OnLevelUp       // Module, Challenge, Core (Chained)
+  OnPreLevelUp    // Module, Challenge, Core (Chained)
+  OnWinGame       // Module, Challenge, Core (Chained)
+  OnMortem        // Module, Challenge, Core (Chained)
+  OnMortemPrint   // Module, Challenge, Core (Chained)
+  OnCreateEpisode // Module, Challenge, Core (Chained)
+  OnLoadBase      // Module, Challenge, Core (Chained)
+  OnIntro         // Module, Challenge, Core (Chained)
+  OnLogo          // Module, Challenge, Core (Chained)
+  OnGenerate      // Module, Challenge, Core (Chained)
+
+Module hooks are dependant on module type:
+  Total conversion -- all hooks
+  Episode          -- all hooks except OnLoadBase and OnLogo
+  Single           -- all hooks except OnCreateEpisode, OnLoadBase and OnLogo
+
+0.9.9.4 BETA 1 -> 0.9.9.4 BETA 2
+ * entities now need to be properly defined (have all required fields, none extra)
+ * new AI's available -- built-in AI removed
+ * removed old API flags - BF_USESITEMS, BF_HUNTER, BF_DISTANCE and BF_RETALITATE
+   ( BF_HUNTER and BF_OPENDOORS will be removed later!)
+ * all flagSet sets for prototypes are now flag_set
+ * all soundID sets for prototypes are now sound_id
+ * all ammoID props now named ammo_id
+ * XP -> xp, HP -> hp, minLev -> min_lev, maxLev -> max_lev, toDam ->todam, toHit -> tohit, toHitMelee -> tohitmelee
+   for being prototypes
+ * MAXAFFECTS raised to 12 - feel free to add your own!
+ * path_next and direct_seek return a coord as a second result -- either it's the coord that has successfuly been
+   moved to, or it is the coord that blocked
+
+0.9.9.4 -> 0.9.9.4 BETA 1
+ * Episodic mods supported!
+ * Multiple lua files in a mod supported
+ * BF_BOSS sub-uses split into separate flags -- BF_SELFIMMUNE, BF_KNOCKIMMUNE, BF_HUNTER
+ * Removed Generator.place_tile and Generator.set_translation -- instead, Valkyrie dungen's own functions are
+   used -- you create a tile using Generator.tile_new( map, trans ) (note the reverse order!) and place it using
+   Generator.tile_place( coord, tile ) (also reversed!). Note however, that the Level.place_tile stayed the same!
+ * Removed Level.place_chunk -- as thanks to the new Generator tile API it is just 3 lines -- see the Archi style
+   generator for an example.
+ * Removed ui.plot_write -- use ui.plot_screen (can and should be fed with a multiline string!)
+ * OnDieCheck hook added for beings and player -- return false to prevent death

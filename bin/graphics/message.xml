@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<font name="message" src="message.png">
+
+	<char name="a">
+	    <pos_x>0</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="b">
+	    <pos_x>8</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="c">
+	    <pos_x>16</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="d">
+	    <pos_x>24</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="e">
+	    <pos_x>32</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="f">
+	    <pos_x>40</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="g">
+	    <pos_x>48</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="h">
+	    <pos_x>56</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="i">
+	    <pos_x>64</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>4</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="j">
+	    <pos_x>68</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="k">
+	    <pos_x>76</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="l">
+	    <pos_x>84</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+
+	<char name="m">
+	    <pos_x>92</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>9</width>
+	    <height>9</height>
+	</char>
+
+	<char name="n">
+	    <pos_x>101</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="o">
+	    <pos_x>109</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="p">
+	    <pos_x>117</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="q">
+	    <pos_x>125</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="r">
+	    <pos_x>133</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="s">
+	    <pos_x>141</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="t">
+	    <pos_x>149</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="u">
+	    <pos_x>157</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+
+	<char name="v">
+	    <pos_x>165</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>
+
+	<char name="w">
+	    <pos_x>172</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>9</width>
+	    <height>9</height>
+	</char>
+
+	<char name="x">
+	    <pos_x>181</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>9</width>
+	    <height>9</height>
+	</char>
+
+	<char name="y">
+	    <pos_x>190</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="z">
+	    <pos_x>198</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char> 	
+
+	<char name="zero">
+	    <pos_x>206</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="one">
+	    <pos_x>214</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>5</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="two">
+	    <pos_x>219</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="three">
+	    <pos_x>227</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="four">
+	    <pos_x>235</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="five">
+	    <pos_x>243</pos_x>
+	    <pos_y>0</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="six">
+	    <pos_x>0</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="seven">
+	    <pos_x>8</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="eight">
+	    <pos_x>16</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="nine">
+	    <pos_x>24</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="backslash">
+	    <pos_x>32</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="frontslash">
+	    <pos_x>39</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="percent">
+	    <pos_x>46</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="exclamation">
+	    <pos_x>55</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>4</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="question">
+	    <pos_x>59</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+
+	<char name="para_left">
+	    <pos_x>67</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>
+
+	<char name="para_right">
+	    <pos_x>74</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>
+
+	<char name="bracket_left">
+	    <pos_x>81</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>5</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="bracket_right">
+	    <pos_x>86</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>5</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="guillemet_left">
+	    <pos_x>91</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>5</width>
+	    <height>9</height>
+	</char>
+
+	<char name="guillemet_right">
+	    <pos_x>96</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>5</width>
+	    <height>9</height>
+	</char>
+
+	<char name="period">
+	    <pos_x>101</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>4</width>
+	    <height>9</height>
+	</char>
+
+	<char name="comma">
+	    <pos_x>105</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>4</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="colon">
+	    <pos_x>109</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>4</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="semicolon">
+	    <pos_x>113</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>4</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="at">
+	    <pos_x>117</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>6</width>
+	    <height>9</height>
+	</char>
+
+	<char name="quote">
+	    <pos_x>126</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="singlequote">
+	    <pos_x>133</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>4</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="caret">
+	    <pos_x>137</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="amp">
+	    <pos_x>144</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="dollar">
+	    <pos_x>152</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="euro">
+	    <pos_x>159</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>9</width>
+	    <height>9</height>
+	</char>
+
+	<char name="number">
+	    <pos_x>168</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>
+
+	<char name="bullet">
+	    <pos_x>175</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>5</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="vbar">
+	    <pos_x>180</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>3</width>
+	    <height>9</height>
+	</char>
+
+	<char name="dash">
+	    <pos_x>183</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>8</width>
+	    <height>9</height>
+	</char>
+	
+	<char name="minus">
+	    <pos_x>191</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>6</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="plus">
+	    <pos_x>197</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="equals">
+	    <pos_x>204</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>	
+	
+	<char name="cross">
+	    <pos_x>211</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>	
+
+	<char name="space">
+	    <pos_x>218</pos_x>
+	    <pos_y>9</pos_y>
+	    <width>7</width>
+	    <height>9</height>
+	</char>	
+	
+</font>
