@@ -11,15 +11,28 @@ If you enjoy this Open Source release, please consider pledging!
 
 Parts of this codebase date back to 2002, please do not judge! :P
 
-This FreePascal source code release is provided as is. You can try compiling it using the latest version of Lazarus ( http://www.lazarus-ide.org/ ). You will also need the FPC Valkyrie library ( https://github.com/ChaosForge/fpcvalkyrie/ ). You will also probably need the binary files of the full game downloadable from http://drl.chaosforge.org/ (in particular the sound and music folder contents, and the premade doomrl.wad if you don't want to create it yourself).
+This FreePascal source code release is provided as is. You can try compiling it using the latest version of Lazarus ( http://www.lazarus-ide.org/ ). You need to download the 32 bit version (64-bit is possible, but much more tricky). You will also need the FPC Valkyrie library ( https://github.com/ChaosForge/fpcvalkyrie/ ). You will also probably need the binary files of the full game downloadable from http://drl.chaosforge.org/ (in particular the sound, soundhq, music and mp3 folder contents, and the premade doomrl.wad and core.wad if you don't want to create it yourself).
 
 Detailed compilation instructions will appear at some later point after the Jupiter Hell Kickstarter finishes.
 
-All code is (C) 2003-2016 Kornel Kisielewicz, 
+Short version:
+
+1. Download 32-bit DoomRL from http://drl.chaosforge.org/
+2. Copy bin/mp3, bin/music, bin/sound, bin/soundhq from the DoomRL folders to the source tree bin folder
+3. Download 32-bit Lazarus
+4. Open src/makewad.lpi build, do not run
+5. Run makewad.exe from the command line in the bin folder to generate doomrl.wad and core.wad (precompiled lua files)
+6. Open src/doomrl.lpi, build and run
+7. Profit (?)
+
+All code is (C) 2003-2016 Kornel Kisielewicz
+
 Code is distributed under the GPL 2.0 license (see LICENSE file in this folder)
 
 All art is (C) 2003-2016 Derek Yu
+
 Art is distributed under the CC-BY-SA 4.0 license (see LICENSE file in the bin/graphics/ folder)
 
 sincerely,
+
 Kornel Kisielewicz of ChaosForge
