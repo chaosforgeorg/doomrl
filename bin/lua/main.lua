@@ -768,7 +768,7 @@ function DoomRL.OnWinGame()
 
                    Congratulations!
            Look further for the next release
-            on http://doom.chaosforge.org/]])
+            on https://drl.chaosforge.org/]])
 	ui.blood_slide()
 	return true
 end
@@ -781,7 +781,7 @@ You are running DoomRL for the first time. I hope you will find this roguelike g
 
 This game is in active development, and as such please be always sure that you have the most recent version, for bugs are fixed, new features appear, and the game becomes better at every iteration. You can find the lastest version on DoomRL website:
 
-@Bhttp://doom.chaosforge.org/@y
+@Bhttps://drl.chaosforge.org/@y
 
 Also, if you enjoy this game, join the forums:
 

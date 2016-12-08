@@ -115,7 +115,7 @@ makefile = {
 			{ name = "DoomRL (console mode)", exe = "doomrl", parameters = "-console" },
 			{ name = "DoomRL Manual", file = "manual.txt" },
 			{ name = "ChaosForge Website", url = "http://www.chaosforge.org/" },
-			{ name = "DoomRL Website", url = "http://doom.chaosforge.org/" },
+			{ name = "DoomRL Website", url = "https://drl.chaosforge.org/" },
 			{ name = "DoomRL Forum", url = "http://forum.chaosforge.org/" },
 		},
 		dmg_size   = 128000,
