@@ -319,9 +319,6 @@ end;
 constructor TPlayer.CreateFromStream ( Stream : TStream ) ;
 begin
   inherited CreateFromStream( Stream );
-
-  Initialize;
-
   SpecExit       := Stream.ReadAnsiString();
   CurrentLevel   := Stream.ReadWord();
   NukeActivated  := Stream.ReadWord();
@@ -340,6 +337,8 @@ begin
 
   FKills          := TKillTable.CreateFromStream( Stream );
   FStatistics.Map := TIntHashMap.CreateFromStream( Stream );
+  
+  Initialize;
 end;
 
 procedure TPlayer.LevelUp;
