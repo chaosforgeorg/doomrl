@@ -1,0 +1,15 @@
+                                                                              
+           ###             ###  ##                                            
+          #####  ###      ###  ##                 #        #                  
+          ## ## ####      ##  #####              ##       ##                  
+          ## ##   ## #### ## ##### ### # ##  ####### ###     # ##             
+             ## ## #### ####   ## ## ##########  ## ## ## ## #####            
+             ########## #####  ## ###  ## ## ### ## ###   ## ## ##            
+             ### ## ##### #### ##  ###### #####  ##  #### ## ## ##            
+                             ####                                             
+                              ##                                              
+                                                                              
+                          Wolfenstein, the Roguelike                          
+                         Built on Doom, the Roguelike                         
+                  DoomRL (c) 2002-2016 by Kornel Kisielewicz                  
+           WolfRL exclusive components are released without license           
