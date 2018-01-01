@@ -21,7 +21,7 @@ makefile = {
 	},
 	pre_build = function()
 		local v = make.readversion( "bin/version.txt" )
-		local s = make.svnrevision()
+		local s = make.gitrevision()
 		make.writeversion( "src/version.inc", v, s )
 		--make.svncheck(s)
 	end,
