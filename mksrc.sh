@@ -22,7 +22,7 @@ DIST_TMP_PATH=pkg/"$SRC_BASE_NAME"/
 
 
 rm -Rf "$DIST_TMP_PATH"
-/bin/mkdir "$DIST_TMP_PATH"  "$DIST_TMP_PATH"bin/  "$DIST_TMP_PATH"src/ "$DIST_TMP_PATH"bin/mortem/ "$DIST_TMP_PATH"bin/screenshot/ 
+/bin/mkdir -p "$DIST_TMP_PATH"  "$DIST_TMP_PATH"bin/  "$DIST_TMP_PATH"src/ "$DIST_TMP_PATH"bin/mortem/ "$DIST_TMP_PATH"bin/screenshot/ 
 
 # Copy regular files to temp dir
 cp -R "$BINDIR"/doomrl.wad \

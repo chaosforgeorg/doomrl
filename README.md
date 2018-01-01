@@ -17,12 +17,21 @@ Detailed compilation instructions will appear at some later point after the Jupi
 
 Short version:
 
-1. Download 32-bit DoomRL from http://drl.chaosforge.org/
-2. Copy bin/mp3, bin/music, bin/sound, bin/soundhq from the DoomRL folders to the source tree bin folder
+1. Download 32-bit DRL from http://drl.chaosforge.org/
+2. Copy bin/mp3, bin/music, bin/sound, bin/soundhq from the DRL folders to the source tree bin folder
 3. Download 32-bit Lazarus
+3.1. Get a 32-bit SDL 1.2.x. (On Mac OS X) Copy the SDL framework to /Library/Frameworks/.
+3.2. (On Mac OS X) Get patched SDL_image.framework at https://github.com/ChaosForge/doomrl/issues/4. Copy it to /Library/Frameworks/.
+3.3. Build a 32-bit libSDLmain.a using [these instructions](http://wiki.freepascal.org/FPC_and_SDL#SDL_headers_from_JEDI-SDL)
+3.4. Get a 32-bit Lua libraries. 5.1.4 worked once.
+3.5. Copy libSDLmain.a and liblua5.1.a to DRL directory.
+3.6. (On Mac OS X) see Makefile.macosx for build hints.
 4. Open src/makewad.lpi build, do not run
 5. Run makewad.exe from the command line in the bin folder to generate doomrl.wad and core.wad (precompiled lua files)
-6. Open src/doomrl.lpi, build and run
+6. Open src/doomrl.lpi, build. Or use `lua makefile.lua install` to build from command line (the only way that works on Mac OS X)
+7. (On Mac OS X) debugging DRL on Mac in Lazarus should require installing gdb and [codesigning it](https://sourceware.org/gdb/wiki/BuildingOnDarwin#Giving_gdb_permission_to_control_other_processes)
+lldb already works.
+
 7. Profit (?)
 
 All code is (C) 2003-2016 Kornel Kisielewicz

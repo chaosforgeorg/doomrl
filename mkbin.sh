@@ -21,7 +21,7 @@ SRC_BASE_NAME=doomrl-win-"$VERSION"-src
 DIST_TMP_PATH=pkg/"$BIN_BASE_NAME"/
 
 rm -Rf "$DIST_TMP_PATH"
-/bin/mkdir "$DIST_TMP_PATH" "$DIST_TMP_PATH"mortem/ "$DIST_TMP_PATH"screenshot/ "$DIST_TMP_PATH"music/ "$DIST_TMP_PATH"wav/
+/bin/mkdir -p "$DIST_TMP_PATH" "$DIST_TMP_PATH"mortem/ "$DIST_TMP_PATH"screenshot/ "$DIST_TMP_PATH"music/ "$DIST_TMP_PATH"wav/
 
 # Copy regular files to temp dir
 cp -R "$BINDIR"/doomrl.wad \

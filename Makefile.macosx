@@ -1,0 +1,40 @@
+EXECUTABLE=bin/doomrl
+LIBLUA=liblua5.1.a
+LIBSDLMAIN=libSDLmain.a
+
+build: $(EXECUTABLE)
+
+$(EXECUTABLE): src/*.pas src/*.inc libSDLmain.a $(LIBLUA)
+	lua makefile.lua install
+	# FIXME: somewhy "install" doesn't trigger
+	install_name_tool -change @rpath/SDL.framework/Versions/A/SDL @executable_path/../Frameworks/SDL.framework/Versions/A/SDL $(EXECUTABLE)
+
+# This requires modification of Lua's makefile (add -m32), as it's impossible to
+# pass external compiler flags to Lus'a Makefile.
+# FIXME: Change to sed.
+# I did this:
+#
+# macosx:
+#		$(MAKE) all MYCFLAGS="-DLUA_USE_LINUX -m32" MYLIBS="-lreadline -m32"
+
+$(LIBLUA):
+	MACOSX_DEPLOYMENT_TARGET=10.4 make -C ../lua-5.1.4/ MYCFLAGS="-m32" clean macosx
+	cp -f ../lua-5.1.4/src/liblua.a $(LIBLUA)
+
+$(LIBSDLMAIN):
+	cd ../SDLmain && \
+		MACOSX_DEPLOYMENT_TARGET=10.4 \
+		gcc -I/Library/Frameworks/SDL.framework/Headers -c -o SDLMain.o -F.. -framework SDL -framework Cocoa -m32 SDLmain.m
+	cd ../SDLmain && \
+		MACOSX_DEPLOYMENT_TARGET=10.4 \
+		ar rcs libSDLmain.a SDLMain.o
+	cp -f ../SDLmain/libSDLmain.a .
+
+deploy: build
+	cp -f bin/doomrl /Applications/DoomRL.app/Contents/MacOS/
+	cp -f bin/core.wad bin/doomrl.wad /Applications/DoomRL.app/Contents/Resources/
+
+all: deploy
+
+clean:
+	rm -f $(EXECUTABLE)
