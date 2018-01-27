@@ -1,0 +1,8 @@
+tmp/
+lib/
+pkg/
+CMakeLists.txt
+cmake-build-debug/
+mod.info
+revision.info
+*.a
