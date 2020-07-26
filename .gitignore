@@ -6,3 +6,12 @@ cmake-build-debug/
 mod.info
 revision.info
 *.a
+*.mp3
+*.wav
+bin/core.wad
+bin/doom.prc
+bin/doomrl.wad
+src/doomrl.lps
+src/makewad.lps
+src/backup/
+bin/log.txt
