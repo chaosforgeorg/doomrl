@@ -20,7 +20,7 @@ TTraits = object
   function GetHistory : AnsiString;
   procedure Upgrade ( aTrait : Byte ) ;
   function CanPick( aTrait : Byte; aCharLevel : Byte ): Boolean;
-  class function CanPickInitially( aTrait : Byte; aKlassID : Byte ) : Boolean;
+  class function CanPickInitially( aTrait : Byte; aKlassID : Byte ) : Boolean; static;
 end;
 PTraits = ^TTraits;
 

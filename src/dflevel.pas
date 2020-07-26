@@ -1132,7 +1132,7 @@ begin
   Exit(isProperCoord(coord) and (cellFlagSet(coord,CF_BLOCKLOS)));
 end;
 
-function TLevel.getCell( const aWhere : TCoord2D ) : byte; inline;
+function TLevel.getCell( const aWhere : TCoord2D ) : byte;
 var iOverlay : Word;
 begin
   iOverlay := Map.d[aWhere.x, aWhere.y];
@@ -1140,7 +1140,7 @@ begin
   Result := inherited GetCell( aWhere );
 end;
 
-procedure TLevel.putCell( const aWhere : TCoord2D; const aWhat : byte ); inline;
+procedure TLevel.putCell( const aWhere : TCoord2D; const aWhat : byte );
 begin
   if CF_OVERLAY in Cells[ aWhat ].Flags
   then
