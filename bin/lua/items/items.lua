@@ -1244,6 +1244,7 @@ function DoomRL.loaditems()
 			for c in room() do
 				local tile = cells[level.map[c]]
 				if tile.set == CELLSET_WALLS then
+					player:play_sound("barrel.explode")
 					level.map[c] = generator.styles[ level.style ].floor
 					level.light[c][LFPERMANENT] = false
 				end
