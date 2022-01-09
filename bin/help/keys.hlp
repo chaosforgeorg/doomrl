@@ -23,7 +23,7 @@
   'U'    -- Unload weapon from inventory/from ground
   '@@'    -- Show screen with character info (parameters of player
             and his equipment)
-  'T'    -- Show character traits
+  't'    -- Show character traits
   'A'    -- Show known assemblies
   'S'    -- Save game (works ONLY on the stairs to the next level)
   'Q'    -- Quit game (without saving)
