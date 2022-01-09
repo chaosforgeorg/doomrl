@@ -880,9 +880,9 @@ function DoomRL.quit_message()
 		"Your system will get overrun by imps!",
 		"If I were your boss I'd deathmatch you in a minute!",
 		"Let's beat it -- it's turning into a bloodbath!",
-		"You're trying to say you like Windows better then me, eh?",
+		"You're trying to say you like the internet better then me, eh?",
 		"Please don't leave -- there're more demons to roast!",
-		"I wouldn't leave if I were you. Windows is much worse!",
+		"I wouldn't leave if I were you. The internet is much worse!",
 		"Get outta here and go back to your boring programs...!",
 		"Go ahead and leave. See if I care.",
 		"Ya know. Next time ya gonna come here, I'm gonna toast ya."
