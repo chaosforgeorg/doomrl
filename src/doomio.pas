@@ -101,7 +101,11 @@ uses video, vlog, vdebug,
      vfmodsound,
      vsdlsound,
      vuiconsole, vcolor,
+     {$IFDEF WINDOWS}
      vtextio, vtextconsole,
+     {$ELSE}
+     vcursesio, vcursesconsole,
+     {$ENDIF}
      vsdlio, vglconsole,
      vgllibrary, vglulibrary,
      doomtextures,  doombase,
@@ -228,10 +232,18 @@ begin
   end
   else
   begin
+    {$IFDEF WINDOWS}
     FIODriver := TTextIODriver.Create( 80, 25 );
+    {$ELSE}
+    FIODriver := TCursesIODriver.Create( 80, 25 );
+    {$ENDIF}
     if (FIODriver.GetSizeX < 80) or (FIODriver.GetSizeY < 25) then
       raise EIOException.Create('Too small console available, resize your console to 80x25!');
+    {$IFDEF WINDOWS}
     FConsole  := TTextConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
+    {$ELSE}
+    FConsole  := TCursesConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
+    {$ENDIF}
   end;
 
   FIODriver.SetTitle('Doom, the Roguelike','DoomRL');
