@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="9"/>
+    <Version Value="11"/>
     <PathDelim Value="\"/>
     <General>
       <Flags>
@@ -21,22 +21,28 @@
       <RevisionNr Value="9"/>
       <BuildNr Value="6"/>
       <CharSet Value="0000"/>
-      <StringTable CompanyName="ChaosForge" ProductName="Doom, the Roguelike" LegalCopyright="(c) 2002-2012 by Kornel Kisielewicz" ProductVersion="" FileDescription="Doom, the Roguelike"/>
+      <StringTable CompanyName="ChaosForge" ProductName="Doom, the Roguelike" LegalCopyright="(c) 2002-2012 by Kornel Kisielewicz" FileDescription="Doom, the Roguelike"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="default" Default="True"/>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
-      <IncludeFileFilter Value="*.(pas|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
-      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
     </PublishOptions>
     <RunParams>
       <local>
-        <FormatVersion Value="1"/>
-        <CommandLineParams Value="-god -console"/>
+        <CommandLineParams Value="-god"/>
         <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
       </local>
+      <FormatVersion Value="2"/>
+      <Modes Count="1">
+        <Mode0 Name="default">
+          <local>
+            <CommandLineParams Value="-god"/>
+            <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
+          </local>
+        </Mode0>
+      </Modes>
     </RunParams>
     <Units Count="32">
       <Unit0>
@@ -164,7 +170,7 @@
         <IsPartOfProject Value="True"/>
       </Unit30>
       <Unit31>
-        <Filename Value="..\..\fpcvalkyrie\src\vnetwork.pas"/>
+        <Filename Value="F:\fpcvalkyrie\src\vnetwork.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit31>
     </Units>
@@ -200,7 +206,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="3">
+    <Exceptions Count="4">
       <Item1>
         <Name Value="EPlacementException"/>
       </Item1>
@@ -210,6 +216,9 @@
       <Item3>
         <Name Value="EArrayFullException"/>
       </Item3>
+      <Item4>
+        <Name Value="EHTTPError"/>
+      </Item4>
     </Exceptions>
   </Debugging>
 </CONFIG>
