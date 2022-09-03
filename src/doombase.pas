@@ -137,7 +137,7 @@ begin
   FreeAndNil( Config );
   IO.LoadStart;
   ColorOverrides := TIntHashMap.Create( );
-  Config := TDoomConfig.Create( ConfigurationPath+ConfigFile, True );
+  Config := TDoomConfig.Create( ConfigurationPath, True );
   IO.Configure( Config, True );
 
   FCoreHooks := [];
@@ -156,8 +156,8 @@ begin
   UI.CreateMessageWriter( Config );
   LoadModule( True );
 
-  if GodMode and FileExists(ConfigurationPath+'god.lua') then
-    Lua.LoadFile(ConfigurationPath+'god.lua');
+  if GodMode and FileExists( WritePath + 'god.lua') then
+    Lua.LoadFile( WritePath + 'god.lua');
   HOF.Init;
   FLevel := TLevel.Create;
   if not GraphicsVersion then
@@ -229,7 +229,7 @@ begin
   iResult    := TMenuResult.Create;
   Doom.Load;
 
-  if not FileExists(ConfigurationPath+'doom.prc') then DoomFirst;
+  if not FileExists( WritePath + 'doom.prc' ) then DoomFirst;
 
   IO.RunUILoop( TMainMenuViewer.CreateMain( IO.Root ) );
   if FState <> DSQuit then
@@ -525,7 +525,7 @@ end;
 procedure TDoom.DoomFirst;
 var T : Text;
 begin
-  Assign(T,ConfigurationPath+'doom.prc');
+  Assign(T, WritePath + 'doom.prc');
   Rewrite(T);
   Writeln(T,'Doom was already run.');
   Close(T);

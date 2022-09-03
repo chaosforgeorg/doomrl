@@ -123,7 +123,7 @@ end;
 constructor TDoomModules.Create;
 begin
   Log('DoomModules loading...');
-  FModuleDirectory := ConfigurationPath + 'modules' + DirectorySeparator;
+  FModuleDirectory := WritePath + 'modules' + DirectorySeparator;
   FRemoteModules   := TModuleArray.Create;
   FLocalModules    := TModuleArray.Create;
   FLocalMap        := TModuleHash.Create;

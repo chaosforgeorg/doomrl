@@ -71,7 +71,7 @@ begin
     FMOTD := 'Network connection disabled.';
     Exit;
   end;
-  with TDownloadTask.Create( 'doom.chaosforge.net','/info.xml',ConfigurationPath+'info.xml' ) do
+  with TDownloadTask.Create( 'doom.chaosforge.net','/info.xml', WritePath + 'info.xml' ) do
   try
     FConnected := Run;
   finally
@@ -158,7 +158,7 @@ begin
   FAlertURL      := '';
   ReadVersion( FStable, nil );
   ReadVersion( FBeta,   nil );
-  iFileName      := ConfigurationPath+'info.xml';
+  iFileName      := WritePath + 'info.xml';
   if (not Option_NetworkConnection) or (not FileExists( iFileName )) then Exit;
   try
     try

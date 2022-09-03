@@ -52,9 +52,8 @@ try
     {$IFDEF OSX_APP_BUNDLE}
     RootPath := GetResourcesPath();
     DataPath          := RootPath;
-    ConfigurationPath := RootPath;
+    ConfigurationPath := RootPath + 'config.lua';
     SaveFilePath      := RootPath;
-    Logger.Log( LOGINFO, 'Root path set to - '+RootPath );
     {$ENDIF}
     {$ELSE}
       {$IFDEF UNIX}
@@ -64,33 +63,25 @@ try
     {$IFDEF Windows}
     RootPath := ExtractFilePath( ParamStr(0) );
     DataPath          := RootPath;
-    ConfigurationPath := RootPath;
+    ConfigurationPath := RootPath + 'config.lua';
     SaveFilePath      := RootPath;
-    Logger.Log( LOGINFO, 'Root path set to - '+RootPath );
     {$ENDIF}
-
-    Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, RootPath+'log.txt', False ) );
-    LogSystemInfo();
-    Logger.Log( LOGINFO, 'Root path set to - '+RootPath );
 
     {$IFDEF WINDOWS}
     Title := 'DoomRL - Doom, the Roguelike';
     SetConsoleTitle(PChar(Title));
     Sleep(40);
     {$ENDIF}
-
-    {$IFDEF HEAPTRACE}
-    SetHeapTraceOutput(RootPath+'heap.txt');
-    {$ENDIF}
+    ColorOverrides := nil;
 
     with TParams.Create do
     try
       if isSet('god')    then
       begin
-        GodMode    := True;
-        ConfigFile := 'godmode.lua';
+        GodMode           := True;
+        ConfigurationPath := RootPath + 'godmode.lua';
       end;
-      if isSet('config')     then ConfigFile := get('config');
+      if isSet('config')     then ConfigurationPath := get('config');
       if isSet('nonet')      then ForceNoNet := True;
       if isSet('fullscreen') then ForceFullscreen := True;
       if isSet('nosound')    then ForceNoAudio    := True;
@@ -104,12 +95,31 @@ try
         GraphicsVersion := False;
         ForceConsole := True;
       end;
+
+      Config := TDoomConfig.Create( ConfigurationPath, False );
+      DataPath     := Config.Configure( 'DataPath', DataPath );
+      WritePath    := Config.Configure( 'WritePath', WritePath );
+      ScorePath    := Config.Configure( 'ScorePath', ScorePath );
+
+      if isSet('datapath')   then DataPath          := get('datapath');
+      if isSet('writepath')  then WritePath         := get('writepath');
+      if isSet('scorepath')  then ScorePath         := get('scorepath');
+      if isSet('name')       then Option_AlwaysName := get('name');
     finally
       Free;
     end;
 
-    ColorOverrides := nil;
-    Config := TDoomConfig.Create( ConfigurationPath+ConfigFile, False );
+
+    {$IFDEF HEAPTRACE}
+    SetHeapTraceOutput( WritePath + 'heap.txt');
+    {$ENDIF}
+
+    Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, WritePath + 'log.txt', False ) );
+    LogSystemInfo();
+    Logger.Log( LOGINFO, 'Log path set to - ' + WritePath );
+
+    if ScorePath = '' then ScorePath := WritePath;
+    ErrorLogFileName := WritePath + 'error.log';
 
     Doom := Systems.Add(TDoom.Create) as TDoom;
 

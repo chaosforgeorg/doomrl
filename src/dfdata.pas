@@ -10,12 +10,10 @@ interface
 uses Classes, SysUtils, idea, DOM, vgenerics, vcolor, vutil, vrltools,
      doomconfig, vuitypes;
 
-const ConfigurationPath : AnsiString = '';
+const ConfigurationPath : AnsiString = 'config.lua';
       DataPath          : AnsiString = '';
       WritePath         : AnsiString = '';
       ScorePath         : AnsiString = '';
-      ConfigFile        : AnsiString = 'config.lua';
-
 
 {$INCLUDE version.inc}
 
