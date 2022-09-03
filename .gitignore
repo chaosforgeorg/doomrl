@@ -15,3 +15,10 @@ src/doomrl.lps
 src/makewad.lps
 src/backup/
 bin/log.txt
+temp/
+bin/backup/
+src/fpcmade.x86_64-linux
+src/Makefile
+*.wad
+bin/makewad
+bin/doomrl
