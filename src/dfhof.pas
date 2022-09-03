@@ -696,7 +696,12 @@ begin
   FScore := TScoreFile.Create( ScorePath + ScoreFile, MaxHOFEntries );
   FScore.SetCRC( '344ef'+{ModuleID+}'3321', '738af'+{ModuleID+}'92-5' );
   FScore.SetBackup(  ScorePath+'backup'+PathDelim, Option_ScoreBackups );
-  FScore.Load;
+  FScore.Lock;
+  try
+    FScore.Load;
+  finally
+    FScore.Unlock;
+  end;
 
   FPlayerInfo := TVXMLDataFile.Create( WritePath + PlayerFile, 'player' );
   FPlayerInfo.SetCRC( '344ef'+{ModuleID+}'3321', '738af'+{ModuleID+}'92-5' );
@@ -894,18 +899,25 @@ begin
   begin
     VS := LuaSystem.ProtectedCall(['DoomRL','get_result_description'],[iGameResultID,true]);
 
-    iScoreEntry := FScore.Add( aScore );
-    if iScoreEntry <> nil then
-    begin
-      //Score.Add(Name,aScore,Level,DLev,Doom.Difficulty,VS,VSS,LuaSystem.Get(['klasses',Player.Klass,'id']));
-      iScoreEntry.SetAttribute('name', Name );
-      iScoreEntry.SetAttribute('level', IntToStr(Level) );
-      iScoreEntry.SetAttribute('depth', IntToStr(DLev) );
-      iScoreEntry.SetAttribute('klass', LuaSystem.Get(['klasses',Player.Klass,'id']) );
-      iScoreEntry.SetAttribute('killed', VS );
-      iScoreEntry.SetAttribute('difficulty', IntToStr(Doom.Difficulty) );
-      if nChal <> '' then
-        iScoreEntry.SetAttribute('challenge', LuaSystem.Get(['chal',nChal,'abbr']) );
+    FScore.Lock;
+    try
+      FScore.Load;
+      iScoreEntry := FScore.Add( aScore );
+      if iScoreEntry <> nil then
+      begin
+        //Score.Add(Name,aScore,Level,DLev,Doom.Difficulty,VS,VSS,LuaSystem.Get(['klasses',Player.Klass,'id']));
+        iScoreEntry.SetAttribute('name', Name );
+        iScoreEntry.SetAttribute('level', IntToStr(Level) );
+        iScoreEntry.SetAttribute('depth', IntToStr(DLev) );
+        iScoreEntry.SetAttribute('klass', LuaSystem.Get(['klasses',Player.Klass,'id']) );
+        iScoreEntry.SetAttribute('killed', VS );
+        iScoreEntry.SetAttribute('difficulty', IntToStr(Doom.Difficulty) );
+        if nChal <> '' then
+          iScoreEntry.SetAttribute('challenge', LuaSystem.Get(['chal',nChal,'abbr']) );
+        FScore.Save;
+      end;
+    finally
+      FScore.Unlock;
     end;
   end;
   Save;
@@ -954,7 +966,6 @@ begin
   ProgramRealTime := MSecNow();
   IncreaseXMLCount( FPlayerInfo.XML.DocumentElement, 'time', iSeconds );
 
-  FScore.Save;
   FPlayerInfo.Save;
 end;
 
