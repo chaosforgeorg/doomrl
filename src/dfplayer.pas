@@ -1087,7 +1087,6 @@ begin
   Inc(Score,FExpLevel);
   Inc(Score,CurrentLevel*3);
 end;
-function lowASCII(c : char) : char; begin if c in ['ù',''] then Exit('.'); Exit(c); end;
 
 begin
   if MemorialWritten then Exit;
@@ -1114,7 +1113,7 @@ begin
 
   HOF.Add(Name,FScore,FKilledBy,FExpLevel,CurrentLevel,Doom.Challenge);
 
-  Assign(MortemText,SaveFilePath+'mortem.txt');
+  Assign(MortemText, WritePath + 'mortem.txt' );
   Rewrite(MortemText);
   WritingMortem := True;
   LuaSystem.ProtectedCall(['DoomRL','print_mortem'],[]);
@@ -1125,11 +1124,11 @@ begin
 
   if Option_MortemArchive then
   begin
-    iString := SaveFilePath+'mortem'+PathDelim+ToProperFilename('['+FormatDateTime(Option_TimeStamp,Now)+'] '+Name)+'.txt';
+    iString :=  WritePath + 'mortem'+PathDelim+ToProperFilename('['+FormatDateTime(Option_TimeStamp,Now)+'] '+Name)+'.txt';
     Assign(iCopyText,iString);
     Log('Writing mortem...: '+iString);
     Rewrite(iCopyText);
-    Assign(MortemText,SaveFilePath+'mortem.txt');
+    Assign(MortemText, WritePath + 'mortem.txt');
     Reset(MortemText);
     
     while not EOF(MortemText) do

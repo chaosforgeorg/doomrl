@@ -12,7 +12,8 @@ uses Classes, SysUtils, idea, DOM, vgenerics, vcolor, vutil, vrltools,
 
 const ConfigurationPath : AnsiString = '';
       DataPath          : AnsiString = '';
-      SaveFilePath      : AnsiString = '';
+      WritePath         : AnsiString = '';
+      ScorePath         : AnsiString = '';
       ConfigFile        : AnsiString = 'config.lua';
 
 

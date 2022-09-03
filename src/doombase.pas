@@ -446,7 +446,7 @@ var Stream : TStream;
 begin
   try
     try
-      Stream := TGZFileStream.Create(SaveFilePath+'save',gzOpenRead);
+      Stream := TGZFileStream.Create( WritePath + 'save',gzOpenRead );
 
       ModuleID        := Stream.ReadAnsiString;
       UIDs            := TUIDStore.CreateFromStream( Stream );
@@ -461,7 +461,7 @@ begin
     finally
       Stream.Destroy;
     end;
-    DeleteFile(SaveFilePath+'save');
+    DeleteFile( WritePath + 'save' );
 
     if GameType <> GameStandard then
     begin
@@ -481,7 +481,7 @@ begin
     on e : Exception do
     begin
       Log('Save file corrupted! Error while loading : '+ e.message );
-      DeleteFile(SaveFilePath+'save');
+      DeleteFile( WritePath + 'save' );
       LoadSaveFile := False;
     end;
   end;
@@ -493,7 +493,7 @@ begin
   Player.FStatistics.RealTime += MSecNow() - GameRealTime;
   Player.IncStatistic('save_count');
 
-  Stream := TGZFileStream.Create(SaveFilePath+'save',gzOpenWrite);
+  Stream := TGZFileStream.Create( WritePath + 'save',gzOpenWrite );
 
   Stream.WriteAnsiString( ModuleID );
   UIDs.WriteToStream( Stream );
@@ -511,7 +511,7 @@ end;
 
 function TDoom.SaveExists : Boolean;
 begin
-  Exit( FileExists(SaveFilePath+'save') );
+  Exit( FileExists( WritePath + 'save' ) );
 end;
 
 procedure TDoom.SetupLuaConstants;

@@ -693,14 +693,14 @@ begin
   SkillRank := 0;
   ExpRank   := 0;
 
-  FScore := TScoreFile.Create(ConfigurationPath+ScoreFile, MaxHOFEntries );
+  FScore := TScoreFile.Create( ScorePath + ScoreFile, MaxHOFEntries );
   FScore.SetCRC( '344ef'+{ModuleID+}'3321', '738af'+{ModuleID+}'92-5' );
-  FScore.SetBackup(  ConfigurationPath+'backup'+PathDelim, Option_ScoreBackups );
+  FScore.SetBackup(  ScorePath+'backup'+PathDelim, Option_ScoreBackups );
   FScore.Load;
 
-  FPlayerInfo := TVXMLDataFile.Create( ConfigurationPath+PlayerFile, 'player' );
+  FPlayerInfo := TVXMLDataFile.Create( WritePath + PlayerFile, 'player' );
   FPlayerInfo.SetCRC( '344ef'+{ModuleID+}'3321', '738af'+{ModuleID+}'92-5' );
-  FPlayerInfo.SetBackup(  ConfigurationPath+'backup'+PathDelim, Option_PlayerBackups );
+  FPlayerInfo.SetBackup(  WritePath + 'backup'+PathDelim, Option_PlayerBackups );
   FPlayerInfo.Load;
 
   SkillRank := GetRank('skill');
