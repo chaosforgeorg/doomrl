@@ -13,6 +13,8 @@ uses Classes, SysUtils, idea, DOM, vgenerics, vcolor, vutil, vrltools,
 const ConfigurationPath : AnsiString = '';
       DataPath          : AnsiString = '';
       SaveFilePath      : AnsiString = '';
+      ConfigFile        : AnsiString = 'config.lua';
+
 
 {$INCLUDE version.inc}
 
@@ -69,8 +71,6 @@ const
 
   NoPlayerRecord : Boolean = False;
   NoScoreRecord  : Boolean = False;
-
-  ConfigFile   : string  = 'config.lua';
 
   GodMode      : Boolean = False;
 

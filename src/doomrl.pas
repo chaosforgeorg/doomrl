@@ -24,8 +24,8 @@ program doomrl;
 uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
-     vdebug, doombase, dfoutput, vlog, vutil, vos,
-     dfdata, doommodule, doomnet, doomio;
+     vdebug, doombase, dfoutput, vlog, vutil, vos, vparams,
+     dfdata, doommodule, doomnet, doomio, doomconfig;
 
 {$IFDEF WINDOWS}
 var Handle : HWND;
@@ -82,6 +82,34 @@ try
     {$IFDEF HEAPTRACE}
     SetHeapTraceOutput(RootPath+'heap.txt');
     {$ENDIF}
+
+    with TParams.Create do
+    try
+      if isSet('god')    then
+      begin
+        GodMode    := True;
+        ConfigFile := 'godmode.lua';
+      end;
+      if isSet('config')     then ConfigFile := get('config');
+      if isSet('nonet')      then ForceNoNet := True;
+      if isSet('fullscreen') then ForceFullscreen := True;
+      if isSet('nosound')    then ForceNoAudio    := True;
+      if isSet('graphics')   then
+      begin
+        GraphicsVersion := True;
+        ForceGraphics := True;
+      end;
+      if isSet('console')    then
+      begin
+        GraphicsVersion := False;
+        ForceConsole := True;
+      end;
+    finally
+      Free;
+    end;
+
+    ColorOverrides := nil;
+    Config := TDoomConfig.Create( ConfigurationPath+ConfigFile, False );
 
     Doom := Systems.Add(TDoom.Create) as TDoom;
 

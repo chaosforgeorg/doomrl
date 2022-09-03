@@ -179,47 +179,17 @@ begin
 end;
 
 constructor TDoom.Create;
-var CP : TParams;
 begin
   inherited Create;
-  ModuleID := 'DoomRL';
-  GameType := GameStandard;
-  GameWon  := False;
+  ModuleID   := 'DoomRL';
+  GameType   := GameStandard;
+  GameWon    := False;
   DataLoaded := False;
   SetState( DSStart );
   FModuleHooks := [];
   FChallengeHooks := [];
   NVersion := ArrayToVersion(VERSION_ARRAY);
   Log( VersionToString( NVersion ) );
-
-  CP := TParams.Create;
-  
-  if CP.isSet('god')    then
-  begin
-    GodMode := True;
-    ConfigFile := 'godmode.lua';
-  end;
-  if CP.isSet('config') then ConfigFile := CP.get('config');
-  if CP.isSet('nonet')  then ForceNoNet := True;
-  if CP.isSet('graphics') then
-  begin
-    GraphicsVersion := True;
-    ForceGraphics := True;
-  end;
-  if CP.isSet('console') then
-  begin
-    GraphicsVersion := False;
-    ForceConsole := True;
-  end;
-  if CP.isSet('fullscreen') then
-    ForceFullscreen := True;
-  if CP.isSet('nosound') then
-    ForceNoAudio := True;
-
-  FreeAndNil(CP);
-
-  ColorOverrides := nil;
-  Config := TDoomConfig.Create( ConfigurationPath+ConfigFile, False );
 end;
 
 procedure TDoom.CreateIO;
