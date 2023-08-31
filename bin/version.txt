@@ -1,6 +1,7 @@
 0.9.9.8 BETA 1
 [new] -- TR#307: description for badges and medals in mortem.txt
 [new] -- TR#---: event added: darkness
+[mod] -- TR#---: Nightmare no longer prevents saving
 [mod] -- TR#---: animation engine upgrade
 [mod] -- TR#294: targeting ranges use vision calculation and are locked to vision range unless the weapon specifies a different range (shark)
 [mod] -- TR#310: character screen (@) shows dodge and knockback modifiers.
