@@ -53,7 +53,6 @@ try
     RootPath := GetResourcesPath();
     DataPath          := RootPath;
     ConfigurationPath := RootPath + 'config.lua';
-    SaveFilePath      := RootPath;
     {$ENDIF}
     {$ELSE}
       {$IFDEF UNIX}
@@ -64,7 +63,6 @@ try
     RootPath := ExtractFilePath( ParamStr(0) );
     DataPath          := RootPath;
     ConfigurationPath := RootPath + 'config.lua';
-    SaveFilePath      := RootPath;
     {$ENDIF}
 
     {$IFDEF WINDOWS}
