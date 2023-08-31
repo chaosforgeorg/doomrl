@@ -13,7 +13,7 @@ const ChallengeType : array[1..4] of TChallengeDesc =
    Desc : 'Mix two DoomRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach @ySergeant@> rank to unlock!';
 ),(
    Name : 'Archangel Game';
-   Desc : 'Play one of the DoomRL challenge in it''s ultra hard form. Do not expect fairness here!'#10#10'Reach @ySergeant@> rank to unlock!';
+   Desc : 'Play one of the DoomRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach @ySergeant@> rank to unlock!';
 ),(
    Name : 'Custom Challenge';
    Desc : 'Play one of many custom DoomRL challenge levels and episodes. Download new ones from the @yCustom game/Download Mods@> option in the main menu.';
