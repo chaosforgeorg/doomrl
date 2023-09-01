@@ -34,7 +34,7 @@ makefile = {
 			exec = { "doomrl" },
 			files = { "config.lua" },
 			os = {
-				WINDOWS = { "fmod64.dll", "fmod.dll", "lua5.1.dll", "zlib1.dll", "SDL.dll", "SDL_image.dll", "libpng15-15.dll", "doomrl_console.bat" },
+				WINDOWS = { "fmod64.dll", "fmod.dll", "lua5.1.dll", "zlib1.dll", "SDL.dll", "SDL_image.dll", "SDL_mixer.dll", "smpeg.dll", "libpng15-15.dll", "doomrl_console.bat" },
 				LINUX   = { "unix_notes.txt", "doomrl_gnome-terminal", "doomrl_konsole", "doomrl_xterm" },
 				MACOSX  = { "unix_notes.txt" },
 			},

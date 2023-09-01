@@ -19,7 +19,7 @@ Graphics = "TILES"
 -- Windows you'll need SDL_mixer.dll and smpeg.dll from SDL_mixer website.
 -- For using FMOD on *nix systems you'll need the proper packages.
 -- Possible values are FMOD, SDL, NONE, DEFAULT
-SoundEngine = "DEFAULT"
+SoundEngine = "SDL"
 
 -- SDL sound only options. See SDL_mixer manual on what to put here if
 -- defaults don't get you working audio. Format needs to be decoded because
