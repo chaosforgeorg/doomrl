@@ -7,6 +7,8 @@
 [mod] -- TR#310: character screen (@) shows dodge and knockback modifiers.
 [mod] -- TR#---: Ao100 / AAo666 full wins now counted as such.
 [mod] -- TR#---: AoOC retooled -- starting inventory changed.
+[mod] -- TR#---: separte path support (separate data/score etc, esp on Linux)
+[mod] -- TR#---: curses used on Linux instead of FPCVideo
 [fix] -- TR#---: melee kills tracked properly AoLT and ArchAoLT now working as intended
 [fix] -- TR#---: kills are only assigned to an item if the item was used to kill
 [fix] -- TR#---: weapon OnKill is called only if weapon is used to kill the enemy
