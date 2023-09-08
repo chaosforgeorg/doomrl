@@ -1356,7 +1356,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 
 		arch_name        = "Archangel of Humanity",
 		arch_description = "You're no hero. Try beating the game with a mere 10 HP. Oh, and don't count on Ironman, it will only give you +2 HP per level. To ease your suffering a little, you gain some useful junk at start. Actually, traits are so unrealistic, take just one at the start.",
-		arch_rating      = "Tormuse",
+		arch_rating      = "TORMUSE",
 		arch_rank        = 9,
 
 		OnCreatePlayer = function ()
