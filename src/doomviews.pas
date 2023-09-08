@@ -654,7 +654,7 @@ begin
     iDamLevel   := FStatistics.Map['damage_on_level'];
     iKills      := FStatistics.Map['kills'];
     iMaxKills   := FStatistics.Map['max_kills'];
-    iKillSpree  := FKills.BestNoDamageSequence;
+    iKillSpree  := FKills.NoDamageSequence;
     iKillRecord := FStatistics.Map['kills_non_damage'];
     if iKillSpree > iKillRecord then iKillRecord := iKillSpree;
 
