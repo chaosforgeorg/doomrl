@@ -58,7 +58,7 @@ type
 
     procedure LookMode;
     function ChooseDirection(aActionName : string) : TDirection;
-    function ChooseTarget( aActionName : string; aRange : byte; aTargets : TAutoTarget; aShowLast : Boolean = False ) : TCoord2D;
+    function ChooseTarget( aActionName : string; aRange : byte; aLimitRange : Boolean; aTargets : TAutoTarget; aShowLast : Boolean = False ) : TCoord2D;
 
     procedure Focus( aCoord : TCoord2D );
 
@@ -522,7 +522,7 @@ begin
 end;
 
 function TDoomUI.ChooseTarget(aActionName : string; aRange: byte;
-  aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D;
+  aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D;
 var Key : byte;
     Dir : TDirection;
     Position : TCoord2D;
@@ -568,7 +568,7 @@ begin
        begin
          iTarget := IO.MTarget;
          iDist := Distance(iTarget.x, iTarget.y, Position.x, Position.y);
-         if iDist > aRange-1 then
+         if aLimitRange and (iDist > aRange - 1) then
            begin
              iDist := 0;
              iTargetLine.Init(iLevel, Position, iTarget);
@@ -588,7 +588,7 @@ begin
     begin
       Dir := CommandDirection( Key );
       if (iLevel.isProperCoord( iTarget + Dir ))
-        and (Distance((iTarget + Dir).x, (iTarget + Dir).y, Position.x, Position.y) <= aRange-1) then
+        and ((not aLimitRange) or (Distance((iTarget + Dir).x, (iTarget + Dir).y, Position.x, Position.y) <= aRange-1)) then
         iTarget += Dir;
     end;
     if (Key = COMMAND_MORE) then

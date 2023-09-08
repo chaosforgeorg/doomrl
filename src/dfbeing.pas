@@ -702,12 +702,13 @@ var iFireDesc  : AnsiString;
     iEnemyUID  : TUID;
     iGunKata   : Boolean;
     iFireCost  : LongInt;
-	  iRange     : Byte;
+    iLimitRange: Boolean;
+    iRange     : Byte;
     iDist      : Byte;
 begin
-  iChainOld  := FTargetPos;
-  iChainFire := FChainFire;
-  FChainFire := 0;
+  iChainOld   := FTargetPos;
+  iChainFire  := FChainFire;
+  FChainFire  := 0;
 
   if (aWeapon = nil) or (not aWeapon.isRanged) then Exit( Fail( 'You have no ranged weapon.', [] ) );
   if aAltFire = ALT_NONE then
@@ -726,6 +727,7 @@ begin
   else
       iRange := Missiles[ aWeapon.Missile ].Range;
   if iRange = 0 then iRange := self.Vision;
+  iLimitRange := (not aWeapon.Flags[ IF_SHOTGUN ]) and (MF_EXACT in Missiles[ aWeapon.Missile ].Flags);
   if aChooseTarget then
   begin
     iFireDesc := '';
@@ -743,17 +745,18 @@ begin
         1 : iFireDesc := ' (@Ywarming@>)';
         2 : iFireDesc := ' (@Rfull@>)';
       end;
-      if not Player.doChooseTarget( Format('Chain fire%s -- Choose target or abort...', [ iFireDesc ]), iRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
+      if not Player.doChooseTarget( Format('Chain fire%s -- Choose target or abort...', [ iFireDesc ]), iRange, iLimitRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
     end
     else
-      if not Player.doChooseTarget( Format('Fire%s -- Choose target...',[ iFireDesc ]), iRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
+      if not Player.doChooseTarget( Format('Fire%s -- Choose target...',[ iFireDesc ]), iRange, iLimitRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
     aTarget := FTargetPos;
   end;
 
-  {**** See if target is in range.}
-  iDist := Distance(self.Position.x, self.Position.y, aTarget.x, aTarget.y);
-      if iDist > iRange then Exit( Fail( 'Out of range!', [] ) );
-
+  if iLimitRange then
+  begin
+    iDist := Distance(self.Position.x, self.Position.y, aTarget.x, aTarget.y);
+    if iDist > iRange then Exit( Fail( 'Out of range!', [] ) );
+  end;
 
   if (aAltFire = ALT_CHAIN) and ( iChainFire > 0 ) then FTargetPos := iChainOld;
   FChainFire := iChainFire;
@@ -788,7 +791,9 @@ begin
 end;
 
 function TBeing.ActionAltFire ( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem ) : Boolean;
-var iAlt : TAltFire;
+var iAlt        : TAltFire;
+    iRange      : Byte;
+    iLimitRange : Boolean;
 begin
   if (aWeapon = nil) or (not aWeapon.isWeapon) then Exit( Fail( 'You have no weapon.', [] ) );
   if aWeapon.AltFire = ALT_NONE then Exit( Fail('This weapon has no alternate fire mode.', [] ) );
@@ -807,7 +812,9 @@ begin
       begin
         if isPlayer and aChooseTarget then
         begin
-          if not Player.doChooseTarget( 'Throw -- Choose target...', Missiles[ aWeapon.Missile ].Range ) then Exit( Fail( 'Throwing canceled.', [] ) );
+          iRange      := Missiles[ aWeapon.Missile ].Range;
+          iLimitRange := MF_EXACT in Missiles[ aWeapon.Missile ].Flags;
+          if not Player.doChooseTarget( 'Throw -- Choose target...', iRange, iLimitRange ) then Exit( Fail( 'Throwing canceled.', [] ) );
           aTarget := FTargetPos;
         end;
         // thelaptop: If you can aim it, you should get a bonus for throwing it.
