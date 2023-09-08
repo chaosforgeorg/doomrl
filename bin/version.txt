@@ -1,5 +1,6 @@
 0.9.9.8 BETA 2
 [mod] -- TR#294: MF_EXACT weapons locked to vision range
+[mod] -- TR#---: pick bottom-most stack when reloading
 [fix] -- TR#---: improve mouse responsiveness
 
 0.9.9.8 BETA 1

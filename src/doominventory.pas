@@ -235,7 +235,7 @@ begin
   for iAmmo in Self do
      if iAmmo.isAmmo then
        if iAmmo.NID = aAmmoID then
-       if iAmmo.Ammo < iAmmoCount then
+       if iAmmo.Ammo <= iAmmoCount then
        begin
          SeekAmmo   := iAmmo;
          iAmmoCount := iAmmo.Ammo;
