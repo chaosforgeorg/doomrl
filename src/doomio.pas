@@ -757,6 +757,7 @@ function TDoomIO.WaitForKeyEvent ( out aEvent : TIOEvent;
 var iEndLoop : TIOEventTypeSet;
     iStart   : DWord;
     iPeek    : TIOEvent;
+    iResult  : Boolean;
 begin
   iEndLoop := [VEVENT_KEYDOWN];
   iStart   := FLastUpdate;
@@ -768,12 +769,12 @@ begin
       FullUpdate;
       FIODriver.Sleep(10);
     until FIODriver.EventPending;
-    FIODriver.PollEvent( aEvent );
+    if not FIODriver.PollEvent( aEvent ) then continue;
     if ( aEvent.EType = VEVENT_MOUSEMOVE ) and FIODriver.EventPending then
     begin
       repeat
-        FIODriver.PeekEvent( iPeek );
-        if iPeek.EType <> VEVENT_MOUSEMOVE then break;
+        iResult := FIODriver.PeekEvent( iPeek );
+        if ( not iResult ) or ( iPeek.EType <> VEVENT_MOUSEMOVE ) then break;
         FIODriver.PollEvent( aEvent );
       until (not FIODriver.EventPending);
     end;
