@@ -107,7 +107,7 @@ uses video, vlog, vdebug,
      vcursesio, vcursesconsole,
      {$ENDIF}
      vsdlio, vglconsole,
-     vgllibrary, vglulibrary,
+     vgllibrary,
      doomtextures,  doombase,
      dfdata, dfoutput, dfplayer;
 
@@ -221,8 +221,7 @@ begin
     CalculateConsoleParams;
     FConsole := TGLConsoleRenderer.Create( iFont, 80, 25, FLineSpace, [VIO_CON_CURSOR] );
     TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
-    LoadGLU;
-    gluOrtho2D(0, FIODriver.GetSizeX, FIODriver.GetSizeY,0 );
+    glOrtho( 0, FIODriver.GetSizeX, FIODriver.GetSizeY, 0, -1, 1 );
     SpriteMap  := TDoomSpriteMap.Create;
     FQuadSheet := TGLQuadSheet.Create;
     FTextSheet := TGLQuadSheet.Create;
@@ -626,7 +625,7 @@ begin
   glMatrixMode( GL_PROJECTION );
   glPushMatrix();
   glLoadIdentity();
-  gluOrtho2D(0, iSizeX, iSizeY, 0);
+  glOrtho(0, iSizeX, iSizeY, 0, -1, 1 );
 
   glMatrixMode( GL_MODELVIEW );
   glPushMatrix();
@@ -649,7 +648,7 @@ begin
   glMatrixMode( GL_PROJECTION );
   glPushMatrix();
   glLoadIdentity();
-  gluOrtho2D( 0, iSizeX, iSizeY, 0);
+  glOrtho( 0, iSizeX, iSizeY, 0, -1, 1 );
   glMatrixMode( GL_MODELVIEW );
   glPushMatrix();
   glLoadIdentity();
