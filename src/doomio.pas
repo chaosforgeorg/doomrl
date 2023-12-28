@@ -107,7 +107,7 @@ uses video, vlog, vdebug,
      vcursesio, vcursesconsole,
      {$ENDIF}
      vsdlio, vglconsole,
-     vgllibrary,
+     vgl3library,
      doomtextures,  doombase,
      dfdata, dfoutput, dfplayer;
 

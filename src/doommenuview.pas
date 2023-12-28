@@ -97,7 +97,7 @@ type TMainMenuViewer = class( TUIElement )
 implementation
 
 uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, dfoutput, vgltypes,
-     doombase, doomio, doomnet, doomviews, vgllibrary;
+     doombase, doomio, doomnet, doomviews;
 
 const
   TextContinueGame  = '@b--@> Continue game @b---@>';

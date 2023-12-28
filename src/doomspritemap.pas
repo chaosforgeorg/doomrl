@@ -89,7 +89,7 @@ var SpriteMap : TDoomSpriteMap = nil;
 
 implementation
 
-uses math, vmath, viotypes, vgllibrary, vvision,
+uses math, vmath, viotypes, vgl3library, vvision,
      doomtextures, doomio, doombase,
      dfoutput, dfmap, dfitem, dfbeing, dfplayer;
 
