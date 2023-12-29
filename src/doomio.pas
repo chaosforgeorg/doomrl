@@ -2,7 +2,7 @@
 unit doomio;
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils, vgenerics, vio,
-     vsystems, vmath, vrltools, vluaconfig, vglquadsheet, doomspritemap, doomviews,
+     vsystems, vmath, vrltools, vluaconfig, vglquadsheet, vgltypes, doomspritemap, doomviews,
      viotypes, vbitmapfont, vioevent, vioconsole, vuielement, vuitypes;
 
 type TCommandSet = set of Byte;
@@ -52,11 +52,13 @@ protected
 public // REMOVE
   FMsgFont    : TBitmapFont;
 private
-  FLoading    : TUILoadingScreen;
-  FMCursor    : TDoomMouseCursor;
-  FQuadSheet  : TGLQuadSheet;
-  FTextSheet  : TGLQuadSheet;
-  FPostSheet  : TGLQuadSheet;
+  FLoading     : TUILoadingScreen;
+  FMCursor     : TDoomMouseCursor;
+  FQuadSheet   : TGLQuadSheet;
+  FTextSheet   : TGLQuadSheet;
+  FPostSheet   : TGLQuadSheet;
+  FQuadRenderer: TGLQuadSheetRenderer;
+  FProjection  : TMatrix44;
   FSettings   : array [Boolean] of
   record
     Width  : Integer;
@@ -163,6 +165,7 @@ begin
   FTextSheet := nil;
   FPostSheet := nil;
   Textures   := nil;
+  FQuadRenderer := nil;
 
   if GraphicsVersion then
   begin
@@ -226,7 +229,8 @@ begin
     FQuadSheet := TGLQuadSheet.Create;
     FTextSheet := TGLQuadSheet.Create;
     FPostSheet := TGLQuadSheet.Create;
-    FMCursor   := TDoomMouseCursor.Create;
+    FQuadRenderer := TGLQuadSheetRenderer.Create;
+    FMCursor      := TDoomMouseCursor.Create;
     TSDLIODriver( FIODriver ).ShowMouse( False );
   end
   else
@@ -391,6 +395,7 @@ begin
   FreeAndNil( FQuadSheet );
   FreeAndNil( FTextSheet );
   FreeAndNil( FPostSheet );
+  FreeAndNil( FQuadRenderer );
 
   IO := nil;
   inherited Destroy;
@@ -591,13 +596,14 @@ begin
   begin
     if (Doom <> nil) and (UI <> nil) then UI.GFXAnimationUpdate( aMSec );
     if GraphicsVersion then GraphicsDraw;
-    if FQuadSheet <> nil then FQuadSheet.Draw;
+    if FQuadRenderer <> nil then FQuadRenderer.Update( FProjection );
+    if FQuadSheet <> nil then FQuadRenderer.Render( FQuadSheet );
   end;
   FUIRoot.OnUpdate( aMSec );
   FUIRoot.Render;
-  if FTextSheet <> nil then FTextSheet.Draw;
+  if FTextSheet <> nil then FQuadRenderer.Render( FTextSheet );
   FConsole.Update;
-  if FPostSheet <> nil then FPostSheet.Draw;
+  if FPostSheet <> nil then FQuadRenderer.Render( FPostSheet );
   if (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos(iMousePos) then
   begin
     FMCursor.Draw( iMousePos.X, iMousePos.Y, FLastUpdate );
@@ -652,6 +658,7 @@ begin
   glMatrixMode( GL_MODELVIEW );
   glPushMatrix();
   glLoadIdentity();
+  FProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -1, 1 );
 end;
 
 function TDoomIO.GetCommand : Byte;
