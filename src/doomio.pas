@@ -603,11 +603,11 @@ begin
   FUIRoot.Render;
   if FTextSheet <> nil then FQuadRenderer.Render( FTextSheet );
   FConsole.Update;
-  if FPostSheet <> nil then FQuadRenderer.Render( FPostSheet );
-  if (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos(iMousePos) then
+  if (FPostSheet <> nil) and (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos(iMousePos) then
   begin
-    FMCursor.Draw( iMousePos.X, iMousePos.Y, FLastUpdate );
+    FMCursor.Draw( iMousePos.X, iMousePos.Y, FLastUpdate, FPostSheet );
   end;
+  if FPostSheet <> nil then FQuadRenderer.Render( FPostSheet );
 end;
 
 procedure TDoomIO.GraphicsDraw;
