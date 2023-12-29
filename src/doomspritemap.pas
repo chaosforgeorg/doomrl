@@ -11,7 +11,6 @@ const SpriteCellRow = 16;
 type TDoomMouseCursor = class( TVObject )
   constructor Create;
   procedure SetTextureID( aTexture : TTextureID; aSize : DWord );
-  procedure DrawOld( x, y : Integer; aTicks : DWord );
   procedure Draw( x, y : Integer; aTicks : DWord; aTarget : TGLQuadSheet );
 private
   FCoord     : TGLRawQCoord;
@@ -90,7 +89,7 @@ var SpriteMap : TDoomSpriteMap = nil;
 
 implementation
 
-uses math, vmath, viotypes, vgl3library, vvision,
+uses math, vmath, viotypes, vvision,
      doomtextures, doomio, doombase,
      dfoutput, dfmap, dfitem, dfbeing, dfplayer;
 
@@ -116,27 +115,6 @@ procedure TDoomMouseCursor.SetTextureID ( aTexture : TTextureID; aSize : DWord )
 begin
   FTextureID := aTexture;
   FSize      := aSize;
-end;
-
-procedure TDoomMouseCursor.DrawOld ( x, y : Integer; aTicks : DWord ) ;
-begin
-  if ( FSize = 0 ) or ( not FActive ) then Exit;
-
-  FCoord.Init( TGLVec2i.Create(x,y), TGLVec2i.Create(x+FSize,y+FSize) );
-
-  glColor4f( 1.0, ( Sin( aTicks / 100 ) + 1.0 ) / 2 , 0.1, 1.0 );
-  glEnable( GL_TEXTURE_2D );
-
-  glEnableClientState( GL_VERTEX_ARRAY );
-  glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-
-  glBindTexture( GL_TEXTURE_2D, Textures[ FTextureID ].GLTexture );
-  glVertexPointer( 2, GL_INT, 0, @(FCoord) );
-  glTexCoordPointer( 2, GL_FLOAT, 0, @(FTexCoord) );
-  glDrawArrays( GL_QUADS, 0, 4 );
-
-  glDisableClientState( GL_VERTEX_ARRAY );
-  glDisableClientState( GL_TEXTURE_COORD_ARRAY );
 end;
 
 procedure TDoomMouseCursor.Draw ( x, y : Integer; aTicks : DWord; aTarget : TGLQuadSheet ) ;
