@@ -638,12 +638,13 @@ begin
   glLoadIdentity();
   glColor4f(1.0,1.0,1.0,1.0);
   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+  FProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -1, 1 );
 
   if (Doom <> nil) and (Doom.State = DSPlaying) then
   begin
     FConsole.HideCursor;
     //if not UI.AnimationsRunning then SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
-    SpriteMap.Update( iTickTime );
+    SpriteMap.Update( iTickTime, FProjection );
     UI.GFXAnimationDraw;
     SpriteMap.Draw;
   end;
@@ -658,7 +659,7 @@ begin
   glMatrixMode( GL_MODELVIEW );
   glPushMatrix();
   glLoadIdentity();
-  FProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -1, 1 );
+
 end;
 
 function TDoomIO.GetCommand : Byte;

@@ -32,7 +32,7 @@ type
  TDoomSpriteMap = class( TVObject )
   constructor Create;
   procedure Recalculate;
-  procedure Update( aTime : DWord );
+  procedure Update( aTime : DWord; aProjection : TMatrix44 );
   procedure Draw;
   procedure PrepareTextures;
   procedure ReassignTextures;
@@ -191,7 +191,7 @@ begin
   end;
 end;
 
-procedure TDoomSpriteMap.Update ( aTime : DWord ) ;
+procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
 begin
   FShift := FNewShift;
   FFluidTime += aTime*0.0001;
@@ -200,6 +200,7 @@ begin
   ApplyEffect;
   UpdateLightMap;
   FSpriteEngine.Clear;
+  FSpriteEngine.Update( aProjection );
   PushTerrain;
   PushObjects;
 end;
