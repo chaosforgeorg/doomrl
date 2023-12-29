@@ -224,7 +224,6 @@ begin
     CalculateConsoleParams;
     FConsole := TGLConsoleRenderer.Create( iFont, 80, 25, FLineSpace, [VIO_CON_CURSOR] );
     TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
-    glOrtho( 0, FIODriver.GetSizeX, FIODriver.GetSizeY, 0, -1, 1 );
     SpriteMap  := TDoomSpriteMap.Create;
     FQuadSheet := TGLQuadSheet.Create;
     FTextSheet := TGLQuadSheet.Create;
@@ -627,16 +626,6 @@ begin
   glEnable( GL_TEXTURE_2D );
   glDisable( GL_DEPTH_TEST );
   glEnable( GL_BLEND );
-
-  glMatrixMode( GL_PROJECTION );
-  glPushMatrix();
-  glLoadIdentity();
-  glOrtho(0, iSizeX, iSizeY, 0, -1, 1 );
-
-  glMatrixMode( GL_MODELVIEW );
-  glPushMatrix();
-  glLoadIdentity();
-  glColor4f(1.0,1.0,1.0,1.0);
   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
   FProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -1, 1 );
 
@@ -648,18 +637,6 @@ begin
     UI.GFXAnimationDraw;
     SpriteMap.Draw;
   end;
-
-  iSizeY    := FIODriver.GetSizeY-2*FVPadding;
-  iSizeX    := FIODriver.GetSizeX;
-  glViewport( 0, FVPadding, iSizeX, iSizeY );
-  glMatrixMode( GL_PROJECTION );
-  glPushMatrix();
-  glLoadIdentity();
-  glOrtho( 0, iSizeX, iSizeY, 0, -1, 1 );
-  glMatrixMode( GL_MODELVIEW );
-  glPushMatrix();
-  glLoadIdentity();
-
 end;
 
 function TDoomIO.GetCommand : Byte;
