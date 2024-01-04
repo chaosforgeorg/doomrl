@@ -2,7 +2,7 @@
 unit doomio;
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils, vgenerics, vio,
-     vsystems, vmath, vrltools, vluaconfig, vglquadsheet, vglquadbuffer, vgltypes, doomspritemap, doomviews,
+     vsystems, vmath, vrltools, vluaconfig, vglquadsheet, vglquadrenderer, vgltypes, doomspritemap, doomviews,
      viotypes, vbitmapfont, vioevent, vioconsole, vuielement, vuitypes;
 
 type TCommandSet = set of Byte;

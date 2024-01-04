@@ -2,7 +2,7 @@
 unit doomspritemap;
 interface
 uses Classes, SysUtils,
-     vutil, vgltypes, vrltools, vgenerics, vcolor, vglquadsheet,
+     vutil, vgltypes, vrltools, vgenerics, vcolor, vglquadsheet, vglquadrenderer,
      vnode, vspriteengine, vtextures, dfdata;
 
 // TODO : remove
