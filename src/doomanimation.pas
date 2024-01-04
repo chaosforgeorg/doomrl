@@ -259,7 +259,7 @@ end;
 
 procedure TDoomBlink.OnDraw;
 begin
-  IO.PostSheet.PostColoredQuad( TGLVec2i.Create(0,0), TGLVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TGLVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
+  IO.PostSheet.PushColoredQuad( TGLVec2i.Create(0,0), TGLVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TGLVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
 end;
 
 { TDoomMove }

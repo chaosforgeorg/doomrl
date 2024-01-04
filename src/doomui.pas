@@ -108,7 +108,7 @@ const UnitTex : TGLVec2f = ( Data : ( 1, 1 ) );
 begin
   inherited OnRedraw;
   if FScale <> 0 then
-    IO.QuadSheet.PostTexturedQuad( FGLPos, FGLPos + TGLVec2i.Create( FScale*128, FScale*32 ), ZeroTex, UnitTex, FTexture );
+    IO.QuadSheet.PushTexturedQuad( FGLPos, FGLPos + TGLVec2i.Create( FScale*128, FScale*32 ), ZeroTex, UnitTex, FTexture );
 end;
 
 procedure TDoomUIMiniMap.Update;
@@ -397,11 +397,11 @@ begin
     iRoot := TConUIRoot(FRoot);
     iP1 := iRoot.ConsoleCoordToDeviceCoord( FAbsolute.Pos );
     iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( FAbsolute.x2+1, FAbsolute.y+2 ) );
-    IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
+    IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
 
     iP1 := iRoot.ConsoleCoordToDeviceCoord( Point( FAbsolute.x, FAbsolute.y2-2 ) );
     iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( FAbsolute.x2+1, FAbsolute.y2+2 ) );
-    IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
+    IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
   end;
 
   inherited OnRender;

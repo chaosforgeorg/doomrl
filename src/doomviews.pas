@@ -262,14 +262,14 @@ begin
     iPoint.Init( iSize.X div 400, iSize.X div 400 );
     iV1.Init(           iStep.X, iStep.Y * 7 );
     iV2.Init( iSize.X - iStep.X, iStep.Y * 8 );
-    IO.QuadSheet.PostColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0,0,1 ) );
+    IO.QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0,0,1 ) );
     iV1 := iV1 + iPoint;
     iV2 := iV2 - iPoint;
-    IO.QuadSheet.PostColoredQuad( iV1, iV2, TGLVec4f.Create( 0,0,0,1 ) );
+    IO.QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 0,0,0,1 ) );
     iV1 := iV1 + iPoint.Scaled(2);
     iV2 := iV2 - iPoint.Scaled(2);
     iV2.X := Round( ( iV2.X - iV1.X ) * (FCurrent / FMax) ) + iV1.X;
-    IO.QuadSheet.PostColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0.9,0,1 ) );
+    IO.QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0.9,0,1 ) );
   end;
 end;
 
@@ -369,7 +369,7 @@ begin
     iRoot := TConUIRoot(FRoot);
     iP1 := iRoot.ConsoleCoordToDeviceCoord( FAbsolute.Pos );
     iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( FAbsolute.x2+1, FAbsolute.y2+1 ) );
-    IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+    IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
   end;
 
   inherited OnRender;

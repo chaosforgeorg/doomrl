@@ -2,7 +2,7 @@
 unit doomspritemap;
 interface
 uses Classes, SysUtils,
-     vutil, vgltypes, vrltools, vgenerics, vcolor, vglquadsheet, vglquadrenderer,
+     vutil, vgltypes, vrltools, vgenerics, vcolor, vglquadrenderer,
      vnode, vspriteengine, vtextures, dfdata;
 
 // TODO : remove
@@ -11,11 +11,8 @@ const SpriteCellRow = 16;
 type TDoomMouseCursor = class( TVObject )
   constructor Create;
   procedure SetTextureID( aTexture : TTextureID; aSize : DWord );
-  procedure Draw( x, y : Integer; aTicks : DWord; aTarget : TGLQuadSheet );
+  procedure Draw( x, y : Integer; aTicks : DWord; aTarget : TGLQuadList );
 private
-  FCoord     : TGLRawQCoord;
-  FTexCoord  : TGLRawQTexCoord;
-  FColor     : TGLRawQColor4f;
   FTextureID : TTextureID;
   FSize      : DWord;
   FActive    : Boolean;
@@ -106,9 +103,7 @@ constructor TDoomMouseCursor.Create;
 begin
   inherited Create;
   FActive := True;
-  FSize := 0;
-  FColor.FillAll(1);
-  FTexCoord.Init( TGLVec2f.Create(0,0), TGLVec2f.Create(1,1) );
+  FSize   := 0;
 end;
 
 procedure TDoomMouseCursor.SetTextureID ( aTexture : TTextureID; aSize : DWord ) ;
@@ -117,19 +112,17 @@ begin
   FSize      := aSize;
 end;
 
-procedure TDoomMouseCursor.Draw ( x, y : Integer; aTicks : DWord; aTarget : TGLQuadSheet ) ;
+procedure TDoomMouseCursor.Draw ( x, y : Integer; aTicks : DWord; aTarget : TGLQuadList ) ;
 var iColor : TGLVec4f;
 begin
   if ( FSize = 0 ) or ( not FActive ) then Exit;
 
-  FCoord.Init( TGLVec2i.Create(x,y), TGLVec2i.Create(x+FSize,y+FSize) );
   iColor.Init( 1.0, ( Sin( aTicks / 100 ) + 1.0 ) / 2 , 0.1, 1.0 );
-
-  aTarget.PostTexturedQuad(
+  aTarget.PushTexturedQuad(
     TGLVec2i.Create(x,y),
     TGLVec2i.Create(x+FSize,y+FSize),
     iColor,
-    FTexCoord.Data[0], FTexCoord.Data[2],
+    TGLVec2f.Create(0,0), TGLVec2f.Create(1,1),
     Textures[ FTextureID ].GLTexture
     );
 end;
