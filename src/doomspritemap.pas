@@ -192,7 +192,6 @@ begin
   FFluidY := (FFluidTime - Floor( FFluidTime ));
   ApplyEffect;
   UpdateLightMap;
-  FSpriteEngine.Clear;
   FSpriteEngine.Update( aProjection );
   PushTerrain;
   PushObjects;
@@ -253,9 +252,6 @@ begin
     FLayers[ 4 ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
     FLayers[ 3 ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
     FLayerCount := 4;
-
-    FLayers[ 1 ].Resize( MAXX * MAXY );
-    FLayers[ 1 ].Clear;
   end;
 
   ReassignTextures;
