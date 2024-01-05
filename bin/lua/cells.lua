@@ -478,7 +478,7 @@ function DoomRL.loadcells()
 			local damage   = 6
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
 			if being.flags[ BF_ENVIROSAFE ] then return end
-			if being:get_total_resistance( DAMAGE_ACID, TARGET_FEET ) == 100 then return end
+			if being:get_total_resistance( "acid", TARGET_FEET ) == 100 then return end
 			if being:is_player() then
 				if being.running then damage = damage / 2 end
 				if being:is_affect("enviro") then return end
@@ -503,7 +503,7 @@ function DoomRL.loadcells()
 			local damage = 12
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
 			if being.flags[ BF_ENVIROSAFE ] then return end
-			if being:get_total_resistance( DAMAGE_FIRE, TARGET_FEET ) == 100 then return end
+			if being:get_total_resistance( "fire", TARGET_FEET ) == 100 then return end
 			if being:is_player() then
 				if being.running then damage = damage / 2 end
 				if being:is_affect("enviro") then return end
