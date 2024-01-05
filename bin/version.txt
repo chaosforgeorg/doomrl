@@ -46,7 +46,6 @@
 [fix] -- TR#---: Arch-Viles now take damage from acid/lava.
 [fix] -- TR#---: Berserker trigger is based on Nominal HP (Iro/Marine will no longer affect it), still has minimum of 10 damage (for AoHu).
 [fix] -- TR#309: AoOC now counts sacrifice and full wins properly.
-[fix] -- TR#---: Technicians now get starting tech mod on challenges that were (incorrectly) removing it.
 
 0.9.9.7
 [new] -- TR#194: online Mod Server added!
