@@ -811,7 +811,10 @@ var cn : DWord;
   begin
     if aID = 'other' then Exit('other');
     if aID = 'melee' then Exit('weapon-melee');
-    Exit( LuaSystem.Get(['items',aID,'group'] ) );
+    if LuaSystem.Defined( ['items',aID,'group'] ) then
+        Exit( LuaSystem.Get( ['items',aID,'group'] ) )
+    else
+        Exit( 'other' );
   end;
 
 begin
