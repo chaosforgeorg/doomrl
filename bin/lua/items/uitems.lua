@@ -898,7 +898,9 @@ function DoomRL.load_doom_unique_items()
 			if math.random(20) == 1 then
 				-- Meh.  Nightmare demons are too easy anyway.  This should convince the player to wear BA only when it is time to summon the Apostle.
 				local demon = level:summon( "ncacodemon" )
-				demon.flags[ BF_NOEXP ] = true
+				if demon then
+					demon.flags[ BF_NOEXP ] = true
+				end
 			end
 		end,
 	}
@@ -985,7 +987,9 @@ function DoomRL.load_doom_unique_items()
 			if math.random(40) == 1 then
 				-- The DS shouldn't be an easy I-Win! button.  Make YAAM harder.
 				local demon = level:summon( "ndemon" )
-				demon.flags[ BF_NOEXP ] = true
+				if demon then
+					demon.flags[ BF_NOEXP ] = true
+				end
 			end
 		end,
 	}

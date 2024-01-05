@@ -3,6 +3,7 @@
 [mod] -- TR#---: pick bottom-most stack when reloading
 [fix] -- TR#---: improve mouse responsiveness
 [fix] -- TR#---: fix current kill spree showing best kill spree
+[fix] -- GH#054: fixed error when DS/BA has no room to spawn demons
 
 0.9.9.8 BETA 1
 [new] -- TR#307: description for badges and medals in mortem.txt
