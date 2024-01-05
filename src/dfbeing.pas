@@ -1785,7 +1785,8 @@ var iDirection  : TDirection;
     iSound      : DWord;
     iMissile    : DWord;
     iDirectHit  : Boolean;
-    iThisUID    : DWord;
+    iThisUID    : TUID;
+    iItemUID    : TUID;
     iHit        : Boolean;
     iLevel      : TLevel;
     iStart      : TCoord2D;
@@ -1798,6 +1799,7 @@ begin
   iDirectHit := False;
   iMissile   := aItem.Missile;
   iThisUID   := FUID;
+  iItemUID   := aItem.uid;
   iDodged    := False;
   if iLevel.isProperCoord( aTarget ) then
   begin
@@ -1940,6 +1942,13 @@ begin
     begin
       if (iAimedBeing = Player) and (iDodged) then UI.Msg('You dodge!');
       break;
+    end;
+
+    if UIDs[ iItemUID ] = nil then
+    begin
+      aItem := nil;
+      vdebug.Log( LOGWARN, 'Item destroyed duirng SendMissile!');
+      Exit( False );
     end;
   until false;
 

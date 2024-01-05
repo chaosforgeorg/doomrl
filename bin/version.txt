@@ -6,7 +6,8 @@
 [fix] -- TR#---: improve mouse responsiveness
 [fix] -- TR#---: fix current kill spree showing best kill spree
 [fix] -- GH#054: fixed error when DS/BA has no room to spawn demons
-[fix] -- BETA  : fixed post-mortem crash related to kill types
+[fix] -- BETA  : fixed post-mortem crash related to kill types (OT Bug #7/#8)
+[fix] -- BETA  : fixed kill source related crashes (OT Bug #4)
 
 0.9.9.8 BETA 1
 [new] -- TR#307: description for badges and medals in mortem.txt

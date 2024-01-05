@@ -153,7 +153,7 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
 implementation
 
 uses typinfo, vluadungen, vluatools, vluasystem,
-     vdebug, dfplayer, doomlua, doombase, doomio, doomspritemap;
+     vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomspritemap;
 
 procedure TLevel.ScriptLevel(script : string);
 begin
@@ -801,9 +801,11 @@ var a     : TCoord2D;
     iDamage : Integer;
     dir   : TDirection;
     iKnockbackValue : Byte;
+    iItemUID : TUID;
     iNode : TNode;
 begin
   if not isProperCoord( coord ) then Exit;
+  if aItem <> nil then iItemUID := aItem.uid;
 
   UI.Explosion( Sequence, coord, Range, Delay, Color, ExplSound, aFlags );
 
@@ -840,6 +842,8 @@ begin
           if (Flags[BF_FIREANGEL]) and (not aDirectHit) then Continue;
           if (efSelfHalf in aFlags) and isActive then iDamage := iDamage div 2;
           ApplyDamage( iDamage, Target_Torso, DamageType, aItem );
+          if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then
+            aItem := nil;
         end;
         if Item[a] <> nil then
            if (iDamage > 10) then
