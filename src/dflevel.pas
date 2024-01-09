@@ -604,7 +604,7 @@ end;
 function TLevel.CellExplored( coord: TCoord2D ): boolean;
 begin
   if Player.Flags[ BF_DARKNESS ] and not isVisible( coord ) then Exit(False);
-  if Player.Flags[ BF_STAIRSENSE ] and (CF_STAIRS in Cells[ GetCell(coord) ].Flags) then Exit(True);
+  if Player.Flags[ BF_STAIRSENSE ] and (CF_STAIRSENSE in Cells[ GetCell(coord) ].Flags) then Exit(True);
   if Option_BlindMode and not GraphicsVersion then Exit(False);
   Exit(isExplored( coord ));
 end;

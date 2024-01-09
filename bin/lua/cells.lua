@@ -332,7 +332,7 @@ function DoomRL.loadcells()
 		ascii      = ">",
 		color      = LIGHTGRAY,
 		color_dark = LIGHTGRAY,
-		flags      = {CF_NOCHANGE, CF_NORUN, CF_OVERLAY, CF_CRITICAL, CF_HIGHLIGHT, CF_STAIRS},
+		flags      = { CF_NOCHANGE, CF_NORUN, CF_OVERLAY, CF_CRITICAL, CF_HIGHLIGHT, CF_STAIRS, CF_STAIRSENSE },
 		sprite     = SPRITE_GRAYSTAIRS,
 
 		OnEnter = function(c,being)

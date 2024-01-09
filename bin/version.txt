@@ -2,6 +2,7 @@
 [mod] -- GH#028: ported the game to SDL2
 [mod] -- GH#048: ported the game to OpenGL 3.3 core
 [mod] -- GH#062: Marines start with +20% fire/acid/plasma resistance
+[mod] -- GH#062: Scout stair-sense works on regular stairs only
 [mod] -- GH#062: Tech can single-mod: Cleaver, Mjollnir, Silent, Trigun,
                  Jackal, Jackhammer, Frag Shotgun, multi-mod Revenant Launcher
 [mod] -- TR#294: MF_EXACT weapons locked to vision range
