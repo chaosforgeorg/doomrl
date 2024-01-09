@@ -27,8 +27,8 @@ function DoomRL.load_klasses()
 			{ id = "whizkid",      requires = {{ "finesse",    2 }}, max = 2 },
 
 			{ id = "vampyre",      requires = {{ "berserker",    1 }, { "badass",       1 },               }, blocks = { "eagle",      "bitch",     "hellrunner", }, reqlevel = 6, master = true },
-			{ id = "bulletdance",  requires = {{ "dualgunner",   1 }, { "triggerhappy", 1 },               }, blocks = { "hellrunner", "eagle",     "brute",      },               master = true },
-			{ id = "armydead",     requires = {{ "shottyman",    1 }, { "badass",       1 },               }, blocks = { "finesse",    "eagle",     "hellrunner", }, reqlevel = 6, master = true },
+			{ id = "bulletdance",  requires = {{ "dualgunner",   1 }, { "triggerhappy", 1 },               }, blocks = { "hellrunner", "intuition", "brute",      },               master = true },
+			{ id = "armydead",     requires = {{ "shottyman",    1 }, { "badass",       1 },               }, blocks = { "gun",        "eagle",     "hellrunner", }, reqlevel = 6, master = true },
 			{ id = "ammochain",    requires = {{ "triggerhappy", 2 }, { "reloader",     2 },               }, blocks = { "nails",      "gun",       "eagle",      },               master = true },
 			{ id = "survivalist",  requires = {{ "badass",       1 }, { "ironman",      3 }, {"nails", 2}, }, blocks = { "hellrunner", "berserker", "bitch",      },               master = true },
 		},
@@ -80,7 +80,7 @@ function DoomRL.load_klasses()
 			{ id = "gunkata",      requires = {{ "dualgunner",   1 }, { "dodgemaster", 1},                      }, blocks = { "nails",    "bitch", "brute",      },               master = true },
 			{ id = "shottyhead",   requires = {{ "juggler",      1 }, { "shottyman",   1}, { "hellrunner", 1 }, }, blocks = { "nails",    "bitch", "eagle",      },               master = true },
 			{ id = "cateye",       requires = {{ "triggerhappy", 1 }, { "intuition",   1},                      }, blocks = { "reloader", "brute", "nails",      }, reqlevel = 6, master = true },
-			{ id = "gunrunner",    requires = {{ "dodgemaster",  1 }, { "juggler",     1},                      }, blocks = { "bitch",    "nails", "whizkid",    },               master = true },
+			{ id = "gunrunner",    requires = {{ "dodgemaster",  1 }, { "juggler",     1},                      }, blocks = { "bitch",    "nails", "brute",      },               master = true },
 		},
 
 		desc = "Scouts are agile and have the best intel. They are generally 10% faster and inherently know the location of stairs on any given level.",
