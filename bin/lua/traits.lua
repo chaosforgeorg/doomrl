@@ -88,13 +88,13 @@ function DoomRL.load_traits()
 	register_trait "reloader"
 	{
 		name   = "Reloader",
-		desc   = "Each level reduces reload time by 20%.",
+		desc   = "Each level reduces reload time by 30%.",
 		quote  = "\"The humanity! My big gun is out of bullets! I can't believe it!\"",
-		full   = "So you're out of ammo... no problem! You're especially gifted at keeping your gun well-fed - for every level of this trait, you can reload your gun 20% faster than the average marine!",
+		full   = "So you're out of ammo... no problem! You're especially gifted at keeping your gun well-fed - for every level of this trait, you can reload your gun 30% faster than the average marine!",
 		abbr   = "Rel",
 
 		OnPick = function (being)
-			being.reloadtime = being.reloadtime - 20
+			being.reloadtime = being.reloadtime - 30
 		end,
 	}
 

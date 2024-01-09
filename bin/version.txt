@@ -6,6 +6,7 @@
 [mod] -- GH#062: Tech can single-mod: Cleaver, Mjollnir, Silent, Trigun,
                  Jackal, Jackhammer, Frag Shotgun, multi-mod Revenant Launcher
 [mod] -- GH#064: Ironman adds +10% bullet/shrapnel/melee resistance per level
+[mod] -- GH#064: Reloader bonus increased +20% -> +30%
 [mod] -- TR#294: MF_EXACT weapons locked to vision range
 [mod] -- TR#---: pick bottom-most stack when reloading
 [mod] -- TR#---: intuition range reduced to Vision + 2
