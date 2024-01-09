@@ -5,6 +5,7 @@
 [mod] -- GH#062: Scout stair-sense works on regular stairs only
 [mod] -- GH#062: Tech can single-mod: Cleaver, Mjollnir, Silent, Trigun,
                  Jackal, Jackhammer, Frag Shotgun, multi-mod Revenant Launcher
+[mod] -- GH#064: Ironman adds +10% bullet/shrapnel/melee resistance per level
 [mod] -- TR#294: MF_EXACT weapons locked to vision range
 [mod] -- TR#---: pick bottom-most stack when reloading
 [mod] -- TR#---: intuition range reduced to Vision + 2

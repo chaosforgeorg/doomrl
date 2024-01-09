@@ -3,15 +3,19 @@ function DoomRL.load_traits()
 	register_trait "ironman"
 	{
 		name   = "Ironman",
-		desc   = "Increases hitpoints by 20% starting HP/lv.",
+		desc   = "Increase HP by +20%/lv, bullet/sharpnel/melee resist +10%/lv",
 		quote  = "\"Just a couple of broken ribs, it's nothing. To stop me... you've got to smash my head or take my heart out.\"",
-		full   = "You're a diehard piece of shit. You'll keep on fighting until all your bones are broken and you have no blood left. Every level of this trait increases your health by 20% of your starting HP.",
+		full   = "You're a diehard piece of shit. You'll keep on fighting until all your bones are broken and you have no blood left. Every level of this trait increases your health by 20% of your starting HP. Additionally bullet, shrapnel and melee resistance goes up by 10% per level.",
 		abbr   = "Iro",
 
 		OnPick = function (being)
 			local inc = math.floor(0.2 * being.hpnom)
 			being.hpmax = being.hpmax + inc
 			being.hp    = being.hp + inc
+
+			being.resist.bullet   = ( being.resist.bullet   or 0 ) + 10
+			being.resist.shrapnel = ( being.resist.shrapnel or 0 ) + 10
+			being.resist.melee    = ( being.resist.melee    or 0 ) + 10
 		end,
 	}
 
