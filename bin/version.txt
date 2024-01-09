@@ -3,7 +3,7 @@
 [mod] -- GH#048: ported the game to OpenGL 3.3 core
 [mod] -- TR#294: MF_EXACT weapons locked to vision range
 [mod] -- TR#---: pick bottom-most stack when reloading
-[mod] -- TR#061: DS/B demons no longer give XP (fixes exploit)
+[mod] -- TR#---: intuition range reduced to Vision + 2
 [fix] -- TR#---: improve mouse responsiveness
 [fix] -- TR#---: fix current kill spree showing best kill spree
 [fix] -- GH#054: fixed error when DS/BA has no room to spawn demons
@@ -21,6 +21,8 @@
 [mod] -- TR#---: AoOC retooled -- starting inventory changed.
 [mod] -- TR#---: separte path support (separate data/score etc, esp on Linux)
 [mod] -- TR#---: curses used on Linux instead of FPCVideo
+[mod] -- TR#061: DS/B demons no longer give XP (fixes exploit)
+[mod] -- TR#---: graphical intuition is a symbol
 [fix] -- TR#---: melee kills tracked properly AoLT and ArchAoLT now working as intended
 [fix] -- TR#---: kills are only assigned to an item if the item was used to kill
 [fix] -- TR#---: weapon OnKill is called only if weapon is used to kill the enemy

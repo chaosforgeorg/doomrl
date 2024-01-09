@@ -643,7 +643,7 @@ function TLevel.BeingIntuited( coord: TCoord2D; aBeing: TBeing ) : boolean;
 begin
   if aBeing = nil then Exit(False);
   if not Player.Flags[ BF_BEINGSENSE ] then Exit(False);
-  Exit(Distance( Player.Position, coord ) <= Player.Vision + 3);
+  Exit(Distance( Player.Position, coord ) <= Player.Vision + 2);
 end;
 
 {$IFDEF CORNERMAP}
