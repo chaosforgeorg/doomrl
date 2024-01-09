@@ -33,7 +33,7 @@ function DoomRL.load_klasses()
 			{ id = "survivalist",  requires = {{ "badass",       1 }, { "ironman",      3 }, {"nails", 2}, }, blocks = { "hellrunner", "berserker", "bitch",      },               master = true },
 		},
 
-		desc = "Marines are the backbone of the UAC, resilient and hardy. They start with 10 more health points and powerups they use have a +50% duration bonus (+25% on Nightmare).",
+		desc = "Marines are the backbone of the UAC, resilient and hardy. They start with 10 more health points, +20% fire/acid/plasma resistance and powerups they use have a +50% duration bonus (+25% on Nightmare).",
 
 		OnPick = function( being )
 			being.flags[ BF_POWERBONUS ] = true
@@ -44,6 +44,10 @@ function DoomRL.load_klasses()
 			being.inv:add( "ammo", { ammo = 40 } )
 			being.inv:add( "smed" )
 			being.inv:add( "smed" )
+
+			being.resist.fire   = 20
+			being.resist.acid   = 20
+			being.resist.plasma = 20
 		end
 	}
 
@@ -123,7 +127,7 @@ function DoomRL.load_klasses()
 			{ id = "entrenchment", requires = {{ "triggerhappy", 1 }, { "badass",    1 },                   }, blocks = { "finesse",      "reloader",  "gun",        },               master = true },
 			{ id = "scavenger",    requires = {{ "whizkid",      2 }, { "intuition", 1 },                   }, blocks = { "triggerhappy", "berserker", "dualgunner", }, reqlevel = 6, master = true },
 		},
-		desc = "Technicians are masters of equipment and tinkering. They use consumables almost instantly and can hack computer maps for tracking data.",
+		desc = "Technicians are masters of equipment and tinkering. They use consumables almost instantly and can hack computer maps for tracking data. Only they can also mod some really unique tech.",
 
 		OnPick = function( being )
 			being.flags[ BF_INSTAUSE ] = true
