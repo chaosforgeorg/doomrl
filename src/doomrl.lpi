@@ -33,7 +33,7 @@
       <local>
         <CommandLineParams Value="-god"/>
         <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
-        <WorkingDirectory Value="..\bin"/>
+        <WorkingDirectory Value="D:\doomrl\bin"/>
       </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
@@ -41,12 +41,12 @@
           <local>
             <CommandLineParams Value="-god"/>
             <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
-            <WorkingDirectory Value="..\bin"/>
+            <WorkingDirectory Value="D:\doomrl\bin"/>
           </local>
         </Mode0>
       </Modes>
     </RunParams>
-    <Units Count="32">
+    <Units Count="31">
       <Unit0>
         <Filename Value="doomrl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -171,10 +171,6 @@
         <Filename Value="..\bin\core\constants.lua"/>
         <IsPartOfProject Value="True"/>
       </Unit30>
-      <Unit31>
-        <Filename Value="F:\fpcvalkyrie\src\vnetwork.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit31>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

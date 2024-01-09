@@ -302,7 +302,7 @@ function DoomRL.loaduniqueitems()
 		fire          = 10,
 		reload        = 35,
 		shots         = 3,
-		shotcost      = 5,
+		shotcost      = 3,
 		missile       = "mchaingun",
 
 		OnKill = function (self,being,target)
@@ -473,7 +473,7 @@ function DoomRL.loaduniqueitems()
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
 		ammomax       = 16,
-		shotcost      = 4,
+		shotcost      = 2,
 		damage        = "7d3",
 		damagetype    = DAMAGE_SHARPNEL,
 		fire          = 15,
@@ -715,7 +715,7 @@ function DoomRL.loaduniqueitems()
 		flags    = { IF_UNIQUE, IF_NODESTROY },
 
 		type       = ITEMTYPE_ARMOR,
-		armor      = 4,
+		armor      = 6,
 		movemod    = -15,
 
 		OnEquipTick = function(self, being)
