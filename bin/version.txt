@@ -12,6 +12,7 @@
 [mod] -- GH#064: Bullet Dance - block Intuition instead of Eagle Eye
 [mod] -- GH#067: Backpack and schematics are now indestructible
 [mod] -- GH#067: doubled BFG9K and Chainsaw natural generation weight
+[mod] -- GH#067: rocket boxes hold 25 rockets (up from 20)
 [mod] -- TR#294: MF_EXACT weapons locked to vision range
 [mod] -- TR#---: pick bottom-most stack when reloading
 [mod] -- TR#---: intuition range reduced to Vision + 2

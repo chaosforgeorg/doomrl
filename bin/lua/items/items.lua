@@ -488,8 +488,8 @@ function DoomRL.loaditems()
 		desc     = "Now this is the REAL 'boombox'!",
 
 		type    = ITEMTYPE_AMMOPACK,
-		ammo    = 20,
-		ammomax = 20,
+		ammo    = 25,
+		ammomax = 25,
 		ammo_id = "rocket",
 	}
 
