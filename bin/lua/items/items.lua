@@ -327,7 +327,8 @@ function DoomRL.loaditems()
 		level    = 200,
 		weight   = 0,
 		firstmsg = "Duh, I'll ditch my junk here.",
-
+		flags    = { IF_NODESTROY },
+		
 		type    = ITEMTYPE_POWER,
 
 		OnPickup = function(self,being)
@@ -1395,7 +1396,8 @@ function DoomRL.loaditems()
 		sprite   = SPRITE_SCHEMATIC,
 		level    = 9999,
 		weight   = 3,
-
+		flags  = { IF_NODESTROY },
+		
 		type    = ITEMTYPE_POWER,
 		slevel  = 0,
 
@@ -1413,7 +1415,8 @@ function DoomRL.loaditems()
 		sprite   = SPRITE_SCHEMATIC,
 		level    = 9999,
 		weight   = 2,
-
+		flags  = { IF_NODESTROY },
+		
 		type    = ITEMTYPE_POWER,
 		slevel  = 1,
 
@@ -1431,7 +1434,8 @@ function DoomRL.loaditems()
 		sprite   = SPRITE_SCHEMATIC,
 		level    = 9999,
 		weight   = 1,
-
+		flags  = { IF_NODESTROY },
+		
 		type    = ITEMTYPE_POWER,
 		slevel  = 2,
 

@@ -10,6 +10,7 @@
 [mod] -- GH#064: Gunrunner - blocks Brute instead of Whizkid
 [mod] -- GH#064: Army of Dead - blocks Son of a Gun instead of Finesse
 [mod] -- GH#064: Bullet Dance - block Intuition instead of Eagle Eye
+[mod] -- GH#067: Backpack and schematics are now indestructible
 [mod] -- TR#294: MF_EXACT weapons locked to vision range
 [mod] -- TR#---: pick bottom-most stack when reloading
 [mod] -- TR#---: intuition range reduced to Vision + 2
