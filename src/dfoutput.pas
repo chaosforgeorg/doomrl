@@ -93,7 +93,7 @@ var UI : TDoomUI = nil;
 
 implementation
 
-uses doomlua, dateutils, vdebug, vsystems, vluasystem, vconuirl, video, doombase, dfplayer, dflevel, dfmap, vvision;
+uses doomlua, dateutils, vdebug, vsystems, vluasystem, vconuirl, doombase, dfplayer, dflevel, dfmap, vvision;
 
 {
 procedure OutPutRestore;
