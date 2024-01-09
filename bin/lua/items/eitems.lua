@@ -753,7 +753,7 @@ function DoomRL.loadexoticitems()
 		OnUse = function(self,being)
 			if self:has_property( "assembled" ) then return true end
 			local item = being.eq.weapon
-			if item.shots >= 3 then
+			if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) then
 				item.shots = item.shots + 2
 			elseif item.blastradius >= 3 then
 				item.blastradius = item.blastradius + 2
