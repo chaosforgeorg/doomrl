@@ -134,7 +134,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 2,
 		desc     = "Now that is a BIG cleaver. Butcher them!",
 		firstmsg = "Aaaah, fresh meat!",
-		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_CLEAVE, IF_BLADE },
+		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_CLEAVE, IF_BLADE, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "5d6",
@@ -152,7 +152,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 1,
 		group    = "weapon-melee",
 		desc     = "Forged by the dwarves Eitri and Brokk, in response to Loki's challenge, Mjollnir is an indestructible war hammer.",
-		flags    = { IF_UNIQUE, IF_NODESTROY },
+		flags    = { IF_UNIQUE, IF_NODESTROY, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "1d15",
@@ -184,7 +184,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 1,
 		desc     = "A weapon that can cut the very fabric of reality. Too bad it's only eight inches long...",
 		firstmsg = "Looks very inconspicious.",
-		flags    = { IF_UNIQUE, IF_BLADE },
+		flags    = { IF_UNIQUE, IF_BLADE, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "3d5",
@@ -224,7 +224,7 @@ function DoomRL.loaduniqueitems()
 		group    = "weapon-pistol",
 		desc     = "One of the deadliest weapons ever made. Nyooo >O.o<",
 		scavenge = { "umod_nano" },
-		flags    = { IF_UNIQUE, IF_PISTOL },
+		flags    = { IF_UNIQUE, IF_PISTOL, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -265,7 +265,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 2,
 		group    = "weapon-pistol",
 		desc     = "In the name of God, impure souls of the living dead shall be banished into eternal damnation. Amen.",
-		flags    = { IF_UNIQUE, IF_PISTOL },
+		flags    = { IF_UNIQUE, IF_PISTOL, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -429,7 +429,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 2,
 		group    = "weapon-shotgun",
 		desc     = "The Pancor Corporation Jackhammer is a 12-gauge, gas-operated automatic weapon.",
-		flags    = { IF_UNIQUE, IF_SHOTGUN },
+		flags    = { IF_UNIQUE, IF_SHOTGUN, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -468,7 +468,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 1,
 		group    = "weapon-shotgun",
 		desc     = "Advanced pulverization technology converts bullets into shrapnel.",
-		flags    = { IF_UNIQUE, IF_SHOTGUN },
+		flags    = { IF_UNIQUE, IF_SHOTGUN, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -492,7 +492,7 @@ function DoomRL.loaduniqueitems()
 		group    = "weapon-rocket",
 		desc     = "Two can play the homing missile game.",
 		scavenge = { "umod_sniper" },
-		flags    = { IF_UNIQUE, IF_ROCKET },
+		flags    = { IF_UNIQUE, IF_ROCKET, IF_MODABLE },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "rocket",
