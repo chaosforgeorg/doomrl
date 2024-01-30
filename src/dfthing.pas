@@ -7,7 +7,7 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfthing;
 interface
-uses SysUtils, Classes, vluaentitynode, vutil, vrltools, vluatable, dfdata, doomhooks;
+uses SysUtils, Classes, vluaentitynode, vutil, vluatable, dfdata, doomhooks;
 
 type
 
@@ -34,7 +34,7 @@ implementation
 
 uses typinfo, variants,
      vluasystem, vcolor, vdebug,
-     doomlua, doombase, doomio;
+     doombase, doomio;
 
 constructor TThing.Create( const aID : AnsiString );
 begin
@@ -43,8 +43,6 @@ end;
 
 procedure TThing.LuaLoad(Table: TLuaTable);
 var iColorID : AnsiString;
-    iRes     : TResistance;
-    iResist  : TLuaTable;
 begin
   FGylph.ASCII := Table.getChar('ascii');
   FGylph.Color := Table.getInteger('color');

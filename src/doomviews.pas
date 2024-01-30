@@ -936,7 +936,7 @@ function TUIChallengesViewer.OnMenuSelect ( aSender : TUIElement; aIndex : DWord
 var iChoice : Byte;
 begin
   if not FMenu.IsValid( aIndex ) then Exit( True );
-  iChoice := Byte(FMenu.SelectedItem.Data);
+  iChoice := Byte( FMenu.SelectedItem.Data );
   FLabel.Text := Padded( '- @<' + LuaSystem.Get(['chal',iChoice,FPrefix+'name']) + ' @>', 53, '-');
   FDesc.Text  := '@rRating: @y'+LuaSystem.Get(['chal',iChoice,FPrefix+'rating'],'UNRATED')+#10#10+
                  '@l'+LuaSystem.Get(['chal',iChoice,FPrefix+'description']);

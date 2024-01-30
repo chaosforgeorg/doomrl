@@ -67,7 +67,7 @@ var Lua : TDoomLua;
 implementation
 
 uses Classes, SysUtils,
-     vparams, vdebug,
+     vdebug,
      dfmap,
      dfoutput, doomio, zstream,
      doomhelp, doomconfig, doomviews, dfplayer;

@@ -136,7 +136,7 @@ begin
     ITEMTYPE_BOOTS    : Exit(efBoots);
     ITEMTYPE_AMMOPACK : Exit(efWeapon2);
   end;
-  raise EItemException.Create('eqSlot -- unsupported IType: @1',[ Byte( FProps.Itype ) ]);
+  raise EItemException.CreateFmt('eqSlot -- unsupported IType: %d',[ Byte( FProps.Itype ) ]);
 end;
 
 constructor TItem.Create(anid : byte; onFloor : boolean);
@@ -299,13 +299,13 @@ end;
 function    TItem.rollDamage : Integer;
 begin
   if isWeapon then Exit(FProps.Damage.Roll);
-  raise EItemException.Create('TItem.Damage called for Itype @1!',[ Byte( FProps.Itype ) ] );
+  raise EItemException.CreateFmt('TItem.Damage called for Itype %d!',[ Byte( FProps.Itype ) ] );
 end;
 
 function TItem.maxDamage: Integer;
 begin
   if isWeapon then Exit(FProps.Damage.Max);
-  raise EItemException.Create('TItem.MaxDamage called for Itype @1!',[ Byte( FProps.Itype ) ] );
+  raise EItemException.CreateFmt('TItem.MaxDamage called for Itype %d!',[ Byte( FProps.Itype ) ] );
 end;
 
 function    TItem.GetProtection : Byte;
@@ -324,7 +324,6 @@ end;
 
 function    TItem.GetResistance ( const aResistance : AnsiString ): Integer;
 var iResist : LongInt;
-    iResID  : TResistance;
 begin
   iResist := GetLuaProperty( ['resist',aResistance], 0 );
   if iResist <= 0 then Exit(iResist);

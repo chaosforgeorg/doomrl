@@ -221,7 +221,7 @@ implementation
 
 uses vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem,
      dfplayer, dflevel, dfmap, doomhooks,
-     doomlua, doombase, doomanimation, doomio, doomviews;
+     doomlua, doombase, doomio, doomviews;
 
 function TBeing.getStrayChance( defender : TBeing; missile : byte ) : byte;
 var miss     : Integer;
@@ -1339,8 +1339,7 @@ begin
 end;
 
 procedure TBeing.Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem );
-var iSlot      : TEqSlot;
-    iItem      : TItem;
+var iItem      : TItem;
     iCorpse    : Word;
     iBlood     : Byte;
     iDir       : TDirection;

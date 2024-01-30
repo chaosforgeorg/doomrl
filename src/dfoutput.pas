@@ -74,7 +74,6 @@ type
   private
     FHint       : AnsiString;
     FGameUI     : TDoomGameUI;
-    FLastTick   : TDateTime;
     FASCII      : TASCIIImageMap;
 
     // GFX only animations
@@ -123,9 +122,7 @@ begin
 {
   for vx := 1 to 80 do for vy := 1 to 25 do Temp [vy,vx] := VideoBuf^[(vx-1)+(vy-1)*ScreenSizeX];
   OutputRestore;
-  {$HINTS OFF}
   FillWord(Blood,25*80,Word(BloodPic));
-  {$HINTS ON}
   SlideDown(DelayTime,Blood);
   SlideDown(DelayTime,Temp);
 }
@@ -379,6 +376,7 @@ begin
   if not GraphicsVersion then
   begin
     FGameUI.Map.FreezeMarks;
+    iExpl := nil;
     SetLength( iExpl, 4 );
     iExpl[0].Time := aDelay;
     iExpl[1].Time := aDelay;

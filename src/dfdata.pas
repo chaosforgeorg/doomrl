@@ -7,7 +7,7 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfdata;
 interface
-uses Classes, SysUtils, idea, DOM, vgenerics, vcolor, vutil, vrltools,
+uses Classes, SysUtils, idea, vgenerics, vcolor, vutil, vrltools,
      doomconfig, vuitypes;
 
 const ConfigurationPath : AnsiString = 'config.lua';
@@ -334,7 +334,7 @@ Function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; Prefer
 
 
 implementation
-uses typinfo, strutils, XMLRead, math, vdebug;
+uses typinfo, strutils, math, vdebug;
 
 // change also in mortem lua!
 function SlotName(slot : TEqSlot) : string;

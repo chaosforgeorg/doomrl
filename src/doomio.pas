@@ -62,7 +62,7 @@ private
   FSettings   : array [Boolean] of
   record
     Width  : Integer;
-    Height : Integer;
+    Height : Integer;                                  spritemap, doomviews,
     FMult  : Integer;
     TMult  : Integer;
     MiniM  : Integer;

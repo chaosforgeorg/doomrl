@@ -8,6 +8,7 @@
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <MainUnitHasScaledStatement Value="False"/>
         <CompatibilityMode Value="True"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
@@ -204,7 +205,7 @@
     </Linking>
     <Other>
       <CompilerMessages>
-        <IgnoredMessages idx5024="True" idx4081="True" idx4080="True" idx4079="True"/>
+        <IgnoredMessages idx6058="True" idx5024="True" idx4105="True" idx4104="True" idx4081="True" idx4080="True" idx4079="True" idx4056="True" idx4055="True" idx3250="True"/>
       </CompilerMessages>
     </Other>
   </CompilerOptions>

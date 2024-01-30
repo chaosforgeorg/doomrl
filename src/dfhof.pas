@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit dfhof;
 interface
-uses Classes, XMLRead, XMLWrite, DOM, vnode, vxml, vxmldata, MD5, dfdata, vuitypes;
+uses Classes, DOM, vnode, vxml, vxmldata, dfdata, vuitypes;
 
 const MaxHofEntries = 500;
       MaxID         = 1023;
@@ -75,7 +75,7 @@ var HOF : THOF;
 
 implementation
 
-uses math, sysutils, strutils, variants, vluasystem, doombase, dfplayer, vdebug, vutil, vrltools, zstream;
+uses math, sysutils, strutils, variants, vluasystem, doombase, dfplayer, vdebug, vutil, vrltools;
 
 const HOFOpen : Boolean = False;
 
@@ -788,18 +788,15 @@ begin
 end;
 
 procedure THOF.Add( const Name : AnsiString; aScore : LongInt; const aKillerID : AnsiString; Level, DLev : Word; nChal : AnsiString );
-var cn : DWord;
-
-    XMLElement : TDOMElement;
+var XMLElement : TDOMElement;
     XMLSubElement : TDOMElement;
     XMLEntry   : TDOMElement;
     iScoreEntry : TScoreEntry;
-    VS,VSS : String;
+    VS : String;
     iGameResultID : AnsiString;
     iString : String;
     iGameResult : String;
     iKills : DWord;
-    iWeaponID : DWord;
     iChalAbbr  : string;
     iChalInc : shortint;
     iDiffID : string;

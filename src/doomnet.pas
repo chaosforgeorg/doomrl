@@ -147,9 +147,9 @@ var iXML      : TXMLDocument;
     end
     else
     begin
-      aInfo.Version   := StringToVersion( aNode.GetAttribute('version') );
-      aInfo.Patch     := aNode.GetAttribute('patch');
-      aInfo.ModServer := aNode.GetAttribute({$IFDEF CPU64}'mod_url64'{$ELSE}'mod_url'{$ENDIF});
+      aInfo.Version   := StringToVersion( AnsiString( aNode.GetAttribute('version') ) );
+      aInfo.Patch     := AnsiString( aNode.GetAttribute('patch') );
+      aInfo.ModServer := AnsiString( aNode.GetAttribute({$IFDEF CPU64}'mod_url64'{$ELSE}'mod_url'{$ENDIF}) );
     end;
   end;
 begin
@@ -167,12 +167,12 @@ begin
       ReadVersion( FStable, TDOMElement(iXML.DocumentElement.GetElementsByTagName('stable').Item[0]) );
       ReadVersion( FBeta,   TDOMElement(iXML.DocumentElement.GetElementsByTagName('beta').Item[0]) );
       iElement := TDOMElement(iXML.DocumentElement.GetElementsByTagName('motd').Item[0]);
-      if iElement <> nil then FMOTD := iElement.TextContent;
+      if iElement <> nil then FMOTD := AnsiString( iElement.TextContent );
       iElement := TDOMElement(iXML.DocumentElement.GetElementsByTagName('alert').Item[0]);
       if iElement <> nil then
       begin
-        FAlert    := iElement.TextContent;
-        FAlertURL := iElement.GetAttribute('url');
+        FAlert    := AnsiString( iElement.TextContent );
+        FAlertURL := AnsiString( iElement.GetAttribute('url') );
       end;
     finally
       FreeAndNil( iXML );

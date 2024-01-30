@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, math,
-  vnode, vutil, vcolor, vgenerics, vmath, vrltools, vvision, vgltypes, vanimation,
+  vnode, vutil, vcolor, vmath, vrltools, vvision, vgltypes, vanimation,
   dfdata;
 
 type TAnimation        = vanimation.TAnimation;
@@ -108,7 +108,7 @@ end;
 implementation
 
 uses viotypes, vuid,
-     dfoutput, dfbeing,
+     dfbeing,
      doombase, doomio, doomspritemap;
 
 { TDoomMissile }

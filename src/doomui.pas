@@ -81,7 +81,7 @@ implementation
 
 uses math, dfoutput,
      vcolor, vmath, vutil, viotypes,
-     dfmap, dfdata, dflevel, dfitem, dfbeing, dfplayer,
+     dfdata, dflevel, dfitem, dfbeing, dfplayer,
      doomio, doomspritemap, doombase, vvision;
 
 { TDoomUIMiniMap }

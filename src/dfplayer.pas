@@ -139,7 +139,7 @@ implementation
 uses math, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
      dfmap, dflevel, dfoutput,
-     doomhooks, doomio,  doomanimation, doomspritemap, doomviews, doombase,
+     doomhooks, doomio, doomspritemap, doomviews, doombase,
      doomlua, doominventory;
 
 var MortemText    : Text;

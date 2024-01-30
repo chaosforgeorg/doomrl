@@ -577,6 +577,7 @@ begin
   case iResult of
     1 :
     begin
+      iChallenges := nil;
       SetLength( iChallenges, iChalCount );
       for iCount := 1 to iChalCount do
         iChallenges[iCount-1] := iCount;
@@ -643,6 +644,7 @@ begin
   DestroyChildren;
 
   iChalCount := LuaSystem.Get( ['chal','__counter'] );
+  iChallenges := nil;
   SetLength( iChallenges, iChalCount );
   iChoices := 0;
   with LuaSystem.GetTable([ 'chal', FResult.Challenge, 'secondary' ]) do
