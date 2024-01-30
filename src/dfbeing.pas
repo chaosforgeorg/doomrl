@@ -49,7 +49,7 @@ TBeing = class(TThing,IPathQuery)
     procedure WriteToStream( Stream: TStream ); override;
     procedure Initialize;
     function GetName( known : boolean ) : string;
-    procedure Call;
+    procedure Tick;
     procedure Action;
     function  TryMove( where : TCoord2D ) : TMoveResult;
     function  MoveTowards( where : TCoord2D ) : TMoveResult;
@@ -1263,20 +1263,14 @@ begin
   iThisUID := UID;
   TLevel(Parent).CallHook( FPosition, Self, CellHook_OnEnter );
   if UIDs[ iThisUID ] = nil then Exit;
-  if isPlayer then
-    (Self as TPlayer).AIControl
-  else
-  begin
-    LastPos := FPosition;
-    CallHook(Hook_OnAction,[])
-  end;
+  LastPos := FPosition;
+  CallHook(Hook_OnAction,[]);
   if UIDs[ iThisUID ] = nil then Exit;
   while FSpeedCount >= 5000 do Dec( FSpeedCount, 1000 );
 end;
 
-procedure TBeing.Call;
+procedure TBeing.Tick;
 begin
-  if Doom.State <> DSPlaying then Exit;
   if ( FHP * 100 ) > Integer( FHPMax * FHPDecayMax ) then
     if FHP > 1 then
       if ( Player.FStatistics.GameTime mod 50 = 0 ) then
@@ -1286,7 +1280,6 @@ begin
       if ( Player.FStatistics.GameTime mod 10 = 0 ) then
         Inc( FHP );
   FSpeedCount := Min( FSpeedCount + FSpeed, 10000 );
-  if FSpeedCount >= 5000 then Action;
 end;
 
 procedure TBeing.Ressurect( RRange : Byte );

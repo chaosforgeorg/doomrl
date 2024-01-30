@@ -1035,28 +1035,13 @@ begin
 end;
 
 procedure TLevel.Tick;
-var Scan  : TNode;
+var iNode : TNode;
 begin
   Inc(LTime);
-  if Doom.State = DSPlaying then
-  begin
-    Scan := Child;
-    if Scan <> nil then
-    repeat
-      FNextNode    := Scan.Next;
-      FActiveBeing := nil;
-      if Scan is TBeing then
-      begin
-        FActiveBeing := TBeing(Scan);
-        FActiveBeing.Call;
-      end;
-      if Doom.State <> DSPlaying then Break;
-      Scan := FNextNode;
-    until (Scan = Child) or (Scan = nil);
-  end;
-  FActiveBeing := nil;
+  Inc(Player.FStatistics.GameTime);
+
   CallHook( Hook_OnTick,[] );
-  
+
   if LF_RESPAWN in FFlags  then
   begin
     if LTime mod 100 = 0 then
@@ -1065,6 +1050,38 @@ begin
   end;
 
   NukeTick;
+
+  if Doom.State = DSPlaying then
+  begin
+    for iNode in Self do
+      if iNode is TBeing then
+         TBeing(iNode).Tick;
+
+    iNode := Child;
+    if iNode <> nil then
+    repeat
+      FNextNode    := iNode.Next;
+      FActiveBeing := nil;
+      if iNode is TBeing then
+        if TBeing(iNode).SCount >= 5000 then
+          if not TBeing(iNode).isPlayer then
+            begin
+              FActiveBeing := TBeing(iNode);
+              FActiveBeing.Action;
+            end;
+      if Doom.State <> DSPlaying then Break;
+      iNode := FNextNode;
+    until (iNode = Child) or (iNode = nil);
+
+    if Player.SCount >= 5000 then
+    begin
+      FActiveBeing := Player;
+      Player.AIAction;
+    end;
+
+  end;
+  FActiveBeing := nil;
+
 end;
 
 procedure TLevel.NukeTick;

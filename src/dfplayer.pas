@@ -71,7 +71,7 @@ TPlayer = class(TBeing)
   procedure Initialize; reintroduce;
   constructor CreateFromStream( Stream: TStream ); override;
   procedure WriteToStream( Stream: TStream ); override;
-  procedure AIControl;
+  procedure AIAction;
   procedure LevelEnter;
   procedure doUpgradeTrait;
   function doAct( aFlagID : byte; const aActName : string ) : Boolean;
@@ -136,7 +136,7 @@ var   Player : TPlayer;
 
 implementation
 
-uses math, vpath, variants, vioevent, vgenerics,
+uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
      dfmap, dflevel, dfoutput,
      doomhooks, doomio, doomspritemap, doomviews, doombase,
@@ -640,8 +640,9 @@ begin
   FScore      := -100000;
 end;
 
-procedure TPlayer.AIControl;
-var iLevel      : TLevel;
+procedure TPlayer.AIAction;
+var iThisUID    : DWord;
+    iLevel      : TLevel;
     iCommand    : Byte;
     iDir        : TDirection;
     iMove       : TCoord2D;
@@ -658,6 +659,11 @@ var iLevel      : TLevel;
       Exit( False );
     end;
 begin
+  FMeleeAttack := False;
+  iThisUID := UID;
+  TLevel(Parent).CallHook( FPosition, Self, CellHook_OnEnter );
+  if UIDs[ iThisUID ] = nil then Exit;
+
   iLevel := TLevel(Parent);
   UI.WaitForAnimation;
   MasterDodge := False;

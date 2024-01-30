@@ -347,7 +347,6 @@ repeat
     FLevel.PreEnter;
     repeat
       FLevel.Tick;
-      Inc(Player.FStatistics.GameTime);
     until State <> DSPlaying;
     if State in [ DSNextLevel, DSSaving ] then
       FLevel.Leave;
