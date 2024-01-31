@@ -12,7 +12,7 @@ register_level "deimos_lab"
 	end,
 
 	OnCompletedCheck = function ()
-		return level.status > 1
+		return level.status > 6
 	end,
 
 	OnRegister = function ()
