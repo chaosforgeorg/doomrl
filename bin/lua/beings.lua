@@ -567,7 +567,7 @@ function DoomRL.loadnpcs()
 		danger       = 6,
 		weight       = 8,
 		bulk         = 100,
-		flags        = { BF_OPENDOORS },
+		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
 		ai_type      = "melee_ranged_ai",
 
 		resist = { fire = 50 },
@@ -654,7 +654,7 @@ function DoomRL.loadnpcs()
 		danger       = 7,
 		weight       = 6,
 		bulk         = 100,
-		flags        = { BF_CHARGE },
+		flags        = { BF_CHARGE, BF_ENVIROSAFE },
 		ai_type      = "demon_ai",
 
 		desc            = "You liked it better when these guys were pink. Meet the stronger, tougher, more resilient way to meet your death.",
@@ -681,6 +681,7 @@ function DoomRL.loadnpcs()
 		weight       = 4,
 		bulk         = 100,
 		ai_type      = "sequential_ai",
+		flags        = { BF_ENVIROSAFE },
 
 		desc            = "Pure nightmare spiders. You'd wish they weren't there...",
 		kill_desc       = "let an nightmare arachnotron get him",
@@ -723,7 +724,7 @@ function DoomRL.loadnpcs()
 		danger       = 20,
 		weight       = 3,
 		bulk         = 100,
-		flags        = { BF_OPENDOORS, BF_SELFIMMUNE },
+		flags        = { BF_OPENDOORS, BF_SELFIMMUNE, BF_ENVIROSAFE },
 		ai_type      = "archvile_ai",
 
 		desc            = "Oh God... *WHY* do they come in the nightmare variety too?",
