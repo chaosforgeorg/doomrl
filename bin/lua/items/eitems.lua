@@ -753,9 +753,9 @@ function DoomRL.loadexoticitems()
 		OnUse = function(self,being)
 			if self:has_property( "assembled" ) then return true end
 			local item = being.eq.weapon
-			if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) then
+			if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
 				item.shots = item.shots + 2
-			elseif item.blastradius >= 3 then
+			elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
 				item.blastradius = item.blastradius + 2
 			else
 				ui.msg( "Only a rapid-fire or explosive weapon can be modded!" )
