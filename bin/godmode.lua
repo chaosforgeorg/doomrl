@@ -268,8 +268,8 @@ Keybindings["F4"] = function()
 	player:exit(table.getn(player.episode))
 end
 Keybindings["F5"] = function() 
-	ui.msg('Experience!')
-	player.exp = player.exp + 300
+	ui.msg('+500 Experience!')
+	player:add_exp(500)
 end
 Keybindings["F6"] = function() 
 	ui.msg('ARMAGEDDON!')
