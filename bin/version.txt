@@ -8,6 +8,7 @@
 [fix] -- GH#050: Containment Area conquered status only achieved by full clear
 [fix] -- GH#049: Deimos Lab conquered status only achieved by killing the Shamblers
 [fix] -- GH#040: fixed loud/silent sound for wall-destroying levers
+[fix] -  GH#052: fixed error message when attacking crates with a melee weapon on AoPc
 [fix] -- BETA  : fixed on-kill effects (crash with DS/BA and Beretta wins and Megabuster)
 [fix] -- BETA  : fixed Backpack/Schematics bug
 
