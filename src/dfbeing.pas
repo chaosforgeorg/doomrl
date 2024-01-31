@@ -71,7 +71,7 @@ TBeing = class(TThing,IPathQuery)
     procedure Knockback( dir : TDirection; Strength : Integer );
     destructor Destroy; override;
     function rollMeleeDamage( aSlot : TEqSlot = efWeapon ) : Integer;
-    procedure playSound(SoundID : DWord); virtual;
+    procedure playSound( aSoundID : DWord; aDelay : DWord = 0 ); virtual;
     function getMoveCost : LongInt;
     function getFireCost( aAltFire : TAltFire = ALT_NONE ) : LongInt;
     function getReloadCost : LongInt;
@@ -1423,9 +1423,9 @@ begin
   rollMeleeDamage := iDamage;
 end;
 
-procedure TBeing.PlaySound( SoundID : DWord );
+procedure TBeing.PlaySound( aSoundID : DWord; aDelay : DWord = 0 );
 begin
-  IO.PlaySound(SoundID,FPosition);
+  IO.PlaySound(aSoundID,FPosition,aDelay);
 end;
 
 procedure TBeing.Attack( aWhere : TCoord2D );
@@ -2333,7 +2333,7 @@ var State : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  Being.playSound( State.ToSoundId(2) );
+  Being.playSound( State.ToSoundId(2), State.ToInteger(3,0) );
   Result := 0;
 end;
 

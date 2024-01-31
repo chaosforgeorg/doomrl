@@ -79,7 +79,7 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
     function isPassable( const coord : TCoord2D ) : Boolean; override;
     function isEmpty( const coord : TCoord2D; EmptyFlags : TFlags32 = []) : Boolean; override;
     function cellFlagSet( coord : TCoord2D; Flag : byte) : Boolean;
-    procedure playSound( const SoundID : DWord; coord : TCoord2D ); overload;
+    procedure playSound( const aSoundID : DWord; aCoord : TCoord2D; aDelay : DWord = 0 ); overload;
     procedure playSound( const SoundID : string; coord : TCoord2D ); overload;
     procedure playSound( const BaseID,SoundID : string; coord : TCoord2D ); overload;
     function BeingsVisible : Word;
@@ -227,9 +227,9 @@ begin
   Exit(Flag in Cells[ GetCell( coord ) ].Flags);
 end;
 
-procedure TLevel.playSound(const SoundID: DWord; coord : TCoord2D );
+procedure TLevel.playSound( const aSoundID: DWord; aCoord : TCoord2D; aDelay : DWord = 0 );
 begin
-  IO.PlaySound(SoundID, coord);
+  IO.PlaySound(aSoundID, aCoord, aDelay);
 end;
 
 procedure TLevel.playSound(const SoundID: string; coord : TCoord2D );
@@ -1262,7 +1262,7 @@ var State : TDoomLuaState;
 begin
   State.Init(L);
   Level := State.ToObject(1) as TLevel;
-  Level.playSound( State.ToSoundId(2), State.ToPosition(3) );
+  Level.playSound( State.ToSoundId(2), State.ToPosition(3), State.ToInteger(4,0) );
   Result := 0;
 end;
 
