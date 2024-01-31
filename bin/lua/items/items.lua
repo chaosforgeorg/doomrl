@@ -1243,10 +1243,13 @@ function DoomRL.loaditems()
 
 		OnUse = function(self,being)
 			local room = self.target_area:clamped( area.FULL_SHRINKED )
+			player:play_sound("barrel.explode")
 			for c in room() do
 				local tile = cells[level.map[c]]
 				if tile.set == CELLSET_WALLS then
-					player:play_sound("barrel.explode")
+					if math.random(10) == 1 then
+						player:play_sound("barrel.explode", math.random(500))
+					end
 					level.map[c] = generator.styles[ level.style ].floor
 					level.light[c][LFPERMANENT] = false
 				end
