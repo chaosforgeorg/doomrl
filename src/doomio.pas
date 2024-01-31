@@ -8,8 +8,16 @@ uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils, vgenerics, vio,
 type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
 
+type TSoundEvent = packed record
+       Time    : QWord;
+       Coord   : TCoord2D;
+       SoundID : Word;
+     end;
+
 type TDoomOnProgress = procedure ( aProgress : DWord ) of object;
      TAnsiStringArray = specialize TGArray< AnsiString >;
+     TSoundEventHeap  = specialize TGHeap< TSoundEvent >;
+
 
 type TDoomIO = class( TIO )
   constructor Create; reintroduce;
@@ -18,7 +26,7 @@ type TDoomIO = class( TIO )
   destructor Destroy; override;
   procedure Screenshot( aBB : Boolean );
 
-  procedure PlaySound( SoundID : Word; coord : TCoord2D );
+  procedure PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
   procedure PlayMusic( const MusicID : Ansistring );
   procedure PlayMusicOnce( const MusicID : Ansistring );
   function ResolveSoundID( const ResolveIDs: array of AnsiString ) : Word;
@@ -52,6 +60,7 @@ protected
 public // REMOVE
   FMsgFont    : TBitmapFont;
 private
+  FTime        : QWord;
   FLoading     : TUILoadingScreen;
   FMCursor     : TDoomMouseCursor;
   FQuadSheet   : TGLQuadList;
@@ -79,6 +88,7 @@ private
   FSoundValues : TAnsiStringArray;
   FMusicKeys   : TAnsiStringArray;
   FMusicValues : TAnsiStringArray;
+  FSoundEvents : TSoundEventHeap;
 public
   property QuadSheet : TGLQuadList read FQuadSheet;
   property TextSheet : TGLQuadList read FTextSheet;
@@ -112,6 +122,14 @@ uses video, vlog, vdebug,
      vgl3library,
      doomtextures,  doombase,
      dfdata, dfoutput, dfplayer;
+
+
+function DoomIOSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
+begin
+       if Item1.Time < Item2.Time then Exit(1)
+  else if Item1.Time > Item2.Time then Exit(-1)
+  else Exit(0);
+end;
 
 { TDoomIO }
 
@@ -155,6 +173,8 @@ var iStyle      : TUIStyle;
   end;
 
 begin
+  FTime := 0;
+  FSoundEvents := TSoundEventHeap.Create( @DoomIOSoundEventCompare );
   FLoading := nil;
   IO := Self;
   FVPadding := 0;
@@ -294,9 +314,11 @@ procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
 var iCount   : DWord;
     iProgress: DWord;
 begin
+  FSoundEvents.Clear;
+
   aConfig.ResetCommands;
   aConfig.LoadKeybindings('Keybindings');
-
+  FSoundEvents.Clear;
   // TODO : configurable
   if GodMode then
     RegisterDebugConsole( VKEY_F1 );
@@ -387,6 +409,7 @@ end;
 
 destructor TDoomIO.Destroy;
 begin
+  FreeAndNil( FSoundEvents );
   FreeAndNil( FMCursor );
 
   FreeAndNil( SpriteMap );
@@ -498,25 +521,34 @@ begin
   Exit(True);
 end;
 
-procedure TDoomIO.PlaySound( SoundID : Word; coord : TCoord2D );
-var Volume : Byte;
-    Pan    : Byte;
-    Dist   : Word;
-    Pos    : TCoord2D;
+procedure TDoomIO.PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
+var iVolume     : Byte;
+    iPan        : Byte;
+    iDist       : Word;
+    iPos        : TCoord2D;
+    iSoundEvent : TSoundEvent;
 begin
-  if SoundID = 0 then Exit;
+  if aSoundID = 0 then Exit;
   if (not SoundVersion) or (not Option_Sound) or SoundOff then Exit;
+  if aDelay > 0 then
+  begin
+    iSoundEvent.Coord   := aCoord;
+    iSoundEvent.SoundID := aSoundID;
+    iSoundEvent.Time    := FTime + aDelay;
+    FSoundEvents.Insert( iSoundEvent );
+    Exit;
+  end;
 
-  Pos := Player.Position;
+  iPos := Player.Position;
 
-  Dist := Distance(coord,Pos);
-  if Dist <= 1 then Volume := 127 else
-                    Volume := Clamp((25 - Dist) * 6,0,127);
-  if Volume <> 0 then
-    if Volume < 30 then Volume := 30;
+  iDist := Distance(aCoord,iPos);
+  if iDist <= 1 then iVolume := 127 else
+                    iVolume := Clamp((25 - iDist) * 6,0,127);
+  if iVolume <> 0 then
+    if iVolume < 30 then iVolume := 30;
 
-  Pan := Clamp((coord.x-Pos.x) * 15,-128,127)+128;
-  Sound.PlaySample(SoundID,Volume,Pan);
+  iPan := Clamp((aCoord.x-iPos.x) * 15,-128,127)+128;
+  Sound.PlaySample(aSoundID,iVolume,iPan);
 end;
 
 
@@ -589,8 +621,15 @@ begin
 end;
 
 procedure TDoomIO.Update( aMSec : DWord );
-var iMousePos : TUIPoint;
+var iMousePos   : TUIPoint;
+    iSoundEvent : TSoundEvent;
 begin
+  FTime += aMSec;
+  while (not FSoundEvents.isEmpty) and (FSoundEvents.Top.Time <= FTime) do
+  begin
+    iSoundEvent := FSoundEvents.Pop;
+    PlaySound( iSoundEvent.SoundID, iSoundEvent.Coord );
+  end;
   if GraphicsVersion then
   begin
     if (Doom <> nil) and (UI <> nil) then UI.GFXAnimationUpdate( aMSec );
