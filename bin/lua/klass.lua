@@ -26,7 +26,7 @@ function DoomRL.load_klasses()
 			{ id = "triggerhappy", requires = {{ "bitch",      2 }}, max = 2 },
 			{ id = "whizkid",      requires = {{ "finesse",    2 }}, max = 2 },
 
-			{ id = "vampyre",      requires = {{ "berserker",    1 }, { "badass",       1 },               }, blocks = { "eagle",      "bitch",     "hellrunner", }, reqlevel = 6, master = true },
+			{ id = "vampyre",      requires = {{ "berserker",    1 }, { "badass",       1 },               }, blocks = { "ironman",    "bitch",     "hellrunner", }, reqlevel = 6, master = true },
 			{ id = "bulletdance",  requires = {{ "dualgunner",   1 }, { "triggerhappy", 1 },               }, blocks = { "hellrunner", "intuition", "brute",      },               master = true },
 			{ id = "armydead",     requires = {{ "shottyman",    1 }, { "badass",       1 },               }, blocks = { "gun",        "eagle",     "hellrunner", }, reqlevel = 6, master = true },
 			{ id = "ammochain",    requires = {{ "triggerhappy", 2 }, { "reloader",     2 },               }, blocks = { "nails",      "gun",       "eagle",      },               master = true },
