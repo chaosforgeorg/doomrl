@@ -203,7 +203,7 @@ function DoomRL.load_traits()
 		name   = "Whizkid",
 		desc   = "Increases maximum amount of mod slots",
 		quote  = "\"Not big guns, but they are guns!  And I need guns!\"",
-		full   = "You were always a brainy guy... Mom said you could have been an inventor but the Marine Corps picked you up first. Whether it's a toaster or a chaingun, there's always room for improvement! And with each level of this trait you can increase the number of mod slots on a weapon by 2 (by 1 for armor/boot).",
+		full   = "You were always a brainy guy... Mom said you could have been an inventor but the Marine Corps picked you up first. Whether it's a toaster or a chaingun, there's always room for improvement! And with each level of this trait you can increase the number of mod slots on a weapon by 2 (by 1 for armor/boot). Also, at level 2 you can slap a single mod onto an assembly!",
 		author = "Kornel",
 		abbr   = "WK",
 
