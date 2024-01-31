@@ -1,5 +1,6 @@
 0.9.9.8 BETA 3
 [mod] -- GH#063: you can still mod an assembly if you take WK2 after assembling
+[new] -- GH#063: WK3 available for techs at clev 12+ and allows 1 more assembly mod!
 [mod] -- GH#070: nightmare enemies are resistant to floor effects
 
 

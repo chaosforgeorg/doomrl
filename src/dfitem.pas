@@ -473,12 +473,13 @@ begin
   if (IF_UNIQUE in FFlags) and (not (IF_MODABLE in FFlags)) then Exit(False);
   if IF_NONMODABLE in FFlags then Exit(False);
   if (not Player.Flags[BF_MODEXPERT]) and ( IF_UNIQUE in FFlags ) then Exit( False );
-  if (IF_ASSEMBLED in FFlags) then
-     if (IF_MODIFIED in FFlags) or (Player.TechBonus < 2) then
-       Exit( False );
 
   iSum := 0;
   for iCount := Ord('A') to Ord('Z') do iSum += FMods[iCount];
+
+  if (IF_ASSEMBLED in FFlags) then
+    if Player.TechBonus < (iSum + 2) then
+      Exit( False );
 
   if (IF_SINGLEMOD in FFlags) and (iSum > 0) then Exit(False);
 

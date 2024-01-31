@@ -110,7 +110,7 @@ function DoomRL.load_klasses()
 			{ id = "reloader",   max = 2, max_12 = 3 },
 			{ id = "eagle",      max = 3, max_12 = 5 },
 			{ id = "brute",      max = 3, max_12 = 5 },
-			{ id = "whizkid",    max = 2 },
+			{ id = "whizkid",    max = 2, max_12 = 3 },
 
 			{ id = "juggler",      requires = {{ "finesse",    1 }},         },
 			{ id = "berserker",    requires = {{ "brute",      2 }},         },
