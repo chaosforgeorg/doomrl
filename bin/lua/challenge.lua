@@ -618,6 +618,8 @@ function DoomRL.loadchallenges()
 				player.inv:add( "mod_tech" )
 				player.inv:add( "mod_power" )
 				player.inv:add( "mod_bulk" )
+			end
+			if CHALLENGE ~= "challenge_aoi"  then
 				if player.klass == klasses.technician.nid then
 					player.inv:add("mod_tech")
 				end
@@ -1266,6 +1268,9 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 				player.inv:add( "lmed" )
 			end
 			player.inv:add( "nuke" )
+			if player.klass == klasses.technician.nid then
+				player.inv:add("mod_tech")
+			end
 		end,
 
 		OnEnter = function (l,lid)
@@ -1503,6 +1508,11 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 				player.inv:add( "mod_tech" )
 				player.inv:add( "mod_power" )
 				player.inv:add( "mod_bulk" )
+			end
+			if CHALLENGE ~= "challenge_aoi" then
+				if player.klass == klasses.technician.nid then
+					player.inv:add("mod_tech")
+				end
 			end
 		end,
 
