@@ -1,4 +1,5 @@
 0.9.9.8 BETA 3
+[new] -- BETA  : WARNING - speed system rewrites!
 [mod] -- GH#063: you can still mod an assembly if you take WK2 after assembling
 [new] -- GH#063: WK3 available for techs at clev 12+ and allows 1 more assembly mod!
 [mod] -- GH#070: nightmare enemies are resistant to floor effects
@@ -6,6 +7,9 @@
 [mod] -- GH#053: you can now properly firestorm-mod a tristar blaster
 [fix] -- GH#050: Containment Area conquered status only achieved by full clear
 [fix] -- GH#049: Deimos Lab conquered status only achieved by killing the Shamblers
+[fix] -- GH#040: fixed loud/silent sound for wall-destroying levers
+[fix] -- BETA  : fixed on-kill effects (crash with DS/BA and Beretta wins and Megabuster)
+[fix] -- BETA  : fixed Backpack/Schematics bug
 
 0.9.9.8 BETA 2
 [mod] -- GH#028: ported the game to SDL2

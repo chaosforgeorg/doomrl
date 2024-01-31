@@ -1349,7 +1349,7 @@ begin
   Player.RegisterKill( FID, aKiller, aWeapon );
 
   if (aKiller <> nil) and (aWeapon <> nil) then
-    aWeapon.CallHook(Hook_OnKill, [aWeapon, Self]);
+    aWeapon.CallHook(Hook_OnKill, [ aKiller, Self ]);
 
   if not aOverkill then
   try
