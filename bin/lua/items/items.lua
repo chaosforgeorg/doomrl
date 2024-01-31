@@ -336,6 +336,7 @@ function DoomRL.loaditems()
 				ui.msg("Another backpack? Who needs two anyway.")
 				return
 			end
+			self.flags[ IF_NODESTROY ] = false
 			ui.msg("BackPack!")
 			ui.blink(YELLOW,50)
 			being:power_backpack()
@@ -1402,6 +1403,7 @@ function DoomRL.loaditems()
 		slevel  = 0,
 
 		OnPickup = function(self,being)
+			self.flags[ IF_NODESTROY ] = false
 			ui.blink(LIGHTGREEN,100)
 			player:add_assembly(mod_arrays[self.ammo].id)
 			ui.msg_enter("You suddenly know how to assemble "..mod_arrays[self.ammo].name.."!")
@@ -1421,6 +1423,7 @@ function DoomRL.loaditems()
 		slevel  = 1,
 
 		OnPickup = function(self,being)
+			self.flags[ IF_NODESTROY ] = false
 			ui.blink(LIGHTGREEN,100)
 			player:add_assembly(mod_arrays[self.ammo].id)
 			ui.msg_enter("You suddenly know how to assemble "..mod_arrays[self.ammo].name.."!")
@@ -1440,6 +1443,7 @@ function DoomRL.loaditems()
 		slevel  = 2,
 
 		OnPickup = function(self,being)
+			self.flags[ IF_NODESTROY ] = false
 			ui.blink(LIGHTGREEN,100)
 			player:add_assembly(mod_arrays[self.ammo].id)
 			ui.msg_enter("You suddenly know how to assemble "..mod_arrays[self.ammo].name.."!")
