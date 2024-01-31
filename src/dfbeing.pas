@@ -1598,6 +1598,10 @@ function TBeing.getTotalResistance(const aResistance: AnsiString; aTarget: TBody
 var iResist : LongInt;
 begin
   iResist := GetLuaProperty( ['resist',aResistance], 0 );
+  // HACK: please remove! currently Ironman(5) + Berserk makes 110 resist!
+  if ( BF_BERSERK  in FFlags ) and ( iResist < 160 ) then
+     iResist := Min( 95, iResist );
+
   if iResist >= 100 then Exit( 100 );
   getTotalResistance := iResist;
   if aTarget = Target_Internal then Exit;

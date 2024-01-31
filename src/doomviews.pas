@@ -1401,7 +1401,7 @@ begin
 
   iDesc1 := '@lResistances@d'#10;
   for iRes := Low(TResistance) to High(TResistance) do
-    iDesc1 +=  '@d'+Padded(ResNames[iRes],7)+'@l'+Padded(BonusStr(LuaSystem.Get(['player','resist',ResIDs[iRes]],0))+'%',5)+
+    iDesc1 +=  '@d'+Padded(ResNames[iRes],7)+'@l'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_INTERNAL))+'%',5)+
        '@d Torso @l'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_TORSO))+'%',5)+
        '@d Feet @l'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_FEET))+'%',5)+#10;
 
