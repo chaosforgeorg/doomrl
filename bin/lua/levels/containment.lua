@@ -125,4 +125,8 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 			end
 		end
 	end,
+
+	OnCompletedCheck = function ()
+		return level.status > 3
+	end,
 }
