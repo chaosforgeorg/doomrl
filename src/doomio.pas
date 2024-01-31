@@ -670,7 +670,8 @@ begin
 
   if (Doom <> nil) and (Doom.State = DSPlaying) then
   begin
-    FConsole.HideCursor;
+    if FConsoleWindow = nil then
+       FConsole.HideCursor;
     //if not UI.AnimationsRunning then SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
     SpriteMap.Update( iTickTime, FProjection );
     UI.GFXAnimationDraw;
