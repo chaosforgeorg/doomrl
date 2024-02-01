@@ -5,7 +5,7 @@ register_level "the_vaults"
 	name  = "The Vaults",
 	entry = "On level @1 he entered the Vaults.",
 	welcome = "You enter the Vaults. There's a presence here...",
-	level = 19,
+	level = 17,
 
 	canGenerate = function ()
 		return DIFFICULTY > 1
@@ -70,8 +70,12 @@ register_level "the_vaults"
 			['['] = { "floor", item = "pshell" },
 			[']'] = { "floor", item = "pammo" },
 
-			['A'] = { "floor", being = core.bydiff{ "baron", "baron", "mancubus", "arch" } },
-			['B'] = { "floor", being = core.bydiff{ "arachno", "arachno", "revenant" } },
+			['A'] = { "floor", being = core.bydiff{ "mancubus", "mancubus", "arachno",  "arachno", "narachno" } },
+			['B'] = { "floor", being = core.bydiff{ "revenant", "revenant", "revenant", "baron" } },
+			['C'] = { "floor", being = core.bydiff{ nil,        nil,        nil,        "arachno", "narachno" } },
+			['D'] = { "floor", being = core.bydiff{ nil,        nil,        nil,        "baron" } },
+			['E'] = { "floor", being = core.bydiff{ nil,        nil,        nil,        "arch",    "narch" } },
+			['!'] = { "floor", item  = core.ifdiff( 4, "rarmor" ) },
 
 			['a'] = { "floor", item = level:roll_item( vault_weapon ) },
 			['b'] = { "floor", item = level:roll_item( vault_weapon ) },
@@ -105,12 +109,12 @@ register_level "the_vaults"
 #######...####XX####..##==##..######XXXX######..##==##..####XX####...#######
 ######...###|.A..|###..####..###7-...AB...-0###..####..###-..B.-###...######
 #####...###........###..##..###|............|###..##..%##........###...#####
-####...###|........|###....###......a..1......###....##%-........-###...####
+####...###|.C......|###....###.E....a..1....E.###....##%-......D.-###...####
 ###...X##....e..j....##X..X##-.....[#==#].....-##X..X##....f..h....##X...###
 ##.>..XX|.....##.....AXX..XXA.....3######c.....AXX..XXB.....=#.....-XX....##
 ##....XXA.....#=.....|XX..XXB.....d##**##4.....BXX..XX-.....##.....BXX....##
 ###...X##....g..5....##X..X##|......#==#......|##X..X##....i..6....##X...###
-####...###|........|###....###......2..b......###....###-........-###...####
+####...###|......C.|###....###.E....2..b....E.###....###-.D....!.-###...####
 #####...###........#%#..##..###-............-###..##..###........###...#####
 ######...###|..A.|###..####..###9|...AB...|8###..####..###-.B..-###...######
 #######...####XX####..######..######XXXX######..##==##..####XX####...#######

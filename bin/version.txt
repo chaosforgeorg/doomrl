@@ -17,6 +17,7 @@
 [mod] -- GH#078: buffed danger/XP and weight for elite for/ser/cap and nightmare demons
 [mod] -- GH#078: former commandos and pain elemental spawn level range increased
 [mod] -- GH#078: lava elemental buffed, Erebus/Lava pits have diff dependent envirosuits
+[mod] -- GH#077: swapped positions of Vaults and Cathedral, Vaults enemies buffed
 [fix] -- GH#050: Containment Area conquered status only achieved by full clear
 [fix] -- GH#049: Deimos Lab conquered status only achieved by killing the Shamblers
 [fix] -- GH#040: fixed loud/silent sound for wall-destroying levers
