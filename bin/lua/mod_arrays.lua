@@ -40,7 +40,7 @@ function DoomRL.load_mod_arrays()
 
 		OnApply = function (item)
 			item.name       = "speedloader pistol"
-			item.reloadtime = 6
+			item.reloadtime = 4
 			item.usetime    = item.__proto.fire
 			item.acc        = item.__proto.acc
 		end,
@@ -84,7 +84,7 @@ function DoomRL.load_mod_arrays()
 		OnApply = function (item)
 			item.name         = "micro launcher"
 			item.reloadtime   = 8
-			item.usetime      = 8
+			item.usetime      = 5
 			item.damage_dice  = 5
 			item.damage_sides = 5
 			item.acc          = 7
@@ -241,9 +241,9 @@ function DoomRL.load_mod_arrays()
 		OnApply = function (item)
 			item.name           = "tower shield"
 			item.armor          = 12
-			item.durability     = 150
-			item.maxdurability  = 150
-			item.movemod        = -50
+			item.durability     = 200
+			item.maxdurability  = 200
+			item.movemod        = -30
 			item.knockmod       = -90
 			item.resist.fire       = 0
 			item.flags[ IF_NOREPAIR ] = true
@@ -295,10 +295,10 @@ function DoomRL.load_mod_arrays()
 			item.name          = "ballistic "..item.name
 			item.movemod       = item.__proto.movemod
 			item.knockmod      = item.__proto.knockmod
-			item.resist.melee     = math.min( (item.resist.melee or 0) + 30, 95 )
-			item.resist.bullet    = math.min( (item.resist.bullet or 0) + 30, 95 )
-			item.resist.shrapnel  = math.min( (item.resist.shrapnel or 0) + 30, 95 )
-			item.resist.fire      = (item.resist.fire or 0) - 30
+			item.resist.melee     = math.min( (item.resist.melee or 0) + 40, 95 )
+			item.resist.bullet    = math.min( (item.resist.bullet or 0) + 40, 95 )
+			item.resist.shrapnel  = math.min( (item.resist.shrapnel or 0) + 40, 95 )
+			item.resist.fire      = (item.resist.fire or 0) - 20
 			item.resist.plasma    = 0
 			item.resist.acid      = 0
 		end,
@@ -419,7 +419,7 @@ function DoomRL.load_mod_arrays()
 
 		OnApply = function (item)
 			item.name         = "assault "..item.name
-			item.acc          = item.__proto.acc + 2
+			item.acc          = item.__proto.acc + 3
 			item.shots        = math.ceil(item.__proto.shots / 2)
 			item.shotcost     = math.max(item.__proto.shotcost,1) * 2
 			item.reloadtime   = item.__proto.reload / 2
@@ -775,7 +775,7 @@ function DoomRL.load_mod_arrays()
 	register_mod_array "mother"
 	{
 		name  = "Mother-In-Law",
-		mods  = { P = 3, F = 1, N = 1 },
+		mods  = { P = 2, F = 1, N = 1 },
 		level = 2,
 		request_id = "bazooka",
 
