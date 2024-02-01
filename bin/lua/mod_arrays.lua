@@ -501,7 +501,7 @@ function DoomRL.load_mod_arrays()
 	{
 		name  = "environmental boots",
 		level = 1,
-		mods  = { P = 1, B = 1, T = 1 },
+		mods  = { B = 2, T = 1 },
 		request_type = ITEMTYPE_BOOTS,
 
 		OnApply = function (item)
@@ -511,8 +511,8 @@ function DoomRL.load_mod_arrays()
 			item.armor         = item.__proto.armor
 			item.maxdurability = item.__proto.durability
 			item.durability    = math.min( item.durability, item.maxdurability )
-			item.resist.fire      = math.min( (item.__proto.resist.fire or 0) + 75, 90 )
-			item.resist.acid      = math.min( (item.__proto.resist.acid or 0) + 75, 90 )
+			item.resist.fire      = math.min( (item.__proto.resist.fire or 0) + 95, 95 )
+			item.resist.acid      = math.min( (item.__proto.resist.acid or 0) + 95, 95 )
 		end,
 	}
 
