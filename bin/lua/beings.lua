@@ -363,7 +363,7 @@ function DoomRL.loadnpcs()
 		todam        = 2,
 		tohit        = 1,
 		min_lev      = 12,
-		max_lev      = 17,
+		max_lev      = 21,
 		corpse       = true,
 		danger       = 7,
 		weight       = 6,
