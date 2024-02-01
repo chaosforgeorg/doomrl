@@ -93,13 +93,23 @@ end
 
 
 function generator.being_weight()
-	    if DIFFICULTY == DIFF_EASY      then return math.ceil( level.danger_level*2.2+6 )
-	elseif DIFFICULTY == DIFF_MEDIUM    then return math.ceil( math.sqrt(level.danger_level*500)*0.6)
-	elseif DIFFICULTY == DIFF_HARD      then return math.ceil( math.sqrt(level.danger_level)*20)
-	elseif DIFFICULTY == DIFF_VERYHARD  then return math.ceil( math.sqrt(level.danger_level)*32)
-	elseif DIFFICULTY == DIFF_NIGHTMARE then return math.ceil( math.sqrt(level.danger_level)*40)
-	else return math.ceil( math.sqrt(level.danger_level)*40)
+	local danger = level.danger_level
+	if danger > 16 then
+		danger = danger + 2
+	elseif danger > 8 then
+		danger = danger + 1
 	end
+	local weight = 0
+
+	    if DIFFICULTY == DIFF_EASY      then weight = math.ceil( danger*2.2+6 )
+	elseif DIFFICULTY == DIFF_MEDIUM    then weight = math.ceil( math.sqrt(danger*500)*0.6)
+	elseif DIFFICULTY == DIFF_HARD      then weight = math.ceil( math.sqrt(danger)*20)
+	elseif DIFFICULTY == DIFF_VERYHARD  then weight = math.ceil( math.sqrt(danger)*32)
+	elseif DIFFICULTY == DIFF_NIGHTMARE then weight = math.ceil( math.sqrt(danger)*40)
+	else weight = math.ceil( math.sqrt(danger)*40)
+	end
+	core.log( "generator.being_weight() "..level.danger_level.." > "..weight )
+	return weight
 end
 
 function generator.item_amount()
