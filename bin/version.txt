@@ -10,6 +10,7 @@
 [mod] -- GH#075: buffed Necroarmor and translocator, changed Cybernetic Armor resistances
 [mod] -- GH#063: you can still mod an assembly if you take WK2 after assembling
 [mod] -- GH#070: nightmare enemies are resistant to floor effects
+[mod] -- GH#070: nightmare arch-vile deals 20 plasma damage (was 25 fire)
 [mod] -- GH#059: Techs get starting mod on challenges that allow them
 [mod] -- GH#053: you can now properly firestorm-mod a tristar blaster
 [mod] -- GH#078: buffed danger/XP and weight for elite for/ser/cap and nightmare demons

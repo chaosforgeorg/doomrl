@@ -731,8 +731,8 @@ function DoomRL.loadnpcs()
 		kill_desc       = "faced a nightmare arch-vile",
 
 		weapon = {
-			damage     = "25d1",
-			damagetype = DAMAGE_FIRE,
+			damage     = "20d1",
+			damagetype = DAMAGE_PLASMA,
 			radius     = 1,
 			flags      = { IF_AUTOHIT },
 			missile = {
