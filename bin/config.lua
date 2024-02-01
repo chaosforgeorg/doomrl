@@ -226,6 +226,12 @@ AlertCheck = true
 -- here. Note that this overrides the default server.
 CustomModServer = ''
 
+-- For returning veterans - this option unlocks all the difficulties and 
+-- challenges. For new players this definitely is considered a cheat.
+-- If you can't unlock Angelic Badges, you're definitely not ready to 
+-- try to get them anyway :P
+UnlockAll = false
+
 -- Message coloring system. Works only if MessageColoring
 -- variable is set to true. Use basic color names available in 
 -- colors.lua.

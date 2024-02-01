@@ -147,6 +147,7 @@ begin
   Option_InvMenuStyle     := Configure('InvMenuStyle',Option_InvMenuStyle);
   Option_EqMenuStyle      := Configure('EqMenuStyle',Option_EqMenuStyle);
   Option_HelpMenuStyle    := Configure('HelpMenuStyle',Option_HelpMenuStyle);
+  Option_UnlockAll        := Configure('UnlockAll',Option_UnlockAll );
 
   Option_PlayerBackups    := Configure('PlayerBackups',Option_PlayerBackups);
   Option_ScoreBackups     := Configure('ScoreBackups',Option_ScoreBackups);

@@ -128,6 +128,7 @@ const
   Option_ColorBlindMode   : Boolean = False;
   Option_EmptyConfirm     : Boolean = False;
   Option_SoundEquipPickup : Boolean = False;
+  Option_UnlockAll        : Boolean = False;
   Option_ColoredInventory : Boolean = True;
   Option_LockBreak        : Boolean = True;
   Option_LockClose        : Boolean = True;
