@@ -418,7 +418,7 @@ function DoomRL.loadexoticitems()
 		acc           = 4,
 		fire          = 15,
 		reload        = 20,
-		shotcost      = 10,
+		shotcost      = 5,
 		missile       = "mplasma",
 
 		OnHitBeing = function(self,being,target)

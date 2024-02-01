@@ -680,7 +680,7 @@ function DoomRL.loaduniqueitems()
 		movemod    = -30,
 		knockmod   = -30,
 
-		resist = { shrapnel = 50, melee = 50, bullet = 50 },
+		resist = { shrapnel = 20, melee = 20, bullet = 20, acid = 20, fire = 20, plasma = 20  },
 	}
 
 	register_item "unarmor"
@@ -694,7 +694,7 @@ function DoomRL.loaduniqueitems()
 		desc     = "Something about this armor gives you the chills.",
 		flags    = { IF_UNIQUE, IF_NECROCHARGE, IF_NODESTROY },
 
-		rechargeamount = 2,
+		rechargeamount = 5,
 		rechargedelay  = 0,
 
 		type       = ITEMTYPE_ARMOR,
