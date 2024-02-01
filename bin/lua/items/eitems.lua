@@ -8,13 +8,25 @@ function DoomRL.loadexoticitems()
 
 		OnEquip = function (self,being)
 			being.flags[ BF_SESSILE ] = true
-			being.armor = being.armor + 4
+			being.armor = being.armor + 2
+			being.resist.bullet   = (being.resist.bullet or 0) + 40
+			being.resist.melee    = (being.resist.melee or 0) + 40
+			being.resist.shrapnel = (being.resist.shrapnel or 0) + 40
+			being.resist.acid     = (being.resist.acid or 0) + 40
+			being.resist.fire     = (being.resist.fire or 0) + 40
+			being.resist.plasma   = (being.resist.plasma or 0) + 40
 			being:msg( "Suddenly you feel immobilized. You feel like a fortress!" )
 		end,
 
 		OnRemove = function (self,being)
 			being.flags[ BF_SESSILE ] = false
-			being.armor = being.armor - 4
+			being.armor = being.armor - 2
+			being.resist.bullet   = (being.resist.bullet or 0) - 40
+			being.resist.melee    = (being.resist.melee or 0) - 40
+			being.resist.shrapnel = (being.resist.shrapnel or 0) - 40
+			being.resist.acid     = (being.resist.acid or 0) - 40
+			being.resist.fire     = (being.resist.fire or 0) - 40
+			being.resist.plasma   = (being.resist.plasma or 0) - 40
 			being:msg( "You feel more agile and less protected." )
 		end,
 	}
@@ -557,15 +569,14 @@ function DoomRL.loadexoticitems()
 		desc     = "Handy stuff on the battlefield, why don't they give it to regular marines?",
 		flags    = { IF_EXOTIC },
 
-		resist = { bullet = 20, melee = 20, shrapnel = 20},
-
+		resist     = { fire = 15, acid = 15, plasma = 15 },
 		type       = ITEMTYPE_ARMOR,
 		armor      = 2,
 		movemod    = -15,
 
 		OnEquipTick = function(self, being)
 			if self.durability > 20 then
-				if being.hp < being.hpmax / 4 then
+				if being.hp < being.hpmax / 2 then
 					being.hp = being.hp + 1
 					self.durability = self.durability - 1
 				end
@@ -584,7 +595,7 @@ function DoomRL.loadexoticitems()
 		desc     = "A little archaic, but a surprisingly well-kept armor.",
 		flags    = { IF_EXOTIC },
 
-		resist = { bullet = 50, melee = 50, shrapnel = 50},
+		resist = { bullet = 50, melee = 75, shrapnel = 50},
 
 		type       = ITEMTYPE_ARMOR,
 		armor      = 2,

@@ -649,7 +649,7 @@ function DoomRL.loaduniqueitems()
 		sprite   = SPRITE_ARMOR,
 		coscolor = { 1.0,0.0,0.4,1.0 },
 		level    = 15,
-		weight   = 3,
+		weight   = 2,
 		desc     = "The personal armor of the most famous Imperial Inquisitor.",
 		flags    = { IF_UNIQUE, IF_RECHARGE, IF_NODESTROY },
 		set      = "inquisitor",
@@ -661,7 +661,7 @@ function DoomRL.loaduniqueitems()
 
 		type       = ITEMTYPE_ARMOR,
 		armor      = 3,
-		movemod    = 25,
+		movemod    = 20,
 	}
 
 	register_item "ucarmor"
@@ -781,7 +781,7 @@ function DoomRL.loaduniqueitems()
 		sprite   = SPRITE_BOOTS,
 		coscolor = { 1.0,0.0,0.3,1.0 },
 		level    = 15,
-		weight   = 3,
+		weight   = 2,
 		desc     = "The famous boots of the famous Imperial Inquisitor.",
 		flags    = { IF_UNIQUE, IF_RECHARGE, IF_NODESTROY, IF_PLURALNAME },
 		set      = "inquisitor",
@@ -793,7 +793,7 @@ function DoomRL.loaduniqueitems()
 
 		type       = ITEMTYPE_BOOTS,
 		armor      = 6,
-		movemod    = 25,
+		movemod    = 20,
 	}
 
 	register_item "ushieldarmor"

@@ -4,6 +4,7 @@
 [new] -- GH#063: WK3 available for techs at clev 12+ and allows 1 more assembly mod!
 [mod] -- GH#075: assembly buffs - micro launcher, tower shield, ballistic armor, env boots
 [mod] -- GH#075: assembly buffs - speedloader pistol, assault rifle, mother in law
+[mod] -- GH#075: buffed Gothic Arms set, slightly nerfed Inquisitor Set pieces
 [mod] -- GH#063: you can still mod an assembly if you take WK2 after assembling
 [mod] -- GH#070: nightmare enemies are resistant to floor effects
 [mod] -- GH#059: Techs get starting mod on challenges that allow them
