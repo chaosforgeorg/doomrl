@@ -1020,10 +1020,10 @@ function DoomRL.loadnpcs()
 		color        = YELLOW,
 		sprite       = SPRITE_LAVAELEM,
 		--overlay      = { 0.4, 0.4, 1.0 },
-		hp           = 80,
+		hp           = 100,
 		armor        = 5,
 		attackchance = 30,
-		todam        = 8,
+		todam        = 12,
 		tohit        = 4,
 		min_lev      = 70,
 		danger       = 16,
@@ -1041,7 +1041,7 @@ function DoomRL.loadnpcs()
 		weapon = {
 			damage     = "5d4",
 			damagetype = DAMAGE_FIRE,
-			radius     = 2,
+			radius     = 3,
 			missile = {
 				sound_id   = "cacodemon",
 				ascii      = "*",
