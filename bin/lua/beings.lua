@@ -391,7 +391,7 @@ function DoomRL.loadnpcs()
 		todam        = 6,
 		tohit        = 2,
 		min_lev      = 10,
-		max_lev      = 20,
+		max_lev      = 40,
 		danger       = 6,
 		weight       = 4,
 		bulk         = 100,
@@ -1361,7 +1361,7 @@ function DoomRL.loadnpcs()
 	register_being_group
 	{
 		min_lev = 13,
-		max_lev = 21,
+		max_lev = 25,
 		weight  = 8,
 		beings = {
 			{ being = "pain" },
@@ -1459,6 +1459,16 @@ function DoomRL.loadnpcs()
 			{ being = "arch",     amount = 2 },
 			{ being = "captain",  amount = {2,8} },
 			{ being = "mancubus", amount = {2,3} },
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 30,
+		weight  = 4,
+		beings = {
+			{ being = "pain", amount = 2 },
+			{ being = "cacodemon", amount = {2,5} }
 		}
 	}
 

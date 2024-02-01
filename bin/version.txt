@@ -12,7 +12,7 @@
 [mod] -- GH#059: Techs get starting mod on challenges that allow them
 [mod] -- GH#053: you can now properly firestorm-mod a tristar blaster
 [mod] -- GH#078: buffed danger/XP and weight for elite for/ser/cap and nightmare demons
-[mod] -- GH#078: former commandos spawn level range increased
+[mod] -- GH#078: former commandos and pain elemental spawn level range increased
 [fix] -- GH#050: Containment Area conquered status only achieved by full clear
 [fix] -- GH#049: Deimos Lab conquered status only achieved by killing the Shamblers
 [fix] -- GH#040: fixed loud/silent sound for wall-destroying levers
