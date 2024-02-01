@@ -1111,7 +1111,7 @@ function DoomRL.loadexoticitems()
 			if not self:can_overcharge("This will destroy the weapon after the next shot...") then return false end
 			self.missile       = missiles[ "mbfgover" ].nid
 			self.blastradius   = self.blastradius * 2
-			self.damage_dice   = self.damage_dice + 2
+			self.damage_dice   = self.damage_dice * 2
 			self.shotcost      = self.ammomax
 			self.ammomax       = self.shotcost
 			self.ammo          = self.shotcost
