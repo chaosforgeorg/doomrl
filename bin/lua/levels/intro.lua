@@ -235,7 +235,7 @@ register_level "intro"
 			end
 			local tile = cells[ generator.get_cell( p ) ].id
 			if tile == "stairs" then
-				ui.set_hint("Hint : press \">\" to move downstairs!")
+				ui.set_hint("Hint : press \"SPACE\" to move downstairs!")
 			end
 		end
 	end,

@@ -6,7 +6,7 @@
   Arrows -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
   '.'    -- Wait
   '?'    -- Run on-line help
-  '>'    -- Go down stairs (you won't be able to come back!)
+  SPACE  -- Go down stairs (you won't be able to come back!)
   'g'    -- Pick up item from floor
   'z'    -- Swap weapon (with prepared weapon)
   'd'    -- Drop item
@@ -50,7 +50,7 @@
   F9     -- Makes screenshot (in graphics mode a png screenshot, in console 
             colorful screenshot in BB codes - useful if you want to post it 
             on forum) and places it in "Screenshot" folder
-  SPACE  -- toggle grid view (only in graphics mode)
+  SHIFT-G-- toggle grid view (only in graphics mode)
 
 
 @rKeys while targeting@>
