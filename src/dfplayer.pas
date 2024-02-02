@@ -791,7 +791,7 @@ try
       else
         if iLevel.Item[ FPosition ] <> nil then
           if iLevel.Item[ FPosition ].isLever then
-            iCommand := COMMAND_USE
+            iCommand := COMMAND_ALTPICKUP
           else
             iCommand := COMMAND_PICKUP
           else
@@ -948,7 +948,7 @@ try
       else
       begin
         if ( iLevel.Item[ FPosition ] <> nil ) and ( iLevel.Item[ FPosition ].isLever ) then
-           ActionUse( nil )
+           ActionUse( nil, True )
         else
            doActDoors;
       end;
@@ -967,7 +967,8 @@ try
     COMMAND_LOOK      : begin UI.Msg( '-' ); UI.LookMode end;
     COMMAND_ALTFIRE   : doFire( True );
     COMMAND_FIRE      : doFire();
-    COMMAND_USE       : ActionUse( nil );
+    COMMAND_USE       : ActionUse( nil, False );
+    COMMAND_ALTPICKUP : ActionUse( nil, True );
     COMMAND_PLAYERINFO: doScreen;
     COMMAND_QUIT      : doQuit;
     COMMAND_HARDQUIT  : begin

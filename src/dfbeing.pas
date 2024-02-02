@@ -100,7 +100,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem; aAltFire : TAltFire = ALT_NONE ) : Boolean;
     function ActionAltFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem ) : Boolean;
     function ActionPickup : Boolean;
-    function ActionUse( Item : TItem ) : Boolean;
+    function ActionUse( Item : TItem; aFromFloor : Boolean ) : Boolean;
     function ActionUnLoad( aItem : TItem ) : Boolean;
 
 
@@ -873,7 +873,7 @@ begin
       begin
         if isPlayer then UI.Msg('No time to waste.');
         CallHook( Hook_OnPickUpItem, [item] );
-        Exit( ActionUse( item ) );
+        Exit( ActionUse( item, False ) );
       end;
 
   if Inv.isFull then Exit( Fail( 'You don''t have enough room in your backpack.', [] ) );
@@ -888,26 +888,31 @@ begin
   Exit( True );
 end;
 
-function TBeing.ActionUse ( Item : TItem ) : Boolean;
+function TBeing.ActionUse ( Item : TItem; aFromFloor : Boolean ) : Boolean;
 var isOnGround : Boolean;
     isLever    : Boolean;
     isPack     : Boolean;
-	isEquip    : Boolean;
-	isPrepared : Boolean;
-	isUsed     : Boolean;
-	isFailed   : Boolean;
-	iSlot      : TEqSlot;
-	iUID       : TUID;
+    isEquip    : Boolean;
+    isPrepared : Boolean;
+    isUsed     : Boolean;
+    isFailed   : Boolean;
+    iSlot      : TEqSlot;
+    iUID       : TUID;
 	
 begin
   isFailed := False;
   isOnGround := False;
-  if Item = nil then
+  if aFromFloor then
   begin
     Item := TLevel(Parent).Item[ FPosition ];
     if ( Item <> nil ) and (Item.isLever or Item.isPack or Item.isWearable)
 	then isOnGround := True
     else
+      Exit( Fail('There''s nothing to use on the ground!', [] ) );
+  end;
+
+  if Item = nil then
+  begin
     if isPlayer then
     begin
       Item := Inv.Choose([ITEMTYPE_PACK],'use');
@@ -2435,7 +2440,7 @@ var State  : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionUse( State.ToObjectOrNil(2) as TItem ) );
+  State.Push( Being.ActionUse( State.ToObjectOrNil(2) as TItem, State.ToBoolean(3, False ) ) );
   Result := 1;
 end;
 

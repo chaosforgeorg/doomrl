@@ -39,7 +39,7 @@ begin
   if Player.SCount < 5000 then Exit(0);
   Item := Player.FindChild( State.ToString(1) ) as TItem;
   if Item <> nil then
-    Player.ActionUse( Item );
+    Player.ActionUse( Item, False );
   State.Push( Item <> nil );
   Result := lua_yield( L, 1 );
 end;

@@ -300,6 +300,7 @@ Controls
   SPACE  -- Action - open doors, close doors, use levers/switches or 
             go down stairs (you won't be able to come back!)
   'g'    -- Pick up item from floor
+  'G'    -- Use/wield/wear item from floor/pull lever/switch
   'z'    -- Swap weapon (with prepared weapon)
   'd'    -- Drop item
   'i'    -- Show inventory
@@ -309,7 +310,7 @@ Controls
   'F'    -- Alternative Fire of equipped weapon (if available)
   'r'    -- Reload equipped weapon
   'R'    -- Special reload weapon (depending on weapon)
-  'u'    -- Use item from inventory (eg. Med-pack)/pull lever
+  'u'    -- Use item from inventory (eg. Med-pack)
   'U'    -- Unload weapon from inventory/from ground
   '@'    -- Show screen with character info (parameters of player
             and his equipment)
@@ -340,7 +341,7 @@ Controls
   F9     -- Makes screenshot (in graphics mode a png screenshot, in console 
             colorful screenshot in BB codes - useful if you want to post it 
             on forum) and places it in "Screenshot" folder
-  SHIFT-G-- toggle grid view (only in graphics mode)
+  'K    '-- toggle grid view (only in graphics mode)
 
 
 Keys while targeting
