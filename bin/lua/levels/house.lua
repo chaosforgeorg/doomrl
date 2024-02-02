@@ -159,15 +159,15 @@ register_level "house_of_pain"
 	OnExit = function ()
 		local result = level.status
 		if result == 0 then
-			ui.msg("Let it lie, that which is eternally dead...")
+			ui.msg("Better show myself out...")
 			-- XXX Originally "Armory", but I think it should refer to the House?
 			player:add_history("He left the House without drawing too much attention.")
 		elseif result == 1 then
-			ui.msg("This is madness!")
-			player:add_history("He fled being chased by a nightmare!")
+			ui.msg("Enough!")
+			player:add_history("He fled the House on fire!")
 		else
-			ui.msg("Gotta love the craft...")
-			player:add_history("He destroyed the evil within and reaped the rewards!")
+			ui.msg("My house, my rules.")
+			player:add_history("He conquered the House!")
 		end
 	end,
 
