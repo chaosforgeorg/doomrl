@@ -1,7 +1,7 @@
 0.9.9.8 BETA 3
 [new] -- BETA  : WARNING - speed system rewrites!
 [new] -- GH#080: keybindings updates - SPACE is action key (open, close, descend, pull)
-[new] -- GH#080: keybindings updates - SHIFT-HG
+[new] -- GH#080: keybindings updates - SHIFT-G is use/wear/wield/pull from ground
 [new] -- GH#074: UnlockAll option in config.lua to unlock Challenges and Difficulties
 [new] -- GH#063: WK3 available for techs at clev 12+ and allows 1 more assembly mod!
 [mod] -- GH#078: increased amount of enemies on Deimos and Hell
