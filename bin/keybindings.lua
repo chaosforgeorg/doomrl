@@ -31,6 +31,7 @@ COMMAND_EXAMINEITEM       = 33;
 COMMAND_SWAPWEAPON        = 34;
 COMMAND_TRAITS            = 39;
 COMMAND_GRIDTOGGLE        = 40;
+COMMAND_ACTION            = 43;
 
 COMMAND_SOUNDTOGGLE       = 86;
 COMMAND_MUSICTOGGLE       = 87;
@@ -51,7 +52,7 @@ Keybindings = {
 	["M"]            = COMMAND_MORE,
 	["SHIFT+COMMA"]  = COMMAND_ENTER,
 	["SHIFT+PERIOD"] = COMMAND_ENTER,
-	["SPACE"]        = COMMAND_ENTER,
+	["SPACE"]        = COMMAND_ACTION,
 	["SHIFT+U"]      = COMMAND_UNLOAD,
 	["G"]            = COMMAND_PICKUP,
 	["D"]            = COMMAND_DROP,

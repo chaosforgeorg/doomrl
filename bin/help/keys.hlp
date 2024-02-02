@@ -6,14 +6,13 @@
   Arrows -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
   '.'    -- Wait
   '?'    -- Run on-line help
-  SPACE  -- Go down stairs (you won't be able to come back!)
+  SPACE  -- Action - open doors, close doors, use levers/switches or 
+            go down stairs (you won't be able to come back!)
   'g'    -- Pick up item from floor
   'z'    -- Swap weapon (with prepared weapon)
   'd'    -- Drop item
   'i'    -- Show inventory
   'e'    -- Show or change equipment/show traits
-  'o'    -- Open door
-  'c'    -- Close door
   'l'    -- Toggle LookMode (Escape to exit)
   'f'    -- Fire of equipped weapon
   'F'    -- Alternative Fire of equipped weapon (if available)

@@ -75,6 +75,7 @@ TPlayer = class(TBeing)
   procedure LevelEnter;
   procedure doUpgradeTrait;
   function doAct( aFlagID : byte; const aActName : string ) : Boolean;
+  function doActDoors : Boolean;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
   function doUnLoad : Boolean;
   procedure doScreen;
@@ -522,6 +523,48 @@ begin
   Exit( True );
 end;
 
+
+function TPlayer.doActDoors : Boolean;
+var iLevel  : TLevel;
+    iDir    : TDirection;
+    iScan   : TCoord2D;
+    iAct    : TCoord2D;
+    iCount  : byte;
+begin
+  iLevel := TLevel(Parent);
+  iCount := 0;
+  for iScan in NewArea( FPosition, 1 ).Clamped( iLevel.Area ) do
+    if ( iScan <> FPosition ) and ( iLevel.cellFlagSet(iScan, CF_OPENABLE) or iLevel.cellFlagSet(iScan, CF_CLOSABLE) ) then
+    begin
+      Inc(iCount);
+      iAct := iScan;
+    end;
+
+  if iCount = 0 then Exit( Fail( 'There''s nothing you can act upon here.', [] ) );
+
+  if iCount > 1 then
+  begin
+    iDir := UI.ChooseDirection('action');
+    if iDir.code = DIR_CENTER then Exit;
+    iAct := FPosition + iDir;
+  end;
+
+  if iLevel.isProperCoord( iAct ) then
+  begin
+    if iLevel.cellFlagSet( iAct, CF_CLOSABLE ) or
+      iLevel.cellFlagSet( iAct, CF_OPENABLE )
+      then
+      begin
+        if not iLevel.isEmpty( iAct ,[EF_NOITEMS,EF_NOBEINGS] ) then
+          Exit( Fail( 'There''s something in the way!', [] ) );
+        iLevel.CallHook( iAct, Self, CellHook_OnAct );
+      end
+      else Exit( Fail( 'You can''t do that!', [] ) );
+    Exit( True );
+  end;
+  Exit( False );
+end;
+
 procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem ) ;
 var iKillClass : AnsiString;
 begin
@@ -899,6 +942,17 @@ try
   end
   else
   case iCommand of
+    COMMAND_ACTION    : begin
+      if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
+        iLevel.CallHook( Position, CellHook_OnExit )
+      else
+      begin
+        if ( iLevel.Item[ FPosition ] <> nil ) and ( iLevel.Item[ FPosition ].isLever ) then
+           ActionUse( nil )
+        else
+           doActDoors;
+      end;
+    end;
     COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
     COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
     COMMAND_ESCAPE    : if GodMode then begin Doom.SetState( DSQuit ); Exit; end;

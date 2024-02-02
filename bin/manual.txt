@@ -182,7 +182,7 @@ a consumable. If you ever want to drop something (usually to make room for
 new weapons or items), press "d" to open the drop menu.
 
 Along the way, you're bound to run into levers ("&") and barrels ("0"). To
-pull a lever, stand on it and press "u" to use them. The effects are random,
+pull a lever, stand on it and press "SPACE" to use them. The effects are random,
 so pull them at your own peril!  And if you've ever played Doom, you know
 what to expect with barrels: They all explode quite nicely, but with varying
 effects depending on the barrel. (Be aware that levers are activated with
@@ -297,14 +297,13 @@ Controls
   Arrows -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
   '.'    -- Wait
   '?'    -- Run on-line help
-  SPACE  -- Go down stairs (you won't be able to come back!)
+  SPACE  -- Action - open doors, close doors, use levers/switches or 
+            go down stairs (you won't be able to come back!)
   'g'    -- Pick up item from floor
   'z'    -- Swap weapon (with prepared weapon)
   'd'    -- Drop item
   'i'    -- Show inventory
   'e'    -- Show or change equipment/show traits
-  'o'    -- Open door
-  'c'    -- Close door
   'l'    -- Toggle LookMode (Escape to exit)
   'f'    -- Fire of equipped weapon
   'F'    -- Alternative Fire of equipped weapon (if available)
