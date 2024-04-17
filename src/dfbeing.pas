@@ -1276,7 +1276,7 @@ end;
 
 function TBeing.HandleCommand( aCommand : TCommand ) : Boolean; 
 begin
-  case aCommand of
+  case aCommand.Command of
     COMMAND_WAIT   : Dec( FSpeedCount, 1000 );
     COMMAND_ENTER  : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
   else Exit( False );

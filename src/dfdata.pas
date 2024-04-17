@@ -110,14 +110,6 @@ const
 
   KnockbackValue = 7;
 
-type TCommand = object
-  Command : Byte;
-  Target  : TCoord2D;
-
-  class function Create( aCommand : Byte ) : TCommand; static;
-  class function Create( aCommand : Byte; aTarget : TCoord2D ) : TCommand; static;
-end;
-
 const
   Option_HighASCII        : Boolean = {$IFDEF WINDOWS}True{$ELSE}False{$ENDIF};
   Option_AlwaysRandomName : Boolean = False;
@@ -345,19 +337,7 @@ Function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; Prefer
 
 
 implementation
-uses typinfo, strutils, math, vdebug;
-
-class function TCommand.Create( aCommand : Byte ) : TCommand;
-begin
-  Result.Command := aCommand;
-  Result.Target  := NewCoord2D(0,0);
-end;
-
-class function TCommand.Create( aCommand : Byte; aTarget : TCoord2D ) : TCommand;
-begin
-  Result.Command := aCommand;
-  Result.Target  := aTarget;
-end;
+uses typinfo, strutils, math, vdebug, dfitem;
 
 // change also in mortem lua!
 function SlotName(slot : TEqSlot) : string;
