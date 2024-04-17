@@ -72,7 +72,7 @@ TPlayer = class(TBeing)
   constructor CreateFromStream( Stream: TStream ); override;
   procedure WriteToStream( Stream: TStream ); override;
   function PlayerTick : Boolean;
-  procedure HandleCommand( aCommand : Byte; aAlt : Boolean );
+  procedure HandleCommand( aCommand : Byte );
   procedure AIAction;
   procedure LevelEnter;
   procedure doUpgradeTrait;
@@ -703,7 +703,7 @@ begin
   Exit( True );
 end;
 
-procedure TPlayer.HandleCommand( aCommand : Byte; aAlt : Boolean );
+procedure TPlayer.HandleCommand( aCommand : Byte );
 var iLevel      : TLevel;
     iDir        : TDirection;
     iMove       : TCoord2D;
@@ -1040,7 +1040,7 @@ try
   end;
   // === MOUSE HANDLING END ===
 
-  HandleCommand( iCommand, iAlt );
+  HandleCommand( iCommand );
 except
   on e : Exception do
   begin
