@@ -345,9 +345,32 @@ repeat
     
     IO.PlayMusic(FLevel.ID);
     FLevel.PreEnter;
+
     repeat
       FLevel.Tick;
+      if State = DSPlaying then
+      begin
+        if not Player.PlayerTick then Break;
+        repeat 
+          FLevel.CalculateVision( Player.Position );
+          StatusEffect := Player.FAffects.getEffect;
+          UI.Focus( Player.Position );
+          if GraphicsVersion then
+            UI.GameUI.UpdateMinimap;
+
+          Player.AIAction;
+
+          if State <> DSPlaying then
+          begin
+            UI.Focus( Player.Position );
+            Player.UpdateVisual;
+          end;
+        until ( State <> DSPlaying ) or ( Player.SCount < 5000 );
+        if State = DSPlaying then
+          FLevel.CalculateVision( Player.Position );
+      end;
     until State <> DSPlaying;
+
     if State in [ DSNextLevel, DSSaving ] then
       FLevel.Leave;
 

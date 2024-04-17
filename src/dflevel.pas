@@ -1037,51 +1037,57 @@ end;
 procedure TLevel.Tick;
 var iNode : TNode;
 begin
-  Inc(LTime);
-  Inc(Player.FStatistics.GameTime);
+  FActiveBeing := nil;
+  Player.LastTurnDodge := False;
+  repeat
 
-  CallHook( Hook_OnTick,[] );
+    Inc(LTime);
+    Inc(Player.FStatistics.GameTime);
 
-  if LF_RESPAWN in FFlags  then
-  begin
-    if LTime mod 100 = 0 then
-      if ((LTime div 100)+20) > DWord(Random(100)) then
-        Respawn( Min( (LTime div 1000) + 10, 100 ) );
-  end;
+    CallHook( Hook_OnTick,[] );
 
-  NukeTick;
-
-  if Doom.State = DSPlaying then
-  begin
-    for iNode in Self do
-      if iNode is TBeing then
-         TBeing(iNode).Tick;
-
-    iNode := Child;
-    if iNode <> nil then
-    repeat
-      FNextNode    := iNode.Next;
-      FActiveBeing := nil;
-      if iNode is TBeing then
-        if TBeing(iNode).SCount >= 5000 then
-          if not TBeing(iNode).isPlayer then
-            begin
-              FActiveBeing := TBeing(iNode);
-              FActiveBeing.Action;
-            end;
-      if Doom.State <> DSPlaying then Break;
-      iNode := FNextNode;
-    until (iNode = Child) or (iNode = nil);
-
-    if Player.SCount >= 5000 then
+    if LF_RESPAWN in FFlags  then
     begin
-      FActiveBeing := Player;
-      Player.AIAction;
+      if LTime mod 100 = 0 then
+        if ((LTime div 100)+20) > DWord(Random(100)) then
+          Respawn( Min( (LTime div 1000) + 10, 100 ) );
     end;
 
-  end;
-  FActiveBeing := nil;
+    NukeTick;
 
+    if Doom.State = DSPlaying then
+    begin
+      for iNode in Self do
+        if iNode is TBeing then
+            TBeing(iNode).Tick;
+    end;
+
+    if Doom.State = DSPlaying then
+    begin
+      iNode := Child;
+      if iNode <> nil then
+      repeat
+        FNextNode    := iNode.Next;
+        FActiveBeing := nil;
+        if iNode is TBeing then
+          if TBeing(iNode).SCount >= 5000 then
+            if not TBeing(iNode).isPlayer then
+              begin
+                FActiveBeing := TBeing(iNode);
+                FActiveBeing.Action;
+              end;
+        if Doom.State <> DSPlaying then Break;
+        iNode := FNextNode;
+      until (iNode = Child) or (iNode = nil);
+    end;
+    FActiveBeing := nil;
+
+  until ( Doom.State <> DSPlaying ) or ( Player.SCount > 5000 );
+  if Doom.State = DSPlaying then
+  begin
+    CRASHMODE    := False;
+    FActiveBeing := Player;
+  end;
 end;
 
 procedure TLevel.NukeTick;
