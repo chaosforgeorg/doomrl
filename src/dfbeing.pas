@@ -51,6 +51,7 @@ TBeing = class(TThing,IPathQuery)
     function GetName( known : boolean ) : string;
     procedure Tick;
     procedure Action;
+    function HandleCommand( aCommand : TCommand ) : Boolean; 
     function  TryMove( where : TCoord2D ) : TMoveResult;
     function  MoveTowards( where : TCoord2D ) : TMoveResult;
     procedure Reload( AmmoItem : TItem; Single : Boolean );
@@ -225,8 +226,7 @@ uses vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem,
 
 function TBeing.getStrayChance( defender : TBeing; missile : byte ) : byte;
 var miss     : Integer;
-var Modifier : Real;
-
+    Modifier : Real;
 begin
   if IsPlayer       then Exit(0);
   if defender = nil then Exit(0);
@@ -1272,6 +1272,16 @@ begin
   CallHook(Hook_OnAction,[]);
   if UIDs[ iThisUID ] = nil then Exit;
   while FSpeedCount >= 5000 do Dec( FSpeedCount, 1000 );
+end;
+
+function TBeing.HandleCommand( aCommand : TCommand ) : Boolean; 
+begin
+  case aCommand of
+    COMMAND_WAIT   : Dec( FSpeedCount, 1000 );
+    COMMAND_ENTER  : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
+  else Exit( False );
+  end;
+  Exit( True );
 end;
 
 procedure TBeing.Tick;

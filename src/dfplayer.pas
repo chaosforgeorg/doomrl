@@ -72,7 +72,7 @@ TPlayer = class(TBeing)
   constructor CreateFromStream( Stream: TStream ); override;
   procedure WriteToStream( Stream: TStream ); override;
   function PlayerTick : Boolean;
-  procedure HandleCommand( aCommand : Byte );
+  procedure HandleCommandValue( aCommand : Byte );
   procedure AIAction;
   procedure LevelEnter;
   procedure doUpgradeTrait;
@@ -703,7 +703,7 @@ begin
   Exit( True );
 end;
 
-procedure TPlayer.HandleCommand( aCommand : Byte );
+procedure TPlayer.HandleCommandValue( aCommand : Byte );
 var iLevel      : TLevel;
     iDir        : TDirection;
     iMove       : TCoord2D;
@@ -722,6 +722,14 @@ var iLevel      : TLevel;
 
 begin
   iLevel := TLevel( Parent );
+
+  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER ] ) then
+  begin
+    HandleCommand( TCommand.Create( aCommand ) );
+    Exit;
+  end;
+
+
   if ( aCommand in COMMANDS_MOVE ) or FRun.Active then
   begin
     FLastTargetPos.Create(0,0);
@@ -735,8 +743,8 @@ begin
     end;
 
 
-    if FRun.Active
-      then
+    if FRun.Active then
+    begin
         if FPathRun then
         begin
           if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
@@ -749,7 +757,8 @@ begin
           FPath.Start := FPath.Start.Child;
         end
         else iDir := FRun.Dir
-      else iDir := CommandDirection( aCommand );
+    end
+    else iDir := CommandDirection( aCommand );
 
     if iDir.code = 5 then
     begin
@@ -856,11 +865,8 @@ begin
            doActDoors;
       end;
     end;
-    COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
-    COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
     COMMAND_ESCAPE    : if GodMode then begin Doom.SetState( DSQuit ); Exit; end;
     COMMAND_UNLOAD    : doUnLoad;
-    COMMAND_ENTER     : iLevel.CallHook( Position, CellHook_OnExit );
     COMMAND_PICKUP    : ActionPickup;
     COMMAND_DROP      : doDrop;
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
@@ -896,9 +902,10 @@ begin
 
     COMMAND_SWAPWEAPON   : ActionQuickSwap;
 
+// TODO: These are UI actions not commands
     COMMAND_EXAMINENPC   : ExamineNPC;
     COMMAND_EXAMINEITEM  : ExamineItem;
-
+    COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
     COMMAND_SOUNDTOGGLE  : SoundOff := not SoundOff;
     COMMAND_MUSICTOGGLE  : begin
                              MusicOff := not MusicOff;
@@ -1040,7 +1047,7 @@ try
   end;
   // === MOUSE HANDLING END ===
 
-  HandleCommand( iCommand );
+  HandleCommandValue( iCommand );
 except
   on e : Exception do
   begin
