@@ -735,7 +735,7 @@ begin
     Exit;
   end;
 
-  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER, COMMAND_DROP ] ) then
+  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER ] ) then
   begin
     HandleCommand( TCommand.Create( aCommand ) );
     Exit;
