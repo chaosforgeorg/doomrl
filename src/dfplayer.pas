@@ -723,12 +723,7 @@ var iThisUID    : DWord;
 begin
   iCommand := 0;
   // FArmor color //
-  StatusEffect := FAffects.getEffect;
-  UI.Focus( FPosition );
   iLevel := TLevel( Parent );
-  iLevel.CalculateVision( FPosition );
-  if GraphicsVersion then
-    UI.GameUI.UpdateMinimap;
   FEnemiesInVision := iLevel.BeingsVisible;
   if FEnemiesInVision > 1 then begin FPathRun := False; FRun.Stop; end;
 
