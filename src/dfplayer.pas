@@ -880,7 +880,6 @@ begin
     COMMAND_ESCAPE    : if GodMode then begin Doom.SetState( DSQuit ); Exit; end;
     COMMAND_UNLOAD    : doUnLoad;
     COMMAND_PICKUP    : ActionPickup;
-    COMMAND_DROP      : doDrop;
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
     COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
     COMMAND_OPEN      : doAct( CF_OPENABLE, 'open' );
