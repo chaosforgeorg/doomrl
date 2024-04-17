@@ -72,6 +72,7 @@ TPlayer = class(TBeing)
   constructor CreateFromStream( Stream: TStream ); override;
   procedure WriteToStream( Stream: TStream ); override;
   function PlayerTick : Boolean;
+  procedure HandleCommand( aCommand : Byte; aAlt : Boolean );
   procedure AIAction;
   procedure LevelEnter;
   procedure doUpgradeTrait;
@@ -702,24 +703,223 @@ begin
   Exit( True );
 end;
 
-procedure TPlayer.AIAction;
-var iThisUID    : DWord;
-    iLevel      : TLevel;
-    iCommand    : Byte;
+procedure TPlayer.HandleCommand( aCommand : Byte; aAlt : Boolean );
+var iLevel      : TLevel;
     iDir        : TDirection;
     iMove       : TCoord2D;
     iItem       : TItem;
-    iAlt        : Boolean;
     iMoveResult : TMoveResult;
     iTempSC     : LongInt;
-    function RunStopNear : boolean;
+
+  function RunStopNear : boolean;
+  begin
+    if iLevel.isProperCoord( FPosition.ifIncX(+1) ) and iLevel.cellFlagSet( FPosition.ifIncX(+1), CF_RUNSTOP ) then Exit( True );
+    if iLevel.isProperCoord( FPosition.ifIncX(-1) ) and iLevel.cellFlagSet( FPosition.ifIncX(-1), CF_RUNSTOP ) then Exit( True );
+    if iLevel.isProperCoord( FPosition.ifIncY(+1) ) and iLevel.cellFlagSet( FPosition.ifIncY(+1), CF_RUNSTOP ) then Exit( True );
+    if iLevel.isProperCoord( FPosition.ifIncY(-1) ) and iLevel.cellFlagSet( FPosition.ifIncY(-1), CF_RUNSTOP ) then Exit( True );
+    Exit( False );
+  end;
+
+begin
+  iLevel := TLevel( Parent );
+  if ( aCommand in COMMANDS_MOVE ) or FRun.Active then
+  begin
+    FLastTargetPos.Create(0,0);
+    Inc( FRun.Count );
+    if BF_SESSILE in FFlags then
     begin
-      if iLevel.isProperCoord( FPosition.ifIncX(+1) ) and iLevel.cellFlagSet( FPosition.ifIncX(+1), CF_RUNSTOP ) then Exit( True );
-      if iLevel.isProperCoord( FPosition.ifIncX(-1) ) and iLevel.cellFlagSet( FPosition.ifIncX(-1), CF_RUNSTOP ) then Exit( True );
-      if iLevel.isProperCoord( FPosition.ifIncY(+1) ) and iLevel.cellFlagSet( FPosition.ifIncY(+1), CF_RUNSTOP ) then Exit( True );
-      if iLevel.isProperCoord( FPosition.ifIncY(-1) ) and iLevel.cellFlagSet( FPosition.ifIncY(-1), CF_RUNSTOP ) then Exit( True );
-      Exit( False );
+      UI.Msg('You can''t!');
+      FPathRun := False;
+      FRun.Stop;
+      Exit;
     end;
+
+
+    if FRun.Active
+      then
+        if FPathRun then
+        begin
+          if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
+          begin
+            FPathRun := False;
+            FRun.Stop;
+            Exit;
+          end;
+          iDir := NewDirection( FPosition, FPath.Start.Coord );
+          FPath.Start := FPath.Start.Child;
+        end
+        else iDir := FRun.Dir
+      else iDir := CommandDirection( aCommand );
+
+    if iDir.code = 5 then
+    begin
+      if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
+      Dec( FSpeedCount, 1000 );
+      Exit;
+    end;
+
+    iMove := FPosition + iDir;
+    iMoveResult := TryMove( iMove );
+
+    if (not FPathRun) and FRun.Active and (
+         ( FRun.Count >= Option_MaxRun ) or
+         ( iMoveResult <> MoveOk ) or
+         iLevel.cellFlagSet( iMove, CF_NORUN ) or
+         (not iLevel.isEmpty(iMove,[EF_NOTELE]))
+       ) then
+    begin
+      FPathRun := False;
+      FRun.Stop;
+      Exit;
+    end;
+
+    case iMoveResult of
+       MoveBlock :
+         begin
+           if iLevel.isProperCoord( iMove ) and iLevel.cellFlagSet( iMove, CF_PUSHABLE ) then
+             iLevel.CallHook( iMove, Self, CellHook_OnAct )
+           else
+           begin
+             if Option_Blindmode then UI.Msg( 'You bump into a wall.' );
+             Exit;
+           end;
+         end;
+       MoveOk :
+         begin
+           if GraphicsVersion then
+           begin
+             UI.addScreenMoveAnimation(100,0,iMove);
+             UI.addMoveAnimation(100, 0, FUID, Position, iMove, Sprite );
+           end;
+
+           Displace( iMove );
+           BloodFloor;
+           Dec( FSpeedCount, getMoveCost );
+           iTempSC := FSpeedCount;
+           if Inv.Slot[ efWeapon ] <> nil then
+           with Inv.Slot[ efWeapon ] do
+             if isRanged then
+             begin // Autoreloading
+               if Ammo < AmmoMax then
+                 if ( ( ( IF_SHOTGUN in FFlags ) and ( BF_SHOTTYMAN in Self.FFlags ) ) or
+                    ( ( IF_ROCKET  in FFlags ) and ( BF_ROCKETMAN in Self.FFlags ) ) )
+                    and (not (IF_RECHARGE in FFlags)) then
+                 begin
+                   iItem := Inv.SeekAmmo(AmmoID);
+                   if iItem <> nil then
+                     Reload( iItem, IF_SINGLERELOAD in FFlags )
+                   else if canPackReload then
+                     Reload( FInv.Slot[ efWeapon2 ], IF_SINGLERELOAD in FFlags );
+                 end;
+               if IF_PUMPACTION in FFlags then
+                 if (IF_CHAMBEREMPTY in FFlags) and (Ammo <> 0) then
+                 begin
+                   iLevel.playSound( ID, 'pump', Player.FPosition );
+                   Exclude( FFlags, IF_CHAMBEREMPTY );
+                   UI.Msg( 'You pump a shell into the shotgun chamber.' );
+                 end;
+               if (BF_GUNRUNNER in Self.FFlags) and canFire and (Shots < 3) and GetRunning then
+               with CreateAutoTarget( Player.Vision ) do
+               try
+                 FTargetPos := Current;
+                 if FTargetPos <> FPosition then
+                   ActionFire( False, FTargetPos, Inv.Slot[ efWeapon ] );
+               finally
+                 Free;
+               end;
+             end;
+           FSpeedCount := iTempSC;
+         end;
+       MoveBeing : Attack( iLevel.Being[ iMove ] );
+       MoveDoor  : iLevel.CallHook( iMove, Self, CellHook_OnAct );
+    end;
+    if FRun.Active and (not FPathRun) then
+      if RunStopNear or
+         (iMoveResult <> MoveOk) or
+         ((not Option_RunOverItems) and (iLevel.Item[ FPosition ] <> nil)) then
+      begin
+        FPathRun := False;
+        FRun.Stop;
+        Exit;
+      end;
+  end
+  else
+  case aCommand of
+    COMMAND_ACTION    : begin
+      if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
+        iLevel.CallHook( Position, CellHook_OnExit )
+      else
+      begin
+        if ( iLevel.Item[ FPosition ] <> nil ) and ( iLevel.Item[ FPosition ].isLever ) then
+           ActionUse( nil, True )
+        else
+           doActDoors;
+      end;
+    end;
+    COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
+    COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
+    COMMAND_ESCAPE    : if GodMode then begin Doom.SetState( DSQuit ); Exit; end;
+    COMMAND_UNLOAD    : doUnLoad;
+    COMMAND_ENTER     : iLevel.CallHook( Position, CellHook_OnExit );
+    COMMAND_PICKUP    : ActionPickup;
+    COMMAND_DROP      : doDrop;
+    COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
+    COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
+    COMMAND_OPEN      : doAct( CF_OPENABLE, 'open' );
+    COMMAND_CLOSE     : doAct( CF_CLOSABLE, 'close' );
+    COMMAND_LOOK      : begin UI.Msg( '-' ); UI.LookMode end;
+    COMMAND_ALTFIRE   : doFire( True );
+    COMMAND_FIRE      : doFire();
+    COMMAND_USE       : ActionUse( nil, False );
+    COMMAND_ALTPICKUP : ActionUse( nil, True );
+    COMMAND_PLAYERINFO: doScreen;
+    COMMAND_QUIT      : doQuit;
+    COMMAND_HARDQUIT  : begin
+      Option_MenuReturn := False;
+      doQuit(True);
+    end;
+    COMMAND_SAVE      : doSave;
+    COMMAND_MSCRUP,
+    COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
+
+    COMMAND_MRIGHT    : if (IO.MTarget = FPosition) or
+                           ((Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) and (not (Inv.Slot[efWeapon].GetFlag(IF_NOAMMO))) and (Inv.Slot[ efWeapon ].Ammo = 0))  then
+                          if aAlt
+                            then ActionAltReload
+                            else ActionReload
+                        else if (Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) then
+                          if aAlt
+                            then ActionAltFire( False, IO.MTarget, Inv.Slot[ efWeapon ] )
+                            else ActionFire( False, IO.MTarget, Inv.Slot[ efWeapon ] )
+                        else Attack( FPosition + NewDirectionSmooth( FPosition, IO.MTarget ) );
+    COMMAND_TRAITS    : IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );
+    COMMAND_TACTIC    : if not (BF_BERSERK in FFlags) then
+                          if FTactic.Change then
+                            Dec(FSpeedCount,100);
+    COMMAND_RUNMODE   : doRun;
+
+    COMMAND_SWAPWEAPON   : ActionQuickSwap;
+
+    COMMAND_EXAMINENPC   : ExamineNPC;
+    COMMAND_EXAMINEITEM  : ExamineItem;
+
+    COMMAND_SOUNDTOGGLE  : SoundOff := not SoundOff;
+    COMMAND_MUSICTOGGLE  : begin
+                             MusicOff := not MusicOff;
+                             if MusicOff then IO.PlayMusic('')
+                                         else IO.PlayMusic(iLevel.ID);
+                           end;
+
+    255 {COMMAND_INVALID} :;
+    COMMAND_YIELD        :;
+    else UI.Msg('Unknown command. Press "?" for help.');
+  end;
+end;
+
+procedure TPlayer.AIAction;
+var iLevel      : TLevel;
+    iCommand    : Byte;
+    iAlt        : Boolean;
 begin
   iCommand := 0;
   // FArmor color //
@@ -728,6 +928,7 @@ begin
   if FEnemiesInVision > 1 then begin FPathRun := False; FRun.Stop; end;
 
   if iLevel.Item[ FPosition ] <> nil then
+  begin
     if iLevel.Item[ FPosition ].Hooks[ Hook_OnEnter ] then
     begin
       iLevel.Item[ FPosition ].CallHook( Hook_OnEnter, [ Self ] );
@@ -742,6 +943,7 @@ begin
           if Flags[ IF_PLURALNAME ]
             then UI.Msg('There are %s lying here.', [ GetName( False ) ] )
             else UI.Msg('There is %s lying here.', [ GetName( False ) ] );
+  end;
 
   if FRun.Active then
   begin
@@ -820,200 +1022,7 @@ try
         Exit;
       end;
 
-  if ( iCommand in COMMANDS_MOVE ) or FRun.Active then
-  begin
-    FLastTargetPos.Create(0,0);
-    Inc( FRun.Count );
-    if BF_SESSILE in FFlags then
-    begin
-      UI.Msg('You can''t!');
-      FPathRun := False;
-      FRun.Stop;
-      Exit;
-    end;
-
-    
-    if FRun.Active
-      then
-        if FPathRun then
-        begin
-          if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
-          begin
-            FPathRun := False;
-            FRun.Stop;
-            Exit;
-          end;
-          iDir := NewDirection( FPosition, FPath.Start.Coord );
-          FPath.Start := FPath.Start.Child;
-        end
-        else iDir := FRun.Dir
-      else iDir := CommandDirection( iCommand );
-               
-    if iDir.code = 5 then
-    begin
-      if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
-      Dec( FSpeedCount, 1000 );
-      Exit;
-    end;
-               
-    iMove := FPosition + iDir;
-    iMoveResult := TryMove( iMove );
-    
-    if (not FPathRun) and FRun.Active and (
-         ( FRun.Count >= Option_MaxRun ) or
-         ( iMoveResult <> MoveOk ) or
-         iLevel.cellFlagSet( iMove, CF_NORUN ) or
-         (not iLevel.isEmpty(iMove,[EF_NOTELE]))
-       ) then
-    begin
-      FPathRun := False;
-      FRun.Stop;
-      Exit;
-    end;
-    
-    case iMoveResult of
-       MoveBlock :
-         begin
-           if iLevel.isProperCoord( iMove ) and iLevel.cellFlagSet( iMove, CF_PUSHABLE ) then
-             iLevel.CallHook( iMove, Self, CellHook_OnAct )
-           else
-           begin
-             if Option_Blindmode then UI.Msg( 'You bump into a wall.' );
-             Exit;
-           end;
-         end;
-       MoveOk :
-         begin
-           if GraphicsVersion then
-           begin
-             UI.addScreenMoveAnimation(100,0,iMove);
-             UI.addMoveAnimation(100, 0, FUID, Position, iMove, Sprite );
-           end;
-
-           Displace( iMove );
-           BloodFloor;
-           Dec( FSpeedCount, getMoveCost );
-           iTempSC := FSpeedCount;
-           if Inv.Slot[ efWeapon ] <> nil then
-           with Inv.Slot[ efWeapon ] do
-             if isRanged then
-             begin // Autoreloading
-               if Ammo < AmmoMax then
-                 if ( ( ( IF_SHOTGUN in FFlags ) and ( BF_SHOTTYMAN in Self.FFlags ) ) or
-                    ( ( IF_ROCKET  in FFlags ) and ( BF_ROCKETMAN in Self.FFlags ) ) )
-                    and (not (IF_RECHARGE in FFlags)) then
-                 begin
-                   iItem := Inv.SeekAmmo(AmmoID);
-                   if iItem <> nil then
-                     Reload( iItem, IF_SINGLERELOAD in FFlags )
-                   else if canPackReload then
-                     Reload( FInv.Slot[ efWeapon2 ], IF_SINGLERELOAD in FFlags );
-                 end;
-               if IF_PUMPACTION in FFlags then
-                 if (IF_CHAMBEREMPTY in FFlags) and (Ammo <> 0) then
-                 begin
-                   iLevel.playSound( ID, 'pump', Player.FPosition );
-                   Exclude( FFlags, IF_CHAMBEREMPTY );
-                   UI.Msg( 'You pump a shell into the shotgun chamber.' );
-                 end;
-               if (BF_GUNRUNNER in Self.FFlags) and canFire and (Shots < 3) and GetRunning then
-               with CreateAutoTarget( Player.Vision ) do
-               try
-                 FTargetPos := Current;
-                 if FTargetPos <> FPosition then
-                   ActionFire( False, FTargetPos, Inv.Slot[ efWeapon ] );
-               finally
-                 Free;
-               end;
-             end;
-           FSpeedCount := iTempSC;
-         end;
-       MoveBeing : Attack( iLevel.Being[ iMove ] );
-       MoveDoor  : iLevel.CallHook( iMove, Self, CellHook_OnAct );
-    end;
-    if FRun.Active and (not FPathRun) then
-      if RunStopNear or
-         (iMoveResult <> MoveOk) or
-         ((not Option_RunOverItems) and (iLevel.Item[ FPosition ] <> nil)) then
-      begin
-        FPathRun := False;
-        FRun.Stop;
-        Exit;
-      end;
-  end
-  else
-  case iCommand of
-    COMMAND_ACTION    : begin
-      if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
-        iLevel.CallHook( Position, CellHook_OnExit )
-      else
-      begin
-        if ( iLevel.Item[ FPosition ] <> nil ) and ( iLevel.Item[ FPosition ].isLever ) then
-           ActionUse( nil, True )
-        else
-           doActDoors;
-      end;
-    end;
-    COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
-    COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
-    COMMAND_ESCAPE    : if GodMode then begin Doom.SetState( DSQuit ); Exit; end;
-    COMMAND_UNLOAD    : doUnLoad;
-    COMMAND_ENTER     : iLevel.CallHook( Position, CellHook_OnExit );
-    COMMAND_PICKUP    : ActionPickup;
-    COMMAND_DROP      : doDrop;
-    COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
-    COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
-    COMMAND_OPEN      : doAct( CF_OPENABLE, 'open' );
-    COMMAND_CLOSE     : doAct( CF_CLOSABLE, 'close' );
-    COMMAND_LOOK      : begin UI.Msg( '-' ); UI.LookMode end;
-    COMMAND_ALTFIRE   : doFire( True );
-    COMMAND_FIRE      : doFire();
-    COMMAND_USE       : ActionUse( nil, False );
-    COMMAND_ALTPICKUP : ActionUse( nil, True );
-    COMMAND_PLAYERINFO: doScreen;
-    COMMAND_QUIT      : doQuit;
-    COMMAND_HARDQUIT  : begin
-      Option_MenuReturn := False;
-      doQuit(True);
-    end;
-    COMMAND_SAVE      : doSave;
-    COMMAND_MSCRUP,
-    COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
-
-    COMMAND_MRIGHT    : if (IO.MTarget = FPosition) or
-                           ((Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) and (not (Inv.Slot[efWeapon].GetFlag(IF_NOAMMO))) and (Inv.Slot[ efWeapon ].Ammo = 0))  then
-                          if iAlt
-                            then ActionAltReload
-                            else ActionReload
-                        else if (Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) then
-                          if iAlt
-                            then ActionAltFire( False, IO.MTarget, Inv.Slot[ efWeapon ] )
-                            else ActionFire( False, IO.MTarget, Inv.Slot[ efWeapon ] )
-                        else Attack( FPosition + NewDirectionSmooth( FPosition, IO.MTarget ) );
-    COMMAND_TRAITS    : IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );
-    COMMAND_TACTIC    : if not (BF_BERSERK in FFlags) then
-                          if FTactic.Change then
-                            Dec(FSpeedCount,100);
-    COMMAND_RUNMODE   : doRun;
-
-    COMMAND_SWAPWEAPON   : ActionQuickSwap;
-
-    COMMAND_EXAMINENPC   : ExamineNPC;
-    COMMAND_EXAMINEITEM  : ExamineItem;
-
-    COMMAND_SOUNDTOGGLE  : SoundOff := not SoundOff;
-    COMMAND_MUSICTOGGLE  : begin
-                             MusicOff := not MusicOff;
-                             if MusicOff then IO.PlayMusic('')
-                                         else IO.PlayMusic(iLevel.ID);
-                           end;
-
-    255 {COMMAND_INVALID} :;
-    COMMAND_YIELD        :;
-    else UI.Msg('Unknown command. Press "?" for help.');
-  end;
-  UI.Focus( FPosition );
-  UpdateVisual;
+    HandleCommand( iCommand, iAlt );
 except
   on e : Exception do
   begin
