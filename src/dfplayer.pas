@@ -870,6 +870,8 @@ begin
     COMMAND_LOOK      : begin UI.Msg( '-' ); UI.LookMode end;
     COMMAND_ALTFIRE   : doFire( True );
     COMMAND_FIRE      : doFire();
+    COMMAND_ALTRELOAD : ActionAltReload;
+    COMMAND_RELOAD    : ActionReload;
     COMMAND_USE       : ActionUse( nil, False );
     COMMAND_ALTPICKUP : ActionUse( nil, True );
     COMMAND_PLAYERINFO: doScreen;
@@ -879,19 +881,13 @@ begin
       doQuit(True);
     end;
     COMMAND_SAVE      : doSave;
+
     COMMAND_MSCRUP,
     COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
+    COMMAND_MFIRE     : ActionFire( False, IO.MTarget, Inv.Slot[ efWeapon ] );
+    COMMAND_MALTFIRE  : ActionAltFire( False, IO.MTarget, Inv.Slot[ efWeapon ] );
+    COMMAND_MATTACK   : Attack( FPosition + NewDirectionSmooth( FPosition, IO.MTarget ) );
 
-    COMMAND_MRIGHT    : if (IO.MTarget = FPosition) or
-                           ((Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) and (not (Inv.Slot[efWeapon].GetFlag(IF_NOAMMO))) and (Inv.Slot[ efWeapon ].Ammo = 0))  then
-                          if aAlt
-                            then ActionAltReload
-                            else ActionReload
-                        else if (Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) then
-                          if aAlt
-                            then ActionAltFire( False, IO.MTarget, Inv.Slot[ efWeapon ] )
-                            else ActionFire( False, IO.MTarget, Inv.Slot[ efWeapon ] )
-                        else Attack( FPosition + NewDirectionSmooth( FPosition, IO.MTarget ) );
     COMMAND_TRAITS    : IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );
     COMMAND_TACTIC    : if not (BF_BERSERK in FFlags) then
                           if FTactic.Change then
@@ -977,6 +973,7 @@ try
     then iCommand := IO.GetCommand
     else UI.MsgUpDate;
 
+  // === MOUSE HANDLING ===
   if iCommand in [ COMMAND_MLEFT, COMMAND_MRIGHT ] then
     iAlt := VKMOD_ALT in IO.Driver.GetModKeyState;
 
@@ -986,6 +983,7 @@ try
       else iCommand := COMMAND_EQUIPMENT;
 
   if iCommand = COMMAND_MLEFT then
+  begin
     if IO.MTarget = FPosition then
       if iAlt then iCommand := COMMAND_INVENTORY
       else
@@ -1021,8 +1019,28 @@ try
         UI.Msg('You don''t know how to get there!');
         Exit;
       end;
+  end;
 
-    HandleCommand( iCommand, iAlt );
+  if iCommand = COMMAND_MRIGHT then
+  begin
+    if (IO.MTarget = FPosition) or
+      ((Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) and (not (Inv.Slot[efWeapon].GetFlag(IF_NOAMMO))) and (Inv.Slot[ efWeapon ].Ammo = 0))  then
+    begin
+      if iAlt
+        then iCommand := COMMAND_ALTRELOAD
+        else iCommand := COMMAND_RELOAD;
+    end
+    else if (Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) then
+    begin
+      if iAlt
+        then iCommand := COMMAND_MALTFIRE
+        else iCommand := COMMAND_MFIRE;
+    end
+    else iCommand := COMMAND_MATTACK;
+  end;
+  // === MOUSE HANDLING END ===
+
+  HandleCommand( iCommand, iAlt );
 except
   on e : Exception do
   begin
