@@ -347,6 +347,8 @@ repeat
     FLevel.PreEnter;
     repeat
       FLevel.Tick;
+      if State = DSPlaying then
+        Player.AIAction;
     until State <> DSPlaying;
     if State in [ DSNextLevel, DSSaving ] then
       FLevel.Leave;
