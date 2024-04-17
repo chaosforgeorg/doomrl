@@ -723,7 +723,19 @@ var iLevel      : TLevel;
 begin
   iLevel := TLevel( Parent );
 
-  if ( aCommand in [ COMMAND_WAIT ] ) then
+  if ( aCommand = COMMAND_DROP ) then
+  begin
+    iItem := Inv.Choose([],'drop');
+    if iItem = nil then Exit;
+  end;
+
+  if ( aCommand in [ COMMAND_DROP ] ) then
+  begin
+    HandleCommand( TCommand.Create( aCommand, iItem ) );
+    Exit;
+  end;
+
+  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER, COMMAND_DROP ] ) then
   begin
     HandleCommand( TCommand.Create( aCommand ) );
     Exit;
@@ -743,8 +755,8 @@ begin
     end;
 
 
-    if FRun.Active
-      then
+    if FRun.Active then
+    begin
         if FPathRun then
         begin
           if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
@@ -757,7 +769,8 @@ begin
           FPath.Start := FPath.Start.Child;
         end
         else iDir := FRun.Dir
-      else iDir := CommandDirection( aCommand );
+    end
+    else iDir := CommandDirection( aCommand );
 
     if iDir.code = 5 then
     begin
@@ -864,11 +877,8 @@ begin
            doActDoors;
       end;
     end;
-    COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
-    COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
     COMMAND_ESCAPE    : if GodMode then begin Doom.SetState( DSQuit ); Exit; end;
     COMMAND_UNLOAD    : doUnLoad;
-    COMMAND_ENTER     : iLevel.CallHook( Position, CellHook_OnExit );
     COMMAND_PICKUP    : ActionPickup;
     COMMAND_DROP      : doDrop;
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
@@ -904,9 +914,10 @@ begin
 
     COMMAND_SWAPWEAPON   : ActionQuickSwap;
 
+// TODO: These are UI actions not commands
     COMMAND_EXAMINENPC   : ExamineNPC;
     COMMAND_EXAMINEITEM  : ExamineItem;
-
+    COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
     COMMAND_SOUNDTOGGLE  : SoundOff := not SoundOff;
     COMMAND_MUSICTOGGLE  : begin
                              MusicOff := not MusicOff;
