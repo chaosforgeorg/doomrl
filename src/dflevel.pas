@@ -1038,6 +1038,7 @@ procedure TLevel.Tick;
 var iNode : TNode;
 begin
   FActiveBeing := nil;
+  Player.LastTurnDodge := False;
   repeat
 
     Inc(LTime);
@@ -1083,7 +1084,10 @@ begin
 
   until ( Doom.State <> DSPlaying ) or ( Player.SCount > 5000 );
   if Doom.State = DSPlaying then
+  begin
+    CRASHMODE    := False;
     FActiveBeing := Player;
+  end;
 end;
 
 procedure TLevel.NukeTick;

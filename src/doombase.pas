@@ -348,7 +348,14 @@ repeat
     repeat
       FLevel.Tick;
       if State = DSPlaying then
-        Player.AIAction;
+      begin
+        if not Player.PlayerTick then Break;
+        repeat 
+          Player.AIAction;
+        until ( State <> DSPlaying ) or ( Player.SCount < 5000 );
+        if State = DSPlaying then
+          FLevel.CalculateVision( Player.Position );
+      end;
     until State <> DSPlaying;
     if State in [ DSNextLevel, DSSaving ] then
       FLevel.Leave;

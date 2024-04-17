@@ -71,6 +71,7 @@ TPlayer = class(TBeing)
   procedure Initialize; reintroduce;
   constructor CreateFromStream( Stream: TStream ); override;
   procedure WriteToStream( Stream: TStream ); override;
+  function PlayerTick : Boolean;
   procedure AIAction;
   procedure LevelEnter;
   procedure doUpgradeTrait;
@@ -683,6 +684,24 @@ begin
   FScore      := -100000;
 end;
 
+function TPlayer.PlayerTick : Boolean;
+var iThisUID    : DWord;
+begin
+  iThisUID := UID;
+  TLevel(Parent).CallHook( FPosition, Self, CellHook_OnEnter );
+  if UIDs[ iThisUID ] = nil then Exit( False );
+
+  UI.WaitForAnimation;
+  MasterDodge := False;
+  FAffects.Tick;
+  if Doom.State <> DSPlaying then Exit( False );
+  FTactic.Tick;
+  Inv.EqTick;
+  FLastPos := FPosition;
+  FMeleeAttack := False;
+  Exit( True );
+end;
+
 procedure TPlayer.AIAction;
 var iThisUID    : DWord;
     iLevel      : TLevel;
@@ -702,24 +721,11 @@ var iThisUID    : DWord;
       Exit( False );
     end;
 begin
-  FMeleeAttack := False;
-  iThisUID := UID;
-  TLevel(Parent).CallHook( FPosition, Self, CellHook_OnEnter );
-  if UIDs[ iThisUID ] = nil then Exit;
-
-  iLevel := TLevel(Parent);
-  UI.WaitForAnimation;
-  MasterDodge := False;
-  FAffects.Tick;
-  FLastPos := FPosition;
-  if Doom.State <> DSPlaying then Exit;
-  FTactic.Tick;
-  Inv.EqTick;
-repeat
   iCommand := 0;
   // FArmor color //
   StatusEffect := FAffects.getEffect;
   UI.Focus( FPosition );
+  iLevel := TLevel( Parent );
   iLevel.CalculateVision( FPosition );
   if GraphicsVersion then
     UI.GameUI.UpdateMinimap;
@@ -810,13 +816,13 @@ try
         else
         begin
           UI.Msg('Can''t get there!');
-          continue;
+          Exit;
         end;
       end
       else
       begin
         UI.Msg('You don''t know how to get there!');
-        continue;
+        Exit;
       end;
 
   if ( iCommand in COMMANDS_MOVE ) or FRun.Active then
@@ -828,7 +834,7 @@ try
       UI.Msg('You can''t!');
       FPathRun := False;
       FRun.Stop;
-      continue;
+      Exit;
     end;
 
     
@@ -840,7 +846,7 @@ try
           begin
             FPathRun := False;
             FRun.Stop;
-            Continue;
+            Exit;
           end;
           iDir := NewDirection( FPosition, FPath.Start.Coord );
           FPath.Start := FPath.Start.Child;
@@ -852,7 +858,7 @@ try
     begin
       if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
       Dec( FSpeedCount, 1000 );
-      Break;
+      Exit;
     end;
                
     iMove := FPosition + iDir;
@@ -867,7 +873,7 @@ try
     begin
       FPathRun := False;
       FRun.Stop;
-      Continue;
+      Exit;
     end;
     
     case iMoveResult of
@@ -878,7 +884,7 @@ try
            else
            begin
              if Option_Blindmode then UI.Msg( 'You bump into a wall.' );
-             Continue;
+             Exit;
            end;
          end;
        MoveOk :
@@ -937,7 +943,7 @@ try
       begin
         FPathRun := False;
         FRun.Stop;
-        continue;
+        Exit;
       end;
   end
   else
@@ -1024,11 +1030,6 @@ except
     CRASHMODE := True;
   end;
 end;
-until (FSpeedCount < 5000) or (Doom.State <> DSPlaying);
-  CRASHMODE := False;
-  LastTurnDodge := False;
-  //UI.WaitForAnimation;
-  iLevel.CalculateVision( FPosition );
 end;
 
 procedure TPlayer.LevelEnter;
