@@ -76,8 +76,6 @@ TPlayer = class(TBeing)
   procedure AIAction;
   procedure LevelEnter;
   procedure doUpgradeTrait;
-  function doAct( aFlagID : byte; const aActName : string ) : Boolean;
-  function doActDoors : Boolean;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
   procedure doScreen;
   function doQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
@@ -448,79 +446,6 @@ begin
   FRun.Start( CommandDirection(Key) );
 end;
 
-function TPlayer.doAct( aFlagID : byte; const aActName : string) : Boolean;
-var iLevel  : TLevel;
-    iDir    : TDirection;
-    iScan   : TCoord2D;
-    iAct    : TCoord2D;
-    iCount  : byte;
-begin
-  iLevel := TLevel(Parent);
-  iCount := 0;
-  for iScan in NewArea( FPosition, 1 ).Clamped( iLevel.Area ) do
-    if iLevel.cellFlagSet(iScan, aFlagID) and iLevel.isEmpty( iScan ,[EF_NOITEMS,EF_NOBEINGS] ) then
-    begin
-      Inc(iCount);
-      iAct := iScan;
-    end;
-    
-  if iCount = 0 then Exit( Fail( 'There''s no door you can %s here.', [ aActName ] ) );
-
-  if iCount > 1 then
-  begin
-    iDir := UI.ChooseDirection(Capitalized(aActName)+' door');
-    if iDir.code = DIR_CENTER then Exit;
-    iAct := FPosition + iDir;
-  end;
-
-  if iLevel.isProperCoord( iAct ) and iLevel.cellFlagSet( iAct, aFlagID )
-    then iLevel.CallHook( iAct, Self, CellHook_OnAct )
-    else Exit( Fail( 'You can''t %s that.', [ aActName ] ) );
-  Exit( True );
-end;
-
-
-function TPlayer.doActDoors : Boolean;
-var iLevel  : TLevel;
-    iDir    : TDirection;
-    iScan   : TCoord2D;
-    iAct    : TCoord2D;
-    iCount  : byte;
-begin
-  iLevel := TLevel(Parent);
-  iCount := 0;
-  for iScan in NewArea( FPosition, 1 ).Clamped( iLevel.Area ) do
-    if ( iScan <> FPosition ) and ( iLevel.cellFlagSet(iScan, CF_OPENABLE) or iLevel.cellFlagSet(iScan, CF_CLOSABLE) ) then
-    begin
-      Inc(iCount);
-      iAct := iScan;
-    end;
-
-  if iCount = 0 then Exit( Fail( 'There''s nothing you can act upon here.', [] ) );
-
-  if iCount > 1 then
-  begin
-    iDir := UI.ChooseDirection('action');
-    if iDir.code = DIR_CENTER then Exit;
-    iAct := FPosition + iDir;
-  end;
-
-  if iLevel.isProperCoord( iAct ) then
-  begin
-    if iLevel.cellFlagSet( iAct, CF_CLOSABLE ) or
-      iLevel.cellFlagSet( iAct, CF_OPENABLE )
-      then
-      begin
-        if not iLevel.isEmpty( iAct ,[EF_NOITEMS,EF_NOBEINGS] ) then
-          Exit( Fail( 'There''s something in the way!', [] ) );
-        iLevel.CallHook( iAct, Self, CellHook_OnAct );
-      end
-      else Exit( Fail( 'You can''t do that!', [] ) );
-    Exit( True );
-  end;
-  Exit( False );
-end;
-
 procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem ) ;
 var iKillClass : AnsiString;
 begin
@@ -666,6 +591,10 @@ var iLevel      : TLevel;
     iTempSC     : LongInt;
     iID         : AnsiString;
     iName       : AnsiString;
+    iCount      : Byte;
+    iFlag       : byte;
+    iScan       : TCoord2D;
+    iTarget     : TCoord2D;
 
   function RunStopNear : boolean;
   begin
@@ -678,6 +607,7 @@ var iLevel      : TLevel;
 
 begin
   iLevel := TLevel( Parent );
+  iFlag  := 0;
 
   // Handle commands that should be handled by the UI
   // TODO: Fix
@@ -708,12 +638,85 @@ begin
   if ( aCommand = COMMAND_ACTION ) then 
   begin
     if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
-//      iLevel.CallHook( Position, CellHook_OnExit )
+      aCommand := COMMAND_ENTER
     else
     begin
         if ( iLevel.Item[ FPosition ] <> nil ) and ( iLevel.Item[ FPosition ].isLever ) then
            aCommand := COMMAND_ALTPICKUP 
     end;
+  end;
+
+  if ( aCommand = COMMAND_OPEN ) then 
+  begin
+    iID := 'open';
+    aCommand := COMMAND_ACTION;
+    iFlag := CF_OPENABLE;
+  end;
+
+  if ( aCommand = COMMAND_CLOSE ) then
+  begin
+    iID := 'close';
+    aCommand := COMMAND_ACTION;
+    iFlag := CF_CLOSABLE;
+  end;
+
+  if ( aCommand = COMMAND_ACTION ) then
+  begin
+    if iFlag = 0 then
+    begin
+      for iScan in NewArea( FPosition, 1 ).Clamped( iLevel.Area ) do
+        if ( iScan <> FPosition ) and ( iLevel.cellFlagSet(iScan, CF_OPENABLE) or iLevel.cellFlagSet(iScan, CF_CLOSABLE) ) then
+        begin
+          Inc(iCount);
+          iTarget := iScan;
+        end;
+    end
+    else
+      for iScan in NewArea( FPosition, 1 ).Clamped( iLevel.Area ) do
+        if iLevel.cellFlagSet( iScan, iFlag ) and iLevel.isEmpty( iScan ,[EF_NOITEMS,EF_NOBEINGS] ) then
+        begin
+          Inc(iCount);
+          iTarget := iScan;
+        end;
+    if iCount = 0 then
+    begin
+      if iID = ''
+        then Fail( 'There''s nothing you can act upon here.', [] )
+        else Fail( 'There''s no door you can %s here.', [ iID ] );
+      Exit;
+    end;
+
+    if iCount > 1 then
+    begin
+      if iID = ''
+        then iDir := UI.ChooseDirection('action')
+        else iDir := UI.ChooseDirection(Capitalized(iID)+' door');
+      if iDir.code = DIR_CENTER then Exit;
+      iTarget := FPosition + iDir;
+    end;
+
+    if iLevel.isProperCoord( iTarget ) then
+    begin
+      if ( (iFlag <> 0) and iLevel.cellFlagSet( iTarget, iFlag ) ) or
+          ( (iFlag = 0) and ( iLevel.cellFlagSet( iTarget, CF_CLOSABLE ) or iLevel.cellFlagSet( iTarget, CF_OPENABLE ) ) )
+          then 
+          begin
+            if not iLevel.isEmpty( iTarget ,[EF_NOITEMS,EF_NOBEINGS] ) then
+            begin
+              Fail( 'There''s something in the way!', [] );
+              Exit;
+            end;
+            // SUCCESS
+          end
+          else
+          begin
+            if iID = ''
+              then Fail( 'You can''t do that!', [] )
+              else Fail( 'You can''t %s that.', [ iID ] );
+            Exit;
+          end;
+    end
+    else Exit;
   end;
 
   if ( aCommand = COMMAND_USE ) then
@@ -763,6 +766,13 @@ begin
     iItem := Inv.Choose([],'drop');
     if iItem = nil then Exit;
   end;
+
+  if ( aCommand in [ COMMAND_ACTION ] ) then
+  begin
+    HandleCommand( TCommand.Create( aCommand, iTarget ) );
+    Exit;
+  end;
+
 
   if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD, COMMAND_USE ] ) then
   begin
@@ -901,16 +911,8 @@ begin
   end
   else
   case aCommand of
-    COMMAND_ACTION    : begin
-      if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
-        iLevel.CallHook( Position, CellHook_OnExit )
-      else
-        doActDoors;
-    end;
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
     COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
-    COMMAND_OPEN      : doAct( CF_OPENABLE, 'open' );
-    COMMAND_CLOSE     : doAct( CF_CLOSABLE, 'close' );
     COMMAND_ALTFIRE   : doFire( True );
     COMMAND_FIRE      : doFire();
     COMMAND_MSCRUP,

@@ -1275,6 +1275,7 @@ begin
     COMMAND_USE       : Exit( ActionUse( aCommand.Item ) );
     COMMAND_DROP      : Exit( ActionDrop( aCommand.Item ) );
     COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
+    COMMAND_ACTION    : TLevel( Parent ).CallHook( aCommand.Target, Self, CellHook_OnAct );
     COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
     COMMAND_ALTRELOAD : Exit( ActionAltReload );
     COMMAND_RELOAD    : Exit( ActionReload );
