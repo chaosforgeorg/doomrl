@@ -72,15 +72,6 @@ begin
   Result := 0;
 end;
 
-function lua_command_fire(L: Plua_State): Integer; cdecl;
-var State : TLuaState;
-begin
-  State.Init(L);
-  if Player.SCount < 5000 then Exit(0);
-  Player.doFire( State.ToBoolean(1) );
-  Result := lua_yield( L, 0 );
-end;
-
 function lua_command_reload(L: Plua_State): Integer; cdecl;
 var State : TLuaState;
 begin
@@ -167,7 +158,6 @@ begin
   State.Register( 'command', 'messages',     @lua_command_messages );
   State.Register( 'command', 'assemblies',   @lua_command_assemblies);
   State.Register( 'command', 'reload',       @lua_command_reload );
-  State.Register( 'command', 'fire',         @lua_command_fire );
   State.Register( 'command', 'use_item',     @lua_command_use_item );
 
   if ForceNoNet then Option_NetworkConnection := False;

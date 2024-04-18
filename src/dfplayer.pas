@@ -79,7 +79,7 @@ TPlayer = class(TBeing)
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
   procedure doScreen;
   function doQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
-  procedure doFire( aAlternative : Boolean = False );
+  procedure doFire;
   procedure doQuit( aNoConfirm : Boolean = False );
   procedure doRun;
   procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); override;
@@ -523,12 +523,12 @@ begin
   Exit( True );
 end;
 
-procedure TPlayer.doFire( aAlternative : Boolean = False );
+procedure TPlayer.doFire;
 var iDirection : TDirection;
     iWeapon    : TItem;
 begin
   iWeapon := Inv.Slot[ efWeapon ];
-  if (not aAlternative) and (iWeapon <> nil) and iWeapon.isMelee then
+  if (iWeapon <> nil) and iWeapon.isMelee then
   begin
     iDirection := UI.ChooseDirection('Melee attack');
     if (iDirection.code = DIR_CENTER) then Exit;
@@ -536,9 +536,7 @@ begin
     Exit;
   end;
 
-  if aAlternative
-     then ActionAltFire( True, FTargetPos{unused}, iWeapon )
-     else ActionFire( True, FTargetPos{unused}, iWeapon );
+  ActionFire( True, FTargetPos{unused}, iWeapon );
 end;
 
 function TPlayer.doSave : Boolean;
@@ -913,12 +911,12 @@ begin
   case aCommand of
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
     COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
-    COMMAND_ALTFIRE   : doFire( True );
+    COMMAND_ALTFIRE   : ActionAltFire( True, FTargetPos{unused}, Inv.Slot[ efWeapon ] );
     COMMAND_FIRE      : doFire();
-    COMMAND_MSCRUP,
-    COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
     COMMAND_MFIRE     : ActionFire( False, IO.MTarget, Inv.Slot[ efWeapon ] );
     COMMAND_MALTFIRE  : ActionAltFire( False, IO.MTarget, Inv.Slot[ efWeapon ] );
+    COMMAND_MSCRUP,
+    COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
     COMMAND_MATTACK   : Attack( FPosition + NewDirectionSmooth( FPosition, IO.MTarget ) );
 
     COMMAND_TACTIC    : if not (BF_BERSERK in FFlags) then
