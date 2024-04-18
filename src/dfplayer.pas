@@ -80,7 +80,6 @@ TPlayer = class(TBeing)
   function doActDoors : Boolean;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
   procedure doScreen;
-  procedure doDrop;
   function doQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
   procedure doFire( aAlternative : Boolean = False );
   procedure doQuit( aNoConfirm : Boolean = False );
@@ -435,13 +434,6 @@ begin
   inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource );
 end;
 
-procedure TPlayer.doDrop;
-var Item : TItem;
-begin
-  Item := Inv.Choose([],'drop');
-  if Item <> nil then ActionDrop( Item );
-end;
-
 procedure TPlayer.doRun;
 var Key : Byte;
 begin
@@ -700,6 +692,7 @@ begin
     end;
     COMMAND_SAVE      : doSave;
     COMMAND_TRAITS    : IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );
+    COMMAND_RUNMODE   : doRun;
 
     COMMAND_EXAMINENPC   : ExamineNPC;
     COMMAND_EXAMINEITEM  : ExamineItem;
@@ -710,6 +703,34 @@ begin
                              if MusicOff then IO.PlayMusic('')
                                          else IO.PlayMusic(iLevel.ID);
                            end;
+  end;
+
+  if ( aCommand = COMMAND_ACTION ) then 
+  begin
+    if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
+//      iLevel.CallHook( Position, CellHook_OnExit )
+    else
+    begin
+        if ( iLevel.Item[ FPosition ] <> nil ) and ( iLevel.Item[ FPosition ].isLever ) then
+           aCommand := COMMAND_ALTPICKUP 
+    end;
+  end;
+
+  if ( aCommand = COMMAND_USE ) then
+  begin
+    iItem := Inv.Choose([ITEMTYPE_PACK],'use');
+    if iItem = nil then Exit;
+  end;
+
+  if ( aCommand = COMMAND_ALTPICKUP ) then
+  begin
+    iItem := TLevel(Parent).Item[ FPosition ];
+    if ( iItem = nil ) or (not (iItem.isLever or iItem.isPack or iItem.isWearable) ) then
+    begin
+      Fail('There''s nothing to use on the ground!', [] );
+      Exit;
+    end;
+    aCommand := COMMAND_USE;
   end;
 
   if ( aCommand = COMMAND_UNLOAD ) then
@@ -743,13 +764,13 @@ begin
     if iItem = nil then Exit;
   end;
 
-  if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD ] ) then
+  if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD, COMMAND_USE ] ) then
   begin
     HandleCommand( TCommand.Create( aCommand, iItem, iID ) );
     Exit;
   end;
 
-  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD ] ) then
+  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD, COMMAND_PICKUP ] ) then
   begin
     HandleCommand( TCommand.Create( aCommand ) );
     Exit;
@@ -884,23 +905,14 @@ begin
       if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
         iLevel.CallHook( Position, CellHook_OnExit )
       else
-      begin
-        if ( iLevel.Item[ FPosition ] <> nil ) and ( iLevel.Item[ FPosition ].isLever ) then
-           ActionUse( nil, True )
-        else
-           doActDoors;
-      end;
+        doActDoors;
     end;
-    COMMAND_PICKUP    : ActionPickup;
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
     COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
     COMMAND_OPEN      : doAct( CF_OPENABLE, 'open' );
     COMMAND_CLOSE     : doAct( CF_CLOSABLE, 'close' );
     COMMAND_ALTFIRE   : doFire( True );
     COMMAND_FIRE      : doFire();
-    COMMAND_USE       : ActionUse( nil, False );
-    COMMAND_ALTPICKUP : ActionUse( nil, True );
-
     COMMAND_MSCRUP,
     COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
     COMMAND_MFIRE     : ActionFire( False, IO.MTarget, Inv.Slot[ efWeapon ] );
@@ -910,8 +922,6 @@ begin
     COMMAND_TACTIC    : if not (BF_BERSERK in FFlags) then
                           if FTactic.Change then
                             Dec(FSpeedCount,100);
-    COMMAND_RUNMODE   : doRun;
-
     COMMAND_SWAPWEAPON   : ActionQuickSwap;
 
     255 {COMMAND_INVALID} :;

@@ -104,7 +104,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem; aAltFire : TAltFire = ALT_NONE ) : Boolean;
     function ActionAltFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem ) : Boolean;
     function ActionPickup : Boolean;
-    function ActionUse( Item : TItem; aFromFloor : Boolean ) : Boolean;
+    function ActionUse( Item : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
 
 
@@ -876,7 +876,7 @@ begin
       begin
         if isPlayer then UI.Msg('No time to waste.');
         CallHook( Hook_OnPickUpItem, [item] );
-        Exit( ActionUse( item, False ) );
+        Exit( ActionUse( item ) );
       end;
 
   if Inv.isFull then Exit( Fail( 'You don''t have enough room in your backpack.', [] ) );
@@ -891,7 +891,7 @@ begin
   Exit( True );
 end;
 
-function TBeing.ActionUse ( Item : TItem; aFromFloor : Boolean ) : Boolean;
+function TBeing.ActionUse ( Item : TItem ) : Boolean;
 var isOnGround : Boolean;
     isLever    : Boolean;
     isPack     : Boolean;
@@ -903,28 +903,8 @@ var isOnGround : Boolean;
     iUID       : TUID;
 	
 begin
-  isFailed := False;
-  isOnGround := False;
-  if aFromFloor then
-  begin
-    Item := TLevel(Parent).Item[ FPosition ];
-    if ( Item <> nil ) and (Item.isLever or Item.isPack or Item.isWearable)
-	then isOnGround := True
-    else
-      Exit( Fail('There''s nothing to use on the ground!', [] ) );
-  end;
-
-  if Item = nil then
-  begin
-    if isPlayer then
-    begin
-      Item := Inv.Choose([ITEMTYPE_PACK],'use');
-      if Item = nil then Exit( False );
-    end
-    else
-      Exit( False );
-  end;
-
+  isFailed   := False;
+  isOnGround := TLevel(Parent).Item[ FPosition ] = Item;
   if Item = nil then Exit( false );
   if (not Item.isLever) and (not Item.isPack) and (not Item.isAmmoPack) and (not Item.isWearable) then Exit( False );
   if ((not Item.isWearable) and (not Item.CallHookCheck( Hook_OnUseCheck,[Self] ))) or (Item.isWearable and ( (not Item.CallHookCheck( Hook_OnEquipCheck,[Self] )) or (not Item.CallHookCheck( Hook_OnPickupCheck,[Self] )) )) then Exit( False );
@@ -1292,11 +1272,13 @@ end;
 function TBeing.HandleCommand( aCommand : TCommand ) : Boolean; 
 begin
   case aCommand.Command of
+    COMMAND_USE       : Exit( ActionUse( aCommand.Item ) );
     COMMAND_DROP      : Exit( ActionDrop( aCommand.Item ) );
     COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
     COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
     COMMAND_ALTRELOAD : Exit( ActionAltReload );
     COMMAND_RELOAD    : Exit( ActionReload );
+    COMMAND_PICKUP    : Exit( ActionPickup );
     COMMAND_UNLOAD    : ActionUnLoad( aCommand.Item, aCommand.ID );
   else Exit( False );
   end;
@@ -2469,7 +2451,7 @@ var State  : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionUse( State.ToObjectOrNil(2) as TItem, State.ToBoolean(3, False ) ) );
+  State.Push( Being.ActionUse( State.ToObjectOrNil(2) as TItem ) );
   Result := 1;
 end;
 
