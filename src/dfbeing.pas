@@ -1280,9 +1280,11 @@ end;
 function TBeing.HandleCommand( aCommand : TCommand ) : Boolean; 
 begin
   case aCommand.Command of
-    COMMAND_DROP   : Exit( ActionDrop( aCommand.Item ) );
-    COMMAND_WAIT   : Dec( FSpeedCount, 1000 );
-    COMMAND_ENTER  : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
+    COMMAND_DROP      : Exit( ActionDrop( aCommand.Item ) );
+    COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
+    COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
+    COMMAND_ALTRELOAD : Exit( ActionAltReload );
+    COMMAND_RELOAD    : Exit( ActionReload );
   else Exit( False );
   end;
   Exit( True );

@@ -723,6 +723,32 @@ var iLevel      : TLevel;
 begin
   iLevel := TLevel( Parent );
 
+  // Handle commands that should be handled by the UI
+  // TODO: Fix
+  case aCommand of
+    COMMAND_ESCAPE    : if GodMode then begin Doom.SetState( DSQuit ); Exit; end;
+    COMMAND_LOOK      : begin UI.Msg( '-' ); UI.LookMode end;
+    COMMAND_PLAYERINFO: doScreen;
+    COMMAND_QUIT      : doQuit;
+    COMMAND_HARDQUIT  : begin
+      Option_MenuReturn := False;
+      doQuit(True);
+    end;
+    COMMAND_SAVE      : doSave;
+    COMMAND_TRAITS    : IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );
+
+    COMMAND_EXAMINENPC   : ExamineNPC;
+    COMMAND_EXAMINEITEM  : ExamineItem;
+    COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
+    COMMAND_SOUNDTOGGLE  : SoundOff := not SoundOff;
+    COMMAND_MUSICTOGGLE  : begin
+                             MusicOff := not MusicOff;
+                             if MusicOff then IO.PlayMusic('')
+                                         else IO.PlayMusic(iLevel.ID);
+                           end;
+  end;
+
+
   if ( aCommand = COMMAND_DROP ) then
   begin
     iItem := Inv.Choose([],'drop');
@@ -735,7 +761,7 @@ begin
     Exit;
   end;
 
-  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER ] ) then
+  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD ] ) then
   begin
     HandleCommand( TCommand.Create( aCommand ) );
     Exit;
@@ -877,27 +903,16 @@ begin
            doActDoors;
       end;
     end;
-    COMMAND_ESCAPE    : if GodMode then begin Doom.SetState( DSQuit ); Exit; end;
     COMMAND_UNLOAD    : doUnLoad;
     COMMAND_PICKUP    : ActionPickup;
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
     COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
     COMMAND_OPEN      : doAct( CF_OPENABLE, 'open' );
     COMMAND_CLOSE     : doAct( CF_CLOSABLE, 'close' );
-    COMMAND_LOOK      : begin UI.Msg( '-' ); UI.LookMode end;
     COMMAND_ALTFIRE   : doFire( True );
     COMMAND_FIRE      : doFire();
-    COMMAND_ALTRELOAD : ActionAltReload;
-    COMMAND_RELOAD    : ActionReload;
     COMMAND_USE       : ActionUse( nil, False );
     COMMAND_ALTPICKUP : ActionUse( nil, True );
-    COMMAND_PLAYERINFO: doScreen;
-    COMMAND_QUIT      : doQuit;
-    COMMAND_HARDQUIT  : begin
-      Option_MenuReturn := False;
-      doQuit(True);
-    end;
-    COMMAND_SAVE      : doSave;
 
     COMMAND_MSCRUP,
     COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
@@ -905,24 +920,12 @@ begin
     COMMAND_MALTFIRE  : ActionAltFire( False, IO.MTarget, Inv.Slot[ efWeapon ] );
     COMMAND_MATTACK   : Attack( FPosition + NewDirectionSmooth( FPosition, IO.MTarget ) );
 
-    COMMAND_TRAITS    : IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );
     COMMAND_TACTIC    : if not (BF_BERSERK in FFlags) then
                           if FTactic.Change then
                             Dec(FSpeedCount,100);
     COMMAND_RUNMODE   : doRun;
 
     COMMAND_SWAPWEAPON   : ActionQuickSwap;
-
-// TODO: These are UI actions not commands
-    COMMAND_EXAMINENPC   : ExamineNPC;
-    COMMAND_EXAMINEITEM  : ExamineItem;
-    COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
-    COMMAND_SOUNDTOGGLE  : SoundOff := not SoundOff;
-    COMMAND_MUSICTOGGLE  : begin
-                             MusicOff := not MusicOff;
-                             if MusicOff then IO.PlayMusic('')
-                                         else IO.PlayMusic(iLevel.ID);
-                           end;
 
     255 {COMMAND_INVALID} :;
     COMMAND_YIELD        :;
