@@ -105,7 +105,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionAltFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem ) : Boolean;
     function ActionPickup : Boolean;
     function ActionUse( Item : TItem; aFromFloor : Boolean ) : Boolean;
-    function ActionUnLoad( aItem : TItem ) : Boolean;
+    function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
 
 
     // Always returns False.
@@ -988,11 +988,23 @@ begin
   Exit( not isFailed );
 end;
 
-function TBeing.ActionUnLoad ( aItem : TItem ) : Boolean;
+function TBeing.ActionUnLoad ( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
 var iAmount : Integer;
     iName   : AnsiString;
 begin
   if aItem = nil then Exit( False );
+  if ( aDisassembleID <> '' ) then
+  begin
+    iName   := aItem.Name;
+    FreeAndNil( aItem );
+    aItem := TItem.Create( aDisassembleID );
+    playSound(aItem.Sounds.Reload);
+    if not Inv.isFull
+       then Inv.Add( aItem )
+       else TLevel(Parent).DropItem( aItem, FPosition );
+    Exit( Success( 'You disassemble the %s.',[iName], ActionCostReload ) );
+  end;
+
   if not (aItem.isRanged or aItem.isAmmoPack) then Exit( Fail( 'This item cannot be unloaded!', [] ) );
   if aItem.Flags[ IF_NOUNLOAD ] then Exit( Fail( 'This weapon cannot be unloaded!', []) );
   if aItem.Flags[ IF_RECHARGE ] then Exit( Fail( 'This weapon is self powered!', []) );
@@ -1285,6 +1297,7 @@ begin
     COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
     COMMAND_ALTRELOAD : Exit( ActionAltReload );
     COMMAND_RELOAD    : Exit( ActionReload );
+    COMMAND_UNLOAD    : ActionUnLoad( aCommand.Item, aCommand.ID );
   else Exit( False );
   end;
   Exit( True );

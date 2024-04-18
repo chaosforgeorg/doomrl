@@ -79,7 +79,6 @@ TPlayer = class(TBeing)
   function doAct( aFlagID : byte; const aActName : string ) : Boolean;
   function doActDoors : Boolean;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
-  function doUnLoad : Boolean;
   procedure doScreen;
   procedure doDrop;
   function doQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
@@ -410,43 +409,6 @@ begin
      else Exit( Success( 'You prepare the %s instantly!',[ iWeapon.Name ] ) );
 end;
 
-function TPlayer.doUnLoad : Boolean;
-var iItem : TItem;
-    iModID : AnsiString;
-    iName  : AnsiString;
-begin
-  iItem := TLevel(Parent).Item[ FPosition ];
-  if (iItem = nil) or ( not (iItem.isRanged or iItem.isAmmoPack ) ) then
-  begin
-    iItem := Inv.Choose( [ ItemType_Ranged, ItemType_AmmoPack ] , 'unload' );
-    if iItem = nil then Exit( False );
-  end;
-  iName := iItem.Name;
-
-  if iItem.isAmmoPack then
-    if not UI.MsgConfirm('An ammopack might serve better in the Prepared slot. Continuing will unload the ammo destroying the pack. Are you sure?', True)
-       then Exit( False );
-
-  if (not iItem.isAmmoPack) and (BF_SCAVENGER in FFlags) and
-     ((iItem.Ammo = 0) or iItem.Flags[ IF_NOUNLOAD ] or iItem.Flags[ IF_RECHARGE ] or iItem.Flags[ IF_NOAMMO ]) and
-     (iItem.Flags[ IF_EXOTIC ] or iItem.Flags[ IF_UNIQUE ] or iItem.Flags[ IF_ASSEMBLED ] or iItem.Flags[ IF_MODIFIED ]) then
-  begin
-    iModId := LuaSystem.ProtectedCall( ['DoomRL','OnDisassemble'], [ iItem ] );
-    if iModID = '' then Exit( ActionUnload( iItem ) );
-    if UI.MsgConfirm('Do you want to disassemble the '+iName+'?', True) then
-    begin
-      FreeAndNil( iItem );
-      iItem := TItem.Create( iModId );
-      playSound(iItem.Sounds.Reload);
-      if not Inv.isFull
-        then Inv.Add( iItem )
-        else TLevel(Parent).DropItem( iItem, FPosition );
-      Exit( Success( 'You disassemble the %s.',[iName], ActionCostReload ) );
-    end;
-  end;
-  Exit( ActionUnload( iItem ) );
-end;
-
 procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageType: TDamageType; aSource : TItem);
 begin
   if aDamage < 0 then Exit;
@@ -710,6 +672,8 @@ var iLevel      : TLevel;
     iItem       : TItem;
     iMoveResult : TMoveResult;
     iTempSC     : LongInt;
+    iID         : AnsiString;
+    iName       : AnsiString;
 
   function RunStopNear : boolean;
   begin
@@ -748,6 +712,30 @@ begin
                            end;
   end;
 
+  if ( aCommand = COMMAND_UNLOAD ) then
+  begin
+    iItem := TLevel(Parent).Item[ FPosition ];
+    if (iItem = nil) or ( not (iItem.isRanged or iItem.isAmmoPack ) ) then
+    begin
+      iItem := Inv.Choose( [ ItemType_Ranged, ItemType_AmmoPack ] , 'unload' );
+      if iItem = nil then Exit;
+    end;
+    iName := iItem.Name;
+
+    if iItem.isAmmoPack then
+      if not UI.MsgConfirm('An ammopack might serve better in the Prepared slot. Continuing will unload the ammo destroying the pack. Are you sure?', True)
+        then Exit;
+
+    if (not iItem.isAmmoPack) and (BF_SCAVENGER in FFlags) and
+      ((iItem.Ammo = 0) or iItem.Flags[ IF_NOUNLOAD ] or iItem.Flags[ IF_RECHARGE ] or iItem.Flags[ IF_NOAMMO ]) and
+      (iItem.Flags[ IF_EXOTIC ] or iItem.Flags[ IF_UNIQUE ] or iItem.Flags[ IF_ASSEMBLED ] or iItem.Flags[ IF_MODIFIED ]) then
+    begin
+      iID := LuaSystem.ProtectedCall( ['DoomRL','OnDisassemble'], [ iItem ] );
+      if iID <> '' then
+        if not UI.MsgConfirm('Do you want to disassemble the '+iName+'?', True) then
+          iID := '';
+    end;
+  end;
 
   if ( aCommand = COMMAND_DROP ) then
   begin
@@ -755,9 +743,9 @@ begin
     if iItem = nil then Exit;
   end;
 
-  if ( aCommand in [ COMMAND_DROP ] ) then
+  if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD ] ) then
   begin
-    HandleCommand( TCommand.Create( aCommand, iItem ) );
+    HandleCommand( TCommand.Create( aCommand, iItem, iID ) );
     Exit;
   end;
 
@@ -903,7 +891,6 @@ begin
            doActDoors;
       end;
     end;
-    COMMAND_UNLOAD    : doUnLoad;
     COMMAND_PICKUP    : ActionPickup;
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
     COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
