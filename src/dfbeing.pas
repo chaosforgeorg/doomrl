@@ -713,7 +713,7 @@ begin
   iChainFire  := FChainFire;
   FChainFire  := 0;
 
-  if (aWeapon = nil) or (not aWeapon.isRanged) then Exit( Fail( 'You have no ranged weapon.', [] ) );
+  if (aWeapon = nil) or (not aWeapon.isRanged) then Exit( False );
   if aAltFire = ALT_NONE then
     if not aWeapon.CallHookCheck( Hook_OnFire, [Self,false] ) then Exit( False );
 
@@ -798,8 +798,8 @@ var iAlt        : TAltFire;
     iRange      : Byte;
     iLimitRange : Boolean;
 begin
-  if (aWeapon = nil) or (not aWeapon.isWeapon) then Exit( Fail( 'You have no weapon.', [] ) );
-  if aWeapon.AltFire = ALT_NONE then Exit( Fail('This weapon has no alternate fire mode.', [] ) );
+  if (aWeapon = nil) or (not aWeapon.isWeapon) then Exit( False );
+  if aWeapon.AltFire = ALT_NONE then Exit( False );
   if not aWeapon.CallHookCheck( Hook_OnFire, [Self,true] ) then Exit( False );
   iAlt := aWeapon.AltFire;
 

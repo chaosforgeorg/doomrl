@@ -79,7 +79,6 @@ TPlayer = class(TBeing)
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
   procedure doScreen;
   function doQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
-  procedure doFire;
   procedure doQuit( aNoConfirm : Boolean = False );
   procedure doRun;
   procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); override;
@@ -523,22 +522,6 @@ begin
   Exit( True );
 end;
 
-procedure TPlayer.doFire;
-var iDirection : TDirection;
-    iWeapon    : TItem;
-begin
-  iWeapon := Inv.Slot[ efWeapon ];
-  if (iWeapon <> nil) and iWeapon.isMelee then
-  begin
-    iDirection := UI.ChooseDirection('Melee attack');
-    if (iDirection.code = DIR_CENTER) then Exit;
-    Attack( FPosition + iDirection );
-    Exit;
-  end;
-
-  ActionFire( True, FTargetPos{unused}, iWeapon );
-end;
-
 function TPlayer.doSave : Boolean;
 begin
   //if Doom.Difficulty >= DIFF_NIGHTMARE then Exit( Fail( 'There''s no escape from a NIGHTMARE! Stand and fight like a man!', [] ) );
@@ -759,6 +742,29 @@ begin
     end;
   end;
 
+  if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE, COMMAND_MFIRE, COMMAND_MALTFIRE ] ) then
+  begin
+    iItem := Inv.Slot[ efWeapon ];
+    if (iItem = nil) or (not iItem.isWeapon) then begin Fail( 'You have no weapon.', [] ); Exit; end;
+    if (aCommand in [COMMAND_FIRE, COMMAND_MFIRE]) then
+    begin
+      if ( aCommand = COMMAND_FIRE ) and iItem.isMelee then
+      begin
+        iDir := UI.ChooseDirection('Melee attack');
+        if (iDir.code = DIR_CENTER) then Exit;
+        iTarget := FPosition + iDir;
+        aCommand := COMMAND_MELEE;
+      end
+      else
+        if (not iItem.isRanged) then begin Fail( 'You have no ranged weapon.', [] ); Exit; end;
+    end 
+    else
+    begin
+      if iItem.AltFire = ALT_NONE then begin Fail('This weapon has no alternate fire mode.', [] ); Exit; end;
+    end;
+  end;
+
+
   if ( aCommand = COMMAND_DROP ) then
   begin
     iItem := Inv.Choose([],'drop');
@@ -911,10 +917,11 @@ begin
   case aCommand of
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
     COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
-    COMMAND_ALTFIRE   : ActionAltFire( True, FTargetPos{unused}, Inv.Slot[ efWeapon ] );
-    COMMAND_FIRE      : doFire();
-    COMMAND_MFIRE     : ActionFire( False, IO.MTarget, Inv.Slot[ efWeapon ] );
-    COMMAND_MALTFIRE  : ActionAltFire( False, IO.MTarget, Inv.Slot[ efWeapon ] );
+    COMMAND_MELEE     : Attack( iTarget );
+    COMMAND_ALTFIRE   : ActionAltFire( True, FTargetPos{unused}, iItem );
+    COMMAND_FIRE      : ActionFire( True, FTargetPos{unused}, iItem );
+    COMMAND_MFIRE     : ActionFire( False, IO.MTarget, iItem );
+    COMMAND_MALTFIRE  : ActionAltFire( False, IO.MTarget, iItem );
     COMMAND_MSCRUP,
     COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
     COMMAND_MATTACK   : Attack( FPosition + NewDirectionSmooth( FPosition, IO.MTarget ) );
