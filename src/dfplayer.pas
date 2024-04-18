@@ -773,10 +773,13 @@ begin
         
       end;
     end;
-
-
   end;
 
+  if ( aCommand = COMMAND_MATTACK ) then
+  begin
+    aCommand := COMMAND_MELEE;
+    iTarget  := FPosition + NewDirectionSmooth( FPosition, IO.MTarget );
+  end;
 
   if ( aCommand = COMMAND_DROP ) then
   begin
@@ -784,7 +787,7 @@ begin
     if iItem = nil then Exit;
   end;
 
-  if ( aCommand in [ COMMAND_ACTION ] ) then
+  if ( aCommand in [ COMMAND_ACTION, COMMAND_MELEE ] ) then
   begin
     HandleCommand( TCommand.Create( aCommand, iTarget ) );
     Exit;
@@ -934,15 +937,13 @@ begin
   case aCommand of
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
     COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
-    COMMAND_MELEE     : Attack( iTarget );
     COMMAND_ALTFIRE   : ActionFire( True, FTargetPos{unused}, iItem, True );
     COMMAND_FIRE      : ActionFire( True, FTargetPos{unused}, iItem );
     COMMAND_MFIRE     : ActionFire( False, IO.MTarget, iItem );
     COMMAND_MALTFIRE  : ActionFire( False, IO.MTarget, iItem, True );
     COMMAND_MSCRUP,
     COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
-    COMMAND_MATTACK   : Attack( FPosition + NewDirectionSmooth( FPosition, IO.MTarget ) );
-
+    
     COMMAND_TACTIC    : if not (BF_BERSERK in FFlags) then
                           if FTactic.Change then
                             Dec(FSpeedCount,100);
