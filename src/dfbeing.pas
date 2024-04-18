@@ -2404,16 +2404,6 @@ begin
   Result := 1;
 end;
 
-function lua_being_alt_fire(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
-    Being  : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionAltFire( False, State.ToPosition(2), State.ToObject(3) as TItem ) );
-  Result := 1;
-end;
-
 function lua_being_reload(L: Plua_State): Integer; cdecl;
 var State  : TDoomLuaState;
     Being  : TBeing;
@@ -2629,7 +2619,7 @@ begin
   Result := 0;
 end;
 
-const lua_being_lib : array[0..26] of luaL_Reg = (
+const lua_being_lib : array[0..25] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -2650,7 +2640,6 @@ const lua_being_lib : array[0..26] of luaL_Reg = (
       ( name : 'wear';          func : @lua_being_wear),
       ( name : 'attack';        func : @lua_being_attack),
       ( name : 'fire';          func : @lua_being_fire),
-      ( name : 'alt_fire';      func : @lua_being_alt_fire),
       ( name : 'reload';        func : @lua_being_reload),
       ( name : 'alt_reload';    func : @lua_being_alt_reload),
       ( name : 'direct_seek';   func : @lua_being_direct_seek),
