@@ -143,7 +143,7 @@ uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
      dfmap, dflevel, dfoutput,
      doomhooks, doomio, doomspritemap, doomviews, doombase,
-     doomlua, doominventory;
+     doomlua, doominventory, doomcommand;
 
 var MortemText    : Text;
     WritingMortem : Boolean = False;

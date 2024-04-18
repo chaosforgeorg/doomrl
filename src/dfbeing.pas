@@ -7,7 +7,10 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfbeing;
 interface
-uses Classes, SysUtils, doominventory, dfdata, dfoutput, vluatable, vnode, vpath, vmath, math, dfthing, dfitem, vutil, vrltools;
+uses Classes, SysUtils,
+     vluatable, vnode, vpath, vmath, vutil, vrltools,
+     dfdata, dfoutput, dfthing, dfitem,
+     doominventory, doomcommand;
 
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
 
@@ -220,7 +223,7 @@ TBeing = class(TThing,IPathQuery)
 
 implementation
 
-uses vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem,
+uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem,
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio, doomviews;
 

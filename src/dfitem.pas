@@ -105,37 +105,9 @@ TItem  = class( TThing )
 
 procedure SwapItem(var a, b: TItem);
 
-type TCommand = object
-  Command : Byte;
-  Target  : TCoord2D;
-  Item    : TItem;
-
-  class function Create( aCommand : Byte ) : TCommand; static;
-  class function Create( aCommand : Byte; aTarget : TCoord2D ) : TCommand; static;
-  class function Create( aCommand : Byte; aItem : TItem ) : TCommand; static;
-end;
-
 implementation
 
 uses doomlua, doomio, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, dfplayer, doombase, vmath, doomhooks;
-
-class function TCommand.Create( aCommand : Byte ) : TCommand;
-begin
-  Result.Command := aCommand;
-  Result.Target  := NewCoord2D(0,0);
-end;
-
-class function TCommand.Create( aCommand : Byte; aTarget : TCoord2D ) : TCommand;
-begin
-  Result.Command := aCommand;
-  Result.Target  := aTarget;
-end;
-
-class function TCommand.Create( aCommand : Byte; aItem : TItem ) : TCommand;
-begin
-  Result.Command := aCommand;
-  Result.Item    := aItem;
-end;
 
 procedure SwapItem(var a, b: TItem);
 var c : TItem;
