@@ -101,8 +101,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionReload : Boolean;
     function ActionDualReload : Boolean;
     function ActionAltReload : Boolean;
-    function ActionFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem; aAltFire : TAltFire = ALT_NONE ) : Boolean;
-    function ActionAltFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem ) : Boolean;
+    function ActionFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean = False ) : Boolean;
     function ActionPickup : Boolean;
     function ActionUse( Item : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
@@ -697,7 +696,7 @@ begin
   end;
 end;
 
-function TBeing.ActionFire ( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem; aAltFire : TAltFire ) : Boolean;
+function TBeing.ActionFire ( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean ) : Boolean;
 var iFireDesc  : AnsiString;
     iChainFire : Byte;
     iChainOld  : TCoord2D;
@@ -708,14 +707,47 @@ var iFireDesc  : AnsiString;
     iLimitRange: Boolean;
     iRange     : Byte;
     iDist      : Byte;
+    iAltFire   : TAltFire;
 begin
   iChainOld   := FTargetPos;
   iChainFire  := FChainFire;
+  iAltFire    := ALT_NONE;
   FChainFire  := 0;
 
-  if (aWeapon = nil) or (not aWeapon.isRanged) then Exit( False );
-  if aAltFire = ALT_NONE then
-    if not aWeapon.CallHookCheck( Hook_OnFire, [Self,false] ) then Exit( False );
+  if (aWeapon = nil) then Exit( False );
+  if aAltFire then iAltFire := aWeapon.AltFire;
+
+  if iAltFire <> ALT_NONE then 
+  begin
+    if (not aWeapon.isWeapon) then Exit( False );
+    if aWeapon.isMelee then FMeleeAttack := True;
+    if aWeapon.AltFire = ALT_SCRIPT then
+      if not aWeapon.CallHookCheck( Hook_OnAltFire, [Self] ) 
+        then Exit( False );
+
+    if aWeapon.isMelee then
+    begin
+      case aWeapon.AltFire of
+        ALT_THROW  :
+        begin
+          if isPlayer and aChooseTarget then
+          begin
+            iRange      := Missiles[ aWeapon.Missile ].Range;
+            iLimitRange := MF_EXACT in Missiles[ aWeapon.Missile ].Flags;
+            if not Player.doChooseTarget( 'Throw -- Choose target...', iRange, iLimitRange ) then Exit( Fail( 'Throwing canceled.', [] ) );
+            aTarget := FTargetPos;
+          end;
+          // thelaptop: If you can aim it, you should get a bonus for throwing it.
+          SendMissile( aTarget, aWeapon, FBonus.ToHit, FBonus.ToDam + FBonus.ToDamAll );
+          Dec( FSpeedCount, 1000 );
+          Exit( True );
+        end;
+      end;
+      Exit( True );
+    end;
+  end;  
+  
+  if (not aWeapon.isRanged) then Exit( False );
 
   if not aWeapon.Flags[ IF_NOAMMO ] then
   begin
@@ -734,14 +766,14 @@ begin
   if aChooseTarget then
   begin
     iFireDesc := '';
-    case aAltFire of
+    case iAltFire of
       ALT_SCRIPT  : iFireDesc := LuaSystem.Get([ 'items', aWeapon.ID, 'altname' ],'');
       ALT_AIMED   : iFireDesc := 'aimed';
       ALT_SINGLE  : iFireDesc := 'single';
     end;
     if iFireDesc <> '' then iFireDesc := ' (@Y'+iFireDesc+'@>)';
 
-    if aAltFire = ALT_CHAIN then
+    if iAltFire = ALT_CHAIN then
     begin
       case iChainFire of
         0 : iFireDesc := ' (@Ginitial@>)';
@@ -761,7 +793,7 @@ begin
     if iDist > iRange then Exit( Fail( 'Out of range!', [] ) );
   end;
 
-  if (aAltFire = ALT_CHAIN) and ( iChainFire > 0 ) then FTargetPos := iChainOld;
+  if (iAltFire = ALT_CHAIN) and ( iChainFire > 0 ) then FTargetPos := iChainOld;
   FChainFire := iChainFire;
 
   iEnemy    := TLevel(Parent).Being[ aTarget ];
@@ -769,18 +801,18 @@ begin
   if iEnemy <> nil then iEnemyUID := iEnemy.uid;
   iGunKata  := aWeapon.Flags[ IF_PISTOL ] and (BF_GUNKATA in FFlags);
 
-  iFireCost := getFireCost( aAltFire );
+  iFireCost := getFireCost( iAltFire );
   // Gun Kata -- fire effect
-  if iGunKata and isPlayer and Player.LastTurnDodge and (aAltFire = ALT_NONE) then
+  if iGunKata and isPlayer and Player.LastTurnDodge and (iAltFire = ALT_NONE) then
   begin
     iFireCost := iFireCost div 10;
     Player.LastTurnDodge := False;
   end;
   Dec(FSpeedCount,iFireCost);
 
-  if ( not FireRanged( aTarget, aWeapon, aAltFire )) or Player.Dead then Exit;
+  if ( not FireRanged( aTarget, aWeapon, iAltFire )) or Player.Dead then Exit;
   if canDualGun then
-    if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], aAltFire )) or Player.Dead then Exit;
+    if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], iAltFire )) or Player.Dead then Exit;
 
   // Gun Kata -- reload effect
   if iGunKata and (iEnemyUID <> 0) and ( not TLevel(Parent).isAlive( iEnemyUID ) ) then
@@ -791,44 +823,6 @@ begin
       else ActionReload;
     FSpeedCount := iFireCost;
   end;
-end;
-
-function TBeing.ActionAltFire ( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem ) : Boolean;
-var iAlt        : TAltFire;
-    iRange      : Byte;
-    iLimitRange : Boolean;
-begin
-  if (aWeapon = nil) or (not aWeapon.isWeapon) then Exit( False );
-  if aWeapon.AltFire = ALT_NONE then Exit( False );
-  if not aWeapon.CallHookCheck( Hook_OnFire, [Self,true] ) then Exit( False );
-  iAlt := aWeapon.AltFire;
-
-  if aWeapon.isMelee then FMeleeAttack := True;
-
-  if iAlt = ALT_SCRIPT then
-    if not aWeapon.CallHookCheck( Hook_OnAltFire, [Self] ) then Exit;
-
-  if aWeapon.isMelee then
-  begin
-    case iAlt of
-    ALT_THROW  :
-      begin
-        if isPlayer and aChooseTarget then
-        begin
-          iRange      := Missiles[ aWeapon.Missile ].Range;
-          iLimitRange := MF_EXACT in Missiles[ aWeapon.Missile ].Flags;
-          if not Player.doChooseTarget( 'Throw -- Choose target...', iRange, iLimitRange ) then Exit( Fail( 'Throwing canceled.', [] ) );
-          aTarget := FTargetPos;
-        end;
-        // thelaptop: If you can aim it, you should get a bonus for throwing it.
-        SendMissile( aTarget, aWeapon, FBonus.ToHit, FBonus.ToDam + FBonus.ToDamAll );
-        Dec( FSpeedCount, 1000 );
-        Exit;
-      end;
-    end;
-    Exit;
-  end;
-  Exit( ActionFire( aChooseTarget, aTarget, aWeapon, iAlt ) );
 end;
 
 function TBeing.ActionPickup : Boolean;
@@ -2400,6 +2394,7 @@ var State  : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
+  // TODO: add Hook_OnFire ?
   State.Push( Being.ActionFire( False, State.ToPosition(2), State.ToObject(3) as TItem ) );
   Result := 1;
 end;

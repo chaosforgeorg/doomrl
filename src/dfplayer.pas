@@ -576,6 +576,7 @@ var iLevel      : TLevel;
     iFlag       : byte;
     iScan       : TCoord2D;
     iTarget     : TCoord2D;
+    iAlt        : Boolean;
 
   function RunStopNear : boolean;
   begin
@@ -745,8 +746,9 @@ begin
   if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE, COMMAND_MFIRE, COMMAND_MALTFIRE ] ) then
   begin
     iItem := Inv.Slot[ efWeapon ];
+    iAlt  := ( aCommand in [ COMMAND_ALTFIRE, COMMAND_MALTFIRE ] );
     if (iItem = nil) or (not iItem.isWeapon) then begin Fail( 'You have no weapon.', [] ); Exit; end;
-    if (aCommand in [COMMAND_FIRE, COMMAND_MFIRE]) then
+    if not iAlt then
     begin
       if ( aCommand = COMMAND_FIRE ) and iItem.isMelee then
       begin
@@ -762,6 +764,17 @@ begin
     begin
       if iItem.AltFire = ALT_NONE then begin Fail('This weapon has no alternate fire mode.', [] ); Exit; end;
     end;
+    if aCommand <> COMMAND_MELEE then
+    begin
+      if not iItem.CallHookCheck( Hook_OnFire, [Self,iAlt] ) then Exit;
+    
+      if iAlt then
+      begin
+        
+      end;
+    end;
+
+
   end;
 
 
@@ -893,7 +906,11 @@ begin
                try
                  FTargetPos := Current;
                  if FTargetPos <> FPosition then
-                   ActionFire( False, FTargetPos, Inv.Slot[ efWeapon ] );
+                 begin
+                   // TODO: fix?
+                   if Inv.Slot[ efWeapon ].CallHookCheck( Hook_OnFire, [Self,false] ) then 
+                     ActionFire( False, FTargetPos, Inv.Slot[ efWeapon ] );
+                 end;
                finally
                  Free;
                end;
@@ -918,10 +935,10 @@ begin
     COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
     COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
     COMMAND_MELEE     : Attack( iTarget );
-    COMMAND_ALTFIRE   : ActionAltFire( True, FTargetPos{unused}, iItem );
+    COMMAND_ALTFIRE   : ActionFire( True, FTargetPos{unused}, iItem, True );
     COMMAND_FIRE      : ActionFire( True, FTargetPos{unused}, iItem );
     COMMAND_MFIRE     : ActionFire( False, IO.MTarget, iItem );
-    COMMAND_MALTFIRE  : ActionAltFire( False, IO.MTarget, iItem );
+    COMMAND_MALTFIRE  : ActionFire( False, IO.MTarget, iItem, True );
     COMMAND_MSCRUP,
     COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
     COMMAND_MATTACK   : Attack( FPosition + NewDirectionSmooth( FPosition, IO.MTarget ) );
