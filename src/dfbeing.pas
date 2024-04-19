@@ -101,6 +101,8 @@ TBeing = class(TThing,IPathQuery)
     function ActionSwapWeapon : boolean;
     function ActionDrop( Item : TItem ) : boolean;
     function ActionWear( aItem : TItem ) : boolean;
+    function ActionSwap( aItem : TItem; aSlot : TEqSlot ) : boolean;
+    function ActionTakeOff( aSlot : TEqSlot ) : boolean;
     function ActionReload : Boolean;
     function ActionDualReload : Boolean;
     function ActionAltReload : Boolean;
@@ -562,15 +564,21 @@ begin
 end;
 
 function TBeing.ActionDrop ( Item : TItem ) : boolean;
+var iUnique : Boolean;
 begin
   if Item = nil then Exit( false );
   if not FInv.Contains( Item ) then Exit( False );
+  iUnique := Item.Flags[ IF_UNIQUE ] or Item.Flags[ IF_NODESTROY ];
 try
   if TLevel(Parent).DropItem( Item, FPosition ) then
+  begin
+    FInv.ClearSlot( Item );
     Exit( Success( 'You dropped %s.',[Item.GetName(false)],ActionCostDrop ) )
+  end
   else
     begin
-      if Item.Flags[ IF_UNIQUE ] then
+      FInv.ClearSlot( Item );
+      if iUnique then
         Exit( Success( 'You dropped %s.',[Item.GetName(false)],ActionCostDrop ) )
 	  else
         Exit( Success( 'The dropped item melts!',[],ActionCostDrop ) );
@@ -597,6 +605,38 @@ begin
       Dec( FSpeedCount, ActionCostWear );
       Exit( True );
     end;
+  end;
+  Exit( False );
+end;
+
+function TBeing.ActionSwap( aItem : TItem; aSlot : TEqSlot ) : boolean;
+var iWeapon : Boolean;
+begin
+  if aItem = nil then Exit( false );
+  if not FInv.Contains( aItem ) then Exit( False );
+  iWeapon := aItem.isWeapon;
+  if FInv.DoWear( aItem, aSlot ) then
+  begin
+    if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then
+    begin
+      Dec( FSpeedCount, ActionCostWear );
+      Exit( True );
+    end;
+  end;
+  Exit( False );
+end;
+
+function TBeing.ActionTakeOff( aSlot : TEqSlot ) : boolean;
+var iWeapon : Boolean;
+begin
+  if (FInv.Slot[aSlot] = nil) or FInv.Slot[aSlot].Flags[ IF_CURSED ] then
+    Exit( False );
+  iWeapon := FInv.Slot[aSlot].isWeapon;
+  FInv.setSlot( aSlot, nil );
+  if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then
+  begin
+    Dec( FSpeedCount, ActionCostWear );
+    Exit( True );
   end;
   Exit( False );
 end;
@@ -1291,6 +1331,8 @@ begin
     COMMAND_USE       : Exit( ActionUse( aCommand.Item ) );
     COMMAND_DROP      : Exit( ActionDrop( aCommand.Item ) );
     COMMAND_WEAR      : Exit( ActionWear( aCommand.Item ) );
+    COMMAND_TAKEOFF   : Exit( ActionTakeOff( aCommand.Slot ) );
+    COMMAND_SWAP      : Exit( ActionSwap( aCommand.Item, aCommand.Slot ) );
     COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
     COMMAND_ACTION    : TLevel( Parent ).CallHook( aCommand.Target, Self, CellHook_OnAct );
     COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );

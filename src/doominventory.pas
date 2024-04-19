@@ -26,11 +26,13 @@ TInventory = class( TVObject )
        function  AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
        function  isFull : boolean;
        procedure RawSetSlot( aIndex : TEqSlot; aItem : TItem ); inline;
-       function  RunEq : boolean;
+       function  RunEq : TCommand;
        procedure EqSwap( aSlot1, aSlot2 : TEqSlot );
        procedure EqTick;
        procedure ClearSlot( aItem : TItem );
        function DoWear( aItem : TItem ) : Boolean;
+       // no checking if slot fits!
+       function DoWear( aItem : TItem; aSlot : TEqSlot ) : Boolean;
        function Wear( aItem : TItem ) : Boolean;
        function Contains( aItem : TItem ) : Boolean;
        function FindSlot( aItem : TItem ) : TEqSlot;
@@ -54,21 +56,19 @@ TInventory = class( TVObject )
 
 implementation
 
-uses vmath, vgenerics, vmaparea, vrltools, vluasystem, doomio, dfplayer, dfbeing, dflevel;
+uses vmath, vgenerics, vrltools, vluasystem, doomio, dfplayer, dfbeing, dflevel;
 
 { TInventoryEnumerator }
 
-function TInventory.RunEq : boolean;
+function TInventory.RunEq : TCommand;
 var iItem   : TItem;
     iSlot   : TEqSlot;
-    iCoord  : TCoord2D;
-    iName   : AnsiString;
 begin
-  RunEq := False;
+  RunEq.Command := COMMAND_NONE;
   FChosen := nil;
   FAction := ItemResultCancel;
   IO.RunUILoop( TUIEquipmentView.Create( IO.Root, @OnEqConfirm ) );
-  if FAction = ItemResultCancel then Exit( False );
+  if FAction = ItemResultCancel then Exit;
   iSlot := FSlot;
 
   if FAction = ItemResultPick then
@@ -77,39 +77,40 @@ begin
     begin
       if not Option_InvFullDrop then
       begin
-        if not UI.MsgConfirm('No room in inventory! Should it be dropped?') then Exit( False );
+        if not UI.MsgConfirm('No room in inventory! Should it be dropped?') then Exit;
       end;
       FAction := ItemResultDrop;
     end;
   end;
-  if (FSlots[iSlot] <> nil) and FSlots[iSlot].Flags[ IF_CURSED ] then begin UI.Msg('You can''t, it''s cursed!'); Exit(False); end;
+
+  if (FSlots[iSlot] <> nil) and FSlots[iSlot].Flags[ IF_CURSED ] then
+  begin
+    UI.Msg('You can''t, it''s cursed!');
+    Exit;
+  end;
 
   if (FSlots[iSlot] = nil) or (FAction = ItemResultSwap) then
   begin
     iItem := Choose(ItemEqFilters[iSlot],'wear/wield');
     if iItem = nil then Exit;
-    if not iItem.CallHookCheck( Hook_OnEquipCheck,[FOwner] ) then Exit( False );
-    setSlot( iSlot, iItem );
-    Exit( True );
+    RunEq.Command := COMMAND_SWAP;
+    RunEq.Slot    := iSlot;
+    RunEq.Item    := iItem;
+    Exit;
   end;
 
   if FAction = ItemResultDrop then
-  try
-    iName := FSlots[ iSlot ].GetName(false);
-    iCoord := TLevel(FOwner.Parent).MapArea.Drop( FOwner.Position, [EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS] );
-    TLevel(FOwner.Parent).DropItem( FSlots[ iSlot ], iCoord );
-    UI.Msg('You dropped '+iName+'.');
-    setSlot( iSlot, nil );
-    Exit( True );
-  except
-    on e : EPlacementException do
-    begin
-      UI.Msg('No room on the floor to drop the equipped item!');
-      Exit;
-    end;
+  begin
+    RunEq.Command := COMMAND_DROP;
+    RunEq.Item    := iItem;
   end;
-  setSlot( iSlot, nil );
-  Exit( True );
+
+  if FAction = ItemResultPick then
+  begin
+    RunEq.Command := COMMAND_TAKEOFF;
+    RunEq.Slot    := iSlot;
+  end;
+
 end;
 
 function TInventory.Wear( aItem : TItem ) : Boolean;
@@ -374,6 +375,19 @@ begin
   if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin UI.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
   UI.Msg('You wear/wield : '+aItem.GetName(false));
   Wear( aItem );
+  Exit( True );
+end;
+
+function TInventory.DoWear ( aItem : TItem; aSlot : TEqSlot ) : Boolean;
+var iItem : TItem;
+begin
+  if aItem = nil then Exit( False );
+  if aItem.Hooks[ Hook_OnEquipCheck ] then
+    if not aItem.CallHookCheck( Hook_OnEquipCheck,[FOwner] ) then Exit( False );
+  iItem := FSlots[aSlot];
+  if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin UI.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
+  UI.Msg('You wear/wield : '+aItem.GetName(false));
+  setSlot( aSlot, aItem );
   Exit( True );
 end;
 

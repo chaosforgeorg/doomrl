@@ -980,17 +980,13 @@ begin
     iCommand.Command:= COMMAND_NONE;
     case aCommand of
       COMMAND_INVENTORY : iCommand := Inv.View;
-      COMMAND_EQUIPMENT : begin if Inv.RunEq then begin Dec(FSpeedCount,1000);Exit( True ); end; Exit( False ); end;
+      COMMAND_EQUIPMENT : iCommand := Inv.RunEq;
       COMMAND_MSCRUP,
       COMMAND_MSCRDOWN  : iCommand := Inv.DoScrollSwap;
     end;
-    if iCommand.Command <> COMMAND_NONE then
-    begin
-      aCommand := iCommand.Command;
-      iItem    := iCommand.Item;
-    end
-    else
-      Exit( False );
+    if iCommand.Command = COMMAND_NONE then Exit( False );
+    if iCommand.Command <> COMMAND_SWAPWEAPON then
+      Exit( HandleCommand( iCommand ) );
   end;
 
   if aCommand = COMMAND_SWAPWEAPON then

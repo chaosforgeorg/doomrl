@@ -40,5 +40,7 @@ COMMAND_ALTRELOAD         = 46;
 COMMAND_MELEE             = 47;
 COMMAND_MOVE              = 48;
 COMMAND_WEAR              = 49;
+COMMAND_SWAP              = 50;
+COMMAND_TAKEOFF           = 51;
 COMMAND_SOUNDTOGGLE       = 86;
 COMMAND_MUSICTOGGLE       = 87;

@@ -1,12 +1,13 @@
 {$INCLUDE doomrl.inc}
 unit doomcommand;
 interface
-uses vrltools, dfitem;
+uses vrltools, dfitem, dfdata;
 
 type TCommand = object
   Command : Byte;
   Target  : TCoord2D;
   Item    : TItem;
+  Slot    : TEqSlot;
   ID      : AnsiString;
 
   class function Create( aCommand : Byte ) : TCommand; static;
