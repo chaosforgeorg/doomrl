@@ -262,7 +262,7 @@ function TInventory.DoScrollSwap : TCommand;
 var iArray   : TItemArray;
     iItem    : TItem;
     iIdx     : Integer;
-    iCommand : Byte;
+    iInput   : Byte;
 begin
   iArray := TItemArray.Create( False );
   if Slot[ efWeapon ]  <> nil then iArray.Push( Slot[ efWeapon ] );
@@ -282,11 +282,11 @@ begin
     if Slot[ efWeapon ] = nil then iIdx := 0;
     repeat
       UI.SetHint( iArray[iIdx].Description );
-      iCommand := IO.WaitForCommand( [COMMAND_MSCRUP,COMMAND_MSCRDOWN,COMMAND_MLEFT,COMMAND_MRIGHT,COMMAND_ESCAPE,COMMAND_ENTER] );
-      if iCommand = COMMAND_MSCRUP   then if iIdx = 0 then iIdx := iArray.Size-1 else iIdx -= 1;
-      if iCommand = COMMAND_MSCRDOWN then iIdx := (iIdx + 1) mod iArray.Size;
-    until iCommand in [0,COMMAND_ESCAPE,COMMAND_ENTER,COMMAND_MLEFT,COMMAND_MRIGHT];
-    if iCommand in [COMMAND_ENTER,COMMAND_MLEFT] then
+      iInput := IO.WaitForCommand( [INPUT_MSCRUP,INPUT_MSCRDOWN,INPUT_MLEFT,INPUT_MRIGHT,INPUT_ESCAPE,INPUT_ENTER] );
+      if iInput = INPUT_MSCRUP   then if iIdx = 0 then iIdx := iArray.Size-1 else iIdx -= 1;
+      if iInput = INPUT_MSCRDOWN then iIdx := (iIdx + 1) mod iArray.Size;
+    until iInput in [0,INPUT_ESCAPE,INPUT_ENTER,INPUT_MLEFT,INPUT_MRIGHT];
+    if iInput in [INPUT_ENTER,INPUT_MLEFT] then
     begin
       if iArray[ iIdx ] = Slot[ efWeapon2 ] then
         DoScrollSwap.Command := COMMAND_SWAPWEAPON

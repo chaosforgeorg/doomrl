@@ -441,9 +441,9 @@ begin
     Fail( 'Can''t run, there are enemies present.',[] );
     Exit;
   end;
-  Key := UI.MsgCommandChoice('Run - direction...',COMMANDS_MOVE+[COMMAND_ESCAPE,COMMAND_WAIT]);
-  if Key = COMMAND_ESCAPE then Exit;
-  FRun.Start( CommandDirection(Key) );
+  Key := UI.MsgCommandChoice('Run - direction...',INPUT_MOVE+[INPUT_ESCAPE,INPUT_WAIT]);
+  if Key = INPUT_ESCAPE then Exit;
+  FRun.Start( InputDirection(Key) );
 end;
 
 procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem ) ;
@@ -673,31 +673,31 @@ begin
     begin
       if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
     end;
-    aCommand := DirectionToCommand( iDir );
+    aCommand := DirectionToInput( iDir );
   end;
 
 
   // Handle commands that should be handled by the UI
   // TODO: Fix
   case aCommand of
-    COMMAND_ESCAPE    : begin if GodMode then begin Doom.SetState( DSQuit ); Exit( True ); end; Exit( True ); end;
-    COMMAND_LOOK      : begin UI.Msg( '-' ); UI.LookMode; Exit( True ); end;
-    COMMAND_PLAYERINFO: begin doScreen; Exit( True ); end;
-    COMMAND_QUIT      : begin doQuit; Exit( True ); end;
-    COMMAND_HARDQUIT  : begin
+    INPUT_ESCAPE    : begin if GodMode then begin Doom.SetState( DSQuit ); Exit( True ); end; Exit( True ); end;
+    INPUT_LOOK      : begin UI.Msg( '-' ); UI.LookMode; Exit( True ); end;
+    INPUT_PLAYERINFO: begin doScreen; Exit( True ); end;
+    INPUT_QUIT      : begin doQuit; Exit( True ); end;
+    INPUT_HARDQUIT  : begin
       Option_MenuReturn := False;
       doQuit(True);
       Exit( True );
     end;
-    COMMAND_SAVE      : begin doSave; Exit( True ); end;
-    COMMAND_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );Exit( True ); end;
-    COMMAND_RUNMODE   : begin doRun;Exit( True ); end;
+    INPUT_SAVE      : begin doSave; Exit( True ); end;
+    INPUT_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );Exit( True ); end;
+    INPUT_RUNMODE   : begin doRun;Exit( True ); end;
 
-    COMMAND_EXAMINENPC   : begin ExamineNPC; Exit( True ); end;
-    COMMAND_EXAMINEITEM  : begin ExamineItem; Exit( True ); end;
-    COMMAND_GRIDTOGGLE: begin if GraphicsVersion then SpriteMap.ToggleGrid; Exit( True ); end;
-    COMMAND_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit( True ); end;
-    COMMAND_MUSICTOGGLE  : begin
+    INPUT_EXAMINENPC   : begin ExamineNPC; Exit( True ); end;
+    INPUT_EXAMINEITEM  : begin ExamineItem; Exit( True ); end;
+    INPUT_GRIDTOGGLE: begin if GraphicsVersion then SpriteMap.ToggleGrid; Exit( True ); end;
+    INPUT_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit( True ); end;
+    INPUT_MUSICTOGGLE  : begin
                              MusicOff := not MusicOff;
                              if MusicOff then IO.PlayMusic('')
                                          else IO.PlayMusic(iLevel.ID);
@@ -716,14 +716,14 @@ begin
     end;
   end;
 
-  if ( aCommand = COMMAND_OPEN ) then 
+  if ( aCommand = INPUT_OPEN ) then
   begin
     iID := 'open';
     aCommand := COMMAND_ACTION;
     iFlag := CF_OPENABLE;
   end;
 
-  if ( aCommand = COMMAND_CLOSE ) then
+  if ( aCommand = INPUT_CLOSE ) then
   begin
     iID := 'close';
     aCommand := COMMAND_ACTION;
@@ -824,14 +824,14 @@ begin
     end;
   end;
 
-  if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE, COMMAND_MFIRE, COMMAND_MALTFIRE ] ) then
+  if ( aCommand in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_MFIRE, INPUT_MALTFIRE ] ) then
   begin
     iItem := Inv.Slot[ efWeapon ];
-    iAlt  := ( aCommand in [ COMMAND_ALTFIRE, COMMAND_MALTFIRE ] );
+    iAlt  := ( aCommand in [ INPUT_ALTFIRE, INPUT_MALTFIRE ] );
     if (iItem = nil) or (not iItem.isWeapon) then Exit( Fail( 'You have no weapon.', [] ) );
     if not iAlt then
     begin
-      if ( aCommand = COMMAND_FIRE ) and iItem.isMelee then
+      if ( aCommand = INPUT_FIRE ) and iItem.isMelee then
       begin
         iDir := UI.ChooseDirection('Melee attack');
         if (iDir.code = DIR_CENTER) then Exit( False );
@@ -918,11 +918,11 @@ begin
               Exit( Fail( 'Out of range!', [] ) );
       end;
     end;
-    if aCommand = COMMAND_MFIRE    then aCommand := COMMAND_FIRE;
-    if aCommand = COMMAND_MALTFIRE then aCommand := COMMAND_ALTFIRE;
+    if aCommand = INPUT_MFIRE    then aCommand := COMMAND_FIRE;
+    if aCommand = INPUT_MALTFIRE then aCommand := COMMAND_ALTFIRE;
   end;
 
-  if ( aCommand = COMMAND_MATTACK ) then
+  if ( aCommand = INPUT_MATTACK ) then
   begin
     aCommand := COMMAND_MELEE;
     iTarget  := FPosition + NewDirectionSmooth( FPosition, IO.MTarget );
@@ -934,13 +934,13 @@ begin
     if iItem = nil then Exit( False );
   end;
 
-  if ( aCommand in COMMANDS_MOVE ) then
+  if ( aCommand in INPUT_MOVE ) then
   begin
     FLastTargetPos.Create(0,0);
     if BF_SESSILE in FFlags then
       Exit( Fail('You can''t!',[] ) );
 
-    iDir := CommandDirection( aCommand );
+    iDir := InputDirection( aCommand );
     iTarget := FPosition + iDir;
     iMoveResult := TryMove( iTarget );
 
@@ -973,16 +973,14 @@ begin
     end;
   end;
 
-  // These should invoke commands
-  // TODO: Fix
-  if aCommand in [ COMMAND_INVENTORY, COMMAND_EQUIPMENT, COMMAND_MSCRUP, COMMAND_MSCRDOWN ] then
+  if aCommand in [ INPUT_INVENTORY, INPUT_EQUIPMENT, INPUT_MSCRUP, INPUT_MSCRDOWN ] then
   begin
     iCommand.Command:= COMMAND_NONE;
     case aCommand of
-      COMMAND_INVENTORY : iCommand := Inv.View;
-      COMMAND_EQUIPMENT : iCommand := Inv.RunEq;
-      COMMAND_MSCRUP,
-      COMMAND_MSCRDOWN  : iCommand := Inv.DoScrollSwap;
+      INPUT_INVENTORY : iCommand := Inv.View;
+      INPUT_EQUIPMENT : iCommand := Inv.RunEq;
+      INPUT_MSCRUP,
+      INPUT_MSCRDOWN  : iCommand := Inv.DoScrollSwap;
     end;
     if iCommand.Command = COMMAND_NONE then Exit( False );
     if iCommand.Command <> COMMAND_SWAPWEAPON then
@@ -1007,7 +1005,7 @@ begin
   if ( aCommand in [ COMMAND_TACTIC, COMMAND_WAIT, COMMAND_SWAPWEAPON, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD, COMMAND_PICKUP ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand ) ) );
 
-  if aCommand = COMMAND_YIELD then Exit( True );
+  if aCommand = INPUT_YIELD then Exit( True );
 
   Exit( Fail('Unknown command. Press "?" for help.', []) );
 end;
@@ -1051,7 +1049,7 @@ begin
     end
     else
     begin
-      iCommand := COMMAND_WALKNORTH;
+      iCommand := INPUT_WALKNORTH;
 
       if not GraphicsVersion then
         IO.Delay( Option_RunDelay );
@@ -1074,18 +1072,18 @@ try
     else UI.MsgUpDate;
 
   // === MOUSE HANDLING ===
-  if iCommand in [ COMMAND_MLEFT, COMMAND_MRIGHT ] then
+  if iCommand in [ INPUT_MLEFT, INPUT_MRIGHT ] then
     iAlt := VKMOD_ALT in IO.Driver.GetModKeyState;
 
-  if iCommand = COMMAND_MMIDDLE then
+  if iCommand = INPUT_MMIDDLE then
     if IO.MTarget = FPosition
       then iCommand := COMMAND_SWAPWEAPON
-      else iCommand := COMMAND_EQUIPMENT;
+      else iCommand := INPUT_EQUIPMENT;
 
-  if iCommand = COMMAND_MLEFT then
+  if iCommand = INPUT_MLEFT then
   begin
     if IO.MTarget = FPosition then
-      if iAlt then iCommand := COMMAND_INVENTORY
+      if iAlt then iCommand := INPUT_INVENTORY
       else
       if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
         iCommand := COMMAND_ENTER
@@ -1096,10 +1094,10 @@ try
           else
             iCommand := COMMAND_PICKUP
           else
-            iCommand := COMMAND_INVENTORY
+            iCommand := INPUT_INVENTORY
     else
     if Distance( FPosition, IO.MTarget ) = 1
-      then iCommand := DirectionToCommand( NewDirection( FPosition, IO.MTarget ) )
+      then iCommand := DirectionToInput( NewDirection( FPosition, IO.MTarget ) )
       else if iLevel.isExplored( IO.MTarget ) then
       begin
         if FPath.Run( FPosition, IO.MTarget, 200) then
@@ -1121,7 +1119,7 @@ try
       end;
   end;
 
-  if iCommand = COMMAND_MRIGHT then
+  if iCommand = INPUT_MRIGHT then
   begin
     if (IO.MTarget = FPosition) or
       ((Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) and (not (Inv.Slot[efWeapon].GetFlag(IF_NOAMMO))) and (Inv.Slot[ efWeapon ].Ammo = 0))  then
@@ -1133,10 +1131,10 @@ try
     else if (Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) then
     begin
       if iAlt
-        then iCommand := COMMAND_MALTFIRE
-        else iCommand := COMMAND_MFIRE;
+        then iCommand := INPUT_MALTFIRE
+        else iCommand := INPUT_MFIRE;
     end
-    else iCommand := COMMAND_MATTACK;
+    else iCommand := INPUT_MATTACK;
   end;
   // === MOUSE HANDLING END ===
 
