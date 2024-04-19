@@ -101,7 +101,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionReload : Boolean;
     function ActionDualReload : Boolean;
     function ActionAltReload : Boolean;
-    function ActionFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean = False ) : Boolean;
+    function ActionFire( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean = False ) : Boolean;
     function ActionPickup : Boolean;
     function ActionUse( Item : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
@@ -696,7 +696,7 @@ begin
   end;
 end;
 
-function TBeing.ActionFire ( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean ) : Boolean;
+function TBeing.ActionFire ( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean ) : Boolean;
 var iFireDesc  : AnsiString;
     iChainFire : Byte;
     iChainOld  : TCoord2D;
@@ -730,13 +730,6 @@ begin
       case aWeapon.AltFire of
         ALT_THROW  :
         begin
-          if isPlayer and aChooseTarget then
-          begin
-            iRange      := Missiles[ aWeapon.Missile ].Range;
-            iLimitRange := MF_EXACT in Missiles[ aWeapon.Missile ].Flags;
-            if not Player.doChooseTarget( 'Throw -- Choose target...', iRange, iLimitRange ) then Exit( Fail( 'Throwing canceled.', [] ) );
-            aTarget := FTargetPos;
-          end;
           // thelaptop: If you can aim it, you should get a bonus for throwing it.
           SendMissile( aTarget, aWeapon, FBonus.ToHit, FBonus.ToDam + FBonus.ToDamAll );
           Dec( FSpeedCount, 1000 );
@@ -751,11 +744,11 @@ begin
 
   if not aWeapon.Flags[ IF_NOAMMO ] then
   begin
-    if aWeapon.Ammo = 0 then Exit( FailConfirm( 'Your weapon is empty.', [] ) );
-    if aWeapon.Ammo < aWeapon.ShotCost then Exit( FailConfirm( 'You don''t have enough ammo to fire the %s!', [aWeapon.Name]) );
+    if aWeapon.Ammo = 0 then Exit( False );
+    if aWeapon.Ammo < aWeapon.ShotCost then Exit( False );
   end;
   
-  if aWeapon.Flags[ IF_CHAMBEREMPTY ] then Exit( FailConfirm( 'Shell chamber empty - move or reload.', [] ) );
+  if aWeapon.Flags[ IF_CHAMBEREMPTY ] then Exit( False );
 
   if aWeapon.Flags[ IF_SHOTGUN ] then
       iRange := Shotguns[ aWeapon.Missile ].Range
@@ -763,34 +756,11 @@ begin
       iRange := Missiles[ aWeapon.Missile ].Range;
   if iRange = 0 then iRange := self.Vision;
   iLimitRange := (not aWeapon.Flags[ IF_SHOTGUN ]) and (MF_EXACT in Missiles[ aWeapon.Missile ].Flags);
-  if aChooseTarget then
-  begin
-    iFireDesc := '';
-    case iAltFire of
-      ALT_SCRIPT  : iFireDesc := LuaSystem.Get([ 'items', aWeapon.ID, 'altname' ],'');
-      ALT_AIMED   : iFireDesc := 'aimed';
-      ALT_SINGLE  : iFireDesc := 'single';
-    end;
-    if iFireDesc <> '' then iFireDesc := ' (@Y'+iFireDesc+'@>)';
-
-    if iAltFire = ALT_CHAIN then
-    begin
-      case iChainFire of
-        0 : iFireDesc := ' (@Ginitial@>)';
-        1 : iFireDesc := ' (@Ywarming@>)';
-        2 : iFireDesc := ' (@Rfull@>)';
-      end;
-      if not Player.doChooseTarget( Format('Chain fire%s -- Choose target or abort...', [ iFireDesc ]), iRange, iLimitRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
-    end
-    else
-      if not Player.doChooseTarget( Format('Fire%s -- Choose target...',[ iFireDesc ]), iRange, iLimitRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
-    aTarget := FTargetPos;
-  end;
 
   if iLimitRange then
   begin
     iDist := Distance(self.Position.x, self.Position.y, aTarget.x, aTarget.y);
-    if iDist > iRange then Exit( Fail( 'Out of range!', [] ) );
+    if iDist > iRange then Exit( False );
   end;
 
   if (iAltFire = ALT_CHAIN) and ( iChainFire > 0 ) then FTargetPos := iChainOld;
@@ -2396,7 +2366,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   // TODO: add Hook_OnFire ?
-  State.Push( Being.ActionFire( False, State.ToPosition(2), State.ToObject(3) as TItem ) );
+  State.Push( Being.ActionFire( State.ToPosition(2), State.ToObject(3) as TItem ) );
   Result := 1;
 end;
 
