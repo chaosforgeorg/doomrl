@@ -107,6 +107,7 @@ const
   COMMAND_MALTFIRE = 247;
   COMMAND_MATTACK  = 248;
   COMMAND_YIELD    = 254;
+  COMMAND_NONE     = 0;
 
   KnockbackValue = 7;
 
@@ -200,6 +201,7 @@ const
   ActionCostWear   = 1000;
   ActionCostMove   = 1000;
   ActionCostFire   = 1000;
+  ActionCostTactic = 100;
 
   ActSoundChance    = 30;
 

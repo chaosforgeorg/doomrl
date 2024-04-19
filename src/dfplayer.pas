@@ -380,7 +380,7 @@ begin
 
   if Inv.Slot[ efWeapon2 ] <> nil then
     if Inv.Slot[ efWeapon2 ].ID = aWeaponID then
-      Exit( ActionQuickSwap );
+      Exit( ActionSwapWeapon );
 
   iAmmo   := 0;
   iWeapon := nil;
@@ -679,26 +679,28 @@ begin
   // Handle commands that should be handled by the UI
   // TODO: Fix
   case aCommand of
-    COMMAND_ESCAPE    : if GodMode then begin Doom.SetState( DSQuit ); Exit( True ); end;
-    COMMAND_LOOK      : begin UI.Msg( '-' ); UI.LookMode end;
-    COMMAND_PLAYERINFO: doScreen;
-    COMMAND_QUIT      : doQuit;
+    COMMAND_ESCAPE    : begin if GodMode then begin Doom.SetState( DSQuit ); Exit( True ); end; Exit( True ); end;
+    COMMAND_LOOK      : begin UI.Msg( '-' ); UI.LookMode; Exit( True ); end;
+    COMMAND_PLAYERINFO: begin doScreen; Exit( True ); end;
+    COMMAND_QUIT      : begin doQuit; Exit( True ); end;
     COMMAND_HARDQUIT  : begin
       Option_MenuReturn := False;
       doQuit(True);
+      Exit( True );
     end;
-    COMMAND_SAVE      : doSave;
-    COMMAND_TRAITS    : IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );
-    COMMAND_RUNMODE   : doRun;
+    COMMAND_SAVE      : begin doSave; Exit( True ); end;
+    COMMAND_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );Exit( True ); end;
+    COMMAND_RUNMODE   : begin doRun;Exit( True ); end;
 
-    COMMAND_EXAMINENPC   : ExamineNPC;
-    COMMAND_EXAMINEITEM  : ExamineItem;
-    COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
-    COMMAND_SOUNDTOGGLE  : SoundOff := not SoundOff;
+    COMMAND_EXAMINENPC   : begin ExamineNPC; Exit( True ); end;
+    COMMAND_EXAMINEITEM  : begin ExamineItem; Exit( True ); end;
+    COMMAND_GRIDTOGGLE: begin if GraphicsVersion then SpriteMap.ToggleGrid; Exit( True ); end;
+    COMMAND_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit( True ); end;
     COMMAND_MUSICTOGGLE  : begin
                              MusicOff := not MusicOff;
                              if MusicOff then IO.PlayMusic('')
                                          else IO.PlayMusic(iLevel.ID);
+                             Exit( True );
                            end;
   end;
 
@@ -738,6 +740,7 @@ begin
 
   if ( aCommand = COMMAND_ACTION ) then
   begin
+    iCount := 0;
     if iFlag = 0 then
     begin
       for iScan in NewArea( FPosition, 1 ).Clamped( iLevel.Area ) do
@@ -978,6 +981,12 @@ begin
     end;
   end;
 
+  if aCommand = COMMAND_SWAPWEAPON then
+  begin
+    if ( Inv.Slot[ efWeapon ] <> nil )  and ( Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then Exit( Fail('You can''t!',[]) );
+    if ( Inv.Slot[ efWeapon2 ] <> nil ) and ( Inv.Slot[ efWeapon2 ].isAmmoPack )        then Exit( Fail('Nothing to swap!',[]) );
+  end;
+
   if ( aCommand in [ COMMAND_ACTION, COMMAND_MELEE, COMMAND_MOVE ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iTarget ) ) );
 
@@ -987,19 +996,12 @@ begin
   if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD, COMMAND_USE ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iItem, iID ) ) );
 
-  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD, COMMAND_PICKUP ] ) then
+  if ( aCommand in [ COMMAND_TACTIC, COMMAND_WAIT, COMMAND_SWAPWEAPON, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD, COMMAND_PICKUP ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand ) ) );
 
-  case aCommand of
-    COMMAND_WAIT      : Dec(FSpeedCount,1000);
-    COMMAND_TACTIC    : if not (BF_BERSERK in FFlags) then
-                          if FTactic.Change then
-                            Dec(FSpeedCount,100);
-    COMMAND_SWAPWEAPON   : ActionQuickSwap;
-    COMMAND_YIELD        :;
-    else Exit( Fail('Unknown command. Press "?" for help.', []) );
-  end;
-  Exit( True );
+  if aCommand = COMMAND_YIELD then Exit( True );
+
+  Exit( Fail('Unknown command. Press "?" for help.', []) );
 end;
 
 procedure TPlayer.AIAction;

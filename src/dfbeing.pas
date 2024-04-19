@@ -98,7 +98,7 @@ TBeing = class(TThing,IPathQuery)
     // Actions
     // All actions return True/False depending on success.
     // On success they do eat up action cost!
-    function ActionQuickSwap : boolean;
+    function ActionSwapWeapon : boolean;
     function ActionDrop( Item : TItem ) : boolean;
     function ActionReload : Boolean;
     function ActionDualReload : Boolean;
@@ -108,6 +108,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionUse( Item : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
     function ActionMove( aTarget : TCoord2D ) : Boolean;
+    function ActionTactic : boolean;
 
 
     // Always returns False.
@@ -542,10 +543,10 @@ begin
   Exit( ID );
 end;
 
-function TBeing.ActionQuickSwap : boolean;
+function TBeing.ActionSwapWeapon : boolean;
 begin
-  if ( Inv.Slot[ efWeapon ] <> nil ) and Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] then Exit( Fail('You can''t!',[]) );
-  if ( Inv.Slot[ efWeapon2 ] <> nil ) and ( Inv.Slot[ efWeapon2 ].isAmmoPack ) then Exit( Fail('Nothing to swap!',[]) );
+  if ( Inv.Slot[ efWeapon ] <> nil ) and Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] then Exit( False );
+  if ( Inv.Slot[ efWeapon2 ] <> nil ) and ( Inv.Slot[ efWeapon2 ].isAmmoPack )   then Exit( False );
 
   Inv.EqSwap( efWeapon, efWeapon2 );
 
@@ -985,6 +986,17 @@ begin
   HandlePostMove;
 end;
 
+function TBeing.ActionTactic : Boolean;
+begin
+  if ( not isPlayer ) or ( BF_BERSERK in FFlags ) then Exit( False );
+  if Player.FTactic.Change then
+  begin
+    Dec( FSpeedCount, ActionCostTactic );
+    Exit( True );
+  end;
+  Exit( False );
+end;
+
 function TBeing.Fail ( const aText: AnsiString; const aParams: array of const ): Boolean;
 begin
   if FSilentAction then Exit( False );
@@ -1270,6 +1282,8 @@ begin
     COMMAND_ALTFIRE   : Exit( ActionFire( aCommand.Target, aCommand.Item, True ) );
     COMMAND_PICKUP    : Exit( ActionPickup );
     COMMAND_UNLOAD    : Exit( ActionUnLoad( aCommand.Item, aCommand.ID ) );
+    COMMAND_SWAPWEAPON: Exit( ActionSwapWeapon );
+    COMMAND_TACTIC    : Exit( ActionTactic );
   else Exit( False );
   end;
   Exit( True );
@@ -2353,7 +2367,7 @@ var State  : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionQuickSwap );
+  State.Push( Being.ActionSwapWeapon );
   Result := 1;
 end;
 

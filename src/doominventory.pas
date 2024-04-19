@@ -286,7 +286,7 @@ begin
     begin
       if iArray[ iIdx ] = Slot[ efWeapon2 ] then
       begin
-        TBeing(FOwner).ActionQuickSwap;
+        TBeing(FOwner).ActionSwapWeapon;
         DoScrollSwap := False;
       end
       else
