@@ -596,6 +596,37 @@ begin
   iLevel := TLevel( Parent );
   iFlag  := 0;
 
+  if FRun.Active then
+  begin
+    Inc( FRun.Count );
+    if BF_SESSILE in FFlags then
+    begin
+      FPathRun := False;
+      FRun.Stop;
+      Exit( Fail('You can''t!',[] ) );
+    end;
+
+    if FPathRun then
+    begin
+      if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
+      begin
+        FPathRun := False;
+        FRun.Stop;
+        Exit( False );
+      end;
+      iDir := NewDirection( FPosition, FPath.Start.Coord );
+      FPath.Start := FPath.Start.Child;
+    end
+    else iDir := FRun.Dir;
+
+    if iDir.code = 5 then
+    begin
+      if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
+    end;
+    aCommand := DirectionToCommand( iDir );
+  end;
+
+
   // Handle commands that should be handled by the UI
   // TODO: Fix
   case aCommand of
@@ -620,6 +651,15 @@ begin
                              if MusicOff then IO.PlayMusic('')
                                          else IO.PlayMusic(iLevel.ID);
                            end;
+  end;
+
+  // These should invoke commands
+  // TODO: Fix
+  case aCommand of
+    COMMAND_INVENTORY : begin if Inv.View then begin Dec(FSpeedCount,1000); Exit( True ); end; Exit( False ); end;
+    COMMAND_EQUIPMENT : begin if Inv.RunEq then begin Dec(FSpeedCount,1000);Exit( True ); end; Exit( False ); end;
+    COMMAND_MSCRUP,
+    COMMAND_MSCRDOWN  : begin if Inv.DoScrollSwap then begin Dec(FSpeedCount,1000); Exit( True ); end; Exit( False ); end;
   end;
 
   if ( aCommand = COMMAND_ACTION ) then 
@@ -850,52 +890,13 @@ begin
     if iItem = nil then Exit( False );
   end;
 
-  if ( aCommand in [ COMMAND_ACTION, COMMAND_MELEE ] ) then
-    Exit( HandleCommand( TCommand.Create( aCommand, iTarget ) ) );
-
-
-  if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD, COMMAND_USE ] ) then
-    Exit( HandleCommand( TCommand.Create( aCommand, iItem, iID ) ) );
-
-  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD, COMMAND_PICKUP ] ) then
-    Exit( HandleCommand( TCommand.Create( aCommand ) ) );
-
-  if ( aCommand in COMMANDS_MOVE ) or FRun.Active then
+  if ( aCommand in COMMANDS_MOVE ) then
   begin
     FLastTargetPos.Create(0,0);
-    Inc( FRun.Count );
     if BF_SESSILE in FFlags then
-    begin
-      FPathRun := False;
-      FRun.Stop;
       Exit( Fail('You can''t!',[] ) );
-    end;
 
-
-    if FRun.Active then
-    begin
-        if FPathRun then
-        begin
-          if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
-          begin
-            FPathRun := False;
-            FRun.Stop;
-            Exit( False );
-          end;
-          iDir := NewDirection( FPosition, FPath.Start.Coord );
-          FPath.Start := FPath.Start.Child;
-        end
-        else iDir := FRun.Dir
-    end
-    else iDir := CommandDirection( aCommand );
-
-    if iDir.code = 5 then
-    begin
-      if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
-      Dec( FSpeedCount, 1000 );
-      Exit( False );
-    end;
-
+    iDir := CommandDirection( aCommand );
     iMove := FPosition + iDir;
     iMoveResult := TryMove( iMove );
 
@@ -915,13 +916,45 @@ begin
        MoveBlock :
          begin
            if iLevel.isProperCoord( iMove ) and iLevel.cellFlagSet( iMove, CF_PUSHABLE ) then
-             iLevel.CallHook( iMove, Self, CellHook_OnAct )
+           begin
+             aCommand := COMMAND_ACTION;
+             iTarget  := iMove;
+           end
            else
            begin
              if Option_Blindmode then UI.Msg( 'You bump into a wall.' );
              Exit( False );
            end;
          end;
+       MoveBeing :
+         begin
+           aCommand := COMMAND_MELEE;
+           iTarget  := iMove;
+         end;
+       MoveDoor  :
+         begin
+           aCommand := COMMAND_ACTION;
+           iTarget  := iMove;
+         end;
+    end;
+  end;
+
+  if ( aCommand in [ COMMAND_ACTION, COMMAND_MELEE ] ) then
+    Exit( HandleCommand( TCommand.Create( aCommand, iTarget ) ) );
+
+  if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE ] ) then
+    Exit( HandleCommand( TCommand.Create( aCommand, iTarget, iItem ) ) );
+
+  if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD, COMMAND_USE ] ) then
+    Exit( HandleCommand( TCommand.Create( aCommand, iItem, iID ) ) );
+
+  if ( aCommand in [ COMMAND_WAIT, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD, COMMAND_PICKUP ] ) then
+    Exit( HandleCommand( TCommand.Create( aCommand ) ) );
+
+
+  if ( aCommand in COMMANDS_MOVE ) then
+  begin
+    case iMoveResult of
        MoveOk :
          begin
            if GraphicsVersion then
@@ -933,6 +966,7 @@ begin
            Displace( iMove );
            BloodFloor;
            Dec( FSpeedCount, getMoveCost );
+
            iTempSC := FSpeedCount;
            if Inv.Slot[ efWeapon ] <> nil then
            with Inv.Slot[ efWeapon ] do
@@ -971,35 +1005,26 @@ begin
                end;
              end;
            FSpeedCount := iTempSC;
+
+           if FRun.Active and (not FPathRun) then
+           if RunStopNear or
+              ((not Option_RunOverItems) and (iLevel.Item[ FPosition ] <> nil)) then
+           begin
+             FPathRun := False;
+             FRun.Stop;
+             Exit( False );
+           end;
          end;
-       MoveBeing : Attack( iLevel.Being[ iMove ] );
-       MoveDoor  : iLevel.CallHook( iMove, Self, CellHook_OnAct );
     end;
-    if FRun.Active and (not FPathRun) then
-      if RunStopNear or
-         (iMoveResult <> MoveOk) or
-         ((not Option_RunOverItems) and (iLevel.Item[ FPosition ] <> nil)) then
-      begin
-        FPathRun := False;
-        FRun.Stop;
-        Exit( False );
-      end;
+
   end
   else
   case aCommand of
-    COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
-    COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
-    COMMAND_ALTFIRE   : ActionFire( iTarget, iItem, True );
-    COMMAND_FIRE      : ActionFire( iTarget, iItem );
-    COMMAND_MSCRUP,
-    COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
-    
+    COMMAND_WAIT      : Dec(FSpeedCount,1000);
     COMMAND_TACTIC    : if not (BF_BERSERK in FFlags) then
                           if FTactic.Change then
                             Dec(FSpeedCount,100);
     COMMAND_SWAPWEAPON   : ActionQuickSwap;
-
-    255 {COMMAND_INVALID} :;
     COMMAND_YIELD        :;
     else Exit( Fail('Unknown command. Press "?" for help.', []) );
   end;

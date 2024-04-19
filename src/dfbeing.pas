@@ -1242,8 +1242,10 @@ begin
     COMMAND_ACTION    : TLevel( Parent ).CallHook( aCommand.Target, Self, CellHook_OnAct );
     COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
     COMMAND_MELEE     : Attack( aCommand.Target );
-    COMMAND_ALTRELOAD : Exit( ActionAltReload );
     COMMAND_RELOAD    : Exit( ActionReload );
+    COMMAND_ALTRELOAD : Exit( ActionAltReload );
+    COMMAND_FIRE      : Exit( ActionFire( aCommand.Target, aCommand.Item ) );
+    COMMAND_ALTFIRE   : Exit( ActionFire( aCommand.Target, aCommand.Item, True ) );
     COMMAND_PICKUP    : Exit( ActionPickup );
     COMMAND_UNLOAD    : Exit( ActionUnLoad( aCommand.Item, aCommand.ID ) );
   else Exit( False );
