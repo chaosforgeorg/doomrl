@@ -38,5 +38,6 @@ COMMAND_ALTPICKUP         = 44;
 COMMAND_RELOAD            = 45;
 COMMAND_ALTRELOAD         = 46;
 COMMAND_MELEE             = 47;
+COMMAND_MOVE              = 48;
 COMMAND_SOUNDTOGGLE       = 86;
 COMMAND_MUSICTOGGLE       = 87;

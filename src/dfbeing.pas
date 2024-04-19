@@ -54,6 +54,7 @@ TBeing = class(TThing,IPathQuery)
     function GetName( known : boolean ) : string;
     procedure Tick;
     procedure Action;
+    procedure HandlePostMove; virtual;
     function HandleCommand( aCommand : TCommand ) : Boolean; 
     function  TryMove( where : TCoord2D ) : TMoveResult;
     function  MoveTowards( where : TCoord2D ) : TMoveResult;
@@ -71,6 +72,7 @@ TBeing = class(TThing,IPathQuery)
     function  isActive : boolean;
     function  WoundStatus : string;
     function  IsPlayer : Boolean;
+
     procedure BloodFloor;
     procedure Knockback( dir : TDirection; Strength : Integer );
     destructor Destroy; override;
@@ -105,6 +107,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionPickup : Boolean;
     function ActionUse( Item : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
+    function ActionMove( aTarget : TCoord2D ) : Boolean;
 
 
     // Always returns False.
@@ -969,6 +972,19 @@ begin
   Exit( Success( 'You partially unload the %s.', [ iName ], ActionCostReload ) );
 end;
 
+function TBeing.ActionMove( aTarget : TCoord2D ) : Boolean;
+begin
+  if GraphicsVersion then
+  begin
+    UI.addScreenMoveAnimation(100,0,aTarget);
+    UI.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
+  end;
+  Displace( aTarget );
+  BloodFloor;
+  Dec( FSpeedCount, getMoveCost );
+  HandlePostMove;
+end;
+
 function TBeing.Fail ( const aText: AnsiString; const aParams: array of const ): Boolean;
 begin
   if FSilentAction then Exit( False );
@@ -1233,9 +1249,15 @@ begin
   while FSpeedCount >= 5000 do Dec( FSpeedCount, 1000 );
 end;
 
+procedure TBeing.HandlePostMove;
+begin
+
+end;
+
 function TBeing.HandleCommand( aCommand : TCommand ) : Boolean; 
 begin
   case aCommand.Command of
+    COMMAND_MOVE      : Exit( ActionMove( aCommand.Target ) );
     COMMAND_USE       : Exit( ActionUse( aCommand.Item ) );
     COMMAND_DROP      : Exit( ActionDrop( aCommand.Item ) );
     COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
