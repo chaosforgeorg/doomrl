@@ -585,14 +585,18 @@ end;
 end;
 
 function TBeing.ActionWear( aItem : TItem ) : boolean;
+var iWeapon : Boolean;
 begin
   if aItem = nil then Exit( false );
   if not FInv.Contains( aItem ) then Exit( False );
-  FInv.DoWear( aItem );
-  if not Flags[BF_QUICKSWAP] then
+  iWeapon := aItem.isWeapon;
+  if FInv.DoWear( aItem ) then
   begin
-    Dec( FSpeedCount, ActionCostWear );
-    Exit( True );
+    if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then
+    begin
+      Dec( FSpeedCount, ActionCostWear );
+      Exit( True );
+    end;
   end;
   Exit( False );
 end;

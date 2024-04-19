@@ -128,9 +128,9 @@ function DoomRL.load_traits()
 	register_trait "juggler"
 	{
 		name   = "Juggler",
-		desc   = "Uses melee weapon if prepared.",
+		desc   = "Instant swap and melee weapon use",
 		quote  = "\"Allow me to communicate to you my desire to have your guns.\"",
-		full   = "Your hands are so nimble you could work at a circus.  Unfortunately, the army got you first. The only benefit of your skill now is that you instantly swap prepared and quickkeyed weapons, and automatically use a prepared melee weapon when need arises!",
+		full   = "Your hands are so nimble you could work at a circus.  Unfortunately, the army got you first. The only benefit of your skill now is that you instantly swap prepared and inventory weapons, and automatically use a prepared melee weapon when need arises!",
 		abbr   = "Jug",
 
 		OnPick = function (being)
