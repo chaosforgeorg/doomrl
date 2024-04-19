@@ -979,7 +979,7 @@ begin
   begin
     iCommand.Command:= COMMAND_NONE;
     case aCommand of
-      COMMAND_INVENTORY : begin if Inv.View then begin Dec(FSpeedCount,1000); Exit( True ); end; Exit( False ); end;
+      COMMAND_INVENTORY : iCommand := Inv.View;
       COMMAND_EQUIPMENT : begin if Inv.RunEq then begin Dec(FSpeedCount,1000);Exit( True ); end; Exit( False ); end;
       COMMAND_MSCRUP,
       COMMAND_MSCRDOWN  : iCommand := Inv.DoScrollSwap;

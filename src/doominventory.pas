@@ -21,7 +21,7 @@ TInventory = class( TVObject )
        procedure Add( aItem : TItem );
        function  Choose( aFilter : TItemTypeSet; const aAction : string) : TItem;
        function  SeekAmmo( aAmmoID : DWord ) : TItem;
-       function  View : boolean;
+       function  View : TCommand;
        function  DoScrollSwap : TCommand;
        function  AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
        function  isFull : boolean;
@@ -246,14 +246,13 @@ begin
 end;
 
 
-function TInventory.View : boolean;
-var iItem : TItem;
+function TInventory.View : TCommand;
 begin
-  View := False;
-  iItem := Choose([],'');
-  if iItem = nil then Exit;
-  if iItem.isWearable then Exit(DoWear(iItem));
-  if iItem.isPack then (FOwner as TBeing).ActionUse(iItem);
+  View.Command := COMMAND_NONE;
+  View.Item := Choose([],'');
+  if View.Item = nil then Exit;
+  if View.Item.isWearable then View.Command := COMMAND_WEAR;
+  if View.Item.isPack     then View.Command := COMMAND_USE;
 end;
 
 type TItemArray = specialize TGObjectArray< TItem >;
