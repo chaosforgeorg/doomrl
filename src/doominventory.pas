@@ -1,7 +1,10 @@
 {$INCLUDE doomrl.inc}
 unit doominventory;
 interface
-uses SysUtils, vnode, vuielements, dfitem, dfoutput, dfthing, dfdata, doomviews, doomhooks;
+uses SysUtils,
+     vnode, vuielements,
+     dfitem, dfoutput, dfthing, dfdata,
+     doomcommand, doomviews, doomhooks;
 
 type
   TItemList      = array[TItemSlot] of TItem;
@@ -19,7 +22,7 @@ TInventory = class( TVObject )
        function  Choose( aFilter : TItemTypeSet; const aAction : string) : TItem;
        function  SeekAmmo( aAmmoID : DWord ) : TItem;
        function  View : boolean;
-       function  DoScrollSwap : Boolean;
+       function  DoScrollSwap : TCommand;
        function  AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
        function  isFull : boolean;
        procedure RawSetSlot( aIndex : TEqSlot; aItem : TItem ); inline;
@@ -255,7 +258,7 @@ end;
 
 type TItemArray = specialize TGObjectArray< TItem >;
 
-function TInventory.DoScrollSwap : Boolean;
+function TInventory.DoScrollSwap : TCommand;
 var iArray   : TItemArray;
     iItem    : TItem;
     iIdx     : Integer;
@@ -268,7 +271,8 @@ begin
     if not Equipped( iItem ) then
       if iItem.isWeapon then
         iArray.Push( iItem );
-  DoScrollSwap := False;
+
+  DoScrollSwap.Command := COMMAND_NONE;
   if iArray.Size = 0 then UI.Msg('You have no weapons!');
   if iArray.Size = 1 then UI.Msg('You have no other weapons!');
   if iArray.Size > 1 then
@@ -285,13 +289,13 @@ begin
     if iCommand in [COMMAND_ENTER,COMMAND_MLEFT] then
     begin
       if iArray[ iIdx ] = Slot[ efWeapon2 ] then
-      begin
-        TBeing(FOwner).ActionSwapWeapon;
-        DoScrollSwap := False;
-      end
+        DoScrollSwap.Command := COMMAND_SWAPWEAPON
       else
       if iArray[ iIdx ] <> Slot[ efWeapon ] then
-        DoScrollSwap := DoWear( iArray[ iIdx ] ) and (not FOwner.Flags[BF_QUICKSWAP]);
+      begin
+        DoScrollSwap.Command := COMMAND_WEAR;
+        DoScrollSwap.Item    := iArray[ iIdx ];
+      end;
     end;
   end;
   UI.SetHint('');

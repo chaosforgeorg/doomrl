@@ -641,6 +641,7 @@ var iLevel      : TLevel;
 
     iLimitRange : Boolean;
     iRange      : Byte;
+    iCommand    : TCommand;
 begin
   iLevel := TLevel( Parent );
   iFlag  := 0;
@@ -704,16 +705,7 @@ begin
                            end;
   end;
 
-  // These should invoke commands
-  // TODO: Fix
-  case aCommand of
-    COMMAND_INVENTORY : begin if Inv.View then begin Dec(FSpeedCount,1000); Exit( True ); end; Exit( False ); end;
-    COMMAND_EQUIPMENT : begin if Inv.RunEq then begin Dec(FSpeedCount,1000);Exit( True ); end; Exit( False ); end;
-    COMMAND_MSCRUP,
-    COMMAND_MSCRDOWN  : begin if Inv.DoScrollSwap then begin Dec(FSpeedCount,1000); Exit( True ); end; Exit( False ); end;
-  end;
-
-  if ( aCommand = COMMAND_ACTION ) then 
+  if ( aCommand = COMMAND_ACTION ) then
   begin
     if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
       aCommand := COMMAND_ENTER
@@ -981,6 +973,26 @@ begin
     end;
   end;
 
+  // These should invoke commands
+  // TODO: Fix
+  if aCommand in [ COMMAND_INVENTORY, COMMAND_EQUIPMENT, COMMAND_MSCRUP, COMMAND_MSCRDOWN ] then
+  begin
+    iCommand.Command:= COMMAND_NONE;
+    case aCommand of
+      COMMAND_INVENTORY : begin if Inv.View then begin Dec(FSpeedCount,1000); Exit( True ); end; Exit( False ); end;
+      COMMAND_EQUIPMENT : begin if Inv.RunEq then begin Dec(FSpeedCount,1000);Exit( True ); end; Exit( False ); end;
+      COMMAND_MSCRUP,
+      COMMAND_MSCRDOWN  : iCommand := Inv.DoScrollSwap;
+    end;
+    if iCommand.Command <> COMMAND_NONE then
+    begin
+      aCommand := iCommand.Command;
+      iItem    := iCommand.Item;
+    end
+    else
+      Exit( False );
+  end;
+
   if aCommand = COMMAND_SWAPWEAPON then
   begin
     if ( Inv.Slot[ efWeapon ] <> nil )  and ( Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then Exit( Fail('You can''t!',[]) );
@@ -993,7 +1005,7 @@ begin
   if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iTarget, iItem ) ) );
 
-  if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD, COMMAND_USE ] ) then
+  if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD, COMMAND_USE, COMMAND_WEAR ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iItem, iID ) ) );
 
   if ( aCommand in [ COMMAND_TACTIC, COMMAND_WAIT, COMMAND_SWAPWEAPON, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD, COMMAND_PICKUP ] ) then

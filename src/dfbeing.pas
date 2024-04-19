@@ -100,6 +100,7 @@ TBeing = class(TThing,IPathQuery)
     // On success they do eat up action cost!
     function ActionSwapWeapon : boolean;
     function ActionDrop( Item : TItem ) : boolean;
+    function ActionWear( aItem : TItem ) : boolean;
     function ActionReload : Boolean;
     function ActionDualReload : Boolean;
     function ActionAltReload : Boolean;
@@ -580,6 +581,19 @@ except
     Fail( 'No room on the floor.', [] );
   end;
 end;
+  Exit( False );
+end;
+
+function TBeing.ActionWear( aItem : TItem ) : boolean;
+begin
+  if aItem = nil then Exit( false );
+  if not FInv.Contains( aItem ) then Exit( False );
+  FInv.DoWear( aItem );
+  if not Flags[BF_QUICKSWAP] then
+  begin
+    Dec( FSpeedCount, ActionCostWear );
+    Exit( True );
+  end;
   Exit( False );
 end;
 
@@ -1272,6 +1286,7 @@ begin
     COMMAND_MOVE      : Exit( ActionMove( aCommand.Target ) );
     COMMAND_USE       : Exit( ActionUse( aCommand.Item ) );
     COMMAND_DROP      : Exit( ActionDrop( aCommand.Item ) );
+    COMMAND_WEAR      : Exit( ActionWear( aCommand.Item ) );
     COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
     COMMAND_ACTION    : TLevel( Parent ).CallHook( aCommand.Target, Self, CellHook_OnAct );
     COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
