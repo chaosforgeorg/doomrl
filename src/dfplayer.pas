@@ -79,7 +79,6 @@ TPlayer = class(TBeing)
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
   procedure doScreen;
-  function doQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
   procedure doQuit( aNoConfirm : Boolean = False );
   procedure doRun;
   procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); override;
@@ -139,7 +138,7 @@ uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
      dfmap, dflevel, dfoutput,
      doomhooks, doomio, doomspritemap, doomviews, doombase,
-     doomlua, doominventory, doomcommand;
+     doomlua, doominventory, doomcommand, doomhelp;
 
 var MortemText    : Text;
     WritingMortem : Boolean = False;
@@ -361,49 +360,6 @@ begin
   if FExpLevel >= MaxPlayerLevel - 1 then Exit;
 
   while FExp >= ExpTable[ FExpLevel + 1 ] do LevelUp;
-end;
-
-
-
-function TPlayer.doQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
-var iWeapon  : TItem;
-    iItem    : TItem;
-    iAmmo    : Byte;
-begin
-  if (not LuaSystem.Defines.Exists(aWeaponID)) or (LuaSystem.Defines[aWeaponID] = 0)then Exit( False );
-
-  if Inv.Slot[ efWeapon ] <> nil then
-  begin
-    if Inv.Slot[ efWeapon ].ID = aWeaponID then Exit( Fail( 'You already have %s in your hands.', [ Inv.Slot[ efWeapon ].GetName(true) ] ) );
-    if Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] then Exit( Fail( 'You can''t!', [] ) );
-  end;
-
-  if Inv.Slot[ efWeapon2 ] <> nil then
-    if Inv.Slot[ efWeapon2 ].ID = aWeaponID then
-      Exit( ActionSwapWeapon );
-
-  iAmmo   := 0;
-  iWeapon := nil;
-  for iItem in Inv do
-    if iItem.isWeapon then
-      if iItem.ID = aWeaponID then
-      if iItem.Ammo >= iAmmo then
-      begin
-        iWeapon := iItem;
-        iAmmo   := iItem.Ammo;
-      end;
-
-  if iWeapon = nil then Exit( Fail( 'You don''t have a %s!', [ Ansistring(LuaSystem.Get([ 'items', aWeaponID, 'name' ])) ] ) );
-
-  Inv.Wear( iWeapon );
-
-  if Option_SoundEquipPickup
-    then PlaySound( iWeapon.Sounds.Pickup )
-    else PlaySound( iWeapon.Sounds.Reload );
-
-  if not ( BF_QUICKSWAP in FFlags )
-     then Exit( Success( 'You prepare the %s!',[ iWeapon.Name ], 1000 ) )
-     else Exit( Success( 'You prepare the %s instantly!',[ iWeapon.Name ] ) );
 end;
 
 procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageType: TDamageType; aSource : TItem);
@@ -675,6 +631,24 @@ begin
     end;
     aCommand := DirectionToInput( iDir );
   end;
+
+  if ( aCommand in [ INPUT_QUICKKEY_0..INPUT_QUICKKEY_9 ] ) then
+  begin
+    case aCommand of
+    INPUT_QUICKKEY_0 : iID := 'chainsaw';
+    INPUT_QUICKKEY_1 : iID := 'knife';
+    INPUT_QUICKKEY_2 : iID := 'pistol';
+    INPUT_QUICKKEY_3 : iID := 'shotgun';
+    INPUT_QUICKKEY_4 : iID := 'ashotgun';
+    INPUT_QUICKKEY_5 : iID := 'dshotgun';
+    INPUT_QUICKKEY_6 : iID := 'chaingun';
+    INPUT_QUICKKEY_7 : iID := 'bazooka';
+    INPUT_QUICKKEY_8 : iID := 'plasma';
+    INPUT_QUICKKEY_9 : iID := 'bfg9000';
+    end;
+    aCommand := COMMAND_QUICKKEY;
+  end;
+
 
   if ( aCommand = COMMAND_ACTION ) then
   begin
@@ -964,6 +938,9 @@ begin
     if ( Inv.Slot[ efWeapon2 ] <> nil ) and ( Inv.Slot[ efWeapon2 ].isAmmoPack )        then Exit( Fail('Nothing to swap!',[]) );
   end;
 
+  if ( aCommand in [ COMMAND_QUICKKEY ] ) then
+    Exit( HandleCommand( TCommand.Create( aCommand, iID ) ) );
+
   if ( aCommand in [ COMMAND_ACTION, COMMAND_MELEE, COMMAND_MOVE ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iTarget ) ) );
 
@@ -975,8 +952,6 @@ begin
 
   if ( aCommand in [ COMMAND_TACTIC, COMMAND_WAIT, COMMAND_SWAPWEAPON, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD, COMMAND_PICKUP ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand ) ) );
-
-  if aCommand = INPUT_YIELD then Exit( True );
 
   Exit( Fail('Unknown command. Press "?" for help.', []) );
 end;
@@ -1112,11 +1087,15 @@ try
     // Handle commands that should be handled by the UI
   // TODO: Fix
   case iCommand of
-    INPUT_ESCAPE    : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
-    INPUT_LOOK      : begin UI.Msg( '-' ); UI.LookMode; Exit; end;
-    INPUT_PLAYERINFO: begin doScreen; Exit; end;
-    INPUT_QUIT      : begin doQuit; Exit; end;
-    INPUT_HARDQUIT  : begin
+    INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+    INPUT_LOOK       : begin UI.Msg( '-' ); UI.LookMode; Exit; end;
+    INPUT_PLAYERINFO : begin doScreen; Exit; end;
+    INPUT_QUIT       : begin doQuit; Exit; end;
+    INPUT_HELP       : begin Help.Run; Exit; end;
+    INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, UI.MsgGetRecent ) ); Exit; end;
+    INPUT_ASSEMBLIES : begin IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) ); Exit; end;
+    INPUT_LEVEL_FEEL : begin Ui.Msg( Ansistring(LuaSystem.Get([ 'level', 'feeling' ]))); Exit; end;
+    INPUT_HARDQUIT   : begin
       Option_MenuReturn := False;
       doQuit(True);
       Exit;
@@ -1594,7 +1573,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  Player.doQuickWeapon(State.ToString(2));
+  Player.ActionQuickKey(State.ToString(2));
   Result := 0;
 end;
 

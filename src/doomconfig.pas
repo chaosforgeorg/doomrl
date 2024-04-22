@@ -17,74 +17,6 @@ implementation
 
 uses vsystems, vluasystem, dfplayer, dfdata, dfoutput, vluastate, vlualibrary, doomlua, doomhelp, dfitem, doomio, doomviews;
 
-{ LUA API }
-
-function lua_command_quick_weapon(L: Plua_State): Integer; cdecl;
-var State : TLuaState;
-    ID    : AnsiString;
-begin
-  State.Init(L);
-  if Player.SCount < 5000 then Exit(0);
-  ID := State.ToString(1);
-  if LuaSystem.Defines.Exists(ID) then
-  Player.doQuickWeapon( ID );
-  Result := lua_yield( L, 0 );
-end;
-
-function lua_command_use_item(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
-begin
-  State.Init(L);
-  if Player.SCount < 5000 then Exit(0);
-  Item := Player.FindChild( State.ToString(1) ) as TItem;
-  if Item <> nil then
-    Player.ActionUse( Item );
-  State.Push( Item <> nil );
-  Result := lua_yield( L, 1 );
-end;
-
-
-function lua_command_quit(L: Plua_State): Integer; cdecl;
-var State : TLuaState;
-begin
-  State.Init(L);
-  if Player.SCount < 5000 then Exit(0);
-  Player.doQuit( State.ToBoolean(1) );
-  Result := 0;
-end;
-
-function lua_command_help(L: Plua_State): Integer; cdecl;
-begin
-  Help.Run;
-  Result := 0;
-end;
-
-function lua_command_messages(L: Plua_State): Integer; cdecl;
-begin
-  IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, UI.MsgGetRecent ) );
-  Result := 0;
-end;
-
-function lua_command_assemblies(L: Plua_State): Integer; cdecl;
-begin
-  IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) );
-  Result := 0;
-end;
-
-function lua_command_reload(L: Plua_State): Integer; cdecl;
-var State : TLuaState;
-begin
-  State.Init(L);
-  if Player.SCount < 5000 then Exit(0);
-  Player.SilentAction := State.ToBoolean(2);
-  if State.ToBoolean(1)
-    then Player.ActionAltReload
-    else Player.ActionReload;
-  Player.SilentAction := False;
-  Result := lua_yield( L, 0 );
-end;
-
 
 { TDoomConfig }
 
@@ -151,14 +83,6 @@ begin
 
   Option_MaxRun           := Configure('MaxRun',Option_MaxRun);
   Option_MaxWait          := Configure('MaxWait',Option_MaxWait);
-
-  State.Register( 'command', 'quick_weapon', @lua_command_quick_weapon );
-  State.Register( 'command', 'quit',         @lua_command_quit );
-  State.Register( 'command', 'help',         @lua_command_help );
-  State.Register( 'command', 'messages',     @lua_command_messages );
-  State.Register( 'command', 'assemblies',   @lua_command_assemblies);
-  State.Register( 'command', 'reload',       @lua_command_reload );
-  State.Register( 'command', 'use_item',     @lua_command_use_item );
 
   if ForceNoNet then Option_NetworkConnection := False;
 

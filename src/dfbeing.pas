@@ -99,6 +99,7 @@ TBeing = class(TThing,IPathQuery)
     // All actions return True/False depending on success.
     // On success they do eat up action cost!
     function ActionSwapWeapon : boolean;
+    function ActionQuickKey( const aWeaponID : Ansistring ) : Boolean;
     function ActionDrop( Item : TItem ) : boolean;
     function ActionWear( aItem : TItem ) : boolean;
     function ActionSwap( aItem : TItem; aSlot : TEqSlot ) : boolean;
@@ -544,6 +545,47 @@ end;
 function TBeing.ASCIIMoreCode : AnsiString;
 begin
   Exit( ID );
+end;
+
+function TBeing.ActionQuickKey( const aWeaponID : Ansistring ) : Boolean;
+var iWeapon  : TItem;
+    iItem    : TItem;
+    iAmmo    : Byte;
+begin
+  if (not LuaSystem.Defines.Exists(aWeaponID)) or (LuaSystem.Defines[aWeaponID] = 0)then Exit( False );
+
+  if Inv.Slot[ efWeapon ] <> nil then
+  begin
+    if Inv.Slot[ efWeapon ].ID = aWeaponID then Exit( Fail( 'You already have %s in your hands.', [ Inv.Slot[ efWeapon ].GetName(true) ] ) );
+    if Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] then Exit( Fail( 'You can''t!', [] ) );
+  end;
+
+  if Inv.Slot[ efWeapon2 ] <> nil then
+    if Inv.Slot[ efWeapon2 ].ID = aWeaponID then
+      Exit( ActionSwapWeapon );
+
+  iAmmo   := 0;
+  iWeapon := nil;
+  for iItem in Inv do
+    if iItem.isWeapon then
+      if iItem.ID = aWeaponID then
+      if iItem.Ammo >= iAmmo then
+      begin
+        iWeapon := iItem;
+        iAmmo   := iItem.Ammo;
+      end;
+
+  if iWeapon = nil then Exit( Fail( 'You don''t have a %s!', [ Ansistring(LuaSystem.Get([ 'items', aWeaponID, 'name' ])) ] ) );
+
+  Inv.Wear( iWeapon );
+
+  if Option_SoundEquipPickup
+    then PlaySound( iWeapon.Sounds.Pickup )
+    else PlaySound( iWeapon.Sounds.Reload );
+
+  if not ( BF_QUICKSWAP in FFlags )
+     then Exit( Success( 'You prepare the %s!',[ iWeapon.Name ], 1000 ) )
+     else Exit( Success( 'You prepare the %s instantly!',[ iWeapon.Name ] ) );
 end;
 
 function TBeing.ActionSwapWeapon : boolean;
@@ -1344,6 +1386,7 @@ begin
     COMMAND_PICKUP    : Exit( ActionPickup );
     COMMAND_UNLOAD    : Exit( ActionUnLoad( aCommand.Item, aCommand.ID ) );
     COMMAND_SWAPWEAPON: Exit( ActionSwapWeapon );
+    COMMAND_QUICKKEY  : Exit( ActionQuickKey( aCommand.ID ) );
     COMMAND_TACTIC    : Exit( ActionTactic );
   else Exit( False );
   end;

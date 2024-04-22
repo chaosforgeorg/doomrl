@@ -37,6 +37,21 @@ INPUT_ACTION            = 43;
 INPUT_ALTPICKUP         = 44;
 INPUT_RELOAD            = 45;
 INPUT_ALTRELOAD         = 46;
+INPUT_HELP              = 47; -- will be removed
+INPUT_LEVEL_FEEL        = 48; -- will be removed
+INPUT_MESSAGES          = 49; -- will be removed
+INPUT_ASSEMBLIES        = 50; -- will be removed
+
+INPUT_QUICKKEY_0        = 60;
+INPUT_QUICKKEY_1        = 61;
+INPUT_QUICKKEY_2        = 62;
+INPUT_QUICKKEY_3        = 63;
+INPUT_QUICKKEY_4        = 64;
+INPUT_QUICKKEY_5        = 65;
+INPUT_QUICKKEY_6        = 66;
+INPUT_QUICKKEY_7        = 67;
+INPUT_QUICKKEY_8        = 68;
+INPUT_QUICKKEY_9        = 69;
 
 INPUT_SOUNDTOGGLE       = 86;
 INPUT_MUSICTOGGLE       = 87;     
@@ -67,15 +82,15 @@ Keybindings = {
 	["O"]            = INPUT_OPEN,
 	["C"]            = INPUT_CLOSE,
 	["L"]            = INPUT_LOOK,
-	["SHIFT+L"]      = function() ui.repeat_feel() end,
+	["SHIFT+L"]      = INPUT_LEVEL_FEEL,
 	["SHIFT+K"]      = INPUT_GRIDTOGGLE,
 	["F"]            = INPUT_FIRE,
 	["SHIFT+F"]      = INPUT_ALTFIRE, 
 	["R"]            = INPUT_RELOAD,
 	["SHIFT+R"]      = INPUT_ALTRELOAD,
 	["U"]            = INPUT_USE,
-	["SHIFT+Q"]      = function() command.quit() end,
-	["SHIFT+SLASH"]  = function() command.help() end,
+	["SHIFT+Q"]      = INPUT_QUIT,
+	["SHIFT+SLASH"]  = INPUT_HELP,
 	["SHIFT+2"]      = INPUT_PLAYERINFO,
 	["SHIFT+S"]      = INPUT_SAVE,
 	TAB              = INPUT_TACTIC,
@@ -86,32 +101,21 @@ Keybindings = {
 	["T"]            = INPUT_TRAITS,
 	["SHIFT+9"]      = INPUT_SOUNDTOGGLE,
 	["SHIFT+0"]      = INPUT_MUSICTOGGLE,
-	["SHIFT+P"]      = function() command.messages() end,
-	["SHIFT+A"]      = function() command.assemblies() end,
+	["SHIFT+P"]      = INPUT_MESSAGES,
+	["SHIFT+A"]      = INPUT_ASSEMBLIES,
 	-- Commands for blind mode:
 	["X"]            = INPUT_EXAMINENPC,
 	["SHIFT+X"]      = INPUT_EXAMINEITEM,
 	-- QuickKeys
-	["0"]     = function() command.quick_weapon('chainsaw') end,
-	["1"]     = function() command.quick_weapon('knife') end,
-	["2"]     = function() command.quick_weapon('pistol') end,
-	["3"]     = function() command.quick_weapon('shotgun') end,
-	["4"]     = function() command.quick_weapon('ashotgun') end,
-	["5"]     = function() command.quick_weapon('dshotgun') end,
-	["6"]     = function() command.quick_weapon('chaingun') end,
-	["7"]     = function() command.quick_weapon('bazooka') end,
-	["8"]     = function() command.quick_weapon('plasma') end,
-	["9"]     = function() command.quick_weapon('bfg9000') end,
+	["0"]     = INPUT_QUICKKEY_0,
+	["1"]     = INPUT_QUICKKEY_1,
+	["2"]     = INPUT_QUICKKEY_2,
+	["3"]     = INPUT_QUICKKEY_3,
+	["4"]     = INPUT_QUICKKEY_4,
+	["5"]     = INPUT_QUICKKEY_5,
+	["6"]     = INPUT_QUICKKEY_6,
+	["7"]     = INPUT_QUICKKEY_7,
+	["8"]     = INPUT_QUICKKEY_8,
+	["9"]     = INPUT_QUICKKEY_9,
 
-	-- Example of complex quickkey's
-	["SHIFT+N"]    = function()
-					if not command.use_item("smed") then
-						ui.msg("No small medpacks left!")
-					end
-				end,
-	["SHIFT+M"]    = function()
-					if not command.use_item("lmed") then
-						ui.msg("No large medpacks left!")
-					end
-				end,
 }
