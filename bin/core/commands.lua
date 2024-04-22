@@ -18,6 +18,7 @@ COMMAND_MOVE              = 48;
 COMMAND_WEAR              = 49;
 COMMAND_SWAP              = 50;
 COMMAND_TAKEOFF           = 51;
+COMMAND_QUICKKEY          = 52;
 
 INPUT_WALKNORTH         = 2;
 INPUT_WALKSOUTH         = 3;
@@ -63,6 +64,17 @@ INPUT_HELP              = 47;
 INPUT_LEVEL_FEEL        = 48;
 INPUT_MESSAGES          = 49;
 INPUT_ASSEMBLIES        = 50;
+
+INPUT_QUICKKEY_0        = 60;
+INPUT_QUICKKEY_1        = 61;
+INPUT_QUICKKEY_2        = 62;
+INPUT_QUICKKEY_3        = 63;
+INPUT_QUICKKEY_4        = 64;
+INPUT_QUICKKEY_5        = 65;
+INPUT_QUICKKEY_6        = 66;
+INPUT_QUICKKEY_7        = 67;
+INPUT_QUICKKEY_8        = 68;
+INPUT_QUICKKEY_9        = 69;
 
 INPUT_SOUNDTOGGLE       = 86;
 INPUT_MUSICTOGGLE       = 87;

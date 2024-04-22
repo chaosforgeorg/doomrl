@@ -27,7 +27,7 @@ begin
   if Player.SCount < 5000 then Exit(0);
   ID := State.ToString(1);
   if LuaSystem.Defines.Exists(ID) then
-  Player.doQuickWeapon( ID );
+  Player.ActionQuickKey( ID );
   Result := lua_yield( L, 0 );
 end;
 

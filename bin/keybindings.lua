@@ -42,6 +42,17 @@ INPUT_LEVEL_FEEL        = 48; -- will be removed
 INPUT_MESSAGES          = 49; -- will be removed
 INPUT_ASSEMBLIES        = 50; -- will be removed
 
+INPUT_QUICKKEY_0        = 60;
+INPUT_QUICKKEY_1        = 61;
+INPUT_QUICKKEY_2        = 62;
+INPUT_QUICKKEY_3        = 63;
+INPUT_QUICKKEY_4        = 64;
+INPUT_QUICKKEY_5        = 65;
+INPUT_QUICKKEY_6        = 66;
+INPUT_QUICKKEY_7        = 67;
+INPUT_QUICKKEY_8        = 68;
+INPUT_QUICKKEY_9        = 69;
+
 INPUT_SOUNDTOGGLE       = 86;
 INPUT_MUSICTOGGLE       = 87;     
 
@@ -96,26 +107,15 @@ Keybindings = {
 	["X"]            = INPUT_EXAMINENPC,
 	["SHIFT+X"]      = INPUT_EXAMINEITEM,
 	-- QuickKeys
-	["0"]     = function() command.quick_weapon('chainsaw') end,
-	["1"]     = function() command.quick_weapon('knife') end,
-	["2"]     = function() command.quick_weapon('pistol') end,
-	["3"]     = function() command.quick_weapon('shotgun') end,
-	["4"]     = function() command.quick_weapon('ashotgun') end,
-	["5"]     = function() command.quick_weapon('dshotgun') end,
-	["6"]     = function() command.quick_weapon('chaingun') end,
-	["7"]     = function() command.quick_weapon('bazooka') end,
-	["8"]     = function() command.quick_weapon('plasma') end,
-	["9"]     = function() command.quick_weapon('bfg9000') end,
+	["0"]     = INPUT_QUICKKEY_0,
+	["1"]     = INPUT_QUICKKEY_1,
+	["2"]     = INPUT_QUICKKEY_2,
+	["3"]     = INPUT_QUICKKEY_3,
+	["4"]     = INPUT_QUICKKEY_4,
+	["5"]     = INPUT_QUICKKEY_5,
+	["6"]     = INPUT_QUICKKEY_6,
+	["7"]     = INPUT_QUICKKEY_7,
+	["8"]     = INPUT_QUICKKEY_8,
+	["9"]     = INPUT_QUICKKEY_9,
 
-	-- Example of complex quickkey's
-	["SHIFT+N"]    = function()
-					if not command.use_item("smed") then
-						ui.msg("No small medpacks left!")
-					end
-				end,
-	["SHIFT+M"]    = function()
-					if not command.use_item("lmed") then
-						ui.msg("No large medpacks left!")
-					end
-				end,
 }
