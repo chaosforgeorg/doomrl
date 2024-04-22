@@ -139,7 +139,7 @@ uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
      dfmap, dflevel, dfoutput,
      doomhooks, doomio, doomspritemap, doomviews, doombase,
-     doomlua, doominventory, doomcommand;
+     doomlua, doominventory, doomcommand, doomhelp;
 
 var MortemText    : Text;
     WritingMortem : Boolean = False;
@@ -1112,11 +1112,14 @@ try
     // Handle commands that should be handled by the UI
   // TODO: Fix
   case iCommand of
-    INPUT_ESCAPE    : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
-    INPUT_LOOK      : begin UI.Msg( '-' ); UI.LookMode; Exit; end;
-    INPUT_PLAYERINFO: begin doScreen; Exit; end;
-    INPUT_QUIT      : begin doQuit; Exit; end;
-    INPUT_HARDQUIT  : begin
+    INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+    INPUT_LOOK       : begin UI.Msg( '-' ); UI.LookMode; Exit; end;
+    INPUT_PLAYERINFO : begin doScreen; Exit; end;
+    INPUT_QUIT       : begin doQuit; Exit; end;
+    INPUT_HELP       : begin Help.Run; Exit; end;
+    INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, UI.MsgGetRecent ) ); Exit; end;
+    INPUT_ASSEMBLIES : begin IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) ); Exit; end;
+    INPUT_HARDQUIT   : begin
       Option_MenuReturn := False;
       doQuit(True);
       Exit;

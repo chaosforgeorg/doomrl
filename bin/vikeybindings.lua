@@ -35,6 +35,11 @@ INPUT_ALTPICKUP         = 44;
 INPUT_RELOAD            = 45;
 INPUT_ALTRELOAD         = 46;
 
+INPUT_HELP              = 47; -- will be removed
+INPUT_LEVEL_FEEL        = 48; -- will be removed
+INPUT_MESSAGES          = 49; -- will be removed
+INPUT_ASSEMBLIES        = 50; -- will be removed
+
 INPUT_SOUNDTOGGLE       = 86;
 INPUT_MUSICTOGGLE       = 87;
 
@@ -68,8 +73,8 @@ Keybindings = {
 	["R"]            = INPUT_RELOAD,
 	["SHIFT+R"]      = INPUT_ALTRELOAD,
 	["A"]            = INPUT_USE,
-	["SHIFT+Q"]      = function() command.quit() end,
-	["SHIFT+SLASH"]  = function() command.help() end,
+	["SHIFT+Q"]      = INPUT_QUIT,
+	["SHIFT+SLASH"]  = INPUT_HELP,
 	["SHIFT+2"]      = INPUT_PLAYERINFO,
 	["SHIFT+S"]      = INPUT_SAVE,
 	TAB              = INPUT_TACTIC,
@@ -80,8 +85,8 @@ Keybindings = {
 	["SHIFT+T"]      = INPUT_TRAITS,
 	["SHIFT+9"]      = INPUT_SOUNDTOGGLE,
 	["SHIFT+0"]      = INPUT_MUSICTOGGLE,
-	["SHIFT+P"]      = function() command.messages() end,
-	["SHIFT+A"]      = function() command.assemblies() end,
+	["SHIFT+P"]      = INPUT_MESSAGES,
+	["SHIFT+A"]      = INPUT_ASSEMBLIES,
 	-- Commands for blind mode:
 	["X"]            = INPUT_EXAMINENPC,
 	["SHIFT+X"]      = INPUT_EXAMINEITEM,

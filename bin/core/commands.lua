@@ -58,6 +58,12 @@ INPUT_ACTION            = 43;
 INPUT_ALTPICKUP         = 44;
 INPUT_RELOAD            = 45;
 INPUT_ALTRELOAD         = 46;
+
+INPUT_HELP              = 47;
+INPUT_LEVEL_FEEL        = 48;
+INPUT_MESSAGES          = 49;
+INPUT_ASSEMBLIES        = 50;
+
 INPUT_SOUNDTOGGLE       = 86;
 INPUT_MUSICTOGGLE       = 87;
 
