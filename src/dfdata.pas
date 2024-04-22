@@ -335,8 +335,7 @@ function SlotName(slot : TEqSlot) : string;
 
 var ColorOverrides : TIntHashMap;
 
-Function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; PreferStrings: Boolean = True): Variant;
-
+function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; PreferStrings: Boolean = True): Variant;
 
 implementation
 uses typinfo, strutils, math, vdebug, dfitem;

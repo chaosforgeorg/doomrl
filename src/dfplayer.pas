@@ -676,35 +676,6 @@ begin
     aCommand := DirectionToInput( iDir );
   end;
 
-
-  // Handle commands that should be handled by the UI
-  // TODO: Fix
-  case aCommand of
-    INPUT_ESCAPE    : begin if GodMode then begin Doom.SetState( DSQuit ); Exit( True ); end; Exit( True ); end;
-    INPUT_LOOK      : begin UI.Msg( '-' ); UI.LookMode; Exit( True ); end;
-    INPUT_PLAYERINFO: begin doScreen; Exit( True ); end;
-    INPUT_QUIT      : begin doQuit; Exit( True ); end;
-    INPUT_HARDQUIT  : begin
-      Option_MenuReturn := False;
-      doQuit(True);
-      Exit( True );
-    end;
-    INPUT_SAVE      : begin doSave; Exit( True ); end;
-    INPUT_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );Exit( True ); end;
-    INPUT_RUNMODE   : begin doRun;Exit( True ); end;
-
-    INPUT_EXAMINENPC   : begin ExamineNPC; Exit( True ); end;
-    INPUT_EXAMINEITEM  : begin ExamineItem; Exit( True ); end;
-    INPUT_GRIDTOGGLE: begin if GraphicsVersion then SpriteMap.ToggleGrid; Exit( True ); end;
-    INPUT_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit( True ); end;
-    INPUT_MUSICTOGGLE  : begin
-                             MusicOff := not MusicOff;
-                             if MusicOff then IO.PlayMusic('')
-                                         else IO.PlayMusic(iLevel.ID);
-                             Exit( True );
-                           end;
-  end;
-
   if ( aCommand = COMMAND_ACTION ) then
   begin
     if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
@@ -1137,6 +1108,34 @@ try
     else iCommand := INPUT_MATTACK;
   end;
   // === MOUSE HANDLING END ===
+
+    // Handle commands that should be handled by the UI
+  // TODO: Fix
+  case iCommand of
+    INPUT_ESCAPE    : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+    INPUT_LOOK      : begin UI.Msg( '-' ); UI.LookMode; Exit; end;
+    INPUT_PLAYERINFO: begin doScreen; Exit; end;
+    INPUT_QUIT      : begin doQuit; Exit; end;
+    INPUT_HARDQUIT  : begin
+      Option_MenuReturn := False;
+      doQuit(True);
+      Exit;
+    end;
+    INPUT_SAVE      : begin doSave; Exit; end;
+    INPUT_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );Exit; end;
+    INPUT_RUNMODE   : begin doRun;Exit; end;
+
+    INPUT_EXAMINENPC   : begin ExamineNPC; Exit; end;
+    INPUT_EXAMINEITEM  : begin ExamineItem; Exit; end;
+    INPUT_GRIDTOGGLE: begin if GraphicsVersion then SpriteMap.ToggleGrid; Exit; end;
+    INPUT_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit; end;
+    INPUT_MUSICTOGGLE  : begin
+                             MusicOff := not MusicOff;
+                             if MusicOff then IO.PlayMusic('')
+                                         else IO.PlayMusic(iLevel.ID);
+                             Exit;
+                           end;
+  end;
 
   HandleCommandValue( iCommand );
 except
