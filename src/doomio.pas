@@ -682,18 +682,8 @@ end;
 function TDoomIO.GetCommand : Byte;
 var Special    : Variant;
 begin
-  if Config.isPaused then
-  begin
-     Special := Config.Resume;
-     if VarIsOrdinal(Special) and (not VarIsType( Special, varBoolean ) )
-        then GetCommand := Special
-        else GetCommand := INPUT_YIELD;
-  end
-  else
-    GetCommand := WaitForCommand([]);
-
-  if GetCommand <> INPUT_YIELD then
-    UI.MsgUpDate;
+  GetCommand := WaitForCommand([]);
+  UI.MsgUpDate;
 
   if GetCommand = COMMAND_INVALID then
   begin

@@ -953,8 +953,6 @@ begin
   if ( aCommand in [ COMMAND_TACTIC, COMMAND_WAIT, COMMAND_SWAPWEAPON, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD, COMMAND_PICKUP ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand ) ) );
 
-  if aCommand = INPUT_YIELD then Exit( True );
-
   Exit( Fail('Unknown command. Press "?" for help.', []) );
 end;
 

@@ -106,7 +106,6 @@ const
   INPUT_MFIRE    = 246;
   INPUT_MALTFIRE = 247;
   INPUT_MATTACK  = 248;
-  INPUT_YIELD    = 254;
   COMMAND_NONE     = 0;
 
   KnockbackValue = 7;
