@@ -7,7 +7,10 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfbeing;
 interface
-uses Classes, SysUtils, doominventory, dfdata, dfoutput, vluatable, vnode, vpath, vmath, math, dfthing, dfitem, vutil, vrltools;
+uses Classes, SysUtils,
+     vluatable, vnode, vpath, vmath, vutil, vrltools,
+     dfdata, dfoutput, dfthing, dfitem,
+     doominventory, doomcommand;
 
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
 
@@ -51,6 +54,8 @@ TBeing = class(TThing,IPathQuery)
     function GetName( known : boolean ) : string;
     procedure Tick;
     procedure Action;
+    procedure HandlePostMove; virtual;
+    function HandleCommand( aCommand : TCommand ) : Boolean; 
     function  TryMove( where : TCoord2D ) : TMoveResult;
     function  MoveTowards( where : TCoord2D ) : TMoveResult;
     procedure Reload( AmmoItem : TItem; Single : Boolean );
@@ -67,6 +72,7 @@ TBeing = class(TThing,IPathQuery)
     function  isActive : boolean;
     function  WoundStatus : string;
     function  IsPlayer : Boolean;
+
     procedure BloodFloor;
     procedure Knockback( dir : TDirection; Strength : Integer );
     destructor Destroy; override;
@@ -92,16 +98,20 @@ TBeing = class(TThing,IPathQuery)
     // Actions
     // All actions return True/False depending on success.
     // On success they do eat up action cost!
-    function ActionQuickSwap : boolean;
+    function ActionSwapWeapon : boolean;
     function ActionDrop( Item : TItem ) : boolean;
+    function ActionWear( aItem : TItem ) : boolean;
+    function ActionSwap( aItem : TItem; aSlot : TEqSlot ) : boolean;
+    function ActionTakeOff( aSlot : TEqSlot ) : boolean;
     function ActionReload : Boolean;
     function ActionDualReload : Boolean;
     function ActionAltReload : Boolean;
-    function ActionFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem; aAltFire : TAltFire = ALT_NONE ) : Boolean;
-    function ActionAltFire( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem ) : Boolean;
+    function ActionFire( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean = False ) : Boolean;
     function ActionPickup : Boolean;
-    function ActionUse( Item : TItem; aFromFloor : Boolean ) : Boolean;
-    function ActionUnLoad( aItem : TItem ) : Boolean;
+    function ActionUse( Item : TItem ) : Boolean;
+    function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
+    function ActionMove( aTarget : TCoord2D ) : Boolean;
+    function ActionTactic : boolean;
 
 
     // Always returns False.
@@ -219,14 +229,13 @@ TBeing = class(TThing,IPathQuery)
 
 implementation
 
-uses vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem,
+uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem,
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio, doomviews;
 
 function TBeing.getStrayChance( defender : TBeing; missile : byte ) : byte;
 var miss     : Integer;
-var Modifier : Real;
-
+    Modifier : Real;
 begin
   if IsPlayer       then Exit(0);
   if defender = nil then Exit(0);
@@ -537,10 +546,10 @@ begin
   Exit( ID );
 end;
 
-function TBeing.ActionQuickSwap : boolean;
+function TBeing.ActionSwapWeapon : boolean;
 begin
-  if ( Inv.Slot[ efWeapon ] <> nil ) and Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] then Exit( Fail('You can''t!',[]) );
-  if ( Inv.Slot[ efWeapon2 ] <> nil ) and ( Inv.Slot[ efWeapon2 ].isAmmoPack ) then Exit( Fail('Nothing to swap!',[]) );
+  if ( Inv.Slot[ efWeapon ] <> nil ) and Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] then Exit( False );
+  if ( Inv.Slot[ efWeapon2 ] <> nil ) and ( Inv.Slot[ efWeapon2 ].isAmmoPack )   then Exit( False );
 
   Inv.EqSwap( efWeapon, efWeapon2 );
 
@@ -555,15 +564,21 @@ begin
 end;
 
 function TBeing.ActionDrop ( Item : TItem ) : boolean;
+var iUnique : Boolean;
 begin
   if Item = nil then Exit( false );
   if not FInv.Contains( Item ) then Exit( False );
+  iUnique := Item.Flags[ IF_UNIQUE ] or Item.Flags[ IF_NODESTROY ];
 try
   if TLevel(Parent).DropItem( Item, FPosition ) then
+  begin
+    FInv.ClearSlot( Item );
     Exit( Success( 'You dropped %s.',[Item.GetName(false)],ActionCostDrop ) )
+  end
   else
     begin
-      if Item.Flags[ IF_UNIQUE ] then
+      FInv.ClearSlot( Item );
+      if iUnique then
         Exit( Success( 'You dropped %s.',[Item.GetName(false)],ActionCostDrop ) )
 	  else
         Exit( Success( 'The dropped item melts!',[],ActionCostDrop ) );
@@ -574,6 +589,55 @@ except
     Fail( 'No room on the floor.', [] );
   end;
 end;
+  Exit( False );
+end;
+
+function TBeing.ActionWear( aItem : TItem ) : boolean;
+var iWeapon : Boolean;
+begin
+  if aItem = nil then Exit( false );
+  if not FInv.Contains( aItem ) then Exit( False );
+  iWeapon := aItem.isWeapon;
+  if FInv.DoWear( aItem ) then
+  begin
+    if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then
+    begin
+      Dec( FSpeedCount, ActionCostWear );
+      Exit( True );
+    end;
+  end;
+  Exit( False );
+end;
+
+function TBeing.ActionSwap( aItem : TItem; aSlot : TEqSlot ) : boolean;
+var iWeapon : Boolean;
+begin
+  if aItem = nil then Exit( false );
+  if not FInv.Contains( aItem ) then Exit( False );
+  iWeapon := aItem.isWeapon;
+  if FInv.DoWear( aItem, aSlot ) then
+  begin
+    if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then
+    begin
+      Dec( FSpeedCount, ActionCostWear );
+      Exit( True );
+    end;
+  end;
+  Exit( False );
+end;
+
+function TBeing.ActionTakeOff( aSlot : TEqSlot ) : boolean;
+var iWeapon : Boolean;
+begin
+  if (FInv.Slot[aSlot] = nil) or FInv.Slot[aSlot].Flags[ IF_CURSED ] then
+    Exit( False );
+  iWeapon := FInv.Slot[aSlot].isWeapon;
+  FInv.setSlot( aSlot, nil );
+  if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then
+  begin
+    Dec( FSpeedCount, ActionCostWear );
+    Exit( True );
+  end;
   Exit( False );
 end;
 
@@ -694,7 +758,7 @@ begin
   end;
 end;
 
-function TBeing.ActionFire ( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem; aAltFire : TAltFire ) : Boolean;
+function TBeing.ActionFire ( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean ) : Boolean;
 var iFireDesc  : AnsiString;
     iChainFire : Byte;
     iChainOld  : TCoord2D;
@@ -705,22 +769,48 @@ var iFireDesc  : AnsiString;
     iLimitRange: Boolean;
     iRange     : Byte;
     iDist      : Byte;
+    iAltFire   : TAltFire;
 begin
   iChainOld   := FTargetPos;
   iChainFire  := FChainFire;
+  iAltFire    := ALT_NONE;
   FChainFire  := 0;
 
-  if (aWeapon = nil) or (not aWeapon.isRanged) then Exit( Fail( 'You have no ranged weapon.', [] ) );
-  if aAltFire = ALT_NONE then
-    if not aWeapon.CallHookCheck( Hook_OnFire, [Self,false] ) then Exit( False );
+  if (aWeapon = nil) then Exit( False );
+  if aAltFire then iAltFire := aWeapon.AltFire;
+
+  if iAltFire <> ALT_NONE then 
+  begin
+    if (not aWeapon.isWeapon) then Exit( False );
+    if aWeapon.isMelee then FMeleeAttack := True;
+    if aWeapon.AltFire = ALT_SCRIPT then
+      if not aWeapon.CallHookCheck( Hook_OnAltFire, [Self] ) 
+        then Exit( False );
+
+    if aWeapon.isMelee then
+    begin
+      case aWeapon.AltFire of
+        ALT_THROW  :
+        begin
+          // thelaptop: If you can aim it, you should get a bonus for throwing it.
+          SendMissile( aTarget, aWeapon, FBonus.ToHit, FBonus.ToDam + FBonus.ToDamAll );
+          Dec( FSpeedCount, 1000 );
+          Exit( True );
+        end;
+      end;
+      Exit( True );
+    end;
+  end;  
+  
+  if (not aWeapon.isRanged) then Exit( False );
 
   if not aWeapon.Flags[ IF_NOAMMO ] then
   begin
-    if aWeapon.Ammo = 0 then Exit( FailConfirm( 'Your weapon is empty.', [] ) );
-    if aWeapon.Ammo < aWeapon.ShotCost then Exit( FailConfirm( 'You don''t have enough ammo to fire the %s!', [aWeapon.Name]) );
+    if aWeapon.Ammo = 0 then Exit( False );
+    if aWeapon.Ammo < aWeapon.ShotCost then Exit( False );
   end;
   
-  if aWeapon.Flags[ IF_CHAMBEREMPTY ] then Exit( FailConfirm( 'Shell chamber empty - move or reload.', [] ) );
+  if aWeapon.Flags[ IF_CHAMBEREMPTY ] then Exit( False );
 
   if aWeapon.Flags[ IF_SHOTGUN ] then
       iRange := Shotguns[ aWeapon.Missile ].Range
@@ -728,37 +818,14 @@ begin
       iRange := Missiles[ aWeapon.Missile ].Range;
   if iRange = 0 then iRange := self.Vision;
   iLimitRange := (not aWeapon.Flags[ IF_SHOTGUN ]) and (MF_EXACT in Missiles[ aWeapon.Missile ].Flags);
-  if aChooseTarget then
-  begin
-    iFireDesc := '';
-    case aAltFire of
-      ALT_SCRIPT  : iFireDesc := LuaSystem.Get([ 'items', aWeapon.ID, 'altname' ],'');
-      ALT_AIMED   : iFireDesc := 'aimed';
-      ALT_SINGLE  : iFireDesc := 'single';
-    end;
-    if iFireDesc <> '' then iFireDesc := ' (@Y'+iFireDesc+'@>)';
-
-    if aAltFire = ALT_CHAIN then
-    begin
-      case iChainFire of
-        0 : iFireDesc := ' (@Ginitial@>)';
-        1 : iFireDesc := ' (@Ywarming@>)';
-        2 : iFireDesc := ' (@Rfull@>)';
-      end;
-      if not Player.doChooseTarget( Format('Chain fire%s -- Choose target or abort...', [ iFireDesc ]), iRange, iLimitRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
-    end
-    else
-      if not Player.doChooseTarget( Format('Fire%s -- Choose target...',[ iFireDesc ]), iRange, iLimitRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
-    aTarget := FTargetPos;
-  end;
 
   if iLimitRange then
   begin
     iDist := Distance(self.Position.x, self.Position.y, aTarget.x, aTarget.y);
-    if iDist > iRange then Exit( Fail( 'Out of range!', [] ) );
+    if iDist > iRange then Exit( False );
   end;
 
-  if (aAltFire = ALT_CHAIN) and ( iChainFire > 0 ) then FTargetPos := iChainOld;
+  if (iAltFire = ALT_CHAIN) and ( iChainFire > 0 ) then FTargetPos := iChainOld;
   FChainFire := iChainFire;
 
   iEnemy    := TLevel(Parent).Being[ aTarget ];
@@ -766,18 +833,18 @@ begin
   if iEnemy <> nil then iEnemyUID := iEnemy.uid;
   iGunKata  := aWeapon.Flags[ IF_PISTOL ] and (BF_GUNKATA in FFlags);
 
-  iFireCost := getFireCost( aAltFire );
+  iFireCost := getFireCost( iAltFire );
   // Gun Kata -- fire effect
-  if iGunKata and isPlayer and Player.LastTurnDodge and (aAltFire = ALT_NONE) then
+  if iGunKata and isPlayer and Player.LastTurnDodge and (iAltFire = ALT_NONE) then
   begin
     iFireCost := iFireCost div 10;
     Player.LastTurnDodge := False;
   end;
   Dec(FSpeedCount,iFireCost);
 
-  if ( not FireRanged( aTarget, aWeapon, aAltFire )) or Player.Dead then Exit;
+  if ( not FireRanged( aTarget, aWeapon, iAltFire )) or Player.Dead then Exit;
   if canDualGun then
-    if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], aAltFire )) or Player.Dead then Exit;
+    if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], iAltFire )) or Player.Dead then Exit;
 
   // Gun Kata -- reload effect
   if iGunKata and (iEnemyUID <> 0) and ( not TLevel(Parent).isAlive( iEnemyUID ) ) then
@@ -788,44 +855,6 @@ begin
       else ActionReload;
     FSpeedCount := iFireCost;
   end;
-end;
-
-function TBeing.ActionAltFire ( aChooseTarget : Boolean; aTarget : TCoord2D; aWeapon : TItem ) : Boolean;
-var iAlt        : TAltFire;
-    iRange      : Byte;
-    iLimitRange : Boolean;
-begin
-  if (aWeapon = nil) or (not aWeapon.isWeapon) then Exit( Fail( 'You have no weapon.', [] ) );
-  if aWeapon.AltFire = ALT_NONE then Exit( Fail('This weapon has no alternate fire mode.', [] ) );
-  if not aWeapon.CallHookCheck( Hook_OnFire, [Self,true] ) then Exit( False );
-  iAlt := aWeapon.AltFire;
-
-  if aWeapon.isMelee then FMeleeAttack := True;
-
-  if iAlt = ALT_SCRIPT then
-    if not aWeapon.CallHookCheck( Hook_OnAltFire, [Self] ) then Exit;
-
-  if aWeapon.isMelee then
-  begin
-    case iAlt of
-    ALT_THROW  :
-      begin
-        if isPlayer and aChooseTarget then
-        begin
-          iRange      := Missiles[ aWeapon.Missile ].Range;
-          iLimitRange := MF_EXACT in Missiles[ aWeapon.Missile ].Flags;
-          if not Player.doChooseTarget( 'Throw -- Choose target...', iRange, iLimitRange ) then Exit( Fail( 'Throwing canceled.', [] ) );
-          aTarget := FTargetPos;
-        end;
-        // thelaptop: If you can aim it, you should get a bonus for throwing it.
-        SendMissile( aTarget, aWeapon, FBonus.ToHit, FBonus.ToDam + FBonus.ToDamAll );
-        Dec( FSpeedCount, 1000 );
-        Exit;
-      end;
-    end;
-    Exit;
-  end;
-  Exit( ActionFire( aChooseTarget, aTarget, aWeapon, iAlt ) );
 end;
 
 function TBeing.ActionPickup : Boolean;
@@ -873,7 +902,7 @@ begin
       begin
         if isPlayer then UI.Msg('No time to waste.');
         CallHook( Hook_OnPickUpItem, [item] );
-        Exit( ActionUse( item, False ) );
+        Exit( ActionUse( item ) );
       end;
 
   if Inv.isFull then Exit( Fail( 'You don''t have enough room in your backpack.', [] ) );
@@ -888,7 +917,7 @@ begin
   Exit( True );
 end;
 
-function TBeing.ActionUse ( Item : TItem; aFromFloor : Boolean ) : Boolean;
+function TBeing.ActionUse ( Item : TItem ) : Boolean;
 var isOnGround : Boolean;
     isLever    : Boolean;
     isPack     : Boolean;
@@ -900,28 +929,8 @@ var isOnGround : Boolean;
     iUID       : TUID;
 	
 begin
-  isFailed := False;
-  isOnGround := False;
-  if aFromFloor then
-  begin
-    Item := TLevel(Parent).Item[ FPosition ];
-    if ( Item <> nil ) and (Item.isLever or Item.isPack or Item.isWearable)
-	then isOnGround := True
-    else
-      Exit( Fail('There''s nothing to use on the ground!', [] ) );
-  end;
-
-  if Item = nil then
-  begin
-    if isPlayer then
-    begin
-      Item := Inv.Choose([ITEMTYPE_PACK],'use');
-      if Item = nil then Exit( False );
-    end
-    else
-      Exit( False );
-  end;
-
+  isFailed   := False;
+  isOnGround := TLevel(Parent).Item[ FPosition ] = Item;
   if Item = nil then Exit( false );
   if (not Item.isLever) and (not Item.isPack) and (not Item.isAmmoPack) and (not Item.isWearable) then Exit( False );
   if ((not Item.isWearable) and (not Item.CallHookCheck( Hook_OnUseCheck,[Self] ))) or (Item.isWearable and ( (not Item.CallHookCheck( Hook_OnEquipCheck,[Self] )) or (not Item.CallHookCheck( Hook_OnPickupCheck,[Self] )) )) then Exit( False );
@@ -985,11 +994,23 @@ begin
   Exit( not isFailed );
 end;
 
-function TBeing.ActionUnLoad ( aItem : TItem ) : Boolean;
+function TBeing.ActionUnLoad ( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
 var iAmount : Integer;
     iName   : AnsiString;
 begin
   if aItem = nil then Exit( False );
+  if ( aDisassembleID <> '' ) then
+  begin
+    iName   := aItem.Name;
+    FreeAndNil( aItem );
+    aItem := TItem.Create( aDisassembleID );
+    playSound(aItem.Sounds.Reload);
+    if not Inv.isFull
+       then Inv.Add( aItem )
+       else TLevel(Parent).DropItem( aItem, FPosition );
+    Exit( Success( 'You disassemble the %s.',[iName], ActionCostReload ) );
+  end;
+
   if not (aItem.isRanged or aItem.isAmmoPack) then Exit( Fail( 'This item cannot be unloaded!', [] ) );
   if aItem.Flags[ IF_NOUNLOAD ] then Exit( Fail( 'This weapon cannot be unloaded!', []) );
   if aItem.Flags[ IF_RECHARGE ] then Exit( Fail( 'This weapon is self powered!', []) );
@@ -1008,6 +1029,30 @@ begin
   if aItem.Ammo = iAmount then Exit( Fail( 'You don''t have enough room in your backpack to unload the %s.', [ iName ] ) );
   aItem.Ammo := iAmount;
   Exit( Success( 'You partially unload the %s.', [ iName ], ActionCostReload ) );
+end;
+
+function TBeing.ActionMove( aTarget : TCoord2D ) : Boolean;
+begin
+  if GraphicsVersion then
+  begin
+    UI.addScreenMoveAnimation(100,0,aTarget);
+    UI.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
+  end;
+  Displace( aTarget );
+  BloodFloor;
+  Dec( FSpeedCount, getMoveCost );
+  HandlePostMove;
+end;
+
+function TBeing.ActionTactic : Boolean;
+begin
+  if ( not isPlayer ) or ( BF_BERSERK in FFlags ) then Exit( False );
+  if Player.FTactic.Change then
+  begin
+    Dec( FSpeedCount, ActionCostTactic );
+    Exit( True );
+  end;
+  Exit( False );
 end;
 
 function TBeing.Fail ( const aText: AnsiString; const aParams: array of const ): Boolean;
@@ -1272,6 +1317,37 @@ begin
   CallHook(Hook_OnAction,[]);
   if UIDs[ iThisUID ] = nil then Exit;
   while FSpeedCount >= 5000 do Dec( FSpeedCount, 1000 );
+end;
+
+procedure TBeing.HandlePostMove;
+begin
+
+end;
+
+function TBeing.HandleCommand( aCommand : TCommand ) : Boolean; 
+begin
+  case aCommand.Command of
+    COMMAND_MOVE      : Exit( ActionMove( aCommand.Target ) );
+    COMMAND_USE       : Exit( ActionUse( aCommand.Item ) );
+    COMMAND_DROP      : Exit( ActionDrop( aCommand.Item ) );
+    COMMAND_WEAR      : Exit( ActionWear( aCommand.Item ) );
+    COMMAND_TAKEOFF   : Exit( ActionTakeOff( aCommand.Slot ) );
+    COMMAND_SWAP      : Exit( ActionSwap( aCommand.Item, aCommand.Slot ) );
+    COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
+    COMMAND_ACTION    : TLevel( Parent ).CallHook( aCommand.Target, Self, CellHook_OnAct );
+    COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
+    COMMAND_MELEE     : Attack( aCommand.Target );
+    COMMAND_RELOAD    : Exit( ActionReload );
+    COMMAND_ALTRELOAD : Exit( ActionAltReload );
+    COMMAND_FIRE      : Exit( ActionFire( aCommand.Target, aCommand.Item ) );
+    COMMAND_ALTFIRE   : Exit( ActionFire( aCommand.Target, aCommand.Item, True ) );
+    COMMAND_PICKUP    : Exit( ActionPickup );
+    COMMAND_UNLOAD    : Exit( ActionUnLoad( aCommand.Item, aCommand.ID ) );
+    COMMAND_SWAPWEAPON: Exit( ActionSwapWeapon );
+    COMMAND_TACTIC    : Exit( ActionTactic );
+  else Exit( False );
+  end;
+  Exit( True );
 end;
 
 procedure TBeing.Tick;
@@ -2352,7 +2428,7 @@ var State  : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionQuickSwap );
+  State.Push( Being.ActionSwapWeapon );
   Result := 1;
 end;
 
@@ -2388,17 +2464,8 @@ var State  : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionFire( False, State.ToPosition(2), State.ToObject(3) as TItem ) );
-  Result := 1;
-end;
-
-function lua_being_alt_fire(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
-    Being  : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionAltFire( False, State.ToPosition(2), State.ToObject(3) as TItem ) );
+  // TODO: add Hook_OnFire ?
+  State.Push( Being.ActionFire( State.ToPosition(2), State.ToObject(3) as TItem ) );
   Result := 1;
 end;
 
@@ -2440,7 +2507,7 @@ var State  : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionUse( State.ToObjectOrNil(2) as TItem, State.ToBoolean(3, False ) ) );
+  State.Push( Being.ActionUse( State.ToObjectOrNil(2) as TItem ) );
   Result := 1;
 end;
 
@@ -2617,7 +2684,7 @@ begin
   Result := 0;
 end;
 
-const lua_being_lib : array[0..26] of luaL_Reg = (
+const lua_being_lib : array[0..25] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -2638,7 +2705,6 @@ const lua_being_lib : array[0..26] of luaL_Reg = (
       ( name : 'wear';          func : @lua_being_wear),
       ( name : 'attack';        func : @lua_being_attack),
       ( name : 'fire';          func : @lua_being_fire),
-      ( name : 'alt_fire';      func : @lua_being_alt_fire),
       ( name : 'reload';        func : @lua_being_reload),
       ( name : 'alt_reload';    func : @lua_being_alt_reload),
       ( name : 'direct_seek';   func : @lua_being_direct_seek),

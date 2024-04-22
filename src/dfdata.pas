@@ -97,19 +97,19 @@ const
 {$include ../bin/dkey.inc}
 
 const
-  COMMAND_MMOVE    = 240;
-  COMMAND_MRIGHT   = 241;
-  COMMAND_MMIDDLE  = 242;
-  COMMAND_MLEFT    = 243;
-  COMMAND_MSCRUP   = 244;
-  COMMAND_MSCRDOWN = 245;
-  COMMAND_MFIRE    = 246;
-  COMMAND_MALTFIRE = 247;
-  COMMAND_MATTACK  = 248;
-  COMMAND_YIELD    = 254;
+  INPUT_MMOVE    = 240;
+  INPUT_MRIGHT   = 241;
+  INPUT_MMIDDLE  = 242;
+  INPUT_MLEFT    = 243;
+  INPUT_MSCRUP   = 244;
+  INPUT_MSCRDOWN = 245;
+  INPUT_MFIRE    = 246;
+  INPUT_MALTFIRE = 247;
+  INPUT_MATTACK  = 248;
+  INPUT_YIELD    = 254;
+  COMMAND_NONE     = 0;
 
   KnockbackValue = 7;
-
 
 const
   Option_HighASCII        : Boolean = {$IFDEF WINDOWS}True{$ELSE}False{$ENDIF};
@@ -173,10 +173,10 @@ var
 
 const
 {$include ../bin/core/commands.lua}
-  COMMANDS_MOVE        = [COMMAND_WALKNORTH,COMMAND_WALKSOUTH,
-                          COMMAND_WALKEAST,COMMAND_WALKWEST,
-                          COMMAND_WALKNE,COMMAND_WALKSE,
-                          COMMAND_WALKNW,COMMAND_WALKSW];
+  INPUT_MOVE        = [INPUT_WALKNORTH,INPUT_WALKSOUTH,
+                       INPUT_WALKEAST, INPUT_WALKWEST,
+                       INPUT_WALKNE,   INPUT_WALKSE,
+                       INPUT_WALKNW,   INPUT_WALKSW];
 
 type TCellSet = set of Byte;
      TExplosionFlags = set of TExplosionFlag;
@@ -201,6 +201,7 @@ const
   ActionCostWear   = 1000;
   ActionCostMove   = 1000;
   ActionCostFire   = 1000;
+  ActionCostTactic = 100;
 
   ActSoundChance    = 30;
 
@@ -315,8 +316,8 @@ const ExpTable : array[1..MaxPlayerLevel] of LongInt =
                900000,10000000);
                
 function Roll(stat : Integer) : Integer;
-function CommandDirection(Command : byte) : TDirection;
-function DirectionToCommand(Dir : TDirection) : Byte;
+function InputDirection(Command : byte) : TDirection;
+function DirectionToInput(Dir : TDirection) : Byte;
 function TwoInt(x : integer) : string;
 function ToProperFilename(s : string) : string;
 function toHitPercent(EffSkill : ShortInt) : string;
@@ -334,11 +335,10 @@ function SlotName(slot : TEqSlot) : string;
 
 var ColorOverrides : TIntHashMap;
 
-Function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; PreferStrings: Boolean = True): Variant;
-
+function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; PreferStrings: Boolean = True): Variant;
 
 implementation
-uses typinfo, strutils, math, vdebug;
+uses typinfo, strutils, math, vdebug, dfitem;
 
 // change also in mortem lua!
 function SlotName(slot : TEqSlot) : string;
@@ -470,35 +470,35 @@ end;
 
 
 
-function CommandDirection(Command : byte) : TDirection;
+function InputDirection(Command : byte) : TDirection;
 begin
   case Command of
-    COMMAND_WALKWEST  : CommandDirection.Create(4);
-    COMMAND_WALKEAST  : CommandDirection.Create(6);
-    COMMAND_WALKNORTH : CommandDirection.Create(8);
-    COMMAND_WALKSOUTH : CommandDirection.Create(2);
-    COMMAND_WALKNW    : CommandDirection.Create(7);
-    COMMAND_WALKNE    : CommandDirection.Create(9);
-    COMMAND_WALKSW    : CommandDirection.Create(1);
-    COMMAND_WALKSE    : CommandDirection.Create(3);
-    COMMAND_WAIT      : CommandDirection.Create(5);
-    else CommandDirection.Create(0);
+    INPUT_WALKWEST  : InputDirection.Create(4);
+    INPUT_WALKEAST  : InputDirection.Create(6);
+    INPUT_WALKNORTH : InputDirection.Create(8);
+    INPUT_WALKSOUTH : InputDirection.Create(2);
+    INPUT_WALKNW    : InputDirection.Create(7);
+    INPUT_WALKNE    : InputDirection.Create(9);
+    INPUT_WALKSW    : InputDirection.Create(1);
+    INPUT_WALKSE    : InputDirection.Create(3);
+    INPUT_WAIT      : InputDirection.Create(5);
+    else InputDirection.Create(0);
   end;
 end;
 
-function DirectionToCommand(Dir : TDirection) : Byte;
+function DirectionToInput(Dir : TDirection) : Byte;
 begin
   case Dir.code of
-    4 : Exit( COMMAND_WALKWEST );
-    6 : Exit( COMMAND_WALKEAST );
-    8 : Exit( COMMAND_WALKNORTH);
-    2 : Exit( COMMAND_WALKSOUTH);
-    7 : Exit( COMMAND_WALKNW );
-    9 : Exit( COMMAND_WALKNE );
-    1 : Exit( COMMAND_WALKSW );
-    3 : Exit( COMMAND_WALKSE );
-    5 : Exit( COMMAND_WAIT );
-    else Exit( COMMAND_WAIT );
+    4 : Exit( INPUT_WALKWEST );
+    6 : Exit( INPUT_WALKEAST );
+    8 : Exit( INPUT_WALKNORTH);
+    2 : Exit( INPUT_WALKSOUTH);
+    7 : Exit( INPUT_WALKNW );
+    9 : Exit( INPUT_WALKNE );
+    1 : Exit( INPUT_WALKSW );
+    3 : Exit( INPUT_WALKSE );
+    5 : Exit( INPUT_WAIT );
+    else Exit( INPUT_WAIT );
   end;
 end;
 

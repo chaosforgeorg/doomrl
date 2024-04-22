@@ -570,7 +570,7 @@ begin
   if Option_MorePrompt then
   begin
     UI.SetHint('[more]');
-    WaitForCommand([COMMAND_OK,COMMAND_MLEFT]);
+    WaitForCommand([INPUT_OK,INPUT_MLEFT]);
     UI.SetHint('');
   end;
   UI.MsgUpdate;
@@ -687,12 +687,12 @@ begin
      Special := Config.Resume;
      if VarIsOrdinal(Special) and (not VarIsType( Special, varBoolean ) )
         then GetCommand := Special
-        else GetCommand := COMMAND_YIELD;
+        else GetCommand := INPUT_YIELD;
   end
   else
     GetCommand := WaitForCommand([]);
 
-  if GetCommand <> COMMAND_YIELD then
+  if GetCommand <> INPUT_YIELD then
     UI.MsgUpDate;
 
   if GetCommand = COMMAND_INVALID then
@@ -707,7 +707,7 @@ end;
 
 procedure TDoomIO.WaitForEnter;
 begin
-  WaitForCommand([COMMAND_OK,COMMAND_MLEFT]);
+  WaitForCommand([INPUT_OK,INPUT_MLEFT]);
 end;
 
 function TDoomIO.WaitForCommand ( const aSet : TCommandSet; aTimeOut : DWord = 0 ) : Byte;
@@ -723,18 +723,18 @@ begin
     iCommand := 0;
     iWait := 0;
     if aTimeOut <> 0 then iWait := Max( aTimeOut - (FLastUpdate - iStart), 0 );
-    WaitForKeyEvent( iEvent, GraphicsVersion, GraphicsVersion and (COMMAND_MMOVE in aSet), iWait );
+    WaitForKeyEvent( iEvent, GraphicsVersion, GraphicsVersion and (INPUT_MMOVE in aSet), iWait );
     if (iEvent.EType = VEVENT_SYSTEM) then
       if Option_LockClose
-         then Exit( COMMAND_QUIT )
-         else Exit( COMMAND_HARDQUIT );
+         then Exit( INPUT_QUIT )
+         else Exit( INPUT_HARDQUIT );
 
     if (iEvent.EType = VEVENT_MOUSEMOVE) then
     begin
       iPoint := SpriteMap.DevicePointToCoord( iEvent.MouseMove.Pos );
       FMTarget.Create( iPoint.X, iPoint.Y );
       if Doom.Level.isProperCoord( FMTarget ) then
-        Exit( COMMAND_MMOVE );
+        Exit( INPUT_MMOVE );
     end;
     if iEvent.EType = VEVENT_MOUSEDOWN then
     begin
@@ -743,11 +743,11 @@ begin
       if Doom.Level.isProperCoord( FMTarget ) then
       begin
         case iEvent.Mouse.Button of
-          VMB_BUTTON_LEFT     : Exit( COMMAND_MLEFT );
-          VMB_BUTTON_MIDDLE   : Exit( COMMAND_MMIDDLE );
-          VMB_BUTTON_RIGHT    : Exit( COMMAND_MRIGHT );
-          VMB_WHEEL_UP        : Exit( COMMAND_MSCRUP );
-          VMB_WHEEL_DOWN      : Exit( COMMAND_MSCRDOWN );
+          VMB_BUTTON_LEFT     : Exit( INPUT_MLEFT );
+          VMB_BUTTON_MIDDLE   : Exit( INPUT_MMIDDLE );
+          VMB_BUTTON_RIGHT    : Exit( INPUT_MRIGHT );
+          VMB_WHEEL_UP        : Exit( INPUT_MSCRUP );
+          VMB_WHEEL_DOWN      : Exit( INPUT_MSCRDOWN );
         end;
         if (aSet = []) then Exit(iCommand);
       end;

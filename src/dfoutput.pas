@@ -442,14 +442,14 @@ begin
   repeat
     if SpriteMap <> nil then SpriteMap.SetTarget( Target, TargetColor, False );
     TargetColor := NewColor( White );
-    Key := IO.WaitForCommand(COMMANDS_MOVE+[COMMAND_GRIDTOGGLE,COMMAND_ESCAPE,COMMAND_MORE,COMMAND_MMOVE,COMMAND_MRIGHT, COMMAND_MLEFT]);
-    if (Key = COMMAND_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if Key in [ COMMAND_MMOVE, COMMAND_MRIGHT, COMMAND_MLEFT ] then Target := IO.MTarget;
-    if Key in [ COMMAND_ESCAPE, COMMAND_MRIGHT ] then Break;
-    if Key <> COMMAND_MORE then
+    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE,INPUT_ESCAPE,INPUT_MORE,INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
+    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if Key in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then Target := IO.MTarget;
+    if Key in [ INPUT_ESCAPE, INPUT_MRIGHT ] then Break;
+    if Key <> INPUT_MORE then
     begin
       lc := Target;
-      Dir := CommandDirection( Key );
+      Dir := InputDirection( Key );
       if iLevel.isProperCoord(lc + Dir) then
       begin
         Target := lc + Dir;
@@ -472,7 +472,7 @@ begin
         Msg('Out of range!');
       end;
      end;
-     if (Key in [ COMMAND_MORE, COMMAND_MLEFT ]) and iLevel.isVisible( Target ) then
+     if (Key in [ INPUT_MORE, INPUT_MLEFT ]) and iLevel.isVisible( Target ) then
      begin
        with iLevel do
        if Being[Target] <> nil then
@@ -495,14 +495,14 @@ begin
   Msg( aActionName + ' -- Choose direction...' );
   iDone := False;
   repeat
-    Key := IO.WaitForCommand(COMMANDS_MOVE+[COMMAND_GRIDTOGGLE,COMMAND_ESCAPE,COMMAND_MLEFT,COMMAND_MRIGHT]);
-    if (Key = COMMAND_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if Key in COMMANDS_MOVE then
+    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE,INPUT_ESCAPE,INPUT_MLEFT,INPUT_MRIGHT]);
+    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if Key in INPUT_MOVE then
     begin
-      ChooseDirection := CommandDirection(Key);
+      ChooseDirection := InputDirection(Key);
       iDone := True;
     end;
-    if (Key = COMMAND_MLEFT) then
+    if (Key = INPUT_MLEFT) then
     begin
       iTarget := IO.MTarget;
       if (Distance( iTarget, Position) = 1) then
@@ -511,7 +511,7 @@ begin
         iDone := True;
       end;
     end;
-    if (Key in [COMMAND_MRIGHT,COMMAND_ESCAPE]) then
+    if (Key in [INPUT_MRIGHT,INPUT_ESCAPE]) then
     begin
       ChooseDirection.Create(DIR_CENTER);
       iDone := True;
@@ -560,9 +560,9 @@ begin
     if iBlock then iTargetColor := Red else iTargetColor := Green;
     FGameUI.SetTarget( iTarget, iTargetColor, iTargetRange );
 
-    Key := IO.WaitForCommand(COMMANDS_MOVE+[COMMAND_GRIDTOGGLE, COMMAND_ESCAPE,COMMAND_MORE,COMMAND_FIRE,COMMAND_ALTFIRE,COMMAND_TACTIC, COMMAND_MMOVE,COMMAND_MRIGHT, COMMAND_MLEFT]);
-    if (Key = COMMAND_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if Key in [ COMMAND_MMOVE, COMMAND_MRIGHT, COMMAND_MLEFT ] then
+    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE, INPUT_ESCAPE,INPUT_MORE,INPUT_FIRE,INPUT_ALTFIRE,INPUT_TACTIC, INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
+    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if Key in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then
        begin
          iTarget := IO.MTarget;
          iDist := Distance(iTarget.x, iTarget.y, Position.x, Position.y);
@@ -580,23 +580,23 @@ begin
              else iTarget := iTargetLine.GetC;
            end;
        end;
-    if Key in [ COMMAND_ESCAPE, COMMAND_MRIGHT ] then begin iTarget.x := 0; Break; end;
-    if Key = COMMAND_TACTIC then iTarget := aTargets.Next;
-    if (Key in COMMANDS_MOVE) then
+    if Key in [ INPUT_ESCAPE, INPUT_MRIGHT ] then begin iTarget.x := 0; Break; end;
+    if Key = INPUT_TACTIC then iTarget := aTargets.Next;
+    if (Key in INPUT_MOVE) then
     begin
-      Dir := CommandDirection( Key );
+      Dir := InputDirection( Key );
       if (iLevel.isProperCoord( iTarget + Dir ))
         and ((not aLimitRange) or (Distance((iTarget + Dir).x, (iTarget + Dir).y, Position.x, Position.y) <= aRange-1)) then
         iTarget += Dir;
     end;
-    if (Key = COMMAND_MORE) then
+    if (Key = INPUT_MORE) then
     begin
       with iLevel do
       if Being[ iTarget ] <> nil then
          Being[ iTarget ].FullLook;
     end;
     LookDescription( iTarget );
-  until Key in [COMMAND_FIRE, COMMAND_ALTFIRE, COMMAND_MLEFT];
+  until Key in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
   MsgUpDate;
   FGameUI.ResetTarget;
   ChooseTarget := iTarget;

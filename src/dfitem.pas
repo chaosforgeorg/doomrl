@@ -7,7 +7,7 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfitem;
 interface
-uses Classes, SysUtils, dfthing, dfdata, vluatable, math;
+uses Classes, SysUtils, dfthing, dfdata, vrltools, vluatable, math;
 
 type TItemSounds = record
   Pickup     : Word;
@@ -107,7 +107,7 @@ procedure SwapItem(var a, b: TItem);
 
 implementation
 
-uses doomlua, doomio, vluasystem, vluaentitynode, vutil, vdebug, vrltools, dfbeing, dfplayer, doombase, vmath, doomhooks;
+uses doomlua, doomio, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, dfplayer, doombase, vmath, doomhooks;
 
 procedure SwapItem(var a, b: TItem);
 var c : TItem;

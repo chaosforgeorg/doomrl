@@ -1,7 +1,10 @@
 {$INCLUDE doomrl.inc}
 unit doominventory;
 interface
-uses SysUtils, vnode, vuielements, dfitem, dfoutput, dfthing, dfdata, doomviews, doomhooks;
+uses SysUtils,
+     vnode, vuielements,
+     dfitem, dfoutput, dfthing, dfdata,
+     doomcommand, doomviews, doomhooks;
 
 type
   TItemList      = array[TItemSlot] of TItem;
@@ -18,16 +21,18 @@ TInventory = class( TVObject )
        procedure Add( aItem : TItem );
        function  Choose( aFilter : TItemTypeSet; const aAction : string) : TItem;
        function  SeekAmmo( aAmmoID : DWord ) : TItem;
-       function  View : boolean;
-       function  DoScrollSwap : Boolean;
+       function  View : TCommand;
+       function  DoScrollSwap : TCommand;
        function  AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
        function  isFull : boolean;
        procedure RawSetSlot( aIndex : TEqSlot; aItem : TItem ); inline;
-       function  RunEq : boolean;
+       function  RunEq : TCommand;
        procedure EqSwap( aSlot1, aSlot2 : TEqSlot );
        procedure EqTick;
        procedure ClearSlot( aItem : TItem );
        function DoWear( aItem : TItem ) : Boolean;
+       // no checking if slot fits!
+       function DoWear( aItem : TItem; aSlot : TEqSlot ) : Boolean;
        function Wear( aItem : TItem ) : Boolean;
        function Contains( aItem : TItem ) : Boolean;
        function FindSlot( aItem : TItem ) : TEqSlot;
@@ -51,21 +56,19 @@ TInventory = class( TVObject )
 
 implementation
 
-uses vmath, vgenerics, vmaparea, vrltools, vluasystem, doomio, dfplayer, dfbeing, dflevel;
+uses vmath, vgenerics, vrltools, vluasystem, doomio, dfplayer, dfbeing, dflevel;
 
 { TInventoryEnumerator }
 
-function TInventory.RunEq : boolean;
+function TInventory.RunEq : TCommand;
 var iItem   : TItem;
     iSlot   : TEqSlot;
-    iCoord  : TCoord2D;
-    iName   : AnsiString;
 begin
-  RunEq := False;
+  RunEq.Command := COMMAND_NONE;
   FChosen := nil;
   FAction := ItemResultCancel;
   IO.RunUILoop( TUIEquipmentView.Create( IO.Root, @OnEqConfirm ) );
-  if FAction = ItemResultCancel then Exit( False );
+  if FAction = ItemResultCancel then Exit;
   iSlot := FSlot;
 
   if FAction = ItemResultPick then
@@ -74,39 +77,40 @@ begin
     begin
       if not Option_InvFullDrop then
       begin
-        if not UI.MsgConfirm('No room in inventory! Should it be dropped?') then Exit( False );
+        if not UI.MsgConfirm('No room in inventory! Should it be dropped?') then Exit;
       end;
       FAction := ItemResultDrop;
     end;
   end;
-  if (FSlots[iSlot] <> nil) and FSlots[iSlot].Flags[ IF_CURSED ] then begin UI.Msg('You can''t, it''s cursed!'); Exit(False); end;
+
+  if (FSlots[iSlot] <> nil) and FSlots[iSlot].Flags[ IF_CURSED ] then
+  begin
+    UI.Msg('You can''t, it''s cursed!');
+    Exit;
+  end;
 
   if (FSlots[iSlot] = nil) or (FAction = ItemResultSwap) then
   begin
     iItem := Choose(ItemEqFilters[iSlot],'wear/wield');
     if iItem = nil then Exit;
-    if not iItem.CallHookCheck( Hook_OnEquipCheck,[FOwner] ) then Exit( False );
-    setSlot( iSlot, iItem );
-    Exit( True );
+    RunEq.Command := COMMAND_SWAP;
+    RunEq.Slot    := iSlot;
+    RunEq.Item    := iItem;
+    Exit;
   end;
 
   if FAction = ItemResultDrop then
-  try
-    iName := FSlots[ iSlot ].GetName(false);
-    iCoord := TLevel(FOwner.Parent).MapArea.Drop( FOwner.Position, [EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS] );
-    TLevel(FOwner.Parent).DropItem( FSlots[ iSlot ], iCoord );
-    UI.Msg('You dropped '+iName+'.');
-    setSlot( iSlot, nil );
-    Exit( True );
-  except
-    on e : EPlacementException do
-    begin
-      UI.Msg('No room on the floor to drop the equipped item!');
-      Exit;
-    end;
+  begin
+    RunEq.Command := COMMAND_DROP;
+    RunEq.Item    := iItem;
   end;
-  setSlot( iSlot, nil );
-  Exit( True );
+
+  if FAction = ItemResultPick then
+  begin
+    RunEq.Command := COMMAND_TAKEOFF;
+    RunEq.Slot    := iSlot;
+  end;
+
 end;
 
 function TInventory.Wear( aItem : TItem ) : Boolean;
@@ -243,23 +247,22 @@ begin
 end;
 
 
-function TInventory.View : boolean;
-var iItem : TItem;
+function TInventory.View : TCommand;
 begin
-  View := False;
-  iItem := Choose([],'');
-  if iItem = nil then Exit;
-  if iItem.isWearable then Exit(DoWear(iItem));
-  if iItem.isPack then (FOwner as TBeing).ActionUse(iItem, False);
+  View.Command := COMMAND_NONE;
+  View.Item := Choose([],'');
+  if View.Item = nil then Exit;
+  if View.Item.isWearable then View.Command := COMMAND_WEAR;
+  if View.Item.isPack     then View.Command := COMMAND_USE;
 end;
 
 type TItemArray = specialize TGObjectArray< TItem >;
 
-function TInventory.DoScrollSwap : Boolean;
+function TInventory.DoScrollSwap : TCommand;
 var iArray   : TItemArray;
     iItem    : TItem;
     iIdx     : Integer;
-    iCommand : Byte;
+    iInput   : Byte;
 begin
   iArray := TItemArray.Create( False );
   if Slot[ efWeapon ]  <> nil then iArray.Push( Slot[ efWeapon ] );
@@ -268,7 +271,8 @@ begin
     if not Equipped( iItem ) then
       if iItem.isWeapon then
         iArray.Push( iItem );
-  DoScrollSwap := False;
+
+  DoScrollSwap.Command := COMMAND_NONE;
   if iArray.Size = 0 then UI.Msg('You have no weapons!');
   if iArray.Size = 1 then UI.Msg('You have no other weapons!');
   if iArray.Size > 1 then
@@ -278,20 +282,20 @@ begin
     if Slot[ efWeapon ] = nil then iIdx := 0;
     repeat
       UI.SetHint( iArray[iIdx].Description );
-      iCommand := IO.WaitForCommand( [COMMAND_MSCRUP,COMMAND_MSCRDOWN,COMMAND_MLEFT,COMMAND_MRIGHT,COMMAND_ESCAPE,COMMAND_ENTER] );
-      if iCommand = COMMAND_MSCRUP   then if iIdx = 0 then iIdx := iArray.Size-1 else iIdx -= 1;
-      if iCommand = COMMAND_MSCRDOWN then iIdx := (iIdx + 1) mod iArray.Size;
-    until iCommand in [0,COMMAND_ESCAPE,COMMAND_ENTER,COMMAND_MLEFT,COMMAND_MRIGHT];
-    if iCommand in [COMMAND_ENTER,COMMAND_MLEFT] then
+      iInput := IO.WaitForCommand( [INPUT_MSCRUP,INPUT_MSCRDOWN,INPUT_MLEFT,INPUT_MRIGHT,INPUT_ESCAPE,INPUT_ENTER] );
+      if iInput = INPUT_MSCRUP   then if iIdx = 0 then iIdx := iArray.Size-1 else iIdx -= 1;
+      if iInput = INPUT_MSCRDOWN then iIdx := (iIdx + 1) mod iArray.Size;
+    until iInput in [0,INPUT_ESCAPE,INPUT_ENTER,INPUT_MLEFT,INPUT_MRIGHT];
+    if iInput in [INPUT_ENTER,INPUT_MLEFT] then
     begin
       if iArray[ iIdx ] = Slot[ efWeapon2 ] then
-      begin
-        TBeing(FOwner).ActionQuickSwap;
-        DoScrollSwap := False;
-      end
+        DoScrollSwap.Command := COMMAND_SWAPWEAPON
       else
       if iArray[ iIdx ] <> Slot[ efWeapon ] then
-        DoScrollSwap := DoWear( iArray[ iIdx ] ) and (not FOwner.Flags[BF_QUICKSWAP]);
+      begin
+        DoScrollSwap.Command := COMMAND_WEAR;
+        DoScrollSwap.Item    := iArray[ iIdx ];
+      end;
     end;
   end;
   UI.SetHint('');
@@ -371,6 +375,19 @@ begin
   if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin UI.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
   UI.Msg('You wear/wield : '+aItem.GetName(false));
   Wear( aItem );
+  Exit( True );
+end;
+
+function TInventory.DoWear ( aItem : TItem; aSlot : TEqSlot ) : Boolean;
+var iItem : TItem;
+begin
+  if aItem = nil then Exit( False );
+  if aItem.Hooks[ Hook_OnEquipCheck ] then
+    if not aItem.CallHookCheck( Hook_OnEquipCheck,[FOwner] ) then Exit( False );
+  iItem := FSlots[aSlot];
+  if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin UI.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
+  UI.Msg('You wear/wield : '+aItem.GetName(false));
+  setSlot( aSlot, aItem );
   Exit( True );
 end;
 
