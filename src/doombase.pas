@@ -360,7 +360,7 @@ repeat
 
           Player.AIAction;
 
-          if State <> DSPlaying then
+          if State = DSPlaying then
           begin
             UI.Focus( Player.Position );
             Player.UpdateVisual;
