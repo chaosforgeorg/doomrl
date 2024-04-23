@@ -1,5 +1,5 @@
 -- HOUSE OF PAIN --------------------------------------------------------
---[[
+--[
 register_level "house_of_pain"
 {
 	name  = "House of Pain",
@@ -173,4 +173,4 @@ register_level "house_of_pain"
 
 
 }
-]]--
+--]]--
