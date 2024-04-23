@@ -45,6 +45,7 @@ require( "doomrl:levels/mterebus" )
 require( "doomrl:levels/lavapits" )
 require( "doomrl:levels/asmosden" )
 require( "doomrl:levels/containment" )
+require( "doomrl:levels/house" )
 
 -- main DoomRL lua script file --
 
@@ -690,7 +691,7 @@ function DoomRL.OnCreateEpisode()
 		{"the_wall","containment_area"}, -- 11/3
 		{"city_of_skulls","abyssal_plains"}, -- 12/4
 		{"halls_of_carnage","spiders_lair"}, -- 14/6
-		{"the_vaults"},--,"house_of_pain"}, -- 17/3
+		{"house_of_pain"}, -- 17/3
 		{"unholy_cathedral"}, -- 19/1
 		{"the_mortuary","limbo"},-- 20/4
 		{"the_lava_pits","mt_erebus"},-- 22/6
