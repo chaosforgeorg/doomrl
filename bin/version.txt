@@ -1,6 +1,6 @@
 0.9.9.8 BETA 4
 [new] -- BETA  : WARNING - speed/command system rewrites!
-[new] -- GH#000: House of Pain reenabled
+[new] -- GH#093: The Vaults alternative added - House of Pain
 [mod] -- BETA  : House of Pain always generates instead of Vaults until balanced
 [mod] -- GH#088: Juggler now makes all weapon swaps free
 [fix] -- BETA  : fixed SHIFT-L previous level feeling
