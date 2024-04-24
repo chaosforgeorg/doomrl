@@ -102,7 +102,7 @@ begin
   if FAction = ItemResultDrop then
   begin
     RunEq.Command := COMMAND_DROP;
-    RunEq.Item    := iItem;
+    RunEq.Item    := FSlots[iSlot];
   end;
 
   if FAction = ItemResultPick then
