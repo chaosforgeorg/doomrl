@@ -964,8 +964,6 @@ begin
   iCommand := 0;
   // FArmor color //
   iLevel := TLevel( Parent );
-  FEnemiesInVision := iLevel.BeingsVisible;
-  if FEnemiesInVision > 1 then begin FPathRun := False; FRun.Stop; end;
 
   if iLevel.Item[ FPosition ] <> nil then
   begin
@@ -985,6 +983,19 @@ begin
             else UI.Msg('There is %s lying here.', [ GetName( False ) ] );
   end;
 
+  FEnemiesInVision := iLevel.BeingsVisible;
+  if FEnemiesInVision < 2 then
+  begin
+    FChainFire := 0;
+    if FBersekerLimit > 0 then Dec( FBersekerLimit );
+  end;
+
+  if FEnemiesInVision > 1 then
+  begin
+    FPathRun := False;
+    FRun.Stop;
+  end;
+
   if FRun.Active then
   begin
     if IO.CommandEventPending then
@@ -1001,13 +1012,6 @@ begin
         IO.Delay( Option_RunDelay );
     end;
   end;
-
-  if FEnemiesInVision < 2 then
-  begin
-    FChainFire := 0;
-    if FBersekerLimit > 0 then Dec( FBersekerLimit );
-  end;
-
 try
 
   if FChainFire > 0 then
