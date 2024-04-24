@@ -1084,6 +1084,7 @@ begin
   BloodFloor;
   Dec( FSpeedCount, getMoveCost );
   HandlePostMove;
+  Exit( True );
 end;
 
 function TBeing.ActionTactic : Boolean;

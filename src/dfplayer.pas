@@ -590,6 +590,7 @@ var iLevel      : TLevel;
     iFireDesc   : AnsiString;
     iCount      : Byte;
     iFlag       : byte;
+    iChainFire  : Byte;
     iScan       : TCoord2D;
     iTarget     : TCoord2D;
     iAlt        : Boolean;
@@ -601,6 +602,8 @@ var iLevel      : TLevel;
 begin
   iLevel := TLevel( Parent );
   iFlag  := 0;
+  iChainFire := FChainFire;
+  FChainFire := 0;
 
   if FRun.Active then
   begin
@@ -843,12 +846,13 @@ begin
 
             if iAltFire = ALT_CHAIN then
             begin
-              case FChainFire of
+              case iChainFire of
                 0 : iFireDesc := ' (@Ginitial@>)';
                 1 : iFireDesc := ' (@Ywarming@>)';
                 2 : iFireDesc := ' (@Rfull@>)';
               end;
-              if not Player.doChooseTarget( Format('Chain fire%s -- Choose target or abort...', [ iFireDesc ]), iRange, iLimitRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
+              if not Player.doChooseTarget( Format('Chain fire%s -- Choose target or abort...', [ iFireDesc ]), iRange, iLimitRange ) then
+                Exit( Fail( 'Targeting canceled.', [] ) );
             end
             else
               if not Player.doChooseTarget( Format('Fire%s -- Choose target...',[ iFireDesc ]), iRange, iLimitRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
@@ -937,6 +941,8 @@ begin
     if ( Inv.Slot[ efWeapon ] <> nil )  and ( Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then Exit( Fail('You can''t!',[]) );
     if ( Inv.Slot[ efWeapon2 ] <> nil ) and ( Inv.Slot[ efWeapon2 ].isAmmoPack )        then Exit( Fail('Nothing to swap!',[]) );
   end;
+
+  FChainFire := iChainFire;
 
   if ( aCommand in [ COMMAND_QUICKKEY ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iID ) ) );
