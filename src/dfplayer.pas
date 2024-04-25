@@ -74,7 +74,7 @@ TPlayer = class(TBeing)
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
   function HandleCommandValue( aCommand : Byte ) : Boolean;
-  procedure AIAction;
+  procedure Action; override;
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
@@ -962,7 +962,7 @@ begin
   Exit( Fail('Unknown command. Press "?" for help.', []) );
 end;
 
-procedure TPlayer.AIAction;
+procedure TPlayer.Action;
 var iLevel      : TLevel;
     iCommand    : Byte;
     iAlt        : Boolean;
