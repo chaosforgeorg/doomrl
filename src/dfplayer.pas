@@ -973,12 +973,6 @@ begin
 
   if iLevel.Item[ FPosition ] <> nil then
   begin
-    if iLevel.Item[ FPosition ].Hooks[ Hook_OnEnter ] then
-    begin
-      iLevel.Item[ FPosition ].CallHook( Hook_OnEnter, [ Self ] );
-      if (FSpeedCount < 5000) or (Doom.State <> DSPlaying) then Exit;
-    end
-    else
     if not FPathRun then
       with iLevel.Item[ FPosition ] do
         if isLever then
