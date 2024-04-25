@@ -358,6 +358,7 @@ repeat
           if GraphicsVersion then
             UI.GameUI.UpdateMinimap;
 
+          Player.PreAction;
           Player.Action;
 
           if State = DSPlaying then

@@ -74,6 +74,7 @@ TPlayer = class(TBeing)
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
   function HandleCommandValue( aCommand : Byte ) : Boolean;
+  procedure PreAction;
   procedure Action; override;
   procedure LevelEnter;
   procedure doUpgradeTrait;
@@ -962,13 +963,9 @@ begin
   Exit( Fail('Unknown command. Press "?" for help.', []) );
 end;
 
-procedure TPlayer.Action;
+procedure TPlayer.PreAction;
 var iLevel      : TLevel;
-    iCommand    : Byte;
-    iAlt        : Boolean;
 begin
-  iCommand := 0;
-  // FArmor color //
   iLevel := TLevel( Parent );
 
   if iLevel.Item[ FPosition ] <> nil then
@@ -989,6 +986,14 @@ begin
     FChainFire := 0;
     if FBersekerLimit > 0 then Dec( FBersekerLimit );
   end;
+end;
+procedure TPlayer.Action;
+var iLevel      : TLevel;
+    iCommand    : Byte;
+    iAlt        : Boolean;
+begin
+  iCommand := 0;
+  // FArmor color //
 
   if FEnemiesInVision > 1 then
   begin
