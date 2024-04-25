@@ -346,12 +346,14 @@ repeat
     IO.PlayMusic(FLevel.ID);
     FLevel.PreEnter;
 
+    FLevel.Tick;
     repeat
-      FLevel.Tick;
-      if State = DSPlaying then
+      IO.FullUpdate;
+      IO.Driver.Sleep(10);
+      if IO.Driver.EventPending then
       begin
         if not Player.PlayerTick then Break;
-        repeat 
+        repeat
           FLevel.CalculateVision( Player.Position );
           StatusEffect := Player.FAffects.getEffect;
           UI.Focus( Player.Position );
@@ -368,7 +370,10 @@ repeat
           end;
         until ( State <> DSPlaying ) or ( Player.SCount < 5000 );
         if State = DSPlaying then
+        begin
           FLevel.CalculateVision( Player.Position );
+          FLevel.Tick;
+        end;
       end;
     until State <> DSPlaying;
 

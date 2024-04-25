@@ -779,10 +779,11 @@ begin
   if aMouseMove  then Include( iEndLoop, VEVENT_MOUSEMOVE );
   repeat
     if (aTimeOut <> 0) and (FLastUpdate - iStart > aTimeOut) then Exit( False );
-    repeat
+    while not FIODriver.EventPending do
+    begin
       FullUpdate;
       FIODriver.Sleep(10);
-    until FIODriver.EventPending;
+    end;
     if not FIODriver.PollEvent( aEvent ) then continue;
     if ( aEvent.EType = VEVENT_MOUSEMOVE ) and FIODriver.EventPending then
     begin

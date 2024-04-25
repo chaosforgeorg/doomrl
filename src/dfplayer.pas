@@ -993,6 +993,7 @@ var iLevel      : TLevel;
     iAlt        : Boolean;
 begin
   iCommand := 0;
+  iLevel := TLevel( Parent );
   // FArmor color //
 
   if FEnemiesInVision > 1 then
