@@ -90,6 +90,7 @@ private
   FMusicValues : TAnsiStringArray;
   FSoundEvents : TSoundEventHeap;
 public
+  property KeyCode   : TIOKeyCode read FKeyCode;
   property QuadSheet : TGLQuadList read FQuadSheet;
   property TextSheet : TGLQuadList read FTextSheet;
   property PostSheet : TGLQuadList read FPostSheet;

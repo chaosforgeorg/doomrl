@@ -190,6 +190,7 @@ TBeing = class(TThing,IPathQuery)
     property AnimCount    : Word    read FAnimCount    write FAnimCount;
     property SilentAction : Boolean read FSilentAction write FSilentAction;
     property MeleeAttack  : Boolean read FMeleeAttack;
+    property ChainFire    : Byte    read FChainFire    write FChainFire;
     published
 
     property can_dual_reload : Boolean read canDualReload;

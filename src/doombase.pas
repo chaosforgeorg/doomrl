@@ -41,6 +41,7 @@ TDoom = class(TSystem)
        procedure LoadChallenge;
        procedure SetState( NewState : TDoomState );
        private
+       procedure PreAction;
        function ModuleHookTable( Hook : Byte ) : AnsiString;
        procedure LoadModule( Base : Boolean );
        procedure DoomFirst;
@@ -222,9 +223,20 @@ begin
   // Set Name    Name       : AnsiString;
 end;
 
+procedure TDoom.PreAction;
+begin
+  FLevel.CalculateVision( Player.Position );
+  StatusEffect := Player.FAffects.getEffect;
+  UI.Focus( Player.Position );
+  if GraphicsVersion then
+    UI.GameUI.UpdateMinimap;
+  Player.PreAction;
+end;
+
 procedure TDoom.Run;
 var iRank      : THOFRank;
     iResult    : TMenuResult;
+    iCommand   : Byte;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
@@ -350,18 +362,22 @@ repeat
     repeat
       IO.FullUpdate;
       IO.Driver.Sleep(10);
-      if IO.Driver.EventPending then
+      if IO.Driver.EventPending or Player.FRun.Active then
       begin
-        if not Player.PlayerTick then Break;
         repeat
-          FLevel.CalculateVision( Player.Position );
-          StatusEffect := Player.FAffects.getEffect;
-          UI.Focus( Player.Position );
-          if GraphicsVersion then
-            UI.GameUI.UpdateMinimap;
+          PreAction;
 
-          Player.PreAction;
-          Player.Action;
+          iCommand := 0;
+          if ( not Player.FRun.Active ) and ( Player.ChainFire = 0 ) then
+            iCommand := IO.WaitForCommand([]);
+          UI.MsgUpDate;
+          if Player.ChainFire > 0 then
+            iCommand := COMMAND_ALTFIRE;
+
+          if ( iCommand = 255 ) then // GodMode Keys
+            Config.RunKey( IO.KeyCode )
+          else
+            Player.Action( iCommand );
 
           if State = DSPlaying then
           begin
@@ -373,6 +389,8 @@ repeat
         begin
           FLevel.CalculateVision( Player.Position );
           FLevel.Tick;
+          UI.WaitForAnimation;
+          if not Player.PlayerTick then Break;
         end;
       end;
     until State <> DSPlaying;

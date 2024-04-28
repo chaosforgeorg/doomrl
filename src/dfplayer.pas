@@ -75,7 +75,7 @@ TPlayer = class(TBeing)
   procedure HandlePostMove; override;
   function HandleCommandValue( aCommand : Byte ) : Boolean;
   procedure PreAction;
-  procedure Action; override;
+  procedure Action( aCommand : Byte );
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
@@ -510,7 +510,6 @@ begin
   TLevel(Parent).CallHook( FPosition, Self, CellHook_OnEnter );
   if UIDs[ iThisUID ] = nil then Exit( False );
 
-  UI.WaitForAnimation;
   MasterDodge := False;
   FAffects.Tick;
   if Doom.State <> DSPlaying then Exit( False );
@@ -986,15 +985,6 @@ begin
     FChainFire := 0;
     if FBersekerLimit > 0 then Dec( FBersekerLimit );
   end;
-end;
-procedure TPlayer.Action;
-var iLevel      : TLevel;
-    iCommand    : Byte;
-    iAlt        : Boolean;
-begin
-  iCommand := 0;
-  iLevel := TLevel( Parent );
-  // FArmor color //
 
   if FEnemiesInVision > 1 then
   begin
@@ -1006,26 +996,28 @@ begin
   begin
     if IO.CommandEventPending then
     begin
+      UI.Msg('Pending stop');
       FPathRun := False;
       FRun.Stop;
       IO.ClearEventBuffer;
     end
     else
     begin
-      iCommand := INPUT_WALKNORTH;
-
       if not GraphicsVersion then
         IO.Delay( Option_RunDelay );
     end;
   end;
+end;
+
+procedure TPlayer.Action( aCommand : Byte );
+var iLevel      : TLevel;
+    iCommand    : Byte;
+    iAlt        : Boolean;
+begin
 try
-
-  if FChainFire > 0 then
-    iCommand := COMMAND_ALTFIRE;
-
-  if iCommand = 0
-    then iCommand := IO.GetCommand
-    else UI.MsgUpDate;
+  iCommand := aCommand;
+  iLevel := TLevel( Parent );
+  // FArmor color //
 
   // === MOUSE HANDLING ===
   if iCommand in [ INPUT_MLEFT, INPUT_MRIGHT ] then
