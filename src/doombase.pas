@@ -68,9 +68,10 @@ var Lua : TDoomLua;
 implementation
 
 uses Classes, SysUtils,
-     vdebug,
+     vdebug, vioevent, viotypes,
      dfmap,
      dfoutput, doomio, zstream,
+     doomspritemap, // remove
      doomhelp, doomconfig, doomviews, dfplayer;
 
 
@@ -237,6 +238,8 @@ procedure TDoom.Run;
 var iRank      : THOFRank;
     iResult    : TMenuResult;
     iCommand   : Byte;
+    iEvent     : TIOEvent;
+    iPoint     : TIOPoint;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
@@ -370,7 +373,42 @@ repeat
           iCommand := 0;
           if ( not Player.FRun.Active ) and ( Player.ChainFire = 0 ) then
           repeat
-            iCommand := IO.WaitForCommand([]);
+            iCommand := 0;
+            IO.WaitForKeyEvent( iEvent, GraphicsVersion, False );
+            if (iEvent.EType = VEVENT_SYSTEM) then
+              if Option_LockClose
+                 then iCommand := INPUT_QUIT
+                 else iCommand := INPUT_HARDQUIT;
+
+            if (iEvent.EType = VEVENT_MOUSEMOVE) then
+            begin
+              iPoint := SpriteMap.DevicePointToCoord( iEvent.MouseMove.Pos );
+              IO.MTarget.Create( iPoint.X, iPoint.Y );
+              if Doom.Level.isProperCoord( IO.MTarget ) then
+                iCommand := INPUT_MMOVE;
+            end;
+
+            if iEvent.EType = VEVENT_MOUSEDOWN then
+            begin
+              iPoint := SpriteMap.DevicePointToCoord( iEvent.Mouse.Pos );
+              IO.MTarget.Create( iPoint.X, iPoint.Y );
+              if Doom.Level.isProperCoord( IO.MTarget ) then
+              begin
+                case iEvent.Mouse.Button of
+                  VMB_BUTTON_LEFT     : iCommand := INPUT_MLEFT;
+                  VMB_BUTTON_MIDDLE   : iCommand := INPUT_MMIDDLE;
+                  VMB_BUTTON_RIGHT    : iCommand := INPUT_MRIGHT;
+                  VMB_WHEEL_UP        : iCommand := INPUT_MSCRUP;
+                  VMB_WHEEL_DOWN      : iCommand := INPUT_MSCRDOWN;
+                end;
+              end;
+            end
+            else if iCommand = 0 then
+            begin
+              IO.KeyCode := IOKeyEventToIOKeyCode( iEvent.Key );
+              iCommand := Config.Commands[ IO.KeyCode ];
+            end;
+
             if ( iCommand = 255 ) then // GodMode Keys
               Config.RunKey( IO.KeyCode )
           until iCommand > 0;
