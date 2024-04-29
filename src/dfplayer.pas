@@ -456,6 +456,9 @@ begin
           iTargets.PriorityTarget( FLastTargetPos );
 
   FTargetPos := UI.ChooseTarget(aActionName, aRadius+1, aLimitRange, iTargets, FChainFire > 0 );
+  if FLastTargetPos.X*FLastTargetPos.Y <> 0
+     then FPrevTargetPos := FLastTargetPos
+     else FPrevTargetPos := FTargetPos;
   FreeAndNil(iTargets);
   if FTargetPos.X = 0 then Exit( False );
 

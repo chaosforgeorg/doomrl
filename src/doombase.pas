@@ -359,31 +359,34 @@ repeat
     FLevel.PreEnter;
 
     FLevel.Tick;
+    PreAction;
+
     repeat
       IO.FullUpdate;
       IO.Driver.Sleep(10);
-      if IO.Driver.EventPending or Player.FRun.Active then
+      if IO.Driver.EventPending or Player.FRun.Active or ( Player.ChainFire > 0 ) then
       begin
         repeat
-          PreAction;
-
           iCommand := 0;
           if ( not Player.FRun.Active ) and ( Player.ChainFire = 0 ) then
+          repeat
             iCommand := IO.WaitForCommand([]);
+            if ( iCommand = 255 ) then // GodMode Keys
+              Config.RunKey( IO.KeyCode )
+          until iCommand > 0;
           UI.MsgUpDate;
           if Player.ChainFire > 0 then
             iCommand := COMMAND_ALTFIRE;
 
-          if ( iCommand = 255 ) then // GodMode Keys
-            Config.RunKey( IO.KeyCode )
-          else
-            Player.Action( iCommand );
+          Player.Action( iCommand );
 
           if State = DSPlaying then
           begin
             UI.Focus( Player.Position );
             Player.UpdateVisual;
           end;
+          if ( State = DSPlaying ) and ( Player.SCount >= 5000 ) then
+            PreAction;
         until ( State <> DSPlaying ) or ( Player.SCount < 5000 );
         if State = DSPlaying then
         begin
@@ -391,6 +394,7 @@ repeat
           FLevel.Tick;
           UI.WaitForAnimation;
           if not Player.PlayerTick then Break;
+          PreAction;
         end;
       end;
     until State <> DSPlaying;

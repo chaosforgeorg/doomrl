@@ -172,6 +172,7 @@ TBeing = class(TThing,IPathQuery)
     FMeleeAttack   : Boolean;
     FSilentAction  : Boolean;
     FTargetPos     : TCoord2D;
+    FPrevTargetPos : TCoord2D;
     FInv           : TInventory;
     FMovePos       : TCoord2D;
     FLastPos       : TCoord2D;
@@ -803,8 +804,7 @@ begin
 end;
 
 function TBeing.ActionFire ( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean ) : Boolean;
-var iFireDesc  : AnsiString;
-    iChainFire : Byte;
+var iChainFire : Byte;
     iChainOld  : TCoord2D;
     iEnemy     : TBeing;
     iEnemyUID  : TUID;
@@ -815,7 +815,7 @@ var iFireDesc  : AnsiString;
     iDist      : Byte;
     iAltFire   : TAltFire;
 begin
-  iChainOld   := FTargetPos;
+  iChainOld   := FPrevTargetPos;
   iChainFire  := FChainFire;
   iAltFire    := ALT_NONE;
   FChainFire  := 0;
