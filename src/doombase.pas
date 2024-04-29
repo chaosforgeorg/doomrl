@@ -235,11 +235,13 @@ begin
 end;
 
 procedure TDoom.Run;
-var iRank      : THOFRank;
-    iResult    : TMenuResult;
-    iCommand   : Byte;
-    iEvent     : TIOEvent;
-    iPoint     : TIOPoint;
+var iRank       : THOFRank;
+    iResult     : TMenuResult;
+    iCommand    : Byte;
+    iEvent      : TIOEvent;
+    iPeek       : TIOEvent;
+    iPoint      : TIOPoint;
+    iPeekResult : Boolean;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
@@ -374,7 +376,25 @@ repeat
           if ( not Player.FRun.Active ) and ( Player.ChainFire = 0 ) then
           repeat
             iCommand := 0;
-            IO.WaitForKeyEvent( iEvent, GraphicsVersion, False );
+            repeat
+              while not IO.Driver.EventPending do
+              begin
+                IO.FullUpdate;
+                IO.Driver.Sleep(10);
+              end;
+              if not IO.Driver.PollEvent( iEvent ) then continue;
+              if ( iEvent.EType = VEVENT_MOUSEMOVE ) and IO.Driver.EventPending then
+              begin
+                repeat
+                  iPeekResult := IO.Driver.PeekEvent( iPeek );
+                  if ( not iPeekResult ) or ( iPeek.EType <> VEVENT_MOUSEMOVE ) then break;
+                  IO.Driver.PollEvent( iEvent );
+                until (not IO.Driver.EventPending);
+              end;
+              if IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
+              if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
+                break;
+            until ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
             if (iEvent.EType = VEVENT_SYSTEM) then
               if Option_LockClose
                  then iCommand := INPUT_QUIT
