@@ -2,8 +2,9 @@
 unit doombase;
 interface
 
-uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, dflevel,
-     dfdata, dfhof, doomhooks, doomlua, doommodule, doommenuview;
+uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
+     dflevel, dfdata, dfhof,
+     doomhooks, doomlua, doommodule, doommenuview;
 
 type TDoomState = ( DSStart,      DSMenu,    DSLoading,
                     DSPlaying,    DSSaving,  DSNextLevel,
@@ -33,7 +34,7 @@ TDoom = class(TSystem)
        procedure WriteSaveFile;
        function SaveExists : Boolean;
        procedure SetupLuaConstants;
-       procedure Action( aCommand : Byte );
+       function Action( aCommand : Byte ) : Boolean;
        procedure Run;
        destructor Destroy; override;
        procedure ModuleMainHook( Hook : AnsiString; const Params : array of Const );
@@ -41,21 +42,23 @@ TDoom = class(TSystem)
        function  CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
        procedure LoadChallenge;
        procedure SetState( NewState : TDoomState );
-       private
+     private
+       function HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
+       function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
        procedure PreAction;
        function ModuleHookTable( Hook : Byte ) : AnsiString;
        procedure LoadModule( Base : Boolean );
        procedure DoomFirst;
        procedure RunSingle;
        procedure CreatePlayer( aResult : TMenuResult );
-       private
+     private
        FState           : TDoomState;
        FLevel           : TLevel;
        FCoreHooks       : TFlags;
        FChallengeHooks  : TFlags;
        FSChallengeHooks : TFlags;
        FModuleHooks     : TFlags;
-       public
+     public
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
        property ModuleHooks : TFlags read FModuleHooks;
@@ -69,7 +72,7 @@ var Lua : TDoomLua;
 implementation
 
 uses Classes, SysUtils,
-     vdebug, vioevent, viotypes,
+     vdebug, viotypes,
      dfmap,
      dfoutput, doomio, zstream,
      doomspritemap, // remove
@@ -235,7 +238,7 @@ begin
   Player.PreAction;
 end;
 
-procedure TDoom.Action( aCommand : Byte );
+function TDoom.Action( aCommand : Byte ) : Boolean;
 begin
   UI.MsgUpDate;
   Player.Action( aCommand );
@@ -247,17 +250,49 @@ begin
     FLevel.CalculateVision( Player.Position );
     FLevel.Tick;
     UI.WaitForAnimation;
-    if not Player.PlayerTick then Break;
+    if not Player.PlayerTick then Exit( True );
   end;
   PreAction;
+  Exit( True );
 end;
+
+function TDoom.HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
+var iPoint : TIOPoint;
+begin
+  iPoint := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
+  IO.MTarget.Create( iPoint.X, iPoint.Y );
+  if Doom.Level.isProperCoord( IO.MTarget ) then
+    case aEvent.Mouse.Button of
+      VMB_BUTTON_LEFT     : Exit( Action( INPUT_MLEFT ) );
+      VMB_BUTTON_MIDDLE   : Exit( Action( INPUT_MMIDDLE ) );
+      VMB_BUTTON_RIGHT    : Exit( Action( INPUT_MRIGHT ) );
+      VMB_WHEEL_UP        : Exit( Action( INPUT_MSCRUP ) );
+      VMB_WHEEL_DOWN      : Exit( Action( INPUT_MSCRDOWN ) );
+    end;
+  Exit( False );
+end;
+
+function TDoom.HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
+var iCommand : Byte;
+begin
+  IO.KeyCode := IOKeyEventToIOKeyCode( aEvent.Key );
+  iCommand := Config.Commands[ IO.KeyCode ];
+  if ( iCommand = 255 ) then // GodMode Keys
+  begin
+    Config.RunKey( IO.KeyCode );
+    Action( 0 );
+    Exit( True );
+  end;
+  if iCommand > 0 then
+    Exit( Action( iCommand ) );
+  Exit( False );
+end;
+
 
 procedure TDoom.Run;
 var iRank       : THOFRank;
     iResult     : TMenuResult;
-    iCommand    : Byte;
     iEvent      : TIOEvent;
-    iPoint      : TIOPoint;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
@@ -396,7 +431,6 @@ repeat
         Continue;
       end;
 
-      iCommand := 0;
       repeat
         while not IO.Driver.EventPending do
         begin
@@ -418,37 +452,10 @@ repeat
       end;
 
       if iEvent.EType = VEVENT_MOUSEDOWN then
-      begin
-        iPoint := SpriteMap.DevicePointToCoord( iEvent.Mouse.Pos );
-        IO.MTarget.Create( iPoint.X, iPoint.Y );
-        if Doom.Level.isProperCoord( IO.MTarget ) then
-        begin
-          case iEvent.Mouse.Button of
-            VMB_BUTTON_LEFT     : Action( INPUT_MLEFT );
-            VMB_BUTTON_MIDDLE   : Action( INPUT_MMIDDLE );
-            VMB_BUTTON_RIGHT    : Action( INPUT_MRIGHT );
-            VMB_WHEEL_UP        : Action( INPUT_MSCRUP );
-            VMB_WHEEL_DOWN      : Action( INPUT_MSCRDOWN );
-          end;
-        end;
-        Continue;
-      end;
+        HandleMouseEvent( iEvent );
 
-      if ( iEvent.EType = VEVENT_KEYDOWN ) and ( iCommand = 0 ) then
-      begin
-        IO.KeyCode := IOKeyEventToIOKeyCode( iEvent.Key );
-        iCommand := Config.Commands[ IO.KeyCode ];
-        if ( iCommand = 255 ) then // GodMode Keys
-        begin
-          Config.RunKey( IO.KeyCode );
-          Action( 0 );
-          Continue;
-        end;
-        if iCommand > 0 then
-          Action( iCommand );
-
-      end;
-
+      if iEvent.EType = VEVENT_KEYDOWN then
+        HandleKeyEvent( iEvent );
     end;
 
     if State in [ DSNextLevel, DSSaving ] then
