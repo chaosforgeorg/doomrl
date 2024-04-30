@@ -249,6 +249,7 @@ begin
     UI.WaitForAnimation;
     if not Player.PlayerTick then Break;
   end;
+  PreAction;
 end;
 
 procedure TDoom.Run;
@@ -379,61 +380,65 @@ repeat
     FLevel.PreEnter;
 
     FLevel.Tick;
+    PreAction;
 
     while ( State = DSPlaying ) do
     begin
-      iCommand := 0;
-      PreAction;
-
-      if ( not Player.FRun.Active ) and ( Player.ChainFire = 0 ) then
-      repeat
-        iCommand := 0;
-        repeat
-          while not IO.Driver.EventPending do
-          begin
-            IO.FullUpdate;
-            IO.Driver.Sleep(10);
-          end;
-          if not IO.Driver.PollEvent( iEvent ) then continue;
-          if IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
-          if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
-            break;
-        until ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
-        if (iEvent.EType = VEVENT_SYSTEM) then
-          if Option_LockClose
-             then iCommand := INPUT_QUIT
-             else iCommand := INPUT_HARDQUIT;
-
-        if iEvent.EType = VEVENT_MOUSEDOWN then
-        begin
-          iPoint := SpriteMap.DevicePointToCoord( iEvent.Mouse.Pos );
-          IO.MTarget.Create( iPoint.X, iPoint.Y );
-          if Doom.Level.isProperCoord( IO.MTarget ) then
-          begin
-            case iEvent.Mouse.Button of
-              VMB_BUTTON_LEFT     : iCommand := INPUT_MLEFT;
-              VMB_BUTTON_MIDDLE   : iCommand := INPUT_MMIDDLE;
-              VMB_BUTTON_RIGHT    : iCommand := INPUT_MRIGHT;
-              VMB_WHEEL_UP        : iCommand := INPUT_MSCRUP;
-              VMB_WHEEL_DOWN      : iCommand := INPUT_MSCRDOWN;
-            end;
-          end;
-        end;
-
-        if ( iEvent.EType = VEVENT_KEYDOWN ) and ( iCommand = 0 ) then
-        begin
-          IO.KeyCode := IOKeyEventToIOKeyCode( iEvent.Key );
-          iCommand := Config.Commands[ IO.KeyCode ];
-          if ( iCommand = 255 ) then // GodMode Keys
-            Config.RunKey( IO.KeyCode )
-        end;
-
-      until iCommand > 0;
-
       if Player.ChainFire > 0 then
-        iCommand := COMMAND_ALTFIRE;
+      begin
+        Action( COMMAND_ALTFIRE );
+        Continue;
+      end;
 
-      Action( iCommand );
+      if ( Player.FRun.Active ) then
+      begin
+        Action( 0 );
+        Continue;
+      end;
+
+      iCommand := 0;
+      repeat
+        while not IO.Driver.EventPending do
+        begin
+          IO.FullUpdate;
+          IO.Driver.Sleep(10);
+        end;
+        if not IO.Driver.PollEvent( iEvent ) then continue;
+        if IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
+        if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
+          break;
+      until ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
+      if (iEvent.EType = VEVENT_SYSTEM) then
+        if Option_LockClose
+           then iCommand := INPUT_QUIT
+           else iCommand := INPUT_HARDQUIT;
+
+      if iEvent.EType = VEVENT_MOUSEDOWN then
+      begin
+        iPoint := SpriteMap.DevicePointToCoord( iEvent.Mouse.Pos );
+        IO.MTarget.Create( iPoint.X, iPoint.Y );
+        if Doom.Level.isProperCoord( IO.MTarget ) then
+        begin
+          case iEvent.Mouse.Button of
+            VMB_BUTTON_LEFT     : iCommand := INPUT_MLEFT;
+            VMB_BUTTON_MIDDLE   : iCommand := INPUT_MMIDDLE;
+            VMB_BUTTON_RIGHT    : iCommand := INPUT_MRIGHT;
+            VMB_WHEEL_UP        : iCommand := INPUT_MSCRUP;
+            VMB_WHEEL_DOWN      : iCommand := INPUT_MSCRDOWN;
+          end;
+        end;
+      end;
+
+      if ( iEvent.EType = VEVENT_KEYDOWN ) and ( iCommand = 0 ) then
+      begin
+        IO.KeyCode := IOKeyEventToIOKeyCode( iEvent.Key );
+        iCommand := Config.Commands[ IO.KeyCode ];
+        if ( iCommand = 255 ) then // GodMode Keys
+          Config.RunKey( IO.KeyCode )
+      end;
+
+      if iCommand > 0 then
+        Action( iCommand );
     end;
 
     if State in [ DSNextLevel, DSSaving ] then
