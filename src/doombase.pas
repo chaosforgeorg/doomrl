@@ -2,8 +2,9 @@
 unit doombase;
 interface
 
-uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, dflevel,
-     dfdata, dfhof, doomhooks, doomlua, doommodule, doommenuview;
+uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
+     dflevel, dfdata, dfhof,
+     doomhooks, doomlua, doommodule, doommenuview;
 
 type TDoomState = ( DSStart,      DSMenu,    DSLoading,
                     DSPlaying,    DSSaving,  DSNextLevel,
@@ -33,6 +34,7 @@ TDoom = class(TSystem)
        procedure WriteSaveFile;
        function SaveExists : Boolean;
        procedure SetupLuaConstants;
+       function Action( aCommand : Byte ) : Boolean;
        procedure Run;
        destructor Destroy; override;
        procedure ModuleMainHook( Hook : AnsiString; const Params : array of Const );
@@ -40,20 +42,23 @@ TDoom = class(TSystem)
        function  CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
        procedure LoadChallenge;
        procedure SetState( NewState : TDoomState );
-       private
+     private
+       function HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
+       function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
+       procedure PreAction;
        function ModuleHookTable( Hook : Byte ) : AnsiString;
        procedure LoadModule( Base : Boolean );
        procedure DoomFirst;
        procedure RunSingle;
        procedure CreatePlayer( aResult : TMenuResult );
-       private
+     private
        FState           : TDoomState;
        FLevel           : TLevel;
        FCoreHooks       : TFlags;
        FChallengeHooks  : TFlags;
        FSChallengeHooks : TFlags;
        FModuleHooks     : TFlags;
-       public
+     public
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
        property ModuleHooks : TFlags read FModuleHooks;
@@ -67,9 +72,10 @@ var Lua : TDoomLua;
 implementation
 
 uses Classes, SysUtils,
-     vdebug,
+     vdebug, viotypes,
      dfmap,
      dfoutput, doomio, zstream,
+     doomspritemap, // remove
      doomhelp, doomconfig, doomviews, dfplayer;
 
 
@@ -222,9 +228,71 @@ begin
   // Set Name    Name       : AnsiString;
 end;
 
+procedure TDoom.PreAction;
+begin
+  FLevel.CalculateVision( Player.Position );
+  StatusEffect := Player.FAffects.getEffect;
+  UI.Focus( Player.Position );
+  if GraphicsVersion then
+    UI.GameUI.UpdateMinimap;
+  Player.PreAction;
+end;
+
+function TDoom.Action( aCommand : Byte ) : Boolean;
+begin
+  UI.MsgUpDate;
+  Player.Action( aCommand );
+  if State <> DSPlaying then Exit;
+  UI.Focus( Player.Position );
+  Player.UpdateVisual;
+  while (Player.SCount < 5000) and (State = DSPlaying) do
+  begin
+    FLevel.CalculateVision( Player.Position );
+    FLevel.Tick;
+    UI.WaitForAnimation;
+    if not Player.PlayerTick then Exit( True );
+  end;
+  PreAction;
+  Exit( True );
+end;
+
+function TDoom.HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
+var iPoint : TIOPoint;
+begin
+  iPoint := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
+  IO.MTarget.Create( iPoint.X, iPoint.Y );
+  if Doom.Level.isProperCoord( IO.MTarget ) then
+    case aEvent.Mouse.Button of
+      VMB_BUTTON_LEFT     : Exit( Action( INPUT_MLEFT ) );
+      VMB_BUTTON_MIDDLE   : Exit( Action( INPUT_MMIDDLE ) );
+      VMB_BUTTON_RIGHT    : Exit( Action( INPUT_MRIGHT ) );
+      VMB_WHEEL_UP        : Exit( Action( INPUT_MSCRUP ) );
+      VMB_WHEEL_DOWN      : Exit( Action( INPUT_MSCRDOWN ) );
+    end;
+  Exit( False );
+end;
+
+function TDoom.HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
+var iCommand : Byte;
+begin
+  IO.KeyCode := IOKeyEventToIOKeyCode( aEvent.Key );
+  iCommand := Config.Commands[ IO.KeyCode ];
+  if ( iCommand = 255 ) then // GodMode Keys
+  begin
+    Config.RunKey( IO.KeyCode );
+    Action( 0 );
+    Exit( True );
+  end;
+  if iCommand > 0 then
+    Exit( Action( iCommand ) );
+  Exit( False );
+end;
+
+
 procedure TDoom.Run;
-var iRank      : THOFRank;
-    iResult    : TMenuResult;
+var iRank       : THOFRank;
+    iResult     : TMenuResult;
+    iEvent      : TIOEvent;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
@@ -346,30 +414,49 @@ repeat
     IO.PlayMusic(FLevel.ID);
     FLevel.PreEnter;
 
-    repeat
-      FLevel.Tick;
-      if State = DSPlaying then
+    FLevel.Tick;
+    PreAction;
+
+    while ( State = DSPlaying ) do
+    begin
+      if Player.ChainFire > 0 then
       begin
-        if not Player.PlayerTick then Break;
-        repeat 
-          FLevel.CalculateVision( Player.Position );
-          StatusEffect := Player.FAffects.getEffect;
-          UI.Focus( Player.Position );
-          if GraphicsVersion then
-            UI.GameUI.UpdateMinimap;
-
-          Player.AIAction;
-
-          if State = DSPlaying then
-          begin
-            UI.Focus( Player.Position );
-            Player.UpdateVisual;
-          end;
-        until ( State <> DSPlaying ) or ( Player.SCount < 5000 );
-        if State = DSPlaying then
-          FLevel.CalculateVision( Player.Position );
+        Action( COMMAND_ALTFIRE );
+        Continue;
       end;
-    until State <> DSPlaying;
+
+      if ( Player.FRun.Active ) then
+      begin
+        Action( 0 );
+        Continue;
+      end;
+
+      repeat
+        while not IO.Driver.EventPending do
+        begin
+          IO.FullUpdate;
+          IO.Driver.Sleep(10);
+        end;
+        if not IO.Driver.PollEvent( iEvent ) then continue;
+        if IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
+        if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
+          break;
+      until ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
+
+      if (iEvent.EType = VEVENT_SYSTEM) then
+      begin
+        if Option_LockClose
+           then Action( INPUT_QUIT )
+           else Action( INPUT_HARDQUIT );
+        Continue;
+      end;
+
+      if iEvent.EType = VEVENT_MOUSEDOWN then
+        HandleMouseEvent( iEvent );
+
+      if iEvent.EType = VEVENT_KEYDOWN then
+        HandleKeyEvent( iEvent );
+    end;
 
     if State in [ DSNextLevel, DSSaving ] then
       FLevel.Leave;

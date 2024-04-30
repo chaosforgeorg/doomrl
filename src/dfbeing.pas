@@ -53,9 +53,10 @@ TBeing = class(TThing,IPathQuery)
     procedure Initialize;
     function GetName( known : boolean ) : string;
     procedure Tick;
-    procedure Action;
+    procedure Action; virtual;
     procedure HandlePostMove; virtual;
-    function HandleCommand( aCommand : TCommand ) : Boolean; 
+    procedure HandlePostDisplace;
+    function HandleCommand( aCommand : TCommand ) : Boolean;
     function  TryMove( where : TCoord2D ) : TMoveResult;
     function  MoveTowards( where : TCoord2D ) : TMoveResult;
     procedure Reload( AmmoItem : TItem; Single : Boolean );
@@ -171,6 +172,7 @@ TBeing = class(TThing,IPathQuery)
     FMeleeAttack   : Boolean;
     FSilentAction  : Boolean;
     FTargetPos     : TCoord2D;
+    FPrevTargetPos : TCoord2D;
     FInv           : TInventory;
     FMovePos       : TCoord2D;
     FLastPos       : TCoord2D;
@@ -189,6 +191,7 @@ TBeing = class(TThing,IPathQuery)
     property AnimCount    : Word    read FAnimCount    write FAnimCount;
     property SilentAction : Boolean read FSilentAction write FSilentAction;
     property MeleeAttack  : Boolean read FMeleeAttack;
+    property ChainFire    : Byte    read FChainFire    write FChainFire;
     published
 
     property can_dual_reload : Boolean read canDualReload;
@@ -801,8 +804,7 @@ begin
 end;
 
 function TBeing.ActionFire ( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean ) : Boolean;
-var iFireDesc  : AnsiString;
-    iChainFire : Byte;
+var iChainFire : Byte;
     iChainOld  : TCoord2D;
     iEnemy     : TBeing;
     iEnemyUID  : TUID;
@@ -813,7 +815,7 @@ var iFireDesc  : AnsiString;
     iDist      : Byte;
     iAltFire   : TAltFire;
 begin
-  iChainOld   := FTargetPos;
+  iChainOld   := FPrevTargetPos;
   iChainFire  := FChainFire;
   iAltFire    := ALT_NONE;
   FChainFire  := 0;
@@ -1081,8 +1083,8 @@ begin
     UI.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
   end;
   Displace( aTarget );
-  BloodFloor;
   Dec( FSpeedCount, getMoveCost );
+  HandlePostDisplace;
   HandlePostMove;
   Exit( True );
 end;
@@ -1214,11 +1216,8 @@ begin
     if iLevel.BeingExplored( FPosition, Self ) or iLevel.BeingExplored( LastMove, Self ) or iLevel.BeingVisible( FPosition, Self ) or iLevel.BeingVisible( LastMove, Self ) then
       UI.addMoveAnimation(100, 0, FUID,Position,LastMove,Sprite);
   Displace( FMovePos );
-  BloodFloor;
   playSound( SoundHoof );
-  if iLevel.Item[ FPosition ] <> nil then
-    iLevel.Item[ FPosition ].CallHook( Hook_OnEnter, [ Self ] );
-
+  HandlePostDisplace;
   Exit( MoveResult );
 end;
 
@@ -1364,8 +1363,18 @@ end;
 
 procedure TBeing.HandlePostMove;
 begin
-
 end;
+
+procedure TBeing.HandlePostDisplace;
+var iLevel      : TLevel;
+begin
+  BloodFloor;
+  iLevel := TLevel( Parent );
+  if iLevel.Item[ FPosition ] <> nil then
+    if iLevel.Item[ FPosition ].Hooks[ Hook_OnEnter ] then
+      iLevel.Item[ FPosition ].CallHook( Hook_OnEnter, [ Self ] );
+end;
+
 
 function TBeing.HandleCommand( aCommand : TCommand ) : Boolean; 
 begin
@@ -2171,6 +2180,7 @@ begin
         UI.addMoveAnimation( 50,0,FUID,Position,knock,Sprite);
     end;
     Displace( knock );
+    HandlePostDisplace;
   end;
 end;
 

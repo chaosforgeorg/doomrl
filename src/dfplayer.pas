@@ -74,7 +74,8 @@ TPlayer = class(TBeing)
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
   function HandleCommandValue( aCommand : Byte ) : Boolean;
-  procedure AIAction;
+  procedure PreAction;
+  procedure Action( aCommand : Byte );
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
@@ -455,6 +456,9 @@ begin
           iTargets.PriorityTarget( FLastTargetPos );
 
   FTargetPos := UI.ChooseTarget(aActionName, aRadius+1, aLimitRange, iTargets, FChainFire > 0 );
+  if FLastTargetPos.X*FLastTargetPos.Y <> 0
+     then FPrevTargetPos := FLastTargetPos
+     else FPrevTargetPos := FTargetPos;
   FreeAndNil(iTargets);
   if FTargetPos.X = 0 then Exit( False );
 
@@ -509,7 +513,6 @@ begin
   TLevel(Parent).CallHook( FPosition, Self, CellHook_OnEnter );
   if UIDs[ iThisUID ] = nil then Exit( False );
 
-  UI.WaitForAnimation;
   MasterDodge := False;
   FAffects.Tick;
   if Doom.State <> DSPlaying then Exit( False );
@@ -962,23 +965,13 @@ begin
   Exit( Fail('Unknown command. Press "?" for help.', []) );
 end;
 
-procedure TPlayer.AIAction;
+procedure TPlayer.PreAction;
 var iLevel      : TLevel;
-    iCommand    : Byte;
-    iAlt        : Boolean;
 begin
-  iCommand := 0;
-  // FArmor color //
   iLevel := TLevel( Parent );
 
   if iLevel.Item[ FPosition ] <> nil then
   begin
-    if iLevel.Item[ FPosition ].Hooks[ Hook_OnEnter ] then
-    begin
-      iLevel.Item[ FPosition ].CallHook( Hook_OnEnter, [ Self ] );
-      if (FSpeedCount < 5000) or (Doom.State <> DSPlaying) then Exit;
-    end
-    else
     if not FPathRun then
       with iLevel.Item[ FPosition ] do
         if isLever then
@@ -1006,26 +999,28 @@ begin
   begin
     if IO.CommandEventPending then
     begin
+      UI.Msg('Pending stop');
       FPathRun := False;
       FRun.Stop;
       IO.ClearEventBuffer;
     end
     else
     begin
-      iCommand := INPUT_WALKNORTH;
-
       if not GraphicsVersion then
         IO.Delay( Option_RunDelay );
     end;
   end;
+end;
+
+procedure TPlayer.Action( aCommand : Byte );
+var iLevel      : TLevel;
+    iCommand    : Byte;
+    iAlt        : Boolean;
+begin
 try
-
-  if FChainFire > 0 then
-    iCommand := COMMAND_ALTFIRE;
-
-  if iCommand = 0
-    then iCommand := IO.GetCommand
-    else UI.MsgUpDate;
+  iCommand := aCommand;
+  iLevel := TLevel( Parent );
+  // FArmor color //
 
   // === MOUSE HANDLING ===
   if iCommand in [ INPUT_MLEFT, INPUT_MRIGHT ] then

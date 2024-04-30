@@ -39,11 +39,10 @@ type TDoomIO = class( TIO )
   procedure LoadStop;
   procedure Update( aMSec : DWord ); override;
 
-  function GetCommand : Byte;
   procedure WaitForEnter;
-  function WaitForCommand( const aSet : TCommandSet; aTimeOut : DWord = 0 ) : Byte;
+  function WaitForCommand( const aSet : TCommandSet ) : Byte;
   function WaitForKey( const aSet : TKeySet ) : Byte;
-  function WaitForKeyEvent( out aEvent : TIOEvent; aMouseClick : Boolean = False; aMouseMove : Boolean = False; aTimeOut : DWord = 0 ) : Boolean;
+  procedure WaitForKeyEvent( out aEvent : TIOEvent; aMouseClick : Boolean = False; aMouseMove : Boolean = False );
   function CommandEventPending : Boolean;
 
 private
@@ -71,7 +70,7 @@ private
   FSettings   : array [Boolean] of
   record
     Width  : Integer;
-    Height : Integer;                                  spritemap, doomviews,
+    Height : Integer;
     FMult  : Integer;
     TMult  : Integer;
     MiniM  : Integer;
@@ -90,6 +89,7 @@ private
   FMusicValues : TAnsiStringArray;
   FSoundEvents : TSoundEventHeap;
 public
+  property KeyCode   : TIOKeyCode read FKeyCode write FKeyCode;
   property QuadSheet : TGLQuadList read FQuadSheet;
   property TextSheet : TGLQuadList read FTextSheet;
   property PostSheet : TGLQuadList read FPostSheet;
@@ -97,7 +97,7 @@ public
   property FontMult  : Byte read FFontMult;
   property TileMult  : Byte read FTileMult;
   property MCursor   : TDoomMouseCursor read FMCursor;
-  property MTarget   : TCoord2D read FMTarget;
+  property MTarget   : TCoord2D read FMTarget write FMTarget;
 end;
 
 var IO : TDoomIO;
@@ -679,41 +679,19 @@ begin
   end;
 end;
 
-function TDoomIO.GetCommand : Byte;
-var Special    : Variant;
-begin
-  GetCommand := WaitForCommand([]);
-  UI.MsgUpDate;
-
-  if GetCommand = COMMAND_INVALID then
-  begin
-    Special := Config.RunKey( FKeyCode );
-    if VarIsOrdinal(Special) and (not VarIsType( Special, varBoolean ) ) then GetCommand := Special;
-  end;
-
-  Exit( GetCommand );
-end;
-
-
 procedure TDoomIO.WaitForEnter;
 begin
   WaitForCommand([INPUT_OK,INPUT_MLEFT]);
 end;
 
-function TDoomIO.WaitForCommand ( const aSet : TCommandSet; aTimeOut : DWord = 0 ) : Byte;
+function TDoomIO.WaitForCommand ( const aSet : TCommandSet ) : Byte;
 var iCommand : Byte;
     iEvent   : TIOEvent;
     iPoint   : TIOPoint;
-    iStart   : DWord;
-    iWait    : DWord;
 begin
-  iStart := FLastUpdate;
   repeat
-    if (aTimeOut <> 0) and (FLastUpdate - iStart > aTimeOut) then Exit( 0 );
     iCommand := 0;
-    iWait := 0;
-    if aTimeOut <> 0 then iWait := Max( aTimeOut - (FLastUpdate - iStart), 0 );
-    WaitForKeyEvent( iEvent, GraphicsVersion, GraphicsVersion and (INPUT_MMOVE in aSet), iWait );
+    WaitForKeyEvent( iEvent, GraphicsVersion, GraphicsVersion and (INPUT_MMOVE in aSet) );
     if (iEvent.EType = VEVENT_SYSTEM) then
       if Option_LockClose
          then Exit( INPUT_QUIT )
@@ -766,23 +744,21 @@ begin
   Exit( iKey );
 end;
 
-function TDoomIO.WaitForKeyEvent ( out aEvent : TIOEvent;
-  aMouseClick : Boolean; aMouseMove : Boolean; aTimeOut : DWord ) : Boolean;
+procedure TDoomIO.WaitForKeyEvent ( out aEvent : TIOEvent;
+  aMouseClick : Boolean; aMouseMove : Boolean );
 var iEndLoop : TIOEventTypeSet;
-    iStart   : DWord;
     iPeek    : TIOEvent;
     iResult  : Boolean;
 begin
   iEndLoop := [VEVENT_KEYDOWN];
-  iStart   := FLastUpdate;
   if aMouseClick then Include( iEndLoop, VEVENT_MOUSEDOWN );
   if aMouseMove  then Include( iEndLoop, VEVENT_MOUSEMOVE );
   repeat
-    if (aTimeOut <> 0) and (FLastUpdate - iStart > aTimeOut) then Exit( False );
-    repeat
+    while not FIODriver.EventPending do
+    begin
       FullUpdate;
       FIODriver.Sleep(10);
-    until FIODriver.EventPending;
+    end;
     if not FIODriver.PollEvent( aEvent ) then continue;
     if ( aEvent.EType = VEVENT_MOUSEMOVE ) and FIODriver.EventPending then
     begin
@@ -794,9 +770,8 @@ begin
     end;
     if FUIRoot.OnEvent( aEvent ) then aEvent.EType := VEVENT_KEYUP;
     if (aEvent.EType = VEVENT_SYSTEM) and (aEvent.System.Code = VIO_SYSEVENT_QUIT) then
-      Exit( True );
+      Exit;
   until aEvent.EType in iEndLoop;
-  Exit( True );
 end;
 
 function TDoomIO.CommandEventPending : Boolean;
