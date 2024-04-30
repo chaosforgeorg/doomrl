@@ -367,94 +367,71 @@ repeat
     PreAction;
 
     repeat
-      IO.FullUpdate;
-      IO.Driver.Sleep(10);
-      if IO.Driver.EventPending or Player.FRun.Active or ( Player.ChainFire > 0 ) then
-      begin
+      repeat
+        iCommand := 0;
+        if ( not Player.FRun.Active ) and ( Player.ChainFire = 0 ) then
         repeat
           iCommand := 0;
-          if ( not Player.FRun.Active ) and ( Player.ChainFire = 0 ) then
           repeat
-            iCommand := 0;
-            repeat
-              while not IO.Driver.EventPending do
-              begin
-                IO.FullUpdate;
-                IO.Driver.Sleep(10);
-              end;
-              if not IO.Driver.PollEvent( iEvent ) then continue;
-              if ( iEvent.EType = VEVENT_MOUSEMOVE ) and IO.Driver.EventPending then
-              begin
-                repeat
-                  iPeekResult := IO.Driver.PeekEvent( iPeek );
-                  if ( not iPeekResult ) or ( iPeek.EType <> VEVENT_MOUSEMOVE ) then break;
-                  IO.Driver.PollEvent( iEvent );
-                until (not IO.Driver.EventPending);
-              end;
-              if IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
-              if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
-                break;
-            until ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
-            if (iEvent.EType = VEVENT_SYSTEM) then
-              if Option_LockClose
-                 then iCommand := INPUT_QUIT
-                 else iCommand := INPUT_HARDQUIT;
-
-            if (iEvent.EType = VEVENT_MOUSEMOVE) then
+            while not IO.Driver.EventPending do
             begin
-              iPoint := SpriteMap.DevicePointToCoord( iEvent.MouseMove.Pos );
-              IO.MTarget.Create( iPoint.X, iPoint.Y );
-              if Doom.Level.isProperCoord( IO.MTarget ) then
-                iCommand := INPUT_MMOVE;
+              IO.FullUpdate;
+              IO.Driver.Sleep(10);
             end;
+            if not IO.Driver.PollEvent( iEvent ) then continue;
+            if IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
+            if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
+              break;
+          until ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
+          if (iEvent.EType = VEVENT_SYSTEM) then
+            if Option_LockClose
+               then iCommand := INPUT_QUIT
+               else iCommand := INPUT_HARDQUIT;
 
-            if iEvent.EType = VEVENT_MOUSEDOWN then
-            begin
-              iPoint := SpriteMap.DevicePointToCoord( iEvent.Mouse.Pos );
-              IO.MTarget.Create( iPoint.X, iPoint.Y );
-              if Doom.Level.isProperCoord( IO.MTarget ) then
-              begin
-                case iEvent.Mouse.Button of
-                  VMB_BUTTON_LEFT     : iCommand := INPUT_MLEFT;
-                  VMB_BUTTON_MIDDLE   : iCommand := INPUT_MMIDDLE;
-                  VMB_BUTTON_RIGHT    : iCommand := INPUT_MRIGHT;
-                  VMB_WHEEL_UP        : iCommand := INPUT_MSCRUP;
-                  VMB_WHEEL_DOWN      : iCommand := INPUT_MSCRDOWN;
-                end;
-              end;
-            end
-            else if iCommand = 0 then
-            begin
-              IO.KeyCode := IOKeyEventToIOKeyCode( iEvent.Key );
-              iCommand := Config.Commands[ IO.KeyCode ];
-            end;
-
-            if ( iCommand = 255 ) then // GodMode Keys
-              Config.RunKey( IO.KeyCode )
-          until iCommand > 0;
-          UI.MsgUpDate;
-          if Player.ChainFire > 0 then
-            iCommand := COMMAND_ALTFIRE;
-
-          Player.Action( iCommand );
-
-          if State = DSPlaying then
+          if iEvent.EType = VEVENT_MOUSEDOWN then
           begin
-            UI.Focus( Player.Position );
-            Player.UpdateVisual;
+            iPoint := SpriteMap.DevicePointToCoord( iEvent.Mouse.Pos );
+            IO.MTarget.Create( iPoint.X, iPoint.Y );
+            if Doom.Level.isProperCoord( IO.MTarget ) then
+            begin
+              case iEvent.Mouse.Button of
+                VMB_BUTTON_LEFT     : iCommand := INPUT_MLEFT;
+                VMB_BUTTON_MIDDLE   : iCommand := INPUT_MMIDDLE;
+                VMB_BUTTON_RIGHT    : iCommand := INPUT_MRIGHT;
+                VMB_WHEEL_UP        : iCommand := INPUT_MSCRUP;
+                VMB_WHEEL_DOWN      : iCommand := INPUT_MSCRDOWN;
+              end;
+            end;
+          end
+          else if iCommand = 0 then
+          begin
+            IO.KeyCode := IOKeyEventToIOKeyCode( iEvent.Key );
+            iCommand := Config.Commands[ IO.KeyCode ];
           end;
-          if ( State = DSPlaying ) and ( Player.SCount >= 5000 ) then
-            PreAction;
-        until ( State <> DSPlaying ) or ( Player.SCount < 5000 );
+
+          if ( iCommand = 255 ) then // GodMode Keys
+            Config.RunKey( IO.KeyCode )
+        until iCommand > 0;
+        UI.MsgUpDate;
+        if Player.ChainFire > 0 then
+          iCommand := COMMAND_ALTFIRE;
+
+        Player.Action( iCommand );
+
         if State = DSPlaying then
         begin
-          FLevel.CalculateVision( Player.Position );
-          FLevel.Tick;
-          UI.WaitForAnimation;
-          if not Player.PlayerTick then Break;
-          PreAction;
+          UI.Focus( Player.Position );
+          Player.UpdateVisual;
         end;
-      end;
+        if ( State = DSPlaying ) and ( Player.SCount >= 5000 ) then
+          PreAction;
+      until ( State <> DSPlaying ) or ( Player.SCount < 5000 );
+      if State <> DSPlaying then Break;
+      FLevel.CalculateVision( Player.Position );
+      FLevel.Tick;
+      UI.WaitForAnimation;
+      if not Player.PlayerTick then Break;
+      PreAction;
     until State <> DSPlaying;
 
     if State in [ DSNextLevel, DSSaving ] then
