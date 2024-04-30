@@ -33,6 +33,7 @@ TDoom = class(TSystem)
        procedure WriteSaveFile;
        function SaveExists : Boolean;
        procedure SetupLuaConstants;
+       procedure Action( aCommand : Byte );
        procedure Run;
        destructor Destroy; override;
        procedure ModuleMainHook( Hook : AnsiString; const Params : array of Const );
@@ -234,6 +235,15 @@ begin
   Player.PreAction;
 end;
 
+procedure TDoom.Action( aCommand : Byte );
+begin
+  UI.MsgUpDate;
+  Player.Action( aCommand );
+  if State <> DSPlaying then Exit;
+  UI.Focus( Player.Position );
+  Player.UpdateVisual;
+end;
+
 procedure TDoom.Run;
 var iRank       : THOFRank;
     iResult     : TMenuResult;
@@ -402,29 +412,25 @@ repeat
                 VMB_WHEEL_DOWN      : iCommand := INPUT_MSCRDOWN;
               end;
             end;
-          end
-          else if iCommand = 0 then
+          end;
+
+          if ( iEvent.EType = VEVENT_KEYDOWN ) and ( iCommand = 0 ) then
           begin
             IO.KeyCode := IOKeyEventToIOKeyCode( iEvent.Key );
             iCommand := Config.Commands[ IO.KeyCode ];
+            if ( iCommand = 255 ) then // GodMode Keys
+              Config.RunKey( IO.KeyCode )
           end;
 
-          if ( iCommand = 255 ) then // GodMode Keys
-            Config.RunKey( IO.KeyCode )
         until iCommand > 0;
-        UI.MsgUpDate;
+
         if Player.ChainFire > 0 then
           iCommand := COMMAND_ALTFIRE;
 
-        Player.Action( iCommand );
-
-        if State = DSPlaying then
-        begin
-          UI.Focus( Player.Position );
-          Player.UpdateVisual;
-        end;
+        Action( iCommand );
         if ( State = DSPlaying ) and ( Player.SCount >= 5000 ) then
           PreAction;
+
       until ( State <> DSPlaying ) or ( Player.SCount < 5000 );
       if State <> DSPlaying then Break;
       FLevel.CalculateVision( Player.Position );
