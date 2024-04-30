@@ -408,10 +408,14 @@ repeat
         if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
           break;
       until ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
+
       if (iEvent.EType = VEVENT_SYSTEM) then
+      begin
         if Option_LockClose
-           then iCommand := INPUT_QUIT
-           else iCommand := INPUT_HARDQUIT;
+           then Action( INPUT_QUIT )
+           else Action( INPUT_HARDQUIT );
+        Continue;
+      end;
 
       if iEvent.EType = VEVENT_MOUSEDOWN then
       begin
@@ -420,13 +424,14 @@ repeat
         if Doom.Level.isProperCoord( IO.MTarget ) then
         begin
           case iEvent.Mouse.Button of
-            VMB_BUTTON_LEFT     : iCommand := INPUT_MLEFT;
-            VMB_BUTTON_MIDDLE   : iCommand := INPUT_MMIDDLE;
-            VMB_BUTTON_RIGHT    : iCommand := INPUT_MRIGHT;
-            VMB_WHEEL_UP        : iCommand := INPUT_MSCRUP;
-            VMB_WHEEL_DOWN      : iCommand := INPUT_MSCRDOWN;
+            VMB_BUTTON_LEFT     : Action( INPUT_MLEFT );
+            VMB_BUTTON_MIDDLE   : Action( INPUT_MMIDDLE );
+            VMB_BUTTON_RIGHT    : Action( INPUT_MRIGHT );
+            VMB_WHEEL_UP        : Action( INPUT_MSCRUP );
+            VMB_WHEEL_DOWN      : Action( INPUT_MSCRDOWN );
           end;
         end;
+        Continue;
       end;
 
       if ( iEvent.EType = VEVENT_KEYDOWN ) and ( iCommand = 0 ) then
@@ -434,11 +439,16 @@ repeat
         IO.KeyCode := IOKeyEventToIOKeyCode( iEvent.Key );
         iCommand := Config.Commands[ IO.KeyCode ];
         if ( iCommand = 255 ) then // GodMode Keys
-          Config.RunKey( IO.KeyCode )
+        begin
+          Config.RunKey( IO.KeyCode );
+          Action( 0 );
+          Continue;
+        end;
+        if iCommand > 0 then
+          Action( iCommand );
+
       end;
 
-      if iCommand > 0 then
-        Action( iCommand );
     end;
 
     if State in [ DSNextLevel, DSSaving ] then
