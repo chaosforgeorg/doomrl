@@ -173,7 +173,7 @@ function DoomRL.load_events()
   register_event "darkness_event"
   {
     message    = "This floor is pitch-black!",
-    history    = "On level @1, he was stumbling in the dark!",
+    history    = "On level @1 he was stumbling in the dark!",
     weight     = 2,
     min_dlevel = 9,
     min_diff   = 2,
