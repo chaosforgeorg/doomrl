@@ -511,8 +511,9 @@ function DoomRL.load_mod_arrays()
 			item.armor         = item.__proto.armor
 			item.maxdurability = item.__proto.durability
 			item.durability    = math.min( item.durability, item.maxdurability )
-			item.resist.fire      = math.min( (item.__proto.resist.fire or 0) + 95, 95 )
-			item.resist.acid      = math.min( (item.__proto.resist.acid or 0) + 95, 95 )
+			local presist = item.__proto.resist or {}
+			item.resist.fire      = math.min( (presist.fire or 0) + 95, 95 )
+			item.resist.acid      = math.min( (presist.acid or 0) + 95, 95 )
 		end,
 	}
 
@@ -782,7 +783,7 @@ function DoomRL.load_mod_arrays()
 		OnApply = function (item)
 			-- Original mother-in-law is rocket launcher + F1N1P3
 			item.name         = "Mother-In-Law"
-			item.desc         = "Simon-v's legendary rocket launcher."
+			--item.desc         = "Simon-v's legendary rocket launcher."
 			item.damage_dice  = 6
 			item.damage_sides = 9
 			item.blastradius  = 6
