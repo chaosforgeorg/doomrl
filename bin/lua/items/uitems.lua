@@ -720,7 +720,7 @@ function DoomRL.loaduniqueitems()
 
 		OnEquipTick = function(self, being)
 			if self.durability > 20 then
-				if being.hp < being.hpmax / 4 then
+				if being.hp < being.hpmax / 2 then
 					being.hp = being.hp + 1
 					self.durability = self.durability - 1
 				end
