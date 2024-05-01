@@ -841,9 +841,9 @@ begin
           KnockBacked := True;
           if (Flags[BF_FIREANGEL]) and (not aDirectHit) then Continue;
           if (efSelfHalf in aFlags) and isActive then iDamage := iDamage div 2;
+          if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
           ApplyDamage( iDamage, Target_Torso, DamageType, aItem );
-          if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then
-            aItem := nil;
+          if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
         if Item[a] <> nil then
            if (iDamage > 10) then
