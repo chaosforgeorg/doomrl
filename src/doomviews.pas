@@ -673,6 +673,7 @@ begin
     iContent.Push( '' );
 
     iDodgeBonus := getDodgeMod;
+    if Player.Running then iDodgeBonus += 20;
     iKnockMod   := getKnockMod;
 
     { Dodge Bonus }
