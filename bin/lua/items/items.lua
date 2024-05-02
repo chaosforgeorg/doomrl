@@ -978,7 +978,7 @@ function DoomRL.loaditems()
 		coscolor = { 1.0,1.0,0.0,1.0 },
 		level    = 5,
 		weight   = 120,
-		desc     = "Technical modification kit -- decreases fire time for weapons, or increases armor knockback resistance.",
+		desc     = "Technical modification kit -- decreases fire time for weapons, or increases armor resistances.",
 
 		type       = ITEMTYPE_PACK,
 		mod_letter = "T",
@@ -996,7 +996,12 @@ function DoomRL.loaditems()
 			if (item.itype == ITEMTYPE_RANGED) or (item.itype == ITEMTYPE_MELEE) then
 				item.usetime = item.usetime * 0.85
 			elseif item.itype == ITEMTYPE_ARMOR or item.itype == ITEMTYPE_BOOTS then
-				item.knockmod = item.knockmod - 25
+				item.resist.bullet   = (item.resist.bullet or 0)   + 20
+				item.resist.melee    = (item.resist.melee or 0)    + 20
+				item.resist.shrapnel = (item.resist.shrapnel or 0) + 20
+				item.resist.acid     = (item.resist.acid or 0)     + 10
+				item.resist.fire     = (item.resist.fire or 0)     + 10
+				item.resist.plasma   = (item.resist.plasma or 0)   + 10
 			end
 			item:add_mod('T')
 			return true
