@@ -122,7 +122,7 @@ function DoomRL.loadmedals()
 	{
 		name  = "Explorer Badge",
 		desc  = "Visited all generated levels",
-		condition = function() return statistics.bonus_levels_visited == statistics.bonus_levels_count end,
+		condition = function() return statistics.bonus_levels_count > 0 and statistics.bonus_levels_visited == statistics.bonus_levels_count end,
 	}
 
 	register_medal "conqueror"
@@ -130,7 +130,7 @@ function DoomRL.loadmedals()
 		name  = "Conqueror Badge",
 		desc  = "Completed all generated levels",
 		removes = { "explorer" },
-		condition = function() return statistics.bonus_levels_completed == statistics.bonus_levels_count end,
+		condition = function() return statistics.bonus_levels_count > 0 and statistics.bonus_levels_completed == statistics.bonus_levels_count end,
 	}
 
 	register_medal "competn1"

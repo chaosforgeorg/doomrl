@@ -5,6 +5,7 @@
 [mod] -- GH#110: Scavenger - works on Melee, Boots and Armors (guaranteed mods added)
 [mod] -- BETA  : House of Pain always generates instead of Vaults until balanced
 [mod] -- GH#088: Juggler now makes all weapon swaps free
+[mod] -- GH#099: Conqueror and Explorer won't be awarded if no special levels were present
 [fix] -- BETA  : fixed SHIFT-L previous level feeling
 
 0.9.9.8 BETA 3
