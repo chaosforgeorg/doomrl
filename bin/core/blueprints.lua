@@ -352,6 +352,7 @@ core.register_blueprint "item"
 			movemod    = { false, core.TNUMBER, 0 },
 			dodgemod   = { false, core.TNUMBER, 0 },
 			knockmod   = { false, core.TNUMBER, 0 },
+			scavenge   = { false, core.TARRAY(core.TIDIN("items")) },
 		},
 		[ITEMTYPE_BOOTS] = {
 			ascii      = { false, core.TSTRING, ";" },
@@ -361,6 +362,7 @@ core.register_blueprint "item"
 			movemod    = { false, core.TNUMBER, 0 },
 			dodgemod   = { false, core.TNUMBER, 0 },
 			knockmod   = { false, core.TNUMBER, 0 },
+			scavenge   = { false, core.TARRAY(core.TIDIN("items")) },
 		},
 		[ITEMTYPE_PACK]   = {
 			ascii      = { false, core.TSTRING, "+" },
@@ -438,6 +440,7 @@ core.register_blueprint "item"
 			altfire     = { false, core.TNUMBER, 0 },
 			altfirename = { false, core.TSTRING },
 			missile     = { false, core.TANY, 0 }, 
+			scavenge    = { false, core.TARRAY(core.TIDIN("items")) },
 			throw_id    = { false, core.TIDIN("missiles") },
 		},
 		[ITEMTYPE_LEVER] = {
