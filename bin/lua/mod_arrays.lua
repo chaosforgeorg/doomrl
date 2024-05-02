@@ -189,13 +189,13 @@ function DoomRL.load_mod_arrays()
 		OnApply = function (item)
 			item.name             = "powered "..item.name
 			item.armor            = item.__proto.armor + 1
-			item.movemod          = 0
+			item.movemod          = item.__proto.movemod + 20
 			item.knockmod         = -25
 			if (item.resist.bullet or 0) > 0 then
-				item.resist.bullet   = math.min( (item.resist.bullet or 0) * 2, 95 )
+				item.resist.bullet   = math.min( (item.resist.bullet or 0) * 5, 95 )
 			end
 			if (item.resist.shrapnel or 0) > 0 then
-				item.resist.shrapnel = math.min( (item.resist.shrapnel or 0) * 2, 95 )
+				item.resist.shrapnel = math.min( (item.resist.shrapnel or 0) * 5, 95 )
 			end
 			if (item.resist.fire or 0) > 0 then
 				item.resist.fire     = math.min( (item.resist.fire or 0) * 2, 95 )
@@ -204,7 +204,7 @@ function DoomRL.load_mod_arrays()
 				item.resist.acid     = math.min( (item.resist.acid or 0) * 2, 95 )
 			end
 			if (item.resist.plasma or 0) > 0 then
-				item.resist.plasma   = math.min( (item.resist.plasma or 0) * 2, 95 )
+				item.resist.plasma   = math.min( (item.resist.plasma or 0) * 3, 95 )
 			end
 			item.resist.melee        = 25
 

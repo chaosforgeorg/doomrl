@@ -595,7 +595,7 @@ function DoomRL.loadexoticitems()
 		desc     = "A little archaic, but a surprisingly well-kept armor.",
 		flags    = { IF_EXOTIC },
 
-		resist = { bullet = 50, melee = 75, shrapnel = 50},
+		resist = { melee = 75, },
 
 		type       = ITEMTYPE_ARMOR,
 		armor      = 2,
@@ -610,11 +610,11 @@ function DoomRL.loadexoticitems()
 		sprite   = SPRITE_ARMOR,
 		coscolor = { 0.6,0.6,0.6,1.0 },
 		level    = 2,
-		weight   = 4,
+		weight   = 6,
 		desc     = "Maybe too specialized for most tastes.",
 		flags    = { IF_EXOTIC },
 
-		resist = { bullet  = 80 },
+		resist = { bullet  = 95 },
 
 		type       = ITEMTYPE_ARMOR,
 		armor      = 1,
@@ -784,7 +784,7 @@ function DoomRL.loadexoticitems()
 		ascii    = "\"",
 		color    = MAGENTA,
 		sprite   = SPRITE_MOD,
-		coscolor = { 1.0,0.0,1.0,1.0 },
+		coscolor = { 0.0,0.5,0.0,1.0 },
 		level    = 10,
 		weight   = 4,
 		desc     = "A high-tech modification for ranged weapons -- implements an advanced auto-hit mechanism.",
