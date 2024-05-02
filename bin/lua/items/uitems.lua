@@ -151,6 +151,7 @@ function DoomRL.loaduniqueitems()
 		level    = 15,
 		weight   = 1,
 		group    = "weapon-melee",
+		scavenge = { "umod_onyx" },
 		desc     = "Forged by the dwarves Eitri and Brokk, in response to Loki's challenge, Mjollnir is an indestructible war hammer.",
 		flags    = { IF_UNIQUE, IF_NODESTROY, IF_MODABLE, IF_SINGLEMOD },
 
@@ -266,6 +267,7 @@ function DoomRL.loaduniqueitems()
 		group    = "weapon-pistol",
 		desc     = "In the name of God, impure souls of the living dead shall be banished into eternal damnation. Amen.",
 		flags    = { IF_UNIQUE, IF_PISTOL, IF_MODABLE, IF_SINGLEMOD },
+		scavenge = { "umod_firestorm" },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -653,6 +655,7 @@ function DoomRL.loaduniqueitems()
 		desc     = "The personal armor of the most famous Imperial Inquisitor.",
 		flags    = { IF_UNIQUE, IF_RECHARGE, IF_NODESTROY },
 		set      = "inquisitor",
+		scavenge = { "umod_nano" },
 
 		rechargeamount = 5,
 		rechargedelay  = 10,
@@ -738,6 +741,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 2,
 		desc     = "This armor glows!",
 		flags    = { IF_UNIQUE, IF_NODESTROY, IF_NOREPAIR },
+		scavenge = { "umod_firestorm" },
 
 		resist = { fire = 75, plasma = 50 },
 
@@ -806,6 +810,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 2,
 		desc     = "So massive, you no longer fear the little ones!",
 		flags    = { IF_UNIQUE, IF_NODURABILITY },
+		scavenge = { "umod_onyx" },
 
 		resist = { shrapnel = 90, melee = 90, bullet = 90 },
 
