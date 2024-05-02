@@ -784,7 +784,7 @@ function DoomRL.loadexoticitems()
 		ascii    = "\"",
 		color    = MAGENTA,
 		sprite   = SPRITE_MOD,
-		coscolor = { 1.0,0.0,1.0,1.0 },
+		coscolor = { 0.0,0.5,0.0,1.0 },
 		level    = 10,
 		weight   = 4,
 		desc     = "A high-tech modification for ranged weapons -- implements an advanced auto-hit mechanism.",
