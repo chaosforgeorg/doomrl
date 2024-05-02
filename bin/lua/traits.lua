@@ -453,7 +453,7 @@ function DoomRL.load_traits()
 		name   = "Survivalist",
 		desc   = "No minimum damage taken, medpacks heal over 100%",
 		quote  = "\"You want a piece of me? C'mon, c'mon. Come at me with it!\"",
-		full   = "You're the mean motherfucker who gets through every predicament! Half the time you completely shrug off damage that would graze others and you heal over 100% using simple medpacks!",
+		full   = "You're the mean motherfucker who gets through every predicament! Half the time you completely shrug off damage that would graze others and you heal over 100% using simple medpacks! Additionally small medpacks and globes are twice as effective!",
 		abbr   = "MSv",
 		master = true,
 

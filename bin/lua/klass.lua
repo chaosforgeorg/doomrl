@@ -30,7 +30,7 @@ function DoomRL.load_klasses()
 			{ id = "bulletdance",  requires = {{ "dualgunner",   1 }, { "triggerhappy", 1 },               }, blocks = { "hellrunner", "intuition", "brute",      },               master = true },
 			{ id = "armydead",     requires = {{ "shottyman",    1 }, { "badass",       1 },               }, blocks = { "gun",        "eagle",     "hellrunner", }, reqlevel = 6, master = true },
 			{ id = "ammochain",    requires = {{ "triggerhappy", 2 }, { "reloader",     2 },               }, blocks = { "nails",      "gun",       "eagle",      },               master = true },
-			{ id = "survivalist",  requires = {{ "badass",       1 }, { "ironman",      3 }, {"nails", 2}, }, blocks = { "hellrunner", "berserker", "bitch",      },               master = true },
+			{ id = "survivalist",  requires = {{ "badass",       1 }, { "ironman",      2 }, {"nails", 2}, }, blocks = { "hellrunner", "berserker", "bitch",      },               master = true },
 		},
 
 		desc = "Marines are the backbone of the UAC, resilient and hardy. They start with 10 more health points, +20% fire/acid/plasma resistance and powerups they use have a +50% duration bonus (+25% on Nightmare).",

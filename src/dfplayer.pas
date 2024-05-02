@@ -598,6 +598,7 @@ var iLevel      : TLevel;
     iTarget     : TCoord2D;
     iAlt        : Boolean;
     iAltFire    : TAltFire;
+    iItemTypes  : TItemTypeSet;
 
     iLimitRange : Boolean;
     iRange      : Byte;
@@ -752,10 +753,13 @@ begin
 
   if ( aCommand = COMMAND_UNLOAD ) then
   begin
+    iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack ];
+    if (BF_SCAVENGER in FFlags) then
+      iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack, ItemType_Melee, ItemType_Armor, ItemType_Boots ];
     iItem := TLevel(Parent).Item[ FPosition ];
-    if (iItem = nil) or ( not (iItem.isRanged or iItem.isAmmoPack ) ) then
+    if (iItem = nil) or ( not (iItem.IType in iItemTypes) ) then
     begin
-      iItem := Inv.Choose( [ ItemType_Ranged, ItemType_AmmoPack ] , 'unload' );
+      iItem := Inv.Choose( iItemTypes, 'unload' );
       if iItem = nil then Exit( False );
     end;
     iName := iItem.Name;
@@ -773,6 +777,9 @@ begin
         if not UI.MsgConfirm('Do you want to disassemble the '+iName+'?', True) then
           iID := '';
     end;
+
+    if ( iID = '' ) and ( not( iItem.IType in [ ItemType_Ranged, ItemType_AmmoPack ] ) ) then
+       Exit( False );
   end;
 
   if ( aCommand in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_MFIRE, INPUT_MALTFIRE ] ) then

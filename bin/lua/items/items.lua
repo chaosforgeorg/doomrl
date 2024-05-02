@@ -151,7 +151,11 @@ function DoomRL.loaditems()
 		OnPickup = function(self,being)
 			being:msg("You feel better.")
 			being.tired = false
-			being.hp = math.min( being.hp + 10 * diff[DIFFICULTY].powerfactor, 2*being.hpmax )
+			local amount =  10 * diff[DIFFICULTY].powerfactor
+			if being.flags[ BF_MEDPLUS ] then
+				amount = amount * 2
+			end
+			being.hp = math.min( being.hp +  amount, 2*being.hpmax )
 		end,
 	}
 
@@ -223,7 +227,11 @@ function DoomRL.loaditems()
 		OnPickup = function(self,being)
 			being:msg("You feel like new!")
 			being.tired = false
-			being.hp = math.min( being.hp + 10 * diff[DIFFICULTY].powerfactor, 2*being.hpmax )
+			local amount =  10 * diff[DIFFICULTY].powerfactor
+			if being.flags[ BF_MEDPLUS ] then
+				amount = amount * 2
+			end
+			being.hp = math.min( being.hp + amount, 2*being.hpmax )
 			if being.hp < being.hpmax then
 				being.hp = being.hpmax
 			end
@@ -742,8 +750,11 @@ function DoomRL.loaditems()
 					being:msg("Nothing happens.")
 					return true
 				end
-				local heal = (being.hpmax * diff[DIFFICULTY].powerfactor) / 4 + 2
-				being.hp = math.min( being.hp + heal, being.hpmax * 2 )
+				local amount = (being.hpmax * diff[DIFFICULTY].powerfactor) / 4 + 2
+				if being.flags[ BF_MEDPLUS ] then
+					amount = amount * 2
+				end
+				being.hp = math.min( being.hp + amount, being.hpmax * 2 )
 				if not being.flags[ BF_MEDPLUS ] then being.hp = math.min( being.hp, being.hpmax ) end
 				being:msg("You feel healed.",being:get_name(true,true).." looks healthier!")
 			end
