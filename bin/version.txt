@@ -10,6 +10,7 @@
 [mod] -- GH#109: changed the color of the sniper mod pack to dark green (G-version)
 [mod] -- GH#116: buffs - bullet-proof vest, power armor
 [mod] -- GH#111: stat screen includes running dodge bonus
+[mod] -- GH#108: all elite formers deal 5 + 1d3 melee damage
 [mod] -- BETA  : duelist armor - 0/75/0
 [fix] -- BETA  : fixed SHIFT-L previous level feeling
 
