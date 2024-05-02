@@ -8,6 +8,7 @@
 [mod] -- GH#088: Juggler now makes all weapon swaps free
 [mod] -- GH#099: Conqueror and Explorer won't be awarded if no special levels were present
 [mod] -- GH#109: changed the color of the sniper mod pack to dark green (G-version)
+[mod] -- GH#116: buffs - bullet-proof vest, power armor
 [mod] -- BETA  : duelist armor - 0/75/0
 [fix] -- BETA  : fixed SHIFT-L previous level feeling
 

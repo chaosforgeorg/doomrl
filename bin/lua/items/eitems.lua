@@ -610,11 +610,11 @@ function DoomRL.loadexoticitems()
 		sprite   = SPRITE_ARMOR,
 		coscolor = { 0.6,0.6,0.6,1.0 },
 		level    = 2,
-		weight   = 4,
+		weight   = 6,
 		desc     = "Maybe too specialized for most tastes.",
 		flags    = { IF_EXOTIC },
 
-		resist = { bullet  = 80 },
+		resist = { bullet  = 95 },
 
 		type       = ITEMTYPE_ARMOR,
 		armor      = 1,
