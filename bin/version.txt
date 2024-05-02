@@ -1,6 +1,7 @@
 0.9.9.8 BETA 4
 [new] -- BETA  : WARNING - speed/command system rewrites!
 [new] -- GH#093: The Vaults alternative added - House of Pain
+[mod] -- GH#112: Survivalist - Ironman 2, and double heals from smed and globes
 [mod] -- BETA  : House of Pain always generates instead of Vaults until balanced
 [mod] -- GH#088: Juggler now makes all weapon swaps free
 [fix] -- BETA  : fixed SHIFT-L previous level feeling
