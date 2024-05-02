@@ -595,7 +595,7 @@ function DoomRL.loadexoticitems()
 		desc     = "A little archaic, but a surprisingly well-kept armor.",
 		flags    = { IF_EXOTIC },
 
-		resist = { bullet = 50, melee = 75, shrapnel = 50},
+		resist = { melee = 75, },
 
 		type       = ITEMTYPE_ARMOR,
 		armor      = 2,
