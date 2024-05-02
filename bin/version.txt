@@ -2,6 +2,7 @@
 [new] -- BETA  : WARNING - speed/command system rewrites!
 [new] -- GH#093: The Vaults alternative added - House of Pain
 [mod] -- BETA  : House of Pain always generates instead of Vaults until balanced
+[mod] -- GH#107: ammo rooms can now contain a variety of ammo, even on Ao100/666
 [mod] -- GH#117: Technical mod packs on armors add resistances instead of knockback res
 [mod] -- GH#112: Survivalist - Ironman 2, and double heals from smed and globes
 [mod] -- GH#110: Scavenger - works on Melee, Boots and Armors (guaranteed mods added)

@@ -64,15 +64,35 @@ function DoomRL.load_rooms()
 		class       = "closed",
 
 		setup       = function ( room )
-			local aid
+			local entries = {
+				{ 4, "pammo", 1, 2 },
+				{ 3, "pshell", 1, 2 },
+				{ 25, "ammo", 3, 5 },
+				{ 25, "shell", 3, 5 },
+			}
 			local roll = math.random(3) + level.danger_level
-			    if roll < 5  then aid = "ammo"
-			elseif roll < 11 then aid = "shell"
-			elseif roll < 13 then aid = "rocket"
-			else aid = "cell" end
-			local amount = math.random(3) + 2
-			level:area_drop( room, aid, amount, true )
-			return true
+			if roll > 11 then
+				table.insert( entries, { 4, "procket", 1, 2 } )
+				table.insert( entries, { 25, "rocket", 3, 5 } )
+			end
+			if roll > 14 then
+				table.insert( entries, { 3, "pcell", 1, 2 } )
+				table.insert( entries, { 25, "cell", 3, 5 } )
+			end
+			local range = 0
+			for _, entry in ipairs( entries ) do
+				range = range + entry[1]
+			end
+			local pick = math.random( range )
+			for _, entry in ipairs( entries ) do
+				pick = pick - entry[1]
+				if pick <= 0 then
+					local amount = math.random( entry[3], entry[4] )
+					level:area_drop( room, entry[2], amount, true )
+					return true
+				end
+			end
+			return false
 		end,
 	}
 
