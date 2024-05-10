@@ -272,9 +272,6 @@ begin
     end;
   end;
 
-
- // FLutTexture := Textures['lut_iddqd'].GLTexture;
-
   if FLutTexture <> 0 then
   begin
     FFramebuffer.BindAndClear;
@@ -525,8 +522,18 @@ begin
 end;
 
 procedure TDoomSpriteMap.ApplyEffect;
-var tempStatusEffect : TStatusEffect;
+//var tempStatusEffect : TStatusEffect;
 begin
+  case StatusEffect of
+    StatusRed    : FLutTexture := Textures['lut_berserk'].GLTexture;
+    StatusGreen  : FLutTexture := Textures['lut_enviro'].GLTexture;
+    StatusInvert : FLutTexture := Textures['lut_iddqd'].GLTexture;
+    else FLutTexture := 0;
+  end;
+  FCosActive      := True;
+  FGlowActive     := True;
+
+(*
   //Some effects are currently unavailable in non-console mode.
   tempStatusEffect := StatusEffect;
   case StatusEffect of
@@ -541,6 +548,7 @@ begin
   FSpriteEngine.FTextureSet.Layer[ 2 ].Normal  := FSpriteSheet[ tempStatusEffect ];
   FSpriteEngine.FTextureSet.Layer[ 3 ].Normal  := FSpriteSheet[ tempStatusEffect ];
   FSpriteEngine.FTextureSet.Layer[ 4 ].Normal  := FSpriteSheet[ tempStatusEffect ];
+  *)
 end;
 
 procedure TDoomSpriteMap.UpdateLightMap;
