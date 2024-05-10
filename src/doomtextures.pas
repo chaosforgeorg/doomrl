@@ -62,6 +62,10 @@ var iColorKey : TColor;
 begin
   Textures[ 'logo' ].Blend := True;
   Textures[ 'background' ].Blend := True;
+  Textures[ 'lut_clear' ].Blend := True;
+  Textures[ 'lut_iddqd' ].Blend := True;
+  Textures[ 'lut_clear' ].Is3D := True;
+  Textures[ 'lut_iddqd' ].Is3D := True;
   iBase     := Textures['spritesheet'].Image;
   iColorKey := iBase.Color[0];
   iBase.SubstituteColor( iColorKey, ColorZero );

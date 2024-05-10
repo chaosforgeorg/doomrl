@@ -2,8 +2,8 @@
 unit doomspritemap;
 interface
 uses Classes, SysUtils,
-     vutil, vgltypes, vrltools, vgenerics, vcolor, vglquadrenderer,
-     vnode, vspriteengine, vtextures, dfdata;
+     vutil, vgltypes, vrltools, vgenerics, vcolor, vglquadrenderer, vglprogram,
+     vglfullscreentriangle, vnode, vspriteengine, vtextures, vglframebuffer, dfdata;
 
 // TODO : remove
 const SpriteCellRow = 16;
@@ -66,6 +66,10 @@ private
   FGlowActive     : Boolean;
   FLightMap       : array[0..MAXX] of array[0..MAXY] of Byte;
   FCellCodeBase   : array[0..15] of Byte;
+  FFramebuffer    : TGLFramebuffer;
+  FPostProgram    : TGLProgram;
+  FFullscreen     : TGLFullscreenTriangle;
+  FLutTexture     : Cardinal;
 private
   procedure ApplyEffect;
   procedure UpdateLightMap;
@@ -86,7 +90,7 @@ var SpriteMap : TDoomSpriteMap = nil;
 
 implementation
 
-uses math, vmath, viotypes, vvision,
+uses math, vmath, viotypes, vvision, vgl3library,
      doomtextures, doomio, doombase,
      dfoutput, dfmap, dfitem, dfbeing, dfplayer;
 
@@ -128,6 +132,27 @@ begin
 end;
 
 
+const
+VCleanVertexShader : Ansistring =
+'#version 330 core'+#10+
+'layout (location = 0) in vec2 position;'+#10+
+#10+
+'void main() {'+#10+
+'gl_Position = vec4(position.x, position.y, 0.0, 1.0);'+#10+
+'}'+#10;
+VPostFragmentShader : Ansistring =
+'#version 330 core'+#10+
+'uniform sampler2D utexture;'+#10+
+'uniform sampler3D ulut;'+#10+
+'uniform vec2 screen_size;'+#10+
+'out vec4 frag_color;'+#10+
+#10+
+'void main() {'+#10+
+'vec2 uv    = gl_FragCoord.xy / screen_size;'+#10+
+'frag_color = texture( ulut, texture(utexture, uv).xyz );'+#10+
+//'frag_color = texture(utexture, uv);'+#10+
+'}'+#10;
+
 { TDoomSpriteMap }
 
 constructor TDoomSpriteMap.Create;
@@ -136,11 +161,17 @@ begin
   FTargeting := False;
   FTargetList := TCoord2DArray.Create();
   FFluidTime := 0;
+  FLutTexture := 0;
   FTarget.Create(0,0);
   FTexturesLoaded := False;
   FSpriteEngine := TSpriteEngine.Create;
   FGridActive     := False;
   FLastCoord.Create(0,0);
+
+  FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+  FPostProgram  := TGLProgram.Create(VCleanVertexShader, VPostFragmentShader);
+  FFullscreen   := TGLFullscreenTriangle.Create;
+
   Recalculate;
 
   iCellRow := SpriteCellRow;
@@ -162,7 +193,6 @@ begin
   FCellCodeBase[1+  4+8] := 3*iCellRow+2*iCellRow+0;
   FCellCodeBase[  2+4+8] := 3*iCellRow+3*iCellRow+1;
   FCellCodeBase[1+2+4+8] := 3*iCellRow+4*iCellRow+1;
-
 end;
 
 procedure TDoomSpriteMap.Recalculate;
@@ -182,6 +212,13 @@ begin
     FMinShift.Y -= 18*IO.FontMult*2;
     FMaxShift.Y += 18*IO.FontMult*3;
   end;
+  FFramebuffer.Resize( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+
+  FPostProgram.Bind;
+    FPostProgram.SetUniformi( 'utexture', 0 );
+    FPostProgram.SetUniformi( 'ulut', 1 );
+    FPostProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+  FPostProgram.UnBind;
 end;
 
 procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
@@ -235,7 +272,31 @@ begin
     end;
   end;
 
-  FSpriteEngine.Draw;
+
+ // FLutTexture := Textures['lut_iddqd'].GLTexture;
+
+  if FLutTexture <> 0 then
+  begin
+    FFramebuffer.BindAndClear;
+    FSpriteEngine.Draw;
+    FFramebuffer.UnBind;
+
+    FPostProgram.Bind;
+      glActiveTexture( GL_TEXTURE0 );
+      glBindTexture( GL_TEXTURE_2D, FFramebuffer.GetTextureID );
+      glActiveTexture( GL_TEXTURE1 );
+      glBindTexture( GL_TEXTURE_3D, FLutTexture );
+
+      FFullscreen.Render;
+
+      glActiveTexture( GL_TEXTURE0 );
+      glBindTexture( GL_TEXTURE_2D, 0 );
+      glActiveTexture( GL_TEXTURE1 );
+      glBindTexture( GL_TEXTURE_3D, 0 );
+    FPostProgram.UnBind;
+  end
+  else
+    FSpriteEngine.Draw;
 end;
 
 procedure TDoomSpriteMap.PrepareTextures;
@@ -457,6 +518,9 @@ destructor TDoomSpriteMap.Destroy;
 begin
   FreeAndNil( FSpriteEngine );
   FreeAndNil( FTargetList );
+  FreeAndNil( FFramebuffer );
+  FreeAndNil( FPostProgram );
+  FreeAndNil( FFullscreen );
   inherited Destroy;
 end;
 
