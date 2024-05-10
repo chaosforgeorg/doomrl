@@ -64,8 +64,12 @@ begin
   Textures[ 'background' ].Blend := True;
   Textures[ 'lut_clear' ].Blend := True;
   Textures[ 'lut_iddqd' ].Blend := True;
+  Textures[ 'lut_enviro' ].Blend := True;
+  Textures[ 'lut_berserk' ].Blend := True;
   Textures[ 'lut_clear' ].Is3D := True;
   Textures[ 'lut_iddqd' ].Is3D := True;
+  Textures[ 'lut_enviro' ].Is3D := True;
+  Textures[ 'lut_berserk' ].Is3D := True;
   iBase     := Textures['spritesheet'].Image;
   iColorKey := iBase.Color[0];
   iBase.SubstituteColor( iColorKey, ColorZero );
