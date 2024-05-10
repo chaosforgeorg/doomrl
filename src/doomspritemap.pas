@@ -60,10 +60,7 @@ private
   FShift          : TCoord2D;
   FLastCoord      : TCoord2D;
   FSpriteEngine   : TSpriteEngine;
-  FSpriteSheet    : array[TStatusEffect] of DWord;
   FTexturesLoaded : Boolean;
-  FCosActive      : Boolean;
-  FGlowActive     : Boolean;
   FLightMap       : array[0..MAXX] of array[0..MAXY] of Byte;
   FCellCodeBase   : array[0..15] of Byte;
   FFramebuffer    : TGLFramebuffer;
@@ -318,20 +315,17 @@ end;
 procedure TDoomSpriteMap.ReassignTextures;
 var iCosColor : DWord;
     iGlow     : DWord;
+    iSheet    : DWord;
 begin
-  FSpriteSheet[StatusNormal] := Textures.Textures['spritesheet'].GLTexture;
-  FSpriteSheet[StatusInvert] := Textures.Textures['spritesheet_inv'].GLTexture;
-  FSpriteSheet[StatusRed]    := Textures.Textures['spritesheet_berserk'].GLTexture;
-  FSpriteSheet[StatusGreen]  := Textures.Textures['spritesheet_enviro'].GLTexture;
-
+  iSheet    := Textures.Textures['spritesheet'].GLTexture;
   iCosColor := Textures.Textures['spritesheet_color'].GLTexture;
   iGlow     := Textures.Textures['spritesheet_glow'].GLTexture;
 
   with FSpriteEngine do
   begin
-    FTextureSet.Layer[ 1 ].Normal  := FSpriteSheet[StatusNormal];
+    FTextureSet.Layer[ 1 ].Normal  := iSheet;
     FTextureSet.Layer[ 1 ].Cosplay := iCosColor;
-    FTextureSet.Layer[ 2 ].Normal  := FSpriteSheet[StatusNormal];
+    FTextureSet.Layer[ 2 ].Normal  := iSheet;
     FTextureSet.Layer[ 2 ].Cosplay := iCosColor;
     FTextureSet.Layer[ 2 ].Glow    := iGlow;
     FTextureSet.Layer[ 3 ] := FTextureSet.Layer[ 2 ];
@@ -377,13 +371,13 @@ begin
     iColor.FillAll( 255 );
     if aSprite.Overlay then iColor.SetAll( ColorToGL( aSprite.Color ) );
     Normal.Push( @iCoord, @iTex, @iColor );
-    if aSprite.CosColor and FCosActive then
+    if aSprite.CosColor then
     begin
       iColor.SetAll( ColorToGL( aSprite.Color ) );
       Cosplay.Push( @iCoord, @iTex, @iColor );
     end;
 
-    if aSprite.Glow and FGlowActive then
+    if aSprite.Glow then
     begin
       iColor.SetAll( ColorToGL( aSprite.GlowColor ) );
       Glow.Push( @iCoord, @iTex, @iColor );
@@ -409,9 +403,9 @@ begin
     if aSprite.Overlay
       then Normal.PushXY( aSprite.SpriteID, iSize, ip, aSprite.Color )
       else Normal.PushXY( aSprite.SpriteID, iSize, ip, NewColor( aLight, aLight, aLight ) );
-    if aSprite.CosColor and FCosActive and (Cosplay <> nil) then
+    if aSprite.CosColor and (Cosplay <> nil) then
       Cosplay.PushXY( aSprite.SpriteID, iSize, ip, aSprite.Color );
-    if aSprite.Glow and FGlowActive and (Glow <> nil) then
+    if aSprite.Glow and (Glow <> nil) then
       Glow.PushXY( aSprite.SpriteID, iSize, ip, aSprite.GlowColor );
   end;
 end;
@@ -446,7 +440,7 @@ begin
   begin
     Normal.PushXY( aSprite.SpriteID, iSize, ip, @iColors, aTSX, aTSY );
 
-    if aSprite.CosColor and FCosActive and (Cosplay <> nil) then
+    if aSprite.CosColor and (Cosplay <> nil) then
     begin
       for i := 0 to 3 do
       begin
@@ -522,7 +516,6 @@ begin
 end;
 
 procedure TDoomSpriteMap.ApplyEffect;
-//var tempStatusEffect : TStatusEffect;
 begin
   case StatusEffect of
     StatusRed    : FLutTexture := Textures['lut_berserk'].GLTexture;
@@ -530,25 +523,6 @@ begin
     StatusInvert : FLutTexture := Textures['lut_iddqd'].GLTexture;
     else FLutTexture := 0;
   end;
-  FCosActive      := True;
-  FGlowActive     := True;
-
-(*
-  //Some effects are currently unavailable in non-console mode.
-  tempStatusEffect := StatusEffect;
-  case StatusEffect of
-    StatusRed, StatusGreen, StatusNormal, StatusInvert : tempStatusEffect := StatusEffect;
-    else tempStatusEffect := StatusNormal;
-  end;
-
-  FCosActive      := tempStatusEffect = StatusNormal;
-  FGlowActive     := tempStatusEffect = StatusNormal;
-
-  FSpriteEngine.FTextureSet.Layer[ 1 ].Normal  := FSpriteSheet[ tempStatusEffect ];
-  FSpriteEngine.FTextureSet.Layer[ 2 ].Normal  := FSpriteSheet[ tempStatusEffect ];
-  FSpriteEngine.FTextureSet.Layer[ 3 ].Normal  := FSpriteSheet[ tempStatusEffect ];
-  FSpriteEngine.FTextureSet.Layer[ 4 ].Normal  := FSpriteSheet[ tempStatusEffect ];
-  *)
 end;
 
 procedure TDoomSpriteMap.UpdateLightMap;

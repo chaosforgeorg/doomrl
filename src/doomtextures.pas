@@ -36,29 +36,6 @@ end;
 procedure TDoomTextures.PrepareTextures;
 var iColorKey : TColor;
     iBase     : TImage;
-
-    function SheetInv( aBase : TImage ) : TImage;
-    begin
-      SheetInv := aBase.Clone;
-      SheetInv.LinearSaturation( 0 );
-      SheetInv.Invert;
-    end;
-
-    function SheetBerserk( aBase : TImage ) : TImage;
-    begin
-      SheetBerserk := aBase.Clone;
-      SheetBerserk.Contrast( 30 );
-      SheetBerserk.LinearSaturation( 0 );
-      SheetBerserk.LinearSaturation( 1.5,0.1,0.15 );
-    end;
-
-    function SheetEnviro( aBase : TImage ) : TImage;
-    begin
-      SheetEnviro := aBase.Clone;
-      SheetEnviro.SimpleSaturation( 0.1 );
-      SheetEnviro.Saturation( 0.1, 1.0, 0.1 );
-    end;
-
 begin
   Textures[ 'logo' ].Blend := True;
   Textures[ 'background' ].Blend := True;
@@ -73,10 +50,6 @@ begin
   iBase     := Textures['spritesheet'].Image;
   iColorKey := iBase.Color[0];
   iBase.SubstituteColor( iColorKey, ColorZero );
-
-  AddImage( 'spritesheet_inv',     SheetInv( iBase ), Option_Blending );
-  AddImage( 'spritesheet_berserk', SheetBerserk( iBase ), Option_Blending );
-  AddImage( 'spritesheet_enviro',  SheetEnviro( iBase ), Option_Blending );
 
   AddImage( 'spritesheet_glow',    GenerateGlow( Textures['spritesheet_shadow'].Image ), Option_Blending );
 
