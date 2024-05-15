@@ -186,11 +186,11 @@ type TCellSet = set of Byte;
        Glow     : Boolean;
        Color    : TColor;
        GlowColor: TColor;
-       SpriteID : Word;
+       SpriteID : DWord;
      end;
 
-function NewSprite( ID : Word ) : TSprite;
-function NewSprite( ID : Word; Color : TColor ) : TSprite;
+function NewSprite( ID : DWord ) : TSprite;
+function NewSprite( ID : DWord; Color : TColor ) : TSprite;
 
 const
   ActionCostPickUp = 1000;
@@ -501,7 +501,7 @@ begin
   end;
 end;
 
-function NewSprite ( ID : Word ) : TSprite;
+function NewSprite ( ID : DWord ) : TSprite;
 begin
   NewSprite.CosColor := False;
   NewSprite.Overlay  := False;
@@ -510,7 +510,7 @@ begin
   NewSprite.SpriteID := ID;
 end;
 
-function NewSprite ( ID : Word; Color : TColor ) : TSprite;
+function NewSprite ( ID : DWord; Color : TColor ) : TSprite;
 begin
   NewSprite.Overlay  := False;
   NewSprite.Glow     := False;
