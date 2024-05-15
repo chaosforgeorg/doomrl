@@ -34,10 +34,10 @@ type
   procedure PrepareTextures;
   procedure ReassignTextures;
   function DevicePointToCoord( aPoint : TPoint ) : TPoint;
-  procedure PushSpriteRotated( aX,aY : Integer; const aSprite : TSprite; aRotation : Single );
-  procedure PushSpriteXY ( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aLayer : Byte = 4 );
-  procedure PushSprite( aX,aY : Byte; const aSprite : TSprite );
-  procedure PushLitSprite( aX,aY : Byte; const aSprite : TSprite; aTSX : Single = 0; aTSY : Single = 0  );
+  procedure PushSpriteBeing( aX, aY : Integer; const aSprite : TSprite; aLight : Byte );
+  procedure PushSpriteFX( aX,aY : Byte; const aSprite : TSprite );
+  procedure PushSpriteFXRotated( aX,aY : Integer; const aSprite : TSprite; aRotation : Single );
+  procedure PushSpriteTerrain( aX,aY : Byte; const aSprite : TSprite; aTSX : Single = 0; aTSY : Single = 0  );
   function ShiftValue( aFocus : TCoord2D ) : TCoord2D;
   procedure SetTarget( aTarget : TCoord2D; aColor : TColor; aDrawPath : Boolean );
   procedure ClearTarget;
@@ -72,6 +72,7 @@ private
   procedure UpdateLightMap;
   procedure PushTerrain;
   procedure PushObjects;
+  procedure PushSprite( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aLayer : Byte = 4 );
   function VariableLight( aWhere : TCoord2D ) : Byte;
 public
   property Loaded : Boolean read FTexturesLoaded;
@@ -265,7 +266,7 @@ begin
         TargetSprite.Color.G := Floor(100*(Sin( FFluidTime*50 )+1)+50)
       else
         TargetSprite.Color.R := Floor(100*(Sin( FFluidTime*50 )+1)+50);
-      SpriteMap.PushSprite( iPoint.X, iPoint.Y, TargetSprite );
+      SpriteMap.PushSpriteFX( iPoint.X, iPoint.Y, TargetSprite );
     end;
   end;
 
@@ -304,8 +305,8 @@ begin
   begin
     FLayers[ 1 ] := TSpriteDataSet.Create( FSpriteEngine, true, false );
     FLayers[ 2 ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
-    FLayers[ 4 ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
     FLayers[ 3 ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
+    FLayers[ 4 ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
     FLayerCount := 4;
   end;
 
@@ -339,7 +340,7 @@ begin
   Result.y := Floor((aPoint.y + FShift.Y) / FTileSize)+1;
 end;
 
-procedure TDoomSpriteMap.PushSpriteRotated ( aX, aY : Integer;
+procedure TDoomSpriteMap.PushSpriteFXRotated ( aX, aY : Integer;
   const aSprite : TSprite; aRotation : Single ) ;
 var iCoord : TGLRawQCoord;
     iTex   : TGLRawQTexCoord;
@@ -385,7 +386,7 @@ begin
   end;
 end;
 
-procedure TDoomSpriteMap.PushSpriteXY ( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aLayer : Byte ) ;
+procedure TDoomSpriteMap.PushSprite( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aLayer : Byte ) ;
 var iSize : Byte;
     ip    : TGLVec2i;
 begin
@@ -410,12 +411,17 @@ begin
   end;
 end;
 
-procedure TDoomSpriteMap.PushSprite ( aX, aY : Byte; const aSprite : TSprite ) ;
+procedure TDoomSpriteMap.PushSpriteBeing( aX, aY : Integer; const aSprite : TSprite; aLight : Byte ) ;
 begin
-  PushSpriteXY( (aX-1) * FTileSize, (aY-1) * FTileSize, aSprite, 255, 4 );
+  PushSprite( aX, aY, aSprite, aLight, 3 );
 end;
 
-procedure TDoomSpriteMap.PushLitSprite ( aX, aY : Byte; const aSprite : TSprite; aTSX : Single; aTSY : Single ) ;
+procedure TDoomSpriteMap.PushSpriteFX( aX, aY : Byte; const aSprite : TSprite ) ;
+begin
+  PushSprite( (aX-1) * FTileSize, (aY-1) * FTileSize, aSprite, 255, 4 );
+end;
+
+procedure TDoomSpriteMap.PushSpriteTerrain( aX, aY : Byte; const aSprite : TSprite; aTSX : Single; aTSY : Single ) ;
 var i, iSize : Byte;
     iColors  : TGLRawQColor;
     ip       : TGLVec2i;
@@ -624,13 +630,13 @@ begin
         if CF_MULTISPRITE in Cells[Bottom].Flags then
           Spr.SpriteID += Doom.Level.Rotation[c] - 3*SpriteCellRow;
         if F_GTSHIFT in Cells[Bottom].Flags
-          then PushLitSprite( X, Y, Spr, FFluidX, FFluidY )
-          else PushLitSprite( X, Y, Spr );
+          then PushSpriteTerrain( X, Y, Spr, FFluidX, FFluidY )
+          else PushSpriteTerrain( X, Y, Spr );
         if (F_GFLUID in Cells[Bottom].Flags) and (Doom.Level.Rotation[c] <> 0) then
         begin
           Spr := Cells[Doom.Level.FFloorCell].Sprite;
           Spr.SpriteID += Doom.Level.Rotation[c];
-          PushLitSprite( X, Y, Spr );
+          PushSpriteTerrain( X, Y, Spr );
         end;
         if Doom.Level.LightFlag[ c, LFBLOOD ] and (Cells[Bottom].BloodSprite.SpriteID <> 0) then
         begin
@@ -638,7 +644,7 @@ begin
           L := VariableLight(c);
           if Spr.CosColor then
             Spr.Color := ScaleColor( Spr.Color, Byte(L) );
-          PushSpriteXY( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, 2 );
+          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, 2 );
         end;
       end;
     end;
@@ -669,14 +675,14 @@ begin
         Spr := Cells[Top].Sprite;
         if Spr.CosColor then
           Spr.Color := ScaleColor( Spr.Color, Byte(L) );
-        PushSpriteXY( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, 2 );
+        PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, 2 );
       end;
 
       iItem := Doom.Level.Item[c];
       if Doom.Level.ItemVisible(c, iItem) or Doom.Level.ItemExplored(c, iItem) then
       begin
         if Doom.Level.ItemVisible(c, iItem) then L := 255 else L := 70;
-        PushSpriteXY( (X-1)*FTileSize, (Y-1)*FTileSize, iItem.Sprite, L, 2 );
+        PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iItem.Sprite, L, 2 );
       end;
     end;
 
@@ -687,11 +693,11 @@ begin
       iBeing := Doom.Level.Being[c];
       if (iBeing <> nil) and (iBeing.AnimCount = 0) then
         if Doom.Level.BeingVisible(c, iBeing) then
-          PushSpriteXY( (X-1)*FTileSize, (Y-1)*FTileSize, iBeing.Sprite, 255, 3 )
+          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iBeing.Sprite, 255, 3 )
         else if Doom.Level.BeingExplored(c, iBeing) then
-          PushSpriteXY( (X-1)*FTileSize, (Y-1)*FTileSize, iBeing.Sprite, 40, 3 )
+          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iBeing.Sprite, 40, 3 )
         else if Doom.Level.BeingIntuited(c, iBeing) then
-          PushSpriteXY( (X-1)*FTileSize, (Y-1)*FTileSize, NewSprite( HARDSPRITE_MARK, NewColor( Magenta ) ), 25, 3 )
+          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, NewSprite( HARDSPRITE_MARK, NewColor( Magenta ) ), 25, 3 )
 
     end;
 
