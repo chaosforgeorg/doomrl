@@ -303,22 +303,22 @@ begin
 
   with FSpriteEngine do
   begin
-    FOldLayers[ 1 ] := TSpriteDataSet.Create( FSpriteEngine, true, false );
-    FOldLayers[ 2 ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
-    FOldLayers[ 3 ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
-    FOldLayers[ 4 ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
+    FOldLayers[ 1 ] := TSpriteDataSet.Create( FSpriteEngine, true, false, 16, 32 );
+    FOldLayers[ 2 ] := TSpriteDataSet.Create( FSpriteEngine, true, true, 16, 32 );
+    FOldLayers[ 3 ] := TSpriteDataSet.Create( FSpriteEngine, true, true, 16, 32 );
+    FOldLayers[ 4 ] := TSpriteDataSet.Create( FSpriteEngine, true, true, 16, 32 );
     FOldLayerCount := 4;
   end;
 
   with FSpriteEngine do
   begin
-    FLayers[ DRL_SPRITESHEET_ENVIRO ] := TSpriteDataSet.Create( FSpriteEngine, true, false );
-    FLayers[ DRL_SPRITESHEET_DOODAD ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
-    FLayers[ DRL_SPRITESHEET_ITEMS  ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
-    FLayers[ DRL_SPRITESHEET_BEINGS ] := TSpriteDataSet.Create( FSpriteEngine, false, true );
-    FLayers[ DRL_SPRITESHEET_PLAYER ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
-    FLayers[ DRL_SPRITESHEET_LARGE  ] := TSpriteDataSet.Create( FSpriteEngine, false, true );
-    FLayers[ DRL_SPRITESHEET_FX     ] := TSpriteDataSet.Create( FSpriteEngine, true, true );
+    FLayers[ DRL_SPRITESHEET_ENVIRO ] := TSpriteDataSet.Create( FSpriteEngine, true,  false, 16, 32 );
+    FLayers[ DRL_SPRITESHEET_DOODAD ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  16, 32 );
+    FLayers[ DRL_SPRITESHEET_ITEMS  ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_SITEMS_COLS, 5 );
+    FLayers[ DRL_SPRITESHEET_BEINGS ] := TSpriteDataSet.Create( FSpriteEngine, false, true,  DRL_SBEINGS_COLS, 3 );
+    FLayers[ DRL_SPRITESHEET_PLAYER ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_SPLAYER_COLS, 2 );
+    FLayers[ DRL_SPRITESHEET_LARGE  ] := TSpriteDataSet.Create( FSpriteEngine, false, true,  DRL_SLARGE_COLS, 6 );
+    FLayers[ DRL_SPRITESHEET_FX     ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  16, 32 );
     FLayerCount := 7;
   end;
 
@@ -416,11 +416,11 @@ begin
   iCoord.Data[ 2 ] := Rotated( +iSizeH, +iSizeH );
   iCoord.Data[ 3 ] := Rotated( +iSizeH, -iSizeH );
 
-  iTP := TGLVec2f.CreateModDiv( (iSpriteID-1), FSpriteEngine.FSpriteRowCount );
+  iTP := TGLVec2f.CreateModDiv( (iSpriteID-1), iLayer.Normal.RowSize );
 
   iTex.init(
-    iTP * FSpriteEngine.FTexUnit,
-    iTP.Shifted(1) * FSpriteEngine.FTexUnit
+    iTP * iLayer.Normal.TexUnit,
+    iTP.Shifted(1) * iLayer.Normal.TexUnit
   );
 
   with iLayer do
