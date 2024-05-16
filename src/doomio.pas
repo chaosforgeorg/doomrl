@@ -666,7 +666,7 @@ begin
   glDisable( GL_DEPTH_TEST );
   glEnable( GL_BLEND );
   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-  FProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -1, 1 );
+  FProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -16384, 16384 );
 
   if (Doom <> nil) and (Doom.State = DSPlaying) then
   begin
@@ -675,7 +675,9 @@ begin
     //if not UI.AnimationsRunning then SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
     SpriteMap.Update( iTickTime, FProjection );
     UI.GFXAnimationDraw;
+    glEnable( GL_DEPTH_TEST );
     SpriteMap.Draw;
+    glDisable( GL_DEPTH_TEST );
   end;
 end;
 
