@@ -46,7 +46,11 @@ function register_corpse( being_proto )
 	end
 	if being_proto.flags[ F_LARGE ] then
 		proto.flags = { F_LARGE, CF_CORPSE, CF_NOCHANGE, CF_OVERLAY, CF_VBLOODY, CF_RAISABLE}
-		proto.sprite = being_proto.sprite + LARGE_CORPSE_SKIP
+		if proto.sprite >= 100000 then
+			proto.sprite = being_proto.sprite + 4 * DRL_SLARGE_COLS
+		else
+			proto.sprite = being_proto.sprite + LARGE_CORPSE_SKIP
+		end
 	end
 	return register_cell( being_proto.id.."corpse" ) (proto)
 end

@@ -162,7 +162,7 @@ register_level "the_chained_court"
 			danger       = 14,
 			weight       = 0,
 			bulk         = 100,
-			flags        = { BF_OPENDOORS, BF_SELFIMMUNE },
+			flags        = { F_LARGE, BF_OPENDOORS, BF_SELFIMMUNE },
 			desc         = "The meanest, ugliest and strongest Arch-Vile you have ever seen...",
 
 			ai_type         = "archvile_ai",
