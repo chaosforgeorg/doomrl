@@ -50,12 +50,13 @@ begin
   iBase     := Textures['spritesheet'].Image;
   iColorKey := iBase.Color[0];
   iBase.SubstituteColor( iColorKey, ColorZero );
-  AddImage( 'spritesheet_glow',        GenerateGlow( Textures['spritesheet_shadow'].Image ), Option_Blending );
+  AddImage( 'spritesheet_glow',          GenerateGlow( Textures['spritesheet_shadow'].Image ), Option_Blending );
 
-  AddImage( 'doomguy_glow',            GenerateGlow( Textures['doomguy_shadow'].Image ), Option_Blending );
-  AddImage( 'enemies_glow',            GenerateGlow( Textures['enemies_shadow'].Image ), Option_Blending );
-  AddImage( 'enemies_big_glow',        GenerateGlow( Textures['enemies_big_shadow'].Image ), Option_Blending );
-  AddImage( 'guns_and_pickups_glow',   GenerateGlow( Textures['guns_and_pickups_shadow'].Image ), Option_Blending );
+  AddImage( 'doomguy_glow',              GenerateGlow( Textures['doomguy_shadow'].Image ), Option_Blending );
+  AddImage( 'enemies_glow',              GenerateGlow( Textures['enemies_shadow'].Image ), Option_Blending );
+  AddImage( 'enemies_big_glow',          GenerateGlow( Textures['enemies_big_shadow'].Image ), Option_Blending );
+  AddImage( 'guns_and_pickups_glow',     GenerateGlow( Textures['guns_and_pickups_shadow'].Image ), Option_Blending );
+  AddImage( 'doors_and_decorations_glow',GenerateGlow( Textures['doors_and_decorations_shadow'].Image ), Option_Blending );
 
   Upload;
 end;
