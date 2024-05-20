@@ -42,12 +42,12 @@ function register_corpse( being_proto )
 		raiseto = being_proto.id;
 	}
 	if proto.sprite >= 100000 then
-		proto.sprite = being_proto.sprite + 2 * DRL_SBEINGS_COLS
+		proto.sprite = being_proto.sprite + 2 * DRL_COLS
 	end
 	if being_proto.flags[ F_LARGE ] then
 		proto.flags = { F_LARGE, CF_CORPSE, CF_NOCHANGE, CF_OVERLAY, CF_VBLOODY, CF_RAISABLE}
 		if proto.sprite >= 100000 then
-			proto.sprite = being_proto.sprite + 4 * DRL_SLARGE_COLS
+			proto.sprite = being_proto.sprite + 4 * DRL_COLS
 		else
 			proto.sprite = being_proto.sprite + LARGE_CORPSE_SKIP
 		end

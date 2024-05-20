@@ -322,13 +322,13 @@ begin
 
   with FSpriteEngine do
   begin
-    FLayers[ DRL_SPRITESHEET_ENVIRO ] := TSpriteDataSet.Create( FSpriteEngine, true,  false, DRL_SENVIRO_COLS, 36 );
-    FLayers[ DRL_SPRITESHEET_DOODAD ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_SDOODAD_COLS, 9 );
-    FLayers[ DRL_SPRITESHEET_ITEMS  ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_SITEMS_COLS, 5 );
-    FLayers[ DRL_SPRITESHEET_BEINGS ] := TSpriteDataSet.Create( FSpriteEngine, false, true,  DRL_SBEINGS_COLS, 3 );
-    FLayers[ DRL_SPRITESHEET_PLAYER ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_SPLAYER_COLS, 2 );
-    FLayers[ DRL_SPRITESHEET_LARGE  ] := TSpriteDataSet.Create( FSpriteEngine, false, true,  DRL_SLARGE_COLS, 6 );
-    FLayers[ DRL_SPRITESHEET_FX     ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_SFX_COLS, 2 );
+    FLayers[ DRL_SPRITESHEET_ENVIRO ] := TSpriteDataSet.Create( FSpriteEngine, true,  false, DRL_COLS, 36 );
+    FLayers[ DRL_SPRITESHEET_DOODAD ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 9 );
+    FLayers[ DRL_SPRITESHEET_ITEMS  ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 5 );
+    FLayers[ DRL_SPRITESHEET_BEINGS ] := TSpriteDataSet.Create( FSpriteEngine, false, true,  DRL_COLS, 6 );
+    FLayers[ DRL_SPRITESHEET_PLAYER ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 2 );
+    FLayers[ DRL_SPRITESHEET_LARGE  ] := TSpriteDataSet.Create( FSpriteEngine, false, true,  DRL_COLS, 12 );
+    FLayers[ DRL_SPRITESHEET_FX     ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 2 );
     FLayerCount := 7;
   end;
 
