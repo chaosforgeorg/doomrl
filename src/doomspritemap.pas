@@ -313,15 +313,6 @@ begin
 
   with FSpriteEngine do
   begin
-    FOldLayers[ 1 ] := TSpriteDataSet.Create( FSpriteEngine, true, false, 16, 32 );
-    FOldLayers[ 2 ] := TSpriteDataSet.Create( FSpriteEngine, true, true, 16, 32 );
-    FOldLayers[ 3 ] := TSpriteDataSet.Create( FSpriteEngine, true, true, 16, 32 );
-    FOldLayers[ 4 ] := TSpriteDataSet.Create( FSpriteEngine, true, true, 16, 32 );
-    FOldLayerCount := 4;
-  end;
-
-  with FSpriteEngine do
-  begin
     FLayers[ DRL_SPRITESHEET_ENVIRO ] := TSpriteDataSet.Create( FSpriteEngine, true,  false, DRL_COLS, 36 );
     FLayers[ DRL_SPRITESHEET_DOODAD ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 9 );
     FLayers[ DRL_SPRITESHEET_ITEMS  ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 5 );
@@ -336,25 +327,7 @@ begin
 end;
 
 procedure TDoomSpriteMap.ReassignTextures;
-var iCosColor : DWord;
-    iGlow     : DWord;
-    iSheet    : DWord;
 begin
-  iSheet    := Textures.Textures['spritesheet'].GLTexture;
-  iCosColor := Textures.Textures['spritesheet_color'].GLTexture;
-  iGlow     := Textures.Textures['spritesheet_glow'].GLTexture;
-
-  with FSpriteEngine do
-  begin
-    FOldTextureSet.Layer[ 1 ].Normal  := iSheet;
-    FOldTextureSet.Layer[ 1 ].Cosplay := iCosColor;
-    FOldTextureSet.Layer[ 2 ].Normal  := iSheet;
-    FOldTextureSet.Layer[ 2 ].Cosplay := iCosColor;
-    FOldTextureSet.Layer[ 2 ].Glow    := iGlow;
-    FOldTextureSet.Layer[ 3 ] := FOldTextureSet.Layer[ 2 ];
-    FOldTextureSet.Layer[ 4 ] := FOldTextureSet.Layer[ 2 ];
-  end;
-
   with FSpriteEngine do
   begin
     FTextureSet.Layer[ DRL_SPRITESHEET_ENVIRO ].Normal  := Textures.Textures['levels'].GLTexture;
@@ -407,13 +380,8 @@ var iCoord    : TGLRawQCoord;
     Rotated.y := Round( pY * cos( aRotation ) + pX * sin( aRotation ) + aY );
   end;
 begin
-  iLayer    := FSpriteEngine.FOldLayers[ 4 ];
-  iSpriteID := aSprite.SpriteID;
-  if iSpriteID >= 100000 then
-  begin
-    iLayer    := FSpriteEngine.FLayers[ iSpriteID div 100000 ];
-    iSpriteID := iSpriteID mod 100000;
-  end;
+  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iSpriteID := aSprite.SpriteID mod 100000;
 
   iSizeH := FTileSize div 2;
 
@@ -454,13 +422,8 @@ var iSize     : Byte;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
 begin
-  iLayer    := FSpriteEngine.FOldLayers[ aLayer ];
-  iSpriteID := aSprite.SpriteID;
-  if iSpriteID >= 100000 then
-  begin
-    iLayer    := FSpriteEngine.FLayers[ iSpriteID div 100000 ];
-    iSpriteID := iSpriteID mod 100000;
-  end;
+  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iSpriteID := aSprite.SpriteID mod 100000;
 
   iSize := 1;
   if aSprite.Large then
@@ -506,13 +469,8 @@ var i, iSize  : Byte;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
 begin
-  iLayer    := FSpriteEngine.FOldLayers[ 1 ];
-  iSpriteID := aSprite.SpriteID;
-  if iSpriteID >= 100000 then
-  begin
-    iLayer    := FSpriteEngine.FLayers[ iSpriteID div 100000 ];
-    iSpriteID := iSpriteID mod 100000;
-  end;
+  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iSpriteID := aSprite.SpriteID mod 100000;
 
   iSize := 1;
   if aSprite.Large then
