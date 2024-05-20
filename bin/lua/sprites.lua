@@ -1,28 +1,3 @@
-core.declare( "ROW_SKIP", 16 )
-core.declare( "LARGE_CORPSE_SKIP", 2 )
-
-core.declare( "OBJECT_ROW_1", 0 )
-core.declare( "OBJECT_ROW_2", 16 )
-core.declare( "OBJECT_ROW_3", 32 )
-core.declare( "OBJECT_ROW_4", 48 )
-core.declare( "OBJECT_ROW_5", 64 )
-core.declare( "OBJECT_ROW_6", 80 )
-core.declare( "OBJECT_ROW_7", 96 )
-core.declare( "OBJECT_ROW_8", 112 )
-
-core.declare( "OBJECT_ROW_14", 208 )
-core.declare( "OBJECT_ROW_15", 224 )
-core.declare( "OBJECT_ROW_16", 240 )
-
-core.declare( "TERRAIN_ROW_1", 256+0 )
-core.declare( "TERRAIN_ROW_2", 256+16 )
-core.declare( "TERRAIN_ROW_3", 256+32 )
-
-core.declare( "TERRAIN_ROW_10", 256+144 )
-core.declare( "TERRAIN_ROW_15", 256+224 )
-core.declare( "TERRAIN_ROW_16", 256+240 )
-
-
 core.declare( "SPRITE_PLAYER",          DRL_SPLAYER + 1 )
 core.declare( "SPRITE_PLAYER_KNIFE",    DRL_SPLAYER + 2 )
 core.declare( "SPRITE_PLAYER_CHAINSAW", DRL_SPLAYER + 3 )
