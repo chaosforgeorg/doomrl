@@ -252,6 +252,7 @@ const TargetSprite : TSprite = (
   Glow     : False;
   Color    : (R:0;G:0;B:0;A:255);
   GlowColor: (R:0;G:0;B:0;A:0);
+  Depth    : 0;
   SpriteID : HARDSPRITE_SELECT;
 );
 
