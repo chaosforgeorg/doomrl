@@ -1479,7 +1479,7 @@ function DoomRL.loaditems()
 		weight = 0,
 		type   = ITEMTYPE_PACK,
 		ascii  = "+",
-		flags  = { IF_NODESTROY },
+		flags  = { F_LARGE, IF_NODESTROY },
 		desc   = "A strange ball of shimmering light.",
 
 		OnUse = function(self,being)
