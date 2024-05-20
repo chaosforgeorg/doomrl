@@ -82,7 +82,7 @@ private
   procedure UpdateLightMap;
   procedure PushTerrain;
   procedure PushObjects;
-  procedure PushSprite( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aLayer : Byte; aZ : Integer );
+  procedure PushSprite( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aZ : Integer );
   function VariableLight( aWhere : TCoord2D ) : Byte;
 public
   property Loaded : Boolean read FTexturesLoaded;
@@ -417,7 +417,7 @@ begin
   end;
 end;
 
-procedure TDoomSpriteMap.PushSprite( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aLayer : Byte; aZ : Integer ) ;
+procedure TDoomSpriteMap.PushSprite( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aZ : Integer ) ;
 var iSize     : Byte;
     ip        : TGLVec2i;
     iLayer    : TSpriteDataSet;
@@ -455,12 +455,12 @@ begin
     z += DRL_Z_LARGE
   else
     z += DRL_Z_BEINGS;
-  PushSprite( aX, aY, aSprite, aLight, 3, z );
+  PushSprite( aX, aY, aSprite, aLight, z );
 end;
 
 procedure TDoomSpriteMap.PushSpriteFX( aX, aY : Byte; const aSprite : TSprite ) ;
 begin
-  PushSprite( (aX-1) * FTileSize, (aY-1) * FTileSize, aSprite, 255, 4, DRL_Z_FX );
+  PushSprite( (aX-1) * FTileSize, (aY-1) * FTileSize, aSprite, 255, DRL_Z_FX );
 end;
 
 procedure TDoomSpriteMap.PushSpriteTerrain( aX, aY : Byte; const aSprite : TSprite; aZ : Integer; aTSX : Single; aTSY : Single ) ;
@@ -693,7 +693,7 @@ begin
           L := VariableLight(c);
           if Spr.CosColor then
             Spr.Color := ScaleColor( Spr.Color, Byte(L) );
-          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, 2, Z + DRL_Z_DOODAD );
+          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, Z + DRL_Z_DOODAD );
         end;
       end;
     end;
@@ -725,14 +725,14 @@ begin
         Spr := Cells[Top].Sprite;
         if Spr.CosColor then
           Spr.Color := ScaleColor( Spr.Color, Byte(L) );
-        PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, 2, Z + DRL_Z_DOODAD );
+        PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, Z + DRL_Z_DOODAD );
       end;
 
       iItem := Doom.Level.Item[c];
       if Doom.Level.ItemVisible(c, iItem) or Doom.Level.ItemExplored(c, iItem) then
       begin
         if Doom.Level.ItemVisible(c, iItem) then L := 255 else L := 70;
-        PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iItem.Sprite, L, 2, Z + DRL_Z_ITEMS );
+        PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iItem.Sprite, L, Z + DRL_Z_ITEMS );
       end;
     end;
 
@@ -744,11 +744,11 @@ begin
       iBeing := Doom.Level.Being[c];
       if (iBeing <> nil) and (iBeing.AnimCount = 0) then
         if Doom.Level.BeingVisible(c, iBeing) then
-          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iBeing.Sprite, 255, 3, Z + DRL_Z_BEINGS )
+          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iBeing.Sprite, 255, Z + DRL_Z_BEINGS )
         else if Doom.Level.BeingExplored(c, iBeing) then
-          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iBeing.Sprite, 40, 3, Z + DRL_Z_BEINGS )
+          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iBeing.Sprite, 40, Z + DRL_Z_BEINGS )
         else if Doom.Level.BeingIntuited(c, iBeing) then
-          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, NewSprite( HARDSPRITE_MARK, NewColor( Magenta ) ), 25, 3, Z + DRL_Z_BEINGS )
+          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, NewSprite( HARDSPRITE_MARK, NewColor( Magenta ) ), 25, Z + DRL_Z_BEINGS )
 
     end;
 
