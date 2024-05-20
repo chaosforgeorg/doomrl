@@ -794,7 +794,7 @@ begin
     end;
 
   if FTargeting then
-    with FSpriteEngine.FOldLayers[ 3 ] do
+    with FSpriteEngine.FLayers[ DRL_SPRITESHEET_FX ] do
     begin
       iColor := NewColor( 0, 128, 0 );
       if FTargetList.Size > 0 then
@@ -812,7 +812,7 @@ begin
   if FGridActive then
   for Y := 1 to MAXY do
     for X := DMinX to DMaxX do
-    with FSpriteEngine.FOldLayers[ 4 ] do
+    with FSpriteEngine.FLayers[ DRL_SPRITESHEET_FX ] do
     begin
       Normal.Push( HARDSPRITE_GRID, TGLVec2i.Create( X, Y ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
     end;
