@@ -156,7 +156,7 @@ begin
   if Doom.Level.isProperCoord( FPath.GetC ) and Doom.Level.isVisible( FPath.GetC ) then
   begin
     v := Lerp( FSource, FTarget, Minf(FTime / FDuration, 1.0) );
-    SpriteMap.PushSpriteRotated( v.x, v.y, FSprite, FHeading + PI/2)
+    SpriteMap.PushSpriteFXRotated( v.x, v.y, FSprite, FHeading + PI/2)
   end;
 end;
 
@@ -193,7 +193,7 @@ begin
   iMarkSprite.CosColor := False;
   iMarkSprite.Overlay  := False;
   iMarkSprite.SpriteID := HARDSPRITE_HIT;
-  SpriteMap.PushSprite( FCoord.X, FCoord.Y, iMarkSprite )
+  SpriteMap.PushSpriteFX( FCoord.X, FCoord.Y, iMarkSprite )
 end;
 
 { TDoomExplodeMark }
@@ -232,7 +232,7 @@ begin
     2 : iMarkSprite.Color    := FGColor3;
   else iMarkSprite.Color    := FGColor2;
   end;
-  SpriteMap.PushSprite( FCoord.X, FCoord.Y, iMarkSprite );
+  SpriteMap.PushSpriteFX( FCoord.X, FCoord.Y, iMarkSprite );
 end;
 
 { TDoomSoundEvent }
@@ -300,7 +300,7 @@ begin
   iValue    := Clampf( FTime / FDuration, 0, 1 );
   iLight    := Lerp( FLightStart, FLightEnd, iValue );
   iPosition := Lerp( FSource, FTarget, iValue );
-  SpriteMap.PushSpriteXY( iPosition.X, iPosition.Y, FSprite, iLight );
+  SpriteMap.PushSpriteBeing( iPosition.X, iPosition.Y, FSprite, iLight );
 end;
 
 destructor TDoomMove.Destroy;

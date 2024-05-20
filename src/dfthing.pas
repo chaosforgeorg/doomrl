@@ -52,6 +52,7 @@ begin
   FSprite.CosColor := not Table.isNil( 'coscolor' );
   FSprite.Overlay  := not Table.isNil( 'overlay' );
   FSprite.Glow     := not Table.isNil( 'glow' );
+  FSprite.Depth    := Table.getInteger( 'depth', 0 );
   FSprite.Large    := F_LARGE    in FFlags;
 
   iColorID := FID;

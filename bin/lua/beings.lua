@@ -920,7 +920,7 @@ function DoomRL.loadnpcs()
 		danger       = 14,
 		weight       = 6,
 		bulk         = 100,
-		flags        = { BF_OPENDOORS, BF_ENVIROSAFE, BF_HUNTING},
+		flags        = { F_LARGE, BF_OPENDOORS, BF_ENVIROSAFE, BF_HUNTING},
 		ai_type      = "baron_ai",
 
 		resist = { acid = 50 },
@@ -970,7 +970,7 @@ function DoomRL.loadnpcs()
 		danger       = 14,
 		weight       = 3,
 		bulk         = 100,
-		flags        = { BF_OPENDOORS, BF_ENVIROSAFE, BF_HUNTING },
+		flags        = { F_LARGE, BF_OPENDOORS, BF_ENVIROSAFE, BF_HUNTING },
 		ai_type      = "teleboss_ai",
 
 		desc            = "Even other monsters fear him, so expect a clobbering. He shrugs off explosions. Good luck.",
@@ -1031,7 +1031,7 @@ function DoomRL.loadnpcs()
 		danger       = 16,
 		weight       = 1,
 		bulk         = 100,
-		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
+		flags        = { F_LARGE, BF_OPENDOORS, BF_ENVIROSAFE },
 		ai_type      = "teleboss_ai",
 
 		resist = { fire = 100 },
@@ -1135,7 +1135,7 @@ function DoomRL.loadnpcs()
 		weight       = 0,
 		xp           = 1000,
 		bulk         = 100,
-		flags        = { BF_CHARGE, BF_ENVIROSAFE ,BF_HUNTING },
+		flags        = { F_LARGE, BF_CHARGE, BF_ENVIROSAFE ,BF_HUNTING },
 		ai_type      = "melee_seek_ai",
 
 		desc            = "Why doesn't a BFG work when you really need it? As if from a half-forgotten nightmare, you encounter the harbinger of death...",
@@ -1159,6 +1159,7 @@ function DoomRL.loadnpcs()
 		ascii        = "C",
 		color        = BROWN,
 		sprite       = SPRITE_CYBERDEMON,
+		corpse       = true,
 		hp           = 200,
 		armor        = 4,
 		todam        = 15,
@@ -1275,7 +1276,7 @@ function DoomRL.loadnpcs()
 		weight       = 0,
 		xp           = 0,
 		bulk         = 100,
-		flags        = { BF_OPENDOORS, BF_UNIQUENAME, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
+		flags        = { F_LARGE, BF_OPENDOORS, BF_UNIQUENAME, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
 		ai_type      = "jc_ai",
 
 		desc            = "You knew it. This is the true EVIL behind the invasion! This is the true mastermind of Hell! Kill him for he knows not the meaning of mercy! Kill him!! Kill him NOW!!!",
@@ -1490,7 +1491,7 @@ function DoomRL.load_doom_npcs()
 		name         = "Apostle",
 		ascii        = "@",
 		color        = YELLOW,
-		sprite       = SPRITE_MASTER,
+		sprite       = SPRITE_APOSTLE,
 		hp           = 255,
 		armor        = 30,
 		vision       = 2,
@@ -1503,7 +1504,7 @@ function DoomRL.load_doom_npcs()
 		danger       = 0,
 		weight       = 0,
 		bulk         = 100,
-		flags        = { BF_OPENDOORS, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
+		flags        = { F_LARGE, BF_OPENDOORS, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
 		ai_type      = "archvile_ai",
 
 		desc            = "This seems so unreal, as though from another story...",
