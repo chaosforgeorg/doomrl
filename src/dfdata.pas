@@ -186,7 +186,6 @@ type TCellSet = set of Byte;
        Glow     : Boolean;
        Color    : TColor;
        GlowColor: TColor;
-       Depth    : Integer;
        SpriteID : DWord;
      end;
 
