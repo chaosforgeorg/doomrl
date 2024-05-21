@@ -202,8 +202,8 @@ begin
   iColor := Red;
   if Doom.Level.Empty then iColor := Blue;
   iCon.RawPrint( FAbsolute.Pos + Point(61,2), iColor,Doom.Level.Name);
-  if Doom.Level.lnum >= 100 then iCon.RawPrint( FAbsolute.Pos + Point(73,2), iColor, 'Lev'+IntToStr(Doom.Level.lnum))
-  else if Doom.Level.lnum <> 0 then iCon.RawPrint( FAbsolute.Pos + Point(74,2), iColor,'Lev'+IntToStr(Doom.Level.lnum));
+  if Doom.Level.Name_Number >= 100 then iCon.RawPrint( FAbsolute.Pos + Point(73,2), iColor, 'Lev'+IntToStr(Doom.Level.Name_Number))
+  else if Doom.Level.Name_Number <> 0 then iCon.RawPrint( FAbsolute.Pos + Point(74,2), iColor,'Lev'+IntToStr(Doom.Level.Name_Number));
 
   with Player do
   for iCount := 1 to MAXAFFECT do

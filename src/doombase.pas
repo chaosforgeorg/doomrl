@@ -400,7 +400,7 @@ repeat
           FLevel.ScriptLevel(Player.SpecExit)
         else
         begin
-          if FLevel.lnum <> 0 then UI.Msg('You enter %s, level %d.',[ FLevel.Name, FLevel.lnum ]);
+          if FLevel.Name_Number <> 0 then UI.Msg('You enter %s, level %d.',[ FLevel.Name, FLevel.Name_Number ]);
           CallHookCheck(Hook_OnGenerate,[]);
           FLevel.AfterGeneration( True );
         end;

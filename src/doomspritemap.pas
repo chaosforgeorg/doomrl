@@ -682,7 +682,7 @@ begin
           else PushSpriteTerrain( X, Y, Spr, Z );
         if (F_GFLUID in Cells[Bottom].Flags) and (Doom.Level.Rotation[c] <> 0) then
         begin
-          Spr := Cells[Doom.Level.FFloorCell].Sprite;
+          Spr := Cells[Doom.Level.FloorCell].Sprite;
           Spr.SpriteID += Doom.Level.Rotation[c];
           PushSpriteTerrain( X, Y, Spr, Z + DRL_Z_ENVIRO );
         end;

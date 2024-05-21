@@ -7,8 +7,10 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dflevel;
 interface
-uses SysUtils, Classes, vluaentitynode, vutil, vvision, vcolor, vmath, viotypes, vrltools, vnode, vluamapnode, vmaparea,
-     dfdata, dfmap, dfthing, dfbeing, dfitem, dfoutput, vconuirl,
+uses SysUtils, Classes,
+     vluaentitynode, vutil, vvision, vcolor, vmath, viotypes, vrltools, vnode,
+     vluamapnode, vmaparea, vconuirl,
+     dfdata, dfmap, dfthing, dfbeing, dfitem, dfoutput,
      doomhooks;
 
 const CellWalls   : TCellSet = [];
@@ -19,14 +21,6 @@ type
 { TLevel }
 
 TLevel = class(TLuaMapNode, IConUIASCIIMap)
-    LNum        : Word;
-    SpecExit    : AnsiString;
-    LTime       : DWord;
-    Empty       : Boolean;
-    DangerLevel : Word;
-    ToHitBonus  : ShortInt;
-    FFloorCell  : Word;
-    FFeeling    : AnsiString;
     constructor Create; reintroduce;
     procedure Init( nStyle : byte; nLNum : Word;nName : string; nSpecExit : string; nDepth : Word; nDangerLevel : Word);
     procedure AfterGeneration( aGenerated : Boolean );
@@ -111,7 +105,7 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
     function EntityFromStream( aStream : TStream; aEntityID : Byte ) : TLuaEntityNode; override;
     class procedure RegisterLuaAPI();
 
-    private
+  private
     function CellToID( const aCell : Byte ) : AnsiString; override;
     procedure RawCallHook( Hook : Byte; const aParams : array of const ); overload;
     function RawCallHookCheck( Hook : Byte; const aParams : array of const ) : boolean;
@@ -120,34 +114,47 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
     procedure putCell( const aWhere : TCoord2D; const aWhat : byte ); override;
     function  getBeing( const coord : TCoord2D ) : TBeing; override;
     function  getItem( const coord : TCoord2D ) : TItem; override;
-    private
-    Map         : TMap;
-    FStatus     : Word; // level result
-    FStyle      : Byte;
+  private
+    FMap         : TMap;
+    FStatus      : Word; // level result
+    FStyle       : Byte;
+
+    FLNum        : Word;
+    FLTime       : DWord;
+    FEmpty       : Boolean;
+
+    FDangerLevel : Word;
+    FToHitBonus  : ShortInt;
 
     FActiveBeing : TBeing;
     FNextNode    : TNode;
 
+    FFloorCell   : Word;
+    FFeeling     : AnsiString;
+    FSpecExit    : AnsiString;
+  private
     function getCellBottom( Index : TCoord2D ): Byte;
     function getCellTop( Index : TCoord2D ): Byte;
     function getRotation( Index : TCoord2D ): Byte;
-
-    public
-    property Hooks : TFlags read FHooks;
+  public
+    property ToHitBonus : ShortInt                  read FToHitBonus;
+    property Hooks : TFlags                         read FHooks;
+    property FloorCell : Word                       read FFloorCell;
+    property Empty : Boolean                        read FEmpty;
     property Item     [ Index : TCoord2D ] : TItem  read getItem;
     property Being    [ Index : TCoord2D ] : TBeing read getBeing;
     property CellBottom [ Index : TCoord2D ] : Byte read getCellBottom;
     property CellTop    [ Index : TCoord2D ] : Byte read getCellTop;
     property Rotation [ Index : TCoord2D ] : Byte   read getRotation;
-    published
-    property Status       : Word       read FStatus     write FStatus;
-    property Name         : AnsiString read FName       write FName;
-    property Name_Number  : Word       read LNum        write LNum;
-    property Danger_Level : Word       read DangerLevel write DangerLevel;
-    property Style        : Byte       read FStyle      write FStyle;
-    property Special_Exit : AnsiString read SpecExit;
-    property Feeling      : AnsiString read FFeeling    write FFeeling;
-    property id : AnsiString           read FID;
+  published
+    property Status       : Word       read FStatus      write FStatus;
+    property Name         : AnsiString read FName        write FName;
+    property Name_Number  : Word       read FLNum        write FLNum;
+    property Danger_Level : Word       read FDangerLevel write FDangerLevel;
+    property Style        : Byte       read FStyle       write FStyle;
+    property Special_Exit : AnsiString read FSpecExit;
+    property Feeling      : AnsiString read FFeeling     write FFeeling;
+    property id           : AnsiString read FID;
   end;
 
 implementation
@@ -173,7 +180,7 @@ begin
     end;
     FStatus := 0;
     FName   := GetString( 'name' );
-    LNum    := 0;
+    FLNum   := 0;
     Call('Create',[]);
     Place( Player, FMapArea.Drop( NewCoord2D(LuaPlayerX,LuaPlayerY), [ EF_NOBEINGS ] ) );
     Include( FFlags, LF_SCRIPT );
@@ -455,20 +462,20 @@ begin
   FActiveBeing := nil;
   FNextNode    := nil;
 
-  LTime  := 0;
+  FLTime  := 0;
   FullClear;
   FStyle := nstyle;
-  lnum := nlnum;
+  FLNum := nlnum;
   FName := nname;
-  DangerLevel := nDangerLevel;
-  SpecExit := nSpecExit;
+  FDangerLevel := nDangerLevel;
+  FSpecExit := nSpecExit;
   FID := 'level'+IntToStr(nDepth);
   FFlags := [];
-  Empty := False;
+  FEmpty := False;
   FHooks := [];
   FFloorCell := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
   if LuaSystem.Get(['diff',Doom.Difficulty,'respawn']) then Include( FFlags, LF_RESPAWN );
-  ToHitBonus := LuaSystem.Get(['diff',Doom.Difficulty,'tohitbonus']);
+  FToHitBonus := LuaSystem.Get(['diff',Doom.Difficulty,'tohitbonus']);
 end;
 
 procedure TLevel.AfterGeneration( aGenerated : Boolean );
@@ -506,7 +513,7 @@ begin
     for c in FArea do
     begin
       if CF_MULTISPRITE in Cells[CellBottom[c]].Flags then
-        Map.r[c.x,c.y] := SpriteMap.GetCellShift(c);
+        FMap.r[c.x,c.y] := SpriteMap.GetCellShift(c);
     end;
 
     UI.GameUI.UpdateMinimap;
@@ -548,7 +555,7 @@ begin
   if LF_SHARPFLUID in FFlags then Exit;
  for cc in FArea do
    if F_GFLUID in Cells[CellBottom[ cc ]].Flags then
-     Map.r[cc.x,cc.y] :=
+     FMap.r[cc.x,cc.y] :=
        FluidFlag( cc.ifInc( 0,-1), 1 ) +
        FluidFlag( cc.ifInc( 0,+1), 2 ) +
        FluidFlag( cc.ifInc(-1, 0), 4 ) +
@@ -591,7 +598,7 @@ var x,y : Byte;
 begin
   ClearAll;
   ClearEntities;
-  with Map do
+  with FMap do
   for x := 1 to MaxX do
     for y := 1 to MaxY do
     begin
@@ -1005,7 +1012,7 @@ begin
       begin
         if not (Hook_OnKillAll in FHooks) then
           UI.Msg('You feel relatively safe now.');
-        Empty := True;
+        FEmpty := True;
       end;
     end;
   end;
@@ -1041,16 +1048,16 @@ begin
   Player.LastTurnDodge := False;
   repeat
 
-    Inc(LTime);
+    Inc(FLTime);
     Inc(Player.FStatistics.GameTime);
 
     CallHook( Hook_OnTick,[] );
 
     if LF_RESPAWN in FFlags  then
     begin
-      if LTime mod 100 = 0 then
-        if ((LTime div 100)+20) > DWord(Random(100)) then
-          Respawn( Min( (LTime div 1000) + 10, 100 ) );
+      if FLTime mod 100 = 0 then
+        if ((FLTime div 100)+20) > DWord(Random(100)) then
+          Respawn( Min( (FLTime div 1000) + 10, 100 ) );
     end;
 
     NukeTick;
@@ -1162,7 +1169,7 @@ end;
 function TLevel.getCell( const aWhere : TCoord2D ) : byte;
 var iOverlay : Word;
 begin
-  iOverlay := Map.d[aWhere.x, aWhere.y];
+  iOverlay := FMap.d[aWhere.x, aWhere.y];
   if iOverlay <> 0 then Exit( iOverlay );
   Result := inherited GetCell( aWhere );
 end;
@@ -1171,11 +1178,11 @@ procedure TLevel.putCell( const aWhere : TCoord2D; const aWhat : byte );
 begin
   if CF_OVERLAY in Cells[ aWhat ].Flags
   then
-     Map.d[aWhere.x, aWhere.y] := aWhat
+     FMap.d[aWhere.x, aWhere.y] := aWhat
   else
   begin
     inherited PutCell( aWhere, aWhat );
-    Map.d[aWhere.x, aWhere.y] := 0;
+    FMap.d[aWhere.x, aWhere.y] := 0;
   end;
 end;
 
@@ -1196,12 +1203,12 @@ end;
 
 function TLevel.getCellTop( Index : TCoord2D ): Byte;
 begin
-  Exit( Map.d[Index.x, Index.y] );
+  Exit( FMap.d[Index.x, Index.y] );
 end;
 
 function TLevel.getRotation( Index : TCoord2D ): Byte;
 begin
-  Exit( Map.r[Index.x, Index.y] );
+  Exit( FMap.r[Index.x, Index.y] );
 end;
 
 function lua_level_drop_being(L: Plua_State): Integer; cdecl;
