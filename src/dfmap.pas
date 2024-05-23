@@ -43,15 +43,16 @@ type
 { TCells }
 
 TCells = class
-           private
-           data     : array of TCell;
-           MaxCells : Byte;
-           function getCell(Index : Byte) : TCell;
-           public
-           procedure RegisterCell(cellNum : byte);
-           property Cells[Index : Byte] : TCell read getCell; default;
-           property Max : Byte read MaxCells;
+         public
+           procedure RegisterCell( aCellNum : Byte );
            destructor Destroy; override;
+         private
+           FData     : array of TCell;
+           FMaxCells : Byte;
+           function getCell( aIndex : Byte ) : TCell;
+         public
+           property Cells[ aIndex : Byte ] : TCell read getCell; default;
+           property Max : Byte read FMaxCells;
          end;
 
 var Cells : TCells;
@@ -60,75 +61,80 @@ implementation
 
 uses SysUtils, vluasystem, vcolor, vdebug;
 
-procedure TCells.RegisterCell(cellNum: byte);
-var ColorID : AnsiString;
-    Hook    : TCellHook;
+procedure TCells.RegisterCell( aCellNum : byte );
+var iColorID : AnsiString;
+    iHook    : TCellHook;
+    iCell    : TCell;
+    iTable   : TLuaTable;
 begin
-  if cellNum >= High( data ) then
+  if aCellNum >= High( FData ) then
   begin
-    SetLength( data, vmath.Max( High( data ) * 2, 100 ) );
-    MaxCells := cellNum;
+    SetLength( FData, vmath.Max( High( FData ) * 2, 100 ) );
+    FMaxCells := aCellNum;
   end;
-  if cellNum > MaxCells then MaxCells := cellNum;
+  if aCellNum > FMaxCells then FMaxCells := aCellNum;
 
-  data[cellNum] := TCell.Create;
-  with LuaSystem.GetTable(['cells',cellNum]) do
+  iCell  := TCell.Create;
+  iTable := LuaSystem.GetTable(['cells',aCellNum]);
+  with iTable do
   try
-    ColorID := getString('id');
-    if IsString('color_id') then ColorID := getString('color_id');
+    iColorID := getString('id');
+    if IsString('color_id') then iColorID := getString('color_id');
     
-    data[ cellNum ].Hooks := [];
-    for Hook in TCellHooks do
-      if isFunction( CellHooks[ Hook ] ) then
-        Include( data[cellNum].Hooks,Hook );
+   iCell.Hooks := [];
+    for iHook in TCellHooks do
+      if isFunction( CellHooks[ iHook ] ) then
+        Include( iCell.Hooks,iHook );
 
-    data[cellNum].PicChr    := getChar('ascii');
-    data[cellNum].PicLow    := getChar('asciilow');
-    data[cellNum].DarkColor := getInteger('color_dark');
-    data[cellNum].LightColor:= getInteger('color');
-    data[cellNum].BloodColor:= getInteger('blcolor');
-    data[cellNum].Desc      := getString('name');
-    data[cellNum].BlDesc    := getString('blname');
-    data[cellNum].DR        := getInteger('armor');
-    data[cellNum].HP        := getInteger('hp');
-    data[cellNum].Flags     := getFlags('flags');
-    data[cellNum].bloodto   := getString('bloodto');
-    data[cellNum].destroyto := getString('destroyto');
-    data[cellNum].raiseto   := getString('raiseto');
+    iCell.PicChr    := getChar('ascii');
+    iCell.PicLow    := getChar('asciilow');
+    iCell.DarkColor := getInteger('color_dark');
+    iCell.LightColor:= getInteger('color');
+    iCell.BloodColor:= getInteger('blcolor');
+    iCell.Desc      := getString('name');
+    iCell.BlDesc    := getString('blname');
+    iCell.DR        := getInteger('armor');
+    iCell.HP        := getInteger('hp');
+    iCell.Flags     := getFlags('flags');
+    iCell.bloodto   := getString('bloodto');
+    iCell.destroyto := getString('destroyto');
+    iCell.raiseto   := getString('raiseto');
 
-    data[cellNum].Sprite.SpriteID := getInteger('sprite');
-    data[cellNum].Sprite.CosColor := not isNil( 'coscolor' );
-    data[cellNum].Sprite.Glow     := not isNil( 'glow' );
-    data[cellNum].Sprite.Overlay  := not isNil( 'overlay' );
-    data[cellNum].Sprite.Large    := F_LARGE in data[cellNum].Flags;
+    iCell.Sprite.SpriteID := getInteger('sprite');
+    iCell.Sprite.CosColor := not isNil( 'coscolor' );
+    iCell.Sprite.Glow     := not isNil( 'glow' );
+    iCell.Sprite.Overlay  := not isNil( 'overlay' );
+    iCell.Sprite.Large    := F_LARGE in iCell.Flags;
 
-    if data[cellNum].Sprite.CosColor then data[cellNum].Sprite.Color := NewColor( GetVec4f('coscolor') );
-    if data[cellNum].Sprite.Overlay  then data[cellNum].Sprite.Color := NewColor( GetVec4f('overlay') );
-    if data[cellNum].Sprite.Glow     then data[cellNum].Sprite.Color := NewColor( GetVec4f('glow') );
+    if iCell.Sprite.CosColor then iCell.Sprite.Color := NewColor( GetVec4f('coscolor') );
+    if iCell.Sprite.Overlay  then iCell.Sprite.Color := NewColor( GetVec4f('overlay') );
+    if iCell.Sprite.Glow     then iCell.Sprite.Color := NewColor( GetVec4f('glow') );
 
-    data[cellNum].BloodSprite.SpriteID := getInteger('blsprite',0);
+    iCell.BloodSprite.SpriteID := getInteger('blsprite',0);
   finally
     Free;
   end;
 
-  if (not Option_HighASCII) then data[cellNum].PicChr := data[cellNum].PicLow;
+  if (not Option_HighASCII) then iCell.PicChr := iCell.PicLow;
 
-  if ColorOverrides.Exists(ColorID+'_light') then
-    data[cellNum].LightColor := ColorOverrides[ColorID+'_light'];
-  if ColorOverrides.Exists(ColorID+'_dark') then
-    data[cellNum].DarkColor:= ColorOverrides[ColorID+'_dark'];
+  if ColorOverrides.Exists(iColorID+'_light') then
+    iCell.LightColor := ColorOverrides[iColorID+'_light'];
+  if ColorOverrides.Exists(iColorID+'_dark') then
+    iCell.DarkColor:= ColorOverrides[iColorID+'_dark'];
+
+  FData[aCellNum] := iCell;
 end;
 
-function TCells.getCell( Index : Byte ) : TCell;
+function TCells.getCell( aIndex : Byte ) : TCell;
 begin
-  Exit( data[ Index ] );
+  Exit( FData[ aIndex ] );
 end;
 
 destructor TCells.Destroy;
-var c : TCell;
+var iCell : TCell;
 begin
-  for c in data do
-    c.Free;
+  for iCell in FData do
+    iCell.Free;
 end;
 
 
