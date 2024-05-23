@@ -512,7 +512,7 @@ begin
   begin
     for c in FArea do
     begin
-      if CF_MULTISPRITE in Cells[CellBottom[c]].Flags then
+      if SF_MULTI in Cells[CellBottom[c]].Sprite.Flags then
         FMap.r[c.x,c.y] := SpriteMap.GetCellShift(c);
     end;
 

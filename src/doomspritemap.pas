@@ -672,7 +672,7 @@ begin
       begin
         Z   := Y * DRL_Z_LINE;
         Spr := Cells[Bottom].Sprite;
-        if CF_MULTISPRITE in Cells[Bottom].Flags then
+        if SF_MULTI in Spr.Flags then
           Spr.SpriteID += Doom.Level.Rotation[c] - 3*SpriteCellRow;
         if SF_FLOW in Spr.Flags
           then PushSpriteTerrain( X, Y, Spr, Z, FFluidX, FFluidY )

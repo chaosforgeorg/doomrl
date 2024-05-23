@@ -57,7 +57,7 @@ CF_PUSHABLE   = 6;
 CF_FRAGILE    = 7;
 CF_HAZARD     = 8;
 CF_OVERLAY    = 9;
-CF_MULTISPRITE= 10;
+
 CF_STICKWALL  = 11;
 CF_LIQUID     = 12;
 CF_OPENABLE   = 13;
@@ -183,6 +183,7 @@ SF_COSPLAY  = 3;
 SF_GLOW     = 4;
 SF_FLOW     = 5;
 SF_FLUID    = 6;
+SF_MULTI    = 7;
 
 EF_NOBLOCK  = 0;
 EF_NOBEINGS = 1;

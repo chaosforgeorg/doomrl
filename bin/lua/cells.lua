@@ -51,9 +51,10 @@ function DoomRL.loadcells()
 		armor      = 10,
 		hp         = 10,
 		set        = CELLSET_WALLS,
-		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_MULTISPRITE, CF_STICKWALL},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
 		sprite     = SPRITE_WALL,
 		blsprite   = SPRITE_WALLBLOOD,
+		sflags     = { SF_MULTI },
 	}
 
 -- Phobos Walls End --
@@ -70,9 +71,10 @@ function DoomRL.loadcells()
 		armor      = 10,
 		hp         = 10,
 		set        = CELLSET_WALLS,
-		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_MULTISPRITE, CF_STICKWALL},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL},
 		sprite     = SPRITE_TECHWALL,
 		blsprite   = SPRITE_WALLBLOOD,
+		sflags     = { SF_MULTI },
 	}
 
 
@@ -90,10 +92,11 @@ function DoomRL.loadcells()
 		armor      = 10,
 		hp         = 15,
 		set        = CELLSET_WALLS,
-		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_MULTISPRITE, CF_STICKWALL},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
 		coscolor   = { 1.0,0.2,0.2,1.0 },
 		sprite     = SPRITE_BRICKWALL,
 		blsprite   = SPRITE_WALLBLOOD,
+		sflags     = { SF_MULTI },
 	}
 
 -- Hell Walls End --
@@ -109,10 +112,11 @@ function DoomRL.loadcells()
 		armor      = 3,
 		hp         = 3,
 		set        = CELLSET_WALLS,
-		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_MULTISPRITE, CF_STICKWALL, CF_FRAGILE },
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL, CF_FRAGILE },
 		coscolor   = { 0.6,0.6,1.0,1.0 },
 		sprite     = SPRITE_CAVEWALL,
 		blsprite   = SPRITE_WALLBLOOD,
+		sflags     = { SF_MULTI },
 	}
 
 -- Ice Walls End --
@@ -129,10 +133,11 @@ function DoomRL.loadcells()
 		armor      = 15,
 		hp         = 30,
 		set        = CELLSET_WALLS,
-		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_MULTISPRITE, CF_STICKWALL},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
 		coscolor   = { 0.3,0.3,0.3,1.0 },
 		sprite     = SPRITE_CAVEWALL,
 		blsprite   = SPRITE_WALLBLOOD,
+		sflags     = { SF_MULTI },
 	}
 
 	register_cell "cwall2"
@@ -145,10 +150,11 @@ function DoomRL.loadcells()
 		armor      = 15,
 		hp         = 30,
 		set        = CELLSET_WALLS,
-		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_MULTISPRITE, CF_STICKWALL},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
 		coscolor   = { 1.0,0.6,0.2,1.0 },
 		sprite     = SPRITE_CAVEWALL,
 		blsprite   = SPRITE_WALLBLOOD,
+		sflags     = { SF_MULTI },
 	}
 
 	register_cell "cwall3"
@@ -161,10 +167,11 @@ function DoomRL.loadcells()
 		armor      = 15,
 		hp         = 30,
 		set        = CELLSET_WALLS,
-		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_MULTISPRITE, CF_STICKWALL},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
 		coscolor   = { 1.0,0.2,0.2,1.0 },
 		sprite     = SPRITE_CAVEWALL,
 		blsprite   = SPRITE_WALLBLOOD,
+		sflags     = { SF_MULTI },
 	}
 
 -- Cave Walls End --
@@ -180,9 +187,10 @@ function DoomRL.loadcells()
 		armor      = 15,
 		hp         = 10,
 		set        = CELLSET_WALLS,
-		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_MULTISPRITE, CF_STICKWALL},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
 		sprite     = SPRITE_BOSSWALL,
 		blsprite   = SPRITE_WALLBLOOD,
+		sflags     = { SF_MULTI },
 	}
 
 -- Green Walls End --
