@@ -422,6 +422,7 @@ function DoomRL.loadcells()
 		hp         = 2,
 		flags      = { CF_BLOCKMOVE, CF_PUSHABLE, CF_FRAGILE, CF_OVERLAY, CF_HIGHLIGHT},
 		sprite     = SPRITE_ACIDBARREL,
+		sframes    = 2,
 
 		OnAct = function(c,being)
 			local source = being.position
@@ -446,6 +447,7 @@ function DoomRL.loadcells()
 		hp         = 2,
 		flags      = { CF_BLOCKMOVE, CF_PUSHABLE, CF_FRAGILE, CF_OVERLAY, CF_HIGHLIGHT},
 		sprite     = SPRITE_LAVABARREL,
+		sframes    = 2,
 
 		OnAct = function(c,being)
 			local source = being.position
