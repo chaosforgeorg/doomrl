@@ -151,6 +151,7 @@ register_level "the_chained_court"
 			ascii        = "V",
 			color        = LIGHTGREEN,
 			sprite       = SPRITE_MASTER,
+			sframes      = 2,
 			sflags       = { SF_LARGE },
 			hp           = 80,
 			armor        = 2,

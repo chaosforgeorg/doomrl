@@ -18,6 +18,7 @@ register_level "the_asmos_den"
 			ascii        = "H",
 			color        = LIGHTRED,
 			sprite       = SPRITE_MASTER,
+			sframes      = 2,
 			sflags       = { SF_LARGE },
 			hp           = 1,
 			armor        = 0,

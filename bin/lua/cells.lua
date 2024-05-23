@@ -601,6 +601,7 @@ function DoomRL.loadcells()
 		color_dark = RED,
 		flags      = { CF_NOCHANGE, CF_NORUN, CF_OVERLAY, CF_NUKABLE, CF_CRITICAL, CF_HIGHLIGHT},
 		sprite     = SPRITE_NUKE,
+		sframes    = 2,
 	}
 
 	register_cell "tree"

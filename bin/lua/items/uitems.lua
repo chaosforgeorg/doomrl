@@ -826,6 +826,7 @@ function DoomRL.loaduniqueitems()
 		ascii    = "+",
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_PHASE,
+		sframes  = 2,
 		coscolor = { 1.0,0.2,0.2,1.0 },
 		level    = 10,
 		weight   = 4,
