@@ -7,8 +7,9 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfdata;
 interface
-uses Classes, SysUtils, idea, vgenerics, vcolor, vutil, vrltools,
-     doomconfig, vuitypes;
+uses Classes, SysUtils, idea,
+     vgenerics, vcolor, vutil, vrltools, vuitypes, vluatable,
+     doomconfig;
 
 const ConfigurationPath : AnsiString = 'config.lua';
       DataPath          : AnsiString = '';
@@ -331,6 +332,7 @@ function MSecNow : Comp;
 function DurationString( aSeconds : int64 ) : Ansistring;
 function BlindCoord( const where : TCoord2D ) : string;
 function SlotName(slot : TEqSlot) : string;
+function ReadSprite( aTable : TLuaTable ) : TSprite;
 
 var ColorOverrides : TIntHashMap;
 
@@ -569,6 +571,19 @@ function BonusStr(i: integer): string;
 begin
   if i < 0 then BonusStr := IntToStr(i)
            else BonusStr := '+'+IntToStr(i);
+end;
+
+function ReadSprite( aTable : TLuaTable ) : TSprite;
+begin
+  Result.SpriteID := aTable.getInteger('sprite',0);
+  Result.CosColor := not aTable.isNil( 'coscolor' );
+  Result.Overlay  := not aTable.isNil( 'overlay' );
+  Result.Glow     := not aTable.isNil( 'glow' );
+  Result.Large    := F_LARGE in aTable.GetFlags('flags');
+
+  if Result.Overlay  then Result.Color     := NewColor( aTable.GetVec4f('overlay' ) );
+  if Result.CosColor then Result.Color     := NewColor( aTable.GetVec4f('coscolor' ) );
+  if Result.Glow     then Result.GlowColor := NewColor( aTable.GetVec4f('glow' ) );
 end;
 
 end.

@@ -47,12 +47,7 @@ begin
   FGylph.ASCII := Table.getChar('ascii');
   FGylph.Color := Table.getInteger('color');
   Name         := Table.getString('name');
-
-  FSprite.SpriteID := Table.getInteger('sprite',0);
-  FSprite.CosColor := not Table.isNil( 'coscolor' );
-  FSprite.Overlay  := not Table.isNil( 'overlay' );
-  FSprite.Glow     := not Table.isNil( 'glow' );
-  FSprite.Large    := F_LARGE    in FFlags;
+  FSprite      := ReadSprite( Table );
 
   iColorID := FID;
   if Table.IsString('color_id') then iColorID := Table.getString('color_id');
@@ -60,9 +55,6 @@ begin
   if ColorOverrides.Exists(iColorID) then
     FGylph.Color := ColorOverrides[iColorID];
 
-  if FSprite.Overlay  then FSprite.Color     := NewColor( Table.GetVec4f('overlay' ) );
-  if FSprite.CosColor then FSprite.Color     := NewColor( Table.GetVec4f('coscolor' ) );
-  if FSprite.Glow     then FSprite.GlowColor := NewColor( Table.GetVec4f('glow' ) );
 end;
 
 procedure TThing.playBasicSound(const SoundID: string);

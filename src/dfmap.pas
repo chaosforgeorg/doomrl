@@ -99,17 +99,7 @@ begin
     iCell.bloodto   := getString('bloodto');
     iCell.destroyto := getString('destroyto');
     iCell.raiseto   := getString('raiseto');
-
-    iCell.Sprite.SpriteID := getInteger('sprite');
-    iCell.Sprite.CosColor := not isNil( 'coscolor' );
-    iCell.Sprite.Glow     := not isNil( 'glow' );
-    iCell.Sprite.Overlay  := not isNil( 'overlay' );
-    iCell.Sprite.Large    := F_LARGE in iCell.Flags;
-
-    if iCell.Sprite.CosColor then iCell.Sprite.Color := NewColor( GetVec4f('coscolor') );
-    if iCell.Sprite.Overlay  then iCell.Sprite.Color := NewColor( GetVec4f('overlay') );
-    if iCell.Sprite.Glow     then iCell.Sprite.Color := NewColor( GetVec4f('glow') );
-
+    iCell.Sprite    := ReadSprite( iTable );
     iCell.BloodSprite.SpriteID := getInteger('blsprite',0);
   finally
     Free;
