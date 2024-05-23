@@ -181,10 +181,12 @@ const
 type TCellSet = set of Byte;
      TExplosionFlags = set of TExplosionFlag;
      TSprite = record
-       Color    : TColor;
-       GlowColor: TColor;
-       SpriteID : DWord;
-       Flags    : TFlags;
+       Color     : TColor;
+       GlowColor : TColor;
+       SpriteID  : DWord;
+       Flags     : TFlags;
+       Frames    : Word;
+       Frametime : Word;
      end;
 
 function NewSprite( ID : DWord ) : TSprite;
@@ -502,15 +504,19 @@ end;
 
 function NewSprite ( ID : DWord ) : TSprite;
 begin
-  NewSprite.Flags    := [];
-  NewSprite.SpriteID := ID;
+  NewSprite.Flags     := [];
+  NewSprite.SpriteID  := ID;
+  NewSprite.Frames    := 0;
+  NewSprite.Frametime := 0;
 end;
 
 function NewSprite ( ID : DWord; Color : TColor ) : TSprite;
 begin
-  NewSprite.Flags    := [ SF_COSPLAY ];
-  NewSprite.Color    := Color;
-  NewSprite.SpriteID := ID;
+  NewSprite.Flags     := [ SF_COSPLAY ];
+  NewSprite.Color     := Color;
+  NewSprite.SpriteID  := ID;
+  NewSprite.Frames    := 0;
+  NewSprite.Frametime := 0;
 end;
 
 function Roll(stat : Integer) : Integer;
@@ -566,8 +572,10 @@ end;
 
 function ReadSprite( aTable : TLuaTable ) : TSprite;
 begin
-  Result.SpriteID := aTable.getInteger('sprite',0);
-  Result.Flags    := aTable.getFlags('sflags');
+  Result.SpriteID  := aTable.getInteger('sprite',0);
+  Result.Flags     := aTable.getFlags('sflags');
+  Result.Frames    := aTable.getInteger('sframes',0);
+  Result.Frametime := aTable.getInteger('sftime',FRAME_TIME);
   if not aTable.isNil( 'overlay' ) then
   begin
     Include( Result.Flags, SF_OVERLAY );

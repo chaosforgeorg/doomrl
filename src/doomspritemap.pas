@@ -61,6 +61,7 @@ private
   FFluidX         : Single;
   FFluidY         : Single;
   FTileSize       : Word;
+  FTimer          : DWord;
   FFluidTime      : Double;
   FTargeting      : Boolean;
   FTarget         : TCoord2D;
@@ -84,6 +85,7 @@ private
   procedure PushObjects;
   procedure PushSprite( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aZ : Integer );
   function VariableLight( aWhere : TCoord2D ) : Byte;
+  function GetSprite( aSprite : TSprite ) : TSprite;
 public
   property Loaded : Boolean read FTexturesLoaded;
   property MaxShift : TPoint read FMaxShift;
@@ -232,6 +234,10 @@ end;
 procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
 begin
   FShift := FNewShift;
+  {$PUSH}
+  {$Q-}
+  FTimer += aTime;
+  {$POP}
   FFluidTime += aTime*0.0001;
   FFluidX := 1-(FFluidTime - Floor( FFluidTime ));
   FFluidY := (FFluidTime - Floor( FFluidTime ));
@@ -246,10 +252,12 @@ procedure TDoomSpriteMap.Draw;
 var iPoint   : TPoint;
     iCoord   : TCoord2D;
 const TargetSprite : TSprite = (
-  Color    : (R:0;G:0;B:0;A:255);
-  GlowColor: (R:0;G:0;B:0;A:0);
-  SpriteID : HARDSPRITE_SELECT;
-  Flags    : [ SF_COSPLAY ];
+  Color     : (R:0;G:0;B:0;A:255);
+  GlowColor : (R:0;G:0;B:0;A:0);
+  SpriteID  : HARDSPRITE_SELECT;
+  Flags     : [ SF_COSPLAY ];
+  Frames    : 0;
+  Frametime : 0;
 );
 
 begin
@@ -671,7 +679,7 @@ begin
       if Bottom <> 0 then
       begin
         Z   := Y * DRL_Z_LINE;
-        Spr := Cells[Bottom].Sprite;
+        Spr := GetSprite( Cells[Bottom].Sprite );
         if SF_MULTI in Spr.Flags then
           Spr.SpriteID += Doom.Level.Rotation[c] - 3*SpriteCellRow;
         if SF_FLOW in Spr.Flags
@@ -718,7 +726,7 @@ begin
       begin
         L := VariableLight(c);
         if CF_STAIRS in Cells[Top].Flags then L := 255;
-        Spr := Cells[Top].Sprite;
+        Spr := GetSprite( Cells[Top].Sprite );
         if SF_COSPLAY in Spr.Flags then
           Spr.Color := ScaleColor( Spr.Color, Byte(L) );
         PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, Z + DRL_Z_DOODAD );
@@ -728,7 +736,7 @@ begin
       if Doom.Level.ItemVisible(c, iItem) or Doom.Level.ItemExplored(c, iItem) then
       begin
         if Doom.Level.ItemVisible(c, iItem) then L := 255 else L := 70;
-        PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iItem.Sprite, L, Z + DRL_Z_ITEMS );
+        PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, GetSprite( iItem.Sprite ), L, Z + DRL_Z_ITEMS );
       end;
     end;
 
@@ -740,9 +748,9 @@ begin
       iBeing := Doom.Level.Being[c];
       if (iBeing <> nil) and (iBeing.AnimCount = 0) then
         if Doom.Level.BeingVisible(c, iBeing) then
-          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iBeing.Sprite, 255, Z + DRL_Z_BEINGS )
+          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, GetSprite( iBeing.Sprite ), 255, Z + DRL_Z_BEINGS )
         else if Doom.Level.BeingExplored(c, iBeing) then
-          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, iBeing.Sprite, 40, Z + DRL_Z_BEINGS )
+          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, GetSprite( iBeing.Sprite ), 40, Z + DRL_Z_BEINGS )
         else if Doom.Level.BeingIntuited(c, iBeing) then
           PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, NewSprite( HARDSPRITE_MARK, NewColor( Magenta ) ), 25, Z + DRL_Z_BEINGS )
 
@@ -778,6 +786,20 @@ function TDoomSpriteMap.VariableLight(aWhere: TCoord2D): Byte;
 begin
   if not Doom.Level.isVisible( aWhere ) then Exit( 70 ); //20
   Exit( Min( 100+Doom.Level.Vision.getLight(aWhere)*20, 255 ) );
+end;
+
+function TDoomSpriteMap.GetSprite( aSprite : TSprite ) : TSprite;
+var iFrame : DWord;
+begin
+  Result := aSprite;
+  if Result.Frames > 0 then
+  begin
+    iFrame := ( ( FTimer div Result.Frametime ) mod Result.Frames );
+    if SF_LARGE in Result.Flags then
+      Result.SpriteID += DRL_COLS * 2 * iFrame
+    else
+      Result.SpriteID += DRL_COLS * iFrame;
+  end;
 end;
 
 end.
