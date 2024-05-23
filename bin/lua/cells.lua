@@ -462,8 +462,9 @@ function DoomRL.loadcells()
 		name       = "water",
 		ascii      = "=",
 		color      = COLOR_WATER,
-		flags      = {F_GTSHIFT, F_GFLUID, CF_LIQUID, CF_NOCHANGE},
+		flags      = { CF_LIQUID, CF_NOCHANGE},
 		sprite     = SPRITE_WATER,
+		sflags     = { SF_FLOW, SF_FLUID },
 	}
 
 	register_cell "acid"
@@ -471,8 +472,9 @@ function DoomRL.loadcells()
 		name       = "acid",
 		ascii      = "=",
 		color      = COLOR_ACID,
-		flags      = {F_GTSHIFT, F_GFLUID, CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HAZARD, CF_HIGHLIGHT},
+		flags      = { CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HAZARD, CF_HIGHLIGHT},
 		sprite     = SPRITE_ACID,
+		sflags     = { SF_FLOW, SF_FLUID },
 
 		OnEnter = function(c,being)
 			local damage   = 6
@@ -496,8 +498,9 @@ function DoomRL.loadcells()
 		name       = "lava",
 		ascii      = "=",
 		color      = COLOR_LAVA,
-		flags      = {F_GTSHIFT, F_GFLUID, CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HAZARD, CF_HIGHLIGHT},
+		flags      = { CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HAZARD, CF_HIGHLIGHT},
 		sprite     = SPRITE_LAVA,
+		sflags     = { SF_FLOW, SF_FLUID },
 
 		OnEnter = function(c,being)
 			local damage = 12
@@ -523,8 +526,9 @@ function DoomRL.loadcells()
 		color      = COLOR_WATER,
 		color_id   = "water",
 		set        = CELLSET_WALLS,
-		flags      = {F_GTSHIFT, F_GFLUID, CF_BLOCKLOS, CF_BLOCKMOVE},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE},
 		sprite     = SPRITE_WATER,
+		sflags     = { SF_FLOW, SF_FLUID },
 	}
 
 	register_cell "pacid"
@@ -534,8 +538,9 @@ function DoomRL.loadcells()
 		color      = COLOR_ACID,
 		color_id   = "acid",
 		set        = CELLSET_WALLS,
-		flags      = {F_GTSHIFT, F_GFLUID, CF_BLOCKLOS, CF_BLOCKMOVE, CF_HIGHLIGHT},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_HIGHLIGHT},
 		sprite     = SPRITE_ACID,
+		sflags     = { SF_FLOW, SF_FLUID },
 	}
 
 	register_cell "plava"
@@ -545,8 +550,9 @@ function DoomRL.loadcells()
 		color      = COLOR_LAVA,
 		color_id   = "lava",
 		set        = CELLSET_WALLS,
-		flags      = {F_GTSHIFT, F_GFLUID, CF_BLOCKLOS, CF_BLOCKMOVE, CF_HIGHLIGHT},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_HIGHLIGHT},
 		sprite     = SPRITE_LAVA,
+		sflags     = { SF_FLOW, SF_FLUID },
 	}
 
 -- End Fluids --
@@ -563,7 +569,7 @@ function DoomRL.loadcells()
 		blname     = "blood",
 		blcolor    = RED;
 		blsprite   = SPRITE_BLOOD;
-		flags      = {F_GFLUID},
+		sflags     = { SF_FLUID },
 	}
 
 	register_cell "rock"
@@ -573,7 +579,7 @@ function DoomRL.loadcells()
 		color      = RED,
 		set        = CELLSET_FLOORS,
 		sprite     = SPRITE_CAVEFLOOR,
-		flags      = { F_GFLUID },
+		sflags     = { SF_FLUID },
 	}
 
 	register_cell "nukecell"
@@ -595,9 +601,10 @@ function DoomRL.loadcells()
 		armor      = 5,
 		hp         = 5,
 		set        = CELLSET_WALLS,
-		flags      = { F_GFLUID, CF_BLOCKMOVE, CF_OVERLAY },
+		flags      = { CF_BLOCKMOVE, CF_OVERLAY },
 		destroyto  = "rock",
 		sprite     = SPRITE_TREE,
+		sflags     = { SF_FLUID },
 	}
 
 -- End Misc --

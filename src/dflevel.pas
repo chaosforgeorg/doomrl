@@ -547,14 +547,14 @@ var cc : TCoord2D;
   function FluidFlag( c : TCoord2D; Value : Byte ) : Byte;
   begin
     if not isProperCoord( c ) then Exit(0);
-    if not (F_GFLUID in Cells[CellBottom[ c ]].Flags)
+    if not (SF_FLUID in Cells[CellBottom[ c ]].Sprite.Flags)
       then Exit( Value )
       else Exit( 0 );
   end;
 begin
   if LF_SHARPFLUID in FFlags then Exit;
  for cc in FArea do
-   if F_GFLUID in Cells[CellBottom[ cc ]].Flags then
+   if SF_FLUID in Cells[CellBottom[ cc ]].Sprite.Flags then
      FMap.r[cc.x,cc.y] :=
        FluidFlag( cc.ifInc( 0,-1), 1 ) +
        FluidFlag( cc.ifInc( 0,+1), 2 ) +

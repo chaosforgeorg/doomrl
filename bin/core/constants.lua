@@ -177,13 +177,12 @@ LF_BEINGSVISIBLE  = 9;
 LF_RESPAWN        = 10;
 LF_SHARPFLUID     = 11;
 
-F_GFLUID      = 194;
-F_GTSHIFT     = 195;
-
 SF_LARGE    = 1;
 SF_OVERLAY  = 2;
 SF_COSPLAY  = 3;
 SF_GLOW     = 4;
+SF_FLOW     = 5;
+SF_FLUID    = 6;
 
 EF_NOBLOCK  = 0;
 EF_NOBEINGS = 1;

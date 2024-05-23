@@ -674,10 +674,10 @@ begin
         Spr := Cells[Bottom].Sprite;
         if CF_MULTISPRITE in Cells[Bottom].Flags then
           Spr.SpriteID += Doom.Level.Rotation[c] - 3*SpriteCellRow;
-        if F_GTSHIFT in Cells[Bottom].Flags
+        if SF_FLOW in Spr.Flags
           then PushSpriteTerrain( X, Y, Spr, Z, FFluidX, FFluidY )
           else PushSpriteTerrain( X, Y, Spr, Z );
-        if (F_GFLUID in Cells[Bottom].Flags) and (Doom.Level.Rotation[c] <> 0) then
+        if (SF_FLUID in Spr.Flags) and (Doom.Level.Rotation[c] <> 0) then
         begin
           Spr := Cells[Doom.Level.FloorCell].Sprite;
           Spr.SpriteID += Doom.Level.Rotation[c];
