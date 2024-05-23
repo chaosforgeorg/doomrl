@@ -576,10 +576,11 @@ end;
 function ReadSprite( aTable : TLuaTable ) : TSprite;
 begin
   Result.SpriteID := aTable.getInteger('sprite',0);
+  Result.Flags    := aTable.getFlags('sflags');
   Result.CosColor := not aTable.isNil( 'coscolor' );
   Result.Overlay  := not aTable.isNil( 'overlay' );
   Result.Glow     := not aTable.isNil( 'glow' );
-  Result.Large    := F_LARGE in aTable.GetFlags('flags');
+  Result.Large    := SF_LARGE in Result.Flags;
 
   if Result.Overlay  then Result.Color     := NewColor( aTable.GetVec4f('overlay' ) );
   if Result.CosColor then Result.Color     := NewColor( aTable.GetVec4f('coscolor' ) );

@@ -1476,10 +1476,11 @@ function DoomRL.loaditems()
 		color  = WHITE,
 		level  = 200,
 		sprite = SPRITE_LAVAINV,
+		sflags = { SF_LARGE },
 		weight = 0,
 		type   = ITEMTYPE_PACK,
 		ascii  = "+",
-		flags  = { F_LARGE, IF_NODESTROY },
+		flags  = { IF_NODESTROY },
 		desc   = "A strange ball of shimmering light.",
 
 		OnUse = function(self,being)
