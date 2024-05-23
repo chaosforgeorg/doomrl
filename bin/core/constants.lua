@@ -181,6 +181,10 @@ F_GFLUID      = 194;
 F_GTSHIFT     = 195;
 
 SF_LARGE    = 1;
+SF_OVERLAY  = 2;
+SF_COSPLAY  = 3;
+SF_GLOW     = 4;
+
 EF_NOBLOCK  = 0;
 EF_NOBEINGS = 1;
 EF_NOITEMS  = 2;

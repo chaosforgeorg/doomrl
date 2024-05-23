@@ -181,13 +181,10 @@ const
 type TCellSet = set of Byte;
      TExplosionFlags = set of TExplosionFlag;
      TSprite = record
-       Large    : Boolean;
-       Overlay  : Boolean;
-       CosColor : Boolean;
-       Glow     : Boolean;
        Color    : TColor;
        GlowColor: TColor;
        SpriteID : DWord;
+       Flags    : TFlags;
      end;
 
 function NewSprite( ID : DWord ) : TSprite;
@@ -505,19 +502,13 @@ end;
 
 function NewSprite ( ID : DWord ) : TSprite;
 begin
-  NewSprite.CosColor := False;
-  NewSprite.Overlay  := False;
-  NewSprite.Glow     := False;
-  NewSprite.Large    := False;
+  NewSprite.Flags    := [];
   NewSprite.SpriteID := ID;
 end;
 
 function NewSprite ( ID : DWord; Color : TColor ) : TSprite;
 begin
-  NewSprite.Overlay  := False;
-  NewSprite.Glow     := False;
-  NewSprite.Large    := False;
-  NewSprite.CosColor := True;
+  NewSprite.Flags    := [ SF_COSPLAY ];
   NewSprite.Color    := Color;
   NewSprite.SpriteID := ID;
 end;
@@ -577,14 +568,21 @@ function ReadSprite( aTable : TLuaTable ) : TSprite;
 begin
   Result.SpriteID := aTable.getInteger('sprite',0);
   Result.Flags    := aTable.getFlags('sflags');
-  Result.CosColor := not aTable.isNil( 'coscolor' );
-  Result.Overlay  := not aTable.isNil( 'overlay' );
-  Result.Glow     := not aTable.isNil( 'glow' );
-  Result.Large    := SF_LARGE in Result.Flags;
-
-  if Result.Overlay  then Result.Color     := NewColor( aTable.GetVec4f('overlay' ) );
-  if Result.CosColor then Result.Color     := NewColor( aTable.GetVec4f('coscolor' ) );
-  if Result.Glow     then Result.GlowColor := NewColor( aTable.GetVec4f('glow' ) );
+  if not aTable.isNil( 'overlay' ) then
+  begin
+    Include( Result.Flags, SF_OVERLAY );
+    Result.Color := NewColor( aTable.GetVec4f('overlay' ) );
+  end;
+  if not aTable.isNil( 'coscolor' ) then
+  begin
+    Include( Result.Flags, SF_COSPLAY );
+    Result.Color := NewColor( aTable.GetVec4f('coscolor' ) );
+  end;
+  if not aTable.isNil( 'glow' ) then
+  begin
+    Include( Result.Flags, SF_GLOW );
+    Result.GlowColor := NewColor( aTable.GetVec4f('glow' ) );
+  end;
 end;
 
 end.

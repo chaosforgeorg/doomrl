@@ -246,13 +246,10 @@ procedure TDoomSpriteMap.Draw;
 var iPoint   : TPoint;
     iCoord   : TCoord2D;
 const TargetSprite : TSprite = (
-  Large    : False;
-  Overlay  : False;
-  CosColor : True;
-  Glow     : False;
   Color    : (R:0;G:0;B:0;A:255);
   GlowColor: (R:0;G:0;B:0;A:0);
   SpriteID : HARDSPRITE_SELECT;
+  Flags    : [ SF_COSPLAY ];
 );
 
 begin
@@ -400,15 +397,15 @@ begin
   with iLayer do
   begin
     iColor.FillAll( 255 );
-    if aSprite.Overlay then iColor.SetAll( ColorToGL( aSprite.Color ) );
+    if SF_OVERLAY in aSprite.Flags then iColor.SetAll( ColorToGL( aSprite.Color ) );
     Normal.Push( @iCoord, @iTex, @iColor, DRL_Z_FX );
-    if aSprite.CosColor then
+    if SF_COSPLAY in aSprite.Flags then
     begin
       iColor.SetAll( ColorToGL( aSprite.Color ) );
       Cosplay.Push( @iCoord, @iTex, @iColor, DRL_Z_FX );
     end;
 
-    if aSprite.Glow then
+    if SF_GLOW in aSprite.Flags then
     begin
       iColor.SetAll( ColorToGL( aSprite.GlowColor ) );
       Glow.Push( @iCoord, @iTex, @iColor, DRL_Z_FX );
@@ -426,7 +423,7 @@ begin
   iSpriteID := aSprite.SpriteID mod 100000;
 
   iSize := 1;
-  if aSprite.Large then
+  if SF_LARGE in aSprite.Flags then
   begin
     iSize := 2;
     aX -= FTileSize div 2;
@@ -436,12 +433,12 @@ begin
   with iLayer do
   begin
 // TODO: facing
-    if aSprite.Overlay
+    if SF_OVERLAY in aSprite.Flags
       then Normal.PushXY( iSpriteID, iSize, ip, aSprite.Color, aZ )
       else Normal.PushXY( iSpriteID, iSize, ip, NewColor( aLight, aLight, aLight ), aZ );
-    if aSprite.CosColor and (Cosplay <> nil) then
+    if ( SF_COSPLAY in aSprite.Flags ) and (Cosplay <> nil) then
       Cosplay.PushXY( iSpriteID, iSize, ip, aSprite.Color, aZ );
-    if aSprite.Glow and (Glow <> nil) then
+    if ( SF_GLOW in aSprite.Flags ) and (Glow <> nil) then
       Glow.PushXY( iSpriteID, iSize, ip, aSprite.GlowColor, aZ );
   end;
 end;
@@ -450,7 +447,7 @@ procedure TDoomSpriteMap.PushSpriteBeing( aX, aY : Integer; const aSprite : TSpr
 var z : Integer;
 begin
   z := aY * DRL_Z_LINE;
-  if aSprite.Large then
+  if SF_LARGE in aSprite.Flags then
     z += DRL_Z_LARGE
   else
     z += DRL_Z_BEINGS;
@@ -473,7 +470,7 @@ begin
   iSpriteID := aSprite.SpriteID mod 100000;
 
   iSize := 1;
-  if aSprite.Large then
+  if SF_LARGE in aSprite.Flags then
   begin
     iSize := 2;
     aX -= FTileSize div 2;
@@ -492,7 +489,7 @@ begin
   begin
     Normal.PushXY( iSpriteID, iSize, ip, @iColors, aTSX, aTSY );
 
-    if aSprite.CosColor and (Cosplay <> nil) then
+    if ( SF_COSPLAY in aSprite.Flags ) and (Cosplay <> nil) then
     begin
       for i := 0 to 3 do
       begin
@@ -690,7 +687,7 @@ begin
         begin
           Spr := Cells[Bottom].BloodSprite;
           L := VariableLight(c);
-          if Spr.CosColor then
+          if SF_COSPLAY in Spr.Flags then
             Spr.Color := ScaleColor( Spr.Color, Byte(L) );
           PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, Z + DRL_Z_DOODAD );
         end;
@@ -722,7 +719,7 @@ begin
         L := VariableLight(c);
         if CF_STAIRS in Cells[Top].Flags then L := 255;
         Spr := Cells[Top].Sprite;
-        if Spr.CosColor then
+        if SF_COSPLAY in Spr.Flags then
           Spr.Color := ScaleColor( Spr.Color, Byte(L) );
         PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, Z + DRL_Z_DOODAD );
       end;

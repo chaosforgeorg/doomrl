@@ -188,10 +188,7 @@ end;
 procedure TDoomMark.OnDraw;
 var iMarkSprite : TSprite;
 begin
-  iMarkSprite.Large    := False;
-  iMarkSprite.Glow     := False;
-  iMarkSprite.CosColor := False;
-  iMarkSprite.Overlay  := False;
+  iMarkSprite.Flags    := [];
   iMarkSprite.SpriteID := HARDSPRITE_HIT;
   SpriteMap.PushSpriteFX( FCoord.X, FCoord.Y, iMarkSprite )
 end;
@@ -220,10 +217,7 @@ end;
 procedure TDoomExplodeMark.OnDraw;
 var iMarkSprite : TSprite;
 begin
-  iMarkSprite.Large    := False;
-  iMarkSprite.Glow     := False;
-  iMarkSprite.CosColor := False;
-  iMarkSprite.Overlay  := True;
+  iMarkSprite.Flags    := [ SF_OVERLAY ];
   iMarkSprite.SpriteID := HARDSPRITE_EXPL;
 
   case (( FTime * 3 ) div FDuration) of
