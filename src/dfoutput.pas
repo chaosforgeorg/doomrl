@@ -32,6 +32,7 @@ type
     procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte; aPic : Char );
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord );
     procedure addScreenMoveAnimation( aDuration : DWord; aDelay : DWord; aTo : TCoord2D );
+    procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
     procedure WaitForAnimation;
     function AnimationsRunning : Boolean;
     procedure GFXAnimationDraw;
@@ -235,6 +236,13 @@ begin
   if Doom.State <> DSPlaying then Exit;
   if not GraphicsVersion then Exit;
   FAnimations.addAnimation( TDoomScreenMove.Create( aDuration, aDelay, aTo ) );
+end;
+
+procedure TDoomUI.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+begin
+  if Doom.State <> DSPlaying then Exit;
+  if not GraphicsVersion then Exit;
+  FAnimations.addAnimation( TDoomAnimateCell.Create( aDuration, aDelay, aCoord, aSprite, aValue ) );
 end;
 
 function TDoomUI.AnimationsRunning : Boolean;

@@ -105,9 +105,21 @@ private
 end;
 
 
+TDoomAnimateCell = class(TAnimation)
+  constructor Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+  procedure OnStart; override;
+  procedure OnDraw; override;
+  destructor Destroy; override;
+private
+  FSprite : TSprite;
+  FCoord  : TCoord2D;
+  FValue  : Integer;
+end;
+
+
 implementation
 
-uses viotypes, vuid,
+uses viotypes, vuid, vlog,
      dfbeing,
      doombase, doomio, doomspritemap;
 
@@ -331,6 +343,37 @@ end;
 destructor TDoomScreenMove.Destroy;
 begin
   SpriteMap.NewShift := FDest;
+  inherited Destroy;
+end;
+
+constructor TDoomAnimateCell.Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+begin
+  inherited Create( aDuration, aDelay, 0 );
+  FCoord := aCoord;
+  FSprite := aSprite;
+  FValue  := aValue - Sgn( FValue );
+end;
+
+procedure TDoomAnimateCell.OnStart;
+begin
+  Doom.Level.LightFlag[ FCoord, LFANIMATING ] := True;
+end;
+
+procedure TDoomAnimateCell.OnDraw;
+var iSprite  : TSprite;
+    iSegment : Integer;
+begin
+  iSprite := FSprite;
+  iSegment := ( FTime * FValue ) div FDuration;
+  if ( iSegment <> FValue ) then
+    iSegment += Sgn( FValue );
+  iSprite.SpriteID += ( FValue - iSegment ) * DRL_COLS;
+  SpriteMap.PushSpriteDoodad( FCoord.X, FCoord.Y, iSprite );
+end;
+
+destructor TDoomAnimateCell.Destroy;
+begin
+  Doom.Level.LightFlag[ FCoord, LFANIMATING ] := False;
   inherited Destroy;
 end;
 

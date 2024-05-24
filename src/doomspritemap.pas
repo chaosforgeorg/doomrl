@@ -45,6 +45,7 @@ type
   procedure ReassignTextures;
   function DevicePointToCoord( aPoint : TPoint ) : TPoint;
   procedure PushSpriteBeing( aX, aY : Integer; const aSprite : TSprite; aLight : Byte );
+  procedure PushSpriteDoodad( aX,aY : Byte; const aSprite : TSprite; aLight : Integer = -1 );
   procedure PushSpriteFX( aX,aY : Byte; const aSprite : TSprite );
   procedure PushSpriteFXRotated( aX,aY : Integer; const aSprite : TSprite; aRotation : Single );
   procedure PushSpriteTerrain( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aTSX : Single = 0; aTSY : Single = 0 );
@@ -462,6 +463,22 @@ begin
   PushSprite( aX, aY, aSprite, aLight, z );
 end;
 
+procedure TDoomSpriteMap.PushSpriteDoodad( aX,aY : Byte; const aSprite : TSprite; aLight : Integer = -1 );
+var iLight  : Byte;
+    iSprite : TSprite;
+    iZ      : DWord;
+begin
+  iSprite := GetSprite( aSprite );
+  if aLight = -1 then
+    iLight := VariableLight( NewCoord2D( aX, aY ) )
+  else
+    iLight := Byte( aLight );
+  if SF_COSPLAY in iSprite.Flags then
+    iSprite.Color := ScaleColor( iSprite.Color, Byte(iLight) );
+  iZ := aY * DRL_Z_LINE;
+  PushSprite( (aX-1)*FTileSize, (aY-1)*FTileSize, iSprite, iLight, iZ + DRL_Z_DOODAD );
+end;
+
 procedure TDoomSpriteMap.PushSpriteFX( aX, aY : Byte; const aSprite : TSprite ) ;
 begin
   PushSprite( (aX-1) * FTileSize, (aY-1) * FTileSize, aSprite, 255, DRL_Z_FX );
@@ -692,13 +709,7 @@ begin
           PushSpriteTerrain( X, Y, Spr, Z + DRL_Z_ENVIRO );
         end;
         if Doom.Level.LightFlag[ c, LFBLOOD ] and (Cells[Bottom].BloodSprite.SpriteID <> 0) then
-        begin
-          Spr := Cells[Bottom].BloodSprite;
-          L := VariableLight(c);
-          if SF_COSPLAY in Spr.Flags then
-            Spr.Color := ScaleColor( Spr.Color, Byte(L) );
-          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, Z + DRL_Z_DOODAD );
-        end;
+          PushSpriteDoodad( X, Y, Cells[Bottom].BloodSprite );
       end;
     end;
 end;
@@ -722,14 +733,12 @@ begin
       c.Create(X,Y);
       Z   := Y * DRL_Z_LINE;
       Top     := Doom.Level.CellTop[c];
-      if (Top <> 0) and Doom.Level.CellExplored(c) then
+      if (Top <> 0) and Doom.Level.CellExplored(c) and ( not Doom.Level.LightFlag[ c, LFANIMATING ] ) then
       begin
-        L := VariableLight(c);
-        if CF_STAIRS in Cells[Top].Flags then L := 255;
-        Spr := GetSprite( Cells[Top].Sprite );
-        if SF_COSPLAY in Spr.Flags then
-          Spr.Color := ScaleColor( Spr.Color, Byte(L) );
-        PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, Spr, L, Z + DRL_Z_DOODAD );
+        if CF_STAIRS in Cells[Top].Flags then
+          PushSpriteDoodad( X, Y, Cells[Top].Sprite, 255 )
+        else
+          PushSpriteDoodad( X, Y, Cells[Top].Sprite );
       end;
 
       iItem := Doom.Level.Item[c];

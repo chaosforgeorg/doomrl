@@ -1349,7 +1349,28 @@ begin
   Exit( 0 );
 end;
 
-const lua_level_lib : array[0..8] of luaL_Reg = (
+function lua_level_animate_cell(L: Plua_State): Integer; cdecl;
+var State   : TDoomLuaState;
+    iCoord  : TCoord2D;
+    iLevel  : TLevel;
+    iValue  : Integer;
+    iSprite : TSprite;
+begin
+  State.Init(L);
+  iLevel := State.ToObject(1) as TLevel;
+  if State.IsNil(2) then Exit(0);
+  iCoord := State.ToCoord(2);
+  iValue := State.ToInteger(3);
+  if iLevel.isVisible( iCoord ) then
+  begin
+    iSprite := Cells[ iLevel.CellTop[ iCoord ] ].Sprite;
+    UI.addCellAnimation( iSprite.Frametime * Abs( iValue ), 0, iCoord, iSprite, iValue );
+  end;
+  Result := 0;
+end;
+
+
+const lua_level_lib : array[0..9] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1358,6 +1379,7 @@ const lua_level_lib : array[0..8] of luaL_Reg = (
       ( name : 'explosion';  func : @lua_level_explosion),
       ( name : 'clear_being';func : @lua_level_clear_being),
       ( name : 'recalc_fluids';func : @lua_level_recalc_fluids),
+      ( name : 'animate_cell'; func : @lua_level_animate_cell),
       ( name : nil;          func : nil; )
 );
 
