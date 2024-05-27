@@ -18,6 +18,8 @@ register_level "the_asmos_den"
 			ascii        = "H",
 			color        = LIGHTRED,
 			sprite       = SPRITE_MASTER,
+			sframes      = 2,
+			sflags       = { SF_LARGE },
 			hp           = 1,
 			armor        = 0,
 			attackchance = 50,
@@ -30,7 +32,7 @@ register_level "the_asmos_den"
 			weight       = 0,
 			bulk         = 100,
 			sound_id     = "baron",
-			flags        = { F_LARGE, BF_KNOCKIMMUNE, BF_INV, BF_ENVIROSAFE },
+			flags        = { BF_KNOCKIMMUNE, BF_INV, BF_ENVIROSAFE },
 			desc         = "It's from your worst nightmares. You don't like to think about it.",
 
 			ai_type         = "melee_ranged_ai",

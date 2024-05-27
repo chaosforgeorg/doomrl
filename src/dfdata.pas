@@ -7,8 +7,9 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfdata;
 interface
-uses Classes, SysUtils, idea, vgenerics, vcolor, vutil, vrltools,
-     doomconfig, vuitypes;
+uses Classes, SysUtils, idea,
+     vgenerics, vcolor, vutil, vrltools, vuitypes, vluatable,
+     doomconfig;
 
 const ConfigurationPath : AnsiString = 'config.lua';
       DataPath          : AnsiString = '';
@@ -180,13 +181,12 @@ const
 type TCellSet = set of Byte;
      TExplosionFlags = set of TExplosionFlag;
      TSprite = record
-       Large    : Boolean;
-       Overlay  : Boolean;
-       CosColor : Boolean;
-       Glow     : Boolean;
-       Color    : TColor;
-       GlowColor: TColor;
-       SpriteID : DWord;
+       Color     : TColor;
+       GlowColor : TColor;
+       SpriteID  : DWord;
+       Flags     : TFlags;
+       Frames    : Word;
+       Frametime : Word;
      end;
 
 function NewSprite( ID : DWord ) : TSprite;
@@ -331,6 +331,7 @@ function MSecNow : Comp;
 function DurationString( aSeconds : int64 ) : Ansistring;
 function BlindCoord( const where : TCoord2D ) : string;
 function SlotName(slot : TEqSlot) : string;
+function ReadSprite( aTable : TLuaTable ) : TSprite;
 
 var ColorOverrides : TIntHashMap;
 
@@ -503,21 +504,19 @@ end;
 
 function NewSprite ( ID : DWord ) : TSprite;
 begin
-  NewSprite.CosColor := False;
-  NewSprite.Overlay  := False;
-  NewSprite.Glow     := False;
-  NewSprite.Large    := False;
-  NewSprite.SpriteID := ID;
+  NewSprite.Flags     := [];
+  NewSprite.SpriteID  := ID;
+  NewSprite.Frames    := 0;
+  NewSprite.Frametime := 0;
 end;
 
 function NewSprite ( ID : DWord; Color : TColor ) : TSprite;
 begin
-  NewSprite.Overlay  := False;
-  NewSprite.Glow     := False;
-  NewSprite.Large    := False;
-  NewSprite.CosColor := True;
-  NewSprite.Color    := Color;
-  NewSprite.SpriteID := ID;
+  NewSprite.Flags     := [ SF_COSPLAY ];
+  NewSprite.Color     := Color;
+  NewSprite.SpriteID  := ID;
+  NewSprite.Frames    := 0;
+  NewSprite.Frametime := 0;
 end;
 
 function Roll(stat : Integer) : Integer;
@@ -569,6 +568,29 @@ function BonusStr(i: integer): string;
 begin
   if i < 0 then BonusStr := IntToStr(i)
            else BonusStr := '+'+IntToStr(i);
+end;
+
+function ReadSprite( aTable : TLuaTable ) : TSprite;
+begin
+  Result.SpriteID  := aTable.getInteger('sprite',0);
+  Result.Flags     := aTable.getFlags('sflags');
+  Result.Frames    := aTable.getInteger('sframes',0);
+  Result.Frametime := aTable.getInteger('sftime',FRAME_TIME);
+  if not aTable.isNil( 'overlay' ) then
+  begin
+    Include( Result.Flags, SF_OVERLAY );
+    Result.Color := NewColor( aTable.GetVec4f('overlay' ) );
+  end;
+  if not aTable.isNil( 'coscolor' ) then
+  begin
+    Include( Result.Flags, SF_COSPLAY );
+    Result.Color := NewColor( aTable.GetVec4f('coscolor' ) );
+  end;
+  if not aTable.isNil( 'glow' ) then
+  begin
+    Include( Result.Flags, SF_GLOW );
+    Result.GlowColor := NewColor( aTable.GetVec4f('glow' ) );
+  end;
 end;
 
 end.

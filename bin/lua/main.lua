@@ -585,6 +585,7 @@ function DoomRL.loadbasedata()
 		name     = "teleport",
 		color    = LIGHTCYAN,
 		sprite   = SPRITE_TELEPORT,
+		sframes  = 2,
 		weight   = 0,
 		flags    = { IF_NODESTROY, IF_NUKERESIST },
 
@@ -630,6 +631,8 @@ function DoomRL.loadbasedata()
 		ascii        = "@" ,
 		color        = LIGHTGRAY,
 		sprite       = SPRITE_PLAYER,
+		sframes      = 2,
+		sftime       = 500,
 		min_lev      = 200,
 		corpse       = "corpse",
 		danger       = 0,

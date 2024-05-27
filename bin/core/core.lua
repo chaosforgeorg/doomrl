@@ -41,8 +41,8 @@ function register_corpse( being_proto )
 		destroyto = "bloodpool";
 		raiseto = being_proto.id;
 	}
-	if being_proto.flags[ F_LARGE ] then
-		proto.flags = { F_LARGE, CF_CORPSE, CF_NOCHANGE, CF_OVERLAY, CF_VBLOODY, CF_RAISABLE}
+	if being_proto.sflags[ SF_LARGE ] then
+		proto.sflags = { SF_LARGE }
 		proto.sprite = being_proto.sprite + 4 * DRL_COLS
 	end
 	return register_cell( being_proto.id.."corpse" ) (proto)
