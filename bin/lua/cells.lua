@@ -241,12 +241,14 @@ function DoomRL.loadcells()
 		hp         = 6,
 		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_FRAGILE, CF_OVERLAY, CF_STICKWALL, CF_OPENABLE, CF_RUNSTOP, CF_HIGHLIGHT},
 		sprite     = SPRITE_DOOR,
+		sftime     = 25,
 
 		OnAct = function(c,being)
 			being:msg("You open the door.")
 			being:play_sound("door.open")
 			level.map[ c ] = "odoor"
 			being.scount = being.scount - 500
+			level:animate_cell( c, -3 )
 			return true
 		end,
 	}
@@ -258,6 +260,7 @@ function DoomRL.loadcells()
 		color      = BROWN,
 		flags      = {CF_NOCHANGE, CF_NORUN, CF_OVERLAY, CF_STICKWALL, CF_CLOSABLE, CF_RUNSTOP, CF_NUKABLE, CF_HIGHLIGHT },
 		sprite     = SPRITE_OPENDOOR,
+		sftime     = 25,
 
 		OnAct = function(c,being)
 			if level:get_being(c) == nil and level:get_item(c) == nil then
@@ -265,6 +268,7 @@ function DoomRL.loadcells()
 				being:play_sound("door.close")
 				level.map[ c ] = "door"
 				being.scount = being.scount - 500
+				level:animate_cell( c, 3 )
 				return true
 			else
 				being:msg("There's something blocking the door.")
@@ -298,12 +302,14 @@ function DoomRL.loadcells()
 		hp         = 6,
 		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_FRAGILE, CF_OVERLAY, CF_STICKWALL, CF_OPENABLE, CF_RUNSTOP, CF_HIGHLIGHT},
 		sprite     = SPRITE_HELLDOOR,
+		sftime     = 25,
 
 		OnAct = function(c,being)
 			being:msg("You open the door.")
 			being:play_sound("door.open")
 			level.map[ c ] = "odoorb"
 			being.scount = being.scount - 500
+			level:animate_cell( c, -3 )
 			return true
 		end,
 	}
@@ -315,6 +321,7 @@ function DoomRL.loadcells()
 		color      = BROWN,
 		flags      = {CF_NOCHANGE, CF_NORUN, CF_OVERLAY, CF_STICKWALL, CF_CLOSABLE, CF_RUNSTOP, CF_NUKABLE, CF_HIGHLIGHT },
 		sprite     = SPRITE_HELLOPENDOOR,
+		sftime     = 25,
 
 		OnAct = function(c,being)
 			if level:get_being(c) == nil and level:get_item(c) == nil then
@@ -322,6 +329,7 @@ function DoomRL.loadcells()
 				being:play_sound("door.close")
 				level.map[ c ] = "doorb"
 				being.scount = being.scount - 500
+				level:animate_cell( c, 3 )
 				return true
 			else
 				being:msg("There's something blocking the door.")
