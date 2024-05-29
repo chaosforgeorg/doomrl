@@ -32,6 +32,8 @@ end;
 
 type TCoord2DArray = specialize TGArray< TCoord2D >;
 
+type TSpritePart = ( F, T, B, L, R, TL, TR, BL, BR );
+
 type
 
 { TDoomSpriteMap }
@@ -85,6 +87,7 @@ private
   procedure PushObjects;
   procedure PushSprite( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aZ : Integer );
   procedure PushMultiSpriteTerrain( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
+  procedure PushSpriteTerrainPart( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
   function VariableLight( aWhere : TCoord2D ) : Byte;
   function GetSprite( aSprite : TSprite ) : TSprite;
 public
@@ -483,6 +486,85 @@ begin
   end;
   Exit;
 end;
+
+procedure TDoomSpriteMap.PushSpriteTerrainPart( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
+var i         : Byte;
+    iColors   : TGLRawQColor;
+    iGridF    : TGLVec2f;
+    iPosition : TGLVec2i;
+    iPa, iPb  : TGLVec2i;
+    iLayer    : TSpriteDataSet;
+    iSpriteID : DWord;
+    iLight    : array[0..3] of Byte;
+    iStart    : TGLVec2f;
+    iEnd      : TGLVec2f;
+    iPStart   : TGLVec2f;
+    iPEnd     : TGLVec2f;
+  procedure Push( aData : TSpriteDataVTC );
+  begin
+    aData.PushPart( iSpriteID, iPa, iPb, @iColors, aZ, iStart, iEnd );
+  end;
+
+  function BilinearLight( aPos : TGLVec2f ) : Byte;
+  var iX1, iX2 : Single;
+  begin
+    iX1 := ( 1 - aPos.X ) * iLight[0] + aPos.X * iLight[3];
+    iX2 := ( 1 - aPos.X ) * iLight[1] + aPos.X * iLight[2];
+    Exit( Round( ( 1 - aPos.Y ) * iX1 + aPos.Y * iX2 ) );
+  end;
+const TOP : Single = 8.0 / 32.0;
+begin
+  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iSpriteID := aSprite.SpriteID mod 100000;
+
+  iLight[0] := FLightMap[aX-1,aY-1];
+  iLight[1] := FLightMap[aX-1,aY  ];
+  iLight[2] := FLightMap[aX  ,aY  ];
+  iLight[3] := FLightMap[aX  ,aY-1];
+
+  iStart    := TGLVec2f.Create(0,0);
+  iEnd      := TGLVec2f.Create(1,1);
+
+  case aPart of
+    T : iEnd.Y := TOP;
+    B : iStart.Y := TOP;
+    L : iEnd.X := 0.5;
+    R : iStart.Y := 0.5;
+    TL : iEnd.Init( 0.5, TOP );
+    TR : begin iEnd.Y := TOP; iStart.X := 0.5; end;
+    BL : begin iEnd.X := 0.5; iStart.Y := TOP; end;
+    BR : iStart.Init( 0.5, TOP );
+  end;
+
+  iColors.Data[0] := TGLVec3b.CreateAll( BilinearLight( iStart ) );
+  iColors.Data[1] := TGLVec3b.CreateAll(BilinearLight( TGLVec2f.Create( iStart.X, iEnd.Y ) ) );
+  iColors.Data[2] := TGLVec3b.CreateAll(BilinearLight( iEnd ) );
+  iColors.Data[3] := TGLVec3b.CreateAll(BilinearLight( TGLVec2f.Create( iEnd.X, iStart.Y ) ) );
+
+  iGridF    := TGLVec2f.Create( FSpriteEngine.FGrid.X, FSpriteEngine.FGrid.Y );
+  iPosition := TGLVec2i.Create( (aX-1)*FTileSize, (aY-1)*FTileSize );
+  iPStart   := iGridF * iStart;
+  iPEnd     := iGridF * iEnd;
+  iPa       := iPosition + TGLVec2i.Create( Round( iPStart.X ), Round( iPStart.Y ) );
+  iPb       := iPosition + TGLVec2i.Create( Round( iPEnd.X ), Round( iPEnd.Y ) );
+  with iLayer do
+  begin
+    Push( Normal );
+
+    if ( SF_COSPLAY in aSprite.Flags ) and (Cosplay <> nil) then
+    begin
+      for i := 0 to 3 do
+      begin
+        // TODO : This should be one line!
+        iColors.Data[ i ].X := Clamp( Floor( ( aSprite.Color.R / 255 ) * iColors.Data[ i ].X  ), 0, 255 );
+        iColors.Data[ i ].Y := Clamp( Floor( ( aSprite.Color.G / 255 ) * iColors.Data[ i ].Y  ), 0, 255 );
+        iColors.Data[ i ].Z := Clamp( Floor( ( aSprite.Color.B / 255 ) * iColors.Data[ i ].Z  ), 0, 255 );
+      end;
+      Push( Cosplay );
+    end;
+  end;
+end;
+
 
 procedure TDoomSpriteMap.PushSpriteBeing( aX, aY : Integer; const aSprite : TSprite; aLight : Byte ) ;
 var z : Integer;
