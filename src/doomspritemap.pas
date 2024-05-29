@@ -32,6 +32,9 @@ end;
 
 type TCoord2DArray = specialize TGArray< TCoord2D >;
 
+type TSpritePart = ( F, T, B, L, R, TL, TR, BL, BR );
+     TSpritePartSet = set of TSpritePart;
+
 type
 
 { TDoomSpriteMap }
@@ -53,7 +56,7 @@ type
   procedure SetTarget( aTarget : TCoord2D; aColor : TColor; aDrawPath : Boolean );
   procedure ClearTarget;
   procedure ToggleGrid;
-  function GetCellShift(cell: TCoord2D): Byte;
+  function GetCellRotationMask( cell: TCoord2D ): Byte;
   destructor Destroy; override;
 private
   FGridActive     : Boolean;
@@ -74,7 +77,6 @@ private
   FSpriteEngine   : TSpriteEngine;
   FTexturesLoaded : Boolean;
   FLightMap       : array[0..MAXX] of array[0..MAXY] of Byte;
-  FCellCodeBase   : array[0..15] of Byte;
   FFramebuffer    : TGLFramebuffer;
   FPostProgram    : TGLProgram;
   FFullscreen     : TGLFullscreenTriangle;
@@ -85,6 +87,8 @@ private
   procedure PushTerrain;
   procedure PushObjects;
   procedure PushSprite( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aZ : Integer );
+  procedure PushMultiSpriteTerrain( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
+  procedure PushSpriteTerrainPart( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
   function VariableLight( aWhere : TCoord2D ) : Byte;
   function GetSprite( aSprite : TSprite ) : TSprite;
 public
@@ -104,6 +108,21 @@ implementation
 uses math, vmath, viotypes, vvision, vgl3library,
      doomtextures, doomio, doombase,
      dfoutput, dfmap, dfitem, dfbeing, dfplayer;
+
+function SpritePartSetFill( aPart : TSpritePart ) : TSpritePartSet;
+begin
+  case aPart of
+    T : Exit( [B] );
+    B : Exit( [T] );
+    L : Exit( [R] );
+    R : Exit( [L] );
+    TL: Exit( [B,TR] );
+    TR: Exit( [B,TL] );
+    BL: Exit( [T,BR] );
+    BR: Exit( [T,BL] );
+  end;
+  Exit( [] );
+end;
 
 function ColorToGL( aColor : TColor ) : TGLVec3b;
 begin
@@ -167,7 +186,6 @@ VPostFragmentShader : Ansistring =
 { TDoomSpriteMap }
 
 constructor TDoomSpriteMap.Create;
-var iCellRow : Byte;
 begin
   FTargeting := False;
   FTargetList := TCoord2DArray.Create();
@@ -184,26 +202,6 @@ begin
   FFullscreen   := TGLFullscreenTriangle.Create;
 
   Recalculate;
-
-  iCellRow := SpriteCellRow;
-
-  FCellCodeBase[0      ] := 3*iCellRow+  iCellRow+2; // missing!
-  FCellCodeBase[1      ] := 3*iCellRow+  iCellRow+2;
-  FCellCodeBase[  2    ] := 3*iCellRow+4*iCellRow+2;
-  FCellCodeBase[1+2    ] := 3*iCellRow+3*iCellRow+2;
-  FCellCodeBase[    4  ] := 3*iCellRow+4*iCellRow+0;
-  FCellCodeBase[1+  4  ] := 3*iCellRow+3*iCellRow+0;
-  FCellCodeBase[  2+4  ] := 3*iCellRow+          1;
-  FCellCodeBase[1+2+4  ] := 3*iCellRow+2*iCellRow+1;
-
-  FCellCodeBase[      8] := 3*iCellRow+  iCellRow+1;
-  FCellCodeBase[1    +8] := 3*iCellRow+  iCellRow  ;
-  FCellCodeBase[  2  +8] := 3*iCellRow+          2;
-  FCellCodeBase[1+2  +8] := 3*iCellRow+2*iCellRow+2;
-  FCellCodeBase[    4+8] := 3*iCellRow+          0;
-  FCellCodeBase[1+  4+8] := 3*iCellRow+2*iCellRow+0;
-  FCellCodeBase[  2+4+8] := 3*iCellRow+3*iCellRow+1;
-  FCellCodeBase[1+2+4+8] := 3*iCellRow+4*iCellRow+1;
 end;
 
 procedure TDoomSpriteMap.Recalculate;
@@ -452,6 +450,199 @@ begin
   end;
 end;
 
+procedure TDoomSpriteMap.PushMultiSpriteTerrain( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
+var iSprite   : TSprite;
+    iSpriteID : DWord;
+    iOtherID  : DWord;
+    iPart     : TSpritePart;
+    iPS       : TSpritePart;
+    iParts    : TSpritePartSet;
+    iMaskOut  : TSpritePartSet;
+  function BaseCase( aMask : Byte ) : DWord;
+  begin
+    case aMask of
+      %00000010 : Exit( aSprite.SpriteID + 1*SpriteCellRow + 2 ); // wall up
+      %00001000 : Exit( aSprite.SpriteID + 4*SpriteCellRow + 2 ); // wall left
+      %00001010 : Exit( aSprite.SpriteID + 3*SpriteCellRow + 2 ); // wall left up
+      %00010000 : Exit( aSprite.SpriteID + 4*SpriteCellRow + 0 ); // wall right
+      %00010010 : Exit( aSprite.SpriteID + 3*SpriteCellRow + 0 ); // wall right up
+      %00011000 : Exit( aSprite.SpriteID +                 + 1 ); // wall left right
+      %00011010 : Exit( aSprite.SpriteID + 2*SpriteCellRow + 1 ); // wall left right up
+
+      %01000000 : Exit( aSprite.SpriteID + 1*SpriteCellRow + 1 ); // wall down
+      %01000010 : Exit( aSprite.SpriteID + 1*SpriteCellRow + 0 ); // wall down up
+      %01001000 : Exit( aSprite.SpriteID +                 + 2 ); // wall down left
+      %01001010 : Exit( aSprite.SpriteID + 2*SpriteCellRow + 2 ); // wall down up left
+      %01010000 : Exit( aSprite.SpriteID +                 + 0 ); // wall down right
+      %01010010 : Exit( aSprite.SpriteID + 2*SpriteCellRow + 0 ); // wall up down right
+      %01011000 : Exit( aSprite.SpriteID + 3*SpriteCellRow + 1 ); // wall down right left
+      %01011010 : Exit( aSprite.SpriteID + 4*SpriteCellRow + 1 ); // wall cross
+
+      %00001011 : Exit( aSprite.SpriteID + (-3+2)*SpriteCellRow + 2 ); // wall left+up
+      %00010110 : Exit( aSprite.SpriteID + (-3+2)*SpriteCellRow + 0 ); // wall right+up
+      %01101000 : Exit( aSprite.SpriteID + (-3  )*SpriteCellRow + 2 ); // wall left+down
+      %11010000 : Exit( aSprite.SpriteID + (-3  )*SpriteCellRow + 0 ); // wall right+down
+
+      %00011111 : Exit( aSprite.SpriteID + (-3+2)*SpriteCellRow + 1 ); // wall full up
+      %11111000 : Exit( aSprite.SpriteID + (-3  )*SpriteCellRow + 1 ); // wall full down
+      %11010110 : Exit( aSprite.SpriteID + (-3+1)*SpriteCellRow + 0 ); // wall full right
+      %01101011 : Exit( aSprite.SpriteID + (-3+1)*SpriteCellRow + 2 ); // wall full left
+      %11111111 : Exit( aSprite.SpriteID + (-3+1)*SpriteCellRow + 1 ); // wall full
+    end;
+    Exit( 0 );
+  end;
+begin
+  iSprite := aSprite;
+  iSpriteID := BaseCase( aRotation );
+  if iSpriteID > 0 then
+  begin
+    iSprite.SpriteID := iSpriteID;
+    PushSpriteTerrain( aX, aY, iSprite, aZ );
+    Exit;
+  end;
+  iSpriteID := 0;
+  iPart     := F;
+  iParts    := [];
+  iMaskOut  := [];
+  case aRotation of
+    %00000000 :
+      begin
+        // Special case for column
+        iSprite.SpriteID := aSprite.SpriteID + 1*SpriteCellRow + 2;
+        PushSpriteTerrainPart( aX, aY, iSprite, aZ, B );
+        iSprite.SpriteID := aSprite.SpriteID + 1*SpriteCellRow + 1;
+        PushSpriteTerrainPart( aX, aY, iSprite, aZ, T );
+        Exit;
+      end;
+    %01011111 : begin iSpriteID := aSprite.SpriteID + 3 * SpriteCellRow + 1; iPart := B; end;
+    %11111010 : begin iSpriteID := aSprite.SpriteID + 2 * SpriteCellRow + 1; iPart := T; end;
+    %11011110 : begin iSpriteID := aSprite.SpriteID + 2 * SpriteCellRow + 2; iPart := L; end;
+    %01111011 : begin iSpriteID := aSprite.SpriteID + 2 * SpriteCellRow + 0; iPart := R; end;
+
+    %11111110 : begin iSpriteID := aSprite.SpriteID + 4 * SpriteCellRow + 1; iPart := TL; end;
+    %11111011 : begin iSpriteID := aSprite.SpriteID + 4 * SpriteCellRow + 1; iPart := TR; end;
+    %11011111 : begin iSpriteID := aSprite.SpriteID + 4 * SpriteCellRow + 1; iPart := BL; end;
+    %01111111 : begin iSpriteID := aSprite.SpriteID + 4 * SpriteCellRow + 1; iPart := BR; end;
+
+    %01111110 : begin iSpriteID := aSprite.SpriteID + 4 * SpriteCellRow + 1; iParts := [BR,TL]; iMaskOut := [BL,TR]; end;
+    %11011011 : begin iSpriteID := aSprite.SpriteID + 4 * SpriteCellRow + 1; iParts := [BL,TR]; iMaskOut := [BR,TL]; end;
+
+    %00011011 : begin iSpriteID := aSprite.SpriteID + 2*SpriteCellRow + 1; iParts := [B,TR]; iMaskOut := [TL]; end; // wall left right up
+    %00011110 : begin iSpriteID := aSprite.SpriteID + 2*SpriteCellRow + 1; iParts := [B,TL]; iMaskOut := [TR]; end; // wall left right up
+
+    %01101010 : begin iSpriteID := aSprite.SpriteID + 2*SpriteCellRow + 2; iParts := [R,TL]; iMaskOut := [BL]; end; // wall down up left
+    %01001011 : begin iSpriteID := aSprite.SpriteID + 2*SpriteCellRow + 2; iParts := [R,BL]; iMaskOut := [TL]; end; // wall down up left
+
+    %11010010 : begin iSpriteID := aSprite.SpriteID + 2*SpriteCellRow + 0; iParts := [L,TR]; iMaskOut := [BR]; end; // wall up down right
+    %01010110 : begin iSpriteID := aSprite.SpriteID + 2*SpriteCellRow + 0; iParts := [L,BR]; iMaskOut := [TR]; end; // wall up down right
+
+    %11011000 : begin iSpriteID := aSprite.SpriteID + 3*SpriteCellRow + 1; iParts := [T,BL]; iMaskOut := [BR]; end; // wall down right left
+    %01111000 : begin iSpriteID := aSprite.SpriteID + 3*SpriteCellRow + 1; iParts := [T,BR]; iMaskOut := [BL]; end; // wall down right left
+
+    %01011110 : begin iSpriteID := aSprite.SpriteID + 4 * SpriteCellRow + 1; iParts := [B,TL]; iMaskOut := [TR]; end;
+    %01111010 : begin iSpriteID := aSprite.SpriteID + 4 * SpriteCellRow + 1; iParts := [T,BR]; iMaskOut := [BL]; end;
+    %01011011 : begin iSpriteID := aSprite.SpriteID + 4 * SpriteCellRow + 1; iParts := [B,TR]; iMaskOut := [TL]; end;
+    %11011010 : begin iSpriteID := aSprite.SpriteID + 4 * SpriteCellRow + 1; iParts := [T,BL]; iMaskOut := [BR]; end;
+  end;
+  if iSpriteID = 0 then Exit;
+
+  iSprite.SpriteID := iSpriteID;
+  if iParts = [] then
+  begin
+    PushSpriteTerrainPart( aX, aY, iSprite, aZ, iPart );
+    iMaskOut := SpritePartSetFill( iPart );
+  end
+  else
+  begin
+    for iPS in iParts do
+      PushSpriteTerrainPart( aX, aY, iSprite, aZ, iPS );
+  end;
+
+  iSprite.SpriteID := aSprite.SpriteID + (-3+1)*SpriteCellRow + 1;
+  for iPS in iMaskOut do
+    PushSpriteTerrainPart( aX, aY, iSprite, aZ, iPS );
+  Exit;
+end;
+
+procedure TDoomSpriteMap.PushSpriteTerrainPart( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
+var i         : Byte;
+    iColors   : TGLRawQColor;
+    iGridF    : TGLVec2f;
+    iPosition : TGLVec2i;
+    iPa, iPb  : TGLVec2i;
+    iLayer    : TSpriteDataSet;
+    iSpriteID : DWord;
+    iLight    : array[0..3] of Byte;
+    iStart    : TGLVec2f;
+    iEnd      : TGLVec2f;
+    iPStart   : TGLVec2f;
+    iPEnd     : TGLVec2f;
+  procedure Push( aData : TSpriteDataVTC );
+  begin
+    aData.PushPart( iSpriteID, iPa, iPb, @iColors, aZ, iStart, iEnd );
+  end;
+
+  function BilinearLight( aPos : TGLVec2f ) : Byte;
+  var iX1, iX2 : Single;
+  begin
+    iX1 := ( 1 - aPos.X ) * iLight[0] + aPos.X * iLight[3];
+    iX2 := ( 1 - aPos.X ) * iLight[1] + aPos.X * iLight[2];
+    Exit( Round( ( 1 - aPos.Y ) * iX1 + aPos.Y * iX2 ) );
+  end;
+const TOP : Single = 8.0 / 32.0;
+begin
+  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iSpriteID := aSprite.SpriteID mod 100000;
+
+  iLight[0] := FLightMap[aX-1,aY-1];
+  iLight[1] := FLightMap[aX-1,aY  ];
+  iLight[2] := FLightMap[aX  ,aY  ];
+  iLight[3] := FLightMap[aX  ,aY-1];
+
+  iStart    := TGLVec2f.Create(0,0);
+  iEnd      := TGLVec2f.Create(1,1);
+
+  case aPart of
+    T : iEnd.Y := TOP;
+    B : iStart.Y := TOP;
+    L : iEnd.X := 0.5;
+    R : iStart.X := 0.5;
+    TL : iEnd.Init( 0.5, TOP );
+    TR : begin iEnd.Y := TOP; iStart.X := 0.5; end;
+    BL : begin iEnd.X := 0.5; iStart.Y := TOP; end;
+    BR : iStart.Init( 0.5, TOP );
+  end;
+
+  iColors.Data[0] := TGLVec3b.CreateAll( BilinearLight( iStart ) );
+  iColors.Data[1] := TGLVec3b.CreateAll(BilinearLight( TGLVec2f.Create( iStart.X, iEnd.Y ) ) );
+  iColors.Data[2] := TGLVec3b.CreateAll(BilinearLight( iEnd ) );
+  iColors.Data[3] := TGLVec3b.CreateAll(BilinearLight( TGLVec2f.Create( iEnd.X, iStart.Y ) ) );
+
+  iGridF    := TGLVec2f.Create( FSpriteEngine.FGrid.X, FSpriteEngine.FGrid.Y );
+  iPosition := TGLVec2i.Create( (aX-1)*FTileSize, (aY-1)*FTileSize );
+  iPStart   := iGridF * iStart;
+  iPEnd     := iGridF * iEnd;
+  iPa       := iPosition + TGLVec2i.Create( Round( iPStart.X ), Round( iPStart.Y ) );
+  iPb       := iPosition + TGLVec2i.Create( Round( iPEnd.X ), Round( iPEnd.Y ) );
+  with iLayer do
+  begin
+    Push( Normal );
+
+    if ( SF_COSPLAY in aSprite.Flags ) and (Cosplay <> nil) then
+    begin
+      for i := 0 to 3 do
+      begin
+        // TODO : This should be one line!
+        iColors.Data[ i ].X := Clamp( Floor( ( aSprite.Color.R / 255 ) * iColors.Data[ i ].X  ), 0, 255 );
+        iColors.Data[ i ].Y := Clamp( Floor( ( aSprite.Color.G / 255 ) * iColors.Data[ i ].Y  ), 0, 255 );
+        iColors.Data[ i ].Z := Clamp( Floor( ( aSprite.Color.B / 255 ) * iColors.Data[ i ].Z  ), 0, 255 );
+      end;
+      Push( Cosplay );
+    end;
+  end;
+end;
+
+
 procedure TDoomSpriteMap.PushSpriteBeing( aX, aY : Integer; const aSprite : TSprite; aLight : Byte ) ;
 var z : Integer;
 begin
@@ -485,34 +676,28 @@ begin
 end;
 
 procedure TDoomSpriteMap.PushSpriteTerrain( aX, aY : Byte; const aSprite : TSprite; aZ : Integer; aTSX : Single; aTSY : Single ) ;
-var i, iSize  : Byte;
+var i         : Byte;
     iColors   : TGLRawQColor;
     ip        : TGLVec2i;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
+    iLight    : array[0..3] of Byte;
 begin
   iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
 
-  iSize := 1;
-  if SF_LARGE in aSprite.Flags then
-  begin
-    iSize := 2;
-    aX -= FTileSize div 2;
-    aY -= FTileSize;
-  end;
+  iLight[0] := FLightMap[aX-1,aY-1];
+  iLight[1] := FLightMap[aX-1,aY  ];
+  iLight[2] := FLightMap[aX  ,aY  ];
+  iLight[3] := FLightMap[aX  ,aY-1];
 
-  {$WARNINGS OFF}
-  iColors.Data[0] := TGLVec3b.CreateAll( FLightMap[aX-1,aY-1] );
-  iColors.Data[1] := TGLVec3b.CreateAll( FLightMap[aX-1,aY  ] );
-  iColors.Data[2] := TGLVec3b.CreateAll( FLightMap[aX  ,aY  ] );
-  iColors.Data[3] := TGLVec3b.CreateAll( FLightMap[aX  ,aY-1] );
-  {$WARNINGS ON}
+  for i := 0 to 3 do
+    iColors.Data[i] := TGLVec3b.CreateAll( iLight[i] );
 
   ip := TGLVec2i.Create( (aX-1)*FTileSize, (aY-1)*FTileSize );
   with iLayer do
   begin
-    Normal.PushXY( iSpriteID, iSize, ip, @iColors, aTSX, aTSY );
+    Normal.PushXY( iSpriteID, 1, ip, @iColors, aTSX, aTSY, aZ );
 
     if ( SF_COSPLAY in aSprite.Flags ) and (Cosplay <> nil) then
     begin
@@ -523,7 +708,7 @@ begin
         iColors.Data[ i ].Y := Clamp( Floor( ( aSprite.Color.G / 255 ) * iColors.Data[ i ].Y  ), 0, 255 );
         iColors.Data[ i ].Z := Clamp( Floor( ( aSprite.Color.B / 255 ) * iColors.Data[ i ].Z  ), 0, 255 );
       end;
-      Cosplay.PushXY( iSpriteID, iSize, ip, @iColors, aTSX, aTSY );
+      Cosplay.PushXY( iSpriteID, 1, ip, @iColors, aTSX, aTSY, aZ );
     end;
   end;
 end;
@@ -620,56 +805,36 @@ begin
       end;
 end;
 
-function TDoomSpriteMap.GetCellShift(cell: TCoord2D): Byte;
-var Base, CellRow : Byte;
-const ExtCode = [ 1+2, 1+4, 2+8, 4+8, 1+2+4, 1+2+8, 1+4+8, 2+4+8, 1+2+4+8 ];
-  function StickyCode( Coord : TCoord2D; Res : Byte ) : Byte;
+function TDoomSpriteMap.GetCellRotationMask(cell: TCoord2D): Byte;
+var iT,iB,iL,iR : Boolean;
+  function StickyCode( Coord : TCoord2D ) : Boolean;
   begin
-    if not Doom.Level.isProperCoord( Coord ) then Exit(Res);
+    if not Doom.Level.isProperCoord( Coord ) then Exit(True);
     if ((CF_STICKWALL in Cells[Doom.Level.CellBottom[ Coord ]].Flags) or
       ((Doom.Level.CellTop[ Coord ] <> 0) and
-      (CF_STICKWALL in Cells[Doom.Level.CellTop[ Coord ]].Flags))) then Exit( Res );
-    Exit( 0 );
+      (CF_STICKWALL in Cells[Doom.Level.CellTop[ Coord ]].Flags))) then Exit( True );
+    Exit( False );
+  end;
+  function AddIf( aBool : Boolean; aValue : Byte ) : Byte;
+  begin
+    if aBool then Exit( aValue ) else Exit( 0 );
   end;
 begin
-  Base :=
-    StickyCode( cell.ifInc( 0,-1), 1 ) +
-    StickyCode( cell.ifInc(-1, 0), 2 ) +
-    StickyCode( cell.ifInc(+1, 0), 4 ) +
-    StickyCode( cell.ifInc( 0,+1), 8 );
-  CellRow := SpriteCellRow;
-  if Base in ExtCode then
-  case Base of
-    1+2   : if StickyCode( cell.IfInc( -1, -1 ), 1 ) <> 0 then Exit( 2*CellRow+2 );
-    1+4   : if StickyCode( cell.IfInc( +1, -1 ), 1 ) <> 0 then Exit( 2*CellRow+0 );
-    2+8   : if StickyCode( cell.IfInc( -1, +1 ), 1 ) <> 0 then Exit( 2 );
-    4+8   : if StickyCode( cell.IfInc( +1, +1 ), 1 ) <> 0 then Exit( 0 );
-    1+2+4 : if (
-      ( StickyCode( cell.IfInc( -1, -1 ), 1 ) <> 0 ) and
-      ( StickyCode( cell.IfInc( +1, -1 ), 1 ) <> 0 )
-      ) then Exit( 2*CellRow+1 );
-    1+2+8 : if (
-      ( StickyCode( cell.IfInc( -1, -1 ), 1 ) <> 0 ) and
-      ( StickyCode( cell.IfInc( -1, +1 ), 1 ) <> 0 )
-      ) then Exit( CellRow+2 );
-    1+4+8 : if (
-      ( StickyCode( cell.IfInc( +1, -1 ), 1 ) <> 0 ) and
-      ( StickyCode( cell.IfInc( +1, +1 ), 1 ) <> 0 )
-      ) then Exit( CellRow+0 );
-    2+4+8 : if (
-      ( StickyCode( cell.IfInc( -1, +1 ), 1 ) <> 0 ) and
-      ( StickyCode( cell.IfInc( +1, +1 ), 1 ) <> 0 )
-      ) then Exit( 1 );
-    1+2+4+8 : if (
-      ( StickyCode( cell.IfInc( -1, -1 ), 1 ) <> 0 ) and
-      ( StickyCode( cell.IfInc( -1, +1 ), 1 ) <> 0 ) and
-      ( StickyCode( cell.IfInc( +1, -1 ), 1 ) <> 0 ) and
-      ( StickyCode( cell.IfInc( +1, +1 ), 1 ) <> 0 )
-      ) then Exit( CellRow+1 );
-  end;
-  Exit( FCellCodeBase[ Base ] );
-end;
+  iT := StickyCode( cell.ifInc(  0, -1 ) );
+  iB := StickyCode( cell.ifInc(  0,  1 ) );
+  iL := StickyCode( cell.ifInc( -1,  0 ) );
+  iR := StickyCode( cell.ifInc(  1,  0 ) );
+  GetCellRotationMask :=
+    AddIf( ( iT and iL ) and StickyCode( cell.ifInc( -1,-1) ),  1 ) +
+    AddIf( iT, 2 ) +
+    AddIf( ( iT and iR ) and StickyCode( cell.ifInc(  1,-1) ),  4 ) +
+    AddIf( iL, 8 ) +
 
+    AddIf( iR, 16 ) +
+    AddIf( ( iB and iL ) and StickyCode( cell.ifInc( -1,1) ),  32 ) +
+    AddIf( iB, 64 ) +
+    AddIf( ( iB and iR ) and StickyCode( cell.ifInc(  1,1) ),  128 );
+end;
 
 procedure TDoomSpriteMap.PushTerrain;
 var DMinX, DMaxX : Word;
@@ -697,11 +862,15 @@ begin
       begin
         Z   := Y * DRL_Z_LINE;
         Spr := GetSprite( Cells[Bottom].Sprite );
-        if SF_MULTI in Spr.Flags then
-          Spr.SpriteID += Doom.Level.Rotation[c] - 3*SpriteCellRow;
         if SF_FLOW in Spr.Flags
           then PushSpriteTerrain( X, Y, Spr, Z, FFluidX, FFluidY )
-          else PushSpriteTerrain( X, Y, Spr, Z );
+          else
+          begin
+            if SF_MULTI in Spr.Flags then
+              PushMultiSpriteTerrain( X, Y, Spr, Z, Doom.Level.Rotation[ c ] )
+             else
+              PushSpriteTerrain( X, Y, Spr, Z );
+          end;
         if (SF_FLUID in Spr.Flags) and (Doom.Level.Rotation[c] <> 0) then
         begin
           Spr := Cells[Doom.Level.FloorCell].Sprite;

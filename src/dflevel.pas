@@ -511,10 +511,8 @@ begin
   if GraphicsVersion then
   begin
     for c in FArea do
-    begin
       if SF_MULTI in Cells[CellBottom[c]].Sprite.Flags then
-        FMap.r[c.x,c.y] := SpriteMap.GetCellShift(c);
-    end;
+        FMap.r[c.x,c.y] := SpriteMap.GetCellRotationMask(c);
 
     UI.GameUI.UpdateMinimap;
     RecalcFluids;
