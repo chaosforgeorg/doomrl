@@ -517,34 +517,28 @@ begin
 end;
 
 procedure TDoomSpriteMap.PushSpriteTerrain( aX, aY : Byte; const aSprite : TSprite; aZ : Integer; aTSX : Single; aTSY : Single ) ;
-var i, iSize  : Byte;
+var i         : Byte;
     iColors   : TGLRawQColor;
     ip        : TGLVec2i;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
+    iLight    : array[0..3] of Byte;
 begin
   iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
 
-  iSize := 1;
-  if SF_LARGE in aSprite.Flags then
-  begin
-    iSize := 2;
-    aX -= FTileSize div 2;
-    aY -= FTileSize;
-  end;
+  iLight[0] := FLightMap[aX-1,aY-1];
+  iLight[1] := FLightMap[aX-1,aY  ];
+  iLight[2] := FLightMap[aX  ,aY  ];
+  iLight[3] := FLightMap[aX  ,aY-1];
 
-  {$WARNINGS OFF}
-  iColors.Data[0] := TGLVec3b.CreateAll( FLightMap[aX-1,aY-1] );
-  iColors.Data[1] := TGLVec3b.CreateAll( FLightMap[aX-1,aY  ] );
-  iColors.Data[2] := TGLVec3b.CreateAll( FLightMap[aX  ,aY  ] );
-  iColors.Data[3] := TGLVec3b.CreateAll( FLightMap[aX  ,aY-1] );
-  {$WARNINGS ON}
+  for i := 0 to 3 do
+    iColors.Data[i] := TGLVec3b.CreateAll( iLight[i] );
 
   ip := TGLVec2i.Create( (aX-1)*FTileSize, (aY-1)*FTileSize );
   with iLayer do
   begin
-    Normal.PushXY( iSpriteID, iSize, ip, @iColors, aTSX, aTSY );
+    Normal.PushXY( iSpriteID, 1, ip, @iColors, aTSX, aTSY, aZ );
 
     if ( SF_COSPLAY in aSprite.Flags ) and (Cosplay <> nil) then
     begin
@@ -555,7 +549,7 @@ begin
         iColors.Data[ i ].Y := Clamp( Floor( ( aSprite.Color.G / 255 ) * iColors.Data[ i ].Y  ), 0, 255 );
         iColors.Data[ i ].Z := Clamp( Floor( ( aSprite.Color.B / 255 ) * iColors.Data[ i ].Z  ), 0, 255 );
       end;
-      Cosplay.PushXY( iSpriteID, iSize, ip, @iColors, aTSX, aTSY );
+      Cosplay.PushXY( iSpriteID, 1, ip, @iColors, aTSX, aTSY, aZ );
     end;
   end;
 end;
