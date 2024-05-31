@@ -453,7 +453,6 @@ end;
 procedure TDoomSpriteMap.PushMultiSpriteTerrain( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
 var iSprite   : TSprite;
     iSpriteID : DWord;
-    iOtherID  : DWord;
     iPart     : TSpritePart;
     iPS       : TSpritePart;
     iParts    : TSpritePartSet;

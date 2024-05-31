@@ -1,8 +1,8 @@
 0.9.9.8 BETA 5
-[new] -- GH#120: graphics - sprites updated!
-[new] -- GH#120: graphics - animations for idle and for doors!
-[new] -- GH#083: graphics - overlay FX done by shaders!
-[new] -- GH#120: graphics - better wall tile flow!
+[new] -- GH#120: G-version - sprites updated!
+[new] -- GH#120: G-version - animations for idle and for doors!
+[new] -- GH#083: G-version - overlay FX done by shaders!
+[new] -- GH#120: G-version - better wall tile flow!
 
 0.9.9.8 BETA 4
 [new] -- BETA  : WARNING - speed/command system rewrites!
