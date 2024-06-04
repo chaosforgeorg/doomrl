@@ -245,7 +245,7 @@ core.register_blueprint "cell"
 	sflags     = { false, core.TFLAGS },
 	sframes    = { false, core.TNUMBER, 0 },
 	sftime     = { false, core.TNUMBER, FRAME_TIME },
-	color      = { false, core.TNUMBER, LIGHTGRAY },
+	color      = { false, core.TANY, LIGHTGRAY },
 	coscolor   = { false, core.TTABLE },
 	color_dark = { false, core.TNUMBER, DARKGRAY },
 	color_id   = { false, core.TIDIN("cells") },

@@ -24,7 +24,7 @@ type TCell = class
   PicLow      : Char;
   Sprite      : array[0..15] of TSprite;
   BloodSprite : TSprite;
-  LightColor  : Byte;
+  LightColor  : array[0..15] of Byte;
   DarkColor   : Byte;
   BloodColor  : Byte;
   Desc        : AnsiString;
@@ -94,7 +94,23 @@ begin
     iCell.PicChr    := getChar('ascii');
     iCell.PicLow    := getChar('asciilow');
     iCell.DarkColor := getInteger('color_dark');
-    iCell.LightColor:= getInteger('color');
+
+    FillChar( iCell.LightColor, SizeOf(iCell.LightColor), 0 );
+    if iTable.IsTable('color') then
+    begin
+      iSize := iTable.GetTableSize( 'color' );
+      with GetTable( 'color' ) do
+      try
+        for i := 1 to iSize do
+          if IsNumber( i ) then
+            iCell.LightColor[i] := GetValue( i )
+      finally
+        Free;
+      end
+    end
+    else
+      iCell.LightColor[0]:= getInteger('color');
+
     iCell.BloodColor:= getInteger('blcolor');
     iCell.Desc      := getString('name');
     iCell.BlDesc    := getString('blname');
@@ -143,7 +159,7 @@ begin
   if (not Option_HighASCII) then iCell.PicChr := iCell.PicLow;
 
   if ColorOverrides.Exists(iColorID+'_light') then
-    iCell.LightColor := ColorOverrides[iColorID+'_light'];
+    iCell.LightColor[0] := ColorOverrides[iColorID+'_light'];
   if ColorOverrides.Exists(iColorID+'_dark') then
     iCell.DarkColor:= ColorOverrides[iColorID+'_dark'];
 

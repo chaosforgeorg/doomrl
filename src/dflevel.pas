@@ -389,6 +389,7 @@ function TLevel.getGylph(const aCoord: TCoord2D): TIOGylph;
 var iColor    : TIOColor;
     iChar     : Char;
     iCell     : DWord;
+    iStyle    : Integer;
     iVisible  : Boolean;
     iExplored : Boolean;
     iBlood    : Boolean;
@@ -429,7 +430,13 @@ begin
       iBlood := LightFlag[ aCoord, LFBLOOD ] and (BloodColor <> 0);
       if iBlood
          then iColor := BloodColor
-         else iColor := LightColor;
+         else
+         begin
+           iStyle := getStyle( aCoord );
+           iColor := LightColor[ iStyle ];
+           if iColor = 0 then
+             iColor := LightColor[ 0 ];
+         end;
     end
     else if iExplored then iColor := DarkColor;
   end;
