@@ -59,7 +59,7 @@ register_level "phobos_lab"
 	end,	
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "floor", area.FULL )
 		level.data.bridge = area.new(50,10,60,11)
 		level.data.door1  = area.new(45,10,45,11)

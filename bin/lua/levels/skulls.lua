@@ -8,7 +8,7 @@ register_level "city_of_skulls"
 	level = 12,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "rwall", area.FULL )
 
 		local translation = {

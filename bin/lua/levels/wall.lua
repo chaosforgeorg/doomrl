@@ -8,7 +8,7 @@ register_level "the_wall"
 	level = 11,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "wall", area.FULL )
 
 		local translation = {

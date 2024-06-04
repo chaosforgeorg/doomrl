@@ -39,7 +39,7 @@ register_level "mt_erebus"
 	end,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "plava", area.FULL )
 
 		local lavapits_armor = {
