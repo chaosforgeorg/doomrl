@@ -67,7 +67,10 @@ var iColorID : AnsiString;
     iHook    : TCellHook;
     iCell    : TCell;
     iTable   : TLuaTable;
+    iSubTable: TLuaTable;
+    iBase    : TSprite;
     iSprite  : TSprite;
+    iSize, i : Integer;
 begin
   if aCellNum >= High( FData ) then
   begin
@@ -101,8 +104,37 @@ begin
     iCell.bloodto   := getString('bloodto');
     iCell.destroyto := getString('destroyto');
     iCell.raiseto   := getString('raiseto');
-    FillChar( iCell.Sprite, SizeOf(iCell.Sprite), 0 );
-    ReadSprite( iTable, iCell.Sprite[0] );
+    FillChar( iCell.Sprite,      SizeOf(iCell.Sprite),      0 );
+    FillChar( iCell.BloodSprite, SizeOf(iCell.BloodSprite), 0 );
+    FillChar( iBase,             SizeOf(iBase),             0 );
+    ReadSprite( iTable, iBase );
+    if iTable.IsTable( 'sprite' ) then
+    begin
+      iSize := iTable.GetTableSize( 'sprite' );
+      if iSize > High( iCell.Sprite ) then
+        raise Exception.Create( 'Maximum number of sprite styles reached!' );
+      if iSize > 0 then
+      with GetTable( 'sprite' ) do
+      try
+        for i := 1 to iSize do
+        begin
+          iSprite := iBase;
+          if IsNumber( i ) then
+            iSprite.SpriteID := GetValue( i )
+          else
+          begin
+            iSubTable := GetTable( [i] );
+            ReadSprite( iSubTable, iSprite );
+            iSubTable.Free;
+          end;
+          iCell.Sprite[i - 1] := iSprite;
+        end;
+      finally
+        Free;
+      end;
+    end
+    else
+      iCell.Sprite[0] := iBase;
     iCell.BloodSprite.SpriteID := getInteger('blsprite',0);
   finally
     Free;

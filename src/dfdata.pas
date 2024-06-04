@@ -604,7 +604,7 @@ begin
   if aTable.IsTable( 'sprite' ) then
   begin
     iTable := aTable.GetTable( 'sprite' );
-    ReadSprite( iTable, aSprite );
+    Result := ReadSprite( iTable, aSprite );
     iTable.Free;
   end;
 end;
