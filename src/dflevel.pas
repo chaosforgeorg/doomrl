@@ -160,7 +160,7 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
     property Name         : AnsiString read FName        write FName;
     property Name_Number  : Word       read FLNum        write FLNum;
     property Danger_Level : Word       read FDangerLevel write FDangerLevel;
-    property Style        : Byte       read FStyle       write FStyle;
+    property Style        : Byte       read FStyle;
     property Special_Exit : AnsiString read FSpecExit;
     property Feeling      : AnsiString read FFeeling     write FFeeling;
     property id           : AnsiString read FID;
@@ -516,9 +516,6 @@ begin
         PutCell(iCoord,FFloorCell);
       PutCell(iCoord,iCell);
     end;
-
-    // TODO: this needs to be removed somewhere else
-    FMap.Style[ iCoord.X, iCoord.Y ] := FFloorStyle;
   end;
 
   if not aGenerated then Exit;
@@ -1416,8 +1413,25 @@ begin
   Result := 0;
 end;
 
+function lua_level_set_generator_style(L: Plua_State): Integer; cdecl;
+var State   : TDoomLuaState;
+    iCoord  : TCoord2D;
+    iLevel  : TLevel;
+begin
+  State.Init(L);
+  iLevel := State.ToObject(1) as TLevel;
+  if State.IsNil(2) then Exit(0);
+  iLevel.FStyle := State.ToInteger(2);
+  iLevel.FFloorCell := LuaSystem.Defines[LuaSystem.Get(['generator','styles',iLevel.FStyle,'floor'])];
+  iLevel.FFloorStyle := LuaSystem.Get(['generator','styles',iLevel.FStyle,'style']);
+  for iCoord in iLevel.FArea do
+  begin
+    iLevel.FMap.Style[iCoord.X,iCoord.Y] := iLevel.FFloorStyle;
+  end;
+  Result := 0;
+end;
 
-const lua_level_lib : array[0..9] of luaL_Reg = (
+const lua_level_lib : array[0..10] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1427,6 +1441,7 @@ const lua_level_lib : array[0..9] of luaL_Reg = (
       ( name : 'clear_being';func : @lua_level_clear_being),
       ( name : 'recalc_fluids';func : @lua_level_recalc_fluids),
       ( name : 'animate_cell'; func : @lua_level_animate_cell),
+      ( name : 'set_generator_style';func : @lua_level_set_generator_style),
       ( name : nil;          func : nil; )
 );
 

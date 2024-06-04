@@ -8,7 +8,7 @@ register_level "containment_area"
 	level = 11,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "dwall", area.FULL )
 
 		local translation = {

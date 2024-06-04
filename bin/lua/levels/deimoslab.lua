@@ -56,7 +56,7 @@ register_level "deimos_lab"
 
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "dwall", area.FULL )
 		level.data.vault1 = area.new(38,9,41,12)
 		level.data.vault2 = area.new(37,10,42,11)

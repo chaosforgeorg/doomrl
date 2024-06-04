@@ -240,7 +240,7 @@ core.register_blueprint "cell"
 	id         = { false, core.TSTRING },
 	ascii      = { true,  core.TSTRING },
 	asciilow   = { false, core.TSTRING },
-	sprite     = { true,  core.TNUMBER },
+	sprite     = { true,  core.TANY },
 	blsprite   = { false, core.TNUMBER },
 	sflags     = { false, core.TFLAGS },
 	sframes    = { false, core.TNUMBER, 0 },

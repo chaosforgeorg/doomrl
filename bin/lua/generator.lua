@@ -362,7 +362,8 @@ function generator.generate_caves_dungeon()
 	if dlevel > 8  then style = 6 end
 	if dlevel > 16 then style = 7 end
 	if dlevel > 30 then style = math.random( 5, 7 ) end
-	level.style = style
+	
+	level:set_generator_style( style )
 
 	local wall_cell    = generator.styles[ level.style ].wall
 	local floor_cell   = generator.styles[ level.style ].floor
@@ -481,7 +482,7 @@ function generator.generate_caves_2_dungeon()
 	if dlevel > 8  then style = 6 end
 	if dlevel > 16 then style = 7 end
 	if dlevel > 30 then style = math.random( 5, 7 ) end
-	level.style = style
+	level:set_generator_style( style )
 
 	local floor_cell = cells[generator.styles[ level.style ].floor].nid
 	local cave_cell  = cells[generator.styles[ level.style ].wall ].nid

@@ -8,7 +8,7 @@ register_level "halls_of_carnage"
 	level = 14,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "rwall", area.FULL )
 
 		local mod1,mod2 = generator.roll_pair{"mod_power","mod_agility","mod_bulk","mod_tech"}

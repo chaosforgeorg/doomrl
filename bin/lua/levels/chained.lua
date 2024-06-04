@@ -200,7 +200,7 @@ register_level "the_chained_court"
 	end,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		-- level.status 1 == chained court
 		-- level.status 0 == unchained court (w/ Arena Master)
 		if player:has_medal("hellchampion") or player:has_medal("hellchampion2") or player:has_medal("hellchampion3") then
