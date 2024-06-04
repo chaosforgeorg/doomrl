@@ -12,7 +12,7 @@ register_level "phobos_lab"
 		{
 			name   = "lever",
 			color  = MAGENTA,
-			sprite = 248,
+			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
 			flags  = { IF_NODESTROY },
@@ -34,7 +34,7 @@ register_level "phobos_lab"
 		{
 			name   = "lever",
 			color  = MAGENTA,
-			sprite = 248,
+			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
 			flags  = { IF_NODESTROY },

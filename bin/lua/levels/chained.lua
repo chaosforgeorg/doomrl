@@ -70,7 +70,7 @@ register_level "the_chained_court"
 		{
 			name   = "lever",
 			color  = MAGENTA,
-			sprite = 248,
+			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
 			flags  = { IF_NODESTROY },
@@ -96,7 +96,7 @@ register_level "the_chained_court"
 		{
 			name   = "lever",
 			color  = MAGENTA,
-			sprite = 248,
+			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
 			flags  = { IF_NODESTROY },
@@ -123,7 +123,7 @@ register_level "the_chained_court"
 			id     = "lever_chain3",
 			name   = "lever",
 			color  = MAGENTA,
-			sprite = 248,
+			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
 			flags  = { IF_NODESTROY },

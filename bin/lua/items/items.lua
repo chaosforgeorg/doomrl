@@ -7,7 +7,7 @@ function DoomRL.loaditems()
 		name     = "combat knife",
 		color    = WHITE,
 		sprite   = SPRITE_KNIFE,
-		psprite  = 2,
+		psprite  = SPRITE_PLAYER_KNIFE,
 		--glow     = { 1.0,1.0,1.0,1.0 },
 		level    = 1,
 		weight   = 640,
