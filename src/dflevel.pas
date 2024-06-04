@@ -512,7 +512,7 @@ begin
   begin
     for c in FArea do
       if SF_MULTI in Cells[CellBottom[c]].Sprite.Flags then
-        FMap.r[c.x,c.y] := SpriteMap.GetCellRotationMask(c);
+        FMap.Rotation[c.x,c.y] := SpriteMap.GetCellRotationMask(c);
 
     UI.GameUI.UpdateMinimap;
     RecalcFluids;
@@ -553,7 +553,7 @@ begin
   if LF_SHARPFLUID in FFlags then Exit;
  for cc in FArea do
    if SF_FLUID in Cells[CellBottom[ cc ]].Sprite.Flags then
-     FMap.r[cc.x,cc.y] :=
+     FMap.Rotation[cc.x,cc.y] :=
        FluidFlag( cc.ifInc( 0,-1), 1 ) +
        FluidFlag( cc.ifInc( 0,+1), 2 ) +
        FluidFlag( cc.ifInc(-1, 0), 4 ) +
@@ -600,8 +600,9 @@ begin
   for x := 1 to MaxX do
     for y := 1 to MaxY do
     begin
-      d[x,y] := 0;
-      r[x,y] := 0;
+      Style[x,y] := 0;
+      Overlay[x,y] := 0;
+      Rotation[x,y] := 0;
       if (x = 1) or (y = 1) or ( x = MaxX ) or ( y = MaxY ) then LightFlag[ NewCoord2D(x,y), lfPermanent ] := True;
     end;
 end;
@@ -1167,7 +1168,7 @@ end;
 function TLevel.getCell( const aWhere : TCoord2D ) : byte;
 var iOverlay : Word;
 begin
-  iOverlay := FMap.d[aWhere.x, aWhere.y];
+  iOverlay := FMap.Overlay[aWhere.x, aWhere.y];
   if iOverlay <> 0 then Exit( iOverlay );
   Result := inherited GetCell( aWhere );
 end;
@@ -1176,11 +1177,11 @@ procedure TLevel.putCell( const aWhere : TCoord2D; const aWhat : byte );
 begin
   if CF_OVERLAY in Cells[ aWhat ].Flags
   then
-     FMap.d[aWhere.x, aWhere.y] := aWhat
+     FMap.Overlay[aWhere.x, aWhere.y] := aWhat
   else
   begin
     inherited PutCell( aWhere, aWhat );
-    FMap.d[aWhere.x, aWhere.y] := 0;
+    FMap.Overlay[aWhere.x, aWhere.y] := 0;
   end;
 end;
 
@@ -1201,12 +1202,12 @@ end;
 
 function TLevel.getCellTop( Index : TCoord2D ): Byte;
 begin
-  Exit( FMap.d[Index.x, Index.y] );
+  Exit( FMap.Overlay[Index.x, Index.y] );
 end;
 
 function TLevel.getRotation( Index : TCoord2D ): Byte;
 begin
-  Exit( FMap.r[Index.x, Index.y] );
+  Exit( FMap.Rotation[Index.x, Index.y] );
 end;
 
 function lua_level_drop_being(L: Plua_State): Integer; cdecl;

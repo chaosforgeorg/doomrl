@@ -14,8 +14,9 @@ type TCellHook  = (CellHook_OnEnter, CellHook_OnExit, CellHook_OnAct, CellHook_O
 const CellHooks : array[TCellHook] of string = ('OnEnter', 'OnExit', 'OnAct', 'OnDescribe', 'OnDestroy');
 
 type TMap = object
-       d : array[ 1..MaxX, 1..MaxY ] of Byte;
-       r : array[ 1..MaxX, 1..MaxY ] of Byte;
+       Overlay  : array[ 1..MaxX, 1..MaxY ] of Byte;
+       Rotation : array[ 1..MaxX, 1..MaxY ] of Byte;
+       Style    : array[ 1..MaxX, 1..MaxY ] of Byte;
      end;
 
 type TCell = class
