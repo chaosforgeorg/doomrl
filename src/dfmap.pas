@@ -67,6 +67,7 @@ var iColorID : AnsiString;
     iHook    : TCellHook;
     iCell    : TCell;
     iTable   : TLuaTable;
+    iSprite  : TSprite;
 begin
   if aCellNum >= High( FData ) then
   begin
@@ -101,7 +102,7 @@ begin
     iCell.destroyto := getString('destroyto');
     iCell.raiseto   := getString('raiseto');
     FillChar( iCell.Sprite, SizeOf(iCell.Sprite), 0 );
-    iCell.Sprite[0] := ReadSprite( iTable );
+    ReadSprite( iTable, iCell.Sprite[0] );
     iCell.BloodSprite.SpriteID := getInteger('blsprite',0);
   finally
     Free;

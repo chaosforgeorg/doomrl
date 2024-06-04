@@ -177,7 +177,7 @@ core.register_blueprint "being"
 	sound_id    = { false, core.TIDIN("beings") },
 	ascii       = { true,  core.TSTRING },
 	color       = { true,  core.TNUMBER },
-	sprite      = { true,  core.TNUMBER  },
+	sprite      = { true,  core.TANY  },
 	coscolor    = { false, core.TTABLE },
 	glow        = { false, core.TTABLE },
 	overlay     = { false, core.TTABLE },
