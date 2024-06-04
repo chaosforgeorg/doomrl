@@ -65,12 +65,16 @@ function generator.place_dungen_tile( code, tile_object, tile_pos )
 		local char       = string.char( tile_object:get_ascii(c) )
 		local tile_entry = code[ char ]
 		assert( tile_entry, "Character in map not defined -> "..char)
-		if tile_entry.being then level:drop_being_ext( tile_entry.being, tile_pos + c - coord.UNIT ) end
-		if tile_entry.item  then level:drop_item_ext( tile_entry.item, tile_pos + c - coord.UNIT ) end
+		local p = tile_pos + c - coord.UNIT
+		if tile_entry.being then level:drop_being_ext( tile_entry.being, p ) end
+		if tile_entry.item  then level:drop_item_ext( tile_entry.item, p ) end
 		if tile_entry.flags then
 			for _, flag in ipairs(tile_entry.flags) do
-				level.light[tile_pos + c - coord.UNIT][flag] = true
+				level.light[p][flag] = true
 			end
+		end
+		if tile_entry.style then
+			level:set_raw_style( p, generator.styles[ tile_entry.style ].style )
 		end
 	end
 end
