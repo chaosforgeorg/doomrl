@@ -99,11 +99,14 @@ begin
     if iTable.IsTable('color') then
     begin
       iSize := iTable.GetTableSize( 'color' );
+      if iSize > High( iCell.LightColor ) then
+        raise Exception.Create( 'Maximum number of ASCII color styles reached!' );
+
       with GetTable( 'color' ) do
       try
         for i := 1 to iSize do
           if IsNumber( i ) then
-            iCell.LightColor[i] := GetValue( i )
+            iCell.LightColor[i-1] := GetValue( i )
       finally
         Free;
       end
