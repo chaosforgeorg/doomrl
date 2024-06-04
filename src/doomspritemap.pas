@@ -987,9 +987,9 @@ function TDoomSpriteMap.GetSprite( aCell, aStyle : Byte ) : TSprite;
 var iCell  : TCell;
 begin
   iCell   := Cells[ aCell ];
-  if iCell.Sprite[ aStyle ].SpriteID <> 0 then;
+  if iCell.Sprite[ aStyle ].SpriteID <> 0 then
     Exit( iCell.Sprite[ aStyle ] );
-  Exit( iCell.Sprite[ aStyle ] );
+  Exit( iCell.Sprite[ 0 ] );
 end;
 
 end.

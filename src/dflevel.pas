@@ -472,8 +472,8 @@ begin
   FNextNode    := nil;
 
   FLTime  := 0;
-  FullClear;
   FStyle := nstyle;
+  FullClear;
   FLNum := nlnum;
   FName := nname;
   FDangerLevel := nDangerLevel;
@@ -482,6 +482,7 @@ begin
   FFlags := [];
   FEmpty := False;
   FHooks := [];
+
   FFloorCell := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
   FFloorStyle := LuaSystem.Get(['generator','styles',FStyle,'style']);
   if LuaSystem.Get(['diff',Doom.Difficulty,'respawn']) then Include( FFlags, LF_RESPAWN );
@@ -508,6 +509,9 @@ begin
         PutCell(iCoord,FFloorCell);
       PutCell(iCoord,iCell);
     end;
+
+    // TODO: this needs to be removed somewhere else
+    FMap.Style[ iCoord.X, iCoord.Y ] := FFloorStyle;
   end;
 
   if not aGenerated then Exit;
@@ -610,7 +614,7 @@ begin
   for x := 1 to MaxX do
     for y := 1 to MaxY do
     begin
-      Style[x,y] := 0;
+      Style[x,y] := FFloorStyle;
       Overlay[x,y] := 0;
       Rotation[x,y] := 0;
       if (x = 1) or (y = 1) or ( x = MaxX ) or ( y = MaxY ) then LightFlag[ NewCoord2D(x,y), lfPermanent ] := True;
