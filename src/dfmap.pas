@@ -22,7 +22,7 @@ type TMap = object
 type TCell = class
   PicChr      : Char;
   PicLow      : Char;
-  Sprite      : TSprite;
+  Sprite      : array[0..15] of TSprite;
   BloodSprite : TSprite;
   LightColor  : Byte;
   DarkColor   : Byte;
@@ -100,7 +100,8 @@ begin
     iCell.bloodto   := getString('bloodto');
     iCell.destroyto := getString('destroyto');
     iCell.raiseto   := getString('raiseto');
-    iCell.Sprite    := ReadSprite( iTable );
+    FillChar( iCell.Sprite, SizeOf(iCell.Sprite), 0 );
+    iCell.Sprite[0] := ReadSprite( iTable );
     iCell.BloodSprite.SpriteID := getInteger('blsprite',0);
   finally
     Free;
