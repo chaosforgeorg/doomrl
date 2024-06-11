@@ -3,7 +3,7 @@ function DoomRL.loadcells()
 	register_cell "floor"
 	{
 		name       = "floor",
-		ascii      = "�",
+		ascii      = "\250",
 		asciilow   = '.',
 		set        = CELLSET_FLOORS,
 		blname     = "blood",
