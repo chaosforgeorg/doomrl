@@ -74,7 +74,7 @@ register_level "phobos_lab"
 		local translation = {
 			['.'] = "floor",
 			['#'] = { "wall",   flags = { LFPERMANENT } },
-			['%'] = { "cwall1", flags = { LFPERMANENT } },
+			['%'] = { "cwall",  flags = { LFPERMANENT }, style = 1, },
 			['X'] = { "wall",   flags = { LFPERMANENT }, style = 2, },
 			['+'] = { "door",   flags = { LFPERMANENT } },
 			['L'] = { "ldoor",  flags = { LFPERMANENT } },

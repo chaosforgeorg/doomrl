@@ -39,7 +39,7 @@ function DoomRL.loadcells()
 		blsprite   = SPRITE_BLOOD;
 	}
 
--- Phobos Walls --
+-- Tech Walls --
 
 	register_cell "wall"
 	{
@@ -57,28 +57,7 @@ function DoomRL.loadcells()
 		sflags     = { SF_MULTI },
 	}
 
--- Phobos Walls End --
-
--- Deimos Walls --
-
-	register_cell "dwall"
-	{
-		name       = "base wall",
-		blname     = "blooded wall",
-		ascii      = "#",
-		color      = DARKGRAY,
-		blcolor    = RED,
-		armor      = 10,
-		hp         = 10,
-		set        = CELLSET_WALLS,
-		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL},
-		sprite     = SPRITE_TECHWALL,
-		blsprite   = SPRITE_WALLBLOOD,
-		sflags     = { SF_MULTI },
-	}
-
-
--- Deimos Walls End --
+-- Tech Walls End --
 
 -- Hell Walls --
 
@@ -123,53 +102,23 @@ function DoomRL.loadcells()
 
 -- Cave Walls --
 
-	register_cell "cwall1"
+	register_cell "cwall"
 	{
 		name       = "cave wall",
 		blname     = "blooded cave wall",
 		ascii      = "#",
-		color      = DARKGRAY,
+		color      = { DARKGRAY, BROWN, RED },
+		sprite     = {
+			sprite = SPRITE_CAVEWALL, 
+			{ coscolor   = { 0.3,0.3,0.3,1.0 }, },
+			{ coscolor   = { 1.0,0.6,0.2,1.0 }, },
+			{ coscolor   = { 1.0,0.2,0.2,1.0 }, },
+		},
 		blcolor    = RED,
 		armor      = 15,
 		hp         = 30,
 		set        = CELLSET_WALLS,
 		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
-		coscolor   = { 0.3,0.3,0.3,1.0 },
-		sprite     = SPRITE_CAVEWALL,
-		blsprite   = SPRITE_WALLBLOOD,
-		sflags     = { SF_MULTI },
-	}
-
-	register_cell "cwall2"
-	{
-		name       = "cave wall",
-		blname     = "blooded cave wall",
-		ascii      = "#",
-		color      = BROWN,
-		blcolor    = RED,
-		armor      = 15,
-		hp         = 30,
-		set        = CELLSET_WALLS,
-		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
-		coscolor   = { 1.0,0.6,0.2,1.0 },
-		sprite     = SPRITE_CAVEWALL,
-		blsprite   = SPRITE_WALLBLOOD,
-		sflags     = { SF_MULTI },
-	}
-
-	register_cell "cwall3"
-	{
-		name       = "cave wall",
-		blname     = "blooded cave wall",
-		ascii      = "#",
-		color      = RED,
-		blcolor    = LIGHTRED,
-		armor      = 15,
-		hp         = 30,
-		set        = CELLSET_WALLS,
-		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
-		coscolor   = { 1.0,0.2,0.2,1.0 },
-		sprite     = SPRITE_CAVEWALL,
 		blsprite   = SPRITE_WALLBLOOD,
 		sflags     = { SF_MULTI },
 	}

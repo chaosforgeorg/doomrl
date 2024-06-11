@@ -80,9 +80,9 @@ function DoomRL.OnLoadBase()
 		{ floor = "floorb", wall = "rwall", door="doorb", odoor = "odoorb", style = 2, },
 		{ floor = "floor",  wall = "rwall", door="door",  odoor = "odoor",  style = 3,  },
 		-- caves
-		{ floor = "floor",   wall = "cwall1", door="door",  odoor = "odoor", style = 0,  },
-		{ floor = "floorc",  wall = "cwall2", door="door",  odoor = "odoor", style = 1,  },
-		{ floor = "floorb",  wall = "cwall3", door="door",  odoor = "odoor", style = 2,  },
+		{ floor = "floor",   wall = "cwall", door="door",  odoor = "odoor", style = 0,  },
+		{ floor = "floorc",  wall = "cwall", door="door",  odoor = "odoor", style = 1,  },
+		{ floor = "floorb",  wall = "cwall", door="door",  odoor = "odoor", style = 2,  },
 	}
 end
 
