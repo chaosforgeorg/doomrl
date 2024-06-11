@@ -189,7 +189,7 @@ function DoomRL.loadcells()
 		armor      = 4,
 		hp         = 6,
 		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_FRAGILE, CF_OVERLAY, CF_STICKWALL, CF_OPENABLE, CF_RUNSTOP, CF_HIGHLIGHT},
-		sprite     = SPRITE_DOOR,
+		sprite     = { SPRITE_DOOR, SPRITE_DOOR, SPRITE_HELLDOOR, },
 		sftime     = 25,
 
 		OnAct = function(c,being)
@@ -208,7 +208,7 @@ function DoomRL.loadcells()
 		ascii      = "/",
 		color      = BROWN,
 		flags      = {CF_NOCHANGE, CF_NORUN, CF_OVERLAY, CF_STICKWALL, CF_CLOSABLE, CF_RUNSTOP, CF_NUKABLE, CF_HIGHLIGHT },
-		sprite     = SPRITE_OPENDOOR,
+		sprite     = { SPRITE_OPENDOOR, SPRITE_OPENDOOR, SPRITE_HELLOPENDOOR, },
 		sftime     = 25,
 
 		OnAct = function(c,being)
@@ -234,56 +234,11 @@ function DoomRL.loadcells()
 		armor      = 6,
 		hp         = 6,
 		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_FRAGILE, CF_OVERLAY, CF_STICKWALL, CF_RUNSTOP},
-		sprite     = SPRITE_DOOR,
+		sprite     = { SPRITE_DOOR, SPRITE_DOOR, SPRITE_HELLDOOR, },
 
 		OnAct = function(c,being)
 			being:msg("The door is locked.")
 			return false
-		end,
-	}
-
-	register_cell "doorb"
-	{
-		name       = "closed door",
-		ascii      = "+",
-		color      = BROWN,
-		armor      = 4,
-		hp         = 6,
-		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_FRAGILE, CF_OVERLAY, CF_STICKWALL, CF_OPENABLE, CF_RUNSTOP, CF_HIGHLIGHT},
-		sprite     = SPRITE_HELLDOOR,
-		sftime     = 25,
-
-		OnAct = function(c,being)
-			being:msg("You open the door.")
-			being:play_sound("door.open")
-			level.map[ c ] = "odoorb"
-			being.scount = being.scount - 500
-			level:animate_cell( c, -3 )
-			return true
-		end,
-	}
-
-	register_cell "odoorb"
-	{
-		name       = "open door",
-		ascii      = "/",
-		color      = BROWN,
-		flags      = {CF_NOCHANGE, CF_NORUN, CF_OVERLAY, CF_STICKWALL, CF_CLOSABLE, CF_RUNSTOP, CF_NUKABLE, CF_HIGHLIGHT },
-		sprite     = SPRITE_HELLOPENDOOR,
-		sftime     = 25,
-
-		OnAct = function(c,being)
-			if level:get_being(c) == nil and level:get_item(c) == nil then
-				being:msg("You close the door.")
-				being:play_sound("door.close")
-				level.map[ c ] = "doorb"
-				being.scount = being.scount - 500
-				level:animate_cell( c, 3 )
-				return true
-			else
-				being:msg("There's something blocking the door.")
-				return false
-			end
 		end,
 	}
 

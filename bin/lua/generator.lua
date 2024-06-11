@@ -203,7 +203,7 @@ end
 -- TODO: use Cells generated cellsets!
 function generator.add_rooms()
 	core.log("generator.add_rooms()")
-	local cell_meta_list = { "wall", "rwall", "door", "odoor", "doorb", "odoorb" }
+	local cell_meta_list = { "wall", "rwall", "door", "odoor", }
 	local cell_meta = generator.cell_set( cell_meta_list )
 	local room_begin = function(c)
 		if c.x == MAXX or c.y == MAXY then return false end
