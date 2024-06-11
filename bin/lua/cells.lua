@@ -110,9 +110,16 @@ function DoomRL.loadcells()
 		color      = { DARKGRAY, BROWN, RED },
 		sprite     = {
 			sprite = SPRITE_CAVEWALL, 
+			-- first five are in tech, rest in cave levels (for floor matching)
 			{ coscolor   = { 0.3,0.3,0.3,1.0 }, },
 			{ coscolor   = { 1.0,0.6,0.2,1.0 }, },
 			{ coscolor   = { 1.0,0.2,0.2,1.0 }, },
+			{ coscolor   = { 0.3,0.3,0.3,1.0 }, },
+			{ coscolor   = { 1.0,0.6,0.2,1.0 }, },
+
+			{ coscolor   = { 0.3,0.3,0.3,1.0 }, }, -- 5
+			{ coscolor   = { 1.0,0.6,0.2,1.0 }, }, -- 6
+			{ coscolor   = { 1.0,0.2,0.2,1.0 }, }, -- 7
 		},
 		blcolor    = RED,
 		armor      = 15,

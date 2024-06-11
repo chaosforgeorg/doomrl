@@ -75,14 +75,14 @@ function DoomRL.OnLoadBase()
 	DoomRL.load_rooms()
 
 	generator.styles = {
-		{ floor = "floor",  wall = "wall",  door="door",  odoor = "odoor",  style = 0,  },
-		{ floor = "floor",  wall = "wall",  door="door",  odoor = "odoor",  style = 1,  },
-		{ floor = "floorb", wall = "rwall", door="door",  odoor = "odoor",  style = 2, },
-		{ floor = "floor",  wall = "rwall", door="door",  odoor = "odoor",  style = 0,  },
+		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 0,  },
+		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 1,  },
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 2, },
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 0,  },
 		-- caves
-		{ floor = "floor",   wall = "cwall", door="door",  odoor = "odoor", style = 0,  },
-		{ floor = "floorc",  wall = "cwall", door="door",  odoor = "odoor", style = 1,  },
-		{ floor = "floorb",  wall = "cwall", door="door",  odoor = "odoor", style = 2,  },
+		{ floor = "floor",  wall = "cwall", door="door",  odoor = "odoor", style = 5,  },
+		{ floor = "floor",  wall = "cwall", door="door",  odoor = "odoor", style = 6,  },
+		{ floor = "floor",  wall = "cwall", door="door",  odoor = "odoor", style = 7,  },
 	}
 end
 
