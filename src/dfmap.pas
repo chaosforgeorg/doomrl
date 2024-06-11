@@ -142,7 +142,7 @@ begin
             iSprite.SpriteID := GetValue( i )
           else
           begin
-            iSubTable := GetTable( [i] );
+            iSubTable := iTable.GetTable( ['sprite',i] );
             ReadSprite( iSubTable, iSprite );
             iSubTable.Free;
           end;

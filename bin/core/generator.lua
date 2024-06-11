@@ -39,6 +39,19 @@ function generator.transmute_marker( marker, fill, ar )
 	end
 end
 
+function generator.transmute_style( from, to, fstyle, tstyle, ar )
+	local a = ar or area.FULL
+	for c in a() do 
+		if level.map[ c ] == from and level:get_raw_style( c ) == fstyle then
+			level.map[ c ] = to
+			if tstyle then
+				level:set_raw_style( c, tstyle )
+			end
+		end
+	end
+end
+
+
 function generator.scatter_blood(scatter_area,good,count)
 	if type(good) == "string" then good = cells[good].nid end
 	for c = 1, count do

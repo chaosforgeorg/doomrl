@@ -1446,7 +1446,20 @@ begin
   Result := 0;
 end;
 
-const lua_level_lib : array[0..11] of luaL_Reg = (
+function lua_level_get_raw_style(L: Plua_State): Integer; cdecl;
+var State   : TDoomLuaState;
+    iCoord  : TCoord2D;
+    iLevel  : TLevel;
+begin
+  State.Init(L);
+  iLevel := State.ToObject(1) as TLevel;
+  if State.IsNil(2) then Exit(0);
+  iCoord := State.ToCoord(2);
+  State.Push( iLevel.FMap.Style[iCoord.X,iCoord.Y] );
+  Result := 1;
+end;
+
+const lua_level_lib : array[0..12] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1458,6 +1471,7 @@ const lua_level_lib : array[0..11] of luaL_Reg = (
       ( name : 'animate_cell'; func : @lua_level_animate_cell),
       ( name : 'set_generator_style';func : @lua_level_set_generator_style),
       ( name : 'set_raw_style';      func : @lua_level_set_raw_style),
+      ( name : 'get_raw_style';      func : @lua_level_get_raw_style),
       ( name : nil;          func : nil; )
 );
 
