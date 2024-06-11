@@ -130,28 +130,37 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
     FNextNode    : TNode;
 
     FFloorCell   : Word;
+    FFloorStyle  : Byte;
     FFeeling     : AnsiString;
     FSpecExit    : AnsiString;
   private
     function getCellBottom( Index : TCoord2D ): Byte;
     function getCellTop( Index : TCoord2D ): Byte;
     function getRotation( Index : TCoord2D ): Byte;
+    function getStyle( Index : TCoord2D ): Byte;
+    function getSpriteTop( Index : TCoord2D ): TSprite;
+    function getSpriteBottom( Index : TCoord2D ): TSprite;
   public
     property ToHitBonus : ShortInt                  read FToHitBonus;
     property Hooks : TFlags                         read FHooks;
     property FloorCell : Word                       read FFloorCell;
+    property FloorStyle : Byte                      read FFloorStyle;
     property Empty : Boolean                        read FEmpty;
     property Item     [ Index : TCoord2D ] : TItem  read getItem;
     property Being    [ Index : TCoord2D ] : TBeing read getBeing;
     property CellBottom [ Index : TCoord2D ] : Byte read getCellBottom;
     property CellTop    [ Index : TCoord2D ] : Byte read getCellTop;
+    property CStyle   [ Index : TCoord2D ] : Byte   read getStyle;
     property Rotation [ Index : TCoord2D ] : Byte   read getRotation;
+
+    property SpriteTop    [ Index : TCoord2D ] : TSprite read getSpriteTop;
+    property SpriteBottom [ Index : TCoord2D ] : TSprite read getSpriteBottom;
   published
     property Status       : Word       read FStatus      write FStatus;
     property Name         : AnsiString read FName        write FName;
     property Name_Number  : Word       read FLNum        write FLNum;
     property Danger_Level : Word       read FDangerLevel write FDangerLevel;
-    property Style        : Byte       read FStyle       write FStyle;
+    property Style        : Byte       read FStyle;
     property Special_Exit : AnsiString read FSpecExit;
     property Feeling      : AnsiString read FFeeling     write FFeeling;
     property id           : AnsiString read FID;
@@ -380,6 +389,7 @@ function TLevel.getGylph(const aCoord: TCoord2D): TIOGylph;
 var iColor    : TIOColor;
     iChar     : Char;
     iCell     : DWord;
+    iStyle    : Integer;
     iVisible  : Boolean;
     iExplored : Boolean;
     iBlood    : Boolean;
@@ -420,7 +430,13 @@ begin
       iBlood := LightFlag[ aCoord, LFBLOOD ] and (BloodColor <> 0);
       if iBlood
          then iColor := BloodColor
-         else iColor := LightColor;
+         else
+         begin
+           iStyle := getStyle( aCoord );
+           iColor := LightColor[ iStyle ];
+           if iColor = 0 then
+             iColor := LightColor[ 0 ];
+         end;
     end
     else if iExplored then iColor := DarkColor;
   end;
@@ -463,8 +479,8 @@ begin
   FNextNode    := nil;
 
   FLTime  := 0;
-  FullClear;
   FStyle := nstyle;
+  FullClear;
   FLNum := nlnum;
   FName := nname;
   FDangerLevel := nDangerLevel;
@@ -473,7 +489,9 @@ begin
   FFlags := [];
   FEmpty := False;
   FHooks := [];
+
   FFloorCell := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
+  FFloorStyle := LuaSystem.Get(['generator','styles',FStyle,'style']);
   if LuaSystem.Get(['diff',Doom.Difficulty,'respawn']) then Include( FFlags, LF_RESPAWN );
   FToHitBonus := LuaSystem.Get(['diff',Doom.Difficulty,'tohitbonus']);
 end;
@@ -511,8 +529,8 @@ begin
   if GraphicsVersion then
   begin
     for c in FArea do
-      if SF_MULTI in Cells[CellBottom[c]].Sprite.Flags then
-        FMap.r[c.x,c.y] := SpriteMap.GetCellRotationMask(c);
+      if SF_MULTI in Cells[CellBottom[c]].Sprite[0].Flags then
+        FMap.Rotation[c.x,c.y] := SpriteMap.GetCellRotationMask(c);
 
     UI.GameUI.UpdateMinimap;
     RecalcFluids;
@@ -545,15 +563,15 @@ var cc : TCoord2D;
   function FluidFlag( c : TCoord2D; Value : Byte ) : Byte;
   begin
     if not isProperCoord( c ) then Exit(0);
-    if not (SF_FLUID in Cells[CellBottom[ c ]].Sprite.Flags)
+    if not (SF_FLUID in Cells[CellBottom[ c ]].Sprite[0].Flags)
       then Exit( Value )
       else Exit( 0 );
   end;
 begin
   if LF_SHARPFLUID in FFlags then Exit;
  for cc in FArea do
-   if SF_FLUID in Cells[CellBottom[ cc ]].Sprite.Flags then
-     FMap.r[cc.x,cc.y] :=
+   if SF_FLUID in Cells[CellBottom[ cc ]].Sprite[0].Flags then
+     FMap.Rotation[cc.x,cc.y] :=
        FluidFlag( cc.ifInc( 0,-1), 1 ) +
        FluidFlag( cc.ifInc( 0,+1), 2 ) +
        FluidFlag( cc.ifInc(-1, 0), 4 ) +
@@ -600,8 +618,9 @@ begin
   for x := 1 to MaxX do
     for y := 1 to MaxY do
     begin
-      d[x,y] := 0;
-      r[x,y] := 0;
+      Style[x,y] := FFloorStyle;
+      Overlay[x,y] := 0;
+      Rotation[x,y] := 0;
       if (x = 1) or (y = 1) or ( x = MaxX ) or ( y = MaxY ) then LightFlag[ NewCoord2D(x,y), lfPermanent ] := True;
     end;
 end;
@@ -1167,7 +1186,7 @@ end;
 function TLevel.getCell( const aWhere : TCoord2D ) : byte;
 var iOverlay : Word;
 begin
-  iOverlay := FMap.d[aWhere.x, aWhere.y];
+  iOverlay := FMap.Overlay[aWhere.x, aWhere.y];
   if iOverlay <> 0 then Exit( iOverlay );
   Result := inherited GetCell( aWhere );
 end;
@@ -1176,11 +1195,11 @@ procedure TLevel.putCell( const aWhere : TCoord2D; const aWhat : byte );
 begin
   if CF_OVERLAY in Cells[ aWhat ].Flags
   then
-     FMap.d[aWhere.x, aWhere.y] := aWhat
+     FMap.Overlay[aWhere.x, aWhere.y] := aWhat
   else
   begin
     inherited PutCell( aWhere, aWhat );
-    FMap.d[aWhere.x, aWhere.y] := 0;
+    FMap.Overlay[aWhere.x, aWhere.y] := 0;
   end;
 end;
 
@@ -1201,12 +1220,39 @@ end;
 
 function TLevel.getCellTop( Index : TCoord2D ): Byte;
 begin
-  Exit( FMap.d[Index.x, Index.y] );
+  Exit( FMap.Overlay[Index.x, Index.y] );
 end;
 
 function TLevel.getRotation( Index : TCoord2D ): Byte;
 begin
-  Exit( FMap.r[Index.x, Index.y] );
+  Exit( FMap.Rotation[Index.x, Index.y] );
+end;
+
+function TLevel.getStyle( Index : TCoord2D ): Byte;
+begin
+  Exit( FMap.Style[Index.x, Index.y] );
+end;
+
+function TLevel.getSpriteTop( Index : TCoord2D ): TSprite;
+var iCell  : TCell;
+    iStyle : Byte;
+begin
+  iCell   := Cells[ getCellTop( Index ) ];
+  iStyle  := getStyle( Index );
+  if iCell.Sprite[ iStyle ].SpriteID <> 0 then;
+    Exit( iCell.Sprite[ iStyle ] );
+  Exit( iCell.Sprite[ iStyle ] );
+end;
+
+function TLevel.getSpriteBottom( Index : TCoord2D ): TSprite;
+var iCell  : TCell;
+    iStyle : Byte;
+begin
+  iCell   := Cells[ getCellBottom( Index ) ];
+  iStyle  := getStyle( Index );
+  if iCell.Sprite[ iStyle ].SpriteID <> 0 then;
+    Exit( iCell.Sprite[ iStyle ] );
+  Exit( iCell.Sprite[ iStyle ] );
 end;
 
 function lua_level_drop_being(L: Plua_State): Integer; cdecl;
@@ -1361,14 +1407,59 @@ begin
   iValue := State.ToInteger(3);
   if iLevel.isVisible( iCoord ) then
   begin
-    iSprite := Cells[ iLevel.CellTop[ iCoord ] ].Sprite;
+    iSprite := iLevel.GetSpriteTop( iCoord );
     UI.addCellAnimation( iSprite.Frametime * Abs( iValue ), 0, iCoord, iSprite, iValue );
   end;
   Result := 0;
 end;
 
+function lua_level_set_generator_style(L: Plua_State): Integer; cdecl;
+var State   : TDoomLuaState;
+    iCoord  : TCoord2D;
+    iLevel  : TLevel;
+begin
+  State.Init(L);
+  iLevel := State.ToObject(1) as TLevel;
+  if State.IsNil(2) then Exit(0);
+  iLevel.FStyle := State.ToInteger(2);
+  iLevel.FFloorCell := LuaSystem.Defines[LuaSystem.Get(['generator','styles',iLevel.FStyle,'floor'])];
+  iLevel.FFloorStyle := LuaSystem.Get(['generator','styles',iLevel.FStyle,'style']);
+  for iCoord in iLevel.FArea do
+  begin
+    iLevel.FMap.Style[iCoord.X,iCoord.Y] := iLevel.FFloorStyle;
+  end;
+  Result := 0;
+end;
 
-const lua_level_lib : array[0..9] of luaL_Reg = (
+function lua_level_set_raw_style(L: Plua_State): Integer; cdecl;
+var State   : TDoomLuaState;
+    iCoord  : TCoord2D;
+    iLevel  : TLevel;
+    iValue  : Byte;
+begin
+  State.Init(L);
+  iLevel := State.ToObject(1) as TLevel;
+  if State.IsNil(2) then Exit(0);
+  iCoord := State.ToCoord(2);
+  iValue := State.ToInteger(3);
+  iLevel.FMap.Style[iCoord.X,iCoord.Y] := iValue;
+  Result := 0;
+end;
+
+function lua_level_get_raw_style(L: Plua_State): Integer; cdecl;
+var State   : TDoomLuaState;
+    iCoord  : TCoord2D;
+    iLevel  : TLevel;
+begin
+  State.Init(L);
+  iLevel := State.ToObject(1) as TLevel;
+  if State.IsNil(2) then Exit(0);
+  iCoord := State.ToCoord(2);
+  State.Push( iLevel.FMap.Style[iCoord.X,iCoord.Y] );
+  Result := 1;
+end;
+
+const lua_level_lib : array[0..12] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1378,6 +1469,9 @@ const lua_level_lib : array[0..9] of luaL_Reg = (
       ( name : 'clear_being';func : @lua_level_clear_being),
       ( name : 'recalc_fluids';func : @lua_level_recalc_fluids),
       ( name : 'animate_cell'; func : @lua_level_animate_cell),
+      ( name : 'set_generator_style';func : @lua_level_set_generator_style),
+      ( name : 'set_raw_style';      func : @lua_level_set_raw_style),
+      ( name : 'get_raw_style';      func : @lua_level_get_raw_style),
       ( name : nil;          func : nil; )
 );
 

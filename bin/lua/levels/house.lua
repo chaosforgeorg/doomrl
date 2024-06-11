@@ -25,7 +25,7 @@ register_level "house_of_pain"
 	end,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill("rwall")
 		level.data.is_staff = false
 

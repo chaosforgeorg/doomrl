@@ -331,7 +331,7 @@ function MSecNow : Comp;
 function DurationString( aSeconds : int64 ) : Ansistring;
 function BlindCoord( const where : TCoord2D ) : string;
 function SlotName(slot : TEqSlot) : string;
-function ReadSprite( aTable : TLuaTable ) : TSprite;
+function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
 
 var ColorOverrides : TIntHashMap;
 
@@ -570,26 +570,42 @@ begin
            else BonusStr := '+'+IntToStr(i);
 end;
 
-function ReadSprite( aTable : TLuaTable ) : TSprite;
+function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
+var iTable : TLuaTable;
 begin
-  Result.SpriteID  := aTable.getInteger('sprite',0);
-  Result.Flags     := aTable.getFlags('sflags');
-  Result.Frames    := aTable.getInteger('sframes',0);
-  Result.Frametime := aTable.getInteger('sftime',FRAME_TIME);
+  ReadSprite := False;
+  if aTable.IsNumber( 'sprite' ) then
+  begin
+    aSprite.SpriteID  := aTable.getInteger('sprite',0);
+    ReadSprite        := True;
+  end;
+  if aTable.IsTable( 'sflags' ) then
+    aSprite.Flags     := aTable.getFlags('sflags');
+  if aTable.IsNumber( 'sframes' ) then
+    aSprite.Frames    := aTable.getInteger('sframes',0);
+  if aTable.IsNumber( 'sftime' ) then
+    aSprite.Frametime := aTable.getInteger('sftime',FRAME_TIME);
   if not aTable.isNil( 'overlay' ) then
   begin
-    Include( Result.Flags, SF_OVERLAY );
-    Result.Color := NewColor( aTable.GetVec4f('overlay' ) );
+    Include( aSprite.Flags, SF_OVERLAY );
+    aSprite.Color := NewColor( aTable.GetVec4f('overlay' ) );
   end;
   if not aTable.isNil( 'coscolor' ) then
   begin
-    Include( Result.Flags, SF_COSPLAY );
-    Result.Color := NewColor( aTable.GetVec4f('coscolor' ) );
+    Include( aSprite.Flags, SF_COSPLAY );
+    aSprite.Color := NewColor( aTable.GetVec4f('coscolor' ) );
   end;
   if not aTable.isNil( 'glow' ) then
   begin
-    Include( Result.Flags, SF_GLOW );
-    Result.GlowColor := NewColor( aTable.GetVec4f('glow' ) );
+    Include( aSprite.Flags, SF_GLOW );
+    aSprite.GlowColor := NewColor( aTable.GetVec4f('glow' ) );
+  end;
+  // so we can later move to in-sprite table sprite info definitions slowly
+  if aTable.IsTable( 'sprite' ) then
+  begin
+    iTable := aTable.GetTable( 'sprite' );
+    Result := ReadSprite( iTable, aSprite );
+    iTable.Free;
   end;
 end;
 

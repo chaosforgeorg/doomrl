@@ -122,7 +122,7 @@ register_level "unholy_cathedral"
 	end,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "rwall", area.FULL )
 		local reward = "spear"
 		if statistics.kills == statistics.max_kills and DIFFICULTY >= DIFF_HARD then

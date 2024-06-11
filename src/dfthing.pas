@@ -47,7 +47,8 @@ begin
   FGylph.ASCII := Table.getChar('ascii');
   FGylph.Color := Table.getInteger('color');
   Name         := Table.getString('name');
-  FSprite      := ReadSprite( Table );
+  FillChar( FSprite, SizeOf( FSprite ), 0 );
+  ReadSprite( Table, FSprite );
 
   iColorID := FID;
   if Table.IsString('color_id') then iColorID := Table.getString('color_id');

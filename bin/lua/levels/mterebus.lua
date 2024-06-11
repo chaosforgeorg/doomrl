@@ -24,14 +24,14 @@ register_level "mt_erebus"
 
 			OnUse = function(self,being)
 				if level.status > 2 then return true end
-				local raise = "cwall1"
+				local raise = 0
 				if level.status == 1 then 
-					raise = "cwall2"
+					raise = 1
 				elseif level.status == 2 then 
-					raise = "cwall3"
+					raise = 2
 				end
 				player:play_sound("lever.use")
-				generator.transmute( raise, "floor" )
+				generator.transmute_style( "cwall", "floor", raise, 0 )
 				level.status = level.status + 1
 				return true
 			end,
@@ -39,7 +39,7 @@ register_level "mt_erebus"
 	end,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "plava", area.FULL )
 
 		local lavapits_armor = {
@@ -53,9 +53,9 @@ register_level "mt_erebus"
 			['='] = "lava",
 			['>'] = "stairs",
 			[','] = "bridge",
-			['X'] = { "cwall1", flags = { LFPERMANENT } },
-			['%'] = { "cwall2", flags = { LFPERMANENT } },
-			['#'] = { "cwall3", flags = { LFPERMANENT } },
+			['X'] = { "cwall", flags = { LFPERMANENT }, style = 1, },
+			['%'] = { "cwall", flags = { LFPERMANENT }, style = 2, },
+			['#'] = { "cwall", flags = { LFPERMANENT }, style = 3, },
 			['&'] = { "floor", item = "lever_erebus" },
 
 			['/'] = { "floor", item = "shell" },
@@ -114,9 +114,7 @@ register_level "mt_erebus"
 		local result = level.status
 		if result < 4 then
 			ui.msg("That seems to be all of them... wait! Something is moving there, or is it just lava glow?")
-			generator.transmute( "cwall1", "floor" )
-			generator.transmute( "cwall2", "floor" )
-			generator.transmute( "cwall3", "floor" )
+			generator.transmute( "cwall", "floor" )
 			level.status = 4
 			local element = level:summon("lava_elemental")
 			element.inv:add( item.new("lava_element") )

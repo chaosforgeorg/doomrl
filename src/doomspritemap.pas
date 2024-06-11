@@ -91,6 +91,7 @@ private
   procedure PushSpriteTerrainPart( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
   function VariableLight( aWhere : TCoord2D ) : Byte;
   function GetSprite( aSprite : TSprite ) : TSprite;
+  function GetSprite( aCell, aStyle : Byte ) : TSprite;
 public
   property Loaded : Boolean read FTexturesLoaded;
   property MaxShift : TPoint read FMaxShift;
@@ -842,6 +843,8 @@ var DMinX, DMaxX : Word;
     Y,X,L        : DWord;
     C            : TCoord2D;
     Spr          : TSprite;
+    iStyle       : Byte;
+
     function Mix( L, C : Byte ) : Byte;
     begin
       Exit( Clamp( Floor( ( L / 255 ) * C ) * 255, 0, 255 ) );
@@ -859,8 +862,9 @@ begin
       Bottom := Doom.Level.CellBottom[c];
       if Bottom <> 0 then
       begin
-        Z   := Y * DRL_Z_LINE;
-        Spr := GetSprite( Cells[Bottom].Sprite );
+        Z      := Y * DRL_Z_LINE;
+        iStyle := Doom.Level.CStyle[ c ];
+        Spr    := GetSprite( Bottom, iStyle );
         if SF_FLOW in Spr.Flags
           then PushSpriteTerrain( X, Y, Spr, Z, FFluidX, FFluidY )
           else
@@ -872,7 +876,7 @@ begin
           end;
         if (SF_FLUID in Spr.Flags) and (Doom.Level.Rotation[c] <> 0) then
         begin
-          Spr := Cells[Doom.Level.FloorCell].Sprite;
+          Spr := GetSprite( Doom.Level.FloorCell, Doom.Level.FloorStyle );
           Spr.SpriteID += Doom.Level.Rotation[c];
           PushSpriteTerrain( X, Y, Spr, Z + DRL_Z_ENVIRO );
         end;
@@ -904,9 +908,9 @@ begin
       if (Top <> 0) and Doom.Level.CellExplored(c) and ( not Doom.Level.LightFlag[ c, LFANIMATING ] ) then
       begin
         if CF_STAIRS in Cells[Top].Flags then
-          PushSpriteDoodad( X, Y, Cells[Top].Sprite, 255 )
+          PushSpriteDoodad( X, Y, Cells[Top].Sprite[0], 255 )
         else
-          PushSpriteDoodad( X, Y, Cells[Top].Sprite );
+          PushSpriteDoodad( X, Y, GetSprite( Top, Doom.Level.CStyle[c] ) );
       end;
 
       iItem := Doom.Level.Item[c];
@@ -977,6 +981,15 @@ begin
     else
       Result.SpriteID += DRL_COLS * iFrame;
   end;
+end;
+
+function TDoomSpriteMap.GetSprite( aCell, aStyle : Byte ) : TSprite;
+var iCell  : TCell;
+begin
+  iCell   := Cells[ aCell ];
+  if iCell.Sprite[ aStyle ].SpriteID <> 0 then
+    Exit( iCell.Sprite[ aStyle ] );
+  Exit( iCell.Sprite[ 0 ] );
 end;
 
 end.

@@ -35,7 +35,7 @@ register_level "spiders_lair"
 
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "rwall", area.FULL )
 
 		local translation = {

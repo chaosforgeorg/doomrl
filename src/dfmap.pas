@@ -14,16 +14,17 @@ type TCellHook  = (CellHook_OnEnter, CellHook_OnExit, CellHook_OnAct, CellHook_O
 const CellHooks : array[TCellHook] of string = ('OnEnter', 'OnExit', 'OnAct', 'OnDescribe', 'OnDestroy');
 
 type TMap = object
-       d : array[ 1..MaxX, 1..MaxY ] of Byte;
-       r : array[ 1..MaxX, 1..MaxY ] of Byte;
+       Overlay  : array[ 1..MaxX, 1..MaxY ] of Byte;
+       Rotation : array[ 1..MaxX, 1..MaxY ] of Byte;
+       Style    : array[ 1..MaxX, 1..MaxY ] of Byte;
      end;
 
 type TCell = class
   PicChr      : Char;
   PicLow      : Char;
-  Sprite      : TSprite;
+  Sprite      : array[0..15] of TSprite;
   BloodSprite : TSprite;
-  LightColor  : Byte;
+  LightColor  : array[0..15] of Byte;
   DarkColor   : Byte;
   BloodColor  : Byte;
   Desc        : AnsiString;
@@ -66,6 +67,10 @@ var iColorID : AnsiString;
     iHook    : TCellHook;
     iCell    : TCell;
     iTable   : TLuaTable;
+    iSubTable: TLuaTable;
+    iBase    : TSprite;
+    iSprite  : TSprite;
+    iSize, i : Integer;
 begin
   if aCellNum >= High( FData ) then
   begin
@@ -89,7 +94,26 @@ begin
     iCell.PicChr    := getChar('ascii');
     iCell.PicLow    := getChar('asciilow');
     iCell.DarkColor := getInteger('color_dark');
-    iCell.LightColor:= getInteger('color');
+
+    FillChar( iCell.LightColor, SizeOf(iCell.LightColor), 0 );
+    if iTable.IsTable('color') then
+    begin
+      iSize := iTable.GetTableSize( 'color' );
+      if iSize > High( iCell.LightColor ) then
+        raise Exception.Create( 'Maximum number of ASCII color styles reached!' );
+
+      with GetTable( 'color' ) do
+      try
+        for i := 1 to iSize do
+          if IsNumber( i ) then
+            iCell.LightColor[i-1] := GetValue( i )
+      finally
+        Free;
+      end
+    end
+    else
+      iCell.LightColor[0]:= getInteger('color');
+
     iCell.BloodColor:= getInteger('blcolor');
     iCell.Desc      := getString('name');
     iCell.BlDesc    := getString('blname');
@@ -99,7 +123,37 @@ begin
     iCell.bloodto   := getString('bloodto');
     iCell.destroyto := getString('destroyto');
     iCell.raiseto   := getString('raiseto');
-    iCell.Sprite    := ReadSprite( iTable );
+    FillChar( iCell.Sprite,      SizeOf(iCell.Sprite),      0 );
+    FillChar( iCell.BloodSprite, SizeOf(iCell.BloodSprite), 0 );
+    FillChar( iBase,             SizeOf(iBase),             0 );
+    ReadSprite( iTable, iBase );
+    if iTable.IsTable( 'sprite' ) then
+    begin
+      iSize := iTable.GetTableSize( 'sprite' );
+      if iSize > High( iCell.Sprite ) then
+        raise Exception.Create( 'Maximum number of sprite styles reached!' );
+      if iSize > 0 then
+      with GetTable( 'sprite' ) do
+      try
+        for i := 1 to iSize do
+        begin
+          iSprite := iBase;
+          if IsNumber( i ) then
+            iSprite.SpriteID := GetValue( i )
+          else
+          begin
+            iSubTable := iTable.GetTable( ['sprite',i] );
+            ReadSprite( iSubTable, iSprite );
+            iSubTable.Free;
+          end;
+          iCell.Sprite[i - 1] := iSprite;
+        end;
+      finally
+        Free;
+      end;
+    end
+    else
+      iCell.Sprite[0] := iBase;
     iCell.BloodSprite.SpriteID := getInteger('blsprite',0);
   finally
     Free;
@@ -108,7 +162,7 @@ begin
   if (not Option_HighASCII) then iCell.PicChr := iCell.PicLow;
 
   if ColorOverrides.Exists(iColorID+'_light') then
-    iCell.LightColor := ColorOverrides[iColorID+'_light'];
+    iCell.LightColor[0] := ColorOverrides[iColorID+'_light'];
   if ColorOverrides.Exists(iColorID+'_dark') then
     iCell.DarkColor:= ColorOverrides[iColorID+'_dark'];
 
