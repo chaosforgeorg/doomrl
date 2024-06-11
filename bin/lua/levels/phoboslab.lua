@@ -75,7 +75,7 @@ register_level "phobos_lab"
 			['.'] = "floor",
 			['#'] = { "wall",   flags = { LFPERMANENT } },
 			['%'] = { "cwall1", flags = { LFPERMANENT } },
-			['X'] = { "dwall",  flags = { LFPERMANENT } },
+			['X'] = { "wall",   flags = { LFPERMANENT }, style = 2, },
 			['+'] = { "door",   flags = { LFPERMANENT } },
 			['L'] = { "ldoor",  flags = { LFPERMANENT } },
 			['='] = "acid",

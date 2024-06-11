@@ -43,16 +43,16 @@ function DoomRL.loadcells()
 
 	register_cell "wall"
 	{
-		name       = "stone wall",
+		name       = "base wall",
 		blname     = "blooded wall",
 		ascii      = "#",
-		color      = LIGHTGRAY,
+		color      = { LIGHTGRAY, DARKGRAY, },
 		blcolor    = RED,
 		armor      = 10,
 		hp         = 10,
 		set        = CELLSET_WALLS,
 		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
-		sprite     = SPRITE_WALL,
+		sprite     = { SPRITE_WALL, SPRITE_TECHWALL },
 		blsprite   = SPRITE_WALLBLOOD,
 		sflags     = { SF_MULTI },
 	}
