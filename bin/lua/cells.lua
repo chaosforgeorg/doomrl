@@ -3,7 +3,7 @@ function DoomRL.loadcells()
 	register_cell "floor"
 	{
 		name       = "floor",
-		ascii      = "ù",
+		ascii      = "ï¿½",
 		asciilow   = '.',
 		set        = CELLSET_FLOORS,
 		blname     = "blood",
@@ -11,32 +11,16 @@ function DoomRL.loadcells()
 		bloodto    = "bloodpool";
 		sprite     = SPRITE_FLOOR,
 		blsprite   = SPRITE_BLOOD;
-	}
-
-	register_cell "floorc"
-	{
-		name       = "floor",
-		ascii      = "ù",
-		asciilow   = '.',
-		set        = CELLSET_FLOORS,
-		blname     = "blood",
-		blcolor    = RED;
-		bloodto    = "bloodpool";
-		sprite     = SPRITE_CAVEFLOOR,
-		blsprite   = SPRITE_BLOOD;
-	}
-
-	register_cell "floorb"
-	{
-		name       = "floor",
-		ascii      = "ù",
-		asciilow   = '.',
-		set        = CELLSET_FLOORS,
-		blname     = "blood",
-		blcolor    = RED;
-		bloodto    = "bloodpool";
-		sprite     = SPRITE_HELLFLOOR,
-		blsprite   = SPRITE_BLOOD;
+		sprite     = {
+			SPRITE_FLOOR, -- tech 0
+			SPRITE_FLOOR, -- tech 1
+			SPRITE_HELLFLOOR, -- tech hell
+			SPRITE_FLOOR, -- unused 3
+			SPRITE_FLOOR, -- unused 4
+			SPRITE_FLOOR,     -- cave 5
+			SPRITE_CAVEFLOOR, -- cave 6
+			SPRITE_HELLFLOOR, -- cave 7
+		}
 	}
 
 -- Tech Walls --
