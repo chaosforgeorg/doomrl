@@ -144,6 +144,8 @@ core.declare( "SPRITE_BRICKWALL", DRL_SENVIRO + DRL_COLS * 15 + 7 )
 core.declare( "SPRITE_TECHWALL",  DRL_SENVIRO + DRL_COLS * 15 + 10 )
 core.declare( "SPRITE_BOSSWALL",  DRL_SENVIRO + DRL_COLS * 15 + 13 )
 
+core.declare( "SPRITE_RUBBLE",    DRL_SENVIRO + DRL_COLS * 31 + 4 )
+
 core.declare( "SPRITE_WATER",     DRL_SENVIRO + DRL_COLS * 28 + 10 )
 core.declare( "SPRITE_ACID",      DRL_SENVIRO + DRL_COLS * 28 + 12 )
 core.declare( "SPRITE_LAVA",      DRL_SENVIRO + DRL_COLS * 28 + 14 )

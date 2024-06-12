@@ -24,6 +24,21 @@ function DoomRL.loadcells()
 
 -- Tech Walls --
 
+	register_cell "wall_destroyed"
+	{
+		name       = "rubble",
+		blname     = "blooded rubble",
+		ascii      = "\250",
+		asciilow   = '.',
+		color 	   = DARKGRAY,
+		set        = CELLSET_FLOORS,
+		blname     = "blood",
+		blcolor    = RED,
+		sprite     = SPRITE_RUBBLE,
+		blsprite   = SPRITE_BLOOD,
+		sflags     = { SF_MULTI, SF_FLOOR },
+	}
+
 	register_cell "wall"
 	{
 		name       = "base wall",
@@ -37,6 +52,7 @@ function DoomRL.loadcells()
 		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
 		sprite     = { SPRITE_WALL, SPRITE_TECHWALL },
 		blsprite   = SPRITE_WALLBLOOD,
+		destroyto  = "wall_destroyed",
 		sflags     = { SF_MULTI },
 	}
 
@@ -58,6 +74,7 @@ function DoomRL.loadcells()
 		coscolor   = { 1.0,0.2,0.2,1.0 },
 		sprite     = SPRITE_BRICKWALL,
 		blsprite   = SPRITE_WALLBLOOD,
+		destroyto  = "wall_destroyed",
 		sflags     = { SF_MULTI },
 	}
 
@@ -79,6 +96,7 @@ function DoomRL.loadcells()
 		sprite     = SPRITE_CAVEWALL,
 		blsprite   = SPRITE_WALLBLOOD,
 		sflags     = { SF_MULTI },
+		destroyto  = "wall_destroyed",
 	}
 
 -- Ice Walls End --
@@ -104,6 +122,7 @@ function DoomRL.loadcells()
 			{ coscolor   = { 1.0,0.6,0.2,1.0 }, }, -- 6
 			{ coscolor   = { 1.0,0.2,0.2,1.0 }, }, -- 7
 		},
+		destroyto  = "wall_destroyed",
 		blcolor    = RED,
 		armor      = 15,
 		hp         = 30,
@@ -131,6 +150,7 @@ function DoomRL.loadcells()
 		deco       = { SPRITE_DECO_SKULL_1, SPRITE_DECO_SKULL_2, SPRITE_DECO_SKULL_3, SPRITE_DECO_SKULL_4 },
 		blsprite   = SPRITE_WALLBLOOD,
 		sflags     = { SF_MULTI },
+		destroyto  = "wall_destroyed",
 	}
 
 -- Green Walls End --
