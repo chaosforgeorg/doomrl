@@ -81,7 +81,7 @@ core.declare( "SPRITE_BARON",     DRL_SBEINGS + 13 )
 core.declare( "SPRITE_ARACHNO",   DRL_SBEINGS + 14 )
 core.declare( "SPRITE_ARCHVILE",  DRL_SBEINGS + 15 )
 core.declare( "SPRITE_REVENANT",  DRL_SBEINGS + 16 )
-core.declare( "SPRITE_MANCUBUS",  DRL_SBEINGS + DRL_COLS * 2 + 1 )
+core.declare( "SPRITE_MANCUBUS",  DRL_SBEINGS + DRL_COLS * 3 + 1 )
 
 core.declare( "SPRITE_BRUISER",   DRL_SLARGE + 1 )
 core.declare( "SPRITE_APOSTLE",   DRL_SLARGE + 3 )
@@ -143,6 +143,8 @@ core.declare( "SPRITE_CAVEWALL",  DRL_SENVIRO + DRL_COLS * 15 + 4 )
 core.declare( "SPRITE_BRICKWALL", DRL_SENVIRO + DRL_COLS * 15 + 7 )
 core.declare( "SPRITE_TECHWALL",  DRL_SENVIRO + DRL_COLS * 15 + 10 )
 core.declare( "SPRITE_BOSSWALL",  DRL_SENVIRO + DRL_COLS * 15 + 13 )
+
+core.declare( "SPRITE_RUBBLE",    DRL_SENVIRO + DRL_COLS * 31 + 4 )
 
 core.declare( "SPRITE_WATER",     DRL_SENVIRO + DRL_COLS * 28 + 10 )
 core.declare( "SPRITE_ACID",      DRL_SENVIRO + DRL_COLS * 28 + 12 )

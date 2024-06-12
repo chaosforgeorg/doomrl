@@ -185,6 +185,7 @@ SF_GLOW     = 4;
 SF_FLOW     = 5;
 SF_FLUID    = 6;
 SF_MULTI    = 7;
+SF_FLOOR    = 8;
 
 EF_NOBLOCK  = 0;
 EF_NOBEINGS = 1;
