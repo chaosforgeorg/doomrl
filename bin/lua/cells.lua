@@ -9,7 +9,6 @@ function DoomRL.loadcells()
 		blname     = "blood",
 		blcolor    = RED;
 		bloodto    = "bloodpool";
-		sprite     = SPRITE_FLOOR,
 		blsprite   = SPRITE_BLOOD;
 		sprite     = {
 			SPRITE_FLOOR, -- tech 0
