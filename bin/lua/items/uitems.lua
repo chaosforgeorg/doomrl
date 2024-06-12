@@ -978,8 +978,7 @@ function DoomRL.load_doom_unique_items()
 			ui.blink(RED,20)
 			ui.blink(LIGHTRED,20)
 			ui.msg("Release the power of the BERSERKER!")
-			-- I hope this number is truly infinite.
-			being:set_affect("berserk",10000000);
+			being:set_affect("berserk",-1);
 		end,
 
 		OnKill = function (self,being,target)

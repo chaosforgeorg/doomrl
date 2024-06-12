@@ -8,6 +8,8 @@
 [mod] -- GH#115: double chainsaw now 4d12 acc -1 (was 8d6 acc -2)
 [mod] -- GH#115: thrown knife & Mjol benefit from both ranged and melee tohit/todam
 [mod] -- GH#115: Subtle Knife - invoke 10->15 damage, 5 hp drain, no maxhp drain
+[fix] -- GH#115: expiring messages for affects appear again
+[fix] -- GH#115: unexpirable affects will no longer expire after a long time
 
 0.9.9.8 BETA 4
 [new] -- BETA  : WARNING - speed/command system rewrites!
