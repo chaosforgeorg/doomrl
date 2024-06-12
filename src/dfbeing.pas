@@ -836,8 +836,7 @@ begin
       case aWeapon.AltFire of
         ALT_THROW  :
         begin
-          // thelaptop: If you can aim it, you should get a bonus for throwing it.
-          SendMissile( aTarget, aWeapon, FBonus.ToHit, FBonus.ToDam + FBonus.ToDamAll );
+          SendMissile( aTarget, aWeapon, FBonus.ToHit + FBonus.ToHitMelee, FBonus.ToDam + FBonus.ToDamAll );
           Dec( FSpeedCount, 1000 );
           Exit( True );
         end;

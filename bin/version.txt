@@ -6,6 +6,7 @@
 [new] -- GH#121: G-version - debris where destroyed walls were!
 [mod] -- GH#115: Mjollnir can appear from level 5 and has 1d25 damage
 [mod] -- GH#115: double chainsaw now 4d12 acc -1 (was 8d6 acc -2)
+[mod] -- GH#115: thrown knife & Mjol benefit from both ranged and melee tohit/todam
 
 0.9.9.8 BETA 4
 [new] -- BETA  : WARNING - speed/command system rewrites!
