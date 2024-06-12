@@ -199,14 +199,13 @@ function DoomRL.loaduniqueitems()
 				ui.msg("You are too tired to invoke the Knife!");
 			else
 				ui.msg("You feel your health drained!");
-				being.hpmax  = math.max( being.hpmax - 2, 5 )
-				being.hp     = math.max( being.hp - 2, 1 )
+				being.hp     = math.max( being.hp - 5, 1 )
 				being.tired  = true
 				being.scount = being.scount - 1000
 				for b in level:beings() do
 					if not b:is_player() and b:is_visible() then
 						level:explosion( b.position, 1, 50, 0, 0, BLUE, "none", DAMAGE_SPLASMA, self, { EFSELFSAFE } )
-						b:apply_damage( 10, TARGET_INTERNAL, DAMAGE_SPLASMA, self )
+						b:apply_damage( 15, TARGET_INTERNAL, DAMAGE_SPLASMA, self )
 					end
 				end
 			end
