@@ -188,14 +188,15 @@ register_level "tower_of_babel"
 		local scatter_area = area.new( 5,3,68,15 )
 		local translation = {
 			['.'] = { "floor", flags = { LFBLOOD } },
-			['#'] = "gwall",
+			['#'] = "gwall", 
+			['D'] = { "gwall", deco = 1 },
 			['>'] = "stairs",
 		}
 		generator.scatter_put(scatter_area,translation, [[
 .....
 .###.
 .###.
-.###.
+.#D#.
 .....
 ]]
 		,"floor",12)

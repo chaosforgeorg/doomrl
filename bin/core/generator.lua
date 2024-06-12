@@ -89,6 +89,9 @@ function generator.place_dungen_tile( code, tile_object, tile_pos )
 		if tile_entry.style then
 			level:set_raw_style( p, generator.styles[ tile_entry.style ].style )
 		end
+		if tile_entry.deco then
+			level:set_raw_deco( p, tile_entry.deco )
+		end
 	end
 end
 
@@ -397,6 +400,7 @@ function generator.reset()
 	generator.room_list = {}
 	generator.room_meta = {}
 
+	level:set_generator_style( level.style )
 	generator.fill( generator.styles[ level.style ].floor )
 	generator.fill_edges( generator.styles[ level.style ].wall )
 end

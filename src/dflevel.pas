@@ -138,6 +138,7 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
     function getCellTop( Index : TCoord2D ): Byte;
     function getRotation( Index : TCoord2D ): Byte;
     function getStyle( Index : TCoord2D ): Byte;
+    function getDeco( Index : TCoord2D ): Byte;
     function getSpriteTop( Index : TCoord2D ): TSprite;
     function getSpriteBottom( Index : TCoord2D ): TSprite;
   public
@@ -151,6 +152,7 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
     property CellBottom [ Index : TCoord2D ] : Byte read getCellBottom;
     property CellTop    [ Index : TCoord2D ] : Byte read getCellTop;
     property CStyle   [ Index : TCoord2D ] : Byte   read getStyle;
+    property Deco     [ Index : TCoord2D ] : Byte   read getDeco;
     property Rotation [ Index : TCoord2D ] : Byte   read getRotation;
 
     property SpriteTop    [ Index : TCoord2D ] : TSprite read getSpriteTop;
@@ -618,8 +620,9 @@ begin
   for x := 1 to MaxX do
     for y := 1 to MaxY do
     begin
-      Style[x,y] := FFloorStyle;
-      Overlay[x,y] := 0;
+      Style[x,y]    := FFloorStyle;
+      Deco[x,y]     := 0;
+      Overlay[x,y]  := 0;
       Rotation[x,y] := 0;
       if (x = 1) or (y = 1) or ( x = MaxX ) or ( y = MaxY ) then LightFlag[ NewCoord2D(x,y), lfPermanent ] := True;
     end;
@@ -1233,6 +1236,11 @@ begin
   Exit( FMap.Style[Index.x, Index.y] );
 end;
 
+function TLevel.getDeco( Index : TCoord2D ): Byte;
+begin
+  Exit( FMap.Deco[Index.x, Index.y] );
+end;
+
 function TLevel.getSpriteTop( Index : TCoord2D ): TSprite;
 var iCell  : TCell;
     iStyle : Byte;
@@ -1459,7 +1467,36 @@ begin
   Result := 1;
 end;
 
-const lua_level_lib : array[0..12] of luaL_Reg = (
+
+function lua_level_set_raw_deco(L: Plua_State): Integer; cdecl;
+var State   : TDoomLuaState;
+    iCoord  : TCoord2D;
+    iLevel  : TLevel;
+    iValue  : Byte;
+begin
+  State.Init(L);
+  iLevel := State.ToObject(1) as TLevel;
+  if State.IsNil(2) then Exit(0);
+  iCoord := State.ToCoord(2);
+  iValue := State.ToInteger(3);
+  iLevel.FMap.Deco[iCoord.X,iCoord.Y] := iValue;
+  Result := 0;
+end;
+
+function lua_level_get_raw_deco(L: Plua_State): Integer; cdecl;
+var State   : TDoomLuaState;
+    iCoord  : TCoord2D;
+    iLevel  : TLevel;
+begin
+  State.Init(L);
+  iLevel := State.ToObject(1) as TLevel;
+  if State.IsNil(2) then Exit(0);
+  iCoord := State.ToCoord(2);
+  State.Push( iLevel.FMap.Deco[iCoord.X,iCoord.Y] );
+  Result := 1;
+end;
+
+const lua_level_lib : array[0..14] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1472,6 +1509,8 @@ const lua_level_lib : array[0..12] of luaL_Reg = (
       ( name : 'set_generator_style';func : @lua_level_set_generator_style),
       ( name : 'set_raw_style';      func : @lua_level_set_raw_style),
       ( name : 'get_raw_style';      func : @lua_level_get_raw_style),
+      ( name : 'set_raw_deco';      func : @lua_level_set_raw_deco),
+      ( name : 'get_raw_deco';      func : @lua_level_get_raw_deco),
       ( name : nil;          func : nil; )
 );
 
