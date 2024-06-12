@@ -148,7 +148,7 @@ function DoomRL.loaduniqueitems()
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_CLEAVER,
 		psprite  = SPRITE_PLAYER_CLEAVER,
-		level    = 15,
+		level    = 5,
 		weight   = 1,
 		group    = "weapon-melee",
 		scavenge = { "umod_onyx" },
@@ -156,7 +156,7 @@ function DoomRL.loaduniqueitems()
 		flags    = { IF_UNIQUE, IF_NODESTROY, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
-		damage      = "1d15",
+		damage      = "1d25",
 		damagetype  = DAMAGE_MELEE,
 		acc         = 0,
 		altfire     = ALT_THROW,
