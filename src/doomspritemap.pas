@@ -844,6 +844,8 @@ var DMinX, DMaxX : Word;
     C            : TCoord2D;
     Spr          : TSprite;
     iStyle       : Byte;
+    iDeco        : Byte;
+    iCell        : TCell;
 
     function Mix( L, C : Byte ) : Byte;
     begin
@@ -882,6 +884,15 @@ begin
         end;
         if Doom.Level.LightFlag[ c, LFBLOOD ] and (Cells[Bottom].BloodSprite.SpriteID <> 0) then
           PushSpriteDoodad( X, Y, Cells[Bottom].BloodSprite );
+        iDeco := Doom.Level.Deco[c];
+        if iDeco <> 0then
+        begin
+          iCell := Cells[ Bottom ];
+          if iCell.Deco[ iDeco ].SpriteID <> 0 then
+          begin
+            PushSpriteTerrain( X, Y, iCell.Deco[ iDeco ], Z + DRL_Z_ENVIRO + 1 );
+          end;
+        end;
       end;
     end;
 end;

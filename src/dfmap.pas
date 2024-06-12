@@ -17,12 +17,14 @@ type TMap = object
        Overlay  : array[ 1..MaxX, 1..MaxY ] of Byte;
        Rotation : array[ 1..MaxX, 1..MaxY ] of Byte;
        Style    : array[ 1..MaxX, 1..MaxY ] of Byte;
+       Deco     : array[ 1..MaxX, 1..MaxY ] of Byte;
      end;
 
 type TCell = class
   PicChr      : Char;
   PicLow      : Char;
   Sprite      : array[0..15] of TSprite;
+  Deco        : array[1..7]  of TSprite;
   BloodSprite : TSprite;
   LightColor  : array[0..15] of Byte;
   DarkColor   : Byte;
@@ -125,6 +127,7 @@ begin
     iCell.raiseto   := getString('raiseto');
     FillChar( iCell.Sprite,      SizeOf(iCell.Sprite),      0 );
     FillChar( iCell.BloodSprite, SizeOf(iCell.BloodSprite), 0 );
+    FillChar( iCell.Deco,        SizeOf(iCell.Deco),        0 );
     FillChar( iBase,             SizeOf(iBase),             0 );
     ReadSprite( iTable, iBase );
     if iTable.IsTable( 'sprite' ) then
@@ -155,6 +158,32 @@ begin
     else
       iCell.Sprite[0] := iBase;
     iCell.BloodSprite.SpriteID := getInteger('blsprite',0);
+    if iTable.IsTable( 'deco' ) then
+    begin
+      iSize := iTable.GetTableSize( 'deco' );
+      if iSize > High( iCell.Deco ) then
+        raise Exception.Create( 'Maximum number of sprite decorations reached!' );
+      if iSize > 0 then
+      with GetTable( 'deco' ) do
+      try
+        for i := 1 to iSize do
+        begin
+          iSprite := iCell.Deco[ i ];
+          if IsNumber( i ) then
+            iSprite.SpriteID := GetValue( i )
+          else
+          begin
+            iSubTable := iTable.GetTable( ['deco',i] );
+            ReadSprite( iSubTable, iSprite );
+            iSubTable.Free;
+          end;
+          iCell.Deco[ i ] := iSprite;
+        end;
+      finally
+        Free;
+      end;
+    end;
+
   finally
     Free;
   end;
