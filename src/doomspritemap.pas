@@ -893,6 +893,11 @@ begin
             PushSpriteTerrain( X, Y, iCell.Deco[ iDeco ], Z + DRL_Z_ENVIRO + 1 );
           end;
         end;
+        if (SF_FLOOR in Spr.Flags) then
+        begin
+          Spr := GetSprite( Doom.Level.FloorCell, Doom.Level.FloorStyle );
+          PushSpriteTerrain( X, Y, Spr, Z - 1 );
+        end;
       end;
     end;
 end;
