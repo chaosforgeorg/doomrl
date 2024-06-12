@@ -361,9 +361,9 @@ function DoomRL.load_mod_arrays()
 
 		OnApply = function (item)
 			item.name         = "double chainsaw"
-			item.damage_dice  = 8
-			item.damage_sides = 6
-			item.acc          = -2
+			item.damage_dice  = 4
+			item.damage_sides = 12
+			item.acc          = -1
 		end,
 	}
 

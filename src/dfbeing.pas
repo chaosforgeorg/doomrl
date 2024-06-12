@@ -836,8 +836,7 @@ begin
       case aWeapon.AltFire of
         ALT_THROW  :
         begin
-          // thelaptop: If you can aim it, you should get a bonus for throwing it.
-          SendMissile( aTarget, aWeapon, FBonus.ToHit, FBonus.ToDam + FBonus.ToDamAll );
+          SendMissile( aTarget, aWeapon, FBonus.ToHit + FBonus.ToHitMelee, FBonus.ToDam + FBonus.ToDamAll );
           Dec( FSpeedCount, 1000 );
           Exit( True );
         end;
@@ -1599,6 +1598,7 @@ var iName          : string;
     iWeapon        : TItem;
     iDamageType    : TDamageType;
     iToHit         : Integer;
+    iBerserk       : Integer;
     iDualAttack    : Boolean;
     iAttackCost    : DWord;
     iIncrease      : DWord;
@@ -1701,8 +1701,12 @@ begin
             Player.FTactic.Stop;
             if Player.FAffects.IsActive(LuaSystem.Defines['berserk']) then
             begin
-              iIncrease := 10 - Min( Player.FAffects.List[LuaSystem.Defines['berserk']] div 10, 9 );
-              Player.FAffects.Add(LuaSystem.Defines['berserk'],iIncrease);
+              iBerserk  := Player.FAffects.List[LuaSystem.Defines['berserk']];
+              if iBerserk > 0 then
+              begin
+                iIncrease := 10 - Min( iBerserk div 10, 9 );
+                Player.FAffects.Add(LuaSystem.Defines['berserk'],iIncrease);
+              end;
             end
             else
               Player.FAffects.Add(LuaSystem.Defines['berserk'],20);

@@ -148,7 +148,7 @@ function DoomRL.loaduniqueitems()
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_CLEAVER,
 		psprite  = SPRITE_PLAYER_CLEAVER,
-		level    = 15,
+		level    = 5,
 		weight   = 1,
 		group    = "weapon-melee",
 		scavenge = { "umod_onyx" },
@@ -156,7 +156,7 @@ function DoomRL.loaduniqueitems()
 		flags    = { IF_UNIQUE, IF_NODESTROY, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
-		damage      = "1d15",
+		damage      = "1d25",
 		damagetype  = DAMAGE_MELEE,
 		acc         = 0,
 		altfire     = ALT_THROW,
@@ -199,14 +199,13 @@ function DoomRL.loaduniqueitems()
 				ui.msg("You are too tired to invoke the Knife!");
 			else
 				ui.msg("You feel your health drained!");
-				being.hpmax  = math.max( being.hpmax - 2, 5 )
-				being.hp     = math.max( being.hp - 2, 1 )
+				being.hp     = math.max( being.hp - 5, 1 )
 				being.tired  = true
 				being.scount = being.scount - 1000
 				for b in level:beings() do
 					if not b:is_player() and b:is_visible() then
 						level:explosion( b.position, 1, 50, 0, 0, BLUE, "none", DAMAGE_SPLASMA, self, { EFSELFSAFE } )
-						b:apply_damage( 10, TARGET_INTERNAL, DAMAGE_SPLASMA, self )
+						b:apply_damage( 15, TARGET_INTERNAL, DAMAGE_SPLASMA, self )
 					end
 				end
 			end
@@ -979,8 +978,7 @@ function DoomRL.load_doom_unique_items()
 			ui.blink(RED,20)
 			ui.blink(LIGHTRED,20)
 			ui.msg("Release the power of the BERSERKER!")
-			-- I hope this number is truly infinite.
-			being:set_affect("berserk",10000000);
+			being:set_affect("berserk",-1);
 		end,
 
 		OnKill = function (self,being,target)
