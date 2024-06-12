@@ -153,6 +153,11 @@ core.declare( "SPRITE_YBOXC",     DRL_SENVIRO + DRL_COLS * 35 + 10 )
 core.declare( "SPRITE_WBOX",      DRL_SENVIRO + DRL_COLS * 34 + 11 )
 core.declare( "SPRITE_WBOXC",     DRL_SENVIRO + DRL_COLS * 35 + 11 )
 
+core.declare( "SPRITE_DECO_SKULL_1", DRL_SENVIRO + DRL_COLS * 12 + 16 )
+core.declare( "SPRITE_DECO_SKULL_2", DRL_SENVIRO + DRL_COLS * 13 + 16 )
+core.declare( "SPRITE_DECO_SKULL_3", DRL_SENVIRO + DRL_COLS * 14 + 16 )
+core.declare( "SPRITE_DECO_SKULL_4", DRL_SENVIRO + DRL_COLS * 15 + 16 )
+
 assert( HARDSPRITE_PLAYER  == SPRITE_PLAYER )
 assert( HARDSPRITE_HIT     == SPRITE_BLAST )
 assert( HARDSPRITE_SELECT  == SPRITE_SELECT )
