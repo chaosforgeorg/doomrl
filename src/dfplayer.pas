@@ -705,7 +705,7 @@ begin
     begin
       if iID = ''
         then Exit( Fail( 'There''s nothing you can act upon here.', [] ) )
-        else Exit( Fail( 'There''s niLimitRangeo door you can %s here.', [ iID ] ) );
+        else Exit( Fail( 'There''s no door you can %s here.', [ iID ] ) );
     end;
 
     if iCount > 1 then
