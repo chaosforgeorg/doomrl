@@ -20,7 +20,7 @@ function DoomRL.loadmedals()
 	register_medal "shotguns"
 	{
 		name  = "Shotgunnery Cross",
-		desc  = "Won & killed everything with shotguns/fists",
+		desc  = "Won & killed only with shotguns/fists",
 		hidden  = true,
 		winonly = true,
 		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + DoomRL.count_group_kills( "weapon-shotgun" ) == statistics.kills end,
@@ -29,7 +29,7 @@ function DoomRL.loadmedals()
 	register_medal "pistols"
 	{
 		name  = "Marksmanship Cross",
-		desc  = "Won & killed everything with pistols/fists",
+		desc  = "Won & killed only with pistols/fists",
 		hidden  = true,
 		winonly = true,
 		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + DoomRL.count_group_kills( "weapon-pistol" ) == statistics.kills end,
@@ -38,7 +38,7 @@ function DoomRL.loadmedals()
 	register_medal "knives"
 	{
 		name  = "Malicious Knives Cross",
-		desc  = "Won & killed everything with knives/fists",
+		desc  = "Won & killed only with knives/fists",
 		hidden  = true,
 		winonly = true,
 		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + kills.get_type( "knife" ) == statistics.kills end,
@@ -47,7 +47,7 @@ function DoomRL.loadmedals()
 	register_medal "fist"
 	{
 		name  = "Sunrise Iron Fist",
-		desc  = "Won & killed everything with your bare hands",
+		desc  = "Won & killed only with your bare hands",
 		hidden  = true,
 		winonly = true,
 		removes = { "knives" , "shotguns", "pistols" },
@@ -57,7 +57,7 @@ function DoomRL.loadmedals()
 	register_medal "zen"
 	{
 		name  = "Zen Master's Cross",
-		desc  = "Won & killed everything w/o fists/weapons",
+		desc  = "Won & killed w/o using fists/weapons",
 		hidden  = true,
 		winonly = true,
 		removes = { "fist" , "knives" , "shotguns", "pistols" },
@@ -107,8 +107,8 @@ function DoomRL.loadmedals()
 	register_medal "gambler"
 	{
 		name  = "Gambler's Shield",
-		desc  = "Pulled more than 25 levers in one game",
-		condition = function() return statistics.levers_pulled > 25 end,
+		desc  = "Pulled at least 25 levers in one game",
+		condition = function() return statistics.levers_pulled > 24 end,
 	}
 
 	register_medal "aurora"
@@ -120,14 +120,14 @@ function DoomRL.loadmedals()
 
 	register_medal "explorer"
 	{
-		name  = "Explorer Badge",
+		name  = "Explorer Pin",
 		desc  = "Visited all generated levels",
 		condition = function() return statistics.bonus_levels_count > 0 and statistics.bonus_levels_visited == statistics.bonus_levels_count end,
 	}
 
 	register_medal "conqueror"
 	{
-		name  = "Conqueror Badge",
+		name  = "Conqueror Pin",
 		desc  = "Completed all generated levels",
 		removes = { "explorer" },
 		condition = function() return statistics.bonus_levels_count > 0 and statistics.bonus_levels_completed == statistics.bonus_levels_count end,
@@ -189,14 +189,14 @@ function DoomRL.loadmedals()
 	register_medal "ironskull1"
 	{
 		name  = "Iron Skull",
-		desc  = "Took 10,000+ damage in one game",
+		desc  = "Took 5,000+ damage in one game",
 		hidden  = true,
-		condition = function() return statistics.damage_taken >= 10000 end,
+		condition = function() return statistics.damage_taken >= 5000 end,
 	}
 
 	register_medal "untouchable1"
 	{
-		name  = "Untouchable Badge",
+		name  = "Untouchable Pin",
 		desc  = "Won taking less than 500 damage",
 		winonly = true,
 		condition = function() return statistics.damage_taken < 500 end,
@@ -496,14 +496,14 @@ function DoomRL.loadmedals()
 
 	register_medal "mortuary"
 	{
-		name = "Grim Reaper's Badge",
+		name = "Grim Reaper's Pin",
 		desc = "Clear the Mortuary/Limbo",
 		hidden  = true,
 	}
 
 	register_medal "mortuary2"
 	{
-		name = "Angelic Badge",
+		name = "Angelic Pin",
 		desc = "Clear the Mortuary/Limbo w/o taking damage",
 		hidden  = true,
 		removes = { "mortuary" },
@@ -546,7 +546,7 @@ function DoomRL.loadmedals()
 
 	register_medal "armory1"
 	{
-		name = "Hell Armorer Badge",
+		name = "Hell Armorer Pin",
 		desc = "Clear Hell's Armory/Deimos Lab",
 		hidden  = true,
 	}

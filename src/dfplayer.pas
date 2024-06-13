@@ -1106,7 +1106,6 @@ try
     INPUT_HELP       : begin Help.Run; Exit; end;
     INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, UI.MsgGetRecent ) ); Exit; end;
     INPUT_ASSEMBLIES : begin IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) ); Exit; end;
-    INPUT_LEVEL_FEEL : begin Ui.Msg( Ansistring(LuaSystem.Get([ 'level', 'feeling' ]))); Exit; end;
     INPUT_HARDQUIT   : begin
       Option_MenuReturn := False;
       doQuit(True);

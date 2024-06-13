@@ -38,7 +38,7 @@ INPUT_ALTPICKUP         = 44;
 INPUT_RELOAD            = 45;
 INPUT_ALTRELOAD         = 46;
 INPUT_HELP              = 47; -- will be removed
-INPUT_LEVEL_FEEL        = 48; -- will be removed
+
 INPUT_MESSAGES          = 49; -- will be removed
 INPUT_ASSEMBLIES        = 50; -- will be removed
 
@@ -82,7 +82,6 @@ Keybindings = {
 	["O"]            = INPUT_OPEN,
 	["C"]            = INPUT_CLOSE,
 	["L"]            = INPUT_LOOK,
-	["SHIFT+L"]      = INPUT_LEVEL_FEEL,
 	["SHIFT+K"]      = INPUT_GRIDTOGGLE,
 	["F"]            = INPUT_FIRE,
 	["SHIFT+F"]      = INPUT_ALTFIRE, 

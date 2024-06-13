@@ -631,7 +631,8 @@ var iStatus  : AnsiString;
     iKillRecord : DWord;
     iDodgeBonus : Word;
     iKnockMod   : Integer;
-
+    iSs,iS1,iS2 : AnsiString;
+    iFirst      : Boolean;
 begin
   iStatus := LuaSystem.Get([ 'diff', Doom.Difficulty, 'code' ]);
   if Doom.Challenge <> ''  then iStatus += '@> / ' + LuaSystem.Get(['chal',Doom.Challenge,'abbr']);
@@ -697,6 +698,25 @@ begin
       then iContent.Push( Format( 'He prevents @L%d@l space%s of knockback.', [BodyBonus, IIf(BodyBonus <> 1,'s')]))
     else
       iContent.Push( 'He has no resistance to knockback.' );
+    iContent.Push( '' );
+    iContent.Push( Format( 'Enemies left : @L%d', [Doom.Level.EnemiesLeft] ) );
+    iSs := Doom.Level.Feeling;
+    iFirst := True;
+    Log( LOGWARN, iSs );
+    while iSs <> '' do
+    begin
+      Split( iSs, iS1, iS2, ' ', IIf( iFirst, 40, 40 + 11 ) );
+      Log( LOGINFO, iS1 );
+      Log( LOGINFO, iS2 );
+      Log( LOGINFO, '---' );
+
+      if iFirst then
+        iContent.Push( Format( 'Level feel : @L%s', [iS1] ) )
+      else
+        iContent.Push( Format( '  @L%s', [iS1] ) );
+      iFirst := False;
+      iSs := iS2;
+    end;
     iContent.Push( '' );
   end;
 

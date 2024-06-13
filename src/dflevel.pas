@@ -103,13 +103,14 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
     function GetMiniMapColor( aCoord : TCoord2D ) : TColor;
     function getGylph( const aCoord : TCoord2D ) : TIOGylph;
     function EntityFromStream( aStream : TStream; aEntityID : Byte ) : TLuaEntityNode; override;
+    function EnemiesLeft : DWord;
+
     class procedure RegisterLuaAPI();
 
   private
     function CellToID( const aCell : Byte ) : AnsiString; override;
     procedure RawCallHook( Hook : Byte; const aParams : array of const ); overload;
     function RawCallHookCheck( Hook : Byte; const aParams : array of const ) : boolean;
-    function EnemiesLeft : DWord;
     function  getCell( const aWhere : TCoord2D ) : byte; override;
     procedure putCell( const aWhere : TCoord2D; const aWhat : byte ); override;
     function  getBeing( const coord : TCoord2D ) : TBeing; override;
@@ -1011,6 +1012,7 @@ begin
 end;
 
 procedure TLevel.Kill ( aBeing : TBeing; Silent : Boolean ) ;
+var iEnemiesLeft : Integer;
 begin
   if aBeing = nil then Exit;
   if Being[ aBeing.Position ] = aBeing then
@@ -1022,10 +1024,15 @@ begin
   end;
 
   FreeAndNil(aBeing);
+  if Doom.State <> DSPlaying then Exit;
 
-  if (Doom.State = DSPlaying) and (not Silent) then
+  iEnemiesLeft := EnemiesLeft();
+  if ( iEnemiesLeft < 4 ) and ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
+    Include( FFlags, LF_BEINGSVISIBLE );
+
+  if not Silent then
   begin
-    if EnemiesLeft() = 0 then
+    if iEnemiesLeft = 0 then
     begin
       CallHook(Hook_OnKillAll,[]);
       if (not (LF_RESPAWN in FFlags)) and ( EnemiesLeft() = 0 ) then
@@ -1033,6 +1040,8 @@ begin
         if not (Hook_OnKillAll in FHooks) then
           UI.Msg('You feel relatively safe now.');
         FEmpty := True;
+        if ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
+          Include( FFlags, LF_ITEMSVISIBLE );
       end;
     end;
   end;

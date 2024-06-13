@@ -830,7 +830,7 @@ function DoomRL.loadchallenges()
 	register_badge "darkness5"
 	{
 		name  = "Hunter Diamond Badge",
-		desc  = "Complete AoD on N! w/Explorer Badge",
+		desc  = "Complete AoD on N! w/Explorer Pin",
 		level = 5,
 	}
 
@@ -895,7 +895,7 @@ function DoomRL.loadchallenges()
 	register_badge "carnage3"
 	{
 		name  = "Destroyer Gold Badge",
-		desc  = "Complete AoMC on HMP w/Untouchable Badge",
+		desc  = "Complete AoMC on HMP w/Untouchable Pin",
 		level = 3,
 	}
 

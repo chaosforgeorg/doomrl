@@ -424,8 +424,8 @@ function generator.generate_caves_dungeon()
 		{ level = { 30 },     weight = 5, list = "ndemon",         history = "On level @1 he stumbled into a nightmare demon cave!" },
 		{ level = { 40 },     weight = 5, list = "narachno",       history = "On level @1 he stumbled into a nightmare arachnotron cave!" },
 		{ level = { 50 },     weight = 5, list = "ncacodemon",     history = "On level @1 he stumbled into a nightmare cacodemon cave!" },
-		{ level = { 60 },     weight = 1, list = "agony",          history = "On level @1 he stumbled into a agony elemental cave!", min_diff = 3 },
-		{ level = { 70 },     weight = 1, list = "lava_elemental", history = "On level @1 he stumbled into a lava elemental cave!", min_diff = 3 },
+		{ level = { 60 },     weight = 1, list = "agony",          history = "On level @1 he stumbled into a agony elemental cave!", min_diff = 3, feeling = "You hear echoing wails of agony!" },
+		{ level = { 70 },     weight = 1, list = "lava_elemental", history = "On level @1 he stumbled into a lava elemental cave!", min_diff = 3, feeling = "The cave temperature is insanely hot!" },
 	}
 
 	local mlevel = math.max( level.danger_level + (DIFFICULTY - 2)*3, 0 )
@@ -448,7 +448,7 @@ function generator.generate_caves_dungeon()
 		level:flood_monsters{ list = set.list, danger = amount }
 	end
 
-  	ui.msg_feel( "Twisted passages carry the smell of death..." )
+  	ui.msg_feel( set.feeling or "Twisted passages carry the smell of death..." )
 
 	generator.set_permanence( area.FULL )
 end
