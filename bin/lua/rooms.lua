@@ -20,6 +20,7 @@ function DoomRL.load_rooms()
 				lever_flood_lava  = 1,
 				lever_repair      = 2,
 				lever_medical     = 2,
+				lever_ammo        = 2,
 			}:roll()
 		
 			local proto = items[lid]

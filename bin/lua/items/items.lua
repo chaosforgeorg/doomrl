@@ -1424,6 +1424,44 @@ function DoomRL.loaditems()
 		end,
 	}
 
+	register_item "lever_ammo"
+	{
+		name     = "lever",
+		color    = WHITE,
+		sprite   = SPRITE_LEVER,
+		weight   = 0,
+		color_id = "lever",
+
+		type       = ITEMTYPE_LEVER,
+		good       = "beneficial",
+		desc       = "ammo dispenser",
+
+		OnCreate = function( self )
+			self:add_property( "charges", math.random(3) + 1 )
+		end,
+
+		OnUseCheck = function(self,being)
+			if not being.eq.weapon then
+				ui.msg("Nothing happens.")
+				return false
+			end
+			local weapon = being.eq.weapon
+			if weapon.ammoid == 0 then
+				ui.msg("Nothing happens.")
+				return false
+			end
+			return true
+		end,
+
+		OnUse = function(self,being)
+			ui.msg("Ammo dispenser. Dispensing requested ammo...")
+			self.charges = self.charges - 1
+			local ammo_id = items[being.eq.weapon.ammoid].id
+			level:drop_item( ammo_id, being.position )
+			return self.charges == 0
+		end,
+	}
+
 	register_item "schematic_0"
 	{
 		name     = "schematics",

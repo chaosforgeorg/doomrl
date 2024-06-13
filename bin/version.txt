@@ -4,6 +4,7 @@
 [new] -- GH#083: G-version - overlay FX done by shaders, less in your face!
 [new] -- GH#120: G-version - better wall tile flow and style handling!
 [new] -- GH#121: G-version - debris where destroyed walls were!
+[new] -- GH#126: added an ammo dispensing lever to the lever pool
 [mod] -- GH#115: Mjollnir can appear from level 5 and has 1d25 damage
 [mod] -- GH#115: double chainsaw now 4d12 acc -1 (was 8d6 acc -2)
 [mod] -- GH#115: thrown knife & Mjol benefit from both ranged and melee tohit/todam
