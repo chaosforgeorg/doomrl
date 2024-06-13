@@ -216,7 +216,10 @@ begin
     end;
 
   with Player do
-    iCon.RawPrint( Point(FAbsolute.x+1, FAbsolute.y2), TacticColor[FTactic.Current], TacticName[FTactic.Current] );
+    if (FTactic.Current = TacticRunning) and (FTactic.Count < 6) then
+      iCon.RawPrint( Point(FAbsolute.x+1, FAbsolute.y2), Brown, TacticName[FTactic.Current] )
+    else
+      iCon.RawPrint( Point(FAbsolute.x+1, FAbsolute.y2), TacticColor[FTactic.Current], TacticName[FTactic.Current] );
 
   inherited OnRedraw;
 end;
