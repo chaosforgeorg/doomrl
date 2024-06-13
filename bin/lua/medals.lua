@@ -120,14 +120,14 @@ function DoomRL.loadmedals()
 
 	register_medal "explorer"
 	{
-		name  = "Explorer Badge",
+		name  = "Explorer Pin",
 		desc  = "Visited all generated levels",
 		condition = function() return statistics.bonus_levels_count > 0 and statistics.bonus_levels_visited == statistics.bonus_levels_count end,
 	}
 
 	register_medal "conqueror"
 	{
-		name  = "Conqueror Badge",
+		name  = "Conqueror Pin",
 		desc  = "Completed all generated levels",
 		removes = { "explorer" },
 		condition = function() return statistics.bonus_levels_count > 0 and statistics.bonus_levels_completed == statistics.bonus_levels_count end,
@@ -196,7 +196,7 @@ function DoomRL.loadmedals()
 
 	register_medal "untouchable1"
 	{
-		name  = "Untouchable Badge",
+		name  = "Untouchable Pin",
 		desc  = "Won taking less than 500 damage",
 		winonly = true,
 		condition = function() return statistics.damage_taken < 500 end,
@@ -496,14 +496,14 @@ function DoomRL.loadmedals()
 
 	register_medal "mortuary"
 	{
-		name = "Grim Reaper's Badge",
+		name = "Grim Reaper's Pin",
 		desc = "Clear the Mortuary/Limbo",
 		hidden  = true,
 	}
 
 	register_medal "mortuary2"
 	{
-		name = "Angelic Badge",
+		name = "Angelic Pin",
 		desc = "Clear the Mortuary/Limbo w/o taking damage",
 		hidden  = true,
 		removes = { "mortuary" },
@@ -546,7 +546,7 @@ function DoomRL.loadmedals()
 
 	register_medal "armory1"
 	{
-		name = "Hell Armorer Badge",
+		name = "Hell Armorer Pin",
 		desc = "Clear Hell's Armory/Deimos Lab",
 		hidden  = true,
 	}
