@@ -36,7 +36,7 @@ INPUT_RELOAD            = 45;
 INPUT_ALTRELOAD         = 46;
 
 INPUT_HELP              = 47; -- will be removed
-INPUT_LEVEL_FEEL        = 48; -- will be removed
+
 INPUT_MESSAGES          = 49; -- will be removed
 INPUT_ASSEMBLIES        = 50; -- will be removed
 
