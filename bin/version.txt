@@ -5,6 +5,7 @@
 [new] -- GH#120: G-version - better wall tile flow and style handling!
 [new] -- GH#121: G-version - debris where destroyed walls were!
 [new] -- GH#126: added an ammo dispensing lever to the lever pool
+[new] -- GH#126: enemies left count and level feel info in character screen
 [mod] -- GH#126: "running" status name fades in the last 5 moves left
 [mod] -- GH#126: added special level feeling for agony and lava elemental caves
 [mod] -- GH#115: Mjollnir can appear from level 5 and has 1d25 damage

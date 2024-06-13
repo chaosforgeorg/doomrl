@@ -103,13 +103,14 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
     function GetMiniMapColor( aCoord : TCoord2D ) : TColor;
     function getGylph( const aCoord : TCoord2D ) : TIOGylph;
     function EntityFromStream( aStream : TStream; aEntityID : Byte ) : TLuaEntityNode; override;
+    function EnemiesLeft : DWord;
+
     class procedure RegisterLuaAPI();
 
   private
     function CellToID( const aCell : Byte ) : AnsiString; override;
     procedure RawCallHook( Hook : Byte; const aParams : array of const ); overload;
     function RawCallHookCheck( Hook : Byte; const aParams : array of const ) : boolean;
-    function EnemiesLeft : DWord;
     function  getCell( const aWhere : TCoord2D ) : byte; override;
     procedure putCell( const aWhere : TCoord2D; const aWhat : byte ); override;
     function  getBeing( const coord : TCoord2D ) : TBeing; override;
