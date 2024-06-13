@@ -16,6 +16,7 @@
 [mod] -- GH#115: Subtle Knife - invoke 10->15 damage, 5 hp drain, no maxhp drain
 [mod] -- GH#126: all medals with "Badge" in name changed to "Pin"
 [mod] -- GH#126: clarified "everything" to "only" in medal kill requirements
+[mod] -- GH#126: adjusted Iron Skull and Gambler's Shield values
 [fix] -- GH#115: expiring messages for affects appear again
 [fix] -- GH#115: unexpirable affects will no longer expire after a long time
 

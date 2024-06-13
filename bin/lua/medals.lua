@@ -107,8 +107,8 @@ function DoomRL.loadmedals()
 	register_medal "gambler"
 	{
 		name  = "Gambler's Shield",
-		desc  = "Pulled more than 25 levers in one game",
-		condition = function() return statistics.levers_pulled > 25 end,
+		desc  = "Pulled at least 25 levers in one game",
+		condition = function() return statistics.levers_pulled > 24 end,
 	}
 
 	register_medal "aurora"
@@ -189,9 +189,9 @@ function DoomRL.loadmedals()
 	register_medal "ironskull1"
 	{
 		name  = "Iron Skull",
-		desc  = "Took 10,000+ damage in one game",
+		desc  = "Took 5,000+ damage in one game",
 		hidden  = true,
-		condition = function() return statistics.damage_taken >= 10000 end,
+		condition = function() return statistics.damage_taken >= 5000 end,
 	}
 
 	register_medal "untouchable1"
