@@ -20,7 +20,7 @@ function DoomRL.loadmedals()
 	register_medal "shotguns"
 	{
 		name  = "Shotgunnery Cross",
-		desc  = "Won & killed everything with shotguns/fists",
+		desc  = "Won & killed only with shotguns/fists",
 		hidden  = true,
 		winonly = true,
 		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + DoomRL.count_group_kills( "weapon-shotgun" ) == statistics.kills end,
@@ -29,7 +29,7 @@ function DoomRL.loadmedals()
 	register_medal "pistols"
 	{
 		name  = "Marksmanship Cross",
-		desc  = "Won & killed everything with pistols/fists",
+		desc  = "Won & killed only with pistols/fists",
 		hidden  = true,
 		winonly = true,
 		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + DoomRL.count_group_kills( "weapon-pistol" ) == statistics.kills end,
@@ -38,7 +38,7 @@ function DoomRL.loadmedals()
 	register_medal "knives"
 	{
 		name  = "Malicious Knives Cross",
-		desc  = "Won & killed everything with knives/fists",
+		desc  = "Won & killed only with knives/fists",
 		hidden  = true,
 		winonly = true,
 		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + kills.get_type( "knife" ) == statistics.kills end,
@@ -47,7 +47,7 @@ function DoomRL.loadmedals()
 	register_medal "fist"
 	{
 		name  = "Sunrise Iron Fist",
-		desc  = "Won & killed everything with your bare hands",
+		desc  = "Won & killed only with your bare hands",
 		hidden  = true,
 		winonly = true,
 		removes = { "knives" , "shotguns", "pistols" },
@@ -57,7 +57,7 @@ function DoomRL.loadmedals()
 	register_medal "zen"
 	{
 		name  = "Zen Master's Cross",
-		desc  = "Won & killed everything w/o fists/weapons",
+		desc  = "Won & killed w/o using fists/weapons",
 		hidden  = true,
 		winonly = true,
 		removes = { "fist" , "knives" , "shotguns", "pistols" },
