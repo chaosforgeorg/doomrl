@@ -73,9 +73,8 @@ TPlayer = class(TBeing)
   procedure WriteToStream( Stream: TStream ); override;
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
-  function HandleCommandValue( aCommand : Byte ) : Boolean;
   procedure PreAction;
-  procedure Action( aCommand : Byte );
+  function Action( aCommand : Byte ) : Boolean;
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
@@ -98,10 +97,10 @@ TPlayer = class(TBeing)
   function CreateAutoTarget( aRange : Integer ): TAutoTarget;
   function doChooseTarget( aActionName : string; aRadius : Byte; aLimitRange : Boolean ) : Boolean;
   function RunPath( const aCoord : TCoord2D ) : Boolean;
-  private
-  function OnTraitConfirm( aSender : TUIElement ) : Boolean;
   procedure ExamineNPC;
   procedure ExamineItem;
+  private
+  function OnTraitConfirm( aSender : TUIElement ) : Boolean;
   private
   FLastTargetUID  : TUID;
   FLastTargetPos  : TCoord2D;
@@ -596,7 +595,7 @@ begin
     end;
 end;
 
-function TPlayer.HandleCommandValue( aCommand : Byte ) : Boolean;
+function TPlayer.Action( aCommand : Byte ) : Boolean;
 var iLevel      : TLevel;
     iDir        : TDirection;
     iItem       : TItem;
@@ -1029,60 +1028,6 @@ begin
         IO.Delay( Option_RunDelay );
     end;
   end;
-end;
-
-procedure TPlayer.Action( aCommand : Byte );
-var iLevel      : TLevel;
-    iCommand    : Byte;
-    iAlt        : Boolean;
-begin
-try
-  iCommand := aCommand;
-  iLevel := TLevel( Parent );
-
-    // Handle commands that should be handled by the UI
-  // TODO: Fix
-  case iCommand of
-    INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
-    INPUT_LOOK       : begin UI.Msg( '-' ); UI.LookMode; Exit; end;
-    INPUT_PLAYERINFO : begin doScreen; Exit; end;
-    INPUT_QUIT       : begin doQuit; Exit; end;
-    INPUT_HELP       : begin Help.Run; Exit; end;
-    INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, UI.MsgGetRecent ) ); Exit; end;
-    INPUT_ASSEMBLIES : begin IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) ); Exit; end;
-    INPUT_HARDQUIT   : begin
-      Option_MenuReturn := False;
-      doQuit(True);
-      Exit;
-    end;
-    INPUT_SAVE      : begin doSave; Exit; end;
-    INPUT_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );Exit; end;
-    INPUT_RUNMODE   : begin doRun;Exit; end;
-
-    INPUT_EXAMINENPC   : begin ExamineNPC; Exit; end;
-    INPUT_EXAMINEITEM  : begin ExamineItem; Exit; end;
-    INPUT_GRIDTOGGLE: begin if GraphicsVersion then SpriteMap.ToggleGrid; Exit; end;
-    INPUT_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit; end;
-    INPUT_MUSICTOGGLE  : begin
-                             MusicOff := not MusicOff;
-                             if MusicOff then IO.PlayMusic('')
-                                         else IO.PlayMusic(iLevel.ID);
-                             Exit;
-                           end;
-  end;
-
-  HandleCommandValue( iCommand );
-except
-  on e : Exception do
-  begin
-    if CRASHMODE then raise;
-    ErrorLogOpen('CRITICAL','Player action exception!');
-    ErrorLogWriteln('Error message : '+e.Message);
-    ErrorLogClose;
-    UI.ErrorReport(e.Message);
-    CRASHMODE := True;
-  end;
-end;
 end;
 
 procedure TPlayer.LevelEnter;

@@ -240,8 +240,55 @@ end;
 
 function TDoom.Action( aCommand : Byte ) : Boolean;
 begin
+
   UI.MsgUpDate;
-  Player.Action( aCommand );
+try
+
+      // Handle commands that should be handled by the UI
+  // TODO: Fix
+  case aCommand of
+    INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+    INPUT_LOOK       : begin UI.Msg( '-' ); UI.LookMode; Exit; end;
+    INPUT_PLAYERINFO : begin Player.doScreen; Exit; end;
+    INPUT_QUIT       : begin Player.doQuit; Exit; end;
+    INPUT_HELP       : begin Help.Run; Exit; end;
+    INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, UI.MsgGetRecent ) ); Exit; end;
+    INPUT_ASSEMBLIES : begin IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) ); Exit; end;
+    INPUT_HARDQUIT   : begin
+      Option_MenuReturn := False;
+      Player.doQuit(True);
+      Exit;
+    end;
+    INPUT_SAVE      : begin Player.doSave; Exit; end;
+    INPUT_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @Player.FTraits, Player.ExpLevel ) );Exit; end;
+    INPUT_RUNMODE   : begin Player.doRun;Exit; end;
+
+    INPUT_EXAMINENPC   : begin Player.ExamineNPC; Exit; end;
+    INPUT_EXAMINEITEM  : begin Player.ExamineItem; Exit; end;
+    INPUT_GRIDTOGGLE: begin if GraphicsVersion then SpriteMap.ToggleGrid; Exit; end;
+    INPUT_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit; end;
+    INPUT_MUSICTOGGLE  : begin
+                             MusicOff := not MusicOff;
+                             if MusicOff then IO.PlayMusic('')
+                                         else IO.PlayMusic(Level.ID);
+                             Exit;
+                           end;
+    else
+      Player.Action( aCommand );
+  end;
+except
+  on e : Exception do
+  begin
+    if CRASHMODE then raise;
+    ErrorLogOpen('CRITICAL','Player action exception!');
+    ErrorLogWriteln('Error message : '+e.Message);
+    ErrorLogClose;
+    UI.ErrorReport(e.Message);
+    CRASHMODE := True;
+  end;
+end;
+
+
   if State <> DSPlaying then Exit;
   UI.Focus( Player.Position );
   Player.UpdateVisual;
