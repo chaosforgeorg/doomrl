@@ -97,6 +97,7 @@ TPlayer = class(TBeing)
   function ASCIIMoreCode : AnsiString; override;
   function CreateAutoTarget( aRange : Integer ): TAutoTarget;
   function doChooseTarget( aActionName : string; aRadius : Byte; aLimitRange : Boolean ) : Boolean;
+  function RunPath( const aCoord : TCoord2D ) : Boolean;
   private
   function OnTraitConfirm( aSender : TUIElement ) : Boolean;
   procedure ExamineNPC;
@@ -473,6 +474,18 @@ begin
     FLastTargetUID := iLevel.Being[ FTargetPos ].UID;
   FLastTargetPos := FTargetPos;
   Exit( True );
+end;
+
+function TPlayer.RunPath( const aCoord : TCoord2D ) : boolean;
+begin
+  if FPath.Run( FPosition, aCoord, 200) then
+  begin
+    FPath.Start := FPath.Start.Child;
+    FRun.Active := True;
+    FPathRun := True;
+    Exit( True );
+  end;
+  Exit( False );
 end;
 
 function TPlayer.OnTraitConfirm ( aSender : TUIElement ) : Boolean;
@@ -932,14 +945,13 @@ begin
     end;
   end;
 
-  if aCommand in [ INPUT_INVENTORY, INPUT_EQUIPMENT, INPUT_MSCRUP, INPUT_MSCRDOWN ] then
+  if aCommand in [ INPUT_INVENTORY, INPUT_EQUIPMENT, INPUT_MSCROLL ] then
   begin
     iCommand.Command:= COMMAND_NONE;
     case aCommand of
       INPUT_INVENTORY : iCommand := Inv.View;
       INPUT_EQUIPMENT : iCommand := Inv.RunEq;
-      INPUT_MSCRUP,
-      INPUT_MSCRDOWN  : iCommand := Inv.DoScrollSwap;
+      INPUT_MSCROLL   : iCommand := Inv.DoScrollSwap;
     end;
     if iCommand.Command = COMMAND_NONE then Exit( False );
     if iCommand.Command <> COMMAND_SWAPWEAPON then
@@ -1027,74 +1039,6 @@ begin
 try
   iCommand := aCommand;
   iLevel := TLevel( Parent );
-  // FArmor color //
-
-  // === MOUSE HANDLING ===
-  if iCommand in [ INPUT_MLEFT, INPUT_MRIGHT ] then
-    iAlt := VKMOD_ALT in IO.Driver.GetModKeyState;
-
-  if iCommand = INPUT_MMIDDLE then
-    if IO.MTarget = FPosition
-      then iCommand := COMMAND_SWAPWEAPON
-      else iCommand := INPUT_EQUIPMENT;
-
-  if iCommand = INPUT_MLEFT then
-  begin
-    if IO.MTarget = FPosition then
-      if iAlt then iCommand := INPUT_INVENTORY
-      else
-      if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
-        iCommand := COMMAND_ENTER
-      else
-        if iLevel.Item[ FPosition ] <> nil then
-          if iLevel.Item[ FPosition ].isLever then
-            iCommand := COMMAND_ALTPICKUP
-          else
-            iCommand := COMMAND_PICKUP
-          else
-            iCommand := INPUT_INVENTORY
-    else
-    if Distance( FPosition, IO.MTarget ) = 1
-      then iCommand := DirectionToInput( NewDirection( FPosition, IO.MTarget ) )
-      else if iLevel.isExplored( IO.MTarget ) then
-      begin
-        if FPath.Run( FPosition, IO.MTarget, 200) then
-        begin
-          FPath.Start := FPath.Start.Child;
-          FRun.Active := True;
-          FPathRun := True;
-        end
-        else
-        begin
-          UI.Msg('Can''t get there!');
-          Exit;
-        end;
-      end
-      else
-      begin
-        UI.Msg('You don''t know how to get there!');
-        Exit;
-      end;
-  end;
-
-  if iCommand = INPUT_MRIGHT then
-  begin
-    if (IO.MTarget = FPosition) or
-      ((Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) and (not (Inv.Slot[efWeapon].GetFlag(IF_NOAMMO))) and (Inv.Slot[ efWeapon ].Ammo = 0))  then
-    begin
-      if iAlt
-        then iCommand := COMMAND_ALTRELOAD
-        else iCommand := COMMAND_RELOAD;
-    end
-    else if (Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) then
-    begin
-      if iAlt
-        then iCommand := INPUT_MALTFIRE
-        else iCommand := INPUT_MFIRE;
-    end
-    else iCommand := INPUT_MATTACK;
-  end;
-  // === MOUSE HANDLING END ===
 
     // Handle commands that should be handled by the UI
   // TODO: Fix

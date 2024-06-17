@@ -257,18 +257,83 @@ begin
 end;
 
 function TDoom.HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
-var iPoint : TIOPoint;
+var iPoint   : TIOPoint;
+    iAlt     : Boolean;
+    iButton  : TIOMouseButton;
+    iCommand : Byte;
 begin
   iPoint := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
   IO.MTarget.Create( iPoint.X, iPoint.Y );
   if Doom.Level.isProperCoord( IO.MTarget ) then
-    case aEvent.Mouse.Button of
-      VMB_BUTTON_LEFT     : Exit( Action( INPUT_MLEFT ) );
-      VMB_BUTTON_MIDDLE   : Exit( Action( INPUT_MMIDDLE ) );
-      VMB_BUTTON_RIGHT    : Exit( Action( INPUT_MRIGHT ) );
-      VMB_WHEEL_UP        : Exit( Action( INPUT_MSCRUP ) );
-      VMB_WHEEL_DOWN      : Exit( Action( INPUT_MSCRDOWN ) );
+  begin
+    iButton  := aEvent.Mouse.Button;
+    iAlt     := False;
+    iCommand := 0;
+    if iButton in [ VMB_BUTTON_LEFT, VMB_BUTTON_RIGHT ] then
+      iAlt := VKMOD_ALT in IO.Driver.GetModKeyState;
+
+    if iButton = VMB_BUTTON_MIDDLE then
+      if IO.MTarget = Player.Position
+        then iCommand := COMMAND_SWAPWEAPON
+        else iCommand := INPUT_EQUIPMENT;
+
+    if iButton = VMB_BUTTON_LEFT then
+    begin
+      if IO.MTarget = Player.Position then
+        if iAlt then iCommand := INPUT_INVENTORY
+        else
+        if Level.cellFlagSet( Player.Position, CF_STAIRS ) then
+          iCommand := COMMAND_ENTER
+        else
+          if Level.Item[ Player.Position ] <> nil then
+            if Level.Item[ Player.Position ].isLever then
+              iCommand := COMMAND_ALTPICKUP
+            else
+              iCommand := COMMAND_PICKUP
+            else
+              iCommand := INPUT_INVENTORY
+      else
+      if Distance( Player.Position, IO.MTarget ) = 1
+        then iCommand := DirectionToInput( NewDirection( Player.Position, IO.MTarget ) )
+        else if Level.isExplored( IO.MTarget ) then
+        begin
+          if not Player.RunPath( IO.MTarget ) then
+          begin
+            UI.Msg('Can''t get there!');
+            Exit;
+          end;
+        end
+        else
+        begin
+          UI.Msg('You don''t know how to get there!');
+          Exit;
+        end;
     end;
+
+    if iButton = VMB_BUTTON_RIGHT then
+    begin
+      if (IO.MTarget = Player.Position) or
+        ((Player.Inv.Slot[ efWeapon ] <> nil) and (Player.Inv.Slot[ efWeapon ].isRanged) and (not (Player.Inv.Slot[efWeapon].GetFlag(IF_NOAMMO))) and (Player.Inv.Slot[ efWeapon ].Ammo = 0))  then
+      begin
+        if iAlt
+          then iCommand := COMMAND_ALTRELOAD
+          else iCommand := COMMAND_RELOAD;
+      end
+      else if (Player.Inv.Slot[ efWeapon ] <> nil) and (Player.Inv.Slot[ efWeapon ].isRanged) then
+      begin
+        if iAlt
+          then iCommand := INPUT_MALTFIRE
+          else iCommand := INPUT_MFIRE;
+      end
+      else iCommand := INPUT_MATTACK;
+    end;
+
+    if iButton in [ VMB_WHEEL_UP, VMB_WHEEL_DOWN ] then
+      iCommand := INPUT_MSCROLL;
+
+    if iCommand <> 0 then
+      Exit( Action( iCommand ) );
+  end;
   Exit( False );
 end;
 
