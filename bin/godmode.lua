@@ -26,8 +26,8 @@ SDLMixerFormat    = 32784
 SDLMixerChunkSize = 1024
 
 -- Windowed sizes
-WindowedWidth    = 800
-WindowedHeight   = 600
+WindowedWidth    = 1280
+WindowedHeight   = 720
 -- Multiplication values of font and tile display - use at most 2
 WindowedFontMult = 1
 WindowedTileMult = 1
