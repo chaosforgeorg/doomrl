@@ -243,14 +243,7 @@ begin
 
   UI.MsgUpDate;
 try
-  if Player.FRun.Active then
-  begin
-    aCommand := Player.GetRunInput;
-    if aCommand = 0 then Exit( False );
-  end;
-
-
-      // Handle commands that should be handled by the UI
+  // Handle commands that should be handled by the UI
   // TODO: Fix
   case aCommand of
     INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
@@ -411,6 +404,7 @@ procedure TDoom.Run;
 var iRank       : THOFRank;
     iResult     : TMenuResult;
     iEvent      : TIOEvent;
+    iCommand    : Byte;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
@@ -545,7 +539,9 @@ repeat
 
       if ( Player.FRun.Active ) then
       begin
-        Action( 0 );
+        iCommand := Player.GetRunInput;
+        if iCommand <> 0 then
+          Action( iCommand );
         Continue;
       end;
 
