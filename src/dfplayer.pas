@@ -74,6 +74,7 @@ TPlayer = class(TBeing)
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
   procedure PreAction;
+  function GetRunInput : Byte;
   function Action( aCommand : Byte ) : Boolean;
   procedure LevelEnter;
   procedure doUpgradeTrait;
@@ -595,6 +596,42 @@ begin
     end;
 end;
 
+function TPlayer.GetRunInput : Byte;
+var iDir : TDirection;
+begin
+  GetRunInput := 0;
+  if FRun.Active then
+  begin
+    Inc( FRun.Count );
+    if BF_SESSILE in FFlags then
+    begin
+      FPathRun := False;
+      FRun.Stop;
+      Fail('You can''t!',[] );
+      Exit( 0 );
+    end;
+
+    if FPathRun then
+    begin
+      if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
+      begin
+        FPathRun := False;
+        FRun.Stop;
+        Exit( 0 );
+      end;
+      iDir := NewDirection( FPosition, FPath.Start.Coord );
+      FPath.Start := FPath.Start.Child;
+    end
+    else iDir := FRun.Dir;
+
+    if iDir.code = 5 then
+    begin
+      if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
+    end;
+    Exit( DirectionToInput( iDir ) );
+  end;
+end;
+
 function TPlayer.Action( aCommand : Byte ) : Boolean;
 var iLevel      : TLevel;
     iDir        : TDirection;
@@ -620,36 +657,6 @@ begin
   iFlag  := 0;
   iChainFire := FChainFire;
   FChainFire := 0;
-
-  if FRun.Active then
-  begin
-    Inc( FRun.Count );
-    if BF_SESSILE in FFlags then
-    begin
-      FPathRun := False;
-      FRun.Stop;
-      Exit( Fail('You can''t!',[] ) );
-    end;
-
-    if FPathRun then
-    begin
-      if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
-      begin
-        FPathRun := False;
-        FRun.Stop;
-        Exit( False );
-      end;
-      iDir := NewDirection( FPosition, FPath.Start.Coord );
-      FPath.Start := FPath.Start.Child;
-    end
-    else iDir := FRun.Dir;
-
-    if iDir.code = 5 then
-    begin
-      if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
-    end;
-    aCommand := DirectionToInput( iDir );
-  end;
 
   if ( aCommand in [ INPUT_QUICKKEY_0..INPUT_QUICKKEY_9 ] ) then
   begin

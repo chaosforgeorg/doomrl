@@ -243,6 +243,12 @@ begin
 
   UI.MsgUpDate;
 try
+  if Player.FRun.Active then
+  begin
+    aCommand := Player.GetRunInput;
+    if aCommand = 0 then Exit( False );
+  end;
+
 
       // Handle commands that should be handled by the UI
   // TODO: Fix
