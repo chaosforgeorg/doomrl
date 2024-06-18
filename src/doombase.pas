@@ -267,6 +267,12 @@ begin
     INPUT_ALTRELOAD  : Exit( HandleCommand( TCommand.Create( COMMAND_ALTRELOAD ) ) );
     INPUT_PICKUP     : Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) );
     INPUT_ENTER      : Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) );
+
+    // MOVE TO MOUSE CODE
+    INPUT_MATTACK    : Exit( HandleCommand( TCommand.Create( COMMAND_MELEE,
+        Player.Position + NewDirectionSmooth( Player.Position, IO.MTarget )
+      ) ) );
+
     INPUT_USE        : begin
       iItem := Player.Inv.Choose([ITEMTYPE_PACK],'use');
       if iItem = nil then Exit( False );
@@ -286,6 +292,16 @@ begin
         Exit( False );
       end;
       Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
+    end;
+
+    INPUT_INVENTORY   : Exit( HandleCommand( Player.Inv.View ) );
+    INPUT_EQUIPMENT   : Exit( HandleCommand( Inv.RunEq ) );
+    INPUT_MSCROLL     : Exit( HandleCommand( Inv.DoScrollSwap ) );
+
+    INPUT_SWAPWEAPON  : begin
+      if ( Player.Inv.Slot[ efWeapon ] <> nil )  and ( Player.Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then begin UI.Msg('You can''t!'); Exit( False ); end;
+      if ( Player.Inv.Slot[ efWeapon2 ] <> nil ) and ( Player.Inv.Slot[ efWeapon2 ].isAmmoPack )        then begin UI.Msg('Nothing to swap!'); Exit( False ); end;
+      Exit( HandleCommand( TCommand.Create( COMMAND_SWAPWEAPON ) ) );
     end;
   end;
   UI.MsgUpDate;
@@ -447,6 +463,8 @@ end;
 
 function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
 begin
+  if aCommand.Command = COMMAND_NONE then
+    Exit( False );
   UI.MsgUpDate;
 try
   Player.HandleCommand( aCommand );
@@ -462,8 +480,7 @@ except
   end;
 end;
 
-
-  if State <> DSPlaying then Exit;
+  if State <> DSPlaying then Exit( False );
   UI.Focus( Player.Position );
   Player.UpdateVisual;
   while (Player.SCount < 5000) and (State = DSPlaying) do

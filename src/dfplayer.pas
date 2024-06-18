@@ -637,7 +637,6 @@ var iLevel      : TLevel;
     iDir        : TDirection;
     iItem       : TItem;
     iMoveResult : TMoveResult;
-    iID         : AnsiString;
     iFireDesc   : AnsiString;
     iChainFire  : Byte;
     iTarget     : TCoord2D;
@@ -754,12 +753,6 @@ begin
 
   FChainFire := iChainFire;
 
-  if ( aCommand = INPUT_MATTACK ) then
-  begin
-    aCommand := COMMAND_MELEE;
-    iTarget  := FPosition + NewDirectionSmooth( FPosition, IO.MTarget );
-  end;
-
   if ( aCommand in INPUT_MOVE ) then
   begin
     FLastTargetPos.Create(0,0);
@@ -799,36 +792,11 @@ begin
     end;
   end;
 
-  if aCommand in [ INPUT_INVENTORY, INPUT_EQUIPMENT, INPUT_MSCROLL ] then
-  begin
-    iCommand.Command:= COMMAND_NONE;
-    case aCommand of
-      INPUT_INVENTORY : iCommand := Inv.View;
-      INPUT_EQUIPMENT : iCommand := Inv.RunEq;
-      INPUT_MSCROLL   : iCommand := Inv.DoScrollSwap;
-    end;
-    if iCommand.Command = COMMAND_NONE then Exit( False );
-    if iCommand.Command <> COMMAND_SWAPWEAPON then
-      Exit( HandleCommand( iCommand ) );
-  end;
-
-  if aCommand = COMMAND_SWAPWEAPON then
-  begin
-    if ( Inv.Slot[ efWeapon ] <> nil )  and ( Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then Exit( Fail('You can''t!',[]) );
-    if ( Inv.Slot[ efWeapon2 ] <> nil ) and ( Inv.Slot[ efWeapon2 ].isAmmoPack )        then Exit( Fail('Nothing to swap!',[]) );
-  end;
-
   if ( aCommand in [ COMMAND_ACTION, COMMAND_MELEE, COMMAND_MOVE ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iTarget ) ) );
 
   if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iTarget, iItem ) ) );
-
-  if ( aCommand in [ COMMAND_DROP, COMMAND_WEAR ] ) then
-    Exit( HandleCommand( TCommand.Create( aCommand, iItem, iID ) ) );
-
-  if ( aCommand in [ COMMAND_SWAPWEAPON ] ) then
-    Exit( HandleCommand( TCommand.Create( aCommand ) ) );
 
   Exit( Fail('Unknown command. Press "?" for help.', []) );
 end;

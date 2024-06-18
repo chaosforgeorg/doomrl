@@ -264,15 +264,24 @@ var iArray   : TItemArray;
     iIdx     : Integer;
     iInput   : Byte;
 begin
+  DoScrollSwap.Command := COMMAND_NONE;
   iArray := TItemArray.Create( False );
-  if Slot[ efWeapon ]  <> nil then iArray.Push( Slot[ efWeapon ] );
+  if Slot[ efWeapon ]  <> nil then
+  begin
+    iArray.Push( Slot[ efWeapon ] );
+    if Slot[ efWeapon ].Flags[ IF_CURSED ] then
+    begin
+      UI.Msg('You can''t!');
+      FreeAndNil( iArray );
+      Exit;
+    end;
+  end;
   if (Slot[ efWeapon2 ] <> nil) and Slot[ efWeapon2 ].isWeapon then iArray.Push( Slot[ efWeapon2 ] );
   for iItem in Self do
     if not Equipped( iItem ) then
       if iItem.isWeapon then
         iArray.Push( iItem );
 
-  DoScrollSwap.Command := COMMAND_NONE;
   if iArray.Size = 0 then UI.Msg('You have no weapons!');
   if iArray.Size = 1 then UI.Msg('You have no other weapons!');
   if iArray.Size > 1 then
@@ -289,7 +298,9 @@ begin
     if iInput in [INPUT_ENTER,INPUT_MLEFT] then
     begin
       if iArray[ iIdx ] = Slot[ efWeapon2 ] then
+      begin
         DoScrollSwap.Command := COMMAND_SWAPWEAPON
+      end
       else
       if iArray[ iIdx ] <> Slot[ efWeapon ] then
       begin
