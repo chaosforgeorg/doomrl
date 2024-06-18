@@ -655,26 +655,6 @@ var iLevel      : TLevel;
 begin
   iLevel := TLevel( Parent );
   iFlag  := 0;
-  iChainFire := FChainFire;
-  FChainFire := 0;
-
-  if ( aCommand in [ INPUT_QUICKKEY_0..INPUT_QUICKKEY_9 ] ) then
-  begin
-    case aCommand of
-    INPUT_QUICKKEY_0 : iID := 'chainsaw';
-    INPUT_QUICKKEY_1 : iID := 'knife';
-    INPUT_QUICKKEY_2 : iID := 'pistol';
-    INPUT_QUICKKEY_3 : iID := 'shotgun';
-    INPUT_QUICKKEY_4 : iID := 'ashotgun';
-    INPUT_QUICKKEY_5 : iID := 'dshotgun';
-    INPUT_QUICKKEY_6 : iID := 'chaingun';
-    INPUT_QUICKKEY_7 : iID := 'bazooka';
-    INPUT_QUICKKEY_8 : iID := 'plasma';
-    INPUT_QUICKKEY_9 : iID := 'bfg9000';
-    end;
-    aCommand := COMMAND_QUICKKEY;
-  end;
-
 
   if ( aCommand = COMMAND_ACTION ) then
   begin
@@ -801,6 +781,9 @@ begin
        Exit( False );
   end;
 
+  iChainFire := FChainFire;
+  FChainFire := 0;
+
   if ( aCommand in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_MFIRE, INPUT_MALTFIRE ] ) then
   begin
     iItem := Inv.Slot[ efWeapon ];
@@ -900,6 +883,8 @@ begin
     if aCommand = INPUT_MALTFIRE then aCommand := COMMAND_ALTFIRE;
   end;
 
+  FChainFire := iChainFire;
+
   if ( aCommand = INPUT_MATTACK ) then
   begin
     aCommand := COMMAND_MELEE;
@@ -969,11 +954,6 @@ begin
     if ( Inv.Slot[ efWeapon ] <> nil )  and ( Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then Exit( Fail('You can''t!',[]) );
     if ( Inv.Slot[ efWeapon2 ] <> nil ) and ( Inv.Slot[ efWeapon2 ].isAmmoPack )        then Exit( Fail('Nothing to swap!',[]) );
   end;
-
-  FChainFire := iChainFire;
-
-  if ( aCommand in [ COMMAND_QUICKKEY ] ) then
-    Exit( HandleCommand( TCommand.Create( aCommand, iID ) ) );
 
   if ( aCommand in [ COMMAND_ACTION, COMMAND_MELEE, COMMAND_MOVE ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iTarget ) ) );

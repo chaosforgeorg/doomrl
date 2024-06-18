@@ -4,7 +4,7 @@ interface
 
 uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
      dflevel, dfdata, dfhof,
-     doomhooks, doomlua, doommodule, doommenuview;
+     doomhooks, doomlua, doommodule, doommenuview, doomcommand;
 
 type TDoomState = ( DSStart,      DSMenu,    DSLoading,
                     DSPlaying,    DSSaving,  DSNextLevel,
@@ -35,6 +35,7 @@ TDoom = class(TSystem)
        function SaveExists : Boolean;
        procedure SetupLuaConstants;
        function Action( aCommand : Byte ) : Boolean;
+       function HandleCommand( aCommand : TCommand ) : Boolean;
        procedure Run;
        destructor Destroy; override;
        procedure ModuleMainHook( Hook : AnsiString; const Params : array of Const );
@@ -240,41 +241,21 @@ end;
 
 function TDoom.Action( aCommand : Byte ) : Boolean;
 begin
-
+  case aCommand of
+    INPUT_QUICKKEY_0 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'chainsaw' ) ) );
+    INPUT_QUICKKEY_1 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'knife' ) ) );
+    INPUT_QUICKKEY_2 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'pistol' ) ) );
+    INPUT_QUICKKEY_3 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'shotgun' ) ) );
+    INPUT_QUICKKEY_4 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'ashotgun' ) ) );
+    INPUT_QUICKKEY_5 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'dshotgun' ) ) );
+    INPUT_QUICKKEY_6 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'chaingun' ) ) );
+    INPUT_QUICKKEY_7 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'bazooka' ) ) );
+    INPUT_QUICKKEY_8 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'plasma' ) ) );
+    INPUT_QUICKKEY_9 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'bfg9000' ) ) );
+  end;
   UI.MsgUpDate;
 try
-  // Handle commands that should be handled by the UI
-  // TODO: Fix
-  case aCommand of
-    INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
-    INPUT_LOOK       : begin UI.Msg( '-' ); UI.LookMode; Exit; end;
-    INPUT_PLAYERINFO : begin Player.doScreen; Exit; end;
-    INPUT_QUIT       : begin Player.doQuit; Exit; end;
-    INPUT_HELP       : begin Help.Run; Exit; end;
-    INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, UI.MsgGetRecent ) ); Exit; end;
-    INPUT_ASSEMBLIES : begin IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) ); Exit; end;
-    INPUT_HARDQUIT   : begin
-      Option_MenuReturn := False;
-      Player.doQuit(True);
-      Exit;
-    end;
-    INPUT_SAVE      : begin Player.doSave; Exit; end;
-    INPUT_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @Player.FTraits, Player.ExpLevel ) );Exit; end;
-    INPUT_RUNMODE   : begin Player.doRun;Exit; end;
-
-    INPUT_EXAMINENPC   : begin Player.ExamineNPC; Exit; end;
-    INPUT_EXAMINEITEM  : begin Player.ExamineItem; Exit; end;
-    INPUT_GRIDTOGGLE: begin if GraphicsVersion then SpriteMap.ToggleGrid; Exit; end;
-    INPUT_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit; end;
-    INPUT_MUSICTOGGLE  : begin
-                             MusicOff := not MusicOff;
-                             if MusicOff then IO.PlayMusic('')
-                                         else IO.PlayMusic(Level.ID);
-                             Exit;
-                           end;
-    else
-      Player.Action( aCommand );
-  end;
+  Player.Action( aCommand );
 except
   on e : Exception do
   begin
@@ -301,6 +282,39 @@ end;
   PreAction;
   Exit( True );
 end;
+
+function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
+begin
+  UI.MsgUpDate;
+try
+  Player.HandleCommand( aCommand );
+except
+  on e : Exception do
+  begin
+    if CRASHMODE then raise;
+    ErrorLogOpen('CRITICAL','Player action exception!');
+    ErrorLogWriteln('Error message : '+e.Message);
+    ErrorLogClose;
+    UI.ErrorReport(e.Message);
+    CRASHMODE := True;
+  end;
+end;
+
+
+  if State <> DSPlaying then Exit;
+  UI.Focus( Player.Position );
+  Player.UpdateVisual;
+  while (Player.SCount < 5000) and (State = DSPlaying) do
+  begin
+    FLevel.CalculateVision( Player.Position );
+    FLevel.Tick;
+    UI.WaitForAnimation;
+    if not Player.PlayerTick then Exit( True );
+  end;
+  PreAction;
+  Exit( True );
+end;
+
 
 function TDoom.HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
 var iPoint   : TIOPoint;
@@ -395,7 +409,39 @@ begin
     Exit( True );
   end;
   if iCommand > 0 then
+  begin
+    // Handle commands that should be handled by the UI
+    // TODO: Fix
+    case iCommand of
+      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+      INPUT_LOOK       : begin UI.Msg( '-' ); UI.LookMode; Exit; end;
+      INPUT_PLAYERINFO : begin Player.doScreen; Exit; end;
+      INPUT_QUIT       : begin Player.doQuit; Exit; end;
+      INPUT_HELP       : begin Help.Run; Exit; end;
+      INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, UI.MsgGetRecent ) ); Exit; end;
+      INPUT_ASSEMBLIES : begin IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) ); Exit; end;
+      INPUT_HARDQUIT   : begin
+        Option_MenuReturn := False;
+        Player.doQuit(True);
+        Exit;
+      end;
+      INPUT_SAVE      : begin Player.doSave; Exit; end;
+      INPUT_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @Player.FTraits, Player.ExpLevel ) );Exit; end;
+      INPUT_RUNMODE   : begin Player.doRun;Exit; end;
+
+      INPUT_EXAMINENPC   : begin Player.ExamineNPC; Exit; end;
+      INPUT_EXAMINEITEM  : begin Player.ExamineItem; Exit; end;
+      INPUT_GRIDTOGGLE: begin if GraphicsVersion then SpriteMap.ToggleGrid; Exit; end;
+      INPUT_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit; end;
+      INPUT_MUSICTOGGLE  : begin
+                               MusicOff := not MusicOff;
+                               if MusicOff then IO.PlayMusic('')
+                                           else IO.PlayMusic(Level.ID);
+                               Exit;
+                             end;
+    end;
     Exit( Action( iCommand ) );
+  end;
   Exit( False );
 end;
 
