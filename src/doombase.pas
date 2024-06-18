@@ -36,6 +36,8 @@ TDoom = class(TSystem)
        procedure SetupLuaConstants;
        function Action( aCommand : Byte ) : Boolean;
        function HandleActionCommand( aCommand : Byte ) : Boolean;
+       function HandleMoveCommand( aCommand : Byte ) : Boolean;
+       function HandleFireCommand( aCommand : Byte ) : Boolean;
        function HandleUnloadCommand : Boolean;
        function HandleCommand( aCommand : TCommand ) : Boolean;
        procedure Run;
@@ -76,7 +78,7 @@ implementation
 
 uses Classes, SysUtils,
      vdebug, viotypes,
-     dfmap, dfitem,
+     dfmap, dfitem, dfbeing,
      dfoutput, doomio, zstream,
      doomspritemap, // remove
      doomhelp, doomconfig, doomviews, dfplayer;
@@ -245,6 +247,12 @@ function TDoom.Action( aCommand : Byte ) : Boolean;
 var iItem : TItem;
 begin
 
+  if aCommand in INPUT_MOVE then
+    Exit( HandleMoveCommand( aCommand ) );
+
+  if ( aCommand in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_MFIRE, INPUT_MALTFIRE ] ) then
+    Exit( HandleFireCommand( aCommand ) );
+
   case aCommand of
     INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
     INPUT_OPEN       : Exit( HandleActionCommand( INPUT_OPEN ) );
@@ -295,8 +303,8 @@ begin
     end;
 
     INPUT_INVENTORY   : Exit( HandleCommand( Player.Inv.View ) );
-    INPUT_EQUIPMENT   : Exit( HandleCommand( Inv.RunEq ) );
-    INPUT_MSCROLL     : Exit( HandleCommand( Inv.DoScrollSwap ) );
+    INPUT_EQUIPMENT   : Exit( HandleCommand( Player.Inv.RunEq ) );
+    INPUT_MSCROLL     : Exit( HandleCommand( Player.Inv.DoScrollSwap ) );
 
     INPUT_SWAPWEAPON  : begin
       if ( Player.Inv.Slot[ efWeapon ] <> nil )  and ( Player.Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then begin UI.Msg('You can''t!'); Exit( False ); end;
@@ -304,34 +312,9 @@ begin
       Exit( HandleCommand( TCommand.Create( COMMAND_SWAPWEAPON ) ) );
     end;
   end;
-  UI.MsgUpDate;
-try
-  Player.Action( aCommand );
-except
-  on e : Exception do
-  begin
-    if CRASHMODE then raise;
-    ErrorLogOpen('CRITICAL','Player action exception!');
-    ErrorLogWriteln('Error message : '+e.Message);
-    ErrorLogClose;
-    UI.ErrorReport(e.Message);
-    CRASHMODE := True;
-  end;
-end;
 
-
-  if State <> DSPlaying then Exit;
-  UI.Focus( Player.Position );
-  Player.UpdateVisual;
-  while (Player.SCount < 5000) and (State = DSPlaying) do
-  begin
-    FLevel.CalculateVision( Player.Position );
-    FLevel.Tick;
-    UI.WaitForAnimation;
-    if not Player.PlayerTick then Exit( True );
-  end;
-  PreAction;
-  Exit( True );
+  UI.Msg('Unknown command. Press "?" for help.' );
+  Exit( False );
 end;
 
 function TDoom.HandleActionCommand( aCommand : Byte ) : Boolean;
@@ -423,6 +406,181 @@ begin
   end;
   Exit( False );
 end;
+
+function TDoom.HandleMoveCommand( aCommand : Byte ) : Boolean;
+var iDir        : TDirection;
+    iTarget     : TCoord2D;
+    iMoveResult : TMoveResult;
+begin
+  Player.FLastTargetPos.Create(0,0);
+  if BF_SESSILE in FFlags then
+  begin
+    UI.Msg( 'You can''t!' );
+    Exit( False );
+  end;
+
+  iDir := InputDirection( aCommand );
+  iTarget := Player.Position + iDir;
+  iMoveResult := Player.TryMove( iTarget );
+
+  if (not Player.FPathRun) and Player.FRun.Active and (
+       ( Player.FRun.Count >= Option_MaxRun ) or
+       ( iMoveResult <> MoveOk ) or
+       Level.cellFlagSet( iTarget, CF_NORUN ) or
+       (not Level.isEmpty(iTarget,[EF_NOTELE]))
+     ) then
+  begin
+    Player.FPathRun := False;
+    Player.FRun.Stop;
+    Exit( False );
+  end;
+
+  case iMoveResult of
+     MoveBlock :
+       begin
+         if Level.isProperCoord( iTarget ) and Level.cellFlagSet( iTarget, CF_PUSHABLE ) then
+           Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) )
+         else
+         begin
+           if Option_Blindmode then UI.Msg( 'You bump into a wall.' );
+           Exit( False );
+         end;
+       end;
+     MoveBeing : Exit( HandleCommand( TCommand.Create( COMMAND_MELEE, iTarget ) ) );
+     MoveDoor  : Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
+     MoveOk    : Exit( HandleCommand( TCommand.Create( COMMAND_MOVE, iTarget ) ) );
+  end;
+  Exit( False );
+end;
+
+function TDoom.HandleFireCommand( aCommand : Byte ) : Boolean;
+var iDir        : TDirection;
+    iTarget     : TCoord2D;
+    iItem       : TItem;
+    iFireDesc   : AnsiString;
+    iChainFire  : Byte;
+    iAlt        : Boolean;
+    iAltFire    : TAltFire;
+    iLimitRange : Boolean;
+    iRange      : Byte;
+begin
+  iChainFire := Player.ChainFire;
+  Player.ChainFire := 0;
+
+  iItem := Player.Inv.Slot[ efWeapon ];
+  iAlt  := ( aCommand in [ INPUT_ALTFIRE, INPUT_MALTFIRE ] );
+  if (iItem = nil) or (not iItem.isWeapon) then
+  begin
+    UI.Msg( 'You have no weapon.' );
+    Exit( False );
+  end;
+  if not iAlt then
+  begin
+    if ( aCommand = INPUT_FIRE ) and iItem.isMelee then
+    begin
+      iDir := UI.ChooseDirection('Melee attack');
+      if (iDir.code = DIR_CENTER) then Exit( False );
+      iTarget := Player.Position + iDir;
+      Exit( HandleCommand( TCommand.Create( COMMAND_MELEE, iTarget ) ) );
+    end;
+
+    if (not iItem.isRanged) then
+    begin
+      UI.Msg( 'You have no ranged weapon.' );
+      Exit( False );
+    end;
+  end
+  else
+  begin
+    if iItem.AltFire = ALT_NONE then
+    begin
+      UI.Msg( 'This weapon has no alternate fire mode' );
+      Exit( False );
+    end;
+  end;
+  if not iItem.CallHookCheck( Hook_OnFire, [Self,iAlt] ) then Exit( False );
+
+  if iAlt then
+  begin
+    if iItem.isMelee and ( iItem.AltFire = ALT_THROW ) then
+    begin
+      if aCommand = COMMAND_ALTFIRE then
+      begin
+        iRange      := Missiles[ iItem.Missile ].Range;
+        iLimitRange := MF_EXACT in Missiles[ iItem.Missile ].Flags;
+        if not Player.doChooseTarget( 'Throw -- Choose target...', iRange, iLimitRange ) then
+        begin
+          UI.Msg( 'Throwing canceled.' );
+          Exit( False );
+        end;
+        iTarget := Player.TargetPos;
+      end
+      else
+        iTarget  := IO.MTarget;
+    end;
+  end;
+
+  if iItem.isRanged then
+  begin
+    if not iItem.Flags[ IF_NOAMMO ] then
+    begin
+      if iItem.Ammo = 0              then Exit( Player.FailConfirm( 'Your weapon is empty.', [] ) );
+      if iItem.Ammo < iItem.ShotCost then Exit( Player.FailConfirm( 'You don''t have enough ammo to fire the %s!', [iItem.Name]) );
+    end;
+
+    if iItem.Flags[ IF_CHAMBEREMPTY ] then Exit( Player.FailConfirm( 'Shell chamber empty - move or reload.', [] ) );
+
+
+    if iItem.Flags[ IF_SHOTGUN ] then
+      iRange := Shotguns[ iItem.Missile ].Range
+    else
+      iRange := Missiles[ iItem.Missile ].Range;
+    if iRange = 0 then iRange := Player.Vision;
+
+    iLimitRange := (not iItem.Flags[ IF_SHOTGUN ]) and (MF_EXACT in Missiles[ iItem.Missile ].Flags);
+    if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE ] ) then
+    begin
+      iAltFire    := ALT_NONE;
+      if iAlt then iAltFire := iItem.AltFire;
+      iFireDesc := '';
+      case iAltFire of
+        ALT_SCRIPT  : iFireDesc := LuaSystem.Get([ 'items', iItem.ID, 'altname' ],'');
+        ALT_AIMED   : iFireDesc := 'aimed';
+        ALT_SINGLE  : iFireDesc := 'single';
+      end;
+      if iFireDesc <> '' then iFireDesc := ' (@Y'+iFireDesc+'@>)';
+
+      if iAltFire = ALT_CHAIN then
+      begin
+        case iChainFire of
+          0 : iFireDesc := ' (@Ginitial@>)';
+          1 : iFireDesc := ' (@Ywarming@>)';
+          2 : iFireDesc := ' (@Rfull@>)';
+        end;
+        if not Player.doChooseTarget( Format('Chain fire%s -- Choose target or abort...', [ iFireDesc ]), iRange, iLimitRange ) then
+          Exit( Player.Fail( 'Targeting canceled.', [] ) );
+      end
+      else
+        if not Player.doChooseTarget( Format('Fire%s -- Choose target...',[ iFireDesc ]), iRange, iLimitRange ) then
+          Exit( Player.Fail( 'Targeting canceled.', [] ) );
+      iTarget := Player.TargetPos;
+    end
+    else
+    begin
+      iTarget := IO.MTarget;
+    end;
+    if iLimitRange then
+      if Distance( Player.Position, iTarget ) > iRange then
+        Exit( Player.Fail( 'Out of range!', [] ) );
+  end;
+
+  if aCommand = INPUT_MFIRE    then aCommand := COMMAND_FIRE;
+  if aCommand = INPUT_MALTFIRE then aCommand := COMMAND_ALTFIRE;
+
+  Player.ChainFire := iChainFire;
+  Exit( HandleCommand( TCommand.Create( aCommand, iTarget, iItem ) ) );
+end;
+
 
 function TDoom.HandleUnloadCommand : Boolean;
 var iID         : AnsiString;

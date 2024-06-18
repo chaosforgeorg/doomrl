@@ -67,6 +67,8 @@ TPlayer = class(TBeing)
   FAffects        : TAffects;
   FPathRun        : Boolean;
 
+  FLastTargetPos  : TCoord2D;
+
   constructor Create; reintroduce;
   procedure Initialize; reintroduce;
   constructor CreateFromStream( Stream: TStream ); override;
@@ -75,7 +77,6 @@ TPlayer = class(TBeing)
   procedure HandlePostMove; override;
   procedure PreAction;
   function GetRunInput : Byte;
-  function Action( aCommand : Byte ) : Boolean;
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
@@ -104,7 +105,6 @@ TPlayer = class(TBeing)
   function OnTraitConfirm( aSender : TUIElement ) : Boolean;
   private
   FLastTargetUID  : TUID;
-  FLastTargetPos  : TCoord2D;
   FExp            : LongInt;
   FExpLevel       : Byte;
   private
@@ -630,175 +630,6 @@ begin
     end;
     Exit( DirectionToInput( iDir ) );
   end;
-end;
-
-function TPlayer.Action( aCommand : Byte ) : Boolean;
-var iLevel      : TLevel;
-    iDir        : TDirection;
-    iItem       : TItem;
-    iMoveResult : TMoveResult;
-    iFireDesc   : AnsiString;
-    iChainFire  : Byte;
-    iTarget     : TCoord2D;
-    iAlt        : Boolean;
-    iAltFire    : TAltFire;
-
-    iLimitRange : Boolean;
-    iRange      : Byte;
-    iCommand    : TCommand;
-begin
-  iLevel := TLevel( Parent );
-
-  iChainFire := FChainFire;
-  FChainFire := 0;
-
-  if ( aCommand in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_MFIRE, INPUT_MALTFIRE ] ) then
-  begin
-    iItem := Inv.Slot[ efWeapon ];
-    iAlt  := ( aCommand in [ INPUT_ALTFIRE, INPUT_MALTFIRE ] );
-    if (iItem = nil) or (not iItem.isWeapon) then Exit( Fail( 'You have no weapon.', [] ) );
-    if not iAlt then
-    begin
-      if ( aCommand = INPUT_FIRE ) and iItem.isMelee then
-      begin
-        iDir := UI.ChooseDirection('Melee attack');
-        if (iDir.code = DIR_CENTER) then Exit( False );
-        iTarget := FPosition + iDir;
-        aCommand := COMMAND_MELEE;
-      end
-      else
-        if (not iItem.isRanged) then Exit( Fail( 'You have no ranged weapon.', [] ) );
-    end 
-    else
-    begin
-      if iItem.AltFire = ALT_NONE then Exit( Fail('This weapon has no alternate fire mode.', [] ) );
-    end;
-    if aCommand <> COMMAND_MELEE then
-    begin
-      if not iItem.CallHookCheck( Hook_OnFire, [Self,iAlt] ) then Exit( False );
-    
-      if iAlt then
-      begin
-        if iItem.isMelee and ( iItem.AltFire = ALT_THROW ) then
-        begin
-          if aCommand = COMMAND_ALTFIRE then
-          begin
-            iRange      := Missiles[ iItem.Missile ].Range;
-            iLimitRange := MF_EXACT in Missiles[ iItem.Missile ].Flags;
-            if not Player.doChooseTarget( 'Throw -- Choose target...', iRange, iLimitRange ) then
-              Exit( Fail( 'Throwing canceled.', [] ) );
-            iTarget := FTargetPos;
-          end
-          else
-            iTarget  := IO.MTarget;
-        end;
-      end;
-
-      if iItem.isRanged then
-      begin
-          if not iItem.Flags[ IF_NOAMMO ] then
-          begin
-            if iItem.Ammo = 0              then Exit( FailConfirm( 'Your weapon is empty.', [] ) );
-            if iItem.Ammo < iItem.ShotCost then Exit( FailConfirm( 'You don''t have enough ammo to fire the %s!', [iItem.Name]) );
-          end;
-
-          if iItem.Flags[ IF_CHAMBEREMPTY ] then Exit( FailConfirm( 'Shell chamber empty - move or reload.', [] ) );
-
-
-          if iItem.Flags[ IF_SHOTGUN ] then
-            iRange := Shotguns[ iItem.Missile ].Range
-          else
-            iRange := Missiles[ iItem.Missile ].Range;
-          if iRange = 0 then iRange := self.Vision;
-
-          iLimitRange := (not iItem.Flags[ IF_SHOTGUN ]) and (MF_EXACT in Missiles[ iItem.Missile ].Flags);
-          if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE ] ) then
-          begin
-            iAltFire    := ALT_NONE;
-            if iAlt then iAltFire := iItem.AltFire;
-            iFireDesc := '';
-            case iAltFire of
-              ALT_SCRIPT  : iFireDesc := LuaSystem.Get([ 'items', iItem.ID, 'altname' ],'');
-              ALT_AIMED   : iFireDesc := 'aimed';
-              ALT_SINGLE  : iFireDesc := 'single';
-            end;
-            if iFireDesc <> '' then iFireDesc := ' (@Y'+iFireDesc+'@>)';
-
-            if iAltFire = ALT_CHAIN then
-            begin
-              case iChainFire of
-                0 : iFireDesc := ' (@Ginitial@>)';
-                1 : iFireDesc := ' (@Ywarming@>)';
-                2 : iFireDesc := ' (@Rfull@>)';
-              end;
-              if not Player.doChooseTarget( Format('Chain fire%s -- Choose target or abort...', [ iFireDesc ]), iRange, iLimitRange ) then
-                Exit( Fail( 'Targeting canceled.', [] ) );
-            end
-            else
-              if not Player.doChooseTarget( Format('Fire%s -- Choose target...',[ iFireDesc ]), iRange, iLimitRange ) then Exit( Fail( 'Targeting canceled.', [] ) );
-            iTarget := FTargetPos;
-          end
-          else
-          begin
-            iTarget := IO.MTarget;
-          end;
-          if iLimitRange then
-            if Distance( self.Position, iTarget ) > iRange then
-              Exit( Fail( 'Out of range!', [] ) );
-      end;
-    end;
-    if aCommand = INPUT_MFIRE    then aCommand := COMMAND_FIRE;
-    if aCommand = INPUT_MALTFIRE then aCommand := COMMAND_ALTFIRE;
-  end;
-
-  FChainFire := iChainFire;
-
-  if ( aCommand in INPUT_MOVE ) then
-  begin
-    FLastTargetPos.Create(0,0);
-    if BF_SESSILE in FFlags then
-      Exit( Fail('You can''t!',[] ) );
-
-    iDir := InputDirection( aCommand );
-    iTarget := FPosition + iDir;
-    iMoveResult := TryMove( iTarget );
-
-    if (not FPathRun) and FRun.Active and (
-         ( FRun.Count >= Option_MaxRun ) or
-         ( iMoveResult <> MoveOk ) or
-         iLevel.cellFlagSet( iTarget, CF_NORUN ) or
-         (not iLevel.isEmpty(iTarget,[EF_NOTELE]))
-       ) then
-    begin
-      FPathRun := False;
-      FRun.Stop;
-      Exit( False );
-    end;
-
-    case iMoveResult of
-       MoveBlock :
-         begin
-           if iLevel.isProperCoord( iTarget ) and iLevel.cellFlagSet( iTarget, CF_PUSHABLE ) then
-             aCommand := COMMAND_ACTION
-           else
-           begin
-             if Option_Blindmode then UI.Msg( 'You bump into a wall.' );
-             Exit( False );
-           end;
-         end;
-       MoveBeing : aCommand := COMMAND_MELEE;
-       MoveDoor  : aCommand := COMMAND_ACTION;
-       MoveOk    : aCommand := COMMAND_MOVE;
-    end;
-  end;
-
-  if ( aCommand in [ COMMAND_ACTION, COMMAND_MELEE, COMMAND_MOVE ] ) then
-    Exit( HandleCommand( TCommand.Create( aCommand, iTarget ) ) );
-
-  if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE ] ) then
-    Exit( HandleCommand( TCommand.Create( aCommand, iTarget, iItem ) ) );
-
-  Exit( Fail('Unknown command. Press "?" for help.', []) );
 end;
 
 procedure TPlayer.PreAction;
