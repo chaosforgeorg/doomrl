@@ -656,100 +656,6 @@ begin
   iLevel := TLevel( Parent );
   iFlag  := 0;
 
-  if ( aCommand = COMMAND_ACTION ) then
-  begin
-    if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
-      aCommand := COMMAND_ENTER
-    else
-    begin
-        if ( iLevel.Item[ FPosition ] <> nil ) and ( iLevel.Item[ FPosition ].isLever ) then
-           aCommand := COMMAND_ALTPICKUP 
-    end;
-  end;
-
-  if ( aCommand = INPUT_OPEN ) then
-  begin
-    iID := 'open';
-    aCommand := COMMAND_ACTION;
-    iFlag := CF_OPENABLE;
-  end;
-
-  if ( aCommand = INPUT_CLOSE ) then
-  begin
-    iID := 'close';
-    aCommand := COMMAND_ACTION;
-    iFlag := CF_CLOSABLE;
-  end;
-
-  if ( aCommand = COMMAND_ACTION ) then
-  begin
-    iCount := 0;
-    if iFlag = 0 then
-    begin
-      for iScan in NewArea( FPosition, 1 ).Clamped( iLevel.Area ) do
-        if ( iScan <> FPosition ) and ( iLevel.cellFlagSet(iScan, CF_OPENABLE) or iLevel.cellFlagSet(iScan, CF_CLOSABLE) ) then
-        begin
-          Inc(iCount);
-          iTarget := iScan;
-        end;
-    end
-    else
-      for iScan in NewArea( FPosition, 1 ).Clamped( iLevel.Area ) do
-        if iLevel.cellFlagSet( iScan, iFlag ) and iLevel.isEmpty( iScan ,[EF_NOITEMS,EF_NOBEINGS] ) then
-        begin
-          Inc(iCount);
-          iTarget := iScan;
-        end;
-    if iCount = 0 then
-    begin
-      if iID = ''
-        then Exit( Fail( 'There''s nothing you can act upon here.', [] ) )
-        else Exit( Fail( 'There''s no door you can %s here.', [ iID ] ) );
-    end;
-
-    if iCount > 1 then
-    begin
-      if iID = ''
-        then iDir := UI.ChooseDirection('action')
-        else iDir := UI.ChooseDirection(Capitalized(iID)+' door');
-      if iDir.code = DIR_CENTER then Exit( False );
-      iTarget := FPosition + iDir;
-    end;
-
-    if iLevel.isProperCoord( iTarget ) then
-    begin
-      if ( (iFlag <> 0) and iLevel.cellFlagSet( iTarget, iFlag ) ) or
-          ( (iFlag = 0) and ( iLevel.cellFlagSet( iTarget, CF_CLOSABLE ) or iLevel.cellFlagSet( iTarget, CF_OPENABLE ) ) )
-          then 
-          begin
-            if not iLevel.isEmpty( iTarget ,[EF_NOITEMS,EF_NOBEINGS] ) then
-              Exit( Fail( 'There''s something in the way!', [] ) );
-            // SUCCESS
-          end
-          else
-          begin
-            if iID = ''
-              then Exit( Fail( 'You can''t do that!', [] ) )
-              else Exit( Fail( 'You can''t %s that.', [ iID ] ) );
-          end;
-    end
-    else Exit( False );
-  end;
-
-  if ( aCommand = COMMAND_USE ) then
-  begin
-    iItem := Inv.Choose([ITEMTYPE_PACK],'use');
-    if iItem = nil then Exit( False );
-  end;
-
-  if ( aCommand = COMMAND_ALTPICKUP ) then
-  begin
-    iItem := TLevel(Parent).Item[ FPosition ];
-    if ( iItem = nil ) or (not (iItem.isLever or iItem.isPack or iItem.isWearable) ) then
-      Exit( Fail( 'There''s nothing to use on the ground!', [] ) );
-    aCommand := COMMAND_USE;
-  end;
-
   if ( aCommand = COMMAND_UNLOAD ) then
   begin
     iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack ];
@@ -961,10 +867,10 @@ begin
   if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iTarget, iItem ) ) );
 
-  if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD, COMMAND_USE, COMMAND_WEAR ] ) then
+  if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD, COMMAND_WEAR ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iItem, iID ) ) );
 
-  if ( aCommand in [ COMMAND_TACTIC, COMMAND_WAIT, COMMAND_SWAPWEAPON, COMMAND_ENTER, COMMAND_RELOAD, COMMAND_ALTRELOAD, COMMAND_PICKUP ] ) then
+  if ( aCommand in [ COMMAND_SWAPWEAPON ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand ) ) );
 
   Exit( Fail('Unknown command. Press "?" for help.', []) );

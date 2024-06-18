@@ -35,6 +35,7 @@ TDoom = class(TSystem)
        function SaveExists : Boolean;
        procedure SetupLuaConstants;
        function Action( aCommand : Byte ) : Boolean;
+       function HandleActionCommand( aCommand : Byte ) : Boolean;
        function HandleCommand( aCommand : TCommand ) : Boolean;
        procedure Run;
        destructor Destroy; override;
@@ -74,7 +75,7 @@ implementation
 
 uses Classes, SysUtils,
      vdebug, viotypes,
-     dfmap,
+     dfmap, dfitem,
      dfoutput, doomio, zstream,
      doomspritemap, // remove
      doomhelp, doomconfig, doomviews, dfplayer;
@@ -240,8 +241,13 @@ begin
 end;
 
 function TDoom.Action( aCommand : Byte ) : Boolean;
+var iItem : TItem;
 begin
+
   case aCommand of
+    INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
+    INPUT_OPEN       : Exit( HandleActionCommand( INPUT_OPEN ) );
+    INPUT_CLOSE      : Exit( HandleActionCommand( INPUT_CLOSE ) );
     INPUT_QUICKKEY_0 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'chainsaw' ) ) );
     INPUT_QUICKKEY_1 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'knife' ) ) );
     INPUT_QUICKKEY_2 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'pistol' ) ) );
@@ -252,6 +258,27 @@ begin
     INPUT_QUICKKEY_7 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'bazooka' ) ) );
     INPUT_QUICKKEY_8 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'plasma' ) ) );
     INPUT_QUICKKEY_9 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'bfg9000' ) ) );
+
+    INPUT_TACTIC     : Exit( HandleCommand( TCommand.Create( COMMAND_TACTIC ) ) );
+    INPUT_WAIT       : Exit( HandleCommand( TCommand.Create( COMMAND_WAIT ) ) );
+    INPUT_RELOAD     : Exit( HandleCommand( TCommand.Create( COMMAND_RELOAD ) ) );
+    INPUT_ALTRELOAD  : Exit( HandleCommand( TCommand.Create( COMMAND_ALTRELOAD ) ) );
+    INPUT_PICKUP     : Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) );
+    INPUT_ENTER      : Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) );
+    INPUT_USE        : begin
+      iItem := Player.Inv.Choose([ITEMTYPE_PACK],'use');
+      if iItem = nil then Exit( False );
+      Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
+    end;
+    INPUT_ALTPICKUP  : begin
+      iItem := Level.Item[ Player.Position ];
+      if ( iItem = nil ) or (not (iItem.isLever or iItem.isPack or iItem.isWearable) ) then
+      begin
+        UI.Msg( 'There''s nothing to use on the ground!' );
+        Exit( False );
+      end;
+      Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
+    end;
   end;
   UI.MsgUpDate;
 try
@@ -281,6 +308,94 @@ end;
   end;
   PreAction;
   Exit( True );
+end;
+
+function TDoom.HandleActionCommand( aCommand : Byte ) : Boolean;
+var iItem   : TItem;
+    iID     : AnsiString;
+    iFlag   : Byte;
+    iCount  : Byte;
+    iScan   : TCoord2D;
+    iTarget : TCoord2D;
+    iDir    : TDirection;
+begin
+  if aCommand = INPUT_ACTION then
+  begin
+    if Level.cellFlagSet( Player.Position, CF_STAIRS ) then
+      Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) )
+    else
+    begin
+      iItem := Level.Item[ Player.Position ];
+      if ( iItem <> nil ) and ( iItem.isLever ) then
+        Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
+    end;
+  end;
+
+  if ( aCommand = INPUT_OPEN ) then
+  begin
+    iID := 'open';
+    iFlag := CF_OPENABLE;
+  end;
+
+  if ( aCommand = INPUT_CLOSE ) then
+  begin
+    iID := 'close';
+    iFlag := CF_CLOSABLE;
+  end;
+
+  iCount := 0;
+  if iFlag = 0 then
+  begin
+    for iScan in NewArea( Player.Position, 1 ).Clamped( Level.Area ) do
+      if ( iScan <> Player.Position ) and ( Level.cellFlagSet(iScan, CF_OPENABLE) or Level.cellFlagSet(iScan, CF_CLOSABLE) ) then
+      begin
+        Inc(iCount);
+        iTarget := iScan;
+      end;
+  end
+  else
+    for iScan in NewArea( Player.Position, 1 ).Clamped( Level.Area ) do
+      if Level.cellFlagSet( iScan, iFlag ) and Level.isEmpty( iScan ,[EF_NOITEMS,EF_NOBEINGS] ) then
+      begin
+        Inc(iCount);
+        iTarget := iScan;
+      end;
+
+  if iCount = 0 then
+  begin
+    if iID = ''
+      then UI.Msg( 'There''s nothing you can act upon here.' )
+      else UI.Msg( 'There''s no door you can %s here.', [ iID ] );
+    Exit( False );
+  end;
+
+  if iCount > 1 then
+  begin
+    if iID = ''
+      then iDir := UI.ChooseDirection('action')
+      else iDir := UI.ChooseDirection(Capitalized(iID)+' door');
+    if iDir.code = DIR_CENTER then Exit( False );
+    iTarget := Player.Position + iDir;
+  end;
+
+  if Level.isProperCoord( iTarget ) then
+  begin
+    if ( (iFlag <> 0) and Level.cellFlagSet( iTarget, iFlag ) ) or
+        ( (iFlag = 0) and ( Level.cellFlagSet( iTarget, CF_CLOSABLE ) or Level.cellFlagSet( iTarget, CF_OPENABLE ) ) ) then
+    begin
+      if not Level.isEmpty( iTarget ,[EF_NOITEMS,EF_NOBEINGS] ) then
+      begin
+        UI.Msg( 'There''s something in the way!' );
+        Exit( False );
+      end;
+      // SUCCESS
+      Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
+    end;
+    if iID = ''
+      then UI.Msg( 'You can''t do that!' )
+      else UI.Msg( 'You can''t %s that.', [ iID ] );
+  end;
+  Exit( False );
 end;
 
 function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
