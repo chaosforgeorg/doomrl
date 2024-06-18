@@ -36,6 +36,7 @@ TDoom = class(TSystem)
        procedure SetupLuaConstants;
        function Action( aCommand : Byte ) : Boolean;
        function HandleActionCommand( aCommand : Byte ) : Boolean;
+       function HandleUnloadCommand : Boolean;
        function HandleCommand( aCommand : TCommand ) : Boolean;
        procedure Run;
        destructor Destroy; override;
@@ -248,6 +249,7 @@ begin
     INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
     INPUT_OPEN       : Exit( HandleActionCommand( INPUT_OPEN ) );
     INPUT_CLOSE      : Exit( HandleActionCommand( INPUT_CLOSE ) );
+    INPUT_UNLOAD     : Exit( HandleUnloadCommand );
     INPUT_QUICKKEY_0 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'chainsaw' ) ) );
     INPUT_QUICKKEY_1 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'knife' ) ) );
     INPUT_QUICKKEY_2 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'pistol' ) ) );
@@ -270,6 +272,12 @@ begin
       if iItem = nil then Exit( False );
       Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
     end;
+    INPUT_DROP       : begin
+      iItem := Player.Inv.Choose([],'drop');
+      if iItem = nil then Exit( False );
+      Exit( HandleCommand( TCommand.Create( COMMAND_DROP, iItem ) ) );
+    end;
+
     INPUT_ALTPICKUP  : begin
       iItem := Level.Item[ Player.Position ];
       if ( iItem = nil ) or (not (iItem.isLever or iItem.isPack or iItem.isWearable) ) then
@@ -319,6 +327,8 @@ var iItem   : TItem;
     iTarget : TCoord2D;
     iDir    : TDirection;
 begin
+  iFlag := 0;
+
   if aCommand = INPUT_ACTION then
   begin
     if Level.cellFlagSet( Player.Position, CF_STAIRS ) then
@@ -396,6 +406,43 @@ begin
       else UI.Msg( 'You can''t %s that.', [ iID ] );
   end;
   Exit( False );
+end;
+
+function TDoom.HandleUnloadCommand : Boolean;
+var iID         : AnsiString;
+    iName       : AnsiString;
+    iItem       : TItem;
+    iItemTypes  : TItemTypeSet;
+begin
+  iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack ];
+  if (BF_SCAVENGER in FFlags) then
+    iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack, ItemType_Melee, ItemType_Armor, ItemType_Boots ];
+  iItem := Level.Item[ Player.Position ];
+  if (iItem = nil) or ( not (iItem.IType in iItemTypes) ) then
+  begin
+    iItem := Player.Inv.Choose( iItemTypes, 'unload' );
+    if iItem = nil then Exit( False );
+  end;
+  iName := iItem.Name;
+
+  if iItem.isAmmoPack then
+    if not UI.MsgConfirm('An ammopack might serve better in the Prepared slot. Continuing will unload the ammo destroying the pack. Are you sure?', True)
+      then Exit( False );
+
+  if (not iItem.isAmmoPack) and (BF_SCAVENGER in FFlags) and
+    ((iItem.Ammo = 0) or iItem.Flags[ IF_NOUNLOAD ] or iItem.Flags[ IF_RECHARGE ] or iItem.Flags[ IF_NOAMMO ]) and
+    (iItem.Flags[ IF_EXOTIC ] or iItem.Flags[ IF_UNIQUE ] or iItem.Flags[ IF_ASSEMBLED ] or iItem.Flags[ IF_MODIFIED ]) then
+  begin
+    iID := LuaSystem.ProtectedCall( ['DoomRL','OnDisassemble'], [ iItem ] );
+    if iID <> '' then
+      if not UI.MsgConfirm('Do you want to disassemble the '+iName+'?', True) then
+        iID := '';
+  end;
+
+  if ( iID = '' ) and ( not( iItem.IType in [ ItemType_Ranged, ItemType_AmmoPack ] ) ) then
+     Exit( False );
+
+  Exit( HandleCommand( TCommand.Create( COMMAND_UNLOAD, iItem, iID ) ) );
 end;
 
 function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;

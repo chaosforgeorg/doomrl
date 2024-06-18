@@ -638,54 +638,17 @@ var iLevel      : TLevel;
     iItem       : TItem;
     iMoveResult : TMoveResult;
     iID         : AnsiString;
-    iName       : AnsiString;
     iFireDesc   : AnsiString;
-    iCount      : Byte;
-    iFlag       : byte;
     iChainFire  : Byte;
-    iScan       : TCoord2D;
     iTarget     : TCoord2D;
     iAlt        : Boolean;
     iAltFire    : TAltFire;
-    iItemTypes  : TItemTypeSet;
 
     iLimitRange : Boolean;
     iRange      : Byte;
     iCommand    : TCommand;
 begin
   iLevel := TLevel( Parent );
-  iFlag  := 0;
-
-  if ( aCommand = COMMAND_UNLOAD ) then
-  begin
-    iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack ];
-    if (BF_SCAVENGER in FFlags) then
-      iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack, ItemType_Melee, ItemType_Armor, ItemType_Boots ];
-    iItem := TLevel(Parent).Item[ FPosition ];
-    if (iItem = nil) or ( not (iItem.IType in iItemTypes) ) then
-    begin
-      iItem := Inv.Choose( iItemTypes, 'unload' );
-      if iItem = nil then Exit( False );
-    end;
-    iName := iItem.Name;
-
-    if iItem.isAmmoPack then
-      if not UI.MsgConfirm('An ammopack might serve better in the Prepared slot. Continuing will unload the ammo destroying the pack. Are you sure?', True)
-        then Exit( False );
-
-    if (not iItem.isAmmoPack) and (BF_SCAVENGER in FFlags) and
-      ((iItem.Ammo = 0) or iItem.Flags[ IF_NOUNLOAD ] or iItem.Flags[ IF_RECHARGE ] or iItem.Flags[ IF_NOAMMO ]) and
-      (iItem.Flags[ IF_EXOTIC ] or iItem.Flags[ IF_UNIQUE ] or iItem.Flags[ IF_ASSEMBLED ] or iItem.Flags[ IF_MODIFIED ]) then
-    begin
-      iID := LuaSystem.ProtectedCall( ['DoomRL','OnDisassemble'], [ iItem ] );
-      if iID <> '' then
-        if not UI.MsgConfirm('Do you want to disassemble the '+iName+'?', True) then
-          iID := '';
-    end;
-
-    if ( iID = '' ) and ( not( iItem.IType in [ ItemType_Ranged, ItemType_AmmoPack ] ) ) then
-       Exit( False );
-  end;
 
   iChainFire := FChainFire;
   FChainFire := 0;
@@ -797,12 +760,6 @@ begin
     iTarget  := FPosition + NewDirectionSmooth( FPosition, IO.MTarget );
   end;
 
-  if ( aCommand = COMMAND_DROP ) then
-  begin
-    iItem := Inv.Choose([],'drop');
-    if iItem = nil then Exit( False );
-  end;
-
   if ( aCommand in INPUT_MOVE ) then
   begin
     FLastTargetPos.Create(0,0);
@@ -867,7 +824,7 @@ begin
   if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iTarget, iItem ) ) );
 
-  if ( aCommand in [ COMMAND_DROP, COMMAND_UNLOAD, COMMAND_WEAR ] ) then
+  if ( aCommand in [ COMMAND_DROP, COMMAND_WEAR ] ) then
     Exit( HandleCommand( TCommand.Create( aCommand, iItem, iID ) ) );
 
   if ( aCommand in [ COMMAND_SWAPWEAPON ] ) then
