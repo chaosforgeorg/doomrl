@@ -37,7 +37,7 @@ TDoom = class(TSystem)
        function Action( aCommand : Byte ) : Boolean;
        function HandleActionCommand( aCommand : Byte ) : Boolean;
        function HandleMoveCommand( aCommand : Byte ) : Boolean;
-       function HandleFireCommand( aCommand : Byte ) : Boolean;
+       function HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
        function HandleUnloadCommand : Boolean;
        function HandleSwapWeaponCommand : Boolean;
        function HandleCommand( aCommand : TCommand ) : Boolean;
@@ -251,10 +251,9 @@ begin
   if aCommand in INPUT_MOVE then
     Exit( HandleMoveCommand( aCommand ) );
 
-  if ( aCommand in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_MFIRE, INPUT_MALTFIRE ] ) then
-    Exit( HandleFireCommand( aCommand ) );
-
   case aCommand of
+    INPUT_FIRE       : Exit( HandleFireCommand( False, False ) );
+    INPUT_ALTFIRE    : Exit( HandleFireCommand( True, False ) );
     INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
     INPUT_OPEN       : Exit( HandleActionCommand( INPUT_OPEN ) );
     INPUT_CLOSE      : Exit( HandleActionCommand( INPUT_CLOSE ) );
@@ -445,13 +444,12 @@ begin
   Exit( False );
 end;
 
-function TDoom.HandleFireCommand( aCommand : Byte ) : Boolean;
+function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
 var iDir        : TDirection;
     iTarget     : TCoord2D;
     iItem       : TItem;
     iFireDesc   : AnsiString;
     iChainFire  : Byte;
-    iAlt        : Boolean;
     iAltFire    : TAltFire;
     iLimitRange : Boolean;
     iRange      : Byte;
@@ -460,15 +458,14 @@ begin
   Player.ChainFire := 0;
 
   iItem := Player.Inv.Slot[ efWeapon ];
-  iAlt  := ( aCommand in [ INPUT_ALTFIRE, INPUT_MALTFIRE ] );
   if (iItem = nil) or (not iItem.isWeapon) then
   begin
     UI.Msg( 'You have no weapon.' );
     Exit( False );
   end;
-  if not iAlt then
+  if not aAlt then
   begin
-    if ( aCommand = INPUT_FIRE ) and iItem.isMelee then
+    if (not aMouse) and iItem.isMelee then
     begin
       iDir := UI.ChooseDirection('Melee attack');
       if (iDir.code = DIR_CENTER) then Exit( False );
@@ -490,13 +487,13 @@ begin
       Exit( False );
     end;
   end;
-  if not iItem.CallHookCheck( Hook_OnFire, [Self,iAlt] ) then Exit( False );
+  if not iItem.CallHookCheck( Hook_OnFire, [Self,aAlt] ) then Exit( False );
 
-  if iAlt then
+  if aAlt then
   begin
     if iItem.isMelee and ( iItem.AltFire = ALT_THROW ) then
     begin
-      if aCommand = COMMAND_ALTFIRE then
+      if not aMouse then
       begin
         iRange      := Missiles[ iItem.Missile ].Range;
         iLimitRange := MF_EXACT in Missiles[ iItem.Missile ].Flags;
@@ -530,10 +527,10 @@ begin
     if iRange = 0 then iRange := Player.Vision;
 
     iLimitRange := (not iItem.Flags[ IF_SHOTGUN ]) and (MF_EXACT in Missiles[ iItem.Missile ].Flags);
-    if ( aCommand in [ COMMAND_FIRE, COMMAND_ALTFIRE ] ) then
+    if not aMouse then
     begin
       iAltFire    := ALT_NONE;
-      if iAlt then iAltFire := iItem.AltFire;
+      if aAlt then iAltFire := iItem.AltFire;
       iFireDesc := '';
       case iAltFire of
         ALT_SCRIPT  : iFireDesc := LuaSystem.Get([ 'items', iItem.ID, 'altname' ],'');
@@ -566,11 +563,10 @@ begin
         Exit( Player.Fail( 'Out of range!', [] ) );
   end;
 
-  if aCommand = INPUT_MFIRE    then aCommand := COMMAND_FIRE;
-  if aCommand = INPUT_MALTFIRE then aCommand := COMMAND_ALTFIRE;
-
   Player.ChainFire := iChainFire;
-  Exit( HandleCommand( TCommand.Create( aCommand, iTarget, iItem ) ) );
+  if aAlt
+    then Exit( HandleCommand( TCommand.Create( COMMAND_ALTFIRE, iTarget, iItem ) ) )
+    else Exit( HandleCommand( TCommand.Create( COMMAND_FIRE, iTarget, iItem ) ) );
 end;
 
 
@@ -717,8 +713,8 @@ begin
       else if (Player.Inv.Slot[ efWeapon ] <> nil) and (Player.Inv.Slot[ efWeapon ].isRanged) then
       begin
         if iAlt
-          then Exit( HandleFireCommand( INPUT_MALTFIRE ) )
-          else Exit( HandleFireCommand( INPUT_MFIRE ) );
+          then Exit( HandleFireCommand( True, True ) )
+          else Exit( HandleFireCommand( False, True ) );
       end
       else Exit( HandleCommand( TCommand.Create( COMMAND_MELEE,
         Player.Position + NewDirectionSmooth( Player.Position, IO.MTarget )
