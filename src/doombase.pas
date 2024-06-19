@@ -39,6 +39,7 @@ TDoom = class(TSystem)
        function HandleMoveCommand( aCommand : Byte ) : Boolean;
        function HandleFireCommand( aCommand : Byte ) : Boolean;
        function HandleUnloadCommand : Boolean;
+       function HandleSwapWeaponCommand : Boolean;
        function HandleCommand( aCommand : TCommand ) : Boolean;
        procedure Run;
        destructor Destroy; override;
@@ -306,11 +307,7 @@ begin
     INPUT_EQUIPMENT   : Exit( HandleCommand( Player.Inv.RunEq ) );
     INPUT_MSCROLL     : Exit( HandleCommand( Player.Inv.DoScrollSwap ) );
 
-    INPUT_SWAPWEAPON  : begin
-      if ( Player.Inv.Slot[ efWeapon ] <> nil )  and ( Player.Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then begin UI.Msg('You can''t!'); Exit( False ); end;
-      if ( Player.Inv.Slot[ efWeapon2 ] <> nil ) and ( Player.Inv.Slot[ efWeapon2 ].isAmmoPack )        then begin UI.Msg('Nothing to swap!'); Exit( False ); end;
-      Exit( HandleCommand( TCommand.Create( COMMAND_SWAPWEAPON ) ) );
-    end;
+    INPUT_SWAPWEAPON  : Exit( HandleSwapWeaponCommand );
   end;
 
   UI.Msg('Unknown command. Press "?" for help.' );
@@ -619,6 +616,13 @@ begin
   Exit( HandleCommand( TCommand.Create( COMMAND_UNLOAD, iItem, iID ) ) );
 end;
 
+function TDoom.HandleSwapWeaponCommand : Boolean;
+begin
+  if ( Player.Inv.Slot[ efWeapon ] <> nil )  and ( Player.Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then begin UI.Msg('You can''t!'); Exit( False ); end;
+  if ( Player.Inv.Slot[ efWeapon2 ] <> nil ) and ( Player.Inv.Slot[ efWeapon2 ].isAmmoPack )        then begin UI.Msg('Nothing to swap!'); Exit( False ); end;
+  Exit( HandleCommand( TCommand.Create( COMMAND_SWAPWEAPON ) ) );
+end;
+
 function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
 begin
   if aCommand.Command = COMMAND_NONE then
@@ -671,24 +675,25 @@ begin
 
     if iButton = VMB_BUTTON_MIDDLE then
       if IO.MTarget = Player.Position
-        then iCommand := COMMAND_SWAPWEAPON
-        else iCommand := INPUT_EQUIPMENT;
+        then Exit( HandleSwapWeaponCommand )
+        else Exit( HandleCommand( Player.Inv.RunEq ) );
 
     if iButton = VMB_BUTTON_LEFT then
     begin
       if IO.MTarget = Player.Position then
-        if iAlt then iCommand := INPUT_INVENTORY
+        if iAlt then
+          Exit( HandleCommand( Player.Inv.View ) )
         else
         if Level.cellFlagSet( Player.Position, CF_STAIRS ) then
-          iCommand := COMMAND_ENTER
+          Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) )
         else
           if Level.Item[ Player.Position ] <> nil then
             if Level.Item[ Player.Position ].isLever then
-              iCommand := COMMAND_ALTPICKUP
+              Exit( HandleCommand( TCommand.Create( COMMAND_USE, Level.Item[ Player.Position ] ) ) )
             else
-              iCommand := COMMAND_PICKUP
-            else
-              iCommand := INPUT_INVENTORY
+              Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) )
+          else
+            Exit( HandleCommand( Player.Inv.View ) )
       else
       if Distance( Player.Position, IO.MTarget ) = 1
         then iCommand := DirectionToInput( NewDirection( Player.Position, IO.MTarget ) )
@@ -713,8 +718,8 @@ begin
         ((Player.Inv.Slot[ efWeapon ] <> nil) and (Player.Inv.Slot[ efWeapon ].isRanged) and (not (Player.Inv.Slot[efWeapon].GetFlag(IF_NOAMMO))) and (Player.Inv.Slot[ efWeapon ].Ammo = 0))  then
       begin
         if iAlt
-          then iCommand := COMMAND_ALTRELOAD
-          else iCommand := COMMAND_RELOAD;
+          then Exit( HandleCommand( TCommand.Create( COMMAND_ALTRELOAD ) ) )
+          else Exit( HandleCommand( TCommand.Create( COMMAND_RELOAD ) ) );
       end
       else if (Player.Inv.Slot[ efWeapon ] <> nil) and (Player.Inv.Slot[ efWeapon ].isRanged) then
       begin
