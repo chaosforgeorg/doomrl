@@ -277,11 +277,6 @@ begin
     INPUT_PICKUP     : Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) );
     INPUT_ENTER      : Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) );
 
-    // MOVE TO MOUSE CODE
-    INPUT_MATTACK    : Exit( HandleCommand( TCommand.Create( COMMAND_MELEE,
-        Player.Position + NewDirectionSmooth( Player.Position, IO.MTarget )
-      ) ) );
-
     INPUT_USE        : begin
       iItem := Player.Inv.Choose([ITEMTYPE_PACK],'use');
       if iItem = nil then Exit( False );
@@ -661,7 +656,6 @@ function TDoom.HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
 var iPoint   : TIOPoint;
     iAlt     : Boolean;
     iButton  : TIOMouseButton;
-    iCommand : Byte;
 begin
   iPoint := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
   IO.MTarget.Create( iPoint.X, iPoint.Y );
@@ -669,7 +663,6 @@ begin
   begin
     iButton  := aEvent.Mouse.Button;
     iAlt     := False;
-    iCommand := 0;
     if iButton in [ VMB_BUTTON_LEFT, VMB_BUTTON_RIGHT ] then
       iAlt := VKMOD_ALT in IO.Driver.GetModKeyState;
 
@@ -696,7 +689,7 @@ begin
             Exit( HandleCommand( Player.Inv.View ) )
       else
       if Distance( Player.Position, IO.MTarget ) = 1
-        then iCommand := DirectionToInput( NewDirection( Player.Position, IO.MTarget ) )
+        then Exit( HandleMoveCommand( DirectionToInput( NewDirection( Player.Position, IO.MTarget ) ) ) )
         else if Level.isExplored( IO.MTarget ) then
         begin
           if not Player.RunPath( IO.MTarget ) then
@@ -724,17 +717,16 @@ begin
       else if (Player.Inv.Slot[ efWeapon ] <> nil) and (Player.Inv.Slot[ efWeapon ].isRanged) then
       begin
         if iAlt
-          then iCommand := INPUT_MALTFIRE
-          else iCommand := INPUT_MFIRE;
+          then Exit( HandleFireCommand( INPUT_MALTFIRE ) )
+          else Exit( HandleFireCommand( INPUT_MFIRE ) );
       end
-      else iCommand := INPUT_MATTACK;
+      else Exit( HandleCommand( TCommand.Create( COMMAND_MELEE,
+        Player.Position + NewDirectionSmooth( Player.Position, IO.MTarget )
+      ) ) );
     end;
 
     if iButton in [ VMB_WHEEL_UP, VMB_WHEEL_DOWN ] then
-      iCommand := INPUT_MSCROLL;
-
-    if iCommand <> 0 then
-      Exit( Action( iCommand ) );
+      Exit( HandleCommand( Player.Inv.DoScrollSwap ) );
   end;
   Exit( False );
 end;
