@@ -64,6 +64,7 @@ INPUT_HELP              = 47;
 
 INPUT_MESSAGES          = 49;
 INPUT_ASSEMBLIES        = 50;
+INPUT_MSCROLL           = 51;
 
 INPUT_QUICKKEY_0        = 60;
 INPUT_QUICKKEY_1        = 61;

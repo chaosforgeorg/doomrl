@@ -182,10 +182,10 @@ TBeing = class(TThing,IPathQuery)
     FKnockBacked   : Boolean;
     FAnimCount     : Word;
     public
-    property Inv       : TInventory read FInv       write FInv;
-    property TargetPos : TCoord2D   read FTargetPos write FTargetPos;
-    property LastPos   : TCoord2D   read FLastPos   write FLastPos;
-    property LastMove  : TCoord2D   read FMovePos   write FMovePos;
+    property Inv       : TInventory  read FInv       write FInv;
+    property TargetPos : TCoord2D    read FTargetPos write FTargetPos;
+    property LastPos   : TCoord2D    read FLastPos   write FLastPos;
+    property LastMove  : TCoord2D    read FMovePos   write FMovePos;
 
     property KnockBacked  : Boolean read FKnockBacked  write FKnockBacked;
     property AnimCount    : Word    read FAnimCount    write FAnimCount;
