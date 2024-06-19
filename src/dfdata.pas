@@ -104,9 +104,6 @@ const
   INPUT_MLEFT    = 243;
   INPUT_MSCRUP   = 244;
   INPUT_MSCRDOWN = 245;
-  INPUT_MFIRE    = 246;
-  INPUT_MALTFIRE = 247;
-  INPUT_MATTACK  = 248;
   COMMAND_NONE     = 0;
 
   KnockbackValue = 7;
