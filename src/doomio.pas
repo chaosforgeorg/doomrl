@@ -144,6 +144,7 @@ var iStyle      : TUIStyle;
     iCurrentWH  : TIOPoint;
     iDoQuery    : Boolean;
     iSDLFlags   : TSDLIOFlags;
+    iMode       : TIODisplayMode;
   procedure ParseSettings( aFull : Boolean; const aPrefix : AnsiString; aDef : TIOPoint );
   begin
     with FSettings[ aFull ] do
@@ -221,6 +222,14 @@ begin
       FFontMult := FMult;
       FTileMult := TMult;
       FMiniScale:= MiniM;
+    end;
+
+    begin
+      Log('Display modes (%d)', [FIODriver.DisplayModes.Size] );
+      Log('-------');
+      for iMode in FIODriver.DisplayModes do
+        Log('%d x %d @%d', [ iMode.Width, iMode.Height, iMode.Refresh ] );
+      Log('-------');
     end;
 
     Textures   := TDoomTextures.Create;

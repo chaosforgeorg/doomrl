@@ -4,8 +4,8 @@ interface
 uses SysUtils, Classes,
      vluastate, vutil, dfdata, vmath, vrltools,
      vnode, vcolor, vluaconfig, vgenerics,
-     viotypes,
-     vuitypes, doomspritemap, doomanimation, doomio, doomui;
+     viotypes, vuitypes,
+     doomconfig, doomspritemap, doomanimation, doomio, doomui;
 
 type TASCIIImageMap = specialize TGObjectHashMap<TUIStringArray>;
 
