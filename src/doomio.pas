@@ -23,6 +23,7 @@ type TDoomIO = class( TIO )
   constructor Create; reintroduce;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False );
   function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
+  procedure FullUpdate; override;
   destructor Destroy; override;
   procedure Screenshot( aBB : Boolean );
 
@@ -118,7 +119,7 @@ uses video, vlog, vdebug,
      {$ELSE}
      vcursesio, vcursesconsole,
      {$ENDIF}
-     vsdlio, vglconsole,
+     vsdlio, vglconsole, vtig,
      vgl3library,
      doomtextures,  doombase,
      dfdata, dfoutput, dfplayer;
@@ -307,6 +308,8 @@ begin
   iStyle.Add('text','fore_color', LightGray );
   iStyle.Add('text','back_color', ColorNone );
 
+  VTIG_Initialize( FConsole, FIODriver, False );
+
   inherited Create( FIODriver, FConsole, iStyle );
   LoadStart;
 
@@ -414,6 +417,12 @@ begin
   FConsole.HideCursor;
   Result := inherited RunUILoop( aElement );
   if (UI <> nil) and (UI.GameUI <> nil) then UI.GameUI.Enabled := True;
+end;
+
+procedure TDoomIO.FullUpdate;
+begin
+  VTIG_NewFrame;
+  inherited FullUpdate;
 end;
 
 destructor TDoomIO.Destroy;
@@ -649,6 +658,10 @@ begin
   FUIRoot.OnUpdate( aMSec );
   FUIRoot.Render;
   if FTextSheet <> nil then FQuadRenderer.Render( FTextSheet );
+
+  VTIG_EndFrame;
+  VTIG_Render;
+
   FConsole.Update;
   if (FPostSheet <> nil) and (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos(iMousePos) then
   begin

@@ -278,14 +278,14 @@ end;
 procedure TDoomUI.SetHint ( const aText : AnsiString ) ;
 begin
   FHint := aText;
-  FGameUI.Hint.SetText( aText );
+  FGameUI.Hint := aText;
 end;
 
 procedure TDoomUI.SetTempHint ( const aText : AnsiString ) ;
 begin
   if aText = ''
-    then FGameUI.Hint.SetText( FHint )
-    else FGameUI.Hint.SetText( aText );
+    then FGameUI.Hint := FHint
+    else FGameUI.Hint := aText;
 end;
 
 procedure TDoomUI.Msg( const aText : AnsiString );

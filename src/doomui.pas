@@ -3,50 +3,6 @@ unit doomui;
 interface
 uses sysutils, vgltypes, vglimage, vimage, vrltools, vconui, vconuirl, vuielements, vuiconsole, vuielement, vuitypes, vioevent;
 
-type TDoomUIMiniMap = class( TUIElement )
-  constructor Create( aParent : TUIElement );
-  procedure SetScale( aScale : Byte );
-  procedure OnRedraw; override;
-  procedure Update;
-  procedure Upload;
-  destructor Destroy; override;
-protected
-  FImage    : TImage;
-  FTexture  : DWord;
-  FScale    : Integer;
-  FGLPos    : TGLVec2i;
-end;
-
-type TDoomStatusUIElement = class( TUIElement )
-  constructor Create( aParent : TUIElement; const aArea : TUIRect );
-  procedure OnRedraw; override;
-  procedure OnUpdate( aTime : DWord ); override;
-end;
-
-type TDoomHintUIElement = class( TUIElement )
-  constructor Create( aParent : TUIElement; const aPos : TUIPoint; aLength : Word );
-  procedure OnRedraw; override;
-  procedure SetText( const aText : TUIString );
-  procedure OnUpdate( aTime : DWord ); override;
-private
-  FHint : TUIString;
-end;
-
-type TDoomConTargetLineUIElement = class( TUIElement )
-  constructor Create( aParent : TUIElement; aArea : TUIRect );
-  procedure OnRedraw; override;
-  procedure SetTarget( aTarget : TCoord2D; aTargetColor : TUIColor; aTargetRange : Byte );
-  procedure SetLast( aLastTarget : TCoord2D );
-  procedure OnUpdate( aTime : DWord ); override;
-  procedure Paint( aCoord : TCoord2D; aColor : TUIColor; aChar : Char = ' ');
-private
-  FShowLast    : Boolean;
-  FLastTarget  : TCoord2D;
-  FTarget      : TCoord2D;
-  FTargetColor : TUIColor;
-  FTargetRange : Byte;
-end;
-
 type TDoomGameUI = class( TUIElement )
   constructor Create( aParent : TUIElement; const aArea : TUIRect );
   procedure OnRedraw; override;
@@ -59,28 +15,35 @@ type TDoomGameUI = class( TUIElement )
   procedure ResetTarget;
   procedure UpdateMinimap;
   procedure SetMinimapScale( aScale : Byte );
+  destructor Destroy; override;
 private
   FLastMouse: DWord;
   FTime     : DWord;
-  FStatus   : TDoomStatusUIElement;
-  FHint     : TDoomHintUIElement;
+  FHint     : TUIString;
   FMessages : TUICustomMessages;
-  FTarget   : TDoomConTargetLineUIElement;
   FMap      : TConUIMapArea;
   FMouseLock: Boolean;
-  FMiniMap  : TDoomUIMiniMap;
+
+  FTargetLast     : Boolean;
+  FTarget         : TCoord2D;
+  FTargetRange    : Byte;
+  FTargetEnabled  : Boolean;
+
+  FMinimapImage   : TImage;
+  FMinimapTexture : DWord;
+  FMinimapScale   : Integer;
+  FMinimapGLPos   : TGLVec2i;
 public
-  property Status   : TDoomStatusUIElement read FStatus;
-  property Hint     : TDoomHintUIElement   read FHint;
-  property Messages : TUICustomMessages    read FMessages;
-  property Map      : TConUIMapArea        read FMap;
+  property Hint     : TUIString         read FHint write FHint;
+  property Messages : TUICustomMessages read FMessages;
+  property Map      : TConUIMapArea     read FMap;
 end;
 
 
 implementation
 
 uses math, dfoutput,
-     vcolor, vmath, vutil, viotypes,
+     vtig, vcolor, vmath, vutil, viotypes,
      dfdata, dflevel, dfitem, dfbeing, dfplayer,
      doomio, doomspritemap, doombase, vvision;
 
@@ -89,17 +52,17 @@ uses math, dfoutput,
 constructor TDoomUIMiniMap.Create ( aParent : TUIElement ) ;
 begin
   inherited Create( aParent, Rectangle( 0,0, 0, 0 ) );
-  FScale    := 0;
-  FTexture  := 0;
-  FGLPos    := TGLVec2i.Create( 0, 0 );
-  FImage    := TImage.Create( 128, 32 );
-  FImage.Fill( NewColor( 0,0,0,0 ) );
+  FMinimapScale    := 0;
+  FMinimapTexture  := 0;
+  FMinimapGLPos    := TGLVec2i.Create( 0, 0 );
+  FMinimapImage    := TImage.Create( 128, 32 );
+  FMinimapImage.Fill( NewColor( 0,0,0,0 ) );
 end;
 
-procedure TDoomUIMiniMap.SetScale ( aScale : Byte ) ;
+procedure TDoomUIMiniMap.SSetScale ( aScale : Byte ) ;
 begin
-  FScale := aScale;
-  FGLPos.Init( IO.Driver.GetSizeX - FScale*(MAXX+2) - 10, IO.Driver.GetSizeY - FScale*(MAXY+2) - ( 10 + IO.FontMult*20*3 ) );
+  FMinimapScale := aScale;
+  FMinimapGLPos.Init( IO.Driver.GetSizeX - FMinimapScale*(MAXX+2) - 10, IO.Driver.GetSizeY - FMinimapScale*(MAXY+2) - ( 10 + IO.FontMult*20*3 ) );
 end;
 
 procedure TDoomUIMiniMap.OnRedraw;
@@ -107,45 +70,78 @@ const UnitTex : TGLVec2f = ( Data : ( 1, 1 ) );
       ZeroTex : TGLVec2f = ( Data : ( 0, 0 ) );
 begin
   inherited OnRedraw;
-  if FScale <> 0 then
-    IO.QuadSheet.PushTexturedQuad( FGLPos, FGLPos + TGLVec2i.Create( FScale*128, FScale*32 ), ZeroTex, UnitTex, FTexture );
+  if FMinimapScale <> 0 then
+    IO.QuadSheet.PushTexturedQuad( FMinimapGLPos, FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ), ZeroTex, UnitTex, FMinimapTexture );
 end;
 
-procedure TDoomUIMiniMap.Update;
+procedure TDoomUIMiniMap.Updatee;
 var x, y : DWord;
 begin
   if Doom.State <> DSPlaying then Exit;
   for x := 0 to MAXX+1 do
     for y := 0 to MAXY+1 do
-      FImage.ColorXY[x,y] := Doom.Level.GetMiniMapColor( NewCoord2D( x, y ) );
-  if FTexture = 0
-    then Upload
-    else ReUploadImage( FTexture, FImage, False );
+      FMinimapImage.ColorXY[x,y] := Doom.Level.GetMiniMapColor( NewCoord2D( x, y ) );
+  if FMinimapTexture = 0
+    then FMinimapTexture := UploadImage( FMinimapImage, False )
+    else ReUploadImage( FMinimapTexture, FMinimapImage, False );
 end;
 
-procedure TDoomUIMiniMap.Upload;
-begin
-  FTexture := UploadImage( FImage, False );
-end;
+{ TDoomGameUI }
 
-destructor TDoomUIMiniMap.Destroy;
-begin
-  FreeAndNil( FImage );
-  inherited Destroy;
-end;
-
-constructor TDoomStatusUIElement.Create ( aParent : TUIElement;
-  const aArea : TUIRect ) ;
+constructor TDoomGameUI.Create ( aParent : TUIElement; const aArea : TUIRect );
 begin
   inherited Create( aParent, aArea );
+  if GraphicsVersion then
+    FEventFilter := [ VEVENT_MOUSEDOWN, VEVENT_MOUSEMOVE ];
+  FFullScreen    := True;
+  FTargetEnabled := False;
+  FMap      := nil;
+  FTime     := 0;
+  if not GraphicsVersion then
+//    FMap := TDoomConMapUIElement.Create( Self, Rectangle( 0,1,MAXX,MAXY ) );
+    FMap := TConUIMapArea.Create( Self, Rectangle( 1,2,MAXX,MAXY ) );
+
+{  if GraphicsVersion then
+  begin
+    FMessages := TGLUIMessages.Create( Self, IO.TextSheet, IO.FMsgFont, Point(10,10) );
+    FMessages.ForeColor := Yellow;
+  end
+  else  }
+  begin
+    FMessages := TConUIMessages.Create( Self, Rectangle( 1,0,FAbsolute.w-3,2 ), @IO.EventWaitForMore, Option_MessageBuffer );
+    FMessages.ForeColor := DarkGray;
+  end;
+
+  FHint     := '';
+  FEnabled := False;
+  FMouseLock := True;
+
+  FMinimapScale    := 0;
+  FMinimapTexture  := 0;
+  FMinimapGLPos    := TGLVec2i.Create( 0, 0 );
+  FMinimapImage    := nil;
+
+  if GraphicsVersion then
+  begin
+    FMinimapImage    := TImage.Create( 128, 32 );
+    FMinimapImage.Fill( NewColor( 0,0,0,0 ) );
+    SetMinimapScale( IO.MiniScale );
+  end;
+
 end;
 
-
-procedure TDoomStatusUIElement.OnRedraw;
-var iCount  : DWord;
-    iCon    : TUIConsole;
-    iColor  : TUIColor;
-    iHPP    : Integer;
+procedure TDoomGameUI.OnRedraw;
+const UnitTex : TGLVec2f = ( Data : ( 1, 1 ) );
+      ZeroTex : TGLVec2f = ( Data : ( 0, 0 ) );
+var iCount      : DWord;
+    iCon        : TUIConsole;
+    iColor      : TUIColor;
+    iHPP        : Integer;
+    iPos        : TUIPoint;
+    iBottom     : Integer;
+    iTargetLine : TVisionRay;
+    iCurrent    : TCoord2D;
+    iLevel      : TLevel;
 
   function ArmorColor( aValue : Integer ) : TUIColor;
   begin
@@ -176,218 +172,92 @@ var iCount  : DWord;
     if Player.ExpLevel >= MaxPlayerLevel - 1 then Exit('MAX');
     Exit(IntToStr(Clamp(Floor(((Player.Exp-ExpTable[Player.ExpLevel]) / (ExpTable[Player.ExpLevel+1]-ExpTable[Player.ExpLevel]))*100),0,99))+'%');
   end;
-begin
-  if Player = nil then Exit;
-  iCon.Init( TConUIRoot(FRoot).Renderer );
-  iCon.ClearRect( FAbsolute, FBackColor );
-
-  iHPP := Round((Player.HP/Player.HPMax)*100);
-
-  iCon.RawPrint( FAbsolute.Pos + Point(28,0),DarkGray, 'Armor :' );
-  iCon.RawPrint( FAbsolute.Pos + Point(1,0), NameColor(iHPP), Player.Name );
-  iCon.RawPrint( FAbsolute.Pos + Point(1,1), DarkGray, 'Health:      Exp:   /      Weapon:');
-  iCon.RawPrint( FAbsolute.Pos + Point(9,1), Red, IntToStr(iHPP)+'%');
-  iCon.RawPrint( FAbsolute.Pos + Point(19,1),LightGray, TwoInt(Player.ExpLevel) );
-  iCon.RawPrint( FAbsolute.Pos + Point(22,1),LightGray, ExpString);
-
-
-  if Player.Inv.Slot[efWeapon] = nil
-    then iCon.RawPrint( FAbsolute.Pos + Point(36,1), LightGray, 'none')
-    else iCon.RawPrint( FAbsolute.Pos + Point(36,1), WeaponColor(Player.Inv.Slot[efWeapon]), Player.Inv.Slot[efWeapon].Description );
-
-  if Player.Inv.Slot[efTorso] = nil
-    then iCon.RawPrint( FAbsolute.Pos + Point(36,0), LightGray, 'none')
-    else iCon.RawPrint( FAbsolute.Pos + Point(36,0), ArmorColor(Player.Inv.Slot[efTorso].Durability), Player.Inv.Slot[efTorso].Description );
-
-  iColor := Red;
-  if Doom.Level.Empty then iColor := Blue;
-  iCon.RawPrint( FAbsolute.Pos + Point(61,2), iColor,Doom.Level.Name);
-  if Doom.Level.Name_Number >= 100 then iCon.RawPrint( FAbsolute.Pos + Point(73,2), iColor, 'Lev'+IntToStr(Doom.Level.Name_Number))
-  else if Doom.Level.Name_Number <> 0 then iCon.RawPrint( FAbsolute.Pos + Point(74,2), iColor,'Lev'+IntToStr(Doom.Level.Name_Number));
-
-  with Player do
-  for iCount := 1 to MAXAFFECT do
-    if FAffects.IsActive(iCount) then
-    begin
-      if FAffects.IsExpiring(iCount)
-        then iColor := Affects[iCount].Color_exp
-        else iColor := Affects[iCount].Color;
-      iCon.RawPrint( Point( FAbsolute.x+((Byte(iCount)-1)*4)+14, FAbsolute.y2 ),iColor,Affects[iCount].name)
-    end;
-
-  with Player do
-    if (FTactic.Current = TacticRunning) and (FTactic.Count < 6) then
-      iCon.RawPrint( Point(FAbsolute.x+1, FAbsolute.y2), Brown, TacticName[FTactic.Current] )
-    else
-      iCon.RawPrint( Point(FAbsolute.x+1, FAbsolute.y2), TacticColor[FTactic.Current], TacticName[FTactic.Current] );
-
-  inherited OnRedraw;
-end;
-
-procedure TDoomStatusUIElement.OnUpdate ( aTime : DWord ) ;
-begin
-  FDirty := True;
-  inherited OnUpdate ( aTime ) ;
-end;
-
-{ TDoomHintUIElement }
-
-constructor TDoomHintUIElement.Create ( aParent : TUIElement; const aPos : TUIPoint; aLength : Word ) ;
-begin
-  inherited Create( aParent, Rectangle( aPos, aLength, 1 ) );
-  FHint := '';
-end;
-
-procedure TDoomHintUIElement.OnRedraw;
-var iCon    : TUIConsole;
-begin
-  if FHint <> '' then
+  procedure Paint ( aCoord : TCoord2D; aColor : TUIColor; aChar : Char = ' ') ;
+  var iPos        : TUIPoint;
   begin
-    iCon.Init( TConUIRoot(FRoot).Renderer );
-    iCon.RawPrint( Point( FAbsolute.x2 - Length(FHint) - 1,FAbsolute.y), Yellow, ' '+FHint+' ');
+    iPos := Point( aCoord.x + 1, aCoord.y + 2 );
+    if aChar = ' ' then aChar := IO.Console.GetChar( iPos.X, iPos.Y );
+    if StatusEffect = StatusInvert
+       then VTIG_FreeChar( aChar, iPos, Black, LightGray )
+       else VTIG_FreeChar( aChar, iPos, aColor );
   end;
-  inherited OnRedraw;
-end;
 
-procedure TDoomHintUIElement.SetText ( const aText : TUIString ) ;
 begin
-  FHint := aText;
-end;
+  iCon.Init( TConUIRoot(FRoot).Renderer );
+  iCon.ClearRect( FAbsolute, Black );
 
-procedure TDoomHintUIElement.OnUpdate ( aTime : DWord ) ;
-begin
-  FDirty := True;
-  inherited OnUpdate ( aTime ) ;
-end;
+  if Player <> nil then
+  begin
+    iPos    := Point( 2,23 );
+    iBottom := 25;
+    iHPP    := Round((Player.HP/Player.HPMax)*100);
 
-{ TDoomConTargetLineUIElement }
+    VTIG_FreeLabel( 'Armor :',                            iPos + Point(28,0), DarkGray );
+    VTIG_FreeLabel( Player.Name,                          iPos + Point(1,0),  NameColor(iHPP) );
+    VTIG_FreeLabel( 'Health:      Exp:   /      Weapon:', iPos + Point(1,1),  DarkGray );
+    VTIG_FreeLabel( IntToStr(iHPP)+'%',                   iPos + Point(9,1),  Red );
+    VTIG_FreeLabel( TwoInt(Player.ExpLevel),              iPos + Point(19,1), LightGray );
+    VTIG_FreeLabel( ExpString,                            iPos + Point(22,1), LightGray );
 
-constructor TDoomConTargetLineUIElement.Create ( aParent : TUIElement;
-  aArea : TUIRect ) ;
-begin
-  inherited Create( aParent, aArea );
-  FShowLast := False;
-  FEnabled  := False;
-end;
+    if Player.Inv.Slot[efWeapon] = nil
+      then VTIG_FreeLabel( 'none',                                iPos + Point(36,1), LightGray )
+      else VTIG_FreeLabel( Player.Inv.Slot[efWeapon].Description, iPos + Point(36,1), WeaponColor(Player.Inv.Slot[efWeapon]) );
 
-procedure TDoomConTargetLineUIElement.OnRedraw;
-var iTargetLine : TVisionRay;
-    iCurrent    : TCoord2D;
-    iColor      : TUIColor;
-    iLevel      : TLevel;
-const Good   = Green;
-      TooFar = Yellow;
-      Bad    = Red;
-begin
-  if FEnabled then
+    if Player.Inv.Slot[efTorso] = nil
+      then VTIG_FreeLabel( 'none',                                iPos + Point(36,0), LightGray )
+      else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(36,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
+
+    iColor := Red;
+    if Doom.Level.Empty then iColor := Blue;
+    VTIG_FreeLabel( Doom.Level.Name, iPos + Point(61,2), iColor );
+    if Doom.Level.Name_Number >= 100 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(73,2), iColor )
+    else if Doom.Level.Name_Number <> 0 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(74,2), iColor );
+
+    with Player do
+    for iCount := 1 to MAXAFFECT do
+      if FAffects.IsActive(iCount) then
+      begin
+        if FAffects.IsExpiring(iCount)
+          then iColor := Affects[iCount].Color_exp
+          else iColor := Affects[iCount].Color;
+        VTIG_FreeLabel( Affects[iCount].name, Point( iPos.X+((Byte(iCount)-1)*4)+14, iBottom ), iColor )
+      end;        if GraphicsVersion and (FMinimapImage <> nil) then
+
+
+    with Player do
+      if (FTactic.Current = TacticRunning) and (FTactic.Count < 6) then
+        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), Brown )
+      else
+        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
+  end;
+  if FHint <> '' then
+    VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 3 ), Yellow );
+
+  if FTargetEnabled then
   begin
     iLevel := Doom.Level;
-    if FShowLast then
+    if FTargetLast then
       Paint( Player.TargetPos, Yellow );
   { if range > PLight.Rad then range := Plight.rad;}
     if GraphicsVersion then Exit;
     if Player.Position = FTarget then Exit;
-    iColor := Good;
+    iColor := Green;
     iTargetLine.Init( iLevel, Player.Position, FTarget );
     repeat
       iTargetLine.Next;
       iCurrent := iTargetLine.GetC;
       if not iLevel.isProperCoord( iCurrent ) then Break;
-      if not iLevel.isVisible( iCurrent ) then iColor := Bad;
-      if icolor = good then if iTargetLine.Cnt > FTargetRange then icolor := TooFar;
+      if not iLevel.isVisible( iCurrent ) then iColor := Red;
+      if iColor = Green then if iTargetLine.Cnt > FTargetRange then icolor := Yellow;
       if iTargetLine.Done then Paint( iCurrent, iColor, 'X' )
                           else Paint( iCurrent, iColor, '*' );
-      if iLevel.cellFlagSet( iCurrent, CF_BLOCKMOVE ) then iColor := Bad;
+      if iLevel.cellFlagSet( iCurrent, CF_BLOCKMOVE ) then iColor := Red;
     until (iTargetLine.Done) or (iTargetLine.cnt > 30);
   end;
-  inherited OnRedraw;
-end;
 
-procedure TDoomConTargetLineUIElement.SetTarget ( aTarget : TCoord2D; aTargetColor : TUIColor; aTargetRange : Byte ) ;
-var iCon        : TUIConsole;
-begin
-  iCon.Init( TConUIRoot(FRoot).Renderer );
-  iCon.Raw.ShowCursor;
-  iCon.Raw.MoveCursor( aTarget.x+FAbsolute.x, aTarget.y+FAbsolute.y );
-  FShowLast    := False;
-  FEnabled     := True;
-  FDirty       := True;
-  FTarget      := aTarget;
-  FTargetColor := aTargetColor;
-  FTargetRange := aTargetRange;
-end;
+  if GraphicsVersion and (FMinimapImage <> nil) and (FMinimapScale <> 0) then
+    IO.QuadSheet.PushTexturedQuad( FMinimapGLPos, FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ), ZeroTex, UnitTex, FMinimapTexture );
 
-procedure TDoomConTargetLineUIElement.SetLast ( aLastTarget : TCoord2D ) ;
-begin
-  FLastTarget := aLastTarget;
-  FShowLast   := True;
-end;
-
-procedure TDoomConTargetLineUIElement.OnUpdate ( aTime : DWord ) ;
-begin
-  FDirty := FEnabled;
-  inherited OnUpdate ( aTime ) ;
-end;
-
-procedure TDoomConTargetLineUIElement.Paint ( aCoord : TCoord2D; aColor : TUIColor; aChar : Char = ' ') ;
-var iCon        : TUIConsole;
-    iPos        : TUIPoint;
-begin
-  iCon.Init( TConUIRoot(FRoot).Renderer );
-  iPos := Point( aCoord.x+FAbsolute.x, aCoord.y+FAbsolute.y );
-  if aChar = ' ' then aChar := iCon.Raw.GetChar( iPos.X, iPos.Y );
-  if StatusEffect = StatusInvert
-     then iCon.DrawChar( iPos, Black, LightGray, aChar )
-     else iCon.DrawChar( iPos, aColor, aChar );
-end;
-
-{ TDoomGameUI }
-
-constructor TDoomGameUI.Create ( aParent : TUIElement; const aArea : TUIRect );
-begin
-  inherited Create( aParent, aArea );
-  if GraphicsVersion then
-    FEventFilter := [ VEVENT_MOUSEDOWN, VEVENT_MOUSEMOVE ];
-  FFullScreen := True;
-  FTarget   := nil;
-  FMap      := nil;
-  FTime     := 0;
-  if not GraphicsVersion then
-//    FMap := TDoomConMapUIElement.Create( Self, Rectangle( 0,1,MAXX,MAXY ) );
-    FMap := TConUIMapArea.Create( Self, Rectangle( 1,2,MAXX,MAXY ) );
-
-{  if GraphicsVersion then
-  begin
-    FMessages := TGLUIMessages.Create( Self, IO.TextSheet, IO.FMsgFont, Point(10,10) );
-    FMessages.ForeColor := Yellow;
-  end
-  else  }
-  begin
-    FMessages := TConUIMessages.Create( Self, Rectangle( 1,0,FAbsolute.w-3,2 ), @IO.EventWaitForMore, Option_MessageBuffer );
-    FMessages.ForeColor := DarkGray;
-  end;
-
-  FStatus   := TDoomStatusUIElement.Create( Self, Rectangle( 1,22,78,3 ) );
-  FHint     := TDoomHintUIElement.Create( Self, Point( 2, 2 ), FAbsolute.w-2 );
-  if not GraphicsVersion then
-     FTarget := TDoomConTargetLineUIElement.Create( Self, Rectangle( 0,1,MAXX,MAXY ) );
-  FEnabled := False;
-  FMouseLock := True;
-  FMiniMap  := nil;
-
-  if GraphicsVersion then
-  begin
-    FMiniMap := TDoomUIMiniMap.Create( Self );
-    FMiniMap.SetScale( IO.MiniScale );
-  end;
-
-end;
-
-procedure TDoomGameUI.OnRedraw;
-var iCon    : TUIConsole;
-begin
-  iCon.Init( TConUIRoot(FRoot).Renderer );
-  iCon.ClearRect( FAbsolute, Black );
   inherited OnRedraw;
 end;
 
@@ -489,13 +359,18 @@ begin
     SpriteMap.SetTarget( aTarget, NewColor( aTargetColor ), True );
     Exit;
   end;
-  FTarget.SetTarget( aTarget, aTargetColor, aTargetRange );
+  FTargetEnabled := True;
+  FTarget        := aTarget;
+  FTargetRange   := aTargetRange;
+  // TODO: this clashes with TIG
+  IO.Console.ShowCursor;
+  IO.Console.MoveCursor( aTarget.x+1, aTarget.y+2 );
 end;
 
 procedure TDoomGameUI.SetLastTarget ( aLastTarget : TCoord2D ) ;
 begin
   if not GraphicsVersion then
-    FTarget.SetLast( aLastTarget );
+    FTargetLast := True;
 end;
 
 procedure TDoomGameUI.ResetTarget;
@@ -505,22 +380,37 @@ begin
     SpriteMap.ClearTarget;
     Exit;
   end;
-  FTarget.Enabled := False;
+  FTargetEnabled := False;
 end;
 
 procedure TDoomGameUI.UpdateMinimap;
+var x, y : DWord;
 begin
-  if GraphicsVersion and (FMiniMap <> nil) then
-    FMiniMap.Update;
+  if (Doom.State = DSPlaying) and GraphicsVersion and (FMinimapImage <> nil) then
+  begin
+    for x := 0 to MAXX+1 do
+      for y := 0 to MAXY+1 do
+        FMinimapImage.ColorXY[x,y] := Doom.Level.GetMiniMapColor( NewCoord2D( x, y ) );
+    if FMinimapTexture = 0
+      then FMinimapTexture := UploadImage( FMinimapImage, False )
+      else ReUploadImage( FMinimapTexture, FMinimapImage, False );
+  end;
 end;
 
 procedure TDoomGameUI.SetMinimapScale ( aScale : Byte ) ;
 begin
-  if FMiniMap <> nil then
+  if GraphicsVersion and (FMinimapImage <> nil) then
   begin
-    FMiniMap.SetScale( aScale );
-    FMiniMap.Update;
+    FMinimapScale := aScale;
+    FMinimapGLPos.Init( IO.Driver.GetSizeX - FMinimapScale*(MAXX+2) - 10, IO.Driver.GetSizeY - FMinimapScale*(MAXY+2) - ( 10 + IO.FontMult*20*3 ) );
+    UpdateMinimap;
   end;
+end;
+
+destructor TDoomGameUI.Destroy;
+begin
+  FreeAndNil( FMinimapImage );
+  inherited Destroy;
 end;
 
 end.
