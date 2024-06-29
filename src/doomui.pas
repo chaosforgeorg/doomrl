@@ -60,19 +60,11 @@ begin
   FMap      := nil;
   FTime     := 0;
   if not GraphicsVersion then
-//    FMap := TDoomConMapUIElement.Create( Self, Rectangle( 0,1,MAXX,MAXY ) );
     FMap := TTextMap.Create( IO.Console, Rectangle( 2,3,MAXX,MAXY ) );
 
-{  if GraphicsVersion then
-  begin
-    FMessages := TGLUIMessages.Create( Self, IO.TextSheet, IO.FMsgFont, Point(10,10) );
-    FMessages.ForeColor := Yellow;
-  end
-  else  }
-  begin
-    FMessages := TConUIMessages.Create( Self, Rectangle( 1,0,FAbsolute.w-3,2 ), @IO.EventWaitForMore, Option_MessageBuffer );
-    FMessages.ForeColor := DarkGray;
-  end;
+
+  FMessages := TConUIMessages.Create( Self, Rectangle( 1,0,FAbsolute.w-3,2 ), @IO.EventWaitForMore, Option_MessageBuffer );
+  FMessages.ForeColor := DarkGray;
 
   FHint     := '';
   FEnabled := False;
@@ -220,7 +212,8 @@ begin
   if GraphicsVersion and (FMinimapImage <> nil) and (FMinimapScale <> 0) then
     IO.QuadSheet.PushTexturedQuad( FMinimapGLPos, FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ), ZeroTex, UnitTex, FMinimapTexture );
 
-  FMap.OnRedraw;
+  if Assigned( FMap ) then
+    FMap.OnRedraw;
   inherited OnRedraw;
 end;
 
@@ -294,7 +287,8 @@ begin
       end;
     end;
   end;
-  FMap.OnUpdate( aTime );
+  if Assigned( FMap ) then
+    FMap.OnUpdate( aTime );
   inherited OnUpdate ( aTime ) ;
 end;
 

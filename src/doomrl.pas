@@ -121,6 +121,8 @@ try
 
     Doom := Systems.Add(TDoom.Create) as TDoom;
 
+    Option_NetworkConnection := False;
+
     DoomNetwork := TDoomNetwork.Create;
     if DoomNetwork.AlertCheck then Halt(0);
 
