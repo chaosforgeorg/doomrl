@@ -9,7 +9,7 @@ unit dflevel;
 interface
 uses SysUtils, Classes,
      vluaentitynode, vutil, vvision, vcolor, vmath, viotypes, vrltools, vnode,
-     vluamapnode, vmaparea, vconuirl,
+     vluamapnode, vmaparea, vconuirl, vtextmap,
      dfdata, dfmap, dfthing, dfbeing, dfitem, dfoutput,
      doomhooks;
 
@@ -20,7 +20,7 @@ type
 
 { TLevel }
 
-TLevel = class(TLuaMapNode, IConUIASCIIMap)
+TLevel = class(TLuaMapNode, ITextMap)
     constructor Create; reintroduce;
     procedure Init( nStyle : byte; nLNum : Word;nName : string; nSpecExit : string; nDepth : Word; nDangerLevel : Word);
     procedure AfterGeneration( aGenerated : Boolean );

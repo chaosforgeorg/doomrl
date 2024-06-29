@@ -93,7 +93,10 @@ var UI : TDoomUI = nil;
 
 implementation
 
-uses doomlua, dateutils, vdebug, vsystems, vluasystem, vconuirl, doombase, dfplayer, dflevel, dfmap, vvision;
+uses doomlua, dateutils,
+     vdebug, vsystems, vluasystem, vtextmap, vvision, vconuirl,
+     doombase,
+     dfplayer, dflevel, dfmap;
 
 {
 procedure OutPutRestore;
@@ -180,7 +183,7 @@ begin
     Exit;
   end;
   if Option_HighASCII then iChr := Chr(219) else iChr := '#';
-  FGameUI.Map.AddAnimation( TConUIBlinkAnimation.Create(IOGylph( iChr, Color ),Duration,aDelay));
+  FGameUI.Map.AddAnimation( TTextBlinkAnimation.Create(IOGylph( iChr, Color ),Duration,aDelay));
 end;
 
 procedure TDoomUI.GFXAnimationUpdate( aTime : DWord );
@@ -209,8 +212,8 @@ begin
     Exit;
   end;
   if aRay
-    then FGameUI.Map.AddAnimation( TConUIRayAnimation.Create( Doom.Level, aSource, aTarget, IOGylph( aPic, aColor ), aDuration, aDelay, Player.Vision ) )
-    else FGameUI.Map.AddAnimation( TConUIBulletAnimation.Create( Doom.Level, aSource, aTarget, IOGylph( aPic, aColor ), aDuration, aDelay, Player.Vision ) );
+    then FGameUI.Map.AddAnimation( TTextRayAnimation.Create( Doom.Level, aSource, aTarget, IOGylph( aPic, aColor ), aDuration, aDelay, Player.Vision ) )
+    else FGameUI.Map.AddAnimation( TTextBulletAnimation.Create( Doom.Level, aSource, aTarget, IOGylph( aPic, aColor ), aDuration, aDelay, Player.Vision ) );
 end;
 
 procedure TDoomUI.addMarkAnimation(aDuration: DWord; aDelay: DWord;
@@ -219,7 +222,7 @@ begin
   if Doom.State <> DSPlaying then Exit;
   if GraphicsVersion
     then FAnimations.addAnimation( TDoomMark.Create(aDuration, aDelay, aCoord ) )
-    else FGameUI.Map.AddAnimation( TConUIMarkAnimation.Create( aCoord, IOGylph( aPic, aColor ), aDuration, aDelay ) );
+    else FGameUI.Map.AddAnimation( TTextMarkAnimation.Create( aCoord, IOGylph( aPic, aColor ), aDuration, aDelay ) );
 end;
 
 procedure TDoomUI.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D;
@@ -375,7 +378,7 @@ end;
 
 procedure TDoomUI.Explosion(aSequence : Integer; aWhere: TCoord2D; aRange, aDelay: Integer;
   aColor: byte; aExplSound: Word; aFlags: TExplosionFlags);
-var iExpl     : TConUIExplosionArray;
+var iExpl     : TTextExplosionArray;
     iCoord    : TCoord2D;
     iDistance : Byte;
     iVisible  : boolean;
@@ -414,12 +417,12 @@ begin
       if iDistance > aRange then Continue;
       if GraphicsVersion
         then FAnimations.AddAnimation( TDoomExplodeMark.Create(3*aDelay,aSequence+aDelay*iDistance,iCoord,aColor) )
-        else FGameUI.Map.AddAnimation( TConUIExplosionAnimation.Create( iCoord, '*', iExpl, iDistance*aDelay+aSequence ) );
+        else FGameUI.Map.AddAnimation( TTextExplosionAnimation.Create( iCoord, '*', iExpl, iDistance*aDelay+aSequence ) );
     end;
   if aRange >= 10 then iVisible := True;
 
   if not GraphicsVersion then
-     FGameUI.Map.AddAnimation( TConUIClearMarkAnimation.Create( aRange*aDelay+aSequence ) );
+     FGameUI.Map.AddAnimation( TTextClearMarkAnimation.Create( aRange*aDelay+aSequence ) );
 
   // TODO : events
   if efAfterBlink in aFlags then
@@ -620,7 +623,7 @@ procedure TDoomUI.Mark(aCoord: TCoord2D; aColor: Byte; aChar: Char; aDuration: D
 begin
   if GraphicsVersion
     then FAnimations.AddAnimation(TDoomMark.Create( aDuration, aDelay, aCoord ) )
-    else FGameUI.Map.AddAnimation( TConUIMarkAnimation.Create( aCoord, IOGylph( aChar, aColor ), aDuration, aDelay ) );
+    else FGameUI.Map.AddAnimation( TTextMarkAnimation.Create( aCoord, IOGylph( aChar, aColor ), aDuration, aDelay ) );
 end;
 
 procedure TDoomUI.CreateMessageWriter(INI: TLuaConfig);

@@ -1,7 +1,8 @@
 {$include doomrl.inc}
 unit doomui; 
 interface
-uses sysutils, vgltypes, vglimage, vimage, vrltools, vconui, vconuirl, vuielements, vuiconsole, vuielement, vuitypes, vioevent;
+uses sysutils, vgltypes, vglimage, vimage, vrltools, vconui, vconuirl,
+     vuielements, vuiconsole, vuielement, vuitypes, vioevent, vtextmap;
 
 type TDoomGameUI = class( TUIElement )
   constructor Create( aParent : TUIElement; const aArea : TUIRect );
@@ -21,7 +22,7 @@ private
   FTime     : DWord;
   FHint     : TUIString;
   FMessages : TUICustomMessages;
-  FMap      : TConUIMapArea;
+  FMap      : TTextMap;
   FMouseLock: Boolean;
 
   FTargetLast     : Boolean;
@@ -36,7 +37,7 @@ private
 public
   property Hint     : TUIString         read FHint write FHint;
   property Messages : TUICustomMessages read FMessages;
-  property Map      : TConUIMapArea     read FMap;
+  property Map      : TTextMap          read FMap;
 end;
 
 
@@ -46,45 +47,6 @@ uses math, dfoutput,
      vtig, vcolor, vmath, vutil, viotypes,
      dfdata, dflevel, dfitem, dfbeing, dfplayer,
      doomio, doomspritemap, doombase, vvision;
-
-{ TDoomUIMiniMap }
-
-constructor TDoomUIMiniMap.Create ( aParent : TUIElement ) ;
-begin
-  inherited Create( aParent, Rectangle( 0,0, 0, 0 ) );
-  FMinimapScale    := 0;
-  FMinimapTexture  := 0;
-  FMinimapGLPos    := TGLVec2i.Create( 0, 0 );
-  FMinimapImage    := TImage.Create( 128, 32 );
-  FMinimapImage.Fill( NewColor( 0,0,0,0 ) );
-end;
-
-procedure TDoomUIMiniMap.SSetScale ( aScale : Byte ) ;
-begin
-  FMinimapScale := aScale;
-  FMinimapGLPos.Init( IO.Driver.GetSizeX - FMinimapScale*(MAXX+2) - 10, IO.Driver.GetSizeY - FMinimapScale*(MAXY+2) - ( 10 + IO.FontMult*20*3 ) );
-end;
-
-procedure TDoomUIMiniMap.OnRedraw;
-const UnitTex : TGLVec2f = ( Data : ( 1, 1 ) );
-      ZeroTex : TGLVec2f = ( Data : ( 0, 0 ) );
-begin
-  inherited OnRedraw;
-  if FMinimapScale <> 0 then
-    IO.QuadSheet.PushTexturedQuad( FMinimapGLPos, FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ), ZeroTex, UnitTex, FMinimapTexture );
-end;
-
-procedure TDoomUIMiniMap.Updatee;
-var x, y : DWord;
-begin
-  if Doom.State <> DSPlaying then Exit;
-  for x := 0 to MAXX+1 do
-    for y := 0 to MAXY+1 do
-      FMinimapImage.ColorXY[x,y] := Doom.Level.GetMiniMapColor( NewCoord2D( x, y ) );
-  if FMinimapTexture = 0
-    then FMinimapTexture := UploadImage( FMinimapImage, False )
-    else ReUploadImage( FMinimapTexture, FMinimapImage, False );
-end;
 
 { TDoomGameUI }
 
@@ -99,7 +61,7 @@ begin
   FTime     := 0;
   if not GraphicsVersion then
 //    FMap := TDoomConMapUIElement.Create( Self, Rectangle( 0,1,MAXX,MAXY ) );
-    FMap := TConUIMapArea.Create( Self, Rectangle( 1,2,MAXX,MAXY ) );
+    FMap := TTextMap.Create( IO.Console, Rectangle( 2,3,MAXX,MAXY ) );
 
 {  if GraphicsVersion then
   begin
@@ -221,8 +183,7 @@ begin
           then iColor := Affects[iCount].Color_exp
           else iColor := Affects[iCount].Color;
         VTIG_FreeLabel( Affects[iCount].name, Point( iPos.X+((Byte(iCount)-1)*4)+14, iBottom ), iColor )
-      end;        if GraphicsVersion and (FMinimapImage <> nil) then
-
+      end;
 
     with Player do
       if (FTactic.Current = TacticRunning) and (FTactic.Count < 6) then
@@ -239,25 +200,27 @@ begin
     if FTargetLast then
       Paint( Player.TargetPos, Yellow );
   { if range > PLight.Rad then range := Plight.rad;}
-    if GraphicsVersion then Exit;
-    if Player.Position = FTarget then Exit;
-    iColor := Green;
-    iTargetLine.Init( iLevel, Player.Position, FTarget );
-    repeat
-      iTargetLine.Next;
-      iCurrent := iTargetLine.GetC;
-      if not iLevel.isProperCoord( iCurrent ) then Break;
-      if not iLevel.isVisible( iCurrent ) then iColor := Red;
-      if iColor = Green then if iTargetLine.Cnt > FTargetRange then icolor := Yellow;
-      if iTargetLine.Done then Paint( iCurrent, iColor, 'X' )
-                          else Paint( iCurrent, iColor, '*' );
-      if iLevel.cellFlagSet( iCurrent, CF_BLOCKMOVE ) then iColor := Red;
-    until (iTargetLine.Done) or (iTargetLine.cnt > 30);
+    if ( not GraphicsVersion ) and ( Player.Position <> FTarget ) then
+    begin
+      iColor := Green;
+      iTargetLine.Init( iLevel, Player.Position, FTarget );
+      repeat
+        iTargetLine.Next;
+        iCurrent := iTargetLine.GetC;
+        if not iLevel.isProperCoord( iCurrent ) then Break;
+        if not iLevel.isVisible( iCurrent ) then iColor := Red;
+        if iColor = Green then if iTargetLine.Cnt > FTargetRange then icolor := Yellow;
+        if iTargetLine.Done then Paint( iCurrent, iColor, 'X' )
+                            else Paint( iCurrent, iColor, '*' );
+        if iLevel.cellFlagSet( iCurrent, CF_BLOCKMOVE ) then iColor := Red;
+      until (iTargetLine.Done) or (iTargetLine.cnt > 30);
+    end;
   end;
 
   if GraphicsVersion and (FMinimapImage <> nil) and (FMinimapScale <> 0) then
     IO.QuadSheet.PushTexturedQuad( FMinimapGLPos, FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ), ZeroTex, UnitTex, FMinimapTexture );
 
+  FMap.OnRedraw;
   inherited OnRedraw;
 end;
 
@@ -276,7 +239,6 @@ begin
     iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( FAbsolute.x2+1, FAbsolute.y2+2 ) );
     IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
   end;
-
   inherited OnRender;
 end;
 
@@ -332,7 +294,7 @@ begin
       end;
     end;
   end;
-
+  FMap.OnUpdate( aTime );
   inherited OnUpdate ( aTime ) ;
 end;
 
@@ -409,6 +371,7 @@ end;
 
 destructor TDoomGameUI.Destroy;
 begin
+  FreeAndNil( FMap );
   FreeAndNil( FMinimapImage );
   inherited Destroy;
 end;
