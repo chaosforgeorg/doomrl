@@ -7,7 +7,6 @@ uses sysutils, vgltypes, vglimage, vimage, vrltools, vconui, viotypes,
 type TDoomGameUI = class
   constructor Create;
   procedure OnRedraw;
-  procedure OnRender;
   procedure OnUpdate( aTime : DWord );
 
   procedure SetTarget( aTarget : TCoord2D; aTargetColor : TUIColor; aTargetRange : Byte = 100 );
@@ -84,11 +83,13 @@ var iCount      : DWord;
     iCon        : TUIConsole;
     iColor      : TUIColor;
     iHPP        : Integer;
-    iPos        : TUIPoint;
+    iPos        : TIOPoint;
     iBottom     : Integer;
     iTargetLine : TVisionRay;
     iCurrent    : TCoord2D;
     iLevel      : TLevel;
+    iAbsolute   : TIORect;
+    iP1, iP2    : TIOPoint;
 
   function ArmorColor( aValue : Integer ) : TUIColor;
   begin
@@ -233,26 +234,19 @@ begin
   VTIG_End;
   }
   //inherited OnRedraw;
-end;
 
-procedure TDoomGameUI.OnRender;
-var iRoot     : TConUIRoot;
-    iP1,iP2   : TPoint;
-    iAbsolute : TIORect;
-begin
-  if not FEnabled then Exit;
   if GraphicsVersion then
   begin
     iAbsolute := Rectangle( 1,1,78,25 );
-    iRoot := IO.Root;
-    iP1 := iRoot.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
-    iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
+    iP1 := IO.Root.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
+    iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
     IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
 
-    iP1 := iRoot.ConsoleCoordToDeviceCoord( Point( iAbsolute.x, iAbsolute.y2-2 ) );
-    iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
+    iP1 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x, iAbsolute.y2-2 ) );
+    iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
     IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
   end;
+
 end;
 
 procedure TDoomGameUI.OnUpdate ( aTime : DWord ) ;

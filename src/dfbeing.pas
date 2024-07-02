@@ -915,7 +915,7 @@ begin
   begin
     if item.CallHookCheck(Hook_OnPickupCheck,[Self]) then
     begin
-      PlaySound( IO.ResolveSoundID([item.ID+'.powerup','powerup']) );
+      PlaySound( IO.Audio.ResolveSoundID([item.ID+'.powerup','powerup']) );
       CallHook( Hook_OnPickUpItem, [item] );
       item.CallHook(Hook_OnPickUp, [Self]);
     end;
@@ -1558,7 +1558,7 @@ end;
 
 procedure TBeing.PlaySound( aSoundID : DWord; aDelay : DWord = 0 );
 begin
-  IO.PlaySound(aSoundID,FPosition,aDelay);
+  IO.Audio.PlaySound(aSoundID,FPosition,aDelay);
 end;
 
 procedure TBeing.Attack( aWhere : TCoord2D );
@@ -2088,7 +2088,7 @@ begin
 
   if UIDs[ iThisUID ] = nil then Exit( False );
 
-  iSound  := IO.ResolveSoundID([aItem.ID+'.fire',Missiles[iMissile].soundID+'.fire','fire']);
+  iSound  := IO.Audio.ResolveSoundID([aItem.ID+'.fire',Missiles[iMissile].soundID+'.fire','fire']);
   iSprite := Missiles[iMissile].Sprite;
   if iSound <> 0 then
     UI.addSoundAnimation( aSequence, iSource, iSound );
@@ -2116,7 +2116,7 @@ begin
     if BF_MAXDAMAGE in FFlags then
       iRoll.Init( 0,0, iRoll.Max );
 
-    iSound := IO.ResolveSoundID([aItem.ID+'.explode',Missiles[iMissile].soundID+'.explode','explode']);
+    iSound := IO.Audio.ResolveSoundID([aItem.ID+'.explode',Missiles[iMissile].soundID+'.explode','explode']);
     with Missiles[iMissile] do
     iLevel.Explosion( iDelay*(iSteps+(aShotCount*2)), iCoord, iRadius, ExplDelay, iRoll, ExplColor,
                     iSound, aItem.DamageType, aItem, ExplFlags, Content, iDirectHit );

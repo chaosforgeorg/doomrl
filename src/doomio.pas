@@ -2,21 +2,14 @@
 unit doomio;
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils, vgenerics, vio,
-     vsystems, vmath, vrltools, vluaconfig, vglquadrenderer, vgltypes, doomspritemap, doomviews,
+     vsystems, vmath, vrltools, vluaconfig, vglquadrenderer, vgltypes,
+     doomspritemap, doomviews, doomaudio,
      viotypes, vbitmapfont, vioevent, vioconsole, vuielement, vuitypes;
 
 type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
 
-type TSoundEvent = packed record
-       Time    : QWord;
-       Coord   : TCoord2D;
-       SoundID : Word;
-     end;
-
 type TDoomOnProgress = procedure ( aProgress : DWord ) of object;
-     TAnsiStringArray = specialize TGArray< AnsiString >;
-     TSoundEventHeap  = specialize TGHeap< TSoundEvent >;
 
 
 type TDoomIO = class( TIO )
@@ -27,14 +20,10 @@ type TDoomIO = class( TIO )
   destructor Destroy; override;
   procedure Screenshot( aBB : Boolean );
 
-  procedure PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
-  procedure PlayMusic( const MusicID : Ansistring );
-  procedure PlayMusicOnce( const MusicID : Ansistring );
-  function ResolveSoundID( const ResolveIDs: array of AnsiString ) : Word;
   function EventWaitForMore : Boolean;
 
   procedure WADLoaded;
-  procedure LoadStart;
+  procedure LoadStart( aAdd : DWord = 0 );
   function LoadCurrent : DWord;
   procedure LoadProgress( aProgress : DWord );
   procedure LoadStop;
@@ -51,8 +40,6 @@ private
   procedure ReuploadTextures;
   procedure CalculateConsoleParams;
   procedure GraphicsDraw;
-  procedure SoundQuery(nkey,nvalue : Variant);
-  procedure MusicQuery(nkey,nvalue : Variant);
   procedure ColorQuery(nkey,nvalue : Variant);
 protected
   function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
@@ -61,6 +48,7 @@ protected
 public // REMOVE
   FMsgFont    : TBitmapFont;
 private
+  FAudio       : TDoomAudio;
   FTime        : QWord;
   FLastMouse   : QWord;
   FMouseLock   : Boolean;
@@ -88,11 +76,6 @@ private
   FLinespace   : Word;
   FKeyCode     : TIOKeyCode;
   FLastTick    : TDateTime;
-  FSoundKeys   : TAnsiStringArray;
-  FSoundValues : TAnsiStringArray;
-  FMusicKeys   : TAnsiStringArray;
-  FMusicValues : TAnsiStringArray;
-  FSoundEvents : TSoundEventHeap;
 public
   property KeyCode   : TIOKeyCode read FKeyCode write FKeyCode;
   property QuadSheet : TGLQuadList read FQuadSheet;
@@ -103,6 +86,7 @@ public
   property TileMult  : Byte read FTileMult;
   property MCursor   : TDoomMouseCursor read FMCursor;
   property MTarget   : TCoord2D read FMTarget write FMTarget;
+  property Audio     : TDoomAudio read FAudio;
 end;
 
 var IO : TDoomIO;
@@ -114,9 +98,7 @@ implementation
 uses math, video, vlog, vdebug,
      variants, vdf, dateutils,
      vutil,
-     vsound, vimage, vglimage,
-     vfmodsound,
-     vsdlsound,
+     vimage, vglimage,
      vuiconsole, vcolor,
      {$IFDEF WINDOWS}
      vtextio, vtextconsole,
@@ -127,14 +109,6 @@ uses math, video, vlog, vdebug,
      vgl3library,
      doomtextures,  doombase,
      dfdata, dfoutput, dfplayer;
-
-
-function DoomIOSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
-begin
-       if Item1.Time < Item2.Time then Exit(1)
-  else if Item1.Time > Item2.Time then Exit(-1)
-  else Exit(0);
-end;
 
 { TDoomIO }
 
@@ -183,7 +157,8 @@ begin
   FLastMouse := 0;
   FMouseLock := True;
 
-  FSoundEvents := TSoundEventHeap.Create( @DoomIOSoundEventCompare );
+  FAudio := TDoomAudio.Create;
+
   FLoading := nil;
   IO := Self;
   FVPadding := 0;
@@ -330,14 +305,10 @@ begin
 end;
 
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
-var iCount   : DWord;
-    iProgress: DWord;
 begin
-  FSoundEvents.Clear;
 
   aConfig.ResetCommands;
   aConfig.LoadKeybindings('Keybindings');
-  FSoundEvents.Clear;
   // TODO : configurable
   if GodMode then
     RegisterDebugConsole( VKEY_F1 );
@@ -351,66 +322,7 @@ begin
 
   if Option_MessageBuffer < 20 then Option_MessageBuffer := 20;
 
-  if SoundVersion and (Option_SoundEngine <> 'NONE') then
-  begin
-    Option_SoundVol := aConfig.Configure('SoundVolume',Option_SoundVol);
-    Option_MusicVol := aConfig.Configure('MusicVolume',Option_MusicVol);
-
-    if Option_Music or Option_Sound then
-    begin
-      if Option_SoundVol > 25 then Option_SoundVol := 25;
-      if Option_MusicVol > 25 then Option_MusicVol := 25;
-      if not aReload then
-      begin
-        if Option_SoundEngine = 'FMOD'
-          then Sound := Systems.Add(TFMODSound.Create) as TSound
-          else Sound := Systems.Add(TSDLSound.Create(Option_SDLMixerFreq, Option_SDLMixerFormat, Option_SDLMixerChunkSize ) ) as TSound;
-      end
-      else
-        Sound.Reset;
-      Sound.SetSoundVolume(5*Option_SoundVol);
-      Sound.SetMusicVolume(5*Option_MusicVol);
-
-      if aReload then
-      begin
-        FSoundKeys   := TAnsiStringArray.Create;
-        FSoundValues := TAnsiStringArray.Create;
-        FMusicKeys   := TAnsiStringArray.Create;
-        FMusicValues := TAnsiStringArray.Create;
-        if Option_Music then
-          aConfig.EntryFeed('Music', @MusicQuery );
-        if Option_Sound then
-          aConfig.RecEntryFeed('Sound', @SoundQuery );
-
-        LoadStart;
-        FLoading.Max := (FSoundKeys.Size+FMusicKeys.Size) div 2 +FLoading.Max;
-        iProgress    := 0;
-
-        if FSoundKeys.Size > 0 then
-          for iCount := 0 to FSoundKeys.Size - 1 do
-          begin
-            Sound.RegisterSample(DataPath+FSoundValues[iCount],FSoundKeys[iCount]);
-            Inc( iProgress );
-            if iProgress mod 20 = 0 then
-              LoadProgress( iProgress div 2 );
-          end;
-
-        if FMusicKeys.Size > 0 then
-          for iCount := 0 to FMusicKeys.Size - 1 do
-          begin
-            Sound.RegisterMusic(DataPath+FMusicValues[iCount],FMusicKeys[iCount]);
-            Inc( iProgress );
-            if iProgress mod 20 = 0 then
-              LoadProgress( iProgress div 2 );
-          end;
-        LoadProgress( iProgress div 2 );
-        FreeAndNil( FSoundKeys );
-        FreeAndNil( FSoundValues );
-        FreeAndNil( FMusicKeys );
-        FreeAndNil( FMusicValues );
-      end;
-    end;
-  end;
+  FAudio.Configure( aConfig, aReload );
 
   if aReload then
     aConfig.EntryFeed('Colors', @ColorQuery );
@@ -430,16 +342,12 @@ procedure TDoomIO.FullUpdate;
 begin
   VTIG_NewFrame;
   if Assigned( UI.GameUI ) then
-  begin
     UI.GameUI.OnRedraw;
-    UI.GameUI.OnRender;
-  end;
   inherited FullUpdate;
 end;
 
 destructor TDoomIO.Destroy;
 begin
-  FreeAndNil( FSoundEvents );
   FreeAndNil( FMCursor );
 
   FreeAndNil( SpriteMap );
@@ -448,7 +356,7 @@ begin
   FreeAndNil( FTextSheet );
   FreeAndNil( FPostSheet );
   FreeAndNil( FQuadRenderer );
-
+  FreeAndNil( FAudio );
   IO := nil;
   inherited Destroy;
 end;
@@ -487,24 +395,6 @@ begin
   end;
     {  if aBB then UI.Msg('BB Screenshot created.')
              else UI.Msg('Screenshot created.');}
-end;
-
-procedure TDoomIO.SoundQuery(nkey,nvalue : Variant);
-var Key, Value : AnsiString;
-begin
-  Key   := LowerCase(nKey);
-  Value := nValue;
-  FSoundKeys.Push( Key );
-  FSoundValues.Push( Value );
-end;
-
-procedure TDoomIO.MusicQuery(nkey,nvalue : Variant);
-var Key, Value : AnsiString;
-begin
-  Key   := LowerCase(nKey);
-  Value := nValue;
-  FMusicKeys.Push( Key );
-  FMusicValues.Push( Value );
 end;
 
 procedure TDoomIO.ColorQuery(nkey,nvalue : Variant);
@@ -551,50 +441,6 @@ begin
   Exit(True);
 end;
 
-procedure TDoomIO.PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
-var iVolume     : Byte;
-    iPan        : Byte;
-    iDist       : Word;
-    iPos        : TCoord2D;
-    iSoundEvent : TSoundEvent;
-begin
-  if aSoundID = 0 then Exit;
-  if (not SoundVersion) or (not Option_Sound) or SoundOff then Exit;
-  if aDelay > 0 then
-  begin
-    iSoundEvent.Coord   := aCoord;
-    iSoundEvent.SoundID := aSoundID;
-    iSoundEvent.Time    := FTime + aDelay;
-    FSoundEvents.Insert( iSoundEvent );
-    Exit;
-  end;
-
-  iPos := Player.Position;
-
-  iDist := Distance(aCoord,iPos);
-  if iDist <= 1 then iVolume := 127 else
-                    iVolume := Clamp((25 - iDist) * 6,0,127);
-  if iVolume <> 0 then
-    if iVolume < 30 then iVolume := 30;
-
-  iPan := Clamp((aCoord.x-iPos.x) * 15,-128,127)+128;
-  Sound.PlaySample(aSoundID,iVolume,iPan);
-end;
-
-
-function TDoomIO.ResolveSoundID(const ResolveIDs: array of AnsiString): Word;
-var c : DWord;
-begin
-  if (not SoundVersion) or (not Option_Sound) or SoundOff then Exit(0);
-  for c := Low(ResolveIDs) to High(ResolveIDs) do
-    if ResolveIDs[c] <> '' then
-    begin
-      Result := Sound.GetSampleID(ResolveIDs[c]);
-      if Result <> 0 then Exit( Result );
-    end;
-  Exit(0);
-end;
-
 function TDoomIO.EventWaitForMore : Boolean;
 begin
   if Option_MorePrompt then
@@ -616,10 +462,13 @@ begin
   end;
 end;
 
-procedure TDoomIO.LoadStart;
+procedure TDoomIO.LoadStart( aAdd : DWord = 0 );
 begin
   if FLoading = nil then
+  begin
     FLoading := TUILoadingScreen.Create(FUIRoot,100);
+    FLoading.Max := FLoading.Max + aAdd;
+  end;
 end;
 
 function TDoomIO.LoadCurrent : DWord;
@@ -652,7 +501,7 @@ end;
 
 procedure TDoomIO.Update( aMSec : DWord );
 var iMousePos   : TUIPoint;
-    iSoundEvent : TSoundEvent;
+
     iPoint   : TUIPoint;
     iValueX  : Single;
     iValueY  : Single;
@@ -663,11 +512,7 @@ var iMousePos   : TUIPoint;
     iShift   : TCoord2D;
 begin
   FTime += aMSec;
-  while (not FSoundEvents.isEmpty) and (FSoundEvents.Top.Time <= FTime) do
-  begin
-    iSoundEvent := FSoundEvents.Pop;
-    PlaySound( iSoundEvent.SoundID, iSoundEvent.Coord );
-  end;
+  FAudio.Update( aMSec );
   if GraphicsVersion then
   begin
     if (Doom <> nil) and (UI <> nil) then UI.GFXAnimationUpdate( aMSec );
@@ -875,39 +720,6 @@ begin
     FMouseLock := False;
   end;
   Exit( False )
-end;
-
-procedure TDoomIO.PlayMusic(const MusicID : Ansistring);
-begin
-  if (not SoundVersion) or (not Option_Music) then Exit;
-  try
-    if MusicID = '' then Sound.Silence;
-    if MusicOff then Exit;
-    if Sound.MusicExists(MusicID) then Sound.PlayMusic(MusicID)
-                                  else PlayMusic('level'+IntToStr(Random(23)+2));
-  except
-    on e : Exception do
-    begin
-      Log('PlayMusic raised exception (' + E.ClassName + '): ' + e.message);
-      UI.Msg( 'PlayMusic raised exception: ' + e.message );
-    end;
-  end;
-end;
-
-procedure TDoomIO.PlayMusicOnce(const MusicID : Ansistring);
-begin
-  if (not SoundVersion) or (not Option_Music) then Exit;
-  try
-    if MusicID = '' then Sound.Silence;
-    if MusicOff then Exit;
-    if Sound.MusicExists(MusicID) then Sound.PlayMusicOnce(MusicID);
-  except
-      on e : Exception do
-      begin
-        Log('PlayMusicOnce raised exception (' + E.ClassName + '): ' + e.message);
-        UI.Msg( 'PlayMusic raised exception: ' + e.message );
-      end;
-  end;
 end;
 
 procedure EmitCrashInfo ( const aInfo : AnsiString; aInGame : Boolean ) ;

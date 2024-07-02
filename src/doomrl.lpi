@@ -47,7 +47,7 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <Units Count="31">
+    <Units Count="32">
       <Unit0>
         <Filename Value="doomrl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -172,6 +172,10 @@
         <Filename Value="..\bin\core\constants.lua"/>
         <IsPartOfProject Value="True"/>
       </Unit30>
+      <Unit31>
+        <Filename Value="doomaudio.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit31>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

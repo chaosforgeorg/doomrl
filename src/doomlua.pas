@@ -241,7 +241,7 @@ function lua_core_resolve_sound_id(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  State.Push(IO.ResolveSoundID([State.ToString(1),State.ToString(2),State.ToString(3)]));
+  State.Push(IO.Audio.ResolveSoundID([State.ToString(1),State.ToString(2),State.ToString(3)]));
   Result := 1;
 end;
 
@@ -249,7 +249,7 @@ function lua_core_play_music(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  IO.PlayMusic(State.ToString(1));
+  IO.Audio.PlayMusic(State.ToString(1));
   Result := 0;
 end;
 
@@ -599,9 +599,9 @@ begin
   if IsNumber( Index ) then
      Exit( ToInteger( Index ) )
   else if IsTable( Index ) then
-     Exit( IO.ResolveSoundID( ToStringArray( Index ) ) )
+     Exit( IO.Audio.ResolveSoundID( ToStringArray( Index ) ) )
   else
-     Exit( IO.ResolveSoundID( [ ToString(Index) ] ) );
+     Exit( IO.Audio.ResolveSoundID( [ ToString(Index) ] ) );
 end;
 
 function TDoomLuaState.ToPosition( Index : Integer ) : TCoord2D;

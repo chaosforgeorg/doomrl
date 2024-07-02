@@ -765,8 +765,8 @@ begin
       INPUT_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit; end;
       INPUT_MUSICTOGGLE  : begin
                                MusicOff := not MusicOff;
-                               if MusicOff then IO.PlayMusic('')
-                                           else IO.PlayMusic(Level.ID);
+                               if MusicOff then IO.Audio.PlayMusic('')
+                                           else IO.Audio.PlayMusic(Level.ID);
                                Exit;
                              end;
     end;
@@ -808,7 +808,7 @@ repeat
 
   UI.ClearAllMessages;
 
-  IO.PlayMusicOnce('start');
+  IO.Audio.PlayMusicOnce('start');
   SetState( DSMenu );
   iResult.Reset; // TODO : could reuse for same game!
   IO.RunUILoop( TMainMenuViewer.Create( IO.Root, iResult ) );
@@ -899,7 +899,7 @@ repeat
     SetState( DSPlaying );
     UI.BloodSlideDown(20);
     
-    IO.PlayMusic(FLevel.ID);
+    IO.Audio.PlayMusic(FLevel.ID);
     FLevel.PreEnter;
 
     FLevel.Tick;
@@ -982,10 +982,10 @@ repeat
     begin
       if GameWon then
       begin
-        IO.PlayMusic('victory');
+        IO.Audio.PlayMusic('victory');
         CallHookCheck(Hook_OnWinGame,[]);
       end
-      else IO.PlayMusic('bunny');
+      else IO.Audio.PlayMusic('bunny');
     end;
   end;
 

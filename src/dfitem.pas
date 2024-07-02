@@ -216,7 +216,7 @@ begin
        begin
          soundid := Table.getString('sound_id','');
          if soundid = '' then soundid := ID;
-         FSounds.Fire := IO.ResolveSoundID([ID+'.use',soundid+'.use','use']);
+         FSounds.Fire := IO.Audio.ResolveSoundID([ID+'.use',soundid+'.use','use']);
        end;
      ITEMTYPE_ARMOR,
      ITEMTYPE_BOOTS :
@@ -227,28 +227,28 @@ begin
          FProps.MoveMod  := Table.getInteger('movemod');
          FProps.DodgeMod  := Table.getInteger('dodgemod');
          FProps.KnockMod := Table.getInteger('knockmod');
-         FSounds.Pickup := IO.ResolveSoundID([ID+'.pickup','pickup']);
+         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
        end;
      ITEMTYPE_PACK,
      ITEMTYPE_POWER :
        begin
          if FProps.IType = ITEMTYPE_POWER
-           then FSounds.Fire   := IO.ResolveSoundID([ID+'.activate','activate'])
-           else FSounds.Fire   := IO.ResolveSoundID([ID+'.use','use']);
-         FSounds.Pickup := IO.ResolveSoundID([ID+'.pickup','pickup']);
+           then FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.activate','activate'])
+           else FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.use','use']);
+         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
        end;
      ITEMTYPE_AMMO, ITEMTYPE_AMMOPACK :
        begin
          FProps.Ammo        := Table.getInteger('ammo');
          FProps.AmmoMax     := Table.getInteger('ammomax');
          FProps.AmmoID      := Table.getInteger('ammo_id',0);
-         FSounds.Pickup := IO.ResolveSoundID([ID+'.pickup','pickup']);
+         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
        end;
      ITEMTYPE_MELEE :
        begin
          FProps.Damage      := NewDiceRoll( Table.getInteger('damage_dice'), Table.getInteger('damage_sides'), Table.getInteger('damage_bonus') );
-         FSounds.Fire   := IO.ResolveSoundID([ID+'.attack','attack']);
-         FSounds.Pickup := IO.ResolveSoundID([ID+'.pickup','pickup']);
+         FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.attack','attack']);
+         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
          FProps.DamageType  := TDamageType( Table.getInteger('damagetype') );
          FProps.Acc         := Table.getInteger('acc');
          FProps.UseTime     := Table.getInteger('fire');
@@ -273,9 +273,9 @@ begin
          FProps.DamageType  := TDamageType( Table.getInteger('damagetype',0) );
          soundid := Table.getString('sound_id','');
          if soundid = '' then soundid := ID;
-         FSounds.Fire   := IO.ResolveSoundID([ID+'.fire', SoundID+'.fire', 'fire']);
-         FSounds.Pickup := IO.ResolveSoundID([ID+'.pickup', SoundID+'.pickup', 'pickup']);
-         FSounds.Reload := IO.ResolveSoundID([ID+'.reload', SoundID+'.reload', 'reload']);
+         FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.fire', SoundID+'.fire', 'fire']);
+         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup', SoundID+'.pickup', 'pickup']);
+         FSounds.Reload := IO.Audio.ResolveSoundID([ID+'.reload', SoundID+'.reload', 'reload']);
        end;
   end;
 

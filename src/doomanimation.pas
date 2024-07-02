@@ -252,7 +252,7 @@ end;
 
 procedure TDoomSoundEvent.OnStart;
 begin
-  IO.PlaySound( FSoundID, FPosition );
+  IO.Audio.PlaySound( FSoundID, FPosition );
 end;
 
 { TDoomBlink }

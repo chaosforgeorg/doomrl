@@ -248,17 +248,17 @@ end;
 
 procedure TLevel.playSound( const aSoundID: DWord; aCoord : TCoord2D; aDelay : DWord = 0 );
 begin
-  IO.PlaySound(aSoundID, aCoord, aDelay);
+  IO.Audio.PlaySound(aSoundID, aCoord, aDelay);
 end;
 
 procedure TLevel.playSound(const SoundID: string; coord : TCoord2D );
 begin
-  IO.PlaySound(IO.ResolveSoundID([SoundID]), coord );
+  IO.Audio.PlaySound(IO.Audio.ResolveSoundID([SoundID]), coord );
 end;
 
 procedure TLevel.playSound(const BaseID, SoundID: string; coord : TCoord2D );
 begin
-  IO.PlaySound(IO.ResolveSoundID([BaseID+'.'+SoundID,SoundID]), coord );
+  IO.Audio.PlaySound(IO.Audio.ResolveSoundID([BaseID+'.'+SoundID,SoundID]), coord );
 end;
 
 function TLevel.BeingsVisible : Word;
@@ -1150,7 +1150,7 @@ begin
       end;
       for cn := 1 to 10 do
       begin
-        Explosion( cn*200, RandomCoord( [ EF_NOBLOCK ] ),8,10,NewDiceRoll(0,0,0),LightRed,IO.ResolveSoundID(['nuke','barrel.explode','explode']){}{}{}{}{}{}{}{}{}, Damage_Fire, nil);
+        Explosion( cn*200, RandomCoord( [ EF_NOBLOCK ] ),8,10,NewDiceRoll(0,0,0),LightRed,IO.Audio.ResolveSoundID(['nuke','barrel.explode','explode']){}{}{}{}{}{}{}{}{}, Damage_Fire, nil);
         UI.Blink(LightRed,40);
         UI.Blink(White,40);
       end;
