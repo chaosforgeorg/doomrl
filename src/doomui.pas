@@ -4,13 +4,12 @@ interface
 uses sysutils, vgltypes, vglimage, vimage, vrltools, vconui, viotypes,
      vuiconsole, vuielement, vuitypes, vioevent, vtextmap, vrlmsg;
 
-type TDoomGameUI = class( TUIElement )
-  constructor Create( aParent : TUIElement; const aArea : TUIRect );
-  procedure OnRedraw; override;
-  procedure OnRender; override;
-  procedure OnUpdate( aTime : DWord ); override;
-  function OnMouseDown( const event : TIOMouseEvent ) : Boolean; override;
-  function OnMouseMove( const event : TIOMouseMoveEvent ) : Boolean; override;
+type TDoomGameUI = class
+  constructor Create;
+  procedure OnRedraw;
+  procedure OnRender;
+  procedure OnUpdate( aTime : DWord );
+
   procedure SetTarget( aTarget : TCoord2D; aTargetColor : TUIColor; aTargetRange : Byte = 100 );
   procedure SetLastTarget( aLastTarget : TCoord2D );
   procedure ResetTarget;
@@ -20,12 +19,10 @@ type TDoomGameUI = class( TUIElement )
 private
   function Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
 private
-  FLastMouse: DWord;
-  FTime     : DWord;
   FHint     : TUIString;
   FMessages : TRLMessages;
   FMap      : TTextMap;
-  FMouseLock: Boolean;
+  FEnabled  : Boolean;
 
   FTargetLast     : Boolean;
   FTarget         : TCoord2D;
@@ -40,6 +37,7 @@ public
   property Hint     : TUIString   read FHint write FHint;
   property Messages : TRLMessages read FMessages;
   property Map      : TTextMap    read FMap;
+  property Enabled  : Boolean     read FEnabled write FEnabled;
 end;
 
 
@@ -52,27 +50,17 @@ uses math, dfoutput,
 
 { TDoomGameUI }
 
-constructor TDoomGameUI.Create ( aParent : TUIElement; const aArea : TUIRect );
+constructor TDoomGameUI.Create;
 begin
-  inherited Create( aParent, aArea );
-  if GraphicsVersion then
-    FEventFilter := [ VEVENT_MOUSEDOWN, VEVENT_MOUSEMOVE ];
-  FFullScreen    := True;
   FTargetEnabled := False;
   FMap      := nil;
-  FTime     := 0;
   if not GraphicsVersion then
     FMap := TTextMap.Create( IO.Console, Rectangle( 2,3,MAXX,MAXY ) );
-
-
-  // Self, Rectangle( 1,0,FAbsolute.w-3,2 ),
-  //FMessages.ForeColor := DarkGray;
 
   FMessages := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
 
   FHint     := '';
   FEnabled := False;
-  FMouseLock := True;
 
   FMinimapScale    := 0;
   FMinimapTexture  := 0;
@@ -142,8 +130,9 @@ var iCount      : DWord;
   end;
 
 begin
-  iCon.Init( TConUIRoot(FRoot).Renderer );
-  iCon.ClearRect( FAbsolute, Black );
+  if not FEnabled then Exit;
+  iCon.Init( IO.Console );
+  iCon.Clear;
 
   if Player <> nil then
   begin
@@ -220,14 +209,13 @@ begin
   if Assigned( FMap ) then
     FMap.OnRedraw;
 
-  iCon.ClearRect( Rectangle( 1,0,FAbsolute.w-3,2 ), FBackColor );
   iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
   if FMessages.Content.Size > 0 then
   for i := 1+FMessages.Scroll to iMax do
   begin
     iColor := DarkGray;
     if i > iMax - FMessages.Active then iColor := LightGray;
-    iCon.Print( FAbsolute.Pos + Point(0,i-1-FMessages.Scroll), FMessages.Content[ i-1 ], iColor, FBackColor, FAbsolute );
+    iCon.Print( Point(1,i-FMessages.Scroll), FMessages.Content[ i-1 ], iColor, Black, Rectangle( 1,1, 78, 25 ) );
   end;
 
   {
@@ -244,97 +232,34 @@ begin
   end;
   VTIG_End;
   }
-  inherited OnRedraw;
+  //inherited OnRedraw;
 end;
 
 procedure TDoomGameUI.OnRender;
-var iRoot   : TConUIRoot;
-    iP1,iP2 : TPoint;
+var iRoot     : TConUIRoot;
+    iP1,iP2   : TPoint;
+    iAbsolute : TIORect;
 begin
+  if not FEnabled then Exit;
   if GraphicsVersion then
   begin
-    iRoot := TConUIRoot(FRoot);
-    iP1 := iRoot.ConsoleCoordToDeviceCoord( FAbsolute.Pos );
-    iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( FAbsolute.x2+1, FAbsolute.y+2 ) );
+    iAbsolute := Rectangle( 1,1,78,25 );
+    iRoot := IO.Root;
+    iP1 := iRoot.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
+    iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
     IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
 
-    iP1 := iRoot.ConsoleCoordToDeviceCoord( Point( FAbsolute.x, FAbsolute.y2-2 ) );
-    iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( FAbsolute.x2+1, FAbsolute.y2+2 ) );
+    iP1 := iRoot.ConsoleCoordToDeviceCoord( Point( iAbsolute.x, iAbsolute.y2-2 ) );
+    iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
     IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
   end;
-  inherited OnRender;
 end;
 
 procedure TDoomGameUI.OnUpdate ( aTime : DWord ) ;
-var iPoint   : TUIPoint;
-    iValueX  : Single;
-    iValueY  : Single;
-    iActiveX : Integer;
-    iActiveY : Integer;
-    iMaxX    : Integer;
-    iMaxY    : Integer;
-    iShift   : TCoord2D;
 begin
-  FDirty := True;
-  if GraphicsVersion then
-  begin
-    FTime += aTime;
-    if FTime - FLastMouse > 3000 then
-    begin
-      IO.MCursor.Active := False;
-      UI.SetTempHint('');
-    end;
-
-    if (IO.MCursor.Active) and IO.Driver.GetMousePos( iPoint ) and (not FMouseLock) then
-    begin
-      iMaxX   := IO.Driver.GetSizeX;
-      iMaxY   := IO.Driver.GetSizeY;
-      iValueX := 0;
-      iValueY := 0;
-      iActiveX := iMaxX div 8;
-      iActiveY := iMaxY div 8;
-      if iPoint.X < iActiveX      then iValueX := ((iActiveX -        iPoint.X) / iActiveX);
-      if iPoint.X > iMaxX-iActiveX then iValueX := ((iActiveX -(iMaxX-iPoint.X)) /iActiveX);
-      if iPoint.X < iActiveX then iValueX := -iValueX;
-      if iMaxY < MAXY*IO.TileMult*32 then
-      begin
-        if iPoint.Y < iActiveY       then iValueY := ((iActiveY -        iPoint.Y) / iActiveY) / 2;
-        if iPoint.Y > iMaxY-iActiveY then iValueY := ((iActiveY -(iMaxY-iPoint.Y)) /iActiveY) / 2;
-        if iPoint.Y < iActiveY then iValueY := -iValueY;
-      end;
-
-      iShift := SpriteMap.Shift;
-      if (iValueX <> 0) or (iValueY <> 0) then
-      begin
-        iShift := NewCoord2D(
-          Clamp( SpriteMap.Shift.X + Ceil( iValueX * aTime ), SpriteMap.MinShift.X, SpriteMap.MaxShift.X ),
-          Clamp( SpriteMap.Shift.Y + Ceil( iValueY * aTime ), SpriteMap.MinShift.Y, SpriteMap.MaxShift.Y )
-        );
-        SpriteMap.NewShift := iShift;
-        FMouseLock :=
-          ((iShift.X = SpriteMap.MinShift.X) or (iShift.X = SpriteMap.MaxShift.X))
-       and ((iShift.Y = SpriteMap.MinShift.Y) or (iShift.Y = SpriteMap.MaxShift.Y));
-      end;
-    end;
-  end;
+  if not FEnabled then Exit;
   if Assigned( FMap ) then
     FMap.OnUpdate( aTime );
-  inherited OnUpdate ( aTime ) ;
-end;
-
-function TDoomGameUI.OnMouseDown ( const event : TIOMouseEvent ) : Boolean;
-begin
-  if IO.MCursor <> nil then IO.MCursor.Active := True;
-  FLastMouse := FTime;
-  Exit( False );
-end;
-
-function TDoomGameUI.OnMouseMove ( const event : TIOMouseMoveEvent ) : Boolean;
-begin
-  if IO.MCursor <> nil then IO.MCursor.Active := True;
-  FLastMouse := FTime;
-  FMouseLock := False;
-  Exit( False );
 end;
 
 procedure TDoomGameUI.SetTarget ( aTarget : TCoord2D; aTargetColor : TUIColor;
@@ -406,11 +331,11 @@ var iCon       : TUIConsole;
     iPosition  : TUIPoint;
     iColor     : TUIColor;
 begin
-  iCon.Init( TConUIRoot(FRoot).Renderer );
+  iCon.Init( IO.Console );
   iPosition  := Point(aStart,0);
   iColor     := aColor;
   iChunkList := nil;
-  iCon.ChunkifyEx( iChunkList, iPosition, iColor, aString, iColor, Dim );
+  iCon.ChunkifyEx( iChunkList, iPosition, iColor, aString, iColor, Point(78,2) );
   Exit( iCon.LinifyChunkList( iChunkList ) );
 end;
 

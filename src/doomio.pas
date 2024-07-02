@@ -46,6 +46,7 @@ type TDoomIO = class( TIO )
   procedure WaitForKeyEvent( out aEvent : TIOEvent; aMouseClick : Boolean = False; aMouseMove : Boolean = False );
   function CommandEventPending : Boolean;
 
+  function OnEvent( const event : TIOEvent ) : Boolean; override;
 private
   procedure ReuploadTextures;
   procedure CalculateConsoleParams;
@@ -61,6 +62,9 @@ public // REMOVE
   FMsgFont    : TBitmapFont;
 private
   FTime        : QWord;
+  FLastMouse   : QWord;
+  FMouseLock   : Boolean;
+
   FLoading     : TUILoadingScreen;
   FMCursor     : TDoomMouseCursor;
   FQuadSheet   : TGLQuadList;
@@ -107,7 +111,7 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 
 implementation
 
-uses video, vlog, vdebug,
+uses math, video, vlog, vdebug,
      variants, vdf, dateutils,
      vutil,
      vsound, vimage, vglimage,
@@ -176,6 +180,9 @@ var iStyle      : TUIStyle;
 
 begin
   FTime := 0;
+  FLastMouse := 0;
+  FMouseLock := True;
+
   FSoundEvents := TSoundEventHeap.Create( @DoomIOSoundEventCompare );
   FLoading := nil;
   IO := Self;
@@ -422,6 +429,11 @@ end;
 procedure TDoomIO.FullUpdate;
 begin
   VTIG_NewFrame;
+  if Assigned( UI.GameUI ) then
+  begin
+    UI.GameUI.OnRedraw;
+    UI.GameUI.OnRender;
+  end;
   inherited FullUpdate;
 end;
 
@@ -641,6 +653,14 @@ end;
 procedure TDoomIO.Update( aMSec : DWord );
 var iMousePos   : TUIPoint;
     iSoundEvent : TSoundEvent;
+    iPoint   : TUIPoint;
+    iValueX  : Single;
+    iValueY  : Single;
+    iActiveX : Integer;
+    iActiveY : Integer;
+    iMaxX    : Integer;
+    iMaxY    : Integer;
+    iShift   : TCoord2D;
 begin
   FTime += aMSec;
   while (not FSoundEvents.isEmpty) and (FSoundEvents.Top.Time <= FTime) do
@@ -655,6 +675,40 @@ begin
     if FQuadRenderer <> nil then FQuadRenderer.Update( FProjection );
     if FQuadSheet <> nil then FQuadRenderer.Render( FQuadSheet );
   end;
+  if Assigned( UI.GameUI ) then
+    UI.GameUI.OnUpdate( aMSec );
+  if GraphicsVersion and (FMCursor.Active) and FIODriver.GetMousePos( iPoint ) and (not FMouseLock) then
+  begin
+    iMaxX   := FIODriver.GetSizeX;
+    iMaxY   := FIODriver.GetSizeY;
+    iValueX := 0;
+    iValueY := 0;
+    iActiveX := iMaxX div 8;
+    iActiveY := iMaxY div 8;
+    if iPoint.X < iActiveX       then iValueX := ((iActiveX -       iPoint.X) / iActiveX);
+    if iPoint.X > iMaxX-iActiveX then iValueX := ((iActiveX -(iMaxX-iPoint.X)) /iActiveX);
+    if iPoint.X < iActiveX then iValueX := -iValueX;
+    if iMaxY < MAXY*IO.TileMult*32 then
+    begin
+      if iPoint.Y < iActiveY       then iValueY := ((iActiveY -        iPoint.Y) / iActiveY) / 2;
+      if iPoint.Y > iMaxY-iActiveY then iValueY := ((iActiveY -(iMaxY-iPoint.Y)) /iActiveY) / 2;
+      if iPoint.Y < iActiveY then iValueY := -iValueY;
+    end;
+
+    iShift := SpriteMap.Shift;
+    if (iValueX <> 0) or (iValueY <> 0) then
+    begin
+      iShift := NewCoord2D(
+        Clamp( SpriteMap.Shift.X + Ceil( iValueX * aMSec ), SpriteMap.MinShift.X, SpriteMap.MaxShift.X ),
+        Clamp( SpriteMap.Shift.Y + Ceil( iValueY * aMSec ), SpriteMap.MinShift.Y, SpriteMap.MaxShift.Y )
+      );
+      SpriteMap.NewShift := iShift;
+      FMouseLock :=
+        ((iShift.X = SpriteMap.MinShift.X) or (iShift.X = SpriteMap.MaxShift.X))
+     and ((iShift.Y = SpriteMap.MinShift.Y) or (iShift.Y = SpriteMap.MaxShift.Y));
+    end;
+  end;
+
   FUIRoot.OnUpdate( aMSec );
   FUIRoot.Render;
   if FTextSheet <> nil then FQuadRenderer.Render( FTextSheet );
@@ -792,7 +846,7 @@ begin
         FIODriver.PollEvent( aEvent );
       until (not FIODriver.EventPending);
     end;
-    if FUIRoot.OnEvent( aEvent ) then aEvent.EType := VEVENT_KEYUP;
+    if OnEvent( aEvent ) or FUIRoot.OnEvent( aEvent ) then aEvent.EType := VEVENT_KEYUP;
     if (aEvent.EType = VEVENT_SYSTEM) and (aEvent.System.Code = VIO_SYSEVENT_QUIT) then
       Exit;
   until aEvent.EType in iEndLoop;
@@ -810,6 +864,17 @@ begin
     end;
   until True;
   Exit( iEvent.EType in [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ] );
+end;
+
+function TDoomIO.OnEvent( const event : TIOEvent ) : Boolean;
+begin
+  if event.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN ] then
+  begin
+    if FMCursor <> nil then FMCursor.Active := True;
+    FLastMouse := FTime;
+    FMouseLock := False;
+  end;
+  Exit( False )
 end;
 
 procedure TDoomIO.PlayMusic(const MusicID : Ansistring);

@@ -629,7 +629,7 @@ end;
 procedure TDoomUI.CreateMessageWriter(INI: TLuaConfig);
 begin
   if FGameUI <> nil then Exit;
-  FGameUI := TDoomGameUI.Create( IO.Root, Rectangle(0,0,80,25) );
+  FGameUI := TDoomGameUI.Create;
   if Option_MessageColoring then
     INI.EntryFeed( 'Messages', @FGameUI.Messages.AddHighlightCallback );
   FGameUI.Enabled := False;
