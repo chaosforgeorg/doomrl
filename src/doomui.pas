@@ -1,8 +1,8 @@
 {$include doomrl.inc}
 unit doomui; 
 interface
-uses sysutils, vgltypes, vglimage, vimage, vrltools, vconui, vconuirl,
-     vuielements, vuiconsole, vuielement, vuitypes, vioevent, vtextmap;
+uses sysutils, vgltypes, vglimage, vimage, vrltools, vconui, viotypes,
+     vuiconsole, vuielement, vuitypes, vioevent, vtextmap, vrlmsg;
 
 type TDoomGameUI = class( TUIElement )
   constructor Create( aParent : TUIElement; const aArea : TUIRect );
@@ -18,10 +18,12 @@ type TDoomGameUI = class( TUIElement )
   procedure SetMinimapScale( aScale : Byte );
   destructor Destroy; override;
 private
+  function Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
+private
   FLastMouse: DWord;
   FTime     : DWord;
   FHint     : TUIString;
-  FMessages : TUICustomMessages;
+  FMessages : TRLMessages;
   FMap      : TTextMap;
   FMouseLock: Boolean;
 
@@ -35,16 +37,16 @@ private
   FMinimapScale   : Integer;
   FMinimapGLPos   : TGLVec2i;
 public
-  property Hint     : TUIString         read FHint write FHint;
-  property Messages : TUICustomMessages read FMessages;
-  property Map      : TTextMap          read FMap;
+  property Hint     : TUIString   read FHint write FHint;
+  property Messages : TRLMessages read FMessages;
+  property Map      : TTextMap    read FMap;
 end;
 
 
 implementation
 
 uses math, dfoutput,
-     vtig, vcolor, vmath, vutil, viotypes,
+     vtig, vcolor, vmath, vutil,
      dfdata, dflevel, dfitem, dfbeing, dfplayer,
      doomio, doomspritemap, doombase, vvision;
 
@@ -63,8 +65,10 @@ begin
     FMap := TTextMap.Create( IO.Console, Rectangle( 2,3,MAXX,MAXY ) );
 
 
-  FMessages := TConUIMessages.Create( Self, Rectangle( 1,0,FAbsolute.w-3,2 ), @IO.EventWaitForMore, Option_MessageBuffer );
-  FMessages.ForeColor := DarkGray;
+  // Self, Rectangle( 1,0,FAbsolute.w-3,2 ),
+  //FMessages.ForeColor := DarkGray;
+
+  FMessages := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
 
   FHint     := '';
   FEnabled := False;
@@ -88,6 +92,7 @@ procedure TDoomGameUI.OnRedraw;
 const UnitTex : TGLVec2f = ( Data : ( 1, 1 ) );
       ZeroTex : TGLVec2f = ( Data : ( 0, 0 ) );
 var iCount      : DWord;
+    i, iMax     : DWord;
     iCon        : TUIConsole;
     iColor      : TUIColor;
     iHPP        : Integer;
@@ -214,6 +219,31 @@ begin
 
   if Assigned( FMap ) then
     FMap.OnRedraw;
+
+  iCon.ClearRect( Rectangle( 1,0,FAbsolute.w-3,2 ), FBackColor );
+  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
+  if FMessages.Content.Size > 0 then
+  for i := 1+FMessages.Scroll to iMax do
+  begin
+    iColor := DarkGray;
+    if i > iMax - FMessages.Active then iColor := LightGray;
+    iCon.Print( FAbsolute.Pos + Point(0,i-1-FMessages.Scroll), FMessages.Content[ i-1 ], iColor, FBackColor, FAbsolute );
+  end;
+
+  {
+  VTIG_Begin( 'messages', Point(78,2), Point( 1,1 ) );
+  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
+  if FMessages.Content.Size > 0 then
+  for i := 1+FMessages.Scroll to iMax do
+  begin
+    iColor := FForeColor;
+    if i > iMax - FMessages.Active then iColor := iCon.BoldColor( FForeColor );
+    for iChunk in FMessages.Content[ i-1 ] do
+      VTIG_Text( iChunk.Content + ' ' );
+//      VTIG_FreeLabel( iChunk.Content, iChunk.Position + Point(1,i-FMessages.Scroll) , iColor );
+  end;
+  VTIG_End;
+  }
   inherited OnRedraw;
 end;
 
@@ -368,6 +398,20 @@ begin
   FreeAndNil( FMap );
   FreeAndNil( FMinimapImage );
   inherited Destroy;
+end;
+
+function TDoomGameUI.Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
+var iCon       : TUIConsole;
+    iChunkList : TUIChunkList;
+    iPosition  : TUIPoint;
+    iColor     : TUIColor;
+begin
+  iCon.Init( TConUIRoot(FRoot).Renderer );
+  iPosition  := Point(aStart,0);
+  iColor     := aColor;
+  iChunkList := nil;
+  iCon.ChunkifyEx( iChunkList, iPosition, iColor, aString, iColor, Dim );
+  Exit( iCon.LinifyChunkList( iChunkList ) );
 end;
 
 end.

@@ -31,7 +31,7 @@ type TDoomIO = class( TIO )
   procedure PlayMusic( const MusicID : Ansistring );
   procedure PlayMusicOnce( const MusicID : Ansistring );
   function ResolveSoundID( const ResolveIDs: array of AnsiString ) : Word;
-  function EventWaitForMore( aSender : TUIElement ) : Boolean;
+  function EventWaitForMore : Boolean;
 
   procedure WADLoaded;
   procedure LoadStart;
@@ -583,7 +583,7 @@ begin
   Exit(0);
 end;
 
-function TDoomIO.EventWaitForMore ( aSender : TUIElement ) : Boolean;
+function TDoomIO.EventWaitForMore : Boolean;
 begin
   if Option_MorePrompt then
   begin
