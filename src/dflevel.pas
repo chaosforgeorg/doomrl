@@ -535,7 +535,7 @@ begin
       if SF_MULTI in Cells[CellBottom[c]].Sprite[0].Flags then
         FMap.Rotation[c.x,c.y] := SpriteMap.GetCellRotationMask(c);
 
-    UI.GameUI.UpdateMinimap;
+    UI.UpdateMinimap;
     RecalcFluids;
     SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
   end;

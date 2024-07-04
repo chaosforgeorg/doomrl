@@ -331,18 +331,17 @@ end;
 
 function TDoomIO.RunUILoop( aElement : TUIElement = nil ) : DWord;
 begin
-  if (UI <> nil) and (UI.GameUI <> nil) then UI.GameUI.Enabled := False;
+  if UI <> nil then UI.HudEnabled := False;
   if IO.MCursor <> nil then IO.MCursor.Active := True;
   FConsole.HideCursor;
   Result := inherited RunUILoop( aElement );
-  if (UI <> nil) and (UI.GameUI <> nil) then UI.GameUI.Enabled := True;
+  if UI <> nil then UI.HudEnabled := True;
 end;
 
 procedure TDoomIO.FullUpdate;
 begin
   VTIG_NewFrame;
-  if Assigned( UI.GameUI ) then
-    UI.GameUI.OnRedraw;
+  UI.OnRedraw;
   inherited FullUpdate;
 end;
 
@@ -421,7 +420,7 @@ begin
   CalculateConsoleParams;
   TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
   TGLConsoleRenderer( FConsole ).HideCursor;
-  if (UI <> nil) and (UI.GameUI <> nil) then UI.GameUI.SetMinimapScale(FMiniScale);
+  if (UI <> nil) then UI.SetMinimapScale(FMiniScale);
   FUIRoot.DeviceChanged;
   SpriteMap.Recalculate;
   if Player <> nil then
@@ -520,8 +519,9 @@ begin
     if FQuadRenderer <> nil then FQuadRenderer.Update( FProjection );
     if FQuadSheet <> nil then FQuadRenderer.Render( FQuadSheet );
   end;
-  if Assigned( UI.GameUI ) then
-    UI.GameUI.OnUpdate( aMSec );
+
+  UI.OnUpdate( aMSec );
+
   if GraphicsVersion and (FMCursor.Active) and FIODriver.GetMousePos( iPoint ) and (not FMouseLock) then
   begin
     iMaxX   := FIODriver.GetSizeX;

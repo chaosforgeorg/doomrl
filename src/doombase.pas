@@ -173,7 +173,7 @@ begin
   HOF.Init;
   FLevel := TLevel.Create;
   if not GraphicsVersion then
-    UI.GameUI.Map.SetMap( FLevel );
+    UI.SetTextMap( FLevel );
   DataLoaded := True;
   IO.LoadStop;
 end;
@@ -240,7 +240,7 @@ begin
   StatusEffect := Player.FAffects.getEffect;
   UI.Focus( Player.Position );
   if GraphicsVersion then
-    UI.GameUI.UpdateMinimap;
+    UI.UpdateMinimap;
   Player.PreAction;
 end;
 
