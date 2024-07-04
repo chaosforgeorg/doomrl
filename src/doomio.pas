@@ -43,10 +43,11 @@ protected
   FLoading     : TUILoadingScreen;
   FMTarget     : TCoord2D;
   FKeyCode     : TIOKeyCode;
+  FHudEnabled  : Boolean;
 public
-  property KeyCode   : TIOKeyCode read FKeyCode write FKeyCode;
-  property Audio     : TDoomAudio read FAudio;
-  property MTarget   : TCoord2D read FMTarget write FMTarget;
+  property KeyCode    : TIOKeyCode read FKeyCode    write FKeyCode;
+  property Audio      : TDoomAudio read FAudio;
+  property MTarget    : TCoord2D   read FMTarget    write FMTarget;
 end;
 
 var IO : TDoomIO;
@@ -69,6 +70,7 @@ begin
   IO := Self;
   FTime := 0;
   FAudio := TDoomAudio.Create;
+  FHudEnabled := False;
 
   FIODriver.SetTitle('Doom, the Roguelike','DoomRL');
 
@@ -130,16 +132,17 @@ end;
 
 function TDoomIO.RunUILoop( aElement : TUIElement = nil ) : DWord;
 begin
-  if UI <> nil then UI.HudEnabled := False;
+  FHudEnabled := False;
   FConsole.HideCursor;
   Result := inherited RunUILoop( aElement );
-  if UI <> nil then UI.HudEnabled := True;
+  FHudEnabled := True;
 end;
 
 procedure TDoomIO.FullUpdate;
 begin
   VTIG_NewFrame;
-  UI.OnRedraw;
+  if FHudEnabled then
+    UI.OnRedraw;
   inherited FullUpdate;
 end;
 
@@ -245,7 +248,8 @@ procedure TDoomIO.Update( aMSec : DWord );
 begin
   FTime += aMSec;
   FAudio.Update( aMSec );
-  UI.OnUpdate( aMSec );
+  if FHudEnabled then
+    UI.OnUpdate( aMSec );
   FUIRoot.OnUpdate( aMSec );
   FUIRoot.Render;
 

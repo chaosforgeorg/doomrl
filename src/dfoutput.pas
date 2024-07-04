@@ -77,9 +77,6 @@ type
     procedure OnUpdate( aTime : DWord );
     procedure SetTextMap( aMap : ITextMap );
 
-    procedure UpdateMinimap;
-    procedure SetMinimapScale( aScale : Byte );
-
   private
     FStoredHint : AnsiString;
     FHint       : AnsiString;
@@ -88,7 +85,6 @@ type
     FMessages   : TRLMessages;
 
     FASCII      : TASCIIImageMap;
-    FHudEnabled : Boolean;
 
     // ASCII Only!
     FTargetLast     : Boolean;
@@ -100,18 +96,12 @@ type
     FAnimations : TAnimationManager;
     FWaiting    : Boolean;
 
-    FMinimapImage   : TImage;
-    FMinimapTexture : DWord;
-    FMinimapScale   : Integer;
-    FMinimapGLPos   : TGLVec2i;
-
   private
     function Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
     procedure LookDescription( aWhere : TCoord2D );
 //    procedure SlideDown(DelayTime : word; var NewScreen : TGFXScreen);
   public
     property ASCII      : TASCIIImageMap read FASCII;
-    property HudEnabled : Boolean        read FHudEnabled write FHudEnabled;
   end;
 
 var UI : TDoomUI = nil;
@@ -204,17 +194,6 @@ begin
   FTargetEnabled := False;
   FTargetLast    := False;
 
-  FMinimapScale    := 0;
-  FMinimapTexture  := 0;
-  FMinimapGLPos    := TGLVec2i.Create( 0, 0 );
-  FMinimapImage    := nil;
-
-  if GraphicsVersion then
-  begin
-    FMinimapImage    := TImage.Create( 128, 32 );
-    FMinimapImage.Fill( NewColor( 0,0,0,0 ) );
-    SetMinimapScale( (IO as TDoomGFXIO).MiniScale );
-  end;
 end;
 
 procedure TDoomUI.Blink(Color : Byte; Duration : Word = 100; aDelay : DWord = 0);
@@ -691,7 +670,6 @@ begin
     FTextMap := TTextMap.Create( IO.Console, Rectangle( 2,3,MAXX,MAXY ) );
   FMessages := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
 
-  FHudEnabled := False;
   if Option_MessageColoring then
     INI.EntryFeed( 'Messages', @FMessages.AddHighlightCallback );
 end;
@@ -702,7 +680,6 @@ begin
   FreeAndNil( FMessages );
   FreeAndNil( FAnimations );
   FreeAndNil( FASCII );
-  FreeAndNil( FMinimapImage );
   inherited Destroy;
 end;
 
@@ -775,8 +752,6 @@ begin
 end;
 
 procedure TDoomUI.OnRedraw;
-const UnitTex : TGLVec2f = ( Data : ( 1, 1 ) );
-      ZeroTex : TGLVec2f = ( Data : ( 0, 0 ) );
 var iCount      : DWord;
     i, iMax     : DWord;
     iCon        : TUIConsole;
@@ -831,128 +806,121 @@ var iCount      : DWord;
   end;
 
 begin
-  if FHudEnabled then
+  iCon.Init( IO.Console );
+  iCon.Clear;
+
+  if Assigned( FTextMap ) then
+    FTextMap.OnRedraw;
+
+  if FHint <> '' then
+    VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 3 ), Yellow );
+
+  if Player <> nil then
   begin
-    iCon.Init( IO.Console );
-    iCon.Clear;
+    iPos    := Point( 2,23 );
+    iBottom := 25;
+    iHPP    := Round((Player.HP/Player.HPMax)*100);
 
-    if Assigned( FTextMap ) then
-      FTextMap.OnRedraw;
+    VTIG_FreeLabel( 'Armor :',                            iPos + Point(28,0), DarkGray );
+    VTIG_FreeLabel( Player.Name,                          iPos + Point(1,0),  NameColor(iHPP) );
+    VTIG_FreeLabel( 'Health:      Exp:   /      Weapon:', iPos + Point(1,1),  DarkGray );
+    VTIG_FreeLabel( IntToStr(iHPP)+'%',                   iPos + Point(9,1),  Red );
+    VTIG_FreeLabel( TwoInt(Player.ExpLevel),              iPos + Point(19,1), LightGray );
+    VTIG_FreeLabel( ExpString,                            iPos + Point(22,1), LightGray );
 
-    if FHint <> '' then
-      VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 3 ), Yellow );
+    if Player.Inv.Slot[efWeapon] = nil
+      then VTIG_FreeLabel( 'none',                                iPos + Point(36,1), LightGray )
+      else VTIG_FreeLabel( Player.Inv.Slot[efWeapon].Description, iPos + Point(36,1), WeaponColor(Player.Inv.Slot[efWeapon]) );
 
-    if Player <> nil then
-    begin
-      iPos    := Point( 2,23 );
-      iBottom := 25;
-      iHPP    := Round((Player.HP/Player.HPMax)*100);
+    if Player.Inv.Slot[efTorso] = nil
+      then VTIG_FreeLabel( 'none',                                iPos + Point(36,0), LightGray )
+      else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(36,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
 
-      VTIG_FreeLabel( 'Armor :',                            iPos + Point(28,0), DarkGray );
-      VTIG_FreeLabel( Player.Name,                          iPos + Point(1,0),  NameColor(iHPP) );
-      VTIG_FreeLabel( 'Health:      Exp:   /      Weapon:', iPos + Point(1,1),  DarkGray );
-      VTIG_FreeLabel( IntToStr(iHPP)+'%',                   iPos + Point(9,1),  Red );
-      VTIG_FreeLabel( TwoInt(Player.ExpLevel),              iPos + Point(19,1), LightGray );
-      VTIG_FreeLabel( ExpString,                            iPos + Point(22,1), LightGray );
+    iColor := Red;
+    if Doom.Level.Empty then iColor := Blue;
+    VTIG_FreeLabel( Doom.Level.Name, iPos + Point(61,2), iColor );
+    if Doom.Level.Name_Number >= 100 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(73,2), iColor )
+    else if Doom.Level.Name_Number <> 0 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(74,2), iColor );
 
-      if Player.Inv.Slot[efWeapon] = nil
-        then VTIG_FreeLabel( 'none',                                iPos + Point(36,1), LightGray )
-        else VTIG_FreeLabel( Player.Inv.Slot[efWeapon].Description, iPos + Point(36,1), WeaponColor(Player.Inv.Slot[efWeapon]) );
-
-      if Player.Inv.Slot[efTorso] = nil
-        then VTIG_FreeLabel( 'none',                                iPos + Point(36,0), LightGray )
-        else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(36,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
-
-      iColor := Red;
-      if Doom.Level.Empty then iColor := Blue;
-      VTIG_FreeLabel( Doom.Level.Name, iPos + Point(61,2), iColor );
-      if Doom.Level.Name_Number >= 100 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(73,2), iColor )
-      else if Doom.Level.Name_Number <> 0 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(74,2), iColor );
-
-      with Player do
-      for iCount := 1 to MAXAFFECT do
-        if FAffects.IsActive(iCount) then
-        begin
-          if FAffects.IsExpiring(iCount)
-            then iColor := Affects[iCount].Color_exp
-            else iColor := Affects[iCount].Color;
-          VTIG_FreeLabel( Affects[iCount].name, Point( iPos.X+((Byte(iCount)-1)*4)+14, iBottom ), iColor )
-        end;
-
-      with Player do
-        if (FTactic.Current = TacticRunning) and (FTactic.Count < 6) then
-          VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), Brown )
-        else
-          VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
-    end;
-    if FTargetEnabled then
-    begin
-      iLevel := Doom.Level;
-      if FTargetLast then
-        Paint( Player.TargetPos, Yellow );
-      if ( Player.Position <> FTarget ) then
+    with Player do
+    for iCount := 1 to MAXAFFECT do
+      if FAffects.IsActive(iCount) then
       begin
-        iColor := Green;
-        iTargetLine.Init( iLevel, Player.Position, FTarget );
-        repeat
-          iTargetLine.Next;
-          iCurrent := iTargetLine.GetC;
-          if not iLevel.isProperCoord( iCurrent ) then Break;
-          if not iLevel.isVisible( iCurrent ) then iColor := Red;
-          if iColor = Green then if iTargetLine.Cnt > FTargetRange then icolor := Yellow;
-          if iTargetLine.Done then Paint( iCurrent, iColor, 'X' )
-                              else Paint( iCurrent, iColor, '*' );
-          if iLevel.cellFlagSet( iCurrent, CF_BLOCKMOVE ) then iColor := Red;
-        until (iTargetLine.Done) or (iTargetLine.cnt > 30);
+        if FAffects.IsExpiring(iCount)
+          then iColor := Affects[iCount].Color_exp
+          else iColor := Affects[iCount].Color;
+        VTIG_FreeLabel( Affects[iCount].name, Point( iPos.X+((Byte(iCount)-1)*4)+14, iBottom ), iColor )
       end;
-    end;
 
-    if GraphicsVersion then
-    with IO as TDoomGFXIO do
-    begin
-      if (FMinimapImage <> nil) and (FMinimapScale <> 0) then
-        QuadSheet.PushTexturedQuad( FMinimapGLPos, FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ), ZeroTex, UnitTex, FMinimapTexture );
-
-      iAbsolute := Rectangle( 1,1,78,25 );
-      iP1 := IO.Root.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
-      iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
-      QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
-
-      iP1 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x, iAbsolute.y2-2 ) );
-      iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
-      QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
-    end;
-
-    iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
-    if FMessages.Content.Size > 0 then
-    for i := 1+FMessages.Scroll to iMax do
-    begin
-      iColor := DarkGray;
-      if i > iMax - FMessages.Active then iColor := LightGray;
-      iCon.Print( Point(1,i-FMessages.Scroll), FMessages.Content[ i-1 ], iColor, Black, Rectangle( 1,1, 78, 25 ) );
-    end;
-
-    {
-    VTIG_Begin( 'messages', Point(78,2), Point( 1,1 ) );
-    iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
-    if FMessages.Content.Size > 0 then
-    for i := 1+FMessages.Scroll to iMax do
-    begin
-      iColor := FForeColor;
-      if i > iMax - FMessages.Active then iColor := iCon.BoldColor( FForeColor );
-      for iChunk in FMessages.Content[ i-1 ] do
-        VTIG_Text( iChunk.Content + ' ' );
-  //      VTIG_FreeLabel( iChunk.Content, iChunk.Position + Point(1,i-FMessages.Scroll) , iColor );
-    end;
-    VTIG_End;
-    }
-
+    with Player do
+      if (FTactic.Current = TacticRunning) and (FTactic.Count < 6) then
+        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), Brown )
+      else
+        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
   end;
+  if FTargetEnabled then
+  begin
+    iLevel := Doom.Level;
+    if FTargetLast then
+      Paint( Player.TargetPos, Yellow );
+    if ( Player.Position <> FTarget ) then
+    begin
+      iColor := Green;
+      iTargetLine.Init( iLevel, Player.Position, FTarget );
+      repeat
+        iTargetLine.Next;
+        iCurrent := iTargetLine.GetC;
+        if not iLevel.isProperCoord( iCurrent ) then Break;
+        if not iLevel.isVisible( iCurrent ) then iColor := Red;
+        if iColor = Green then if iTargetLine.Cnt > FTargetRange then icolor := Yellow;
+        if iTargetLine.Done then Paint( iCurrent, iColor, 'X' )
+                            else Paint( iCurrent, iColor, '*' );
+        if iLevel.cellFlagSet( iCurrent, CF_BLOCKMOVE ) then iColor := Red;
+      until (iTargetLine.Done) or (iTargetLine.cnt > 30);
+    end;
+  end;
+
+  if GraphicsVersion then
+  with IO as TDoomGFXIO do
+  begin
+    iAbsolute := Rectangle( 1,1,78,25 );
+    iP1 := IO.Root.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
+    iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
+    QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
+
+    iP1 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x, iAbsolute.y2-2 ) );
+    iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
+    QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
+  end;
+
+  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
+  if FMessages.Content.Size > 0 then
+  for i := 1+FMessages.Scroll to iMax do
+  begin
+    iColor := DarkGray;
+    if i > iMax - FMessages.Active then iColor := LightGray;
+    iCon.Print( Point(1,i-FMessages.Scroll), FMessages.Content[ i-1 ], iColor, Black, Rectangle( 1,1, 78, 25 ) );
+  end;
+
+  {
+  VTIG_Begin( 'messages', Point(78,2), Point( 1,1 ) );
+  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
+  if FMessages.Content.Size > 0 then
+  for i := 1+FMessages.Scroll to iMax do
+  begin
+    iColor := FForeColor;
+    if i > iMax - FMessages.Active then iColor := iCon.BoldColor( FForeColor );
+    for iChunk in FMessages.Content[ i-1 ] do
+      VTIG_Text( iChunk.Content + ' ' );
+//      VTIG_FreeLabel( iChunk.Content, iChunk.Position + Point(1,i-FMessages.Scroll) , iColor );
+  end;
+  VTIG_End;
+  }
 end;
 
 procedure TDoomUI.OnUpdate( aTime : DWord );
 begin
-  if FHudEnabled and Assigned( FTextMap ) then
+  if Assigned( FTextMap ) then
     FTextMap.OnUpdate( aTime );
 end;
 
@@ -961,32 +929,6 @@ begin
   Assert( Assigned( FTextMap ) );
   FTextMap.SetMap( aMap );
 end;
-
-procedure TDoomUI.UpdateMinimap;
-var x, y : DWord;
-begin
-  if (Doom.State = DSPlaying) and GraphicsVersion and (FMinimapImage <> nil) then
-  begin
-    for x := 0 to MAXX+1 do
-      for y := 0 to MAXY+1 do
-        FMinimapImage.ColorXY[x,y] := Doom.Level.GetMiniMapColor( NewCoord2D( x, y ) );
-    if FMinimapTexture = 0
-      then FMinimapTexture := UploadImage( FMinimapImage, False )
-      else ReUploadImage( FMinimapTexture, FMinimapImage, False );
-  end;
-end;
-
-procedure TDoomUI.SetMinimapScale ( aScale : Byte ) ;
-begin
-  if GraphicsVersion and (FMinimapImage <> nil) then
-    with IO as TDoomGFXIO do
-    begin
-      FMinimapScale := aScale;
-      FMinimapGLPos.Init( Driver.GetSizeX - FMinimapScale*(MAXX+2) - 10, Driver.GetSizeY - FMinimapScale*(MAXY+2) - ( 10 + FontMult*20*3 ) );
-      UpdateMinimap;
-    end;
-end;
-
 
 function lua_ui_set_hint(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;

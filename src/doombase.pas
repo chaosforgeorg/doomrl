@@ -242,7 +242,7 @@ begin
   StatusEffect := Player.FAffects.getEffect;
   UI.Focus( Player.Position );
   if GraphicsVersion then
-    UI.UpdateMinimap;
+    (IO as TDoomGFXIO).UpdateMinimap;
   Player.PreAction;
 end;
 

@@ -172,7 +172,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 implementation
 
 uses typinfo, vluadungen, vluatools, vluasystem,
-     vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomspritemap;
+     vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomgfxio, doomspritemap;
 
 procedure TLevel.ScriptLevel(script : string);
 begin
@@ -535,7 +535,7 @@ begin
       if SF_MULTI in Cells[CellBottom[c]].Sprite[0].Flags then
         FMap.Rotation[c.x,c.y] := SpriteMap.GetCellRotationMask(c);
 
-    UI.UpdateMinimap;
+    (IO as TDoomGFXIO).UpdateMinimap;
     RecalcFluids;
     SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
   end;

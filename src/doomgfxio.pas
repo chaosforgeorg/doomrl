@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomgfxio;
 interface
-uses vglquadrenderer, vgltypes, vluaconfig, vioevent, vuielement,
+uses vglquadrenderer, vgltypes, vluaconfig, vioevent, vuielement, vimage,
      doomio, doomspritemap;
 
 type TDoomGFXIO = class( TDoomIO )
@@ -10,11 +10,13 @@ type TDoomGFXIO = class( TDoomIO )
     procedure Update( aMSec : DWord ); override;
     function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
     function OnEvent( const event : TIOEvent ) : Boolean; override;
+    procedure UpdateMinimap;
     destructor Destroy; override;
   protected
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
     procedure ReuploadTextures;
     procedure CalculateConsoleParams;
+    procedure SetMinimapScale( aScale : Byte );
   private
     FQuadSheet   : TGLQuadList;
     FTextSheet   : TGLQuadList;
@@ -39,11 +41,15 @@ type TDoomGFXIO = class( TDoomIO )
     FLastMouse   : QWord;
     FMouseLock   : Boolean;
     FMCursor     : TDoomMouseCursor;
+
+    FMinimapImage   : TImage;
+    FMinimapTexture : DWord;
+    FMinimapScale   : Integer;
+    FMinimapGLPos   : TGLVec2i;
   public
     property QuadSheet : TGLQuadList read FQuadSheet;
     property TextSheet : TGLQuadList read FTextSheet;
     property PostSheet : TGLQuadList read FPostSheet;
-    property MiniScale : Byte read FMiniScale;
     property FontMult  : Byte read FFontMult;
     property TileMult  : Byte read FTileMult;
     property MCursor   : TDoomMouseCursor read FMCursor;
@@ -54,7 +60,7 @@ implementation
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
      vdebug, vlog, vutil, vmath, vrltools, viotypes, vdf, vgl3library,
-     vimage, vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
+     vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfoutput, dfdata, dfplayer,
      doombase, doomtextures;
 
@@ -184,6 +190,14 @@ begin
   FTextSheet := TGLQuadList.Create;
   FPostSheet := TGLQuadList.Create;
   FQuadRenderer := TGLQuadRenderer.Create;
+
+  FMinimapScale    := 0;
+  FMinimapTexture  := 0;
+  FMinimapGLPos    := TGLVec2i.Create( 0, 0 );
+  FMinimapImage    := TImage.Create( 128, 32 );
+  FMinimapImage.Fill( NewColor( 0,0,0,0 ) );
+
+  SetMinimapScale( FMiniScale );
 end;
 
 destructor TDoomGFXIO.Destroy;
@@ -193,6 +207,8 @@ begin
   FreeAndNil( FTextSheet );
   FreeAndNil( FPostSheet );
   FreeAndNil( FQuadRenderer );
+
+  FreeAndNil( FMinimapImage );
 
   FreeAndNil( SpriteMap );
   FreeAndNil( Textures );
@@ -210,6 +226,8 @@ begin
 end;
 
 procedure TDoomGFXIO.Update( aMSec : DWord );
+const UnitTex : TGLVec2f = ( Data : ( 1, 1 ) );
+      ZeroTex : TGLVec2f = ( Data : ( 0, 0 ) );
 var iMousePos : TIOPoint;
     iPoint    : TIOPoint;
     iValueX   : Single;
@@ -280,6 +298,13 @@ begin
     glDisable( GL_DEPTH_TEST );
   end;
 
+  if FHudEnabled then
+    FQuadSheet.PushTexturedQuad(
+      FMinimapGLPos,
+      FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ),
+      ZeroTex, UnitTex, FMinimapTexture );
+
+
   FQuadRenderer.Update( FProjection );
   FQuadRenderer.Render( FQuadSheet );
   inherited Update( aMSec );
@@ -311,7 +336,7 @@ begin
   CalculateConsoleParams;
   TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
   TGLConsoleRenderer( FConsole ).HideCursor;
-  if (UI <> nil) then UI.SetMinimapScale(FMiniScale);
+  SetMinimapScale(FMiniScale);
   FUIRoot.DeviceChanged;
   SpriteMap.Recalculate;
   if Player <> nil then
@@ -343,13 +368,34 @@ end;
 
 function TDoomGFXIO.RunUILoop( aElement : TUIElement = nil ) : DWord;
 begin
-  if MCursor <> nil then
+  if FMCursor <> nil then
   begin
-    if MCursor.Size = 0 then
-      MCursor.SetTextureID( Textures.TextureID['cursor'], 32 );
-    MCursor.Active := True;
+    if FMCursor.Size = 0 then
+      FMCursor.SetTextureID( Textures.TextureID['cursor'], 32 );
+    FMCursor.Active := True;
   end;
   Exit( inherited RunUILoop( aElement ) );
+end;
+
+procedure TDoomGFXIO.UpdateMinimap;
+var x, y : DWord;
+begin
+  if Doom.State = DSPlaying then
+  begin
+    for x := 0 to MAXX+1 do
+      for y := 0 to MAXY+1 do
+        FMinimapImage.ColorXY[x,y] := Doom.Level.GetMiniMapColor( NewCoord2D( x, y ) );
+    if FMinimapTexture = 0
+      then FMinimapTexture := UploadImage( FMinimapImage, False )
+      else ReUploadImage( FMinimapTexture, FMinimapImage, False );
+  end;
+end;
+
+procedure TDoomGFXIO.SetMinimapScale ( aScale : Byte ) ;
+begin
+  FMinimapScale := aScale;
+  FMinimapGLPos.Init( FIODriver.GetSizeX - FMinimapScale*(MAXX+2) - 10, FIODriver.GetSizeY - FMinimapScale*(MAXY+2) - ( 10 + FFontMult*20*3 ) );
+  UpdateMinimap;
 end;
 
 end.
