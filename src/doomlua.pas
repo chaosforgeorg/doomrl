@@ -430,7 +430,6 @@ begin
     SpriteMap.PrepareTextures;
 
   IO.LoadProgress(iProgBase + 100);
-  IO.WADLoaded;
 end;
 
 procedure TDoomLua.OnError(const ErrorString : Ansistring);

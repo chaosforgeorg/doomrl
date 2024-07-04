@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doommenuview;
 interface
-uses vuielements, vuielement, vglui, viotypes, vuitypes, vioevent, vconui, dfdata, doomtextures, doommodule;
+uses vuielements, vuielement, viotypes, vuitypes, vioevent, vconui, dfdata, doomtextures, doommodule;
 
 type TChallengeDesc = record Name : AnsiString; Desc : AnsiString; end;
 const ChallengeType : array[1..4] of TChallengeDesc =
@@ -97,7 +97,7 @@ type TMainMenuViewer = class( TUIElement )
 implementation
 
 uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, dfoutput, vgltypes,
-     doombase, doomio, doomnet, doomviews;
+     doombase, doomio, doomgfxio, doomnet, doomviews;
 
 const
   TextContinueGame  = '@b--@> Continue game @b---@>';
@@ -172,9 +172,6 @@ begin
   CreateLogo;
   CreateSubLogo;
   FMode   := MenuModeLogo;
-  if GraphicsVersion then
-    TGLUILabel.Create( Self, IO.TextSheet, IO.FMsgFont, Point( 10, 10 ), 'DoomRL version 0.9.9.7G' );
-
   TConUIText.Create( Self, Rectangle(2,14,77,11), AnsiString( LuaSystem.ProtectedCall( ['DoomRL','logo_text'], [] ) ) );
 end;
 
@@ -335,9 +332,13 @@ var iSizeX, iSizeY : Single;
     iImage         : TImage;
     iP1,iP2        : TPoint;
     iRoot          : TConUIRoot;
+    iIO            : TDoomGFXIO;
 begin
   if GraphicsVersion then
   begin
+    iIO    := IO as TDoomGFXIO;
+    Assert( iIO <> nil );
+
     iImage := Textures.Texture[ FBGTexture ].Image;
     iTX    := iImage.RawX / iImage.SizeX;
     iTY    := iImage.RawY / iImage.SizeY;
@@ -360,7 +361,7 @@ begin
       iMaxY  := iMinY + iSizeY;
     end;
 
-    IO.QuadSheet.PushTexturedQuad(
+    iIO.QuadSheet.PushTexturedQuad(
       TGLVec2i.Create(Floor(iMinX), Floor(iMinY)),
       TGLVec2i.Create(Floor(iMaxX), Floor(iMaxY)),
       TGLVec2f.Create(0,0),TGLVec2f.Create(iTX,iTY),
@@ -372,7 +373,7 @@ begin
       iRoot := TConUIRoot(FRoot);
       iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(5,2) );
       iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(77,25) );
-      IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+      iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
       FLogo := False;
     end;
 
@@ -388,7 +389,7 @@ begin
       iMinX  := (iSizeX - (iMaxY - iMinY)) / 2;
       iMaxX  := (iSizeX + (iMaxY - iMinY)) / 2;
 
-      IO.QuadSheet.PushTexturedQuad(
+      iIO.QuadSheet.PushTexturedQuad(
         TGLVec2i.Create(Floor(iMinX), Floor(iMinY)),
         TGLVec2i.Create(Floor(iMaxX), Floor(iMaxY)),
         TGLVec2f.Create( 0,0 ), TGLVec2f.Create( 1,1 ),
@@ -400,57 +401,57 @@ begin
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(2,10) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(80,26) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeLogo :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(26,11) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(56,14) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(2,15) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(80,26) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeMain  :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,15) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,24) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(1,25) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(81,26) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeDiff  :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,16) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,23) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeKlass :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(10,18) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(26,23) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
 
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(29,16) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(78,25) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeChal :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(8,18) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(27,24) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
 
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(29,16) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(78,25) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeName  :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(23,18) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(59,22) );
-          IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
       end;
     end;

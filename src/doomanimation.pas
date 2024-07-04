@@ -121,7 +121,7 @@ implementation
 
 uses viotypes, vuid, vlog,
      dfbeing,
-     doombase, doomio, doomspritemap;
+     doombase, doomgfxio, doomio, doomspritemap;
 
 { TDoomMissile }
 
@@ -265,7 +265,8 @@ end;
 
 procedure TDoomBlink.OnDraw;
 begin
-  IO.PostSheet.PushColoredQuad( TGLVec2i.Create(0,0), TGLVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TGLVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
+  if GraphicsVersion then
+    (IO as TDoomGFXIO).PostSheet.PushColoredQuad( TGLVec2i.Create(0,0), TGLVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TGLVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
 end;
 
 { TDoomMove }

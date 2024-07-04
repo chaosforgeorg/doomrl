@@ -216,7 +216,7 @@ implementation
 
 uses SysUtils,
      vgltypes, variants, vutil, vmath, vuiconsole, vluasystem,
-     doombase, doomhelp, doomio, dfoutput, dfplayer, dfhof;
+     doombase, doomhelp, doomio, doomgfxio, dfoutput, dfplayer, dfhof;
 
 const HelpHeader       = 'DoomRL Help System';
       PostMortemHeader = 'PostMortem (@<mortem.txt@>)';
@@ -256,21 +256,22 @@ var iSize   : TGLVec2i;
 begin
   inherited OnRedraw;
   if GraphicsVersion and ( FMax > 0 ) then
-  begin
-    iSize.Init( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
-    iStep.Init( iSize.X div 15, iSize.Y div 15 );
-    iPoint.Init( iSize.X div 400, iSize.X div 400 );
-    iV1.Init(           iStep.X, iStep.Y * 7 );
-    iV2.Init( iSize.X - iStep.X, iStep.Y * 8 );
-    IO.QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0,0,1 ) );
-    iV1 := iV1 + iPoint;
-    iV2 := iV2 - iPoint;
-    IO.QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 0,0,0,1 ) );
-    iV1 := iV1 + iPoint.Scaled(2);
-    iV2 := iV2 - iPoint.Scaled(2);
-    iV2.X := Round( ( iV2.X - iV1.X ) * (FCurrent / FMax) ) + iV1.X;
-    IO.QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0.9,0,1 ) );
-  end;
+    with IO as TDoomGFXIO do
+    begin
+      iSize.Init( Driver.GetSizeX, Driver.GetSizeY );
+      iStep.Init( iSize.X div 15, iSize.Y div 15 );
+      iPoint.Init( iSize.X div 400, iSize.X div 400 );
+      iV1.Init(           iStep.X, iStep.Y * 7 );
+      iV2.Init( iSize.X - iStep.X, iStep.Y * 8 );
+      QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0,0,1 ) );
+      iV1 := iV1 + iPoint;
+      iV2 := iV2 - iPoint;
+      QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 0,0,0,1 ) );
+      iV1 := iV1 + iPoint.Scaled(2);
+      iV2 := iV2 - iPoint.Scaled(2);
+      iV2.X := Round( ( iV2.X - iV1.X ) * (FCurrent / FMax) ) + iV1.X;
+      QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0.9,0,1 ) );
+    end;
 end;
 
 procedure TUILoadingScreen.OnUpdate ( aTime : DWord ) ;
@@ -369,7 +370,7 @@ begin
     iRoot := TConUIRoot(FRoot);
     iP1 := iRoot.ConsoleCoordToDeviceCoord( FAbsolute.Pos );
     iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( FAbsolute.x2+1, FAbsolute.y2+1 ) );
-    IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+    (IO as TDoomGFXIO).QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
   end;
 
   inherited OnRender;

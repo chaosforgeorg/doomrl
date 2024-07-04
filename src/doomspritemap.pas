@@ -28,6 +28,7 @@ private
   FActive    : Boolean;
 public
   property Active : Boolean read FActive write FActive;
+  property Size   : DWord   read FSize;
 end;
 
 type TCoord2DArray = specialize TGArray< TCoord2D >;
@@ -107,7 +108,7 @@ var SpriteMap : TDoomSpriteMap = nil;
 implementation
 
 uses math, vmath, viotypes, vvision, vgl3library,
-     doomtextures, doomio, doombase,
+     doomtextures, doomio, doomgfxio, doombase,
      dfoutput, dfmap, dfitem, dfbeing, dfplayer;
 
 function SpritePartSetFill( aPart : TSpritePart ) : TSpritePartSet;
@@ -206,11 +207,13 @@ begin
 end;
 
 procedure TDoomSpriteMap.Recalculate;
+var iIO : TDoomGFXIO;
 begin
-  FTileSize := 32 * IO.TileMult;
+  iIO := (IO as TDoomGFXIO);
+  FTileSize := 32 * iIO.TileMult;
   FSpriteEngine.FGrid.Init(FTileSize,FTileSize);
   FMinShift := Point(0,0);
-  FMaxShift := Point(Max(FTileSize*MAXX-IO.Driver.GetSizeX,0),Max(FTileSize*MAXY-IO.Driver.GetSizeY,0));
+  FMaxShift := Point(Max(FTileSize*MAXX-iIO.Driver.GetSizeX,0),Max(FTileSize*MAXY-iIO.Driver.GetSizeY,0));
 
   if IO.Driver.GetSizeY > 20*FTileSize then
   begin
@@ -219,10 +222,10 @@ begin
   end
   else
   begin
-    FMinShift.Y -= 18*IO.FontMult*2;
-    FMaxShift.Y += 18*IO.FontMult*3;
+    FMinShift.Y -= 18*iIO.FontMult*2;
+    FMaxShift.Y += 18*iIO.FontMult*3;
   end;
-  FFramebuffer.Resize( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+  FFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
 
   FPostProgram.Bind;
     FPostProgram.SetUniformi( 'utexture', 0 );
@@ -251,6 +254,7 @@ end;
 procedure TDoomSpriteMap.Draw;
 var iPoint   : TPoint;
     iCoord   : TCoord2D;
+    iIO      : TDoomGFXIO;
 const TargetSprite : TSprite = (
   Color     : (R:0;G:0;B:0;A:255);
   GlowColor : (R:0;G:0;B:0;A:0);
@@ -261,10 +265,11 @@ const TargetSprite : TSprite = (
 );
 
 begin
+  iIO := IO as TDoomGFXIO;
   FSpriteEngine.FPos.X := FShift.X;
   FSpriteEngine.FPos.Y := FShift.Y;
 
-  if IO.MCursor.Active and IO.Driver.GetMousePos( iPoint ) then
+  if iIO.MCursor.Active and iIO.Driver.GetMousePos( iPoint ) then
   begin
     iPoint := DevicePointToCoord( iPoint );
     iCoord := NewCoord2D(iPoint.X,iPoint.Y);

@@ -1,0 +1,356 @@
+{$INCLUDE doomrl.inc}
+unit doomgfxio;
+interface
+uses vglquadrenderer, vgltypes, vluaconfig, vioevent, vuielement,
+     doomio, doomspritemap;
+
+type TDoomGFXIO = class( TDoomIO )
+    constructor Create; reintroduce;
+    procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
+    procedure Update( aMSec : DWord ); override;
+    function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
+    function OnEvent( const event : TIOEvent ) : Boolean; override;
+    destructor Destroy; override;
+  protected
+    function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
+    procedure ReuploadTextures;
+    procedure CalculateConsoleParams;
+  private
+    FQuadSheet   : TGLQuadList;
+    FTextSheet   : TGLQuadList;
+    FPostSheet   : TGLQuadList;
+    FQuadRenderer: TGLQuadRenderer;
+    FProjection  : TMatrix44;
+    FFontMult    : Byte;
+    FTileMult    : Byte;
+    FMiniScale   : Byte;
+    FLinespace   : Word;
+    FVPadding    : DWord;
+
+    FSettings   : array [Boolean] of
+    record
+      Width  : Integer;
+      Height : Integer;
+      FMult  : Integer;
+      TMult  : Integer;
+      MiniM  : Integer;
+    end;
+
+    FLastMouse   : QWord;
+    FMouseLock   : Boolean;
+    FMCursor     : TDoomMouseCursor;
+  public
+    property QuadSheet : TGLQuadList read FQuadSheet;
+    property TextSheet : TGLQuadList read FTextSheet;
+    property PostSheet : TGLQuadList read FPostSheet;
+    property MiniScale : Byte read FMiniScale;
+    property FontMult  : Byte read FFontMult;
+    property TileMult  : Byte read FTileMult;
+    property MCursor   : TDoomMouseCursor read FMCursor;
+  end;
+
+implementation
+
+uses {$IFDEF WINDOWS}windows,{$ENDIF}
+     classes, sysutils, math,
+     vdebug, vlog, vutil, vmath, vrltools, viotypes, vdf, vgl3library,
+     vimage, vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
+     dfoutput, dfdata, dfplayer,
+     doombase, doomtextures;
+
+constructor TDoomGFXIO.Create;
+var iCoreData   : TVDataFile;
+    iImage      : TImage;
+    iFontTexture: TTextureID;
+    iFont       : TBitmapFont;
+    iStream     : TStream;
+    iFullscreen : Boolean;
+    iCurrentWH  : TIOPoint;
+    iDoQuery    : Boolean;
+    iSDLFlags   : TSDLIOFlags;
+    iMode       : TIODisplayMode;
+
+  procedure ParseSettings( aFull : Boolean; const aPrefix : AnsiString; aDef : TIOPoint );
+  begin
+    with FSettings[ aFull ] do
+    begin
+      Width  := Config.Configure( aPrefix+'Width', aDef.X );
+      Height := Config.Configure( aPrefix+'Height', aDef.Y );
+      FMult  := Config.Configure( aPrefix+'FontMult', -1 );
+      TMult  := Config.Configure( aPrefix+'TileMult', -1 );
+      MiniM  := Config.Configure( aPrefix+'MiniMapSize', -1 );
+      if Width  = -1 then Width  := iCurrentWH.X;
+      if Height = -1 then Height := iCurrentWH.Y;
+      if FMult  = -1 then
+        if (Width >= 1600) and (Height >= 900)
+          then FMult := 2
+          else FMult := 1;
+      if TMult  = -1 then
+        if (Width >= 1050) and (Height >= 1050)
+          then TMult := 2
+          else TMult := 1;
+      if MiniM = -1 then
+      begin
+        MiniM := Width div 220;
+        MiniM := Max( 3, MiniM );
+        MiniM := Min( 9, MiniM );
+      end;
+    end;
+  end;
+
+begin
+  FLastMouse := 0;
+  FMouseLock := True;
+
+  FLoading := nil;
+  IO := Self;
+
+  FVPadding := 0;
+  FFontMult := 1;
+  FTileMult := 1;
+  FMCursor  := nil;
+  Textures  := nil;
+
+  {$IFDEF WINDOWS}
+  if not GodMode then
+  begin
+    FreeConsole;
+    vdebug.DebugWriteln := nil;
+  end
+  else
+  begin
+    Logger.AddSink( TConsoleLogSink.Create( LOGDEBUG, True ) );
+  end;
+  {$ENDIF}
+  iFullScreen := Config.Configure( 'StartFullscreen', False ) or ForceFullscreen;
+  {$IFDEF WINDOWS}
+  iDoQuery := Config.Configure( 'FullscreenQuery', True );
+  if iDoQuery then
+    iFullScreen := MessageBox( 0, 'Do you want to run in fullscreen mode?'#10'You can toggle fullscreen any time by pressing Alt-Enter.'#10#10'You can also set the defaults in config.lua, to avoid this dialog.','DoomRL - Run fullscreen?', MB_YESNO or MB_ICONQUESTION ) = IDYES;
+  {$ENDIF}
+
+  if not TSDLIODriver.GetCurrentResolution( iCurrentWH ) then
+    iCurrentWH.Init(800,600);
+
+  ParseSettings( False, 'Windowed', vutil.Point(800,600) );
+  ParseSettings( True, 'Fullscreen', vutil.Point(-1,-1) );
+
+  with FSettings[ iFullscreen ] do
+  begin
+    iSDLFlags := [ SDLIO_OpenGL ];
+    if iFullscreen then Include( iSDLFlags, SDLIO_Fullscreen );
+    FIODriver := TSDLIODriver.Create( Width, Height, 32, iSDLFlags );
+    FFontMult := FMult;
+    FTileMult := TMult;
+    FMiniScale:= MiniM;
+  end;
+
+  begin
+    Log('Display modes (%d)', [FIODriver.DisplayModes.Size] );
+    Log('-------');
+    for iMode in FIODriver.DisplayModes do
+      Log('%d x %d @%d', [ iMode.Width, iMode.Height, iMode.Refresh ] );
+    Log('-------');
+  end;
+
+  Textures   := TDoomTextures.Create;
+
+  if GodMode then
+    iImage := LoadImage('font10x18.png')
+  else
+  begin
+    iCoreData := TVDataFile.Create(DataPath+'doomrl.wad');
+    iCoreData.DKKey := LoveLace;
+    iStream := iCoreData.GetFile( 'font10x18.png', 'fonts' );
+    iImage := LoadImage( iStream, iStream.Size );
+    FreeAndNil( iStream );
+    FreeAndNil( iCoreData );
+  end;
+  iFontTexture := Textures.AddImage( 'font10x18', iImage, Option_Blending );
+  Textures[ iFontTexture ].Image.SubstituteColor( ColorBlack, ColorZero );
+  Textures[ iFontTexture ].Upload;
+
+  iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
+  CalculateConsoleParams;
+  FConsole := TGLConsoleRenderer.Create( iFont, 80, 25, FLineSpace, [VIO_CON_CURSOR] );
+  TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
+  SpriteMap  := TDoomSpriteMap.Create;
+  FMCursor      := TDoomMouseCursor.Create;
+  TSDLIODriver( FIODriver ).ShowMouse( False );
+
+  inherited Create;
+
+  FQuadSheet := TGLQuadList.Create;
+  FTextSheet := TGLQuadList.Create;
+  FPostSheet := TGLQuadList.Create;
+  FQuadRenderer := TGLQuadRenderer.Create;
+end;
+
+destructor TDoomGFXIO.Destroy;
+begin
+  FreeAndNil( FMCursor );
+  FreeAndNil( FQuadSheet );
+  FreeAndNil( FTextSheet );
+  FreeAndNil( FPostSheet );
+  FreeAndNil( FQuadRenderer );
+
+  FreeAndNil( SpriteMap );
+  FreeAndNil( Textures );
+
+  inherited Destroy;
+end;
+
+procedure TDoomGFXIO.Configure( aConfig : TLuaConfig; aReload : Boolean = False );
+begin
+  inherited Configure( aConfig, aReload );
+
+  FIODriver.RegisterInterrupt( IOKeyCode( VKEY_ENTER, [ VKMOD_ALT ] ), @FullScreenCallback );
+  FIODriver.RegisterInterrupt( IOKeyCode( VKEY_F12, [ VKMOD_CTRL ] ), @FullScreenCallback );
+
+end;
+
+procedure TDoomGFXIO.Update( aMSec : DWord );
+var iMousePos : TIOPoint;
+    iPoint    : TIOPoint;
+    iValueX   : Single;
+    iValueY   : Single;
+    iActiveX  : Integer;
+    iActiveY  : Integer;
+    iMaxX     : Integer;
+    iMaxY     : Integer;
+    iShift    : TCoord2D;
+    iSizeY    : DWord;
+    iSizeX    : DWord;
+begin
+  if not Assigned( FQuadRenderer ) then Exit;
+
+  if (FMCursor.Active) and FIODriver.GetMousePos( iPoint ) and (not FMouseLock) then
+  begin
+    iMaxX   := FIODriver.GetSizeX;
+    iMaxY   := FIODriver.GetSizeY;
+    iValueX := 0;
+    iValueY := 0;
+    iActiveX := iMaxX div 8;
+    iActiveY := iMaxY div 8;
+    if iPoint.X < iActiveX       then iValueX := ((iActiveX -       iPoint.X) / iActiveX);
+    if iPoint.X > iMaxX-iActiveX then iValueX := ((iActiveX -(iMaxX-iPoint.X)) /iActiveX);
+    if iPoint.X < iActiveX then iValueX := -iValueX;
+    if iMaxY < MAXY*FTileMult*32 then
+    begin
+      if iPoint.Y < iActiveY       then iValueY := ((iActiveY -        iPoint.Y) / iActiveY) / 2;
+      if iPoint.Y > iMaxY-iActiveY then iValueY := ((iActiveY -(iMaxY-iPoint.Y)) /iActiveY) / 2;
+      if iPoint.Y < iActiveY then iValueY := -iValueY;
+    end;
+
+    iShift := SpriteMap.Shift;
+    if (iValueX <> 0) or (iValueY <> 0) then
+    begin
+      iShift := NewCoord2D(
+        Clamp( SpriteMap.Shift.X + Ceil( iValueX * aMSec ), SpriteMap.MinShift.X, SpriteMap.MaxShift.X ),
+        Clamp( SpriteMap.Shift.Y + Ceil( iValueY * aMSec ), SpriteMap.MinShift.Y, SpriteMap.MaxShift.Y )
+      );
+      SpriteMap.NewShift := iShift;
+      FMouseLock :=
+        ((iShift.X = SpriteMap.MinShift.X) or (iShift.X = SpriteMap.MaxShift.X))
+     and ((iShift.Y = SpriteMap.MinShift.Y) or (iShift.Y = SpriteMap.MaxShift.Y));
+    end;
+  end;
+
+  if UI <> nil then UI.GFXAnimationUpdate( aMSec );
+
+  iSizeY    := FIODriver.GetSizeY-2*FVPadding;
+  iSizeX    := FIODriver.GetSizeX;
+  glViewport( 0, FVPadding, iSizeX, iSizeY );
+
+  glEnable( GL_TEXTURE_2D );
+  glDisable( GL_DEPTH_TEST );
+  glEnable( GL_BLEND );
+  glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+  FProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -16384, 16384 );
+
+  if (Doom <> nil) and (Doom.State = DSPlaying) then
+  begin
+    if FConsoleWindow = nil then
+       FConsole.HideCursor;
+    //if not UI.AnimationsRunning then SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
+    SpriteMap.Update( aMSec, FProjection );
+    UI.GFXAnimationDraw;
+    glEnable( GL_DEPTH_TEST );
+    SpriteMap.Draw;
+    glDisable( GL_DEPTH_TEST );
+  end;
+
+  FQuadRenderer.Update( FProjection );
+  FQuadRenderer.Render( FQuadSheet );
+  inherited Update( aMSec );
+
+  if FTextSheet <> nil then FQuadRenderer.Render( FTextSheet );
+  if (FPostSheet <> nil) and (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos(iMousePos) then
+  begin
+    FMCursor.Draw( iMousePos.X, iMousePos.Y, FLastUpdate, FPostSheet );
+  end;
+  if FPostSheet <> nil then FQuadRenderer.Render( FPostSheet );
+end;
+
+function TDoomGFXIO.FullScreenCallback ( aEvent : TIOEvent ) : Boolean;
+var iFullscreen : Boolean;
+    iSDLFlags   : TSDLIOFlags;
+begin
+  iFullscreen := TSDLIODriver(FIODriver).FullScreen;
+  iFullscreen := not iFullscreen;
+  with FSettings[ iFullscreen ] do
+  begin
+    iSDLFlags := [ SDLIO_OpenGL ];
+    if not TSDLIODriver(FIODriver).FullScreen then Include( iSDLFlags, SDLIO_Fullscreen );
+    TSDLIODriver(FIODriver).ResetVideoMode( Width, Height, 32, iSDLFlags );
+    FTileMult := TMult;
+    FFontMult := FMult;
+    FMiniScale:= MiniM;
+  end;
+  ReuploadTextures;
+  CalculateConsoleParams;
+  TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
+  TGLConsoleRenderer( FConsole ).HideCursor;
+  if (UI <> nil) then UI.SetMinimapScale(FMiniScale);
+  FUIRoot.DeviceChanged;
+  SpriteMap.Recalculate;
+  if Player <> nil then
+    SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
+  Exit( True );
+end;
+
+procedure TDoomGFXIO.ReuploadTextures;
+begin
+  Textures.Upload;
+  SpriteMap.ReassignTextures;
+end;
+
+procedure TDoomGFXIO.CalculateConsoleParams;
+begin
+  FLineSpace := Max((FIODriver.GetSizeY - 25*18*FFontMult - 2*FVPadding) div 25 div FFontMult,0);
+end;
+
+function TDoomGFXIO.OnEvent( const event : TIOEvent ) : Boolean;
+begin
+  if event.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN ] then
+  begin
+    if FMCursor <> nil then FMCursor.Active := True;
+    FLastMouse := FTime;
+    FMouseLock := False;
+  end;
+  Exit( False )
+end;
+
+function TDoomGFXIO.RunUILoop( aElement : TUIElement = nil ) : DWord;
+begin
+  if MCursor <> nil then
+  begin
+    if MCursor.Size = 0 then
+      MCursor.SetTextureID( Textures.TextureID['cursor'], 32 );
+    MCursor.Active := True;
+  end;
+  Exit( inherited RunUILoop( aElement ) );
+end;
+
+end.
+

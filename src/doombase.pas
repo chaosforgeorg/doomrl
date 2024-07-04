@@ -80,7 +80,7 @@ implementation
 uses Classes, SysUtils,
      vdebug, viotypes,
      dfmap, dfitem, dfbeing,
-     dfoutput, doomio, zstream,
+     dfoutput, doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomhelp, doomconfig, doomviews, dfplayer;
 
@@ -206,7 +206,9 @@ end;
 
 procedure TDoom.CreateIO;
 begin
-  IO := TDoomIO.Create;
+  if GraphicsVersion
+    then IO := TDoomGFXIO.Create
+    else IO := TDoomTextIO.Create;
   ProgramRealTime := MSecNow();
   IO.Configure( Config );
 end;

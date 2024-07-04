@@ -121,7 +121,7 @@ implementation
 
 uses math, dateutils,
      vdebug, vsystems, vluasystem, vvision, vconuirl, vuiconsole, vtig, vglimage,
-     doombase, doomlua,
+     doombase, doomlua, doomgfxio,
      dfplayer, dflevel, dfmap, dfitem;
 
 {
@@ -213,7 +213,7 @@ begin
   begin
     FMinimapImage    := TImage.Create( 128, 32 );
     FMinimapImage.Fill( NewColor( 0,0,0,0 ) );
-    SetMinimapScale( IO.MiniScale );
+    SetMinimapScale( (IO as TDoomGFXIO).MiniScale );
   end;
 end;
 
@@ -908,18 +908,19 @@ begin
     end;
 
     if GraphicsVersion then
+    with IO as TDoomGFXIO do
     begin
       if (FMinimapImage <> nil) and (FMinimapScale <> 0) then
-        IO.QuadSheet.PushTexturedQuad( FMinimapGLPos, FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ), ZeroTex, UnitTex, FMinimapTexture );
+        QuadSheet.PushTexturedQuad( FMinimapGLPos, FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ), ZeroTex, UnitTex, FMinimapTexture );
 
       iAbsolute := Rectangle( 1,1,78,25 );
       iP1 := IO.Root.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
       iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
-      IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
+      QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
 
       iP1 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x, iAbsolute.y2-2 ) );
       iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
-      IO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
+      QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
     end;
 
     iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
@@ -978,11 +979,12 @@ end;
 procedure TDoomUI.SetMinimapScale ( aScale : Byte ) ;
 begin
   if GraphicsVersion and (FMinimapImage <> nil) then
-  begin
-    FMinimapScale := aScale;
-    FMinimapGLPos.Init( IO.Driver.GetSizeX - FMinimapScale*(MAXX+2) - 10, IO.Driver.GetSizeY - FMinimapScale*(MAXY+2) - ( 10 + IO.FontMult*20*3 ) );
-    UpdateMinimap;
-  end;
+    with IO as TDoomGFXIO do
+    begin
+      FMinimapScale := aScale;
+      FMinimapGLPos.Init( Driver.GetSizeX - FMinimapScale*(MAXX+2) - 10, Driver.GetSizeY - FMinimapScale*(MAXY+2) - ( 10 + FontMult*20*3 ) );
+      UpdateMinimap;
+    end;
 end;
 
 
