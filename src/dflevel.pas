@@ -104,6 +104,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function getGylph( const aCoord : TCoord2D ) : TIOGylph;
     function EntityFromStream( aStream : TStream; aEntityID : Byte ) : TLuaEntityNode; override;
     function EnemiesLeft : DWord;
+    function GetLookDescription( aWhere : TCoord2D ) : Ansistring;
 
     class procedure RegisterLuaAPI();
 
@@ -1270,6 +1271,36 @@ begin
   if iCell.Sprite[ iStyle ].SpriteID <> 0 then;
     Exit( iCell.Sprite[ iStyle ] );
   Exit( iCell.Sprite[ iStyle ] );
+end;
+
+function TLevel.GetLookDescription ( aWhere : TCoord2D ) : AnsiString;
+var iCellID : DWord;
+  procedure AddInfo( const what : AnsiString );
+  begin
+    if Result = '' then Result := what
+                   else Result += ' | ' + what;
+  end;
+begin
+  if isVisible( aWhere ) then
+  begin
+    Result := '';
+    if Being[ aWhere ] <> nil then
+    with Being[ aWhere ] do
+      AddInfo( GetName( false ) + ' (' + WoundStatus + ')' );
+    if Item[ aWhere ] <> nil then
+      if Item[ aWhere ].isLever then AddInfo( Player.DescribeLever( Item[ aWhere ] ) )
+                                else AddInfo( Item[ aWhere ].GetName( false ) );
+    if CellHook_OnDescribe in Cells[ Cell[ aWhere ] ].Hooks then
+       AddInfo( CallHook( aWhere, CellHook_OnDescribe ) )
+    else
+    begin
+      iCellID := GetCell(aWhere);
+      if LightFlag[ aWhere, LFBLOOD ] and (Cells[ iCellID ].bldesc <> '')
+        then AddInfo( Cells[ GetCell(aWhere) ].bldesc )
+        else AddInfo( Cells[ GetCell(aWhere) ].desc );
+    end;
+  end
+  else Result := 'out of vision';
 end;
 
 function lua_level_drop_being(L: Plua_State): Integer; cdecl;

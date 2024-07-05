@@ -38,8 +38,6 @@ type
     procedure GFXAnimationDraw;
     procedure GFXAnimationUpdate( aTime : DWord );
 
-    procedure SetTempHint( const aText : AnsiString );
-    procedure SetHint( const aText : AnsiString );
     procedure Msg( const aText : AnsiString );
     procedure Msg( const aText : AnsiString; const aParams : array of const );
     procedure MsgEnter( const aText : AnsiString );
@@ -69,8 +67,6 @@ type
     destructor Destroy; override;
     class procedure RegisterLuaAPI( State : TLuaState );
 
-    function GetLookDescription( aWhere : TCoord2D ) : AnsiString;
-
     procedure ASCIILoader( aStream : TStream; aName : Ansistring; aSize : DWord );
 
     procedure OnRedraw;
@@ -78,9 +74,6 @@ type
     procedure SetTextMap( aMap : ITextMap );
 
   private
-    FStoredHint : AnsiString;
-    FHint       : AnsiString;
-
     FTextMap    : TTextMap;
     FMessages   : TRLMessages;
 
@@ -184,8 +177,6 @@ begin
   inherited Create;
   FWaiting := False;
   FTextMap := nil;
-  FStoredHint := '';
-  FHint       := '';
   FAnimations := nil;
   FMessages   := nil;
   if GraphicsVersion then FAnimations := TAnimationManager.Create;
@@ -300,19 +291,6 @@ begin
   Doom.Level.RevealBeings;
 end;
 
-procedure TDoomUI.SetHint ( const aText : AnsiString ) ;
-begin
-  FStoredHint := aText;
-  FHint       := aText;
-end;
-
-procedure TDoomUI.SetTempHint ( const aText : AnsiString ) ;
-begin
-  if aText = ''
-    then FHint := FStoredHint
-    else FHint := aText;
-end;
-
 procedure TDoomUI.Msg( const aText : AnsiString );
 begin
   if FMessages <> nil then FMessages.Add(aText);
@@ -383,7 +361,7 @@ end;
 procedure TDoomUI.MsgUpDate;
 begin
   FMessages.Update;
-  UI.SetTempHint('');
+  IO.SetTempHint('');
 end;
 
 procedure TDoomUI.ErrorReport(const aText: AnsiString);
@@ -683,37 +661,6 @@ begin
   inherited Destroy;
 end;
 
-function TDoomUI.GetLookDescription ( aWhere : TCoord2D ) : AnsiString;
-var iCellID : DWord;
-  procedure AddInfo( const what : AnsiString );
-  begin
-    if Result = '' then Result := what
-                   else Result += ' | ' + what;
-  end;
-begin
-  if Doom.Level.isVisible( aWhere ) then
-   with Doom.Level do
-    begin
-      Result := '';
-      if Being[ aWhere ] <> nil then
-      with Being[ aWhere ] do
-        AddInfo( GetName( false ) + ' (' + WoundStatus + ')' );
-      if Item[ aWhere ] <> nil then
-        if Item[ aWhere ].isLever then AddInfo( Player.DescribeLever( Item[ aWhere ] ) )
-                                  else AddInfo( Item[ aWhere ].GetName( false ) );
-      if CellHook_OnDescribe in Cells[ Cell[ aWhere ] ].Hooks then
-         AddInfo( CallHook( aWhere, CellHook_OnDescribe ) )
-      else
-      begin
-        iCellID := GetCell(aWhere);
-        if LightFlag[ aWhere, LFBLOOD ] and (Cells[ iCellID ].bldesc <> '')
-          then AddInfo( Cells[ GetCell(aWhere) ].bldesc )
-          else AddInfo( Cells[ GetCell(aWhere) ].desc );
-      end;
-    end
-  else Result := 'out of vision';
-end;
-
 procedure TDoomUI.ASCIILoader ( aStream : TStream; aName : Ansistring; aSize : DWord ) ;
 var iImage   : TUIStringArray;
     iCounter : DWord;
@@ -730,7 +677,7 @@ end;
 procedure TDoomUI.LookDescription(aWhere: TCoord2D);
 var LookDesc : string;
 begin
-  LookDesc := GetLookDescription( aWhere );
+  LookDesc := Doom.Level.GetLookDescription( aWhere );
   if Option_BlindMode then LookDesc += ' | '+BlindCoord( aWhere - Player.Position );
   if Doom.Level.isVisible(aWhere) and (Doom.Level.Being[aWhere] <> nil) then LookDesc += ' | [@<m@>]ore';
   FMessages.Pop;
@@ -762,8 +709,6 @@ var iCount      : DWord;
     iTargetLine : TVisionRay;
     iCurrent    : TCoord2D;
     iLevel      : TLevel;
-    iAbsolute   : TIORect;
-    iP1, iP2    : TIOPoint;
 
   procedure Paint ( aCoord : TCoord2D; aColor : TUIColor; aChar : Char = ' ') ;
   var iPos        : TUIPoint;
@@ -806,14 +751,8 @@ var iCount      : DWord;
   end;
 
 begin
-  iCon.Init( IO.Console );
-  iCon.Clear;
-
   if Assigned( FTextMap ) then
     FTextMap.OnRedraw;
-
-  if FHint <> '' then
-    VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 3 ), Yellow );
 
   if Player <> nil then
   begin
@@ -880,19 +819,6 @@ begin
     end;
   end;
 
-  if GraphicsVersion then
-  with IO as TDoomGFXIO do
-  begin
-    iAbsolute := Rectangle( 1,1,78,25 );
-    iP1 := IO.Root.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
-    iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
-    QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
-
-    iP1 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x, iAbsolute.y2-2 ) );
-    iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
-    QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
-  end;
-
   iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
   if FMessages.Content.Size > 0 then
   for i := 1+FMessages.Scroll to iMax do
@@ -935,7 +861,7 @@ var State : TDoomLuaState;
 begin
   State.Init(L);
   if Option_Hints then
-    UI.SetHint( State.ToString( 1 ) );
+    IO.SetHint( State.ToString( 1 ) );
   Result := 0;
 end;
 

@@ -290,7 +290,7 @@ begin
     iIdx := 1;
     if Slot[ efWeapon ] = nil then iIdx := 0;
     repeat
-      UI.SetHint( iArray[iIdx].Description );
+      IO.SetHint( iArray[iIdx].Description );
       iInput := IO.WaitForCommand( [INPUT_MSCRUP,INPUT_MSCRDOWN,INPUT_MLEFT,INPUT_MRIGHT,INPUT_ESCAPE,INPUT_ENTER] );
       if iInput = INPUT_MSCRUP   then if iIdx = 0 then iIdx := iArray.Size-1 else iIdx -= 1;
       if iInput = INPUT_MSCRDOWN then iIdx := (iIdx + 1) mod iArray.Size;
@@ -309,7 +309,7 @@ begin
       end;
     end;
   end;
-  UI.SetHint('');
+  IO.SetHint('');
   FreeAndNil( iArray );
 end;
 

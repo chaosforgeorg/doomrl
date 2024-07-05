@@ -956,7 +956,7 @@ repeat
     Inc(Player.FScore,100);
     if GameWon and (State <> DSNextLevel) then Player.WriteMemorial;
     FLevel.Clear;
-    UI.SetHint('');
+    IO.SetHint('');
   until (State <> DSNextLevel) or (GameType = GameSingle);
   except on e : Exception do
   begin

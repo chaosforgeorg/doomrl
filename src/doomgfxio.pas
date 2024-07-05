@@ -239,6 +239,8 @@ var iMousePos : TIOPoint;
     iShift    : TCoord2D;
     iSizeY    : DWord;
     iSizeX    : DWord;
+    iAbsolute : TIORect;
+    iP1, iP2  : TIOPoint;
 begin
   if not Assigned( FQuadRenderer ) then Exit;
 
@@ -299,10 +301,21 @@ begin
   end;
 
   if FHudEnabled then
+  begin
     FQuadSheet.PushTexturedQuad(
       FMinimapGLPos,
       FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ),
       ZeroTex, UnitTex, FMinimapTexture );
+
+    iAbsolute := Rectangle( 1,1,78,25 );
+    iP1 := IO.Root.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
+    iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
+    QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
+
+    iP1 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x, iAbsolute.y2-2 ) );
+    iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
+    QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
+  end;
 
 
   FQuadRenderer.Update( FProjection );

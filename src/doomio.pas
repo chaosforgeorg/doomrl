@@ -33,7 +33,12 @@ type TDoomIO = class( TIO )
   function WaitForKey( const aSet : TKeySet ) : Byte;
   procedure WaitForKeyEvent( out aEvent : TIOEvent; aMouseClick : Boolean = False; aMouseMove : Boolean = False );
   function CommandEventPending : Boolean;
+
+  procedure SetTempHint( const aText : AnsiString );
+  procedure SetHint( const aText : AnsiString );
+
 protected
+  procedure DrawHud;
   procedure ColorQuery(nkey,nvalue : Variant);
   function ScreenShotCallback( aEvent : TIOEvent ) : Boolean;
   function BBScreenShotCallback( aEvent : TIOEvent ) : Boolean;
@@ -43,7 +48,11 @@ protected
   FLoading     : TUILoadingScreen;
   FMTarget     : TCoord2D;
   FKeyCode     : TIOKeyCode;
+
   FHudEnabled  : Boolean;
+  FStoredHint  : AnsiString;
+  FHint        : AnsiString;
+
 public
   property KeyCode    : TIOKeyCode read FKeyCode    write FKeyCode;
   property Audio      : TDoomAudio read FAudio;
@@ -71,6 +80,9 @@ begin
   FTime := 0;
   FAudio := TDoomAudio.Create;
   FHudEnabled := False;
+  FStoredHint := '';
+  FHint       := '';
+
 
   FIODriver.SetTitle('Doom, the Roguelike','DoomRL');
 
@@ -142,7 +154,7 @@ procedure TDoomIO.FullUpdate;
 begin
   VTIG_NewFrame;
   if FHudEnabled then
-    UI.OnRedraw;
+    DrawHud;
   inherited FullUpdate;
 end;
 
@@ -189,6 +201,31 @@ begin
              else UI.Msg('Screenshot created.');}
 end;
 
+procedure TDoomIO.DrawHud;
+var iCon : TUIConsole;
+begin
+  iCon.Init( FConsole );
+  iCon.Clear;
+
+  UI.OnRedraw;
+
+  if FHint <> '' then
+    VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 3 ), Yellow );
+end;
+
+procedure TDoomIO.SetHint ( const aText : AnsiString ) ;
+begin
+  FStoredHint := aText;
+  FHint       := aText;
+end;
+
+procedure TDoomIO.SetTempHint ( const aText : AnsiString ) ;
+begin
+  if aText = ''
+    then FHint := FStoredHint
+    else FHint := aText;
+end;
+
 procedure TDoomIO.ColorQuery(nkey,nvalue : Variant);
 begin
     ColorOverrides[nkey] := nvalue;
@@ -210,9 +247,9 @@ function TDoomIO.EventWaitForMore : Boolean;
 begin
   if Option_MorePrompt then
   begin
-    UI.SetHint('[more]');
+    SetHint('[more]');
     WaitForCommand([INPUT_OK,INPUT_MLEFT]);
-    UI.SetHint('');
+    SetHint('');
   end;
   UI.MsgUpdate;
   Exit( True );
@@ -236,7 +273,7 @@ end;
 procedure TDoomIO.LoadProgress ( aProgress : DWord ) ;
 begin
   if Assigned( FLoading ) then FLoading.OnProgress( aProgress );
-  IO.FullUpdate;
+  FullUpdate;
 end;
 
 procedure TDoomIO.LoadStop;

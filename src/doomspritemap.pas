@@ -277,7 +277,7 @@ begin
     begin
       if (FLastCoord <> iCoord) and (not UI.AnimationsRunning) then
       begin
-        UI.SetTempHint(UI.GetLookDescription(iCoord));
+        IO.SetTempHint(Doom.Level.GetLookDescription(iCoord));
         FLastCoord := iCoord;
       end;
 
