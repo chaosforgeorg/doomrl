@@ -57,8 +57,6 @@ type
 
     procedure LookMode;
     function ChooseDirection(aActionName : string) : TDirection;
-    function ChooseTarget( aActionName : string; aRange : byte; aLimitRange : Boolean; aTargets : TAutoTarget; aShowLast : Boolean = False ) : TCoord2D;
-
     procedure Focus( aCoord : TCoord2D );
 
     procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0);
@@ -72,6 +70,7 @@ type
     procedure OnRedraw;
     procedure OnUpdate( aTime : DWord );
     procedure SetTextMap( aMap : ITextMap );
+    procedure LookDescription( aWhere : TCoord2D );
 
   private
     FTextMap    : TTextMap;
@@ -79,19 +78,12 @@ type
 
     FASCII      : TASCIIImageMap;
 
-    // ASCII Only!
-    FTargetLast     : Boolean;
-    FTarget         : TCoord2D;
-    FTargetRange    : Byte;
-    FTargetEnabled  : Boolean;
-
     // GFX only animations
     FAnimations : TAnimationManager;
     FWaiting    : Boolean;
 
   private
     function Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
-    procedure LookDescription( aWhere : TCoord2D );
 //    procedure SlideDown(DelayTime : word; var NewScreen : TGFXScreen);
   public
     property ASCII      : TASCIIImageMap read FASCII;
@@ -181,9 +173,6 @@ begin
   FMessages   := nil;
   if GraphicsVersion then FAnimations := TAnimationManager.Create;
   FASCII := TASCIIImageMap.Create( True );
-
-  FTargetEnabled := False;
-  FTargetLast    := False;
 
 end;
 
@@ -529,105 +518,6 @@ begin
   until iDone;
 end;
 
-function TDoomUI.ChooseTarget(aActionName : string; aRange: byte;
-  aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D;
-var Key : byte;
-    Dir : TDirection;
-    Position : TCoord2D;
-    iTarget : TCoord2D;
-    iTargetColor : Byte;
-    iTargetRange : Byte;
-    iTargetLine  : TVisionRay;
-    iLevel : TLevel;
-    iDist : Byte;
-    iBlock : Boolean;
-begin
-  iLevel      := Doom.Level;
-  Position    := Player.Position;
-  iTarget     := aTargets.Current;
-  iTargetRange:= aRange;
-  iTargetColor := Green;
-
-  Msg( aActionName );
-  MsgUpDate;
-  Msg('You see : ');
-
-  if aShowLast then
-    FTargetLast := True;
-
-  LookDescription( iTarget );
-  repeat
-    if iTarget <> Position then
-      begin
-        iTargetLine.Init(iLevel, Position, iTarget);
-        iBlock := false;
-        repeat
-          iTargetLine.Next;
-          if iLevel.cellFlagSet(iTargetLine.GetC, CF_BLOCKMOVE) then iBlock := true;
-        until iTargetLine.Done;
-      end
-    else iBlock := False;
-    if iBlock then iTargetColor := Red else iTargetColor := Green;
-
-    if GraphicsVersion and (SpriteMap <> nil) then
-      SpriteMap.SetTarget( iTarget, NewColor( iTargetColor ), True )
-    else
-    begin
-      FTargetEnabled := True;
-      FTarget        := iTarget;
-      FTargetRange   := iTargetRange;
-      // TODO: this clashes with TIG
-      IO.Console.ShowCursor;
-      IO.Console.MoveCursor( iTarget.x+1, iTarget.y+2 );
-    end;
-
-    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE, INPUT_ESCAPE,INPUT_MORE,INPUT_FIRE,INPUT_ALTFIRE,INPUT_TACTIC, INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
-    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if Key in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then
-       begin
-         iTarget := IO.MTarget;
-         iDist := Distance(iTarget.x, iTarget.y, Position.x, Position.y);
-         if aLimitRange and (iDist > aRange - 1) then
-           begin
-             iDist := 0;
-             iTargetLine.Init(iLevel, Position, iTarget);
-             while iDist < (aRange - 1) do
-               begin
-                    iTargetLine.Next;
-                    iDist := Distance(iTargetLine.GetSource.x, iTargetLine.GetSource.y,  iTargetLine.GetC.x, iTargetLine.GetC.y);
-               end;
-             if Distance(iTargetLine.GetSource.x, iTargetLine.GetSource.y, iTargetLine.GetC.x, iTargetLine.GetC.y) > aRange-1
-             then iTarget := iTargetLine.prev
-             else iTarget := iTargetLine.GetC;
-           end;
-       end;
-    if Key in [ INPUT_ESCAPE, INPUT_MRIGHT ] then begin iTarget.x := 0; Break; end;
-    if Key = INPUT_TACTIC then iTarget := aTargets.Next;
-    if (Key in INPUT_MOVE) then
-    begin
-      Dir := InputDirection( Key );
-      if (iLevel.isProperCoord( iTarget + Dir ))
-        and ((not aLimitRange) or (Distance((iTarget + Dir).x, (iTarget + Dir).y, Position.x, Position.y) <= aRange-1)) then
-        iTarget += Dir;
-    end;
-    if (Key = INPUT_MORE) then
-    begin
-      with iLevel do
-      if Being[ iTarget ] <> nil then
-         Being[ iTarget ].FullLook;
-    end;
-    LookDescription( iTarget );
-  until Key in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
-  MsgUpDate;
-
-  if GraphicsVersion and (SpriteMap <> nil) then
-    SpriteMap.ClearTarget
-  else
-    FTargetEnabled := False;
-
-  ChooseTarget := iTarget;
-end;
-
 procedure TDoomUI.Focus(aCoord: TCoord2D);
 begin
   IO.Console.ShowCursor;
@@ -706,19 +596,6 @@ var iCount      : DWord;
     iHPP        : Integer;
     iPos        : TIOPoint;
     iBottom     : Integer;
-    iTargetLine : TVisionRay;
-    iCurrent    : TCoord2D;
-    iLevel      : TLevel;
-
-  procedure Paint ( aCoord : TCoord2D; aColor : TUIColor; aChar : Char = ' ') ;
-  var iPos        : TUIPoint;
-  begin
-    iPos := Point( aCoord.x + 1, aCoord.y + 2 );
-    if aChar = ' ' then aChar := IO.Console.GetChar( iPos.X, iPos.Y );
-    if StatusEffect = StatusInvert
-       then VTIG_FreeChar( aChar, iPos, Black, LightGray )
-       else VTIG_FreeChar( aChar, iPos, aColor );
-  end;
 
   function ArmorColor( aValue : Integer ) : TUIColor;
   begin
@@ -796,27 +673,6 @@ begin
         VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), Brown )
       else
         VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
-  end;
-  if FTargetEnabled then
-  begin
-    iLevel := Doom.Level;
-    if FTargetLast then
-      Paint( Player.TargetPos, Yellow );
-    if ( Player.Position <> FTarget ) then
-    begin
-      iColor := Green;
-      iTargetLine.Init( iLevel, Player.Position, FTarget );
-      repeat
-        iTargetLine.Next;
-        iCurrent := iTargetLine.GetC;
-        if not iLevel.isProperCoord( iCurrent ) then Break;
-        if not iLevel.isVisible( iCurrent ) then iColor := Red;
-        if iColor = Green then if iTargetLine.Cnt > FTargetRange then icolor := Yellow;
-        if iTargetLine.Done then Paint( iCurrent, iColor, 'X' )
-                            else Paint( iCurrent, iColor, '*' );
-        if iLevel.cellFlagSet( iCurrent, CF_BLOCKMOVE ) then iColor := Red;
-      until (iTargetLine.Done) or (iTargetLine.cnt > 30);
-    end;
   end;
 
   iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );

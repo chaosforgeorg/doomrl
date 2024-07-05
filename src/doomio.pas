@@ -37,8 +37,10 @@ type TDoomIO = class( TIO )
   procedure SetTempHint( const aText : AnsiString );
   procedure SetHint( const aText : AnsiString );
 
+  function ChooseTarget(aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D; virtual;
 protected
-  procedure DrawHud;
+  procedure DrawHud; virtual;
+  procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
   procedure ColorQuery(nkey,nvalue : Variant);
   function ScreenShotCallback( aEvent : TIOEvent ) : Boolean;
   function BBScreenShotCallback( aEvent : TIOEvent ) : Boolean;
@@ -52,7 +54,6 @@ protected
   FHudEnabled  : Boolean;
   FStoredHint  : AnsiString;
   FHint        : AnsiString;
-
 public
   property KeyCode    : TIOKeyCode read FKeyCode    write FKeyCode;
   property Audio      : TDoomAudio read FAudio;
@@ -66,9 +67,9 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 implementation
 
 uses video, dateutils, variants,
-     vlog, vdebug, vutil, vuiconsole,
-     vsdlio, vglconsole, vtig,
-     doombase, dfdata, dfoutput, dfplayer;
+     vlog, vdebug, vutil, vuiconsole, vcolor, vmath,
+     vsdlio, vglconsole, vtig, vvision,
+     doombase, dfdata, dfoutput, dflevel, dfplayer;
 
 { TDoomIO }
 
@@ -82,7 +83,6 @@ begin
   FHudEnabled := False;
   FStoredHint := '';
   FHint       := '';
-
 
   FIODriver.SetTitle('Doom, the Roguelike','DoomRL');
 
@@ -202,7 +202,7 @@ begin
 end;
 
 procedure TDoomIO.DrawHud;
-var iCon : TUIConsole;
+var iCon        : TUIConsole;
 begin
   iCon.Init( FConsole );
   iCon.Clear;
@@ -404,6 +404,87 @@ begin
   until True;
   Exit( iEvent.EType in [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ] );
 end;
+
+function TDoomIO.ChooseTarget(aActionName : string; aRange: byte;
+  aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D;
+var Key : byte;
+    Dir : TDirection;
+    Position : TCoord2D;
+    iTarget : TCoord2D;
+    iTargetColor : Byte;
+    iTargetRange : Byte;
+    iTargetLine  : TVisionRay;
+    iLevel : TLevel;
+    iDist : Byte;
+    iBlock : Boolean;
+begin
+  iLevel      := Doom.Level;
+  Position    := Player.Position;
+  iTarget     := aTargets.Current;
+  iTargetRange:= aRange;
+  iTargetColor := Green;
+
+  UI.Msg( aActionName );
+  UI.MsgUpDate;
+  UI.Msg('You see : ');
+
+  UI.LookDescription( iTarget );
+  repeat
+    if iTarget <> Position then
+      begin
+        iTargetLine.Init(iLevel, Position, iTarget);
+        iBlock := false;
+        repeat
+          iTargetLine.Next;
+          if iLevel.cellFlagSet(iTargetLine.GetC, CF_BLOCKMOVE) then iBlock := true;
+        until iTargetLine.Done;
+      end
+    else iBlock := False;
+    if iBlock then iTargetColor := Red else iTargetColor := Green;
+
+    SetTarget( iTarget, iTargetColor, iTargetRange );
+    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE, INPUT_ESCAPE,INPUT_MORE,INPUT_FIRE,INPUT_ALTFIRE,INPUT_TACTIC, INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
+    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if Key in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then
+       begin
+         iTarget := IO.MTarget;
+         iDist := Distance(iTarget.x, iTarget.y, Position.x, Position.y);
+         if aLimitRange and (iDist > aRange - 1) then
+           begin
+             iDist := 0;
+             iTargetLine.Init(iLevel, Position, iTarget);
+             while iDist < (aRange - 1) do
+               begin
+                    iTargetLine.Next;
+                    iDist := Distance(iTargetLine.GetSource.x, iTargetLine.GetSource.y,  iTargetLine.GetC.x, iTargetLine.GetC.y);
+               end;
+             if Distance(iTargetLine.GetSource.x, iTargetLine.GetSource.y, iTargetLine.GetC.x, iTargetLine.GetC.y) > aRange-1
+             then iTarget := iTargetLine.prev
+             else iTarget := iTargetLine.GetC;
+           end;
+       end;
+    if Key in [ INPUT_ESCAPE, INPUT_MRIGHT ] then begin iTarget.x := 0; Break; end;
+    if Key = INPUT_TACTIC then iTarget := aTargets.Next;
+    if (Key in INPUT_MOVE) then
+    begin
+      Dir := InputDirection( Key );
+      if (iLevel.isProperCoord( iTarget + Dir ))
+        and ((not aLimitRange) or (Distance((iTarget + Dir).x, (iTarget + Dir).y, Position.x, Position.y) <= aRange-1)) then
+        iTarget += Dir;
+    end;
+    if (Key = INPUT_MORE) then
+    begin
+      with iLevel do
+      if Being[ iTarget ] <> nil then
+         Being[ iTarget ].FullLook;
+    end;
+    UI.LookDescription( iTarget );
+  until Key in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
+  UI.MsgUpDate;
+
+  ChooseTarget := iTarget;
+end;
+
 
 procedure EmitCrashInfo ( const aInfo : AnsiString; aInGame : Boolean ) ;
 function Iff(expr : Boolean; const str : AnsiString) : AnsiString;

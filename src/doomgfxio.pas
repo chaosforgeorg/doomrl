@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomgfxio;
 interface
-uses vglquadrenderer, vgltypes, vluaconfig, vioevent, vuielement, vimage,
+uses vglquadrenderer, vgltypes, vluaconfig, vioevent, vuielement, vimage, vrltools,
      doomio, doomspritemap;
 
 type TDoomGFXIO = class( TDoomIO )
@@ -12,7 +12,9 @@ type TDoomGFXIO = class( TDoomIO )
     function OnEvent( const event : TIOEvent ) : Boolean; override;
     procedure UpdateMinimap;
     destructor Destroy; override;
+    function ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D; override;
   protected
+    procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
     procedure ReuploadTextures;
     procedure CalculateConsoleParams;
@@ -59,7 +61,7 @@ implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
-     vdebug, vlog, vutil, vmath, vrltools, viotypes, vdf, vgl3library,
+     vdebug, vlog, vutil, vmath, viotypes, vdf, vgl3library,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfoutput, dfdata, dfplayer,
      doombase, doomtextures;
@@ -214,6 +216,17 @@ begin
   FreeAndNil( Textures );
 
   inherited Destroy;
+end;
+
+function TDoomGFXIO.ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean ): TCoord2D;
+begin
+  ChooseTarget := inherited ChooseTarget( aActionName, aRange, aLimitRange, aTargets, aShowLast );
+  SpriteMap.ClearTarget;
+end;
+
+procedure TDoomGFXIO.SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte );
+begin
+  SpriteMap.SetTarget( aTarget, NewColor( aColor ), True )
 end;
 
 procedure TDoomGFXIO.Configure( aConfig : TLuaConfig; aReload : Boolean = False );

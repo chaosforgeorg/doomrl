@@ -456,7 +456,7 @@ begin
         if Distance( FLastTargetPos, FPosition ) <= aRadius then
           iTargets.PriorityTarget( FLastTargetPos );
 
-  FTargetPos := UI.ChooseTarget(aActionName, aRadius+1, aLimitRange, iTargets, FChainFire > 0 );
+  FTargetPos := IO.ChooseTarget(aActionName, aRadius+1, aLimitRange, iTargets, FChainFire > 0 );
   if FLastTargetPos.X*FLastTargetPos.Y <> 0
      then FPrevTargetPos := FLastTargetPos
      else FPrevTargetPos := FTargetPos;
