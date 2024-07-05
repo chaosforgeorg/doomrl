@@ -604,8 +604,8 @@ begin
 
   inherited Create( aParent, iName, EscapeFooter );
 
-  if UI.Ascii.Exists(iASCII) then
-    TConUIStringList.Create( Self, FAbsolute.Shrinked(2,1), UI.Ascii[iASCII], False )
+  if IO.Ascii.Exists(iASCII) then
+    TConUIStringList.Create( Self, FAbsolute.Shrinked(2,1), IO.Ascii[iASCII], False )
   else
     TConUIText.Create( Self, Rectangle(10,10,10,2), '@rPicture'#10'  N/A' );
 
@@ -642,7 +642,7 @@ begin
 
   inherited Create( aParent, 'DoomRL Character Info '+iStatus, EscapeFooter );
 
-  TConUIStringList.Create( Self, Rectangle(48,3,30,21), UI.Ascii[Player.ASCIIMoreCode], False );
+  TConUIStringList.Create( Self, Rectangle(48,3,30,21), IO.Ascii[Player.ASCIIMoreCode], False );
 
   iContent := TUIStringArray.Create;
 

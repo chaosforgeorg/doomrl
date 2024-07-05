@@ -203,7 +203,7 @@ begin
   if GraphicsVersion then
     FLogo   := True
   else
-    TConUIStringList.Create( Self, Rectangle(17,0,46,20), UI.Ascii['logo'], False );
+    TConUIStringList.Create( Self, Rectangle(17,0,46,20), IO.Ascii['logo'], False );
 end;
 
 procedure TMainMenuViewer.CreateSubLogo;

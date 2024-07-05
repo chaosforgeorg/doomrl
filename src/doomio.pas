@@ -1,16 +1,16 @@
 {$INCLUDE doomrl.inc}
 unit doomio;
 interface
-uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils, vio,
-     vsystems, vrltools, vluaconfig, vglquadrenderer, vrlmsg, vuitypes, vluastate,
-     doomspritemap, doomviews, doomaudio,
-     viotypes, vioevent, vioconsole, vuielement;
+uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
+     vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vrlmsg, vuitypes, vluastate,
+     viotypes, vioevent, vioconsole, vuielement, vgenerics,
+     doomspritemap, doomviews, doomaudio;
 
 type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
 
 type TDoomOnProgress = procedure ( aProgress : DWord ) of object;
-
+type TASCIIImageMap  = specialize TGObjectHashMap<TUIStringArray>;
 
 type TDoomIO = class( TIO )
   constructor Create; reintroduce;
@@ -58,6 +58,11 @@ type TDoomIO = class( TIO )
   procedure ErrorReport( const aText : AnsiString );
 
   procedure ClearAllMessages;
+  procedure ASCIILoader( aStream : TStream; aName : Ansistring; aSize : DWord );
+
+  procedure BloodSlideDown( aDelayTime : Word );
+  procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
+
   class procedure RegisterLuaAPI( State : TLuaState );
 
 protected
@@ -74,14 +79,17 @@ protected
   FLoading     : TUILoadingScreen;
   FMTarget     : TCoord2D;
   FKeyCode     : TIOKeyCode;
+  FASCII       : TASCIIImageMap;
 
   FHudEnabled  : Boolean;
+  FWaiting     : Boolean;
   FStoredHint  : AnsiString;
   FHint        : AnsiString;
 public
-  property KeyCode    : TIOKeyCode read FKeyCode    write FKeyCode;
-  property Audio      : TDoomAudio read FAudio;
-  property MTarget    : TCoord2D   read FMTarget    write FMTarget;
+  property KeyCode    : TIOKeyCode     read FKeyCode    write FKeyCode;
+  property Audio      : TDoomAudio     read FAudio;
+  property MTarget    : TCoord2D       read FMTarget    write FMTarget;
+  property ASCII      : TASCIIImageMap read FASCII;
 end;
 
 var IO : TDoomIO;
@@ -90,10 +98,88 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 
 implementation
 
-uses video, dateutils, variants, vluasystem,
-     vlog, vdebug, vutil, vuiconsole, vcolor, vmath,
+uses math, video, dateutils, variants,
+     vluasystem, vlog, vdebug, vutil, vuiconsole, vcolor, vmath,
      vsdlio, vglconsole, vtig, vvision, vconuirl,
-     doombase, doomlua, dfdata, dfoutput, dflevel, dfplayer;
+     doombase, doomanimation, doomlua, dfdata, dfoutput, dflevel, dfplayer, dfitem;
+
+
+{
+procedure OutPutRestore;
+var vx,vy : byte;
+begin
+  if GraphicsVersion then Exit;
+  for vx := 1 to 80 do for vy := 1 to 25 do VideoBuf^[(vx-1)+(vy-1)*ScreenSizeX] := GFXCapture[vy,vx];
+end;
+}
+
+//type TGFXScreen = array[1..25,1..80] of Word;
+//var  GFXCapture : TGFXScreen;
+
+
+procedure TDoomIO.BloodSlideDown( aDelayTime : Word );
+{
+const BloodPic : TPictureRec = (Picture : ' '; Color : 16*Red);
+var Temp  : TGFXScreen;
+    Blood : TGFXScreen;
+    vx,vy : byte;
+}
+begin
+  if Option_NoBloodSlide or GraphicsVersion then
+  begin
+    exit;
+  end;
+{
+  for vx := 1 to 80 do for vy := 1 to 25 do Temp [vy,vx] := VideoBuf^[(vx-1)+(vy-1)*ScreenSizeX];
+  OutputRestore;
+  FillWord(Blood,25*80,Word(BloodPic));
+  SlideDown(DelayTime,Blood);
+  SlideDown(DelayTime,Temp);
+}
+end;
+
+procedure TDoomIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
+var iChr : Char;
+begin
+  if GraphicsVersion then
+  begin
+    UI.FAnimations.AddAnimation(TDoomBlink.Create(aDuration,aDelay,aColor));
+    Exit;
+  end;
+  if Option_HighASCII then iChr := Chr(219) else iChr := '#';
+  UI.FTextMap.AddAnimation( TTextBlinkAnimation.Create(IOGylph( iChr, aColor ),aDuration,aDelay));
+end;
+
+
+
+{
+procedure TDoomUI.SlideDown(DelayTime : word; var NewScreen : TGFXScreen);
+var Pos  : array[1..80] of Byte;
+    cn,t, vx,vy : byte;
+  procedure MoveColumn(x : byte);
+  var y : byte;
+  begin
+    if pos[x]+1 > 25 then Exit;
+    for y := 24 downto pos[x]+1 do
+      VideoBuf^[(x-1)+y*LongInt(ScreenSizeX)] := VideoBuf^[(x-1)+(y-1)*LongInt(ScreenSizeX)];
+    VideoBuf^[(x-1)+pos[x]*LongInt(ScreenSizeX)] := NewScreen[pos[x]+1,x];
+    Inc(pos[x]);
+  end;
+
+begin
+  if GraphicsVersion then Exit;
+  for cn := 1 to 80  do Pos[cn] := 0;
+  for cn := 1 to 160 do MoveColumn(Random(80)+1);
+  t := 1;
+  repeat
+    Inc(t);
+    IO.Delay(DelayTime);
+    for cn := 1 to 80 do MoveColumn(cn);
+  until t = 25;
+  for vx := 1 to 80 do for vy := 1 to 25 do VideoBuf^[(vx-1)+(vy-1)*ScreenSizeX] := NewScreen[vy,vx];
+
+end;
+}
 
 { TDoomIO }
 
@@ -103,9 +189,11 @@ begin
   FLoading := nil;
   IO := Self;
   FTime := 0;
-  FAudio := TDoomAudio.Create;
-  FMessages   := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
+  FAudio    := TDoomAudio.Create;
+  FMessages := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
+  FASCII    := TASCIIImageMap.Create( True );
 
+  FWaiting    := False;
   FHudEnabled := False;
   FStoredHint := '';
   FHint       := '';
@@ -190,6 +278,7 @@ destructor TDoomIO.Destroy;
 begin
   FreeAndNil( FAudio );
   FreeAndNil( FMessages );
+  FreeAndNil( FASCII );
   IO := nil;
   inherited Destroy;
 end;
@@ -234,11 +323,90 @@ procedure TDoomIO.DrawHud;
 var iCon        : TUIConsole;
     i, iMax     : DWord;
     iColor      : TUIColor;
+    iHPP        : Integer;
+    iPos        : TIOPoint;
+    iBottom     : Integer;
+
+  function ArmorColor( aValue : Integer ) : TUIColor;
+  begin
+    case aValue of
+     -100.. 25  : Exit(LightRed);
+      26 .. 49  : Exit(Yellow);
+      50 ..1000 : Exit(LightGray);
+      else Exit(LightGray);
+    end;
+  end;
+  function NameColor( aValue : Integer ) : TUIColor;
+  begin
+    case aValue of
+     -100.. 25  : Exit(LightRed);
+      26 .. 49  : Exit(Yellow);
+      50 ..1000 : Exit(LightBlue);
+      else Exit(LightGray);
+    end;
+  end;
+  function WeaponColor( aWeapon : TItem ) : TUIColor;
+  begin
+    if aWeapon.IType = ITEMTYPE_MELEE then Exit(lightgray);
+    if ( aWeapon.Ammo = 0 ) and not ( aWeapon.Flags[ IF_NOAMMO ] ) then Exit(LightRed);
+    Exit(LightGray);
+  end;
+  function ExpString : AnsiString;
+  begin
+    if Player.ExpLevel >= MaxPlayerLevel - 1 then Exit('MAX');
+    Exit(IntToStr(Clamp(Floor(((Player.Exp-ExpTable[Player.ExpLevel]) / (ExpTable[Player.ExpLevel+1]-ExpTable[Player.ExpLevel]))*100),0,99))+'%');
+  end;
+
 begin
   iCon.Init( FConsole );
   iCon.Clear;
 
   UI.OnRedraw;
+
+  if Player <> nil then
+  begin
+    iPos    := Point( 2,23 );
+    iBottom := 25;
+    iHPP    := Round((Player.HP/Player.HPMax)*100);
+
+    VTIG_FreeLabel( 'Armor :',                            iPos + Point(28,0), DarkGray );
+    VTIG_FreeLabel( Player.Name,                          iPos + Point(1,0),  NameColor(iHPP) );
+    VTIG_FreeLabel( 'Health:      Exp:   /      Weapon:', iPos + Point(1,1),  DarkGray );
+    VTIG_FreeLabel( IntToStr(iHPP)+'%',                   iPos + Point(9,1),  Red );
+    VTIG_FreeLabel( TwoInt(Player.ExpLevel),              iPos + Point(19,1), LightGray );
+    VTIG_FreeLabel( ExpString,                            iPos + Point(22,1), LightGray );
+
+    if Player.Inv.Slot[efWeapon] = nil
+      then VTIG_FreeLabel( 'none',                                iPos + Point(36,1), LightGray )
+      else VTIG_FreeLabel( Player.Inv.Slot[efWeapon].Description, iPos + Point(36,1), WeaponColor(Player.Inv.Slot[efWeapon]) );
+
+    if Player.Inv.Slot[efTorso] = nil
+      then VTIG_FreeLabel( 'none',                                iPos + Point(36,0), LightGray )
+      else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(36,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
+
+    iColor := Red;
+    if Doom.Level.Empty then iColor := Blue;
+    VTIG_FreeLabel( Doom.Level.Name, iPos + Point(61,2), iColor );
+    if Doom.Level.Name_Number >= 100 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(73,2), iColor )
+    else if Doom.Level.Name_Number <> 0 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(74,2), iColor );
+
+    with Player do
+    for i := 1 to MAXAFFECT do
+      if FAffects.IsActive(i) then
+      begin
+        if FAffects.IsExpiring(i)
+          then iColor := Affects[i].Color_exp
+          else iColor := Affects[i].Color;
+        VTIG_FreeLabel( Affects[i].name, Point( iPos.X+((Byte(i)-1)*4)+14, iBottom ), iColor )
+      end;
+
+    with Player do
+      if (FTactic.Current = TacticRunning) and (FTactic.Count < 6) then
+        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), Brown )
+      else
+        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
+  end;
+
 
   if FHint <> '' then
     VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 3 ), Yellow );
@@ -311,6 +479,19 @@ begin
   iChunkList := nil;
   iCon.ChunkifyEx( iChunkList, iPosition, iColor, aString, iColor, Point(78,2) );
   Exit( iCon.LinifyChunkList( iChunkList ) );
+end;
+
+procedure TDoomIO.ASCIILoader ( aStream : TStream; aName : Ansistring; aSize : DWord ) ;
+var iImage   : TUIStringArray;
+    iCounter : DWord;
+    iAmount  : DWord;
+begin
+  Log('Registering ascii file '+aName+'...');
+  iAmount := aStream.ReadDWord;
+  iImage := TUIStringArray.Create;
+  for iCounter := 1 to Min(iAmount,25) do
+    iImage.Push( aStream.ReadAnsiString );
+  FASCII.Items[LowerCase(LeftStr(aName,Length(aName)-4))] := iImage;
 end;
 
 function TDoomIO.EventWaitForMore : Boolean;
@@ -762,7 +943,7 @@ end;
 
 function lua_ui_blood_slide(L: Plua_State): Integer; cdecl;
 begin
-  UI.BloodSlideDown(20);
+  IO.BloodSlideDown(20);
   Result := 0;
 end;
 

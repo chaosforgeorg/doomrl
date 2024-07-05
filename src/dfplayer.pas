@@ -347,7 +347,7 @@ begin
   UI.Blink( LightBlue, 100 );
   IO.MsgEnter( 'You advance to level %d!', [ FExpLevel ] );
   if not Doom.CallHookCheck( Hook_OnPreLevelUp, [ FExpLevel ] ) then Exit;
-  UI.BloodSlideDown( 20 );
+  IO.BloodSlideDown( 20 );
   doUpgradeTrait();
   Doom.CallHook( Hook_OnLevelUp, [ FExpLevel ] );
 end;
@@ -898,7 +898,7 @@ end;
 
 function TPlayer.ASCIIMoreCode : AnsiString;
 begin
-  if (Inv.Slot[efTorso] <> nil) and (UI.ASCII.Exists(Inv.Slot[efTorso].ID)) then
+  if (Inv.Slot[efTorso] <> nil) and (IO.ASCII.Exists(Inv.Slot[efTorso].ID)) then
     exit(Inv.Slot[efTorso].ID);
   Exit('player');
 end;

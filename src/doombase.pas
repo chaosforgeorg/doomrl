@@ -898,7 +898,7 @@ repeat
     
     FLevel.CalculateVision( Player.Position );
     SetState( DSPlaying );
-    UI.BloodSlideDown(20);
+    IO.BloodSlideDown(20);
     
     IO.Audio.PlayMusic(FLevel.ID);
     FLevel.PreEnter;
@@ -1010,7 +1010,7 @@ repeat
         IO.RunUILoop( TUIMortemViewer.Create( IO.Root ) );
     end;
 
-  UI.BloodSlideDown(20);
+  IO.BloodSlideDown(20);
   FreeAndNil(Player);
 
   if GameType <> GameStandard then

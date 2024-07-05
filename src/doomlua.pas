@@ -336,7 +336,7 @@ begin
     RegisterModule(Module.ID, WAD);
     LoadStream(WAD,'','module.lua');
     LoadStream(WAD,'','main.lua');
-    WAD.RegisterLoader(FILETYPE_ASCII,@UI.ASCIILoader);
+    WAD.RegisterLoader(FILETYPE_ASCII,@IO.ASCIILoader);
     if SoundVersion then
     begin
       WAD.RegisterLoader(FILETYPE_MUSIC,@Sound.MusicStreamLoader);
@@ -401,7 +401,7 @@ begin
       FMainData.RegisterLoader(FILETYPE_IMAGE ,@Textures.LoadTextureCallback);
   end;
   FMainData.RegisterLoader(FILETYPE_HELP ,@Help.StreamLoader);
-  FMainData.RegisterLoader(FILETYPE_ASCII,@UI.ASCIILoader);
+  FMainData.RegisterLoader(FILETYPE_ASCII,@IO.ASCIILoader);
   IO.LoadProgress(iProgBase + 35);
   FMainData.Load('help');
   IO.LoadProgress(iProgBase + 40);
