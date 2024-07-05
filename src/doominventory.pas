@@ -77,7 +77,7 @@ begin
     begin
       if not Option_InvFullDrop then
       begin
-        if not UI.MsgConfirm('No room in inventory! Should it be dropped?') then Exit;
+        if not IO.MsgConfirm('No room in inventory! Should it be dropped?') then Exit;
       end;
       FAction := ItemResultDrop;
     end;
@@ -85,7 +85,7 @@ begin
 
   if (FSlots[iSlot] <> nil) and FSlots[iSlot].Flags[ IF_CURSED ] then
   begin
-    UI.Msg('You can''t, it''s cursed!');
+    IO.Msg('You can''t, it''s cursed!');
     Exit;
   end;
 
@@ -271,7 +271,7 @@ begin
     iArray.Push( Slot[ efWeapon ] );
     if Slot[ efWeapon ].Flags[ IF_CURSED ] then
     begin
-      UI.Msg('You can''t!');
+      IO.Msg('You can''t!');
       FreeAndNil( iArray );
       Exit;
     end;
@@ -282,11 +282,11 @@ begin
       if iItem.isWeapon then
         iArray.Push( iItem );
 
-  if iArray.Size = 0 then UI.Msg('You have no weapons!');
-  if iArray.Size = 1 then UI.Msg('You have no other weapons!');
+  if iArray.Size = 0 then IO.Msg('You have no weapons!');
+  if iArray.Size = 1 then IO.Msg('You have no other weapons!');
   if iArray.Size > 1 then
   begin
-    UI.Msg('Use @<scroll@> to choose weapon, @<left@> button to wield, @<right@> to cancel...');
+    IO.Msg('Use @<scroll@> to choose weapon, @<left@> button to wield, @<right@> to cancel...');
     iIdx := 1;
     if Slot[ efWeapon ] = nil then iIdx := 0;
     repeat
@@ -383,8 +383,8 @@ begin
   if aItem.Hooks[ Hook_OnEquipCheck ] then
     if not aItem.CallHookCheck( Hook_OnEquipCheck,[FOwner] ) then Exit( False );
   iItem := FSlots[aItem.eqSlot];
-  if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin UI.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
-  UI.Msg('You wear/wield : '+aItem.GetName(false));
+  if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin IO.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
+  IO.Msg('You wear/wield : '+aItem.GetName(false));
   Wear( aItem );
   Exit( True );
 end;
@@ -396,8 +396,8 @@ begin
   if aItem.Hooks[ Hook_OnEquipCheck ] then
     if not aItem.CallHookCheck( Hook_OnEquipCheck,[FOwner] ) then Exit( False );
   iItem := FSlots[aSlot];
-  if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin UI.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
-  UI.Msg('You wear/wield : '+aItem.GetName(false));
+  if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin IO.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
+  IO.Msg('You wear/wield : '+aItem.GetName(false));
   setSlot( aSlot, aItem );
   Exit( True );
 end;

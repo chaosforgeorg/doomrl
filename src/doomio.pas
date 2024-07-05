@@ -2,7 +2,7 @@
 unit doomio;
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils, vio,
-     vsystems, vrltools, vluaconfig, vglquadrenderer,
+     vsystems, vrltools, vluaconfig, vglquadrenderer, vrlmsg, vuitypes, vluastate,
      doomspritemap, doomviews, doomaudio,
      viotypes, vioevent, vioconsole, vuielement;
 
@@ -37,15 +37,39 @@ type TDoomIO = class( TIO )
   procedure SetTempHint( const aText : AnsiString );
   procedure SetHint( const aText : AnsiString );
 
-  function ChooseTarget(aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D; virtual;
+  procedure Focus( aCoord: TCoord2D );
+
+  procedure LookMode;
+  function ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D; virtual;
+  function ChooseDirection( aActionName : string ) : TDirection;
+  procedure LookDescription( aWhere : TCoord2D );
+
+  procedure Msg( const aText : AnsiString );
+  procedure Msg( const aText : AnsiString; const aParams : array of const );
+  procedure MsgEnter( const aText : AnsiString );
+  procedure MsgEnter( const aText : AnsiString; const aParams : array of const );
+  function  MsgConfirm( const aText : AnsiString; aStrong : Boolean = False ) : Boolean;
+  function  MsgChoice( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
+  function  MsgCommandChoice( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
+  function  MsgGetRecent : TUIChunkBuffer;
+  procedure MsgReset;
+  // TODO: Could this be removed as well?
+  procedure MsgUpDate;
+  procedure ErrorReport( const aText : AnsiString );
+
+  procedure ClearAllMessages;
+  class procedure RegisterLuaAPI( State : TLuaState );
+
 protected
   procedure DrawHud; virtual;
   procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
   procedure ColorQuery(nkey,nvalue : Variant);
   function ScreenShotCallback( aEvent : TIOEvent ) : Boolean;
   function BBScreenShotCallback( aEvent : TIOEvent ) : Boolean;
+  function Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
 protected
   FAudio       : TDoomAudio;
+  FMessages    : TRLMessages;
   FTime        : QWord;
   FLoading     : TUILoadingScreen;
   FMTarget     : TCoord2D;
@@ -66,10 +90,10 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 
 implementation
 
-uses video, dateutils, variants,
+uses video, dateutils, variants, vluasystem,
      vlog, vdebug, vutil, vuiconsole, vcolor, vmath,
-     vsdlio, vglconsole, vtig, vvision,
-     doombase, dfdata, dfoutput, dflevel, dfplayer;
+     vsdlio, vglconsole, vtig, vvision, vconuirl,
+     doombase, doomlua, dfdata, dfoutput, dflevel, dfplayer;
 
 { TDoomIO }
 
@@ -80,6 +104,8 @@ begin
   IO := Self;
   FTime := 0;
   FAudio := TDoomAudio.Create;
+  FMessages   := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
+
   FHudEnabled := False;
   FStoredHint := '';
   FHint       := '';
@@ -140,6 +166,8 @@ begin
   FAudio.Configure( aConfig, aReload );
   if aReload then
     aConfig.EntryFeed('Colors', @ColorQuery );
+  if Option_MessageColoring then
+    aConfig.EntryFeed( 'Messages', @FMessages.AddHighlightCallback );
 end;
 
 function TDoomIO.RunUILoop( aElement : TUIElement = nil ) : DWord;
@@ -161,6 +189,7 @@ end;
 destructor TDoomIO.Destroy;
 begin
   FreeAndNil( FAudio );
+  FreeAndNil( FMessages );
   IO := nil;
   inherited Destroy;
 end;
@@ -203,6 +232,8 @@ end;
 
 procedure TDoomIO.DrawHud;
 var iCon        : TUIConsole;
+    i, iMax     : DWord;
+    iColor      : TUIColor;
 begin
   iCon.Init( FConsole );
   iCon.Clear;
@@ -211,6 +242,31 @@ begin
 
   if FHint <> '' then
     VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 3 ), Yellow );
+
+  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
+  if FMessages.Content.Size > 0 then
+  for i := 1+FMessages.Scroll to iMax do
+  begin
+    iColor := DarkGray;
+    if i > iMax - FMessages.Active then iColor := LightGray;
+    iCon.Print( Point(1,i-FMessages.Scroll), FMessages.Content[ i-1 ], iColor, Black, Rectangle( 1,1, 78, 25 ) );
+  end;
+
+  {
+  VTIG_Begin( 'messages', Point(78,2), Point( 1,1 ) );
+  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
+  if FMessages.Content.Size > 0 then
+  for i := 1+FMessages.Scroll to iMax do
+  begin
+    iColor := FForeColor;
+    if i > iMax - FMessages.Active then iColor := iCon.BoldColor( FForeColor );
+    for iChunk in FMessages.Content[ i-1 ] do
+      VTIG_Text( iChunk.Content + ' ' );
+//      VTIG_FreeLabel( iChunk.Content, iChunk.Position + Point(1,i-FMessages.Scroll) , iColor );
+  end;
+  VTIG_End;
+  }
+
 end;
 
 procedure TDoomIO.SetHint ( const aText : AnsiString ) ;
@@ -243,6 +299,20 @@ begin
   Exit(True);
 end;
 
+function TDoomIO.Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
+var iCon       : TUIConsole;
+    iChunkList : TUIChunkList;
+    iPosition  : TUIPoint;
+    iColor     : TUIColor;
+begin
+  iCon.Init( IO.Console );
+  iPosition  := Point(aStart,0);
+  iColor     := aColor;
+  iChunkList := nil;
+  iCon.ChunkifyEx( iChunkList, iPosition, iColor, aString, iColor, Point(78,2) );
+  Exit( iCon.LinifyChunkList( iChunkList ) );
+end;
+
 function TDoomIO.EventWaitForMore : Boolean;
 begin
   if Option_MorePrompt then
@@ -251,7 +321,7 @@ begin
     WaitForCommand([INPUT_OK,INPUT_MLEFT]);
     SetHint('');
   end;
-  UI.MsgUpdate;
+  MsgUpdate;
   Exit( True );
 end;
 
@@ -405,7 +475,13 @@ begin
   Exit( iEvent.EType in [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ] );
 end;
 
-function TDoomIO.ChooseTarget(aActionName : string; aRange: byte;
+procedure TDoomIO.Focus(aCoord: TCoord2D);
+begin
+  FConsole.ShowCursor;
+  FConsole.MoveCursor(aCoord.x+1,aCoord.y+2);
+end;
+
+function TDoomIO.ChooseTarget( aActionName : string; aRange: byte;
   aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D;
 var Key : byte;
     Dir : TDirection;
@@ -424,11 +500,11 @@ begin
   iTargetRange:= aRange;
   iTargetColor := Green;
 
-  UI.Msg( aActionName );
-  UI.MsgUpDate;
-  UI.Msg('You see : ');
+  Msg( aActionName );
+  MsgUpDate;
+  Msg('You see : ');
 
-  UI.LookDescription( iTarget );
+  LookDescription( iTarget );
   repeat
     if iTarget <> Position then
       begin
@@ -478,13 +554,327 @@ begin
       if Being[ iTarget ] <> nil then
          Being[ iTarget ].FullLook;
     end;
-    UI.LookDescription( iTarget );
+    LookDescription( iTarget );
   until Key in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
-  UI.MsgUpDate;
+  MsgUpDate;
 
   ChooseTarget := iTarget;
 end;
 
+procedure TDoomIO.LookMode;
+var Key    : byte;
+    Dir    : TDirection;
+    lc     : TCoord2D;
+    TargetColor : TColor;
+    Target  : TCoord2D;
+    iLevel  : TLevel;
+begin
+  iLevel := Doom.Level;
+  Target := Player.Position;
+  TargetColor := NewColor( White );
+  LookDescription( Target );
+  repeat
+    if SpriteMap <> nil then SpriteMap.SetTarget( Target, TargetColor, False );
+    TargetColor := NewColor( White );
+    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE,INPUT_ESCAPE,INPUT_MORE,INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
+    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if Key in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then Target := IO.MTarget;
+    if Key in [ INPUT_ESCAPE, INPUT_MRIGHT ] then Break;
+    if Key <> INPUT_MORE then
+    begin
+      lc := Target;
+      Dir := InputDirection( Key );
+      if iLevel.isProperCoord(lc + Dir) then
+      begin
+        Target := lc + Dir;
+        LookDescription( Target );
+        Focus( Target );
+      end
+      else
+      if Option_BlindMode then
+      begin
+        TargetColor := NewColor( Red );
+        FMessages.Pop;
+        Msg('Out of range!');
+        Continue;
+      end;
+      if Option_BlindMode then
+      if lc = Target then
+      begin
+        TargetColor := NewColor( Red );
+        FMessages.Pop;
+        Msg('Out of range!');
+      end;
+     end;
+     if (Key in [ INPUT_MORE, INPUT_MLEFT ]) and iLevel.isVisible( Target ) then
+     begin
+       with iLevel do
+       if Being[Target] <> nil then
+          Being[Target].FullLook;
+       Focus( Target );
+       LookDescription( Target );
+     end;
+  until False;
+  MsgUpDate;
+  if SpriteMap <> nil then SpriteMap.ClearTarget;
+end;
+
+function TDoomIO.ChooseDirection(aActionName : string): TDirection;
+var Key : byte;
+    Position : TCoord2D;
+    iTarget : TCoord2D;
+    iDone : Boolean;
+begin
+  Position := Player.Position;
+  Msg( aActionName + ' -- Choose direction...' );
+  iDone := False;
+  repeat
+    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE,INPUT_ESCAPE,INPUT_MLEFT,INPUT_MRIGHT]);
+    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if Key in INPUT_MOVE then
+    begin
+      ChooseDirection := InputDirection(Key);
+      iDone := True;
+    end;
+    if (Key = INPUT_MLEFT) then
+    begin
+      iTarget := IO.MTarget;
+      if (Distance( iTarget, Position) = 1) then
+      begin
+        ChooseDirection.Create(Position, iTarget);
+        iDone := True;
+      end;
+    end;
+    if (Key in [INPUT_MRIGHT,INPUT_ESCAPE]) then
+    begin
+      ChooseDirection.Create(DIR_CENTER);
+      iDone := True;
+    end;
+  until iDone;
+end;
+
+procedure TDoomIO.LookDescription(aWhere: TCoord2D);
+var LookDesc : string;
+begin
+  LookDesc := Doom.Level.GetLookDescription( aWhere );
+  if Option_BlindMode then LookDesc += ' | '+BlindCoord( aWhere - Player.Position );
+  if Doom.Level.isVisible(aWhere) and (Doom.Level.Being[aWhere] <> nil) then LookDesc += ' | [@<m@>]ore';
+  FMessages.Pop;
+  Msg('You see : '+LookDesc );
+end;
+
+procedure TDoomIO.Msg( const aText : AnsiString );
+begin
+  if FMessages <> nil then FMessages.Add(aText);
+end;
+
+procedure TDoomIO.Msg( const aText : AnsiString; const aParams : array of const );
+begin
+  Msg( Format( aText, aParams ) );
+end;
+
+procedure TDoomIO.MsgEnter( const aText: AnsiString);
+begin
+  Msg(aText+' Press <Enter>...');
+  WaitForEnter;
+  MsgUpDate;
+end;
+
+procedure TDoomIO.MsgEnter( const aText: AnsiString; const aParams: array of const);
+begin
+  Msg( aText+' Press <Enter>...', aParams );
+  WaitForEnter;
+  MsgUpDate;
+end;
+
+function TDoomIO.MsgConfirm( const aText: AnsiString; aStrong : Boolean = False): Boolean;
+var Key : byte;
+begin
+  if aStrong then Msg(aText+' [Y/n]')
+             else Msg(aText+' [y/n]');
+  if aStrong then Key := IO.WaitForKey([Ord('Y'),Ord('N'),Ord('n')])
+             else Key := IO.WaitForKey([Ord('Y'),Ord('y'),Ord('N'),Ord('n')]);
+  MsgConfirm := Key in [Ord('Y'),Ord('y')];
+  MsgUpDate;
+end;
+
+function TDoomIO.MsgChoice ( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
+var ChoiceStr : string;
+    Count     : Byte;
+begin
+  ChoiceStr := '';
+  for Count := 0 to 255 do
+    if Count in aChoices then
+      if Count in [31..126] then ChoiceStr += Chr(Count);
+
+  Msg(aText + ' ['+ChoiceStr+']');
+  MsgChoice := WaitForKey( aChoices );
+end;
+
+function TDoomIO.MsgCommandChoice ( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
+begin
+  Msg(aText);
+  repeat
+    Result := WaitForCommand( aChoices );
+  until Result in aChoices;
+end;
+
+function TDoomIO.MsgGetRecent : TUIChunkBuffer;
+begin
+  Exit( FMessages.Content );
+end;
+
+procedure TDoomIO.MsgReset;
+begin
+  FMessages.Reset;
+  FMessages.Update;
+end;
+
+procedure TDoomIO.MsgUpDate;
+begin
+  FMessages.Update;
+  SetTempHint('');
+end;
+
+procedure TDoomIO.ErrorReport(const aText: AnsiString);
+begin
+  MsgEnter('@RError:@> '+aText);
+  Msg('@yError written to error.log, please report!@>');
+end;
+
+procedure TDoomIO.ClearAllMessages;
+begin
+  FMessages.Clear;
+end;
+
+(**************************** LUA UI *****************************)
+
+function lua_ui_set_hint(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  if Option_Hints then
+    IO.SetHint( State.ToString( 1 ) );
+  Result := 0;
+end;
+
+{$HINTS OFF} // To supress Hint: Parameter "x" not found
+
+function lua_ui_blood_slide(L: Plua_State): Integer; cdecl;
+begin
+  UI.BloodSlideDown(20);
+  Result := 0;
+end;
+
+{$HINTS ON}
+
+function lua_ui_blink(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  UI.Blink(State.ToInteger(1),State.ToInteger(2));
+  Result := 0;
+end;
+
+function lua_ui_plot_screen(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  IO.RunUILoop( TConUIPlotViewer.Create( IO.Root, State.ToString(1), Rectangle( Point(10,5), 62, 15 ) ) );
+  Result := 0;
+end;
+
+function lua_ui_msg(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  IO.Msg(State.ToString(1));
+  Result := 0;
+end;
+
+function lua_ui_msg_clear(L: Plua_State): Integer; cdecl;
+begin
+  IO.MsgReset();
+  Result := 0;
+end;
+
+function lua_ui_msg_enter(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  if State.StackSize = 0 then Exit(0);
+  IO.MsgEnter(State.ToString(1));
+  Result := 0;
+end;
+
+function lua_ui_msg_confirm(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  if State.StackSize = 0 then Exit(0);
+  State.Push( IO.MsgConfirm(State.ToString(1), State.ToBoolean(2) ) );
+  Result := 1;
+end;
+
+function lua_ui_msg_choice(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Choices : TKeySet;
+    ChStr   : AnsiString;
+    Choice  : Byte;
+begin
+  State.Init(L);
+  if State.StackSize < 2 then Exit(0);
+  ChStr := State.ToString(2);
+  if Length(ChStr) < 2 then Exit(0);
+
+  Choices := [];
+  for Choice := 1 to Length(ChStr) do
+    Include(Choices,Ord(ChStr[Choice]));
+
+  ChStr := Chr( IO.MsgChoice( State.ToString(1), Choices ) );
+  State.Push(ChStr);
+  Result := 1;
+end;
+
+function lua_ui_msg_history(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Idx   : Integer;
+    Msg   : AnsiString;
+begin
+  State.Init(L);
+  if State.StackSize = 0 then Exit(0);
+  Idx := State.ToInteger(1)+1;
+  if Idx > IO.MsgGetRecent.Size then
+    State.PushNil
+  else
+  begin
+    Msg := ChunkListToString( IO.MsgGetRecent[-Idx] );
+    if Msg <> '' then
+      State.Push( Msg )
+    else
+      State.PushNil;
+  end;
+  Result := 1;
+end;
+
+const lua_ui_lib : array[0..10] of luaL_Reg = (
+      ( name : 'msg';         func : @lua_ui_msg ),
+      ( name : 'msg_clear';   func : @lua_ui_msg_clear ),
+      ( name : 'msg_enter';   func : @lua_ui_msg_enter ),
+      ( name : 'msg_choice';  func : @lua_ui_msg_choice ),
+      ( name : 'msg_confirm'; func : @lua_ui_msg_confirm ),
+      ( name : 'msg_history'; func : @lua_ui_msg_history ),
+      ( name : 'blood_slide'; func : @lua_ui_blood_slide),
+      ( name : 'blink';       func : @lua_ui_blink),
+      ( name : 'plot_screen'; func : @lua_ui_plot_screen),
+      ( name : 'set_hint';    func : @lua_ui_set_hint ),
+      ( name : nil;          func : nil; )
+);
+
+class procedure TDoomIO.RegisterLuaAPI( State : TLuaState );
+begin
+  State.Register( 'ui', lua_ui_lib );
+end;
 
 procedure EmitCrashInfo ( const aInfo : AnsiString; aInGame : Boolean ) ;
 function Iff(expr : Boolean; const str : AnsiString) : AnsiString;

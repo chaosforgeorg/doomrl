@@ -206,7 +206,7 @@ begin
     on e : Exception do
     begin
       Log('PlayMusic raised exception (' + E.ClassName + '): ' + e.message);
-      UI.Msg( 'PlayMusic raised exception: ' + e.message );
+      IO.Msg( 'PlayMusic raised exception: ' + e.message );
     end;
   end;
 end;
@@ -222,7 +222,7 @@ begin
       on e : Exception do
       begin
         Log('PlayMusicOnce raised exception (' + E.ClassName + '): ' + e.message);
-        UI.Msg( 'PlayMusic raised exception: ' + e.message );
+        IO.Msg( 'PlayMusic raised exception: ' + e.message );
       end;
   end;
 end;

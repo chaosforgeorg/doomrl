@@ -132,7 +132,7 @@ begin
       else GraphicsVersion := False;
   end;
 
-  TDoomUI.RegisterLuaAPI( State );
+  TDoomIO.RegisterLuaAPI( State );
 end;
 
 end.

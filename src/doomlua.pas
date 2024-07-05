@@ -437,7 +437,7 @@ begin
   // TODO: this is unsafe as Msg might not be loaded !
   if (UI <> nil) and (Doom.State = DSPlaying) then
   begin
-    UI.ErrorReport( ErrorString );
+    IO.ErrorReport( ErrorString );
   end
   else
     raise ELuaException.Create('LuaError: '+ErrorString);
@@ -532,7 +532,7 @@ begin
   SetValue('GRAPHICSVERSION',GraphicsVersion);
 
   for Count := 0 to 15 do SetValue(ColorNames[Count],Count);
-  TDoomUI.RegisterLuaAPI( State );
+  TDoomIO.RegisterLuaAPI( State );
 
   Register( 'statistics', lua_statistics_lib );
   RegisterMetaTable('statistics',@lua_statistics_get, @lua_statistics_set );

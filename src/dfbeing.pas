@@ -730,7 +730,7 @@ begin
   end;
   
   if iPack and ( UIDs[ iAmmoUID ] = nil ) and IsPlayer then
-    UI.Msg( 'Your %s is depleted.', [AmmoName] );
+    IO.Msg( 'Your %s is depleted.', [AmmoName] );
   
   Exit( True );
 end;
@@ -943,7 +943,7 @@ begin
   if BF_IMPATIENT in FFlags then
     if item.isPack then
       begin
-        if isPlayer then UI.Msg('No time to waste.');
+        if isPlayer then IO.Msg('No time to waste.');
         CallHook( Hook_OnPickUpItem, [item] );
         Exit( ActionUse( item ) );
       end;
@@ -952,7 +952,7 @@ begin
 
   if not item.CallHookCheck(Hook_OnPickupCheck,[Self]) then  Exit( False );
   PlaySound(item.Sounds.Pickup);
-  if isPlayer then UI.Msg('You picked up %s.',[item.GetName(false)]);
+  if isPlayer then IO.Msg('You picked up %s.',[item.GetName(false)]);
   Inv.Add(item);
   CallHook( Hook_OnPickUpItem, [item] );
   Dec(FSpeedCount,ActionCostPickUp);
@@ -1102,7 +1102,7 @@ end;
 function TBeing.Fail ( const aText: AnsiString; const aParams: array of const ): Boolean;
 begin
   if FSilentAction then Exit( False );
-  if IsPlayer then UI.Msg( aText, aParams );
+  if IsPlayer then IO.Msg( aText, aParams );
   Exit( False );
 end;
 
@@ -1110,8 +1110,8 @@ function TBeing.FailConfirm ( const aText : AnsiString; const aParams : array of
 begin
   if FSilentAction then Exit( False );
   if IsPlayer then
-    if Option_EmptyConfirm then UI.MsgEnter( aText, aParams )
-                           else UI.Msg( aText, aParams );
+    if Option_EmptyConfirm then IO.MsgEnter( aText, aParams )
+                           else IO.Msg( aText, aParams );
   Exit( False );
 end;
 
@@ -1119,7 +1119,7 @@ function TBeing.Success ( const aText : AnsiString; const aParams : array of con
 begin
   if aCost <> 0 then Dec( FSpeedCount, aCost );
   if FSilentAction then Exit( True );
-  if IsPlayer then UI.Msg( aText, aParams );
+  if IsPlayer then IO.Msg( aText, aParams );
   Exit( True );
 end;
 
@@ -1134,8 +1134,8 @@ procedure TBeing.Emote ( const aPlayerText, aBeingText : AnsiString; const aPara
 begin
   if FSilentAction then Exit;
   if IsPlayer
-    then UI.Msg( aPlayerText, aParams )
-    else if isVisible then UI.Msg( Capitalized(GetName(true))+' '+aBeingText, aParams );
+    then IO.Msg( aPlayerText, aParams )
+    else if isVisible then IO.Msg( Capitalized(GetName(true))+' '+aBeingText, aParams );
 end;
 
 function TBeing.GetName(known : boolean) : string;
@@ -1435,8 +1435,8 @@ begin
             iLevel.DropBeing( iBeing, sc );
             iLevel.Cell[sc] := LuaSystem.Defines[ Cells[ iCellID ].destroyto ];
             Include( iBeing.FFlags, BF_NoExp );
-            if isVisible then UI.Msg(Capitalized(GetName(true))+' raises his arms!');
-            if iBeing.isVisible then UI.Msg(Capitalized( iBeing.GetName(true))+' suddenly rises from the dead!');
+            if isVisible then IO.Msg(Capitalized(GetName(true))+' raises his arms!');
+            if iBeing.isVisible then IO.Msg(Capitalized( iBeing.GetName(true))+' suddenly rises from the dead!');
           except
             on e : EPlacementException do FreeAndNil( iBeing );
           end;
@@ -1658,7 +1658,7 @@ begin
   if Roll( 12 + iToHit ) < iDefence then
   begin
     if IsPlayer then iResult := ' miss ' else iResult := ' misses ';
-    if isVisible then UI.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
+    if isVisible then IO.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
     iMissed := True;
   end;
 
@@ -1669,7 +1669,7 @@ begin
 
     // Hit message
     if IsPlayer then iResult := ' hit ' else iResult := ' hits ';
-    if isVisible then UI.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
+    if isVisible then IO.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
 
     // Apply damage
     aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon );
@@ -1678,7 +1678,7 @@ begin
     if ( ( iWeapon <> nil ) and ( iWeapon.Flags[IF_CLEAVE] ) or ( BF_CLEAVE in FFlags ) ) and
       ( not TLevel(Parent).isAlive( iTargetUID ) ) then
       begin
-        UI.Msg('Next!');
+        IO.Msg('Next!');
         FSpeedCount := 5001;
       end;
 
@@ -1710,7 +1710,7 @@ begin
             end
             else
               Player.FAffects.Add(LuaSystem.Defines['berserk'],20);
-            UI.Msg('You''re going berserk!');
+            IO.Msg('You''re going berserk!');
             Player.FBersekerLimit := 0;
           end;
       end;
@@ -1840,13 +1840,13 @@ begin
     if (iArmor.Durability = 0) and (not iArmor.Flags[ IF_NODESTROY ]) then
     begin
       if IsPlayer then
-        if aTarget = Target_Torso then UI.Msg('Your '+iArmor.Name+' is completely destroyed!')
-                                  else UI.Msg('Your '+iArmor.Name+' are completely destroyed!');
+        if aTarget = Target_Torso then IO.Msg('Your '+iArmor.Name+' is completely destroyed!')
+                                  else IO.Msg('Your '+iArmor.Name+' are completely destroyed!');
       FreeAndNil( iArmor );
     end
     else if IsPlayer and ( iProtection <> iArmor.GetProtection ) then
-      if aTarget = Target_Torso then UI.Msg('Your '+iArmor.Name+' is damaged!')
-                                else UI.Msg('Your '+iArmor.Name+' are damaged!');
+      if aTarget = Target_Torso then IO.Msg('Your '+iArmor.Name+' is damaged!')
+                                else IO.Msg('Your '+iArmor.Name+' are damaged!');
 
   end;
 
@@ -1885,8 +1885,8 @@ begin
 
   FHP := Max( FHP - aDamage, 0 );
   if Dead and (not IsPlayer) then
-    if isVisible then UI.Msg(Capitalized(GetName(true))+' dies.')
-                 else UI.Msg('You hear the scream of a freed soul!');
+    if isVisible then IO.Msg(Capitalized(GetName(true))+' dies.')
+                 else IO.Msg('You hear the scream of a freed soul!');
   if Dead
     then Kill( Min( aDamage div 2, 15), aDamage >= iOverKillValue, TLevel(Parent).ActiveBeing, aSource )
     else CallHook( Hook_OnAttacked, [ TLevel(Parent).ActiveBeing, aSource ] );
@@ -1996,14 +1996,14 @@ begin
 
     if not iLevel.isEmpty( iCoord, [EF_NOBLOCK] ) then
     begin
-      if (iAimedBeing = Player) and (iDodged) then UI.Msg('You dodge!');
+      if (iAimedBeing = Player) and (iDodged) then IO.Msg('You dodge!');
 
       if aItem.Flags[ IF_DESTRUCTIVE ]
         then iLevel.DamageTile( iCoord, iDamage * 2, aItem.DamageType )
         else iLevel.DamageTile( iCoord, iDamage, aItem.DamageType );
 
       if iLevel.isVisible( iCoord ) then
-        UI.Msg('Boom!');
+        IO.Msg('Boom!');
       iCoord := iOldCoord;
       iHit   := True;
       Break;
@@ -2029,15 +2029,15 @@ begin
       begin
         if iLevel.Being[ iCoord ] = Player
           then iDirectHit := True
-          else if (iAimedBeing = Player) and (iDodged) then UI.Msg('You dodge!');
+          else if (iAimedBeing = Player) and (iDodged) then IO.Msg('You dodge!');
         if iLevel.isVisible( iCoord ) then
             if iBeing.IsPlayer then
             begin
               iFireDesc := LuaSystem.Get(['missiles',iMissile,'hitdesc'], '');
               if iFireDesc = '' then iFireDesc := 'You are hit!';
-              UI.Msg( Capitalized( iFireDesc ) );
+              IO.Msg( Capitalized( iFireDesc ) );
             end
-            else UI.Msg('The missile hits '+iBeing.GetName(true)+'.');
+            else IO.Msg('The missile hits '+iBeing.GetName(true)+'.');
 
         if not ( MF_HARD in Missiles[iMissile].Flags ) then
         begin
@@ -2074,7 +2074,7 @@ begin
       
     if ( iSteps >= iMaxRange ) or (MF_IMMIDATE in Missiles[iMissile].Flags) then
     begin
-      if (iAimedBeing = Player) and (iDodged) then UI.Msg('You dodge!');
+      if (iAimedBeing = Player) and (iDodged) then IO.Msg('You dodge!');
       break;
     end;
 

@@ -188,7 +188,7 @@ begin
     if IsString('entry')   then Player.AddHistory( GetString('entry') );
     if IsString('welcome') then 
     begin
-      Ui.Msg( GetString('welcome') );
+      IO.Msg( GetString('welcome') );
       FFeeling := GetString('welcome');
     end;
     FStatus := 0;
@@ -553,7 +553,7 @@ begin
 
   if LF_UNIQUEITEM in FFlags then
   begin
-    UI.Msg('You feel there is something really valuable here!');
+    IO.Msg('You feel there is something really valuable here!');
     FFeeling := FFeeling + ' You feel there is something really valuable here!';
   end;
 
@@ -602,7 +602,7 @@ begin
       Player.AddHistory(Format('He left level %d as soon as possible.',[Player.CurrentLevel]));
   end;
 
-  UI.MsgReset;
+  IO.MsgReset;
 end;
 
 procedure TLevel.Clear;
@@ -1039,7 +1039,7 @@ begin
       if (not (LF_RESPAWN in FFlags)) and ( EnemiesLeft() = 0 ) then
       begin
         if not (Hook_OnKillAll in FHooks) then
-          UI.Msg('You feel relatively safe now.');
+          IO.Msg('You feel relatively safe now.');
         FEmpty := True;
         if ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
           Include( FFlags, LF_ITEMSVISIBLE );
@@ -1137,16 +1137,16 @@ begin
     if (Player.NukeActivated <> 0) then
     begin
       Nuke := Player.NukeActivated;
-      if (Nuke <= 100)   then begin if (Nuke mod 10  = 0) then UI.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
-      if (Nuke <= 10*60) then begin if (Nuke mod 100 = 0) then UI.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
-      if (Nuke mod (10*60) = 0) then UI.Msg('Warning! Explosion in %d minutes!',[Player.NukeActivated div 600]);
+      if (Nuke <= 100)   then begin if (Nuke mod 10  = 0) then IO.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
+      if (Nuke <= 10*60) then begin if (Nuke mod 100 = 0) then IO.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
+      if (Nuke mod (10*60) = 0) then IO.Msg('Warning! Explosion in %d minutes!',[Player.NukeActivated div 600]);
     end
     else
     begin
       Player.IncStatistic('levels_nuked');
       if Doom.State in [DSNextLevel,DSSaving] then
       begin
-        UI.MsgEnter('Right in the nick of time!');
+        IO.MsgEnter('Right in the nick of time!');
         Exit;
       end;
       for cn := 1 to 10 do

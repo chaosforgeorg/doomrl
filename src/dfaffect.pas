@@ -25,7 +25,7 @@ end;
 
 implementation
 
-uses vdebug, vluasystem, dfplayer;
+uses vdebug, vluasystem, dfplayer, doomio;
 
 constructor TAffects.Clear;
 var aff : Word;
@@ -42,7 +42,7 @@ end;
 function TAffects.IsExpiring(affnum : Byte): boolean;
 begin
   Exit(List[affnum] <= 5);
-  UI.Msg( LuaSystem.Get([ 'affects', affnum, 'message_ending' ],'') );
+  IO.Msg( LuaSystem.Get([ 'affects', affnum, 'message_ending' ],'') );
 end;
 
 function TAffects.getEffect : TStatusEffect;
@@ -70,7 +70,7 @@ begin
   if duration     = 0  then Exit;
   if List[affnum] = 0  then
   begin
-    UI.Msg( LuaSystem.Get([ 'affects', affnum, 'message_init' ],'') );
+    IO.Msg( LuaSystem.Get([ 'affects', affnum, 'message_init' ],'') );
     if AffectHookOnAdd in Affects[affnum].Hooks then
       LuaSystem.ProtectedCall( [ 'affects',affnum,'OnAdd' ],[Player]);
   end;
@@ -90,7 +90,7 @@ begin
   List[affnum] := 0;
   if AffectHookOnRemove in Affects[affnum].Hooks then
     LuaSystem.ProtectedCall( [ 'affects',affnum,'OnRemove'],[Player]);
-  UI.Msg( LuaSystem.Get([ 'affects', affnum, 'message_done' ],'') );
+  IO.Msg( LuaSystem.Get([ 'affects', affnum, 'message_done' ],'') );
 end;
 
 procedure   TAffects.Tick;
@@ -100,7 +100,7 @@ begin
     if List[cn] <> 0 then
       begin
         if List[cn] > 0  then Dec(List[cn]);
-        if List[cn] = 5  then UI.Msg( LuaSystem.Get([ 'affects', cn, 'message_ending' ],'') );
+        if List[cn] = 5  then IO.Msg( LuaSystem.Get([ 'affects', cn, 'message_ending' ],'') );
         if List[cn] <> 0 then Run(cn)
                          else Expire(cn);
       end;

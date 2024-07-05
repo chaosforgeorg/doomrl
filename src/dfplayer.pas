@@ -195,7 +195,7 @@ begin
     Dec( Count );
     if Count = 0 then
     begin
-      UI.Msg('You stop running.');
+      IO.Msg('You stop running.');
       Current := tacticTired;
     end;
   end;
@@ -211,13 +211,13 @@ function TTacticData.Change : Boolean;
 begin
   Change := False;
   case Current of
-    tacticTired   : UI.Msg('Too tired to do that right now.');
+    tacticTired   : IO.Msg('Too tired to do that right now.');
     tacticRunning : begin
-                      UI.Msg('You stop running.');
+                      IO.Msg('You stop running.');
                       Current := tacticTired;
                     end;
     tacticNormal  : begin
-                      UI.Msg('You start running!');
+                      IO.Msg('You start running!');
                       Count := Max;
                       Current := tacticRunning;
                       Change := True;
@@ -345,7 +345,7 @@ procedure TPlayer.LevelUp;
 begin
   Inc( FExpLevel );
   UI.Blink( LightBlue, 100 );
-  UI.MsgEnter( 'You advance to level %d!', [ FExpLevel ] );
+  IO.MsgEnter( 'You advance to level %d!', [ FExpLevel ] );
   if not Doom.CallHookCheck( Hook_OnPreLevelUp, [ FExpLevel ] ) then Exit;
   UI.BloodSlideDown( 20 );
   doUpgradeTrait();
@@ -376,7 +376,7 @@ begin
     UI.Blink(Red,100);
     if BF_BERSERKER in FFlags then
     begin
-      UI.Msg('That hurt! You''re going berserk!');
+      IO.Msg('That hurt! You''re going berserk!');
       FTactic.Stop;
       FAffects.Add(LuaSystem.Defines['berserk'],20);
     end;
@@ -399,7 +399,7 @@ begin
     Fail( 'Can''t run, there are enemies present.',[] );
     Exit;
   end;
-  Key := UI.MsgCommandChoice('Run - direction...',INPUT_MOVE+[INPUT_ESCAPE,INPUT_WAIT]);
+  Key := IO.MsgCommandChoice('Run - direction...',INPUT_MOVE+[INPUT_ESCAPE,INPUT_WAIT]);
   if Key = INPUT_ESCAPE then Exit;
   FRun.Start( InputDirection(Key) );
 end;
@@ -465,7 +465,7 @@ begin
 
   if FTargetPos = FPosition then
   begin
-    UI.Msg( 'Find a more constructive way to commit suicide.' );
+    IO.Msg( 'Find a more constructive way to commit suicide.' );
     Exit( False );
   end;
 
@@ -508,10 +508,10 @@ procedure TPlayer.doQuit( aNoConfirm : Boolean = False );
 begin
   if not aNoConfirm then
   begin
-    UI.Msg( LuaSystem.ProtectedCall(['DoomRL','quit_message'],[]) );
-    if not UI.MsgConfirm('Are you sure you want to commit suicide?', true) then
+    IO.Msg( LuaSystem.ProtectedCall(['DoomRL','quit_message'],[]) );
+    if not IO.MsgConfirm('Are you sure you want to commit suicide?', true) then
     begin
-      UI.Msg('Ok, then. Stay and take what''s coming to ya...');
+      IO.Msg('Ok, then. Stay and take what''s coming to ya...');
       Exit;
     end;
   end;
@@ -570,7 +570,7 @@ begin
        begin
          TLevel( Parent ).playSound( ID, 'pump', Player.FPosition );
          Exclude( FFlags, IF_CHAMBEREMPTY );
-         UI.Msg( 'You pump a shell into the shotgun chamber.' );
+         IO.Msg( 'You pump a shell into the shotgun chamber.' );
        end;
      if (BF_GUNRUNNER in Self.FFlags) and canFire and (Shots < 3) and GetRunning then
      with CreateAutoTarget( Player.Vision ) do
@@ -642,11 +642,11 @@ begin
     if not FPathRun then
       with iLevel.Item[ FPosition ] do
         if isLever then
-           UI.Msg('There is a %s here.', [ DescribeLever( iLevel.Item[ FPosition ] ) ] )
+           IO.Msg('There is a %s here.', [ DescribeLever( iLevel.Item[ FPosition ] ) ] )
         else
           if Flags[ IF_PLURALNAME ]
-            then UI.Msg('There are %s lying here.', [ GetName( False ) ] )
-            else UI.Msg('There is %s lying here.', [ GetName( False ) ] );
+            then IO.Msg('There are %s lying here.', [ GetName( False ) ] )
+            else IO.Msg('There is %s lying here.', [ GetName( False ) ] );
   end;
 
   FEnemiesInVision := iLevel.BeingsVisible;
@@ -666,7 +666,7 @@ begin
   begin
     if IO.CommandEventPending then
     begin
-      UI.Msg('Pending stop');
+      IO.Msg('Pending stop');
       FPathRun := False;
       FRun.Stop;
       IO.ClearEventBuffer;
@@ -709,9 +709,9 @@ begin
     with iLevel.Being[iWhere] do
     begin
       Inc(iCount);
-      UI.Msg('You see '+ GetName(false) + ' (' + WoundStatus + ') ' + BlindCoord(iWhere-Self.FPosition)+'.');
+      IO.Msg('You see '+ GetName(false) + ' (' + WoundStatus + ') ' + BlindCoord(iWhere-Self.FPosition)+'.');
     end;
-  if iCount = 0 then UI.Msg('There are no monsters in sight.');
+  if iCount = 0 then IO.Msg('There are no monsters in sight.');
 end;
 
 procedure TPlayer.ExamineItem;
@@ -727,9 +727,9 @@ begin
       with iLevel.Item[iWhere] do
       begin
         Inc(iCount);
-        UI.Msg('You see '+ GetName(false) + ' ' + BlindCoord(iWhere-Self.FPosition)+'.');
+        IO.Msg('You see '+ GetName(false) + ' ' + BlindCoord(iWhere-Self.FPosition)+'.');
       end;
-  if iCount = 0 then UI.Msg('There are no items in sight.');
+  if iCount = 0 then IO.Msg('There are no items in sight.');
 end;
 
 // pieczarki oliwki szynka kielbasa peperoni motzarella //
@@ -773,7 +773,7 @@ begin
 
   UI.WaitForAnimation;
 
-  UI.MsgEnter('You die!...');
+  IO.MsgEnter('You die!...');
   Doom.SetState( DSFinished );
 
   if NukeActivated > 0 then

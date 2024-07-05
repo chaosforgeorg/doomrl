@@ -38,43 +38,19 @@ type
     procedure GFXAnimationDraw;
     procedure GFXAnimationUpdate( aTime : DWord );
 
-    procedure Msg( const aText : AnsiString );
-    procedure Msg( const aText : AnsiString; const aParams : array of const );
-    procedure MsgEnter( const aText : AnsiString );
-    procedure MsgEnter( const aText : AnsiString; const aParams : array of const );
-    function  MsgConfirm( const aText : AnsiString; aStrong : Boolean = False ) : Boolean;
-    function  MsgChoice( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
-    function  MsgCommandChoice( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
-    function  MsgGetRecent : TUIChunkBuffer;
-    procedure MsgReset;
-    // TODO: Coult this be removed as well?
-    procedure MsgUpDate;
-    procedure ErrorReport( const aText : AnsiString );
-
-    procedure ClearAllMessages;
-
     procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word; aFlags : TExplosionFlags = [] );
-
-    procedure LookMode;
-    function ChooseDirection(aActionName : string) : TDirection;
-    procedure Focus( aCoord : TCoord2D );
 
     procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0);
 
-    procedure CreateMessageWriter( INI : TLuaConfig );
     destructor Destroy; override;
-    class procedure RegisterLuaAPI( State : TLuaState );
-
     procedure ASCIILoader( aStream : TStream; aName : Ansistring; aSize : DWord );
 
     procedure OnRedraw;
     procedure OnUpdate( aTime : DWord );
     procedure SetTextMap( aMap : ITextMap );
-    procedure LookDescription( aWhere : TCoord2D );
 
   private
     FTextMap    : TTextMap;
-    FMessages   : TRLMessages;
 
     FASCII      : TASCIIImageMap;
 
@@ -170,10 +146,10 @@ begin
   FWaiting := False;
   FTextMap := nil;
   FAnimations := nil;
-  FMessages   := nil;
-  if GraphicsVersion then FAnimations := TAnimationManager.Create;
   FASCII := TASCIIImageMap.Create( True );
-
+  if GraphicsVersion
+    then FAnimations := TAnimationManager.Create
+    else FTextMap := TTextMap.Create( IO.Console, Rectangle( 2,3,MAXX,MAXY ) );
 end;
 
 procedure TDoomUI.Blink(Color : Byte; Duration : Word = 100; aDelay : DWord = 0);
@@ -280,90 +256,6 @@ begin
   Doom.Level.RevealBeings;
 end;
 
-procedure TDoomUI.Msg( const aText : AnsiString );
-begin
-  if FMessages <> nil then FMessages.Add(aText);
-end;
-
-procedure TDoomUI.Msg( const aText : AnsiString; const aParams : array of const );
-begin
-  Msg( Format( aText, aParams ) );
-end;
-
-procedure TDoomUI.MsgEnter( const aText: AnsiString);
-begin
-  Msg(aText+' Press <Enter>...');
-  IO.WaitForEnter;
-  MsgUpDate;
-end;
-
-procedure TDoomUI.MsgEnter( const aText: AnsiString; const aParams: array of const);
-begin
-  Msg( aText+' Press <Enter>...', aParams );
-  IO.WaitForEnter;
-  MsgUpDate;
-end;
-
-function TDoomUI.MsgConfirm( const aText: AnsiString; aStrong : Boolean = False): Boolean;
-var Key : byte;
-begin
-  if aStrong then Msg(aText+' [Y/n]')
-             else Msg(aText+' [y/n]');
-  if aStrong then Key := IO.WaitForKey([Ord('Y'),Ord('N'),Ord('n')])
-             else Key := IO.WaitForKey([Ord('Y'),Ord('y'),Ord('N'),Ord('n')]);
-  MsgConfirm := Key in [Ord('Y'),Ord('y')];
-  MsgUpDate;
-end;
-
-function TDoomUI.MsgChoice ( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
-var ChoiceStr : string;
-    Count     : Byte;
-begin
-  ChoiceStr := '';
-  for Count := 0 to 255 do
-    if Count in aChoices then
-      if Count in [31..126] then ChoiceStr += Chr(Count);
-
-  Msg(aText + ' ['+ChoiceStr+']');
-  MsgChoice := IO.WaitForKey( aChoices );
-end;
-
-function TDoomUI.MsgCommandChoice ( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
-begin
-  Msg(aText);
-  repeat
-    Result := IO.WaitForCommand( aChoices );
-  until Result in aChoices;
-end;
-
-function TDoomUI.MsgGetRecent : TUIChunkBuffer;
-begin
-  Exit( FMessages.Content );
-end;
-
-procedure TDoomUI.MsgReset;
-begin
-  FMessages.Reset;
-  FMessages.Update;
-end;
-
-procedure TDoomUI.MsgUpDate;
-begin
-  FMessages.Update;
-  IO.SetTempHint('');
-end;
-
-procedure TDoomUI.ErrorReport(const aText: AnsiString);
-begin
-  MsgEnter('@RError:@> '+aText);
-  Msg('@yError written to error.log, please report!@>');
-end;
-
-procedure TDoomUI.ClearAllMessages;
-begin
-  FMessages.Clear;
-end;
-
 procedure TDoomUI.Explosion(aSequence : Integer; aWhere: TCoord2D; aRange, aDelay: Integer;
   aColor: byte; aExplSound: Word; aFlags: TExplosionFlags);
 var iExpl     : TTextExplosionArray;
@@ -420,108 +312,8 @@ begin
   end;
 
   if not iVisible then if aRange > 3 then
-    UI.Msg( 'You hear an explosion!' );
+    IO.Msg( 'You hear an explosion!' );
 //    Animations.Add(TDoomMessage.Create('You hear an explosion!'),Sequence+EDelay*Range);
-end;
-
-
-
-procedure TDoomUI.LookMode;
-var Key    : byte;
-    Dir    : TDirection;
-    lc     : TCoord2D;
-    TargetColor : TColor;
-    Target  : TCoord2D;
-    iLevel  : TLevel;
-begin
-  iLevel := Doom.Level;
-  Target := Player.Position;
-  TargetColor := NewColor( White );
-  LookDescription( Target );
-  repeat
-    if SpriteMap <> nil then SpriteMap.SetTarget( Target, TargetColor, False );
-    TargetColor := NewColor( White );
-    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE,INPUT_ESCAPE,INPUT_MORE,INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
-    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if Key in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then Target := IO.MTarget;
-    if Key in [ INPUT_ESCAPE, INPUT_MRIGHT ] then Break;
-    if Key <> INPUT_MORE then
-    begin
-      lc := Target;
-      Dir := InputDirection( Key );
-      if iLevel.isProperCoord(lc + Dir) then
-      begin
-        Target := lc + Dir;
-        LookDescription( Target );
-        Focus( Target );
-      end
-      else
-      if Option_BlindMode then
-      begin
-        TargetColor := NewColor( Red );
-        FMessages.Pop;
-        Msg('Out of range!');
-        Continue;
-      end;
-      if Option_BlindMode then
-      if lc = Target then
-      begin
-        TargetColor := NewColor( Red );
-        FMessages.Pop;
-        Msg('Out of range!');
-      end;
-     end;
-     if (Key in [ INPUT_MORE, INPUT_MLEFT ]) and iLevel.isVisible( Target ) then
-     begin
-       with iLevel do
-       if Being[Target] <> nil then
-          Being[Target].FullLook;
-       Focus( Target );
-       LookDescription( Target );
-     end;
-  until False;
-  MsgUpDate;
-  if SpriteMap <> nil then SpriteMap.ClearTarget;
-end;
-
-function TDoomUI.ChooseDirection(aActionName : string): TDirection;
-var Key : byte;
-    Position : TCoord2D;
-    iTarget : TCoord2D;
-    iDone : Boolean;
-begin
-  Position := Player.Position;
-  Msg( aActionName + ' -- Choose direction...' );
-  iDone := False;
-  repeat
-    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE,INPUT_ESCAPE,INPUT_MLEFT,INPUT_MRIGHT]);
-    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if Key in INPUT_MOVE then
-    begin
-      ChooseDirection := InputDirection(Key);
-      iDone := True;
-    end;
-    if (Key = INPUT_MLEFT) then
-    begin
-      iTarget := IO.MTarget;
-      if (Distance( iTarget, Position) = 1) then
-      begin
-        ChooseDirection.Create(Position, iTarget);
-        iDone := True;
-      end;
-    end;
-    if (Key in [INPUT_MRIGHT,INPUT_ESCAPE]) then
-    begin
-      ChooseDirection.Create(DIR_CENTER);
-      iDone := True;
-    end;
-  until iDone;
-end;
-
-procedure TDoomUI.Focus(aCoord: TCoord2D);
-begin
-  IO.Console.ShowCursor;
-  IO.Console.MoveCursor(aCoord.x+1,aCoord.y+2);
 end;
 
 procedure TDoomUI.Mark(aCoord: TCoord2D; aColor: Byte; aChar: Char; aDuration: DWord; aDelay: DWord);
@@ -531,21 +323,9 @@ begin
     else FTextMap.AddAnimation( TTextMarkAnimation.Create( aCoord, IOGylph( aChar, aColor ), aDuration, aDelay ) );
 end;
 
-procedure TDoomUI.CreateMessageWriter(INI: TLuaConfig);
-begin
-  if FMessages <> nil then Exit;
-  if not GraphicsVersion then
-    FTextMap := TTextMap.Create( IO.Console, Rectangle( 2,3,MAXX,MAXY ) );
-  FMessages := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
-
-  if Option_MessageColoring then
-    INI.EntryFeed( 'Messages', @FMessages.AddHighlightCallback );
-end;
-
 destructor TDoomUI.Destroy;
 begin
   FreeAndNil( FTextMap );
-  FreeAndNil( FMessages );
   FreeAndNil( FAnimations );
   FreeAndNil( FASCII );
   inherited Destroy;
@@ -562,16 +342,6 @@ begin
   for iCounter := 1 to Min(iAmount,25) do
     iImage.Push( aStream.ReadAnsiString );
   FASCII.Items[LowerCase(LeftStr(aName,Length(aName)-4))] := iImage;
-end;
-
-procedure TDoomUI.LookDescription(aWhere: TCoord2D);
-var LookDesc : string;
-begin
-  LookDesc := Doom.Level.GetLookDescription( aWhere );
-  if Option_BlindMode then LookDesc += ' | '+BlindCoord( aWhere - Player.Position );
-  if Doom.Level.isVisible(aWhere) and (Doom.Level.Being[aWhere] <> nil) then LookDesc += ' | [@<m@>]ore';
-  FMessages.Pop;
-  Msg('You see : '+LookDesc );
 end;
 
 function TDoomUI.Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
@@ -675,29 +445,6 @@ begin
         VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
   end;
 
-  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
-  if FMessages.Content.Size > 0 then
-  for i := 1+FMessages.Scroll to iMax do
-  begin
-    iColor := DarkGray;
-    if i > iMax - FMessages.Active then iColor := LightGray;
-    iCon.Print( Point(1,i-FMessages.Scroll), FMessages.Content[ i-1 ], iColor, Black, Rectangle( 1,1, 78, 25 ) );
-  end;
-
-  {
-  VTIG_Begin( 'messages', Point(78,2), Point( 1,1 ) );
-  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
-  if FMessages.Content.Size > 0 then
-  for i := 1+FMessages.Scroll to iMax do
-  begin
-    iColor := FForeColor;
-    if i > iMax - FMessages.Active then iColor := iCon.BoldColor( FForeColor );
-    for iChunk in FMessages.Content[ i-1 ] do
-      VTIG_Text( iChunk.Content + ' ' );
-//      VTIG_FreeLabel( iChunk.Content, iChunk.Position + Point(1,i-FMessages.Scroll) , iColor );
-  end;
-  VTIG_End;
-  }
 end;
 
 procedure TDoomUI.OnUpdate( aTime : DWord );
@@ -711,137 +458,6 @@ begin
   Assert( Assigned( FTextMap ) );
   FTextMap.SetMap( aMap );
 end;
-
-function lua_ui_set_hint(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  if Option_Hints then
-    IO.SetHint( State.ToString( 1 ) );
-  Result := 0;
-end;
-
-(**************************** LUA UI *****************************)
-
-{$HINTS OFF} // To supress Hint: Parameter "x" not found
-
-function lua_ui_blood_slide(L: Plua_State): Integer; cdecl;
-begin
-  UI.BloodSlideDown(20);
-  Result := 0;
-end;
-
-{$HINTS ON}
-
-function lua_ui_blink(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  UI.Blink(State.ToInteger(1),State.ToInteger(2));
-  Result := 0;
-end;
-
-function lua_ui_plot_screen(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  IO.RunUILoop( TConUIPlotViewer.Create( IO.Root, State.ToString(1), Rectangle( Point(10,5), 62, 15 ) ) );
-  Result := 0;
-end;
-
-function lua_ui_msg(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  UI.Msg(State.ToString(1));
-  Result := 0;
-end;
-
-function lua_ui_msg_clear(L: Plua_State): Integer; cdecl;
-begin
-  UI.MsgReset();
-  Result := 0;
-end;
-
-function lua_ui_msg_enter(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  if State.StackSize = 0 then Exit(0);
-  UI.MsgEnter(State.ToString(1));
-  Result := 0;
-end;
-
-function lua_ui_msg_confirm(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  if State.StackSize = 0 then Exit(0);
-  State.Push( UI.MsgConfirm(State.ToString(1), State.ToBoolean(2) ) );
-  Result := 1;
-end;
-
-function lua_ui_msg_choice(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Choices : TKeySet;
-    ChStr   : AnsiString;
-    Choice  : Byte;
-begin
-  State.Init(L);
-  if State.StackSize < 2 then Exit(0);
-  ChStr := State.ToString(2);
-  if Length(ChStr) < 2 then Exit(0);
-
-  Choices := [];
-  for Choice := 1 to Length(ChStr) do
-    Include(Choices,Ord(ChStr[Choice]));
-
-  ChStr := Chr( UI.MsgChoice( State.ToString(1), Choices ) );
-  State.Push(ChStr);
-  Result := 1;
-end;
-
-function lua_ui_msg_history(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Idx   : Integer;
-    Msg   : AnsiString;
-begin
-  State.Init(L);
-  if State.StackSize = 0 then Exit(0);
-  Idx := State.ToInteger(1)+1;
-  if Idx > UI.MsgGetRecent.Size then
-    State.PushNil
-  else
-  begin
-    Msg := ChunkListToString( UI.MsgGetRecent[-Idx] );
-    if Msg <> '' then
-      State.Push( Msg )
-    else
-      State.PushNil;
-  end;
-  Result := 1;
-end;
-
-const lua_ui_lib : array[0..10] of luaL_Reg = (
-      ( name : 'msg';         func : @lua_ui_msg ),
-      ( name : 'msg_clear';   func : @lua_ui_msg_clear ),
-      ( name : 'msg_enter';   func : @lua_ui_msg_enter ),
-      ( name : 'msg_choice';  func : @lua_ui_msg_choice ),
-      ( name : 'msg_confirm'; func : @lua_ui_msg_confirm ),
-      ( name : 'msg_history'; func : @lua_ui_msg_history ),
-      ( name : 'blood_slide'; func : @lua_ui_blood_slide),
-      ( name : 'blink';       func : @lua_ui_blink),
-      ( name : 'plot_screen'; func : @lua_ui_plot_screen),
-      ( name : 'set_hint';    func : @lua_ui_set_hint ),
-      ( name : nil;          func : nil; )
-);
-
-class procedure TDoomUI.RegisterLuaAPI( State : TLuaState );
-begin
-  State.Register( 'ui', lua_ui_lib );
-end;
-
-
 
 initialization
 
