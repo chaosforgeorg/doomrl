@@ -6,11 +6,21 @@ uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
      dfdata, doomspritemap, doomviews, doomaudio;
 
+type TInterfaceLayer = class
+  procedure Update( aDTime : Integer ); virtual; abstract;
+  procedure Tick( aDTick : Integer ); virtual;
+  function IsFinished : Boolean; virtual; abstract;
+  function IsModal : Boolean; virtual;
+  function HandleEvent( const aEvent : TIOEvent ) : Boolean; virtual;
+end;
+
+
 type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
 
-type TDoomOnProgress = procedure ( aProgress : DWord ) of object;
-type TASCIIImageMap  = specialize TGObjectHashMap<TUIStringArray>;
+type TDoomOnProgress      = procedure ( aProgress : DWord ) of object;
+type TASCIIImageMap       = specialize TGObjectHashMap<TUIStringArray>;
+type TInterfaceLayerStack = specialize TGArray<TInterfaceLayer>;
 
 type TDoomIO = class( TIO )
   constructor Create; reintroduce;
@@ -76,6 +86,14 @@ type TDoomIO = class( TIO )
 
   class procedure RegisterLuaAPI( State : TLuaState );
 
+  procedure PushLayer( aLayer : TInterfaceLayer ); virtual;
+  function IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
+  function IsModal : Boolean;
+  procedure Tick( aDTick : Integer );
+  procedure Clear;
+  function OnEvent( const event : TIOEvent ) : Boolean; override;
+
+
 protected
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
@@ -92,6 +110,7 @@ protected
   FMTarget     : TCoord2D;
   FKeyCode     : TIOKeyCode;
   FASCII       : TASCIIImageMap;
+  FLayers      : TInterfaceLayerStack;
 
   FHudEnabled  : Boolean;
   FWaiting     : Boolean;
@@ -115,6 +134,19 @@ uses math, video, dateutils, variants,
      vsdlio, vglconsole, vtig, vvision, vconuirl,
      doombase, doomanimation, doomlua, dflevel, dfplayer, dfitem;
 
+procedure TInterfaceLayer.Tick( aDTick : Integer );
+begin
+end;
+
+function TInterfaceLayer.IsModal : Boolean;
+begin
+  Exit( False );
+end;
+
+function TInterfaceLayer.HandleEvent( const aEvent : TIOEvent ) : Boolean;
+begin
+  Exit( IsModal );
+end;
 
 {
 procedure OutPutRestore;
@@ -252,6 +284,7 @@ begin
   FAudio    := TDoomAudio.Create;
   FMessages := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
   FASCII    := TASCIIImageMap.Create( True );
+  FLayers   := TInterfaceLayerStack.Create;
 
   FWaiting    := False;
   FHudEnabled := False;
@@ -300,6 +333,50 @@ begin
   FullUpdate;
 end;
 
+procedure TDoomIO.PushLayer( aLayer : TInterfaceLayer );
+begin
+  FLayers.Push( aLayer );
+end;
+
+function TDoomIO.IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
+begin
+  Exit( ( FLayers.Size > 0 ) and ( FLayers.Top = aLayer ) );
+end;
+
+function TDoomIO.IsModal : Boolean;
+var iLayer : TInterfaceLayer;
+begin
+  for iLayer in FLayers do
+    if iLayer.IsModal then Exit( True );
+  Exit( False );
+end;
+
+procedure TDoomIO.Tick( aDTick : Integer );
+var iLayer : TInterfaceLayer;
+begin
+  for iLayer in FLayers do
+    iLayer.Tick( aDTick );
+end;
+
+procedure TDoomIO.Clear;
+var iLayer : TInterfaceLayer;
+begin
+  for iLayer in FLayers do
+    iLayer.Free;
+  FLayers.Clear;
+end;
+
+function TDoomIO.OnEvent( const event : TIOEvent ) : Boolean;
+var iLayer : TInterfaceLayer;
+    i      : Integer;
+begin
+  if not FLayers.IsEmpty then
+    for i := FLayers.Size - 1 downto 0 do
+      if FLayers[i].HandleEvent( event ) then
+        Exit( True );
+  Exit( False );
+end;
+
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
 begin
   aConfig.ResetCommands;
@@ -334,10 +411,15 @@ begin
 end;
 
 destructor TDoomIO.Destroy;
+var iLayer : TInterfaceLayer;
 begin
   FreeAndNil( FAudio );
   FreeAndNil( FMessages );
   FreeAndNil( FASCII );
+
+  for iLayer in FLayers do
+    iLayer.Free;
+  FreeAndNil( FLayers );
   IO := nil;
   inherited Destroy;
 end;
@@ -590,7 +672,24 @@ begin
 end;
 
 procedure TDoomIO.Update( aMSec : DWord );
+var iLayer : TInterfaceLayer;
+    i,j    : Integer;
 begin
+  i := 0;
+  while i < FLayers.Size do
+    if FLayers[i].IsFinished then
+    begin
+      FLayers[i].Free;
+      if i < FLayers.Size - 1 then
+        for j := i to FLayers.Size - 2 do
+          FLayers[j] := FLayers[j + 1];
+      FLayers.Pop;
+    end
+    else
+      Inc( i );
+
+  for iLayer in FLayers do
+    iLayer.Update( Integer( aMSec ) );
   FTime += aMSec;
   FAudio.Update( aMSec );
   FUIRoot.OnUpdate( aMSec );
