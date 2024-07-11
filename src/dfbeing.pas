@@ -9,7 +9,7 @@ unit dfbeing;
 interface
 uses Classes, SysUtils,
      vluatable, vnode, vpath, vmath, vutil, vrltools,
-     dfdata, dfoutput, dfthing, dfitem,
+     dfdata, dfthing, dfitem,
      doominventory, doomcommand;
 
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
@@ -1078,8 +1078,8 @@ function TBeing.ActionMove( aTarget : TCoord2D ) : Boolean;
 begin
   if GraphicsVersion then
   begin
-    UI.addScreenMoveAnimation(100,0,aTarget);
-    UI.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
+    IO.addScreenMoveAnimation(100,0,aTarget);
+    IO.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
   end;
   Displace( aTarget );
   Dec( FSpeedCount, getMoveCost );
@@ -1213,7 +1213,7 @@ begin
   SCount := SCount - getMoveCost;
   if GraphicsVersion then
     if iLevel.BeingExplored( FPosition, Self ) or iLevel.BeingExplored( LastMove, Self ) or iLevel.BeingVisible( FPosition, Self ) or iLevel.BeingVisible( LastMove, Self ) then
-      UI.addMoveAnimation(100, 0, FUID,Position,LastMove,Sprite);
+      IO.addMoveAnimation(100, 0, FUID,Position,LastMove,Sprite);
   Displace( FMovePos );
   playSound( SoundHoof );
   HandlePostDisplace;
@@ -1697,7 +1697,7 @@ begin
         if Player.FBersekerLimit > 4 - Min(Player.FEnemiesInVision div 2, 3) then
           begin
             TLevel(Parent).playSound('bpack','powerup',FPosition);
-            UI.Blink(Red,30);
+            IO.Blink(Red,30);
             Player.FTactic.Stop;
             if Player.FAffects.IsActive(LuaSystem.Defines['berserk']) then
             begin
@@ -2091,14 +2091,14 @@ begin
   iSound  := IO.Audio.ResolveSoundID([aItem.ID+'.fire',Missiles[iMissile].soundID+'.fire','fire']);
   iSprite := Missiles[iMissile].Sprite;
   if iSound <> 0 then
-    UI.addSoundAnimation( aSequence, iSource, iSound );
+    IO.addSoundAnimation( aSequence, iSource, iSound );
 
   iDuration := (iSource - iMisslePath.GetC).LargerLength * iDelay;
   if not ( MF_IMMIDATE in Missiles[iMissile].Flags ) then
   begin
-    UI.addMissileAnimation( iDuration, aSequence,iSource,iMisslePath.GetC,iColor,Missiles[iMissile].Picture,iDelay,iSprite,MF_RAY in Missiles[iMissile].Flags);
+    IO.addMissileAnimation( iDuration, aSequence,iSource,iMisslePath.GetC,iColor,Missiles[iMissile].Picture,iDelay,iSprite,MF_RAY in Missiles[iMissile].Flags);
     if iHit and iLevel.isVisible( iMisslePath.GetC ) then
-      UI.addMarkAnimation(100, aSequence + iDuration, iMisslePath.GetC, Iif( iIsHit, LightRed, LightGray ), '*' );
+      IO.addMarkAnimation(100, aSequence + iDuration, iMisslePath.GetC, Iif( iIsHit, LightRed, LightGray ), '*' );
   end;
 
   if aItem.Flags[ IF_THROWDROP ] then
@@ -2177,11 +2177,11 @@ begin
     begin
       if isPlayer then
       begin
-        UI.WaitForAnimation;
-        UI.addScreenMoveAnimation( 50, 0, knock );
+        IO.WaitForAnimation;
+        IO.addScreenMoveAnimation( 50, 0, knock );
       end;
       if isVisible then
-        UI.addMoveAnimation( 50,0,FUID,Position,knock,Sprite);
+        IO.addMoveAnimation( 50,0,FUID,Position,knock,Sprite);
     end;
     Displace( knock );
     HandlePostDisplace;
@@ -2736,7 +2736,7 @@ begin
   if GraphicsVersion then
     if Thing is TBeing then
     begin
-      if Thing is TPlayer then UI.addScreenMoveAnimation(Distance(Thing.Position,Target)*10,0,Target);
+      if Thing is TPlayer then IO.addScreenMoveAnimation(Distance(Thing.Position,Target)*10,0,Target);
     end;
   Thing.Displace(Target);
   Result := 0;

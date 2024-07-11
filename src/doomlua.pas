@@ -42,7 +42,7 @@ implementation
 
 uses typinfo, variants, strutils, xmlread, dom,
      vnode, vdebug, viotypes, vluatools, vsystems, vluadungen, vluaentitynode,
-     dfoutput, dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, vsound, doomtextures, doomspritemap;
+     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, vsound, doomtextures, doomspritemap;
 
 function lua_core_is_playing(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
@@ -434,8 +434,7 @@ end;
 
 procedure TDoomLua.OnError(const ErrorString : Ansistring);
 begin
-  // TODO: this is unsafe as Msg might not be loaded !
-  if (UI <> nil) and (Doom.State = DSPlaying) then
+  if (IO <> nil) and (Doom.State = DSPlaying) then
   begin
     IO.ErrorReport( ErrorString );
   end

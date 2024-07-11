@@ -80,7 +80,7 @@ implementation
 uses Classes, SysUtils,
      vdebug, viotypes,
      dfmap, dfitem, dfbeing,
-     dfoutput, doomio, doomgfxio, doomtextio, zstream,
+     doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomhelp, doomconfig, doomviews, dfplayer;
 
@@ -172,7 +172,7 @@ begin
   HOF.Init;
   FLevel := TLevel.Create;
   if not GraphicsVersion then
-    UI.SetTextMap( FLevel );
+    (IO as TDoomTextIO).SetTextMap( FLevel );
   DataLoaded := True;
   IO.LoadStop;
 end;
@@ -641,7 +641,7 @@ end;
   begin
     FLevel.CalculateVision( Player.Position );
     FLevel.Tick;
-    UI.WaitForAnimation;
+    IO.WaitForAnimation;
     if not Player.PlayerTick then Exit( True );
   end;
   PreAction;

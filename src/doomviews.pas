@@ -216,7 +216,7 @@ implementation
 
 uses SysUtils,
      vgltypes, variants, vutil, vmath, vuiconsole, vluasystem,
-     doombase, doomhelp, doomio, doomgfxio, dfoutput, dfplayer, dfhof;
+     doombase, doomhelp, doomio, doomgfxio, dfplayer, dfhof;
 
 const HelpHeader       = 'DoomRL Help System';
       PostMortemHeader = 'PostMortem (@<mortem.txt@>)';

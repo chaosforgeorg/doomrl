@@ -138,7 +138,7 @@ implementation
 
 uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
-     dfmap, dflevel, dfoutput,
+     dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doomviews, doombase,
      doomlua, doominventory, doomcommand, doomhelp;
 
@@ -344,7 +344,7 @@ end;
 procedure TPlayer.LevelUp;
 begin
   Inc( FExpLevel );
-  UI.Blink( LightBlue, 100 );
+  IO.Blink( LightBlue, 100 );
   IO.MsgEnter( 'You advance to level %d!', [ FExpLevel ] );
   if not Doom.CallHookCheck( Hook_OnPreLevelUp, [ FExpLevel ] ) then Exit;
   IO.BloodSlideDown( 20 );
@@ -373,7 +373,7 @@ begin
   if BF_INV in FFlags then Exit;
   if ( aDamage >= Max( FHPNom div 3, 10 ) ) then
   begin
-    UI.Blink(Red,100);
+    IO.Blink(Red,100);
     if BF_BERSERKER in FFlags then
     begin
       IO.Msg('That hurt! You''re going berserk!');
@@ -771,7 +771,7 @@ begin
      then iLevel.playSound( 'gib',FPosition )
      else playSound(FSounds.Die);
 
-  UI.WaitForAnimation;
+  IO.WaitForAnimation;
 
   IO.MsgEnter('You die!...');
   Doom.SetState( DSFinished );
@@ -780,7 +780,7 @@ begin
   begin
     NukeActivated := 1;
     iLevel.NukeTick;
-    UI.WaitForAnimation;
+    IO.WaitForAnimation;
   end;
   WriteMemorial;
 end;

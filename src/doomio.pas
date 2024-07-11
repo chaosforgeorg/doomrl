@@ -3,8 +3,8 @@ unit doomio;
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vrlmsg, vuitypes, vluastate,
-     viotypes, vioevent, vioconsole, vuielement, vgenerics,
-     doomspritemap, doomviews, doomaudio;
+     viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
+     dfdata, doomspritemap, doomviews, doomaudio;
 
 type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
@@ -61,11 +61,23 @@ type TDoomIO = class( TIO )
   procedure ASCIILoader( aStream : TStream; aName : Ansistring; aSize : DWord );
 
   procedure BloodSlideDown( aDelayTime : Word );
-  procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
+
+  procedure WaitForAnimation; virtual;
+  function AnimationsRunning : Boolean; virtual; abstract;
+  procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); virtual; abstract;
+  procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); virtual; abstract;
+  procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite ); virtual;
+  procedure addScreenMoveAnimation( aDuration : DWord; aDelay : DWord; aTo : TCoord2D ); virtual;
+  procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); virtual;
+  procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); virtual; abstract;
+  procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte; aPic : Char ); virtual; abstract;
+  procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); virtual; abstract;
+  procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word; aFlags : TExplosionFlags = [] ); virtual;
 
   class procedure RegisterLuaAPI( State : TLuaState );
 
 protected
+  procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
   procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
   procedure ColorQuery(nkey,nvalue : Variant);
@@ -99,9 +111,9 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 implementation
 
 uses math, video, dateutils, variants,
-     vluasystem, vlog, vdebug, vutil, vuiconsole, vcolor, vmath,
+     vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath,
      vsdlio, vglconsole, vtig, vvision, vconuirl,
-     doombase, doomanimation, doomlua, dfdata, dfoutput, dflevel, dfplayer, dfitem;
+     doombase, doomanimation, doomlua, dflevel, dfplayer, dfitem;
 
 
 {
@@ -138,19 +150,67 @@ begin
 }
 end;
 
-procedure TDoomIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
-var iChr : Char;
+procedure TDoomIO.WaitForAnimation;
 begin
-  if GraphicsVersion then
+  if FWaiting then Exit;
+  if Doom.State <> DSPlaying then Exit;
+  FWaiting := True;
+  while AnimationsRunning do
   begin
-    UI.FAnimations.AddAnimation(TDoomBlink.Create(aDuration,aDelay,aColor));
-    Exit;
+    IO.Delay(5);
   end;
-  if Option_HighASCII then iChr := Chr(219) else iChr := '#';
-  UI.FTextMap.AddAnimation( TTextBlinkAnimation.Create(IOGylph( iChr, aColor ),aDuration,aDelay));
+  FWaiting := False;
+  Doom.Level.RevealBeings;
 end;
 
+procedure TDoomIO.addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite );
+begin
 
+end;
+
+procedure TDoomIO.addScreenMoveAnimation( aDuration : DWord; aDelay : DWord; aTo : TCoord2D );
+begin
+
+end;
+
+procedure TDoomIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+begin
+
+end;
+
+procedure TDoomIO.Explosion( aSequence : Integer; aWhere: TCoord2D; aRange, aDelay: Integer;
+  aColor: byte; aExplSound: Word; aFlags: TExplosionFlags);
+var iCoord    : TCoord2D;
+    iDistance : Byte;
+    iVisible  : boolean;
+    iLevel    : TLevel;
+begin
+  iLevel := Doom.Level;
+  if not iLevel.isProperCoord( aWhere ) then Exit;
+
+  if aExplSound <> 0 then
+    addSoundAnimation( aSequence, aWhere, aExplSound );
+
+  for iCoord in NewArea( aWhere, aRange ).Clamped( iLevel.Area ) do
+    begin
+      if aRange < 10 then if iLevel.isVisible(iCoord) then iVisible := True else Continue;
+      if aRange < 10 then if not iLevel.isEyeContact( iCoord, aWhere ) then Continue;
+      iDistance := Distance(iCoord, aWhere);
+      if iDistance > aRange then Continue;
+      ExplosionMark( iCoord, aColor, 3*aDelay, aSequence+iDistance*aDelay );
+    end;
+  if aRange >= 10 then iVisible := True;
+
+  // TODO : events
+  if efAfterBlink in aFlags then
+  begin
+    Blink(LightGreen,50,aSequence+aDelay*aRange);
+    Blink(White,50,aSequence+aDelay*aRange+60);
+  end;
+
+  if not iVisible then if aRange > 3 then
+    IO.Msg( 'You hear an explosion!' );
+end;
 
 {
 procedure TDoomUI.SlideDown(DelayTime : word; var NewScreen : TGFXScreen);
@@ -233,7 +293,6 @@ begin
   inherited Create( FIODriver, FConsole, iStyle );
   LoadStart;
 
-  UI := TDoomUI.Create;
   IO := Self;
   FConsole.Clear;
   FConsole.HideCursor;
@@ -360,8 +419,6 @@ var iCon        : TUIConsole;
 begin
   iCon.Init( FConsole );
   iCon.Clear;
-
-  UI.OnRedraw;
 
   if Player <> nil then
   begin
@@ -536,8 +593,6 @@ procedure TDoomIO.Update( aMSec : DWord );
 begin
   FTime += aMSec;
   FAudio.Update( aMSec );
-  if FHudEnabled then
-    UI.OnUpdate( aMSec );
   FUIRoot.OnUpdate( aMSec );
   FUIRoot.Render;
 
@@ -953,7 +1008,7 @@ function lua_ui_blink(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  UI.Blink(State.ToInteger(1),State.ToInteger(2));
+  IO.Blink(State.ToInteger(1),State.ToInteger(2));
   Result := 0;
 end;
 

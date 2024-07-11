@@ -1,8 +1,8 @@
 {$INCLUDE doomrl.inc}
 unit doomgfxio;
 interface
-uses vglquadrenderer, vgltypes, vluaconfig, vioevent, vuielement, vimage, vrltools,
-     doomio, doomspritemap;
+uses vglquadrenderer, vgltypes, vluaconfig, vioevent, vuielement, vimage, vrltools, vutil,
+     doomio, doomspritemap, doomanimation, dfdata;
 
 type TDoomGFXIO = class( TDoomIO )
     constructor Create; reintroduce;
@@ -13,7 +13,19 @@ type TDoomGFXIO = class( TDoomIO )
     procedure UpdateMinimap;
     destructor Destroy; override;
     function ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D; override;
+
+    procedure WaitForAnimation; override;
+    function AnimationsRunning : Boolean; override;
+    procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); override;
+    procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); override;
+    procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite ); override;
+    procedure addScreenMoveAnimation( aDuration : DWord; aDelay : DWord; aTo : TCoord2D ); override;
+    procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); override;
+    procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
+    procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte; aPic : Char ); override;
+    procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
   protected
+    procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
     procedure ReuploadTextures;
@@ -48,6 +60,8 @@ type TDoomGFXIO = class( TDoomIO )
     FMinimapTexture : DWord;
     FMinimapScale   : Integer;
     FMinimapGLPos   : TGLVec2i;
+
+    FAnimations     : TAnimationManager;
   public
     property QuadSheet : TGLQuadList read FQuadSheet;
     property TextSheet : TGLQuadList read FTextSheet;
@@ -61,9 +75,9 @@ implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
-     vdebug, vlog, vutil, vmath, viotypes, vdf, vgl3library,
+     vdebug, vlog, vmath, viotypes, vdf, vgl3library,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
-     dfoutput, dfdata, dfplayer,
+     dfplayer,
      doombase, doomtextures;
 
 constructor TDoomGFXIO.Create;
@@ -200,6 +214,8 @@ begin
   FMinimapImage.Fill( NewColor( 0,0,0,0 ) );
 
   SetMinimapScale( FMiniScale );
+
+  FAnimations := TAnimationManager.Create;
 end;
 
 destructor TDoomGFXIO.Destroy;
@@ -211,6 +227,7 @@ begin
   FreeAndNil( FQuadRenderer );
 
   FreeAndNil( FMinimapImage );
+  FreeAndNil( FAnimations );
 
   FreeAndNil( SpriteMap );
   FreeAndNil( Textures );
@@ -222,6 +239,74 @@ function TDoomGFXIO.ChooseTarget( aActionName : string; aRange: byte; aLimitRang
 begin
   ChooseTarget := inherited ChooseTarget( aActionName, aRange, aLimitRange, aTargets, aShowLast );
   SpriteMap.ClearTarget;
+end;
+
+procedure TDoomGFXIO.WaitForAnimation;
+begin
+  inherited WaitForAnimation;
+  FAnimations.Clear;
+end;
+
+function TDoomGFXIO.AnimationsRunning : Boolean;
+begin
+  if Doom.State <> DSPlaying then Exit(False);
+  Exit( not FAnimations.Finished );
+end;
+
+procedure TDoomGFXIO.Mark( aCoord: TCoord2D; aColor: Byte; aChar: Char; aDuration: DWord; aDelay: DWord );
+begin
+  FAnimations.AddAnimation( TDoomMark.Create( aDuration, aDelay, aCoord ) );
+end;
+
+procedure TDoomGFXIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
+begin
+  FAnimations.AddAnimation( TDoomBlink.Create(aDuration,aDelay,aColor) );
+end;
+
+procedure TDoomGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite );
+begin
+  if Doom.State <> DSPlaying then Exit;
+  FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite));
+end;
+
+procedure TDoomGFXIO.addScreenMoveAnimation(aDuration: DWord; aDelay: DWord; aTo: TCoord2D);
+begin
+  if Doom.State <> DSPlaying then Exit;
+  FAnimations.addAnimation( TDoomScreenMove.Create( aDuration, aDelay, aTo ) );
+end;
+
+procedure TDoomGFXIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+begin
+  if Doom.State <> DSPlaying then Exit;
+  FAnimations.addAnimation( TDoomAnimateCell.Create( aDuration, aDelay, aCoord, aSprite, aValue ) );
+end;
+
+procedure TDoomGFXIO.addMissileAnimation(aDuration: DWord; aDelay: DWord; aSource,
+  aTarget: TCoord2D; aColor: Byte; aPic: Char; aDrawDelay: Word;
+  aSprite: TSprite; aRay: Boolean);
+begin
+  if Doom.State <> DSPlaying then Exit;
+  FAnimations.addAnimation(
+    TDoomMissile.Create( aDuration, aDelay, aSource,
+      aTarget, aDrawDelay, aSprite, aRay ) );
+end;
+
+procedure TDoomGFXIO.addMarkAnimation(aDuration: DWord; aDelay: DWord;
+  aCoord: TCoord2D; aColor: Byte; aPic: Char);
+begin
+  if Doom.State <> DSPlaying then Exit;
+  FAnimations.addAnimation( TDoomMark.Create(aDuration, aDelay, aCoord ) )
+end;
+
+procedure TDoomGFXIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);
+begin
+  if Doom.State <> DSPlaying then Exit;
+  FAnimations.addAnimation( TDoomSoundEvent.Create( aDelay, aPosition, aSoundID ) )
+end;
+
+procedure TDoomGFXIO.ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord );
+begin
+  FAnimations.AddAnimation( TDoomExplodeMark.Create(aDuration,aDelay,aCoord,aColor) )
 end;
 
 procedure TDoomGFXIO.SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte );
@@ -289,7 +374,7 @@ begin
     end;
   end;
 
-  if UI <> nil then UI.GFXAnimationUpdate( aMSec );
+  FAnimations.Update( aMSec );
 
   iSizeY    := FIODriver.GetSizeY-2*FVPadding;
   iSizeX    := FIODriver.GetSizeX;
@@ -307,7 +392,7 @@ begin
        FConsole.HideCursor;
     //if not UI.AnimationsRunning then SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
     SpriteMap.Update( aMSec, FProjection );
-    UI.GFXAnimationDraw;
+    FAnimations.Draw;
     glEnable( GL_DEPTH_TEST );
     SpriteMap.Draw;
     glDisable( GL_DEPTH_TEST );
@@ -320,13 +405,13 @@ begin
       FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ),
       ZeroTex, UnitTex, FMinimapTexture );
 
-    iAbsolute := Rectangle( 1,1,78,25 );
+    iAbsolute := vutil.Rectangle( 1,1,78,25 );
     iP1 := IO.Root.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
-    iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
+    iP2 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
     QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
 
-    iP1 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x, iAbsolute.y2-2 ) );
-    iP2 := IO.Root.ConsoleCoordToDeviceCoord( Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
+    iP1 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x, iAbsolute.y2-2 ) );
+    iP2 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
     QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
   end;
 

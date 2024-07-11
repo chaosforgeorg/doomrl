@@ -15,7 +15,7 @@ end;
 
 implementation
 
-uses vsystems, dfdata, dfoutput, vluastate, vlualibrary, doomlua, doomhelp, dfitem, doomio, doomviews;
+uses vsystems, dfdata, vluastate, vlualibrary, doomlua, doomhelp, dfitem, doomio, doomviews;
 
 
 { TDoomConfig }

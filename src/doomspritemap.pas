@@ -109,7 +109,7 @@ implementation
 
 uses math, vmath, viotypes, vvision, vgl3library,
      doomtextures, doomio, doomgfxio, doombase,
-     dfoutput, dfmap, dfitem, dfbeing, dfplayer;
+     dfmap, dfitem, dfbeing, dfplayer;
 
 function SpritePartSetFill( aPart : TSpritePart ) : TSpritePartSet;
 begin
@@ -275,7 +275,7 @@ begin
     iCoord := NewCoord2D(iPoint.X,iPoint.Y);
     if Doom.Level.isProperCoord( iCoord ) then
     begin
-      if (FLastCoord <> iCoord) and (not UI.AnimationsRunning) then
+      if (FLastCoord <> iCoord) and (not IO.AnimationsRunning) then
       begin
         IO.SetTempHint(Doom.Level.GetLookDescription(iCoord));
         FLastCoord := iCoord;

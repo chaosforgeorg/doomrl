@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit dfaffect;
 interface
-uses vutil, dfoutput, dfdata;
+uses vutil, dfdata;
 
 type
 

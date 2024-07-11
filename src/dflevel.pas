@@ -10,7 +10,7 @@ interface
 uses SysUtils, Classes,
      vluaentitynode, vutil, vvision, vcolor, vmath, viotypes, vrltools, vnode,
      vluamapnode, vmaparea, vconuirl, vtextmap,
-     dfdata, dfmap, dfthing, dfbeing, dfitem, dfoutput,
+     dfdata, dfmap, dfthing, dfbeing, dfitem,
      doomhooks;
 
 const CellWalls   : TCellSet = [];
@@ -836,7 +836,7 @@ begin
   if not isProperCoord( coord ) then Exit;
   if aItem <> nil then iItemUID := aItem.uid;
 
-  UI.Explosion( Sequence, coord, Range, Delay, Color, ExplSound, aFlags );
+  IO.Explosion( Sequence, coord, Range, Delay, Color, ExplSound, aFlags );
 
   for iNode in Self do
     if iNode is TBeing then
@@ -945,9 +945,9 @@ begin
           if KnockBacked then Continue;
           if isVisible then
           begin
-            if dmg > 10 then UI.Mark( tc, Red, '*', 200 )
-              else if dmg > 4 then UI.Mark( tc, LightRed, '*', 100 )
-                else UI.Mark( tc, LightGray, '*', 50 );
+            if dmg > 10 then IO.Mark( tc, Red, '*', 200 )
+              else if dmg > 4 then IO.Mark( tc, LightRed, '*', 100 )
+                else IO.Mark( tc, LightGray, '*', 50 );
           end;
           if dmg >= KnockBackValue then
           begin
@@ -960,7 +960,7 @@ begin
         
         DamageTile( tc, dmg, Shotgun.DamageType );
         if cellFlagSet(tc,CF_BLOCKMOVE) then
-          if isVisible(tc) then UI.Mark(tc,LightGray,'*',100);
+          if isVisible(tc) then IO.Mark(tc,LightGray,'*',100);
       end;
   ClearLightMapBits([lfDamage]);
 end;
@@ -1152,10 +1152,10 @@ begin
       for cn := 1 to 10 do
       begin
         Explosion( cn*200, RandomCoord( [ EF_NOBLOCK ] ),8,10,NewDiceRoll(0,0,0),LightRed,IO.Audio.ResolveSoundID(['nuke','barrel.explode','explode']){}{}{}{}{}{}{}{}{}, Damage_Fire, nil);
-        UI.Blink(LightRed,40);
-        UI.Blink(White,40);
+        IO.Blink(LightRed,40);
+        IO.Blink(White,40);
       end;
-      UI.Blink(White,2000);
+      IO.Blink(White,2000);
 
       Include( FFlags, LF_NUKED );
 
@@ -1381,10 +1381,10 @@ begin
   for Count := 1 to 10 do
   begin
     Level.Explosion(0,Level.RandomCoord( [ EF_NOBLOCK ] ),8,10,NewDiceRoll(0,0),LightRed,0{}{}{}{}{}{}{}{}{}, Damage_Fire, nil );
-    UI.Blink(LightRed,40);
-    UI.Blink(White,40);
+    IO.Blink(LightRed,40);
+    IO.Blink(White,40);
   end;
-  UI.Blink(White,1000);
+  IO.Blink(White,1000);
   Level.FArea.ForAllCells( @Level.NukeCell );
   Result := 0;
 end;
@@ -1456,7 +1456,7 @@ begin
   if iLevel.isVisible( iCoord ) then
   begin
     iSprite := iLevel.GetSpriteTop( iCoord );
-    UI.addCellAnimation( iSprite.Frametime * Abs( iValue ), 0, iCoord, iSprite, iValue );
+    IO.addCellAnimation( iSprite.Frametime * Abs( iValue ), 0, iCoord, iSprite, iValue );
   end;
   Result := 0;
 end;

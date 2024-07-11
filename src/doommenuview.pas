@@ -96,7 +96,7 @@ type TMainMenuViewer = class( TUIElement )
 
 implementation
 
-uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, dfoutput, vgltypes,
+uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
      doombase, doomio, doomgfxio, doomnet, doomviews;
 
 const

@@ -3,7 +3,7 @@ unit doominventory;
 interface
 uses SysUtils,
      vnode, vuielements,
-     dfitem, dfoutput, dfthing, dfdata,
+     dfitem, dfthing, dfdata,
      doomcommand, doomviews, doomhooks;
 
 type
