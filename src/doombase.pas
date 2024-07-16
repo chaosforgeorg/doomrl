@@ -929,7 +929,7 @@ repeat
           IO.Driver.Sleep(10);
         end;
         if not IO.Driver.PollEvent( iEvent ) then continue;
-        if IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
+        if IO.OnEvent( iEvent ) or IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
         if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
           break;
       until ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );

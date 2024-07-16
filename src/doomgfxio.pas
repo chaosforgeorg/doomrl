@@ -1,7 +1,8 @@
 {$INCLUDE doomrl.inc}
 unit doomgfxio;
 interface
-uses vglquadrenderer, vgltypes, vluaconfig, vioevent, vuielement, vimage, vrltools, vutil,
+uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
+     vrltools, vutil,
      doomio, doomspritemap, doomanimation, dfdata;
 
 type TDoomGFXIO = class( TDoomIO )
@@ -24,6 +25,11 @@ type TDoomGFXIO = class( TDoomIO )
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
     procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte; aPic : Char ); override;
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
+
+    procedure DeviceChanged;
+    function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
+    function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
+
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
@@ -42,6 +48,8 @@ type TDoomGFXIO = class( TDoomIO )
     FMiniScale   : Byte;
     FLinespace   : Word;
     FVPadding    : DWord;
+    FCellX       : Integer;
+    FCellY       : Integer;
 
     FSettings   : array [Boolean] of
     record
@@ -75,7 +83,7 @@ implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
-     vdebug, vlog, vmath, viotypes, vdf, vgl3library,
+     vdebug, vlog, vmath, vdf, vgl3library, vtigstyle,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfplayer,
      doombase, doomtextures;
@@ -194,11 +202,13 @@ begin
 
   iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
   CalculateConsoleParams;
-  FConsole := TGLConsoleRenderer.Create( iFont, 80, 25, FLineSpace, [VIO_CON_CURSOR] );
+  FConsole := TGLConsoleRenderer.Create( iFont, 80, 25, FLineSpace, [VIO_CON_CURSOR, VIO_CON_BGCOLOR, VIO_CON_EXTCOLOR ] );
   TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
   SpriteMap  := TDoomSpriteMap.Create;
   FMCursor      := TDoomMouseCursor.Create;
   TSDLIODriver( FIODriver ).ShowMouse( False );
+                                                    //RRGGBBAA
+  VTIGDefaultStyle.Color[ VTIG_BACKGROUND_COLOR ] := $10000000;
 
   inherited Create;
 
@@ -320,7 +330,7 @@ begin
 
   FIODriver.RegisterInterrupt( IOKeyCode( VKEY_ENTER, [ VKMOD_ALT ] ), @FullScreenCallback );
   FIODriver.RegisterInterrupt( IOKeyCode( VKEY_F12, [ VKMOD_CTRL ] ), @FullScreenCallback );
-
+  DeviceChanged;
 end;
 
 procedure TDoomGFXIO.Update( aMSec : DWord );
@@ -448,7 +458,7 @@ begin
   TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
   TGLConsoleRenderer( FConsole ).HideCursor;
   SetMinimapScale(FMiniScale);
-  FUIRoot.DeviceChanged;
+  DeviceChanged;
   SpriteMap.Recalculate;
   if Player <> nil then
     SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
@@ -474,7 +484,7 @@ begin
     FLastMouse := FTime;
     FMouseLock := False;
   end;
-  Exit( False )
+  Exit( inherited OnEvent( event ) )
 end;
 
 function TDoomGFXIO.RunUILoop( aElement : TUIElement = nil ) : DWord;
@@ -507,6 +517,29 @@ begin
   FMinimapScale := aScale;
   FMinimapGLPos.Init( FIODriver.GetSizeX - FMinimapScale*(MAXX+2) - 10, FIODriver.GetSizeY - FMinimapScale*(MAXY+2) - ( 10 + FFontMult*20*3 ) );
   UpdateMinimap;
+end;
+
+procedure TDoomGFXIO.DeviceChanged;
+begin
+  FUIRoot.DeviceChanged;
+  FCellX := (FConsole.GetDeviceArea.Dim.X) div (FConsole.SizeX);
+  FCellY := (FConsole.GetDeviceArea.Dim.Y) div (FConsole.SizeY);
+end;
+
+function TDoomGFXIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
+begin
+  aCoord := aCoord - FConsole.GetDeviceArea.Pos;
+  aCoord.x := ( aCoord.x div FCellX );
+  aCoord.y := ( aCoord.y div FCellY );
+  Exit( PointUnit + aCoord );
+end;
+
+function TDoomGFXIO.ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
+begin
+  aCoord := aCoord - PointUnit;
+  aCoord.x := ( aCoord.x * FCellX );
+  aCoord.y := ( aCoord.y * FCellY );
+  Exit( FConsole.GetDeviceArea.Pos + aCoord );
 end;
 
 end.

@@ -6,6 +6,23 @@ uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
      dfdata, doomspritemap, doomviews, doomaudio;
 
+const TIG_EV_NONE      = 0;
+      TIG_EV_DROP      = 1;
+      TIG_EV_INVENTORY = 2;
+      TIG_EV_EQUIPMENT = 3;
+      TIG_EV_CHARACTER = 4;
+      TIG_EV_TRAITS    = 5;
+      TIG_EV_QUICK_0   = 10;
+      TIG_EV_QUICK_1   = 11;
+      TIG_EV_QUICK_2   = 12;
+      TIG_EV_QUICK_3   = 13;
+      TIG_EV_QUICK_4   = 14;
+      TIG_EV_QUICK_5   = 15;
+      TIG_EV_QUICK_6   = 16;
+      TIG_EV_QUICK_7   = 17;
+      TIG_EV_QUICK_8   = 18;
+      TIG_EV_QUICK_9   = 19;
+
 type TInterfaceLayer = class
   procedure Update( aDTime : Integer ); virtual; abstract;
   procedure Tick( aDTick : Integer ); virtual;
@@ -92,8 +109,6 @@ type TDoomIO = class( TIO )
   procedure Tick( aDTick : Integer );
   procedure Clear;
   function OnEvent( const event : TIOEvent ) : Boolean; override;
-
-
 protected
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
@@ -131,7 +146,7 @@ implementation
 
 uses math, video, dateutils, variants,
      vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath,
-     vsdlio, vglconsole, vtig, vvision, vconuirl,
+     vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
      doombase, doomanimation, doomlua, dflevel, dfplayer, dfitem;
 
 procedure TInterfaceLayer.Tick( aDTick : Integer );
@@ -330,6 +345,7 @@ begin
   FConsole.Clear;
   FConsole.HideCursor;
   FConsoleWindow := nil;
+  FUIRoot.UpdateOnRender := False;
   FullUpdate;
 end;
 
@@ -367,9 +383,27 @@ begin
 end;
 
 function TDoomIO.OnEvent( const event : TIOEvent ) : Boolean;
-var iLayer : TInterfaceLayer;
-    i      : Integer;
+var i : Integer;
 begin
+  if ( event.EType = VEVENT_KEYDOWN ) then
+    case event.Key.Code of
+      VKEY_UP     : VTIG_GetIOState.EventState.SetState( VTIG_IE_UP, True );
+      VKEY_DOWN   : VTIG_GetIOState.EventState.SetState( VTIG_IE_DOWN, True );
+      VKEY_LEFT   : VTIG_GetIOState.EventState.SetState( VTIG_IE_LEFT, True );
+      VKEY_RIGHT  : VTIG_GetIOState.EventState.SetState( VTIG_IE_RIGHT, True );
+      VKEY_HOME   : VTIG_GetIOState.EventState.SetState( VTIG_IE_HOME, True );
+      VKEY_END    : VTIG_GetIOState.EventState.SetState( VTIG_IE_END, True );
+      VKEY_PGUP   : VTIG_GetIOState.EventState.SetState( VTIG_IE_PGUP, True );
+      VKEY_PGDOWN : VTIG_GetIOState.EventState.SetState( VTIG_IE_PGDOWN, True );
+      VKEY_ESCAPE : VTIG_GetIOState.EventState.SetState( VTIG_IE_CANCEL, True );
+      VKEY_ENTER  : VTIG_GetIOState.EventState.SetState( VTIG_IE_CONFIRM, True );
+      VKEY_SPACE  : VTIG_GetIOState.EventState.SetState( VTIG_IE_SELECT, True );
+      VKEY_BACK   : VTIG_GetIOState.EventState.SetState( VTIG_IE_BACKSPACE, True );
+    end;
+
+  if ( event.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
+    VTIG_GetIOState.MouseState.HandleEvent( event );
+
   if not FLayers.IsEmpty then
     for i := FLayers.Size - 1 downto 0 do
       if FLayers[i].HandleEvent( event ) then
@@ -405,6 +439,7 @@ end;
 procedure TDoomIO.FullUpdate;
 begin
   VTIG_NewFrame;
+  VTIG_EventClear;
   if FHudEnabled then
     DrawHud;
   inherited FullUpdate;
@@ -697,8 +732,6 @@ begin
 
   VTIG_EndFrame;
   VTIG_Render;
-
-  FConsole.Update;
 end;
 
 procedure TDoomIO.WaitForEnter;

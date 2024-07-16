@@ -161,7 +161,7 @@ begin
 //  CreateSubLogo;
   FMode   := MenuModeDonator;
 
-  TConUIText.Create( Self, Rectangle(2,9,77,16), AnsiString( LuaSystem.ProtectedCall( ['DoomRL','donator_text'], [] ) ) ).BackColor:=Black;
+  TConUIText.Create( Self, Rectangle(2,9,77,16), AnsiString( LuaSystem.ProtectedCall( ['DoomRL','donator_text'], [] ) ) ).BackColor:=FBackColor;
   TConUILabel.Create( Self, Point( Dim.X - 20, Dim.Y-1 ),'@rPress <@yEnter@r>...' );
 end;
 
@@ -189,6 +189,7 @@ begin
   begin
     FBGTexture   := Textures.TextureID['background'];
     FLogoTexture := Textures.TextureID['logo'];
+    FBackColor   := $10000000;
   end;
   FEventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN, VEVENT_SYSTEM ];
   IO.Root.Console.HideCursor;
@@ -211,7 +212,7 @@ begin
   TConUIText.Create( Self, Rectangle(28,10,48,3),
     '@rDoom Roguelike @R'+VERSION_STRING+#10+
     '@rby @RKornel Kisielewicz'#10+
-    '@rgraphics by @RDerek Yu' ).BackColor:=Black;
+    '@rgraphics by @RDerek Yu' ).BackColor:=FBackColor;
 end;
 
 procedure TMainMenuViewer.InitMain;
@@ -537,7 +538,7 @@ begin
           TUINotifyBox.Create( Self, Rectangle( 15, 15, 50, 10 ),
             #10#10#10+
             '@r    Save file corrupted! Removing corrupted'#10+
-            '@r    save file, sorry. Press <@yEnter@r>...').BackColor := Black;
+            '@r    save file, sorry. Press <@yEnter@r>...').BackColor := FBackColor;
           Exit( True );
         end;
     2 : begin
@@ -691,7 +692,7 @@ begin
         TUIYesNoBox.Create( Self, Rectangle( 23, 15, 34, 7 ),
           '@r        Are you sure?'#10+
           '@r  This difficulty level isn''t'#10+
-          '@r   even remotely fair! [@yy@r/@yn@r]', @Self.OnPickDifficulty ).BackColor := Black;
+          '@r   even remotely fair! [@yy@r/@yn@r]', @Self.OnPickDifficulty ).BackColor := FBackColor;
         Exit( True );
       end;
     end;
@@ -777,6 +778,7 @@ var iCon   : TUIConsole;
 begin
   inherited OnRedraw;
   iCon.Init( TConUIRoot(FRoot).Renderer );
+  FBackColor := $10000000;
   iCon.ClearRect( FAbsolute, FBackColor );
 end;
 
