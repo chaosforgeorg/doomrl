@@ -439,7 +439,6 @@ end;
 procedure TDoomIO.FullUpdate;
 begin
   VTIG_NewFrame;
-  VTIG_EventClear;
   if FHudEnabled then
     DrawHud;
   inherited FullUpdate;
@@ -732,6 +731,7 @@ begin
 
   VTIG_EndFrame;
   VTIG_Render;
+  VTIG_EventClear;
 end;
 
 procedure TDoomIO.WaitForEnter;
