@@ -145,7 +145,7 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 implementation
 
 uses math, video, dateutils, variants,
-     vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath,
+     vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
      doombase, doomanimation, doomlua, dflevel, dfplayer, dfitem;
 
@@ -338,6 +338,11 @@ begin
 
   VTIG_Initialize( FConsole, FIODriver, False );
 
+  VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := #196+#196+'  '+#196+#196+#196+#196;
+//  VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := '--  ----';
+  VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ]  := YELLOW;
+  VTIGDefaultStyle.Color[ VTIG_FRAME_COLOR ]  := RED;
+  VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ] := LIGHTRED;
   inherited Create( FIODriver, FConsole, iStyle );
   LoadStart;
 

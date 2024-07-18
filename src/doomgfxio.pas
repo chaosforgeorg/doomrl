@@ -208,7 +208,8 @@ begin
   FMCursor      := TDoomMouseCursor.Create;
   TSDLIODriver( FIODriver ).ShowMouse( False );
                                                     //RRGGBBAA
-  VTIGDefaultStyle.Color[ VTIG_BACKGROUND_COLOR ] := $10000000;
+  VTIGDefaultStyle.Color[ VTIG_BACKGROUND_COLOR ]          := $10000000;
+  VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := $442222FF;
 
   inherited Create;
 
