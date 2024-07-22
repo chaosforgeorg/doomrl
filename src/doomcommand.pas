@@ -14,6 +14,7 @@ type TCommand = object
   class function Create( aCommand : Byte; aTarget : TCoord2D ) : TCommand; static;
   class function Create( aCommand : Byte; aID : AnsiString ) : TCommand; static;
   class function Create( aCommand : Byte; aItem : TItem ) : TCommand; static;
+  class function Create( aCommand : Byte; aItem : TItem; aSlot : TEqSlot ) : TCommand; static;
   class function Create( aCommand : Byte; aItem : TItem; aID : AnsiString ) : TCommand; static;
   class function Create( aCommand : Byte; aTarget : TCoord2D; aItem : TItem ) : TCommand; static;
 end;
@@ -43,6 +44,14 @@ class function TCommand.Create( aCommand : Byte; aItem : TItem ) : TCommand;
 begin
   Result.Command := aCommand;
   Result.Item    := aItem;
+  Result.ID      := '';
+end;
+
+class function TCommand.Create( aCommand : Byte; aItem : TItem; aSlot : TEqSlot ) : TCommand;
+begin
+  Result.Command := aCommand;
+  Result.Item    := aItem;
+  Result.Slot    := aSlot;
   Result.ID      := '';
 end;
 

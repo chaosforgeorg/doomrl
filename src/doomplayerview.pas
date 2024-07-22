@@ -1,13 +1,14 @@
 {$INCLUDE doomrl.inc}
 unit doomplayerview;
 interface
-uses viotypes, vgenerics, doomio, dfitem;
+uses viotypes, vgenerics, doomio, dfitem, dfdata;
 
 type TPlayerViewState = (
   PLAYERVIEW_INVENTORY,
   PLAYERVIEW_EQUIPMENT,
   PLAYERVIEW_CHARACTER,
   PLAYERVIEW_TRAITS,
+  PLAYERVIEW_CLOSING,
   PLAYERVIEW_DONE
 );
 
@@ -37,32 +38,39 @@ protected
   procedure ReadEq;
   procedure Sort( aList : TItemViewArray );
 protected
+  procedure Filter( aSet : TItemTypeSet );
+protected
   FState : TPlayerViewState;
   FSize  : TIOPoint;
   FInv   : TItemViewArray;
   FEq    : TItemViewArray;
+  FSwap  : Boolean;
+  FSSlot : TEqSlot;
 end;
 
 implementation
 
 uses sysutils,
      vutil, vtig, vtigio, vgltypes, vluasystem,
-     dfdata, dfplayer,
-     doombase, doominventory, doomtrait, doomgfxio;
+     dfplayer,
+     doomcommand, doombase, doominventory, doomtrait, doomgfxio;
 
 constructor TPlayerView.Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
 begin
   VTIG_EventClear;
+  VTIG_ResetSelect( 'inventory' );
+  VTIG_ResetSelect( 'equipment' );
   FState := aInitialState;
   FSize  := Point( 80, 25 );
   FInv   := nil;
   FEq    := nil;
+  FSwap  := False;
 end;
 
 procedure TPlayerView.Update( aDTime : Integer );
 var iP1,iP2 : TPoint;
 begin
-  if IsFinished then Exit;
+  if IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
 
   if Doom.State <> DSPlaying then
   begin
@@ -77,13 +85,18 @@ begin
     PLAYERVIEW_TRAITS    : UpdateTraits;
   end;
 
-  if VTIG_Event( VTIG_IE_LEFT ) then
+  if IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
+
+  if not FSwap then
   begin
-    if FState = Low( TPlayerViewState ) then FState := PLAYERVIEW_TRAITS       else FState := Pred( FState );
-  end;
-  if VTIG_Event( VTIG_IE_RIGHT ) then
-  begin
-    if FState = PLAYERVIEW_TRAITS       then FState := Low( TPlayerViewState ) else FState := Succ( FState );
+    if VTIG_Event( VTIG_IE_LEFT ) then
+    begin
+      if FState = Low( TPlayerViewState ) then FState := PLAYERVIEW_TRAITS       else FState := Pred( FState );
+    end;
+    if VTIG_Event( VTIG_IE_RIGHT ) then
+    begin
+      if FState = PLAYERVIEW_TRAITS       then FState := Low( TPlayerViewState ) else FState := Succ( FState );
+    end;
   end;
 
   if FState <> PLAYERVIEW_DONE then
@@ -110,7 +123,7 @@ end;
 
 function TPlayerView.IsModal : Boolean;
 begin
-  Exit( True );
+  Exit( FState <> PLAYERVIEW_CLOSING );
 end;
 
 destructor TPlayerView.Destroy;
@@ -123,13 +136,24 @@ end;
 procedure TPlayerView.UpdateInventory;
 var iEntry    : TItemViewEntry;
     iSelected : Integer;
+    iCommand  : Byte;
 begin
   if FInv = nil then ReadInv;
-  VTIG_BeginWindow('Inventory', FSize );
+  if FSwap
+    then VTIG_BeginWindow('Select item to wear/wield', 'inventory', FSize )
+    else VTIG_BeginWindow('Inventory', 'inventory', FSize );
     VTIG_BeginGroup( 50 );
     for iEntry in FInv do
       VTIG_Selectable( iEntry.Name, True, iEntry.Color );
     iSelected := VTIG_Selected;
+    if FInv.Size = 0 then
+    begin
+      iSelected := -1;
+      if FSwap
+        then VTIG_Text( 'No matching items, press <{!Enter}>.' )
+        else VTIG_Text( '{!No items in inventory!}' );
+    end;
+
     VTIG_EndGroup;
 
     VTIG_BeginGroup;
@@ -137,9 +161,53 @@ begin
     begin
       VTIG_Text( FInv[iSelected].Desc );
       VTIG_FreeLabel( FInv[iSelected].Stats, Point( 0, 7 ) );
+
+      VTIG_Ruler( 20 );
+      VTIG_Text( '<{!Enter}> wear/use' );
+      if not FSwap then
+        VTIG_Text( '<{!Backspace}> drop' );
     end;
+
     VTIG_EndGroup;
-  VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit, <{!Backspace}> drop}');
+  if FSwap
+    then VTIG_End('<{!Up,Down}> select, <{!Escape}> exit}')
+    else VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit}');
+
+  if (iSelected >= 0) then
+  begin
+    if FSwap then
+    begin
+      if VTIG_EventConfirm then
+      begin
+        FState := PLAYERVIEW_DONE;
+        Doom.HandleCommand( TCommand.Create( COMMAND_SWAP, FInv[iSelected].Item, FSSlot ) );
+      end;
+    end
+    else
+    begin
+      if VTIG_Event( VTIG_IE_BACKSPACE ) then
+      begin
+        FState := PLAYERVIEW_DONE;
+        Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item ) );
+      end
+      else
+      if VTIG_EventConfirm then
+      begin
+        iCommand := COMMAND_NONE;
+        if FInv[iSelected].Item.isWearable then iCommand := COMMAND_WEAR;
+        if FInv[iSelected].Item.isPack     then iCommand := COMMAND_USE;
+        FState := PLAYERVIEW_DONE;
+        if iCommand <> COMMAND_NONE then
+          Doom.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
+      end;
+    end;
+  end
+  else
+  begin
+    if VTIG_EventConfirm then
+      FState := PLAYERVIEW_DONE;
+  end;
+
 end;
 
 procedure TPlayerView.UpdateEquipment;
@@ -151,9 +219,20 @@ var iEntry       : TItemViewEntry;
     iCount       : Integer;
     iRes         : TResistance;
     iName        : Ansistring;
+  function Cursed : Boolean;
+  begin
+    if ( FEq[iSelected].Item <> nil ) and FEq[iSelected].Item.Flags[ IF_CURSED ] then
+    begin
+      FState := PLAYERVIEW_DONE;
+      IO.Msg('You can''t, it''s cursed!');
+      Exit( True );
+    end;
+    Exit( False );
+  end;
+
 begin
   if FEq = nil then ReadEq;
-  VTIG_BeginWindow('Equipment', FSize );
+  VTIG_BeginWindow('Equipment', 'equipment', FSize );
     VTIG_BeginGroup( 9, True );
 
       VTIG_BeginGroup( 50 );
@@ -203,7 +282,71 @@ begin
            '} Feet {!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_FEET))+'%',5)+'}', Point( 42, iY ) );
     end;
 
-  VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit, <{!Backspace}> drop}');
+     VTIG_FreeLabel( '<{!Enter}> take off/wear', Point(53, 18) );
+     VTIG_FreeLabel( '<{!Tab}> swap item',       Point(53, 19) );
+     VTIG_FreeLabel( '<{!Backspace}> drop item', Point(53, 20) );
+  VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit}');
+
+  if (iSelected >= 0) then
+  begin
+    if VTIG_EventConfirm then
+    begin
+      if Assigned( FEq[iSelected].Item ) then
+      begin
+        if ( Player.Inv.isFull ) then
+        begin
+          FState := PLAYERVIEW_CLOSING;
+          if not Option_InvFullDrop then
+          begin
+            if not IO.MsgConfirm('No room in inventory! Should it be dropped?') then
+            begin
+              FState := PLAYERVIEW_DONE;
+              Exit;
+            end;
+          end;
+          FState := PLAYERVIEW_DONE;
+          if Cursed then Exit;
+          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item ) );
+        end
+        else
+        begin
+          FState := PLAYERVIEW_DONE;
+          if Cursed then Exit;
+          Doom.HandleCommand( TCommand.Create( COMMAND_TAKEOFF, nil, TEqSlot(iSelected) ) );
+        end;
+      end
+      else
+      begin
+        VTIG_ResetSelect( 'inventory' );
+        FState := PLAYERVIEW_INVENTORY;
+        FSwap  := True;
+        Filter( ItemEqFilters[ TEqSlot(iSelected) ] );
+        FSSlot := TEqSlot(iSelected);
+        Exit;
+      end;
+    end
+    else
+    if VTIG_Event( VTIG_IE_TAB ) then
+    begin
+      if Cursed then Exit;
+      VTIG_ResetSelect( 'inventory' );
+      FState := PLAYERVIEW_INVENTORY;
+      FSwap  := True;
+      Filter( ItemEqFilters[ TEqSlot(iSelected) ] );
+      FSSlot := TEqSlot(iSelected);
+      Exit;
+    end
+    else
+    if VTIG_Event( VTIG_IE_BACKSPACE ) then
+    begin
+      if Assigned( FEq[iSelected].Item ) then
+        begin
+          FState := PLAYERVIEW_DONE;
+          if Cursed then Exit;
+          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item ) );
+        end;
+    end;
+  end;
 end;
 
 procedure TPlayerView.UpdateCharacter;
@@ -286,6 +429,21 @@ begin
         aList[iCount2] := aList[iCount2+1];
         aList[iCount2+1] := iTemp;
       end;
+end;
+
+procedure TPlayerView.Filter( aSet : TItemTypeSet );
+var iCount  : Integer;
+    iSize   : Integer;
+begin
+  iSize := 0;
+  for iCount := 0 to FInv.Size - 1 do
+    if FInv[ iCount ].Item.IType in aSet then
+    begin
+      if iCount <> iSize then
+        FInv[ iSize ] := FInv[ iCount ];
+      Inc( iSize );
+    end;
+  FInv.Resize( iSize );
 end;
 
 end.
