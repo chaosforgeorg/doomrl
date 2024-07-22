@@ -140,7 +140,7 @@ uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
      dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doomviews, doombase,
-     doomlua, doominventory, doomcommand, doomhelp;
+     doomlua, doominventory, doomcommand, doomhelp, doomplayerview;
 
 var MortemText    : Text;
     WritingMortem : Boolean = False;
@@ -935,7 +935,8 @@ end;
 
 procedure TPlayer.doUpgradeTrait;
 begin
-  IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel, @OnTraitConfirm) );
+  IO.PushLayer( TPlayerView.CreateTrait( False ) );
+//  IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel, @OnTraitConfirm) );
 end;
 
 function lua_player_set_affect(L: Plua_State): Integer; cdecl;

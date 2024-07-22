@@ -78,7 +78,7 @@ type TMainMenuViewer = class( TUIElement )
     function OnPickSecondChallenge( aSender : TUIElement ) : Boolean;
     function OnPickDifficulty( aSender : TUIElement ) : Boolean;
     function OnPickKlass( aSender : TUIElement ) : Boolean;
-    function OnPickTrait( aSender : TUIElement ) : Boolean;
+    function OnPickTrait( aTrait : Byte ) : Boolean;
     function OnPickName( aSender : TUIElement ) : Boolean;
     function OnPickMod( aSender : TUIElement ) : Boolean;
     function OnKlassMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
@@ -97,7 +97,7 @@ type TMainMenuViewer = class( TUIElement )
 implementation
 
 uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
-     doombase, doomio, doomgfxio, doomnet, doomviews;
+     doombase, doomio, doomgfxio, doomnet, doomviews, doomplayerview;
 
 const
   TextContinueGame  = '@b--@> Continue game @b---@>';
@@ -289,8 +289,11 @@ procedure TMainMenuViewer.InitTrait;
 var iFull : TUITraitsViewer;
 begin
   FLogo := False;
-  iFull := TUITraitsViewer.Create( Self, FResult.Klass, @OnPickTrait );
-  iFull.OnCancelEvent  := @OnCancel;
+
+  IO.PushLayer( TPlayerView.CreateTrait( True, FResult.Klass, @OnPickTrait ) );
+
+//  iFull := TUITraitsViewer.Create( Self, FResult.Klass, @OnPickTrait );
+//  iFull.OnCancelEvent  := @OnCancel;
 end;
 
 procedure TMainMenuViewer.InitName;
@@ -714,12 +717,16 @@ begin
   Exit( True );
 end;
 
-function TMainMenuViewer.OnPickTrait ( aSender : TUIElement ) : Boolean;
+function TMainMenuViewer.OnPickTrait( aTrait : Byte ) : Boolean;
 begin
-  FResult.Trait := Word((aSender as TUICustomMenu).SelectedItem.Data);
+  if aTrait = 255 then
+  begin
+    OnCancel( nil );
+    Exit( True );
+  end;
+  FResult.Trait := aTrait;
   DestroyChildren;
   FLogo := False;
-
   if (Option_AlwaysName <> '') or Option_AlwaysRandomName
     then Free
     else InitName;

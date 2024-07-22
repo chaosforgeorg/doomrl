@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomplayerview;
 interface
-uses viotypes, vgenerics, doomio, dfitem, dfdata;
+uses viotypes, vgenerics, doomio, dfitem, dfdata, doomtrait;
 
 type TPlayerViewState = (
   PLAYERVIEW_INVENTORY,
@@ -22,8 +22,24 @@ end;
 
 type TItemViewArray = specialize TGArray< TItemViewEntry >;
 
+type TTraitViewEntry = record
+  Entry     : Ansistring;
+  Name      : Ansistring;
+  Quote     : Ansistring;
+  Desc      : Ansistring;
+  Requires  : Ansistring;
+  Blocks    : Ansistring;
+  Available : Boolean;
+  Value     : Byte;
+  Index     : Byte;
+end;
+
+type TTraitViewArray = specialize TGArray< TTraitViewEntry >;
+     TOnPickTrait    = function ( aTrait : Byte ) : Boolean of object;
+
 type TPlayerView = class( TInterfaceLayer )
   constructor Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
+  constructor CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0; aCallback : TOnPickTrait = nil );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
@@ -36,35 +52,63 @@ protected
   procedure PushItem( aItem : TItem; aArray : TItemViewArray );
   procedure ReadInv;
   procedure ReadEq;
+  procedure ReadTraits( aKlass : Byte );
   procedure Sort( aList : TItemViewArray );
 protected
   procedure Filter( aSet : TItemTypeSet );
 protected
-  FState : TPlayerViewState;
-  FSize  : TIOPoint;
-  FInv   : TItemViewArray;
-  FEq    : TItemViewArray;
-  FSwap  : Boolean;
-  FSSlot : TEqSlot;
+  FState     : TPlayerViewState;
+  FSize      : TIOPoint;
+  FInv       : TItemViewArray;
+  FEq        : TItemViewArray;
+  FSwapMode  : Boolean;
+  FTraitMode : Boolean;
+  FTraitFirst: Boolean;
+  FSSlot     : TEqSlot;
+  FTraits    : TTraitViewArray;
+  FOnPick    : TOnPickTrait;
 end;
 
 implementation
 
-uses sysutils,
+uses sysutils, variants,
      vutil, vtig, vtigio, vgltypes, vluasystem,
      dfplayer,
-     doomcommand, doombase, doominventory, doomtrait, doomgfxio;
+     doomcommand, doombase, doominventory, doomgfxio;
 
 constructor TPlayerView.Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
 begin
   VTIG_EventClear;
   VTIG_ResetSelect( 'inventory' );
   VTIG_ResetSelect( 'equipment' );
-  FState := aInitialState;
-  FSize  := Point( 80, 25 );
-  FInv   := nil;
-  FEq    := nil;
-  FSwap  := False;
+  VTIG_ResetSelect( 'traits' );
+  FState     := aInitialState;
+  FSize      := Point( 80, 25 );
+  FInv       := nil;
+  FEq        := nil;
+  FTraits    := nil;
+  FSwapMode  := False;
+  FTraitMode := False;
+  FTraitFirst:= False;
+end;
+
+constructor TPlayerView.CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0; aCallback : TOnPickTrait = nil );
+begin
+  VTIG_EventClear;
+  VTIG_ResetSelect( 'traits' );
+  FState     := PLAYERVIEW_TRAITS;
+  FSize      := Point( 80, 25 );
+  FInv       := nil;
+  FEq        := nil;
+  FTraits    := nil;
+  FSwapMode  := False;
+  FTraitMode := True;
+  FTraitFirst:= aFirstTrait;
+  FOnPick    := aCallback;
+
+  if FTraitFirst
+    then ReadTraits( aKlass )
+    else ReadTraits( Player.Klass )
 end;
 
 procedure TPlayerView.Update( aDTime : Integer );
@@ -72,7 +116,7 @@ var iP1,iP2 : TPoint;
 begin
   if IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
 
-  if Doom.State <> DSPlaying then
+  if ( Doom.State <> DSPlaying ) and ( not FTraitFirst ) then
   begin
     FState := PLAYERVIEW_DONE;
     Exit;
@@ -87,7 +131,7 @@ begin
 
   if IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
 
-  if not FSwap then
+  if ( not FSwapMode ) and ( not FTraitMode ) then
   begin
     if VTIG_Event( VTIG_IE_LEFT ) then
     begin
@@ -99,13 +143,20 @@ begin
     end;
   end;
 
-  if FState <> PLAYERVIEW_DONE then
+  if ( FState <> PLAYERVIEW_DONE ) and ( not FTraitMode ) then
   begin
     if VTIG_EventCancel or VTIG_Event( [ TIG_EV_INVENTORY, TIG_EV_EQUIPMENT, TIG_EV_CHARACTER, TIG_EV_TRAITS ] ) then
     begin
       FState := PLAYERVIEW_DONE;
     end;
   end;
+
+  if ( FState <> PLAYERVIEW_DONE ) and FTraitMode and FTraitFirst then
+    if VTIG_EventCancel then
+    begin
+      FState := PLAYERVIEW_DONE;
+      FOnPick(255);
+    end;
 
   if GraphicsVersion then
     with IO as TDoomGFXIO do
@@ -139,7 +190,7 @@ var iEntry    : TItemViewEntry;
     iCommand  : Byte;
 begin
   if FInv = nil then ReadInv;
-  if FSwap
+  if FSwapMode
     then VTIG_BeginWindow('Select item to wear/wield', 'inventory', FSize )
     else VTIG_BeginWindow('Inventory', 'inventory', FSize );
     VTIG_BeginGroup( 50 );
@@ -149,7 +200,7 @@ begin
     if FInv.Size = 0 then
     begin
       iSelected := -1;
-      if FSwap
+      if FSwapMode
         then VTIG_Text( 'No matching items, press <{!Enter}>.' )
         else VTIG_Text( '{!No items in inventory!}' );
     end;
@@ -164,18 +215,18 @@ begin
 
       VTIG_Ruler( 20 );
       VTIG_Text( '<{!Enter}> wear/use' );
-      if not FSwap then
+      if not FSwapMode then
         VTIG_Text( '<{!Backspace}> drop' );
     end;
 
     VTIG_EndGroup;
-  if FSwap
+  if FSwapMode
     then VTIG_End('<{!Up,Down}> select, <{!Escape}> exit}')
     else VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit}');
 
   if (iSelected >= 0) then
   begin
-    if FSwap then
+    if FSwapMode then
     begin
       if VTIG_EventConfirm then
       begin
@@ -318,8 +369,8 @@ begin
       else
       begin
         VTIG_ResetSelect( 'inventory' );
-        FState := PLAYERVIEW_INVENTORY;
-        FSwap  := True;
+        FState    := PLAYERVIEW_INVENTORY;
+        FSwapMode := True;
         Filter( ItemEqFilters[ TEqSlot(iSelected) ] );
         FSSlot := TEqSlot(iSelected);
         Exit;
@@ -330,8 +381,8 @@ begin
     begin
       if Cursed then Exit;
       VTIG_ResetSelect( 'inventory' );
-      FState := PLAYERVIEW_INVENTORY;
-      FSwap  := True;
+      FState    := PLAYERVIEW_INVENTORY;
+      FSwapMode := True;
       Filter( ItemEqFilters[ TEqSlot(iSelected) ] );
       FSSlot := TEqSlot(iSelected);
       Exit;
@@ -356,9 +407,51 @@ begin
 end;
 
 procedure TPlayerView.UpdateTraits;
+var iSelected : Integer;
+    iEntry    : TTraitViewEntry;
 begin
-  VTIG_BeginWindow('Traits', FSize );
-  VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> scroll, <{!Escape}> exit}');
+  if FTraits = nil then ReadTraits( Player.Klass );
+  if FTraitMode
+    then VTIG_BeginWindow('Select trait to upgrade', 'traits', FSize )
+    else VTIG_BeginWindow('Traits', 'traits', FSize );
+
+  VTIG_BeginGroup( 23 );
+  VTIG_MoveCursor( Point(0,-1) );
+    for iEntry in FTraits do
+      if iEntry.Available
+        then VTIG_Selectable( iEntry.Entry, True, LightRed )
+        else VTIG_Selectable( iEntry.Entry, False );
+    iSelected := VTIG_Selected;
+  VTIG_EndGroup;
+
+  VTIG_BeginGroup;
+  if iSelected >= 0 then
+  begin
+    VTIG_Text( FTraits[iSelected].Name, LightRed );
+    VTIG_Ruler;
+    VTIG_Text( FTraits[iSelected].Quote, Yellow );
+    VTIG_Text( '' );
+    VTIG_Text( FTraits[iSelected].Desc );
+    VTIG_Text( '' );
+    if FTraits[iSelected].Requires <> '' then
+      VTIG_Text( 'Requires : {0}',[FTraits[iSelected].Requires] );
+    if FTraits[iSelected].Blocks <> '' then
+      VTIG_Text( 'Blocks   : {0}',[FTraits[iSelected].Blocks] );
+  end;
+  VTIG_EndGroup;
+
+  if FTraitMode
+    then VTIG_End('{l<{!Up,Down}> scroll, <{!Enter}> select}')
+    else VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> scroll, <{!Escape}> exit}');
+
+  if (iSelected >= 0) and FTraitMode then
+    if VTIG_EventConfirm then
+    begin
+      FState := PLAYERVIEW_DONE;
+      if FTraitFirst
+        then FOnPick( FTraits[iSelected].Index )
+        else Player.FTraits.Upgrade( FTraits[iSelected].Index );
+    end;
 end;
 
 procedure TPlayerView.PushItem( aItem : TItem; aArray : TItemViewArray );
@@ -414,6 +507,102 @@ begin
           iEntry.Color := DarkGray;
           FEq.Push( iEntry );
         end;
+end;
+
+procedure TPlayerView.ReadTraits( aKlass : Byte );
+var iEntry    : TTraitViewEntry;
+    iKlass    : Byte;
+    iLevel    : Byte;
+    iTrait, i : byte;
+    iTraits   : Variant;
+    iTData    : PTraits;
+    iName     : AnsiString;
+    iNID      : Word;
+    iValue    : Word;
+    iSize     : Word;
+    iCount    : Word;
+    iTable  : TLuaTable;
+const RG : array[Boolean] of Char = ('G','R');
+      RL : array[Boolean] of Char = ('L','R');
+  function Value( aTrait : Byte ) : Byte;
+  begin
+    if FTraitFirst then Exit(0);
+    Exit( iTData^.Values[aTrait] );
+  end;
+
+begin
+  if FTraits = nil then FTraits := TTraitViewArray.Create;
+  FTraits.Clear;
+
+  iKlass := aKlass;
+  iLevel := 0;
+  iTData := nil;
+  if not FTraitFirst then
+  begin
+    iLevel := Player.ExpLevel;
+    iTData := @(Player.FTraits);
+  end;
+
+  iTraits := LuaSystem.Get(['klasses',iKlass,'traitlist']);
+  for i := VarArrayLowBound(iTraits, 1) to VarArrayHighBound(iTraits, 1) do
+  begin
+    iTrait := iTraits[ i ];
+    iEntry.Value     := Value( iTrait );
+    iEntry.Name      := LuaSystem.Get(['traits',iTrait,'name']);
+    iEntry.Entry     := Padded(iEntry.Name,16) +' ({!'+IntToStr(iEntry.Value)+'})';
+    with LuaSystem.GetTable(['traits',iTrait]) do
+    try
+      iEntry.Quote := getString('quote');
+      iEntry.Desc  := getString('full');
+    finally
+      Free;
+    end;
+
+    iEntry.Requires := '';
+    iEntry.Blocks   := '';
+    with LuaSystem.GetTable(['klasses',iKlass,'trait',iTrait]) do
+    try
+      if GetTableSize('requires') > 0 then
+      for iTable in ITables('requires') do
+      begin
+        iNID            := iTable.GetValue( 1 );
+        iName           := LuaSystem.Get(['traits',iNID,'name']);
+        iValue          := iTable.GetValue( 2 );
+        iEntry.Requires += '{'+RG[Value(iNID) < iValue]+iName+'} ({!'+IntToStr(iValue)+'}), ';
+      end;
+
+      iValue := GetInteger('reqlevel',0);
+      if iValue > 0
+        then iEntry.Requires += '{'+RG[iLevel < iValue]+'Level }({!'+IntToStr(iValue)+'})'
+        else Delete( iEntry.Requires, Length(iEntry.Requires) - 1, 2 );
+
+      iSize   := GetTableSize('blocks');
+      if iSize > 0 then
+      begin
+        with GetTable('blocks') do
+        try
+          for iCount := 1 to iSize do
+          begin
+            iNID          := GetValue( iCount );
+            iName         := LuaSystem.Get(['traits',iNID,'name']);
+            iEntry.Blocks += '{'+RL[Value(iNID) > 0]+iName+'}, ';
+          end;
+        finally
+          Free;
+        end;
+        Delete( iEntry.Blocks, Length(iEntry.Blocks) - 1, 2 );
+      end;
+    finally
+      Free;
+    end;
+
+    iEntry.Index     := iTrait;
+    if FTraitFirst
+      then iEntry.Available := TTraits.CanPickInitially( iTrait, iKlass )
+      else iEntry.Available := iTData^.CanPick( iTrait, iLevel );
+    FTraits.Push( iEntry );
+  end;
+
 end;
 
 procedure TPlayerView.Sort( aList : TItemViewArray );

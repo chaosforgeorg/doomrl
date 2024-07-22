@@ -343,6 +343,7 @@ begin
   VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ]  := YELLOW;
   VTIGDefaultStyle.Color[ VTIG_FRAME_COLOR ]  := RED;
   VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ] := LIGHTRED;
+  VTIGDefaultStyle.Color[ VTIG_SELECTED_TEXT_COLOR ] := YELLOW;
   inherited Create( FIODriver, FConsole, iStyle );
   LoadStart;
 
