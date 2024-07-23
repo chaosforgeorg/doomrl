@@ -100,7 +100,8 @@ TBeing = class(TThing,IPathQuery)
     // All actions return True/False depending on success.
     // On success they do eat up action cost!
     function ActionSwapWeapon : boolean;
-    function ActionQuickKey( const aWeaponID : Ansistring ) : Boolean;
+    function ActionQuickKey( aIndex : Byte ) : Boolean;
+    function ActionQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
     function ActionDrop( Item : TItem ) : boolean;
     function ActionWear( aItem : TItem ) : boolean;
     function ActionSwap( aItem : TItem; aSlot : TEqSlot ) : boolean;
@@ -550,7 +551,40 @@ begin
   Exit( ID );
 end;
 
-function TBeing.ActionQuickKey( const aWeaponID : Ansistring ) : Boolean;
+function TBeing.ActionQuickKey( aIndex : Byte ) : Boolean;
+var iUID  : TUID;
+    iID   : string[32];
+    iItem : TItem;
+begin
+  if ( aIndex < 1 ) or ( aIndex > 9 ) then Exit( False );
+  with Player.FQuickSlots[ aIndex ] do
+  begin
+    iUID := UID;
+    iID  := ID;
+  end;
+  if iUID <> 0 then
+  begin
+    iItem := UIDs[ iUID ] as TItem;
+    if iItem <> nil then
+    begin
+      if FInv.Equipped( iItem )     then Exit( Fail( 'You''re already using it!', [] ) );
+      if not FInv.Contains( iItem ) then Exit( Fail( 'You no longer have it!', [] ) );
+      Exit( ActionWear( iItem ) );
+    end;
+  end
+  else
+  if iID <> '' then
+  begin
+    for iItem in Inv do
+      if iItem.isPack then
+        if iItem.id = iID then
+          Exit( ActionUse( iItem ) );
+    Exit( Fail( 'You no longer have any item like that!', [] ) );
+  end;
+  Exit( Fail( 'Quickslot %d is unassigned!', [aIndex] ) );
+end;
+
+function TBeing.ActionQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
 var iWeapon  : TItem;
     iItem    : TItem;
     iAmmo    : Byte;
@@ -1395,7 +1429,7 @@ begin
     COMMAND_PICKUP    : Exit( ActionPickup );
     COMMAND_UNLOAD    : Exit( ActionUnLoad( aCommand.Item, aCommand.ID ) );
     COMMAND_SWAPWEAPON: Exit( ActionSwapWeapon );
-    COMMAND_QUICKKEY  : Exit( ActionQuickKey( aCommand.ID ) );
+    COMMAND_QUICKKEY  : Exit( ActionQuickKey( Ord( aCommand.ID[1] ) - Ord( '0' ) ) );
     COMMAND_TACTIC    : Exit( ActionTactic );
   else Exit( False );
   end;

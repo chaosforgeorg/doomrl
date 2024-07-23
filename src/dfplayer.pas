@@ -39,6 +39,10 @@ TStatistics = object
   procedure UpdateNDCount( aCount : DWord );
 end;
 
+TQuickSlotInfo = record
+  UID : TUID;
+  ID  : string[32];
+end;
 
 { TPlayer }
 
@@ -66,6 +70,7 @@ TPlayer = class(TBeing)
   FTactic         : TTacticData;
   FAffects        : TAffects;
   FPathRun        : Boolean;
+  FQuickSlots     : array[1..9] of TQuickSlotInfo;
 
   FLastTargetPos  : TCoord2D;
 
@@ -271,6 +276,7 @@ begin
   FExpFactor := 1.0;
 
   Initialize;
+  FillChar( FQuickSlots, SizeOf(FQuickSlots), 0 );
 
   CallHook( Hook_OnCreate, [] );
 end;
@@ -311,6 +317,7 @@ begin
   Stream.Write( FRun,       SizeOf( FRun ) );
   Stream.Write( FTactic,    SizeOf( FTactic ) );
   Stream.Write( FStatistics,SizeOf( FStatistics ) );
+  Stream.Write( FQuickSlots,SizeOf( FQuickSlots ) );
 
   FKills.WriteToStream( Stream );
   FStatistics.Map.WriteToStream( Stream );
@@ -334,6 +341,7 @@ begin
   Stream.Read( FRun,       SizeOf( FRun ) );
   Stream.Read( FTactic,    SizeOf( FTactic ) );
   Stream.Read( FStatistics,SizeOf( FStatistics ) );
+  Stream.Read( FQuickSlots,SizeOf( FQuickSlots ) );
 
   FKills          := TKillTable.CreateFromStream( Stream );
   FStatistics.Map := TIntHashMap.CreateFromStream( Stream );
@@ -1122,7 +1130,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  Player.ActionQuickKey(State.ToString(2));
+  Player.ActionQuickWeapon(State.ToString(2));
   Result := 0;
 end;
 

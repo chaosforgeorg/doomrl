@@ -417,6 +417,16 @@ begin
       VKEY_SPACE  : VTIG_GetIOState.EventState.SetState( VTIG_IE_SELECT, True );
       VKEY_BACK   : VTIG_GetIOState.EventState.SetState( VTIG_IE_BACKSPACE, True );
       VKEY_TAB    : VTIG_GetIOState.EventState.SetState( VTIG_IE_TAB, True );
+      VKEY_0      : VTIG_GetIOState.EventState.SetState( VTIG_IE_0, True );
+      VKEY_1      : VTIG_GetIOState.EventState.SetState( VTIG_IE_1, True );
+      VKEY_2      : VTIG_GetIOState.EventState.SetState( VTIG_IE_2, True );
+      VKEY_3      : VTIG_GetIOState.EventState.SetState( VTIG_IE_3, True );
+      VKEY_4      : VTIG_GetIOState.EventState.SetState( VTIG_IE_4, True );
+      VKEY_5      : VTIG_GetIOState.EventState.SetState( VTIG_IE_5, True );
+      VKEY_6      : VTIG_GetIOState.EventState.SetState( VTIG_IE_6, True );
+      VKEY_7      : VTIG_GetIOState.EventState.SetState( VTIG_IE_7, True );
+      VKEY_8      : VTIG_GetIOState.EventState.SetState( VTIG_IE_8, True );
+      VKEY_9      : VTIG_GetIOState.EventState.SetState( VTIG_IE_9, True );
     end;
 
   if ( event.EType in [ VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
