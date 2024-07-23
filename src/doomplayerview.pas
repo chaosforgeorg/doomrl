@@ -21,6 +21,7 @@ type TItemViewEntry = record
 end;
 
 type TItemViewArray = specialize TGArray< TItemViewEntry >;
+     TStringArray   = specialize TGArray<AnsiString>;
 
 type TTraitViewEntry = record
   Entry     : Ansistring;
@@ -53,6 +54,7 @@ protected
   procedure ReadInv;
   procedure ReadEq;
   procedure ReadTraits( aKlass : Byte );
+  procedure ReadCharacter;
   procedure Sort( aList : TItemViewArray );
 protected
   procedure Filter( aSet : TItemTypeSet );
@@ -61,6 +63,8 @@ protected
   FSize      : TIOPoint;
   FInv       : TItemViewArray;
   FEq        : TItemViewArray;
+  FCharacter : TStringArray;
+  FCTitle    : AnsiString;
   FSwapMode  : Boolean;
   FTraitMode : Boolean;
   FTraitFirst: Boolean;
@@ -181,6 +185,8 @@ destructor TPlayerView.Destroy;
 begin
   FreeAndNil( FEq );
   FreeAndNil( FInv );
+  FreeAndNil( FTraits );
+  FreeAndNil( FCharacter );
   inherited Destroy;
 end;
 
@@ -401,8 +407,12 @@ begin
 end;
 
 procedure TPlayerView.UpdateCharacter;
+var iString : Ansistring;
 begin
-  VTIG_BeginWindow('Character', FSize );
+  if FCharacter = nil then ReadCharacter;
+  VTIG_BeginWindow(FCTitle, 'character', FSize );
+  for iString in FCharacter do
+    VTIG_Text( iString );
   VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> scroll, <{!Escape}> exit}');
 end;
 
@@ -601,6 +611,71 @@ begin
       then iEntry.Available := TTraits.CanPickInitially( iTrait, iKlass )
       else iEntry.Available := iTData^.CanPick( iTrait, iLevel );
     FTraits.Push( iEntry );
+  end;
+end;
+
+procedure TPlayerView.ReadCharacter;
+var iKillRecord : Integer;
+    iDodgeBonus : Word;
+    iKnockMod   : Integer;
+begin
+  if FCharacter = nil then FCharacter := TStringArray.Create;
+  FCharacter.Clear;
+
+  FCTitle := LuaSystem.Get([ 'diff', Doom.Difficulty, 'ccode' ]);
+  if Doom.Challenge <> ''  then FCTitle += ' / ' + LuaSystem.Get(['chal',Doom.Challenge,'abbr']);
+  if Doom.SChallenge <> '' then FCTitle += ' + ' + LuaSystem.Get(['chal',Doom.SChallenge,'abbr']);
+  FCTitle := 'Character ( '+FCTitle+' )';
+
+  with Player do
+  begin
+    FStatistics.Update();
+    iKillRecord := FStatistics.Map['kills_non_damage'];
+    if FKills.NoDamageSequence > iKillRecord then iKillRecord := FKills.NoDamageSequence;
+
+    FCharacter.Push( Format( '{!%s}, level {!%d} {!%s},',[ Name, ExpLevel, AnsiString(LuaSystem.Get(['klasses',Klass,'name']))] ) );
+    FCharacter.Push( Format( 'currently on level {!%d} of the Phobos base. ', [CurrentLevel] ) );
+    FCharacter.Push( Format( 'He survived {!%d} turns, which took him {!%d} seconds. ', [ FStatistics.Map['game_time'], FStatistics.Map['real_time'] ] ) );
+    FCharacter.Push( Format( 'He took {!%d} damage, {!%d} on this floor alone. ', [ FStatistics.Map['damage_taken'], FStatistics.Map['damage_on_level'] ] ) );
+    FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemies total. ', [ FStatistics.Map['kills'], FStatistics.Map['max_kills'] ] ) );
+    FCharacter.Push( Format( 'His current killing spree is {!%d}, with a record of {!%d}. ', [ FKills.NoDamageSequence, iKillRecord ] ) );
+    FCharacter.Push( '' );
+    FCharacter.Push( Format( 'Current movement speed is {!%.2f} second/move.', [getMoveCost/(Speed*10.0)] ) );
+    FCharacter.Push( Format( 'Current fire speed is {!%.2f} second/%s.', [getFireCost/(Speed*10.0),IIf(canDualGun,'dualshot','shot')] ) );
+    FCharacter.Push( Format( 'Current reload speed is {!%.2f} second/reload.', [getReloadCost/(Speed*10.0)] ) );
+    FCharacter.Push( Format( 'Current to hit chance (point blank) is {!%s}.',[toHitPercent(10+getToHitRanged(Inv.Slot[efWeapon]))]));
+    FCharacter.Push( Format( 'Current melee hit chance is {!%s}.',[toHitPercent(10+getToHitMelee(Inv.Slot[efWeapon]))]));
+    FCharacter.Push( '' );
+
+    iDodgeBonus := getDodgeMod;
+    if Player.Running then iDodgeBonus += 20;
+    iKnockMod   := getKnockMod;
+
+    if iDodgeBonus <> 0
+      then FCharacter.Push( Format( 'He has a {!%d%%} bonus toward dodging attacks.', [iDodgeBonus]))
+      else FCharacter.Push( 'He has no bonus toward dodging attacks.' );
+
+    { Knockback Modifier }
+    if ( ( iKnockMod <> 100 ) and ( BodyBonus <> 0 ) ) then
+    begin
+      if ( iKnockMod < 100 )
+      then FCharacter.Push( Format( 'He resists {!%d%%} of knockback', [100-iKnockMod]))
+      else FCharacter.Push( Format( 'He receives {!%d%%} extra knockback', [iKnockMod-100]));
+      FCharacter.Push( Format( '%s prevents {!%d} space%s of knockback.', [IIf( iKnockMod < 100, 'and', 'but' ), BodyBonus, IIf(BodyBonus <> 1, 's') ]));
+    end
+    else if ( iKnockMod <> 100 ) then
+      if ( iKnockMod < 100 )
+      then FCharacter.Push( Format( 'He resists {!%d%%} of knockback.', [100-iKnockMod]))
+      else FCharacter.Push( Format( 'He receives {!%d%%} extra knockback.', [iKnockMod-100]))
+    else if ( BodyBonus <> 0 )
+      then FCharacter.Push( Format( 'He prevents {!%d} space%s of knockback.', [BodyBonus, IIf(BodyBonus <> 1,'s')]))
+    else
+      FCharacter.Push( 'He has no resistance to knockback.' );
+    FCharacter.Push( '' );
+    FCharacter.Push( '' );
+    FCharacter.Push( Format( 'Enemies left : {!%d}', [Doom.Level.EnemiesLeft] ) );
+    if Doom.Level.Feeling <> '' then
+      FCharacter.Push( Format( 'Level feel : {!%s}', [Doom.Level.Feeling] ) )
   end;
 
 end;

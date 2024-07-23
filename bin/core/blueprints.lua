@@ -24,6 +24,7 @@ core.register_blueprint "difficulty"
 	name        = { true,  core.TSTRING },
 	description = { true,  core.TSTRING },
 	code        = { true,  core.TSTRING },
+	ccode       = { true,  core.TSTRING },
 	tohitbonus  = { false, core.TNUMBER, 0 },
 	expfactor   = { false, core.TNUMBER, 1 },
 	scorefactor = { false, core.TNUMBER, 1 },

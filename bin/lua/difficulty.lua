@@ -5,6 +5,7 @@ function DoomRL.load_difficulty()
 		name        = "I'm Too Young To Die!",
 		description = "He was too young to die!",
 		code        = "@GE",
+		ccode       = "{GE}",
 		tohitbonus  = -1,
 		expfactor   = 1.4,
 		scorefactor = 0.5,
@@ -19,6 +20,7 @@ function DoomRL.load_difficulty()
 		id          = "HNTR",
 		description = "He didn't like it too rough.",
 		code        = "@BM",
+		ccode       = "{BM}",
 		expfactor   = 1.2,
 	}
 
@@ -27,6 +29,7 @@ function DoomRL.load_difficulty()
 		name        = "Hurt Me Plenty",
 		description = "He wasn't afraid to be hurt plenty.",
 		code        = "@RH",
+		ccode       = "{RH}",
 		scorefactor = 1.5,
 		ammofactor  = 1.25,
 	}
@@ -36,6 +39,7 @@ function DoomRL.load_difficulty()
 		name        = "Ultra-Violence",
 		description = "He was a man of Ultra-Violence!",
 		code        = "@yU",
+		ccode       = "{yU}",
 		tohitbonus  = 2,
 		scorefactor = 2,
 		ammofactor  = 1.5,
@@ -47,6 +51,7 @@ function DoomRL.load_difficulty()
 		name        = "Nightmare!",
 		description = "He opposed the Nightmare!",
 		code        = "@rN",
+		ccode       = "{rN}",
 		tohitbonus  = 2,
 		expfactor   = 1.2,
 		scorefactor = 4,
