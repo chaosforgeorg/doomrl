@@ -548,7 +548,7 @@ var iP1,iP2 : TIOPoint;
 begin
   iP1 := ConsoleCoordToDeviceCoord( aUL + PointUnit );
   iP2 := ConsoleCoordToDeviceCoord( aBR + PointUnit );
-  QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+  QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.85 ) );
 end;
 
 

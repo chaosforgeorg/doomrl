@@ -23,6 +23,7 @@ uses vluasystem, vtig, dfplayer, doombase;
 
 constructor TMoreView.Create( aSid : Ansistring );
 begin
+  VTIG_EventClear;
   FFinished := False;
   FSID  := aSid;
   FName := Capitalized(LuaSystem.Get(['beings',FSID,'name']));
@@ -54,7 +55,7 @@ begin
   VTIG_Text( FDesc );
   VTIG_End;
 
-  VTIG_End('<{!Escape},{!Enter},{!Space}> exit}');
+  VTIG_End('{l<{!Escape},{!Enter},{!Space}> exit}');
   if VTIG_EventCancel or VTIG_EventConfirm then
     FFinished := True;
   IO.RenderUIBackground( PointZero, FSize );

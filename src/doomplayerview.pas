@@ -261,7 +261,7 @@ begin
 
     VTIG_EndGroup;
   if FSwapMode
-    then VTIG_End('<{!Up,Down}> select, <{!Escape}> exit}')
+    then VTIG_End('{l<{!Up,Down}> select, <{!Escape}> exit}')
     else VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit}');
 
   if (iSelected >= 0) then
@@ -476,7 +476,7 @@ begin
     else VTIG_BeginWindow('Traits', 'traits', FSize );
 
   VTIG_BeginGroup( 23 );
-  VTIG_MoveCursor( Point(0,-1) );
+    VTIG_AdjustPadding( Point(0,-1) );
     for iEntry in FTraits do
       if iEntry.Available
         then VTIG_Selectable( iEntry.Entry, True, LightRed )
