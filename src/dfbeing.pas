@@ -69,7 +69,6 @@ TBeing = class(TThing,IPathQuery)
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
     procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); virtual;
     function SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : ShortInt = 0; aToHitMod : ShortInt = 0; aShotCount : ShortInt = 0 ) : Boolean;
-    procedure FullLook; virtual;
     function  isActive : boolean;
     function  WoundStatus : string;
     function  IsPlayer : Boolean;
@@ -2157,11 +2156,6 @@ begin
   end;
   if (iAimedBeing = Player) and (iDodged) then Player.LastTurnDodge := True;
   Exit( UIDs[ iThisUID ] <> nil );
-end;
-
-procedure TBeing.FullLook;
-begin
-  IO.RunUILoop( TUIMoreViewer.Create( IO.Root, ID) );
 end;
 
 procedure TBeing.BloodFloor;

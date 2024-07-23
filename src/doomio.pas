@@ -113,6 +113,7 @@ type TDoomIO = class( TIO )
   function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
   function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
   procedure RenderUIBackground( aUL, aBR : TIOPoint ); virtual;
+  procedure FullLook( aID : Ansistring );
 protected
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
@@ -155,7 +156,7 @@ implementation
 uses math, video, dateutils, variants,
      vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
-     doombase, doomanimation, doomlua, dflevel, dfplayer, dfitem;
+     doombase, doommoreview, doomlua, dflevel, dfplayer, dfitem;
 
 procedure TInterfaceLayer.Tick( aDTick : Integer );
 begin
@@ -462,6 +463,12 @@ end;
 procedure TDoomIO.RenderUIBackground( aUL, aBR : TIOPoint );
 begin
   // noop
+end;
+
+procedure TDoomIO.FullLook( aID : Ansistring );
+begin
+  PushLayer( TMoreView.Create( aID ) );
+  //IO.RunUILoop( TUIMoreViewer.Create( IO.Root, ID ) );
 end;
 
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
@@ -1031,7 +1038,7 @@ begin
     begin
       with iLevel do
       if Being[ iTarget ] <> nil then
-         Being[ iTarget ].FullLook;
+         FullLook( Being[ iTarget ].ID );
     end;
     LookDescription( iTarget );
   until Key in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
@@ -1089,7 +1096,7 @@ begin
      begin
        with iLevel do
        if Being[Target] <> nil then
-          Being[Target].FullLook;
+          FullLook( Being[Target].ID );
        Focus( Target );
        LookDescription( Target );
      end;

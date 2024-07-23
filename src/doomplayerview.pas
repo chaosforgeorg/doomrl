@@ -22,7 +22,6 @@ type TItemViewEntry = record
 end;
 
 type TItemViewArray = specialize TGArray< TItemViewEntry >;
-     TStringArray   = specialize TGArray<AnsiString>;
 
 type TTraitViewEntry = record
   Entry     : Ansistring;
@@ -65,7 +64,7 @@ protected
   FSize      : TIOPoint;
   FInv       : TItemViewArray;
   FEq        : TItemViewArray;
-  FCharacter : TStringArray;
+  FCharacter : TStringGArray;
   FCTitle    : AnsiString;
   FSwapMode  : Boolean;
   FTraitMode : Boolean;
@@ -673,7 +672,7 @@ var iKillRecord : Integer;
     iDodgeBonus : Word;
     iKnockMod   : Integer;
 begin
-  if FCharacter = nil then FCharacter := TStringArray.Create;
+  if FCharacter = nil then FCharacter := TStringGArray.Create;
   FCharacter.Clear;
 
   FCTitle := LuaSystem.Get([ 'diff', Doom.Difficulty, 'ccode' ]);
