@@ -27,8 +27,8 @@ type TDoomGFXIO = class( TDoomIO )
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
 
     procedure DeviceChanged;
-    function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
-    function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
+    function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; override;
+    function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; override;
 
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
@@ -60,9 +60,9 @@ type TDoomGFXIO = class( TDoomIO )
       MiniM  : Integer;
     end;
 
-    FLastMouse   : QWord;
-    FMouseLock   : Boolean;
-    FMCursor     : TDoomMouseCursor;
+    FLastMouseTime : QWord;
+    FMouseLock     : Boolean;
+    FMCursor       : TDoomMouseCursor;
 
     FMinimapImage   : TImage;
     FMinimapTexture : DWord;
@@ -129,8 +129,8 @@ var iCoreData   : TVDataFile;
   end;
 
 begin
-  FLastMouse := 0;
-  FMouseLock := True;
+  FLastMouseTime := 0;
+  FMouseLock     := True;
 
   FLoading := nil;
   IO := Self;
@@ -482,8 +482,8 @@ begin
   if event.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN ] then
   begin
     if FMCursor <> nil then FMCursor.Active := True;
-    FLastMouse := FTime;
-    FMouseLock := False;
+    FLastMouseTime := FTime;
+    FMouseLock     := False;
   end;
   Exit( inherited OnEvent( event ) )
 end;

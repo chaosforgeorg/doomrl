@@ -109,6 +109,9 @@ type TDoomIO = class( TIO )
   procedure Tick( aDTick : Integer );
   procedure Clear;
   function OnEvent( const event : TIOEvent ) : Boolean; override;
+
+  function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
+  function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
 protected
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
@@ -126,6 +129,8 @@ protected
   FKeyCode     : TIOKeyCode;
   FASCII       : TASCIIImageMap;
   FLayers      : TInterfaceLayerStack;
+  FUIMouseLast : TIOPoint;
+  FUIMouse     : TIOPoint;
 
   FHudEnabled  : Boolean;
   FWaiting     : Boolean;
@@ -346,6 +351,8 @@ begin
   VTIGDefaultStyle.Color[ VTIG_SELECTED_TEXT_COLOR ] := YELLOW;
   inherited Create( FIODriver, FConsole, iStyle );
   LoadStart;
+  FUIMouseLast := Point(-1,-1);
+  FUIMouse     := Point(-1,-1);
 
   IO := Self;
   FConsole.Clear;
@@ -389,7 +396,8 @@ begin
 end;
 
 function TDoomIO.OnEvent( const event : TIOEvent ) : Boolean;
-var i : Integer;
+var i      : Integer;
+    iEvent : TIOEvent;
 begin
   if ( event.EType = VEVENT_KEYDOWN ) then
     case event.Key.Code of
@@ -408,14 +416,33 @@ begin
       VKEY_TAB    : VTIG_GetIOState.EventState.SetState( VTIG_IE_TAB, True );
     end;
 
-  if ( event.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
-    VTIG_GetIOState.MouseState.HandleEvent( event );
+  if ( event.EType in [ VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
+  begin
+    iEvent := event;
+    iEvent.Mouse.Pos := DeviceCoordToConsoleCoord( event.Mouse.Pos );
+    VTIG_GetIOState.MouseState.HandleEvent( iEvent );
+    if event.EType = VEVENT_MOUSEDOWN then
+      VTIG_GetIOState.EventState.SetState( VTIG_IE_MCONFIRM, True );
+  end;
+
+  if ( event.EType in [ VEVENT_MOUSEMOVE ] ) then
+    FUIMouse := DeviceCoordToConsoleCoord( event.MouseMove.Pos );
 
   if not FLayers.IsEmpty then
     for i := FLayers.Size - 1 downto 0 do
       if FLayers[i].HandleEvent( event ) then
         Exit( True );
   Exit( False );
+end;
+
+function TDoomIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
+begin
+  Exit( aCoord );
+end;
+
+function TDoomIO.ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
+begin
+  Exit( aCoord );
 end;
 
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
@@ -713,9 +740,18 @@ begin
 end;
 
 procedure TDoomIO.Update( aMSec : DWord );
-var iLayer : TInterfaceLayer;
-    i,j    : Integer;
+var iLayer  : TInterfaceLayer;
+    i,j     : Integer;
+    iMEvent : TIOEvent;
 begin
+  if FUIMouse <> FUIMouseLast then
+  begin
+    iMEvent.EType:= VEVENT_MOUSEMOVE;
+    iMEvent.MouseMove.Pos := FUIMouse;
+    FUIMouseLast := FUIMouse;
+    VTIG_GetIOState.MouseState.HandleEvent( iMEvent );
+  end;
+
   i := 0;
   while i < FLayers.Size do
     if FLayers[i].IsFinished then
