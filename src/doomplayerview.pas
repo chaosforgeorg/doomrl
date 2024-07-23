@@ -118,7 +118,6 @@ begin
 end;
 
 procedure TPlayerView.Update( aDTime : Integer );
-var iP1,iP2 : TPoint;
 begin
   if IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
 
@@ -164,13 +163,7 @@ begin
       FOnPick(255);
     end;
 
-  if GraphicsVersion then
-    with IO as TDoomGFXIO do
-    begin
-      iP1 := ConsoleCoordToDeviceCoord( PointUnit );
-      iP2 := ConsoleCoordToDeviceCoord( FSize + PointUnit );
-      QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
-    end;
+  IO.RenderUIBackground( PointZero, FSize );
 end;
 
 function TPlayerView.IsFinished : Boolean;

@@ -29,7 +29,7 @@ type TDoomGFXIO = class( TDoomIO )
     procedure DeviceChanged;
     function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; override;
     function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; override;
-
+    procedure RenderUIBackground( aUL, aBR : TIOPoint ); override;
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
@@ -542,6 +542,15 @@ begin
   aCoord.y := ( aCoord.y * FCellY );
   Exit( FConsole.GetDeviceArea.Pos + aCoord );
 end;
+
+procedure TDoomGFXIO.RenderUIBackground( aUL, aBR : TIOPoint );
+var iP1,iP2 : TIOPoint;
+begin
+  iP1 := ConsoleCoordToDeviceCoord( aUL + PointUnit );
+  iP2 := ConsoleCoordToDeviceCoord( aBR + PointUnit );
+  QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+end;
+
 
 end.
 

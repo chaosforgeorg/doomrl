@@ -112,6 +112,7 @@ type TDoomIO = class( TIO )
 
   function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
   function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
+  procedure RenderUIBackground( aUL, aBR : TIOPoint ); virtual;
 protected
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
@@ -456,6 +457,11 @@ end;
 function TDoomIO.ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
 begin
   Exit( aCoord );
+end;
+
+procedure TDoomIO.RenderUIBackground( aUL, aBR : TIOPoint );
+begin
+  // noop
 end;
 
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;

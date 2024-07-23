@@ -82,7 +82,7 @@ uses Classes, SysUtils,
      dfmap, dfitem, dfbeing,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
-     doomplayerview,
+     doomplayerview, doomingamemenuview,
      doomhelp, doomconfig, doomviews, dfplayer;
 
 
@@ -745,7 +745,8 @@ begin
     // Handle commands that should be handled by the UI
     // TODO: Fix
     case iCommand of
-      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+//      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+      INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
       INPUT_LOOK       : begin IO.Msg( '-' ); IO.LookMode; Exit; end;
       INPUT_PLAYERINFO : begin Player.doScreen; Exit; end;
       INPUT_QUIT       : begin Player.doQuit; Exit; end;
@@ -925,16 +926,19 @@ repeat
       end;
 
       repeat
-        while not IO.Driver.EventPending do
+        while ( not IO.Driver.EventPending ) and ( State = DSPlaying ) do
         begin
           IO.FullUpdate;
           IO.Driver.Sleep(10);
         end;
+        if State <> DSPlaying then break;
         if not IO.Driver.PollEvent( iEvent ) then continue;
         if IO.OnEvent( iEvent ) or IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
         if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
           break;
-      until ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
+      until ( State <> DSPlaying ) or ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
+
+      if ( State <> DSPlaying ) then Break;
 
       if (iEvent.EType = VEVENT_SYSTEM) then
       begin
