@@ -90,10 +90,6 @@ protected
   FCallback   : TUIHOFCallback;
 end;
 
-type TUIMoreViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement; const aSID : AnsiString );
-end;
-
 type TUIAssemblyViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement );
 end;
@@ -556,30 +552,6 @@ begin
     Exit( True );
   end;
   Result := inherited OnKeyDown ( event );
-end;
-
-{ TUIMoreViewer }
-
-constructor TUIMoreViewer.Create ( aParent : TUIElement; const aSID : AnsiString ) ;
-var iName  : AnsiString;
-    iASCII : AnsiString;
-    iDesc  : AnsiString;
-begin
-  iName := Capitalized(LuaSystem.Get(['beings',aSID,'name']));
-  iDesc := LuaSystem.Get(['beings',aSID,'desc']);
-  if aSID = 'soldier'
-    then iASCII := Player.ASCIIMoreCode
-    else iASCII := aSID;
-
-  inherited Create( aParent, iName, EscapeFooter );
-
-  if IO.OldAscii.Exists(iASCII) then
-    TConUIStringList.Create( Self, FAbsolute.Shrinked(2,1), IO.OldAscii[iASCII], False )
-  else
-    TConUIText.Create( Self, Rectangle(10,10,10,2), '@rPicture'#10'  N/A' );
-
-  TConUIText.Create( Self, Rectangle(40,8,38,1),'@r'+iName );
-  TConUIText.Create( Self, Rectangle(40,9,38,14),'@l'+iDesc );
 end;
 
 { TUIAssemblyViewer }
