@@ -82,7 +82,7 @@ uses Classes, SysUtils,
      dfmap, dfitem, dfbeing,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
-     doomplayerview, doomingamemenuview, doomhelpview,
+     doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
      doomhelp, doomconfig, doomviews, dfplayer;
 
 
@@ -755,9 +755,9 @@ begin
       INPUT_PLAYERINFO : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
       INPUT_INVENTORY  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;
       INPUT_EQUIPMENT  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) ); Exit; end;
+      INPUT_ASSEMBLIES : begin IO.PushLayer( TAssemblyView.Create ); Exit; end;
 
       INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, IO.MsgGetRecent ) ); Exit; end;
-      INPUT_ASSEMBLIES : begin IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) ); Exit; end;
 
       INPUT_HARDQUIT   : begin
         Option_MenuReturn := False;

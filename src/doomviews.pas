@@ -90,10 +90,6 @@ protected
   FCallback   : TUIHOFCallback;
 end;
 
-type TUIAssemblyViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement );
-end;
-
 type TUIRankUpViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; aRank : THOFRank );
 end;
@@ -552,45 +548,6 @@ begin
     Exit( True );
   end;
   Result := inherited OnKeyDown ( event );
-end;
-
-{ TUIAssemblyViewer }
-
-constructor TUIAssemblyViewer.Create ( aParent : TUIElement ) ;
-var iRect            : TUIRect;
-    iContent         : TUIStringArray;
-    iText            : TConUIStringList;
-    iType, iFound, i : DWord;
-    iString, iID     : AnsiString;
-const TypeName : array[0..2] of string = ('Basic','Advanced','Master');
-begin
-  inherited Create( aParent, 'Known assemblies', ScrollFooterOn );
-  iContent := TUIStringArray.Create;
-  for iType := 0 to 2 do
-  begin
-    iContent.Push('@y'+TypeName[iType]+' assemblies');
-    iContent.Push('');
-    for i := 1 to LuaSystem.Get(['mod_arrays','__counter']) do
-    if LuaSystem.Get(['mod_arrays',i,'level']) = iType then
-    begin
-      iID    := LuaSystem.Get(['mod_arrays',i,'id']);
-      iFound := HOF.GetCounted( 'assemblies','assembly', iID );
-      if LuaSystem.Get( [ 'player','__props', 'assemblies', iID ], 0 ) > 0 then Inc( iFound );
-      if iFound = 0
-        then if iType = 0
-          then iString := '  @d'+LuaSystem.Get(['mod_arrays',i,'name'])+' (@L-@d)'
-          else iString := '  @d  -- ? -- (@L-@d)'
-        else iString := '  @y'+Padded(LuaSystem.Get(['mod_arrays',i,'name'])+' (@L'+IntToStr(iFound)+'@d@y)',36)
-                        + '@l' + LuaSystem.Get(['mod_arrays',i,'desc']);
-      iContent.Push( iString );
-    end;
-    if iType <> 2 then iContent.Push('');
-  end;
-
-  iRect := GetDimRect.Shrinked(2,2);
-  iText := TConUIStringList.Create( Self, iRect, iContent, True );
-  iText.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
-  TConUIScrollableIcons.Create( Self, iText, iRect, Point( FAbsolute.X2 - 7, FAbsolute.Y ) );
 end;
 
 { TUIRankUpViewer }
