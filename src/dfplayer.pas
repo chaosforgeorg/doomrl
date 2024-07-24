@@ -85,7 +85,6 @@ TPlayer = class(TBeing)
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
-  procedure doScreen;
   procedure doQuit( aNoConfirm : Boolean = False );
   procedure doRun;
   procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); override;
@@ -698,11 +697,6 @@ begin
   FTargetPos.Create(0,0);
   FTactic.Reset;
   FChainFire := 0;
-end;
-
-procedure TPlayer.doScreen;
-begin
-  IO.RunUILoop( TUIPlayerViewer.Create( IO.Root ) );
 end;
 
 procedure TPlayer.ExamineNPC;

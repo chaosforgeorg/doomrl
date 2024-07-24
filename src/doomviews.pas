@@ -94,10 +94,6 @@ type TUIMoreViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; const aSID : AnsiString );
 end;
 
-type TUIPlayerViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement );
-end;
-
 type TUIAssemblyViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement );
 end;
@@ -611,119 +607,6 @@ begin
 
   TConUIText.Create( Self, Rectangle(40,8,38,1),'@r'+iName );
   TConUIText.Create( Self, Rectangle(40,9,38,14),'@l'+iDesc );
-end;
-
-
-{ TUIPlayerViewer }
-
-constructor TUIPlayerViewer.Create ( aParent : TUIElement ) ;
-var iStatus  : AnsiString;
-    iContent : TUIStringArray;
-    iText    : TConUIStringList;
-    
-    iDepth      : DWord;
-    iGameTime   : DWord;
-    iRealTime   : DWord;
-    iDamTotal   : DWord;
-    iDamLevel   : DWord;
-    iKills      : DWord;
-    iMaxKills   : DWord;
-    iKillSpree  : DWord;
-    iKillRecord : DWord;
-    iDodgeBonus : Word;
-    iKnockMod   : Integer;
-    iSs,iS1,iS2 : AnsiString;
-    iFirst      : Boolean;
-begin
-  iStatus := LuaSystem.Get([ 'diff', Doom.Difficulty, 'code' ]);
-  if Doom.Challenge <> ''  then iStatus += '@> / ' + LuaSystem.Get(['chal',Doom.Challenge,'abbr']);
-  if Doom.SChallenge <> '' then iStatus += ' + ' + LuaSystem.Get(['chal',Doom.SChallenge,'abbr']);
-  iStatus := '( '+iStatus+'@> )';
-
-  inherited Create( aParent, 'DoomRL Character Info '+iStatus, EscapeFooter );
-
-  TConUIStringList.Create( Self, Rectangle(48,3,30,21), IO.OldAscii[Player.ASCIIMoreCode], False );
-
-  iContent := TUIStringArray.Create;
-
-  with Player do
-  begin
-    FStatistics.Update();
-    iDepth      := CurrentLevel;
-    iGameTime   := FStatistics.Map['game_time'];
-    iRealTime   := FStatistics.Map['real_time'];
-    iDamTotal   := FStatistics.Map['damage_taken'];
-    iDamLevel   := FStatistics.Map['damage_on_level'];
-    iKills      := FStatistics.Map['kills'];
-    iMaxKills   := FStatistics.Map['max_kills'];
-    iKillSpree  := FKills.NoDamageSequence;
-    iKillRecord := FStatistics.Map['kills_non_damage'];
-    if iKillSpree > iKillRecord then iKillRecord := iKillSpree;
-
-    iContent.Push( Format( '@L%s@l, level @L%d@l @L%s,',[Name,ExpLevel,AnsiString(LuaSystem.Get(['klasses',Klass,'name']))] ) );
-    iContent.Push( Format( 'currently on level @L%d@l of the Phobos base. ', [iDepth] ) );
-    iContent.Push( Format( 'He survived @L%d@l turns, which took him @L%d@l seconds. ', [ iGameTime, iRealTime ] ) );
-    iContent.Push( Format( 'He took @L%d@l damage, @L%d@l on this floor alone. ', [ iDamTotal, iDamLevel ] ) );
-    iContent.Push( Format( 'He killed @L%d@l out of @L%d@l enemies total. ', [ iKills, iMaxKills ] ) );
-    iContent.Push( Format( 'His current killing spree is @L%d@l, with a record of @L%d@l. ', [ iKillSpree, iKillRecord ] ) );
-    iContent.Push( '' );
-    iContent.Push( Format( 'Current movement speed is @L%.2f@l second/move.', [getMoveCost/(Speed*10.0)] ) );
-    iContent.Push( Format( 'Current fire speed is @L%.2f@l second/%s.', [getFireCost/(Speed*10.0),IIf(canDualGun,'dualshot','shot')] ) );
-    iContent.Push( Format( 'Current reload speed is @L%.2f@l second/reload.', [getReloadCost/(Speed*10.0)] ) );
-    iContent.Push( Format( 'Current to hit chance (point blank) is @L%s',[toHitPercent(10+getToHitRanged(Inv.Slot[efWeapon]))]));
-    iContent.Push( Format( 'Current melee hit chance is @L%s',[toHitPercent(10+getToHitMelee(Inv.Slot[efWeapon]))]));
-    iContent.Push( '' );
-
-    iDodgeBonus := getDodgeMod;
-    if Player.Running then iDodgeBonus += 20;
-    iKnockMod   := getKnockMod;
-
-    { Dodge Bonus }
-    if iDodgeBonus <> 0
-    then iContent.Push( Format( 'He has a @L%d%%@l bonus toward dodging attacks.', [iDodgeBonus]))
-    else iContent.Push( 'He has no bonus toward dodging attacks.' );
-
-    { Knockback Modifier }
-    if ( ( iKnockMod <> 100 ) and ( BodyBonus <> 0 ) ) then
-    begin
-      if ( iKnockMod < 100 )
-      then iContent.Push( Format( 'He resists @L%d%%@l of knockback', [100-iKnockMod]))
-      else iContent.Push( Format( 'He receives @L%d%%@l extra knockback', [iKnockMod-100]));
-      iContent.Push( Format( '%s prevents @L%d@l space%s of knockback.', [IIf( iKnockMod < 100, 'and', 'but' ), BodyBonus, IIf(BodyBonus <> 1, 's') ]));
-    end
-    else if ( iKnockMod <> 100 ) then
-      if ( iKnockMod < 100 )
-      then iContent.Push( Format( 'He resists @L%d%%@l of knockback.', [100-iKnockMod]))
-      else iContent.Push( Format( 'He receives @L%d%%@l extra knockback.', [iKnockMod-100]))
-    else if ( BodyBonus <> 0 )
-      then iContent.Push( Format( 'He prevents @L%d@l space%s of knockback.', [BodyBonus, IIf(BodyBonus <> 1,'s')]))
-    else
-      iContent.Push( 'He has no resistance to knockback.' );
-    iContent.Push( '' );
-    iContent.Push( Format( 'Enemies left : @L%d', [Doom.Level.EnemiesLeft] ) );
-    iSs := Doom.Level.Feeling;
-    iFirst := True;
-    Log( LOGWARN, iSs );
-    while iSs <> '' do
-    begin
-      Split( iSs, iS1, iS2, ' ', IIf( iFirst, 40, 40 + 11 ) );
-      Log( LOGINFO, iS1 );
-      Log( LOGINFO, iS2 );
-      Log( LOGINFO, '---' );
-
-      if iFirst then
-        iContent.Push( Format( 'Level feel : @L%s', [iS1] ) )
-      else
-        iContent.Push( Format( '  @L%s', [iS1] ) );
-      iFirst := False;
-      iSs := iS2;
-    end;
-    iContent.Push( '' );
-  end;
-
-  iText := TConUIStringList.Create( Self, FAbsolute.Shrinked(2,2), iContent, True );
-  iText.ForeColor := LightGray;
-  iText.BackColor := ColorNone;
 end;
 
 { TUIAssemblyViewer }
