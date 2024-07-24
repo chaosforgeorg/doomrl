@@ -168,10 +168,6 @@ protected
   FGeneral   : Boolean;
 end;
 
-type TUIEquipmentView = class( TUIBaseItemView )
-  constructor Create( aParent : TUIElement; aOnConfirm : TUIItemConfirm );
-end;
-
 type TUILoadingScreen = class( TUIElement )
   constructor Create( aParent : TUIElement; aMax : DWord );
   procedure OnRedraw; override;
@@ -1084,68 +1080,6 @@ begin
     else iDesc := 'To '+aAction+' an item press the item letter or use @<Up/Down@> to browse and @<Enter@> to accept. Press @<Escape@> to exit.';
 
   TConUIText.Create( iHSep.Bottom, iDesc );
-end;
-
-
-{ TUIEquipmentView }
-
-constructor TUIEquipmentView.Create ( aParent : TUIElement; aOnConfirm : TUIItemConfirm ) ;
-const ResNames : array[TResistance] of AnsiString = ('Bullet','Melee','Shrap','Acid','Fire','Plasma');
-      ResIDs   : array[TResistance] of AnsiString = ('bullet','melee','shrapnel','acid','fire','plasma');
-var iVSep  : TUICustomSeparator;
-    iHSep  : TUICustomSeparator;
-    iCont  : TUIElement;
-    iName  : AnsiString;
-    iDesc1 : AnsiString;
-    iDesc2 : AnsiString;
-    iSlot  : TEqSlot;
-    iCount : DWord;
-    iRes   : TResistance;
-begin
-  inherited Create( aParent, aOnConfirm, '@yEquipment and Character Info', [ ItemResultPick, ItemResultDrop, ItemResultSwap ] );
-  FFooter := '@<up/down/letter (pick), Enter (wear/wield), Backspace (drop), TAB (swap)@>';
-
-  iCont := TUIElement.Create( Self, aParent.GetDimRect.Shrinked(0,1) );
-  iHSep := TConUISeparator.Create( iCont, VORIENT_HORIZONTAL, 11 );
-  iVSep := TConUISeparator.Create( iHSep.Top, VORIENT_VERTICAL, 54 );
-  iVSep.Right.SetPadding( PointUnit );
-
-  FMenu       := CreateMenu( Option_EqMenuStyle, iVSep.Left, Rectangle( 2,1,50,4 ) );
-  FDesc       := TConUIText.Create( iHSep.Top, Rectangle( 2,6,50,2 ),'' );
-  FStats      := TConUIText.Create( iVSep.Right, '' );
-
-  FOnConfirm := aOnConfirm;
-  FMenu.SelectedColor  := White;
-  FMenu.OnSelectEvent  := @OnMenuSelect;
-  FMenu.OnConfirmEvent := @OnConfirm;
-
-  for iSlot := Low(TEqSlot) to High(TEqSlot) do
-     if Player.Inv.Slot[iSlot] <> nil
-       then FMenu.Add( Player.Inv.Slot[iSlot].Description, True, Player.Inv.Slot[iSlot], Player.Inv.Slot[iSlot].MenuColor )
-       else FMenu.Add( SlotName(iSlot), True, nil, DarkGray );
-
-  iDesc1 := '@lBasic traits@d'#10;
-  iDesc2 := '@lAdvanced traits@d'#10;
-  for iCount := 1 to MAXTRAITS do
-    if Player.FTraits.Values[iCount] > 0 then
-    begin
-      iName := LuaSystem.Get(['traits',iCount,'name']);
-      if iCount < 10
-        then iDesc1 += Padded(iName,16)+'@d (@l'+IntToStr(Player.FTraits.Values[iCount])+'@d)'#10
-        else iDesc2 += Padded(iName,16)+'@d (@l'+IntToStr(Player.FTraits.Values[iCount])+'@d)'#10;
-    end;
-
-  TConUIText.Create( iHSep.Bottom, Rectangle( 1,1,20,9 ), iDesc1);
-  TConUIText.Create( iHSep.Bottom, Rectangle( 22,1,20,9 ), iDesc2);
-
-  iDesc1 := '@lResistances@d'#10;
-  for iRes := Low(TResistance) to High(TResistance) do
-    iDesc1 +=  '@d'+Padded(ResNames[iRes],7)+'@l'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_INTERNAL))+'%',5)+
-       '@d Torso @l'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_TORSO))+'%',5)+
-       '@d Feet @l'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_FEET))+'%',5)+#10;
-
-  TConUIText.Create( iHSep.Bottom, Rectangle( 44,1,36,9 ), iDesc1);
-
 end;
 
 end.

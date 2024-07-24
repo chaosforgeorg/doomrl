@@ -299,10 +299,7 @@ begin
       Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
     end;
 
-    INPUT_INVENTORY   : Exit( HandleCommand( Player.Inv.View ) );
-    INPUT_EQUIPMENT   : Exit( HandleCommand( Player.Inv.RunEq ) );
     INPUT_MSCROLL     : Exit( HandleCommand( Player.Inv.DoScrollSwap ) );
-
     INPUT_SWAPWEAPON  : Exit( HandleSwapWeaponCommand );
   end;
 
@@ -667,7 +664,10 @@ begin
     if iButton = VMB_BUTTON_MIDDLE then
       if IO.MTarget = Player.Position
         then Exit( HandleSwapWeaponCommand )
-        else Exit( HandleCommand( Player.Inv.RunEq ) );
+        else begin
+          IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) );
+          Exit( True );
+        end;
 
     if iButton = VMB_BUTTON_LEFT then
     begin
@@ -747,14 +747,18 @@ begin
     case iCommand of
 //      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
       INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
-      INPUT_LOOK       : begin IO.Msg( '-' ); IO.LookMode; Exit; end;
-//      INPUT_HELP       : begin Player.doScreen; Exit; end;
-      INPUT_PLAYERINFO : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
+      //      INPUT_HELP       : begin Player.doScreen; Exit; end;
       INPUT_QUIT       : begin Player.doQuit; Exit; end;
-//      INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
+      //      INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
       INPUT_HELP       : begin Help.Run; Exit; end;
+      INPUT_LOOK       : begin IO.Msg( '-' ); IO.LookMode; Exit; end;
+      INPUT_PLAYERINFO : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
+      INPUT_INVENTORY  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;
+      INPUT_EQUIPMENT  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) ); Exit; end;
+
       INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, IO.MsgGetRecent ) ); Exit; end;
       INPUT_ASSEMBLIES : begin IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) ); Exit; end;
+
       INPUT_HARDQUIT   : begin
         Option_MenuReturn := False;
         Player.doQuit(True);

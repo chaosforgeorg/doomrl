@@ -26,7 +26,6 @@ TInventory = class( TVObject )
        function  AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
        function  isFull : boolean;
        procedure RawSetSlot( aIndex : TEqSlot; aItem : TItem ); inline;
-       function  RunEq : TCommand;
        procedure EqSwap( aSlot1, aSlot2 : TEqSlot );
        procedure EqTick;
        procedure ClearSlot( aItem : TItem );
@@ -59,59 +58,6 @@ implementation
 uses vmath, vgenerics, vrltools, vluasystem, doomio, dfplayer, dfbeing, dflevel;
 
 { TInventoryEnumerator }
-
-function TInventory.RunEq : TCommand;
-var iItem   : TItem;
-    iSlot   : TEqSlot;
-begin
-  RunEq.Command := COMMAND_NONE;
-  FChosen := nil;
-  FAction := ItemResultCancel;
-  IO.RunUILoop( TUIEquipmentView.Create( IO.Root, @OnEqConfirm ) );
-  if FAction = ItemResultCancel then Exit;
-  iSlot := FSlot;
-
-  if FAction = ItemResultPick then
-  begin
-    if (FSlots[iSlot] <> nil) and isFull then
-    begin
-      if not Option_InvFullDrop then
-      begin
-        if not IO.MsgConfirm('No room in inventory! Should it be dropped?') then Exit;
-      end;
-      FAction := ItemResultDrop;
-    end;
-  end;
-
-  if (FSlots[iSlot] <> nil) and FSlots[iSlot].Flags[ IF_CURSED ] then
-  begin
-    IO.Msg('You can''t, it''s cursed!');
-    Exit;
-  end;
-
-  if (FSlots[iSlot] = nil) or (FAction = ItemResultSwap) then
-  begin
-    iItem := Choose(ItemEqFilters[iSlot],'wear/wield');
-    if iItem = nil then Exit;
-    RunEq.Command := COMMAND_SWAP;
-    RunEq.Slot    := iSlot;
-    RunEq.Item    := iItem;
-    Exit;
-  end;
-
-  if FAction = ItemResultDrop then
-  begin
-    RunEq.Command := COMMAND_DROP;
-    RunEq.Item    := FSlots[iSlot];
-  end;
-
-  if FAction = ItemResultPick then
-  begin
-    RunEq.Command := COMMAND_TAKEOFF;
-    RunEq.Slot    := iSlot;
-  end;
-
-end;
 
 function TInventory.Wear( aItem : TItem ) : Boolean;
 begin
