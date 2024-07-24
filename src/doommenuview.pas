@@ -286,14 +286,9 @@ begin
 end;
 
 procedure TMainMenuViewer.InitTrait;
-var iFull : TUITraitsViewer;
 begin
   FLogo := False;
-
   IO.PushLayer( TPlayerView.CreateTrait( True, FResult.Klass, @OnPickTrait ) );
-
-//  iFull := TUITraitsViewer.Create( Self, FResult.Klass, @OnPickTrait );
-//  iFull.OnCancelEvent  := @OnCancel;
 end;
 
 procedure TMainMenuViewer.InitName;

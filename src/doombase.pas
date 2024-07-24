@@ -761,7 +761,7 @@ begin
         Exit;
       end;
       INPUT_SAVE      : begin Player.doSave; Exit; end;
-      INPUT_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @Player.FTraits, Player.ExpLevel ) );Exit; end;
+      INPUT_TRAITS    : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
       INPUT_RUNMODE   : begin Player.doRun;Exit; end;
 
       INPUT_EXAMINENPC   : begin Player.ExamineNPC; Exit; end;
