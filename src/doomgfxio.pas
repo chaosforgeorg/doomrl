@@ -353,7 +353,7 @@ var iMousePos : TIOPoint;
 begin
   if not Assigned( FQuadRenderer ) then Exit;
 
-  if (FMCursor.Active) and FIODriver.GetMousePos( iPoint ) and (not FMouseLock) then
+  if (FMCursor.Active) and FIODriver.GetMousePos( iPoint ) and (not FMouseLock) and (not isModal) then
   begin
     iMaxX   := FIODriver.GetSizeX;
     iMaxY   := FIODriver.GetSizeY;
