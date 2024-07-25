@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomingamemenuview;
 interface
-uses doomio;
+uses doomio, doomconfirmview;
 
 type TInGameMenuView = class( TInterfaceLayer )
   constructor Create;
@@ -10,8 +10,13 @@ type TInGameMenuView = class( TInterfaceLayer )
   function IsModal : Boolean; override;
 protected
   FFinished       : Boolean;
-  FAbandonMode    : Boolean;
-  FAbandonMessage : Ansistring;
+end;
+
+type TAbandonView = class( TConfirmView )
+  constructor Create;
+protected
+  procedure OnConfirm; override;
+  procedure OnCancel; override;
 end;
 
 implementation
@@ -31,32 +36,6 @@ var iRect : TRectangle;
 begin
   if IsFinished or (Doom.State <> DSPlaying) then Exit;
 
-  if FAbandonMode then
-  begin
-    VTIG_Begin('ingame_menu_abandon', Point( 50, 10 ) );
-    VTIG_Text( FAbandonMessage );
-    VTIG_Text( 'Are you sure you want to abandon this run?', Yellow );
-    VTIG_Text( '' );
-    iRect := VTIG_GetWindowRect;
-    if VTIG_Selectable( 'Continue run' ) then
-    begin
-      FFinished := True;
-      IO.Msg('Ok, then. Stay and take what''s coming to ya...');
-    end;
-
-    if VTIG_Selectable( 'Abandon run' ) then
-    begin
-      Player.doQuit( True );
-      FFinished := True;
-    end;
-    VTIG_End;
-
-    IO.RenderUIBackground( iRect.TopLeft, iRect.BottomRight - PointUnit );
-
-    if VTIG_EventCancel then FFinished := True;
-    Exit;
-  end;
-
   VTIG_Begin('ingame_menu', Point( 30, 9 ) );
   iRect := VTIG_GetWindowRect;
   if VTIG_Selectable( 'Continue' ) then
@@ -71,8 +50,8 @@ begin
   end;
   if VTIG_Selectable( 'Abandon Run' ) then
   begin
-    FAbandonMode    := True;
-    FAbandonMessage := LuaSystem.ProtectedCall(['DoomRL','quit_message'],[]);
+    FFinished := True;
+    IO.PushLayer( TAbandonView.Create );
   end;
   if VTIG_Selectable( 'Save & Quit' ) then
   begin
@@ -94,6 +73,26 @@ end;
 function TInGameMenuView.IsModal : Boolean;
 begin
   Exit( True );
+end;
+
+constructor TAbandonView.Create;
+begin
+  inherited Create;
+  FCancel  := 'Continue run';
+  FConfirm := 'Abandon run';
+  FMessage := LuaSystem.ProtectedCall(['DoomRL','quit_message'],[]) + #10 +
+    '{yAre you sure you want to abandon this run?}';
+  FSize    := Point( 50, 10 );
+end;
+
+procedure TAbandonView.OnConfirm;
+begin
+  Player.doQuit( True );
+end;
+
+procedure TAbandonView.OnCancel;
+begin
+  IO.Msg('Ok, then. Stay and take what''s coming to ya...');
 end;
 
 end.
