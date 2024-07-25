@@ -41,11 +41,13 @@ type TTraitViewArray = specialize TGArray< TTraitViewEntry >;
 type TPlayerView = class( TInterfaceLayer )
   constructor Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
   constructor CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0; aCallback : TOnPickTrait = nil );
+  constructor CreateCommand( aCommand : Byte );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   destructor Destroy; override;
 protected
+  procedure Initialize;
   procedure UpdateInventory;
   procedure UpdateEquipment;
   procedure UpdateCharacter;
@@ -56,22 +58,26 @@ protected
   procedure ReadTraits( aKlass : Byte );
   procedure ReadCharacter;
   procedure ReadQuickslots;
+  procedure InitSwapMode( aSlot : TEqSlot );
   procedure Sort( aList : TItemViewArray );
 protected
   procedure Filter( aSet : TItemTypeSet );
 protected
-  FState     : TPlayerViewState;
-  FSize      : TIOPoint;
-  FInv       : TItemViewArray;
-  FEq        : TItemViewArray;
-  FCharacter : TStringGArray;
-  FCTitle    : AnsiString;
-  FSwapMode  : Boolean;
-  FTraitMode : Boolean;
-  FTraitFirst: Boolean;
-  FSSlot     : TEqSlot;
-  FTraits    : TTraitViewArray;
-  FOnPick    : TOnPickTrait;
+  FState       : TPlayerViewState;
+  FSize        : TIOPoint;
+  FInv         : TItemViewArray;
+  FEq          : TItemViewArray;
+  FCharacter   : TStringGArray;
+  FAction      : AnsiString;
+  FITitle      : AnsiString;
+  FCTitle      : AnsiString;
+  FSwapMode    : Boolean;
+  FTraitMode   : Boolean;
+  FTraitFirst  : Boolean;
+  FSSlot       : TEqSlot;
+  FTraits      : TTraitViewArray;
+  FOnPick      : TOnPickTrait;
+  FCommandMode : Byte;
 end;
 
 implementation
@@ -83,30 +89,14 @@ uses sysutils, variants,
 
 constructor TPlayerView.Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
 begin
-  VTIG_EventClear;
-  VTIG_ResetSelect( 'inventory' );
-  VTIG_ResetSelect( 'equipment' );
-  VTIG_ResetSelect( 'traits' );
-  FState     := aInitialState;
-  FSize      := Point( 80, 25 );
-  FInv       := nil;
-  FEq        := nil;
-  FTraits    := nil;
-  FSwapMode  := False;
-  FTraitMode := False;
-  FTraitFirst:= False;
+  Initialize;
+  FState := aInitialState;
 end;
 
 constructor TPlayerView.CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0; aCallback : TOnPickTrait = nil );
 begin
-  VTIG_EventClear;
-  VTIG_ResetSelect( 'traits' );
+  Initialize;
   FState     := PLAYERVIEW_TRAITS;
-  FSize      := Point( 80, 25 );
-  FInv       := nil;
-  FEq        := nil;
-  FTraits    := nil;
-  FSwapMode  := False;
   FTraitMode := True;
   FTraitFirst:= aFirstTrait;
   FOnPick    := aCallback;
@@ -114,6 +104,37 @@ begin
   if FTraitFirst
     then ReadTraits( aKlass )
     else ReadTraits( Player.Klass )
+end;
+
+constructor TPlayerView.CreateCommand( aCommand : Byte );
+begin
+  Initialize;
+  FCommandMode := aCommand;
+  FState       := PLAYERVIEW_INVENTORY;
+  ReadInv;
+  case aCommand of
+    COMMAND_USE  : begin FAction := 'use';  FITitle := 'Choose item to use';  Filter( [ITEMTYPE_PACK] ); end;
+    COMMAND_DROP : begin FAction := 'drop'; FITitle := 'Choose item to drop'; end;
+  end;
+end;
+
+procedure TPlayerView.Initialize;
+begin
+  VTIG_EventClear;
+  VTIG_ResetSelect( 'inventory' );
+  VTIG_ResetSelect( 'equipment' );
+  VTIG_ResetSelect( 'traits' );
+  FState       := PLAYERVIEW_INVENTORY;
+  FSize        := Point( 80, 25 );
+  FInv         := nil;
+  FEq          := nil;
+  FTraits      := nil;
+  FSwapMode    := False;
+  FTraitMode   := False;
+  FTraitFirst  := False;
+  FCommandMode := 0;
+  FAction      := 'wear/use';
+  FITitle      := 'Inventory';
 end;
 
 procedure TPlayerView.Update( aDTime : Integer );
@@ -135,7 +156,7 @@ begin
 
   if IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
 
-  if ( not FSwapMode ) and ( not FTraitMode ) then
+  if ( not FSwapMode ) and ( not FTraitMode ) and ( FCommandMode = 0 ) then
   begin
     if VTIG_Event( VTIG_IE_LEFT ) then
     begin
@@ -145,22 +166,22 @@ begin
     begin
       if FState = PLAYERVIEW_TRAITS       then FState := Low( TPlayerViewState ) else FState := Succ( FState );
     end;
+    if ( FState <> PLAYERVIEW_DONE ) and VTIG_Event( [ TIG_EV_INVENTORY, TIG_EV_EQUIPMENT, TIG_EV_CHARACTER, TIG_EV_TRAITS ] ) then
+    begin
+      FState := PLAYERVIEW_DONE;
+    end;
   end;
 
-  if ( FState <> PLAYERVIEW_DONE ) and ( not FTraitMode ) then
+  if ( FState <> PLAYERVIEW_DONE ) and VTIG_EventCancel then
   begin
-    if VTIG_EventCancel or VTIG_Event( [ TIG_EV_INVENTORY, TIG_EV_EQUIPMENT, TIG_EV_CHARACTER, TIG_EV_TRAITS ] ) then
-    begin
-      FState := PLAYERVIEW_DONE;
-    end;
+    if ( not FTraitMode )
+      then FState := PLAYERVIEW_DONE
+      else if FTraitFirst then
+        begin
+          FState := PLAYERVIEW_DONE;
+          FOnPick(255);
+        end;
   end;
-
-  if ( FState <> PLAYERVIEW_DONE ) and FTraitMode and FTraitFirst then
-    if VTIG_EventCancel then
-    begin
-      FState := PLAYERVIEW_DONE;
-      FOnPick(255);
-    end;
 
   IO.RenderUIBackground( PointZero, FSize );
 end;
@@ -225,9 +246,7 @@ var iEntry    : TItemViewEntry;
   end;
 begin
   if FInv = nil then ReadInv;
-  if FSwapMode
-    then VTIG_BeginWindow('Select item to wear/wield', 'inventory', FSize )
-    else VTIG_BeginWindow('Inventory', 'inventory', FSize );
+  VTIG_BeginWindow( FITitle, 'inventory', FSize );
     VTIG_BeginGroup( 50 );
     for iEntry in FInv do
       if iEntry.QSlot <> 0
@@ -251,8 +270,8 @@ begin
       VTIG_FreeLabel( FInv[iSelected].Stats, Point( 0, 7 ) );
 
       VTIG_Ruler( 19 );
-      VTIG_Text( '<{!Enter}> wear/use' );
-      if not FSwapMode then
+      VTIG_Text( '<{!Enter}> {0}',[FAction] );
+      if (not FSwapMode) and ( FCommandMode in [0, COMMAND_USE] ) then
       begin
         VTIG_Text( '<{!Backspace}> drop' );
         VTIG_Text( '<{!1-9}> mark quickslot' );
@@ -260,7 +279,7 @@ begin
     end;
 
     VTIG_EndGroup;
-  if FSwapMode
+  if FSwapMode or ( FCommandMode <> 0 )
     then VTIG_End('{l<{!Up,Down}> select, <{!Escape}> exit}')
     else VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit}');
 
@@ -276,30 +295,43 @@ begin
     end
     else
     begin
-      if VTIG_Event( VTIG_IE_BACKSPACE ) then
+      if ( FCommandMode in [0, COMMAND_USE] ) then
       begin
-        FState := PLAYERVIEW_DONE;
-        Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item ) );
+        if VTIG_Event( VTIG_IE_BACKSPACE ) then
+        begin
+          FState := PLAYERVIEW_DONE;
+          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item ) );
+        end
+        else
+        if VTIG_EventConfirm then
+        begin
+          iCommand := COMMAND_NONE;
+          if FInv[iSelected].Item.isWearable then iCommand := COMMAND_WEAR;
+          if FInv[iSelected].Item.isPack     then iCommand := COMMAND_USE;
+          FState := PLAYERVIEW_DONE;
+          if iCommand <> COMMAND_NONE then
+            Doom.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
+        end;
+        if VTIG_Event( VTIG_IE_1 ) then MarkQSlot( iSelected, 1 );
+        if VTIG_Event( VTIG_IE_2 ) then MarkQSlot( iSelected, 2 );
+        if VTIG_Event( VTIG_IE_3 ) then MarkQSlot( iSelected, 3 );
+        if VTIG_Event( VTIG_IE_4 ) then MarkQSlot( iSelected, 4 );
+        if VTIG_Event( VTIG_IE_5 ) then MarkQSlot( iSelected, 5 );
+        if VTIG_Event( VTIG_IE_6 ) then MarkQSlot( iSelected, 6 );
+        if VTIG_Event( VTIG_IE_7 ) then MarkQSlot( iSelected, 7 );
+        if VTIG_Event( VTIG_IE_8 ) then MarkQSlot( iSelected, 8 );
+        if VTIG_Event( VTIG_IE_9 ) then MarkQSlot( iSelected, 9 );
       end
       else
-      if VTIG_EventConfirm then
       begin
-        iCommand := COMMAND_NONE;
-        if FInv[iSelected].Item.isWearable then iCommand := COMMAND_WEAR;
-        if FInv[iSelected].Item.isPack     then iCommand := COMMAND_USE;
-        FState := PLAYERVIEW_DONE;
-        if iCommand <> COMMAND_NONE then
-          Doom.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
+        if VTIG_EventConfirm then
+        begin
+          iCommand := FCommandMode;
+          FState := PLAYERVIEW_DONE;
+          if iCommand <> COMMAND_NONE then
+            Doom.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
+        end;
       end;
-      if VTIG_Event( VTIG_IE_1 ) then MarkQSlot( iSelected, 1 );
-      if VTIG_Event( VTIG_IE_2 ) then MarkQSlot( iSelected, 2 );
-      if VTIG_Event( VTIG_IE_3 ) then MarkQSlot( iSelected, 3 );
-      if VTIG_Event( VTIG_IE_4 ) then MarkQSlot( iSelected, 4 );
-      if VTIG_Event( VTIG_IE_5 ) then MarkQSlot( iSelected, 5 );
-      if VTIG_Event( VTIG_IE_6 ) then MarkQSlot( iSelected, 6 );
-      if VTIG_Event( VTIG_IE_7 ) then MarkQSlot( iSelected, 7 );
-      if VTIG_Event( VTIG_IE_8 ) then MarkQSlot( iSelected, 8 );
-      if VTIG_Event( VTIG_IE_9 ) then MarkQSlot( iSelected, 9 );
     end;
   end
   else
@@ -417,11 +449,7 @@ begin
       end
       else
       begin
-        VTIG_ResetSelect( 'inventory' );
-        FState    := PLAYERVIEW_INVENTORY;
-        FSwapMode := True;
-        Filter( ItemEqFilters[ TEqSlot(iSelected) ] );
-        FSSlot := TEqSlot(iSelected);
+        InitSwapMode( TEqSlot(iSelected) );
         Exit;
       end;
     end
@@ -429,11 +457,7 @@ begin
     if VTIG_Event( VTIG_IE_TAB ) then
     begin
       if Cursed then Exit;
-      VTIG_ResetSelect( 'inventory' );
-      FState    := PLAYERVIEW_INVENTORY;
-      FSwapMode := True;
-      Filter( ItemEqFilters[ TEqSlot(iSelected) ] );
-      FSSlot := TEqSlot(iSelected);
+      InitSwapMode( TEqSlot(iSelected) );
       Exit;
     end
     else
@@ -789,6 +813,17 @@ begin
             FInv.Data^[i].QSlot := s;
     end;
   end;
+end;
+
+procedure TPlayerView.InitSwapMode( aSlot : TEqSlot );
+begin
+  VTIG_ResetSelect( 'inventory' );
+  FState    := PLAYERVIEW_INVENTORY;
+  FSwapMode := True;
+  FITitle   := 'Select item to wear/wield';
+  FAction   := 'wear/wield';
+  Filter( ItemEqFilters[ aSlot ] );
+  FSSlot := aSlot;
 end;
 
 end.

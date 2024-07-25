@@ -277,18 +277,6 @@ begin
     INPUT_ALTRELOAD  : Exit( HandleCommand( TCommand.Create( COMMAND_ALTRELOAD ) ) );
     INPUT_PICKUP     : Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) );
     INPUT_ENTER      : Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) );
-
-    INPUT_USE        : begin
-      iItem := Player.Inv.Choose([ITEMTYPE_PACK],'use');
-      if iItem = nil then Exit( False );
-      Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
-    end;
-    INPUT_DROP       : begin
-      iItem := Player.Inv.Choose([],'drop');
-      if iItem = nil then Exit( False );
-      Exit( HandleCommand( TCommand.Create( COMMAND_DROP, iItem ) ) );
-    end;
-
     INPUT_ALTPICKUP  : begin
       iItem := Level.Item[ Player.Position ];
       if ( iItem = nil ) or (not (iItem.isLever or iItem.isPack or iItem.isWearable) ) then
@@ -756,6 +744,8 @@ begin
       INPUT_INVENTORY  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;
       INPUT_EQUIPMENT  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) ); Exit; end;
       INPUT_ASSEMBLIES : begin IO.PushLayer( TAssemblyView.Create ); Exit; end;
+      INPUT_USE        : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_USE ) ); Exit; end;
+      INPUT_DROP       : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
 
       INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, IO.MsgGetRecent ) ); Exit; end;
 
