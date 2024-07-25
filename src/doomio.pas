@@ -596,7 +596,8 @@ var iCon        : TUIConsole;
 
 begin
   iCon.Init( FConsole );
-  iCon.Clear;
+  if GraphicsVersion then
+    iCon.Clear;
 
   if Player <> nil then
   begin
