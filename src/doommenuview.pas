@@ -97,7 +97,7 @@ type TMainMenuViewer = class( TUIElement )
 implementation
 
 uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
-     doombase, doomio, doomgfxio, doomnet, doomviews, doomplayerview;
+     doombase, doomio, doomgfxio, doomnet, doomviews, doomplayerview, doomhelpview;
 
 const
   TextContinueGame  = '@b--@> Continue game @b---@>';
@@ -546,7 +546,7 @@ begin
     3 : iFull := TUIModViewer.Create( Self, Option_NetworkConnection and (DoomNetwork.ModServer <> ''), @OnPickMod );
     4 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
     5 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
-    6 : iFull := TUIHelpViewer.Create( Self );
+    6 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
     7 : FResult.Quit := True;
   end;
   if iFull <> nil then

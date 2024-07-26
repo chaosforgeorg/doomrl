@@ -744,10 +744,8 @@ begin
     case iCommand of
 //      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
       INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
-      //      INPUT_HELP       : begin Player.doScreen; Exit; end;
       INPUT_QUIT       : begin Player.doQuit; Exit; end;
-      //      INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
-      INPUT_HELP       : begin Help.Run; Exit; end;
+      INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
       INPUT_LOOK       : begin IO.Msg( '-' ); IO.LookMode; Exit; end;
       INPUT_PLAYERINFO : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
       INPUT_INVENTORY  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;

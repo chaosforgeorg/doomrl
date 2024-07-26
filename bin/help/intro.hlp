@@ -1,8 +1,8 @@
-@rIntroduction@>
+{rIntroduction}
 
-@rDoomRL@> (abbr. for Doom, the Roguelike) is, as the name implies, a
+{rDoomRL} (abbr. for Doom, the Roguelike) is, as the name implies, a
 roguelike game. If you don't know what a roguelike is... checkout 
-wikipedia -- @Bhttp://en.wikipedia.org/wiki/Roguelike@>.
+wikipedia -- {Bhttp://en.wikipedia.org/wiki/Roguelike}.
 
 DoomRL is based on the world from id Software's(tm) game Doom(tm). You're
 the sole surviving marine from a squad sent to investigate a distress call

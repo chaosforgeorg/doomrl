@@ -64,16 +64,6 @@ protected
   FIcons      : TConUIScrollableIcons;
 end;
 
-type TUIHelpViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement );
-  function OnHelpConfirm( aSender : TUIElement ) : Boolean;
-  function OnKeyDown( const event : TIOKeyEvent ) : Boolean; override;
-protected
-  FMenu   : TConUIMenu;
-  FText   : TConUIStringList;
-  FIcons  : TConUIScrollableIcons;
-end;
-
 type TUIHOFViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; aReport : TUIHOFReport );
   constructor Create( aParent : TUIElement; const aTitle : TUIString; aContent : TUIStringArray );
@@ -342,63 +332,6 @@ begin
   iContent.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
   if iContent.Count <= iContent.VisibleCount then Footer := ScrollFooterOff;
   TConUIScrollableIcons.Create( Self, iContent, iRect, Point( FAbsolute.x2 - 7, FAbsolute.Y ) );
-end;
-
-{ TUIHelpViewer }
-
-constructor TUIHelpViewer.Create ( aParent : TUIElement ) ;
-var i : Byte;
-    iRect : TUIRect;
-begin
-  inherited Create( aParent, HelpHeader, HelpFooter );
-  FEventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
-  iRect := aParent.GetDimRect;
-  FMenu := CreateMenu( Option_HelpMenuStyle, Self,iRect.Shrinked(2) );
-
-  for i := 1 to Help.HNum do
-    FMenu.Add( Help.RegHelps[i].Desc, True, @(Help.RegHelps[i]) );
-  FMenu.Add('Quit Help');
-  FMenu.OnConfirmEvent := @OnHelpConfirm;
-
-  iRect  := aParent.GetDimRect.Shrinked(1,2);
-  FText  := TConUIStringList.Create( Self, iRect );
-  FIcons := TConUIScrollableIcons.Create( Self, FText, iRect, Point( FAbsolute.X2 - 7, FAbsolute.Y ) );
-  FText.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
-  FText.Enabled := False;
-  FIcons.Enabled := False;
-end;
-
-function TUIHelpViewer.OnHelpConfirm( aSender : TUIElement ) : Boolean;
-begin
-  if FMenu.SelectedItem.Data = nil then Exit( OnCancel );
-  FText.SetContent( PHelpRecord(FMenu.SelectedItem.Data)^.Text, False );
-  FTitle := ' '+PHelpRecord(FMenu.SelectedItem.Data)^.Desc+' ';
-  if FText.Count <= FText.VisibleCount
-    then FFooter := ScrollFooterOff
-    else FFooter := ScrollFooterOn;
-  FText.Enabled := True;
-  FIcons.Enabled := True;
-  FMenu.Enabled := False;
-  Exit( True );
-end;
-
-function TUIHelpViewer.OnKeyDown ( const event : TIOKeyEvent ) : Boolean;
-begin
-  if (event.Code = VKEY_ESCAPE) or (event.Code = VKEY_ENTER) or (event.Code = VKEY_SPACE) then
-  begin
-    if FText.Enabled then
-    begin
-      FText.Enabled := False;
-      FIcons.Enabled := False;
-      FMenu.Enabled := True;
-      FTitle := HelpHeader;
-      FFooter := HelpFooter;
-    end
-    else
-      Exit( OnCancel );
-    Exit( True );
-  end;
-  Result := False;
 end;
 
 { TUIPagedViewer }

@@ -1,4 +1,4 @@
-@rCredits@>
+{rCredits}
 
 Credits in this particular production go to Ilya Bely, for feedback, ideas
 and the enthusiasm that allowed me to actually finish something I started,
@@ -15,9 +15,9 @@ especially AI and bugfixing!
 Big thanks to Simon Volpert for the DoomRL special level music tracks, and
 Game Hunter for the youtube DoomRL tutorials!
 
-High quality remixes of the original Doom music used in the graphical version
-are a courtesy of Sonic Clang ( http://sonicclang.ringdev.com/ ) used with
-permission.
+High quality remixes of the original Doom music used in the graphical 
+version are a courtesy of Sonic Clang ( http://sonicclang.ringdev.com/ ) 
+used with permission.
 
 High quality recreation of the original Doom sounds used in the graphical 
 version is a courtesy of Per Kristian Risvik ( http://www.perkristian.net )
@@ -39,9 +39,9 @@ Also big thanks goes to MaiZure for his help with marketing and PR :)
 Finally a big thanks to Gargulec, for PR, press releases, ideas, motivation
 kicks and being epic in general!
 
-And of course a *huge* thanks to id Software, who created the original Doom, 
-which in many was (as seen here) provides us with tons of entertainment even
-almost 20 years after it's release...
+And of course a *huge* thanks to id Software, who created the original 
+Doom, which in many was (as seen here) provides us with tons of 
+entertainment even almost 20 years after it's release...
 
 He's the list of the TOP 15 people who keep ChaosForge running, based on 
 donations:
@@ -111,5 +111,5 @@ WorthlessBums, XC3N, Xi over Xi-bar, xpsg, Yamstis, Yando The Man, you,
 yupsi, zaimoni, zakastra, Zalminen, zchris13, Zeb, ZellSF, zeroDi and
 ZicherCZ
  
-Also thanks to the whole crew of @Brec.games.roguelike.development@> for
+Also thanks to the whole crew of {Brec.games.roguelike.development} for
 the years spent together and the warm welcome of my game!
