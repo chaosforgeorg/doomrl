@@ -1,6 +1,8 @@
 0.9.9.8 BETA 6
-[new] -- GH#---: paneled inventory/equipment/trait/character screen!
-[new] -- GH#---: proper quickslot system in inventory!
+[new] -- GH#119: paneled inventory/equipment/trait/character screen!
+[new] -- GH#090: game menu (Help, Settings, Abandon, Quit ) under Escape key
+[new] -- GH#087: proper quickslot system in inventory!
+[fix] -- BETA  : fixed disassembly of armors
 
 0.9.9.8 BETA 5
 [new] -- GH#120: G-version - sprites updated!
