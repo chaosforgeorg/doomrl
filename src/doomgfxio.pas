@@ -419,11 +419,11 @@ begin
     iAbsolute := vutil.Rectangle( 1,1,78,25 );
     iP1 := IO.Root.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
     iP2 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
-    QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
+    QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.8 ) );
 
-    iP1 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x, iAbsolute.y2-2 ) );
+    iP1 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x, iAbsolute.y2-1 ) );
     iP2 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
-    QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.1 ) );
+    QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.8 ) );
   end;
 
 
