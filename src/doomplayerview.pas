@@ -305,8 +305,9 @@ begin
     begin
       if VTIG_EventConfirm then
       begin
-        FState := PLAYERVIEW_DONE;
+        FState := PLAYERVIEW_CLOSING;
         Doom.HandleCommand( TCommand.Create( COMMAND_SWAP, FInv[iSelected].Item, FSSlot ) );
+        FState := PLAYERVIEW_DONE;
       end;
     end
     else
@@ -315,8 +316,9 @@ begin
       begin
         if VTIG_Event( VTIG_IE_BACKSPACE ) then
         begin
-          FState := PLAYERVIEW_DONE;
+          FState := PLAYERVIEW_CLOSING;
           Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item ) );
+          FState := PLAYERVIEW_DONE;
         end
         else
         if VTIG_EventConfirm then
@@ -324,9 +326,10 @@ begin
           iCommand := COMMAND_NONE;
           if FInv[iSelected].Item.isWearable then iCommand := COMMAND_WEAR;
           if FInv[iSelected].Item.isPack     then iCommand := COMMAND_USE;
-          FState := PLAYERVIEW_DONE;
+          FState := PLAYERVIEW_CLOSING;
           if iCommand <> COMMAND_NONE then
             Doom.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
+          FState := PLAYERVIEW_DONE;
         end;
         if VTIG_Event( VTIG_IE_1 ) then MarkQSlot( iSelected, 1 );
         if VTIG_Event( VTIG_IE_2 ) then MarkQSlot( iSelected, 2 );
@@ -343,11 +346,12 @@ begin
         if VTIG_EventConfirm then
         begin
           iCommand := FCommandMode;
-          FState := PLAYERVIEW_DONE;
+          FState := PLAYERVIEW_CLOSING;
                if iCommand = COMMAND_UNLOAD then
             Doom.HandleUnloadCommand( FInv[iSelected].Item )
           else if iCommand <> COMMAND_NONE then
             Doom.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
+          FState := PLAYERVIEW_DONE;
         end;
       end;
     end;
@@ -373,8 +377,9 @@ var iEntry       : TItemViewEntry;
   begin
     if ( FEq[iSelected].Item <> nil ) and FEq[iSelected].Item.Flags[ IF_CURSED ] then
     begin
-      FState := PLAYERVIEW_DONE;
+      FState := PLAYERVIEW_CLOSING;
       IO.Msg('You can''t, it''s cursed!');
+      FState := PLAYERVIEW_DONE;
       Exit( True );
     end;
     Exit( False );
@@ -454,15 +459,17 @@ begin
               Exit;
             end;
           end;
-          FState := PLAYERVIEW_DONE;
           if Cursed then Exit;
+          FState := PLAYERVIEW_CLOSING;
           Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item ) );
+          FState := PLAYERVIEW_DONE;
         end
         else
         begin
-          FState := PLAYERVIEW_DONE;
           if Cursed then Exit;
+          FState := PLAYERVIEW_CLOSING;
           Doom.HandleCommand( TCommand.Create( COMMAND_TAKEOFF, nil, TEqSlot(iSelected) ) );
+          FState := PLAYERVIEW_DONE;
         end;
       end
       else
@@ -483,9 +490,10 @@ begin
     begin
       if Assigned( FEq[iSelected].Item ) then
         begin
-          FState := PLAYERVIEW_DONE;
           if Cursed then Exit;
+          FState := PLAYERVIEW_CLOSING;
           Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item ) );
+          FState := PLAYERVIEW_DONE;
         end;
     end;
   end;
@@ -549,10 +557,11 @@ begin
   if (iSelected >= 0) and FTraitMode then
     if VTIG_EventConfirm then
     begin
-      FState := PLAYERVIEW_DONE;
+      FState := PLAYERVIEW_CLOSING;
       if FTraitFirst
         then FOnPick( FTraits[iSelected].Index )
         else Player.FTraits.Upgrade( FTraits[iSelected].Index );
+      FState := PLAYERVIEW_DONE;
     end;
 end;
 
