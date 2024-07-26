@@ -79,6 +79,7 @@ register_level "house_of_pain"
 ]=]
 		generator.place_tile( translation, map, 1, 1 )
 		generator.set_permanence( area.FULL )
+		generator.set_permanence( area.FULL, true, "door" )
 
 		level:player(14,10)
 	end,
@@ -109,19 +110,20 @@ register_level "house_of_pain"
 		if res < 6 then
 			if res == 1 and player.x > 33 then
 				local room_2 = area.new( 31, 2, 50, 19 )
-				level:summon{ core.ifdiff( 4, "ncacodemon", "cacodemon" ), core.ifdiff( 4, 2, 4 ), area = room_2 }
-				level:summon{ core.ifdiff( 3, "baron", "knight" ), core.bydiff{ 0, 2, 2, 2, 4 }, area = room_2 }
+				level:summon{ core.ifdiff( 4, "ncacodemon", "cacodemon" ), core.ifdiff( 5, 6, 4 ), area = room_2 }
+				level:summon{ core.ifdiff( 3, "baron", "knight" ), core.bydiff{ 0, 4, 4, 4, 6 }, area = room_2 }
 				level.status = 2
 			elseif res == 3 and player.x > 55 then
 				local room_3 = area.new( 55, 2, 77, 19 )
-				level:summon{ "mancubus", core.ifdiff( 4, 4, 2 ), area = room_3 }
-				if DIFFICULTY > 1 then level:summon{ "revenant" , core.ifdiff( 5, 4, 2 ), area = room_3 } end
-				if DIFFICULTY > 2 then level:summon{ "arch" , area = room_3 } end
+				level:summon{ "mancubus", core.bydiff{ 2,2,3,4,6 }, area = room_3 }
+				if DIFFICULTY > 1 then level:summon{ "revenant" , core.bydiff{ 2,2,3,4,6 }, area = room_3 } end
+				if DIFFICULTY > 2 then level:summon{ "arch" , core.bydiff{ 0,0,1,2,3 }, area = room_3 } end
 				level.status = 4
 			elseif res == 5 and player.x < 27 then
 				ui.msg("The voice laughs: \"Allow me to present you your just reward!\"")
 				local room_1 = area.new( 7, 7, 21, 14 )
-				level:summon{ core.ifdiff( 3, "narch", "arch" ), core.bydiff{ 1, 1, 2, 1, 1 }, area = room_1 }
+				level:summon{ core.ifdiff( 3, "narch", "arch" ), core.bydiff{ 0, 2, 1, 2, 2 }, area = room_1 }
+				if DIFFICULTY > 4 then level:summon{ "baron" , 4, area = room_1 } end
 				for i=1,8 do
 					level:area_drop( room_1, level:roll_item{ level = 20, type = ITEMTYPE_RANGED, unique_mod = 5 } )
 					level:area_drop( room_1, level:roll_item{ level = 20, type = {ITEMTYPE_ARMOR,ITEMTYPE_BOOTS}, unique_mod = 5 } )
