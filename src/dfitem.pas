@@ -39,7 +39,7 @@ TItem  = class( TThing )
     function    GetProtection : Byte;
     function    GetResistance( const aResistance : AnsiString ) : Integer;
     function    Description : Ansistring;
-    function    DescriptionBox : Ansistring;
+    function    DescriptionBox( aNewFormat : Boolean = False ) : Ansistring;
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
     function    CanMod(aModChar : char) : Boolean;
@@ -216,7 +216,7 @@ begin
        begin
          soundid := Table.getString('sound_id','');
          if soundid = '' then soundid := ID;
-         FSounds.Fire := IO.ResolveSoundID([ID+'.use',soundid+'.use','use']);
+         FSounds.Fire := IO.Audio.ResolveSoundID([ID+'.use',soundid+'.use','use']);
        end;
      ITEMTYPE_ARMOR,
      ITEMTYPE_BOOTS :
@@ -227,28 +227,28 @@ begin
          FProps.MoveMod  := Table.getInteger('movemod');
          FProps.DodgeMod  := Table.getInteger('dodgemod');
          FProps.KnockMod := Table.getInteger('knockmod');
-         FSounds.Pickup := IO.ResolveSoundID([ID+'.pickup','pickup']);
+         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
        end;
      ITEMTYPE_PACK,
      ITEMTYPE_POWER :
        begin
          if FProps.IType = ITEMTYPE_POWER
-           then FSounds.Fire   := IO.ResolveSoundID([ID+'.activate','activate'])
-           else FSounds.Fire   := IO.ResolveSoundID([ID+'.use','use']);
-         FSounds.Pickup := IO.ResolveSoundID([ID+'.pickup','pickup']);
+           then FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.activate','activate'])
+           else FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.use','use']);
+         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
        end;
      ITEMTYPE_AMMO, ITEMTYPE_AMMOPACK :
        begin
          FProps.Ammo        := Table.getInteger('ammo');
          FProps.AmmoMax     := Table.getInteger('ammomax');
          FProps.AmmoID      := Table.getInteger('ammo_id',0);
-         FSounds.Pickup := IO.ResolveSoundID([ID+'.pickup','pickup']);
+         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
        end;
      ITEMTYPE_MELEE :
        begin
          FProps.Damage      := NewDiceRoll( Table.getInteger('damage_dice'), Table.getInteger('damage_sides'), Table.getInteger('damage_bonus') );
-         FSounds.Fire   := IO.ResolveSoundID([ID+'.attack','attack']);
-         FSounds.Pickup := IO.ResolveSoundID([ID+'.pickup','pickup']);
+         FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.attack','attack']);
+         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
          FProps.DamageType  := TDamageType( Table.getInteger('damagetype') );
          FProps.Acc         := Table.getInteger('acc');
          FProps.UseTime     := Table.getInteger('fire');
@@ -273,9 +273,9 @@ begin
          FProps.DamageType  := TDamageType( Table.getInteger('damagetype',0) );
          soundid := Table.getString('sound_id','');
          if soundid = '' then soundid := ID;
-         FSounds.Fire   := IO.ResolveSoundID([ID+'.fire', SoundID+'.fire', 'fire']);
-         FSounds.Pickup := IO.ResolveSoundID([ID+'.pickup', SoundID+'.pickup', 'pickup']);
-         FSounds.Reload := IO.ResolveSoundID([ID+'.reload', SoundID+'.reload', 'reload']);
+         FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.fire', SoundID+'.fire', 'fire']);
+         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup', SoundID+'.pickup', 'pickup']);
+         FSounds.Reload := IO.Audio.ResolveSoundID([ID+'.reload', SoundID+'.reload', 'reload']);
        end;
   end;
 
@@ -389,7 +389,7 @@ begin
   end;
 end;
 
-function TItem.DescriptionBox: Ansistring;
+function TItem.DescriptionBox( aNewFormat : Boolean = False ): Ansistring;
   function Iff(expr : Boolean; str : Ansistring) : Ansistring;
   begin
     if expr then exit(str) else exit('');
@@ -416,34 +416,69 @@ function TItem.DescriptionBox: Ansistring;
     end;
   end;
 begin
-  case FProps.IType of
-    ITEMTYPE_ARMOR, ITEMTYPE_BOOTS : DescriptionBox :=
-      'Durability  : @<'+IntToStr(FProps.MaxDurability)+'@>'#10+
-      'Move speed  : @<'+Percent(FProps.MoveMod)+'@>'#10+
-      'Knockback   : @<'+Percent(FProps.KnockMod)+'@>'#10+
-      Iff(FProps.DodgeMod <> 0,'Dodge rate  : @<'+Percent(FProps.DodgeMod)+'@>'#10);
-    ITEMTYPE_RANGED : DescriptionBox :=
-      'Fire time   : @<'+Seconds(FProps.UseTime)+'@>'#10+
-      'Reload time : @<'+Seconds(FProps.ReloadTime)+'@>'#10+
-      'Accuracy    : @<'+BonusStr(FProps.Acc)+'@>'#10+
-      Iff(FProps.Shots       <> 0,'Shots       : @<'+IntToStr(FProps.Shots)+'@>'#10)+
-      Iff(FProps.ShotCost    <> 0,'Shot cost   : @<'+IntToStr(FProps.ShotCost)+'@>'#10)+
-      Iff(FProps.BlastRadius <> 0,'Expl.radius : @<'+IntToStr(FProps.BlastRadius)+'@>'#10)+
-      Iff(FProps.AltFire   <> ALT_NONE   ,'Alt. fire   : @<'+AltFireName( FProps.AltFire )+'@>'#10)+
-      Iff(FProps.AltReload <> RELOAD_NONE,'Alt. reload : @<'+AltReloadName( FProps.AltReload )+'@>'#10);
-    ITEMTYPE_MELEE : DescriptionBox :=
-      'Attack time : @<'+Seconds(FProps.UseTime)+'@>'#10+
-      Iff(FProps.Acc     <> 0,'Accuracy    : @<' + BonusStr(FProps.Acc)+'@>'#10)+
-      Iff(FProps.AltFire <> ALT_NONE,'Alt. fire   : @<'+AltFireName( FProps.AltFire )+'@>'#10);
+  if aNewFormat then
+  begin
+    DescriptionBox := '';
+    case FProps.IType of
+      ITEMTYPE_ARMOR, ITEMTYPE_BOOTS : DescriptionBox :=
+        'Durability  : {!'+IntToStr(FProps.MaxDurability)+'}'#10+
+        'Move speed  : {!'+Percent(FProps.MoveMod)+'}'#10+
+        'Knockback   : {!'+Percent(FProps.KnockMod)+'}'#10+
+        Iff(FProps.DodgeMod <> 0,'Dodge rate  : {!'+Percent(FProps.DodgeMod)+'}'#10);
+      ITEMTYPE_RANGED : DescriptionBox :=
+        'Fire time   : {!'+Seconds(FProps.UseTime)+'}'#10+
+        'Reload time : {!'+Seconds(FProps.ReloadTime)+'}'#10+
+        'Accuracy    : {!'+BonusStr(FProps.Acc)+'}'#10+
+        Iff(FProps.Shots       <> 0,'Shots       : {!'+IntToStr(FProps.Shots)+'}'#10)+
+        Iff(FProps.ShotCost    <> 0,'Shot cost   : {!'+IntToStr(FProps.ShotCost)+'}'#10)+
+        Iff(FProps.BlastRadius <> 0,'Expl.radius : {!'+IntToStr(FProps.BlastRadius)+'}'#10)+
+        Iff(FProps.AltFire   <> ALT_NONE   ,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10)+
+        Iff(FProps.AltReload <> RELOAD_NONE,'Alt. reload : {!'+AltReloadName( FProps.AltReload )+'}'#10);
+      ITEMTYPE_MELEE : DescriptionBox :=
+        'Attack time : {!'+Seconds(FProps.UseTime)+'}'#10+
+        Iff(FProps.Acc     <> 0,'Accuracy    : {!' + BonusStr(FProps.Acc)+'}'#10)+
+        Iff(FProps.AltFire <> ALT_NONE,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10);
+    end;
+    DescriptionBox +=
+        Iff(GetResistance('bullet')   <> 0,'Bullet res. : {!' + BonusStr(GetResistance('bullet'))+'}'#10)+
+        Iff(GetResistance('melee')    <> 0,'Melee res.  : {!' + BonusStr(GetResistance('melee'))+'}'#10)+
+        Iff(GetResistance('shrapnel') <> 0,'Shrapnel res: {!' + BonusStr(GetResistance('shrapnel'))+'}'#10)+
+        Iff(GetResistance('acid')     <> 0,'Acid res.   : {!' + BonusStr(GetResistance('acid'))+'}'#10)+
+        Iff(GetResistance('fire')     <> 0,'Fire res.   : {!' + BonusStr(GetResistance('fire'))+'}'#10)+
+        Iff(GetResistance('plasma')   <> 0,'Plasma res. : {!' + BonusStr(GetResistance('plasma'))+'}'#10);
+  end
+  else
+  begin
+    DescriptionBox := '';
+    case FProps.IType of
+      ITEMTYPE_ARMOR, ITEMTYPE_BOOTS : DescriptionBox :=
+        'Durability  : @<'+IntToStr(FProps.MaxDurability)+'@>'#10+
+        'Move speed  : @<'+Percent(FProps.MoveMod)+'@>'#10+
+        'Knockback   : @<'+Percent(FProps.KnockMod)+'@>'#10+
+        Iff(FProps.DodgeMod <> 0,'Dodge rate  : @<'+Percent(FProps.DodgeMod)+'@>'#10);
+      ITEMTYPE_RANGED : DescriptionBox :=
+        'Fire time   : @<'+Seconds(FProps.UseTime)+'@>'#10+
+        'Reload time : @<'+Seconds(FProps.ReloadTime)+'@>'#10+
+        'Accuracy    : @<'+BonusStr(FProps.Acc)+'@>'#10+
+        Iff(FProps.Shots       <> 0,'Shots       : @<'+IntToStr(FProps.Shots)+'@>'#10)+
+        Iff(FProps.ShotCost    <> 0,'Shot cost   : @<'+IntToStr(FProps.ShotCost)+'@>'#10)+
+        Iff(FProps.BlastRadius <> 0,'Expl.radius : @<'+IntToStr(FProps.BlastRadius)+'@>'#10)+
+        Iff(FProps.AltFire   <> ALT_NONE   ,'Alt. fire   : @<'+AltFireName( FProps.AltFire )+'@>'#10)+
+        Iff(FProps.AltReload <> RELOAD_NONE,'Alt. reload : @<'+AltReloadName( FProps.AltReload )+'@>'#10);
+      ITEMTYPE_MELEE : DescriptionBox :=
+        'Attack time : @<'+Seconds(FProps.UseTime)+'@>'#10+
+        Iff(FProps.Acc     <> 0,'Accuracy    : @<' + BonusStr(FProps.Acc)+'@>'#10)+
+        Iff(FProps.AltFire <> ALT_NONE,'Alt. fire   : @<'+AltFireName( FProps.AltFire )+'@>'#10);
+    end;
+    DescriptionBox +=
+        Iff(GetResistance('bullet')   <> 0,'Bullet res. : @<' + BonusStr(GetResistance('bullet'))+'@>'#10)+
+        Iff(GetResistance('melee')    <> 0,'Melee res.  : @<' + BonusStr(GetResistance('melee'))+'@>'#10)+
+        Iff(GetResistance('shrapnel') <> 0,'Shrapnel res: @<' + BonusStr(GetResistance('shrapnel'))+'@>'#10)+
+        Iff(GetResistance('acid')     <> 0,'Acid res.   : @<' + BonusStr(GetResistance('acid'))+'@>'#10)+
+        Iff(GetResistance('fire')     <> 0,'Fire res.   : @<' + BonusStr(GetResistance('fire'))+'@>'#10)+
+        Iff(GetResistance('plasma')   <> 0,'Plasma res. : @<' + BonusStr(GetResistance('plasma'))+'@>'#10);
   end;
-  DescriptionBox +=
-      Iff(GetResistance('bullet')   <> 0,'Bullet res. : @<' + BonusStr(GetResistance('bullet'))+'@>'#10)+
-      Iff(GetResistance('melee')    <> 0,'Melee res.  : @<' + BonusStr(GetResistance('melee'))+'@>'#10)+
-      Iff(GetResistance('shrapnel') <> 0,'Shrapnel res: @<' + BonusStr(GetResistance('shrapnel'))+'@>'#10)+
-      Iff(GetResistance('acid')     <> 0,'Acid res.   : @<' + BonusStr(GetResistance('acid'))+'@>'#10)+
-      Iff(GetResistance('fire')     <> 0,'Fire res.   : @<' + BonusStr(GetResistance('fire'))+'@>'#10)+
-      Iff(GetResistance('plasma')   <> 0,'Plasma res. : @<' + BonusStr(GetResistance('plasma'))+'@>'#10);
-end;
+ end;
 
 function TItem.ResistDescriptionShort: AnsiString;
 const ResLetter : array[Low(TResistance)..High(TResistance)] of Char = ( 'b','m','s','a','f','p' );

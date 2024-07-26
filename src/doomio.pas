@@ -1,39 +1,55 @@
 {$INCLUDE doomrl.inc}
 unit doomio;
 interface
-uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils, vgenerics, vio,
-     vsystems, vmath, vrltools, vluaconfig, vglquadrenderer, vgltypes, doomspritemap, doomviews,
-     viotypes, vbitmapfont, vioevent, vioconsole, vuielement, vuitypes;
+uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
+     vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vrlmsg, vuitypes, vluastate,
+     viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
+     dfdata, doomspritemap, doomviews, doomaudio;
+
+const TIG_EV_NONE      = 0;
+      TIG_EV_DROP      = 1;
+      TIG_EV_INVENTORY = 2;
+      TIG_EV_EQUIPMENT = 3;
+      TIG_EV_CHARACTER = 4;
+      TIG_EV_TRAITS    = 5;
+      TIG_EV_QUICK_0   = 10;
+      TIG_EV_QUICK_1   = 11;
+      TIG_EV_QUICK_2   = 12;
+      TIG_EV_QUICK_3   = 13;
+      TIG_EV_QUICK_4   = 14;
+      TIG_EV_QUICK_5   = 15;
+      TIG_EV_QUICK_6   = 16;
+      TIG_EV_QUICK_7   = 17;
+      TIG_EV_QUICK_8   = 18;
+      TIG_EV_QUICK_9   = 19;
+
+type TInterfaceLayer = class
+  procedure Update( aDTime : Integer ); virtual; abstract;
+  procedure Tick( aDTick : Integer ); virtual;
+  function IsFinished : Boolean; virtual; abstract;
+  function IsModal : Boolean; virtual;
+  function HandleEvent( const aEvent : TIOEvent ) : Boolean; virtual;
+end;
+
 
 type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
 
-type TSoundEvent = packed record
-       Time    : QWord;
-       Coord   : TCoord2D;
-       SoundID : Word;
-     end;
-
-type TDoomOnProgress = procedure ( aProgress : DWord ) of object;
-     TAnsiStringArray = specialize TGArray< AnsiString >;
-     TSoundEventHeap  = specialize TGHeap< TSoundEvent >;
-
+type TDoomOnProgress      = procedure ( aProgress : DWord ) of object;
+type TASCIIImageMap       = specialize TGObjectHashMap<TUIStringArray>;
+type TInterfaceLayerStack = specialize TGArray<TInterfaceLayer>;
 
 type TDoomIO = class( TIO )
   constructor Create; reintroduce;
-  procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False );
+  procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
   function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
+  procedure FullUpdate; override;
   destructor Destroy; override;
   procedure Screenshot( aBB : Boolean );
 
-  procedure PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
-  procedure PlayMusic( const MusicID : Ansistring );
-  procedure PlayMusicOnce( const MusicID : Ansistring );
-  function ResolveSoundID( const ResolveIDs: array of AnsiString ) : Word;
-  function EventWaitForMore( aSender : TUIElement ) : Boolean;
+  function EventWaitForMore : Boolean;
 
-  procedure WADLoaded;
-  procedure LoadStart;
+  procedure LoadStart( aAdd : DWord = 0 );
   function LoadCurrent : DWord;
   procedure LoadProgress( aProgress : DWord );
   procedure LoadStop;
@@ -45,59 +61,90 @@ type TDoomIO = class( TIO )
   procedure WaitForKeyEvent( out aEvent : TIOEvent; aMouseClick : Boolean = False; aMouseMove : Boolean = False );
   function CommandEventPending : Boolean;
 
-private
-  procedure ReuploadTextures;
-  procedure CalculateConsoleParams;
-  procedure GraphicsDraw;
-  procedure SoundQuery(nkey,nvalue : Variant);
-  procedure MusicQuery(nkey,nvalue : Variant);
-  procedure ColorQuery(nkey,nvalue : Variant);
+  procedure SetTempHint( const aText : AnsiString );
+  procedure SetHint( const aText : AnsiString );
+
+  procedure Focus( aCoord: TCoord2D );
+
+  procedure LookMode;
+  function ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D; virtual;
+  function ChooseDirection( aActionName : string ) : TDirection;
+  procedure LookDescription( aWhere : TCoord2D );
+
+  procedure Msg( const aText : AnsiString );
+  procedure Msg( const aText : AnsiString; const aParams : array of const );
+  procedure MsgEnter( const aText : AnsiString );
+  procedure MsgEnter( const aText : AnsiString; const aParams : array of const );
+  function  MsgConfirm( const aText : AnsiString; aStrong : Boolean = False ) : Boolean;
+  function  MsgChoice( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
+  function  MsgCommandChoice( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
+  function  MsgGetRecent : TUIChunkBuffer;
+  procedure MsgReset;
+  // TODO: Could this be removed as well?
+  procedure MsgUpDate;
+  procedure ErrorReport( const aText : AnsiString );
+
+  procedure ClearAllMessages;
+  procedure ASCIILoader( aStream : TStream; aName : Ansistring; aSize : DWord );
+
+  procedure BloodSlideDown( aDelayTime : Word );
+
+  procedure WaitForAnimation; virtual;
+  function AnimationsRunning : Boolean; virtual; abstract;
+  procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); virtual; abstract;
+  procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); virtual; abstract;
+  procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite ); virtual;
+  procedure addScreenMoveAnimation( aDuration : DWord; aDelay : DWord; aTo : TCoord2D ); virtual;
+  procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); virtual;
+  procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); virtual; abstract;
+  procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte; aPic : Char ); virtual; abstract;
+  procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); virtual; abstract;
+  procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word; aFlags : TExplosionFlags = [] ); virtual;
+
+  class procedure RegisterLuaAPI( State : TLuaState );
+
+  procedure PushLayer( aLayer : TInterfaceLayer ); virtual;
+  function IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
+  function IsModal : Boolean;
+  procedure Tick( aDTick : Integer );
+  procedure Clear;
+  function OnEvent( const event : TIOEvent ) : Boolean; override;
+
+  function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
+  function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
+  procedure RenderUIBackground( aUL, aBR : TIOPoint ); virtual;
+  procedure FullLook( aID : Ansistring );
 protected
-  function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
+  procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
+  procedure DrawHud; virtual;
+  procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
+  procedure ColorQuery(nkey,nvalue : Variant);
   function ScreenShotCallback( aEvent : TIOEvent ) : Boolean;
   function BBScreenShotCallback( aEvent : TIOEvent ) : Boolean;
-public // REMOVE
-  FMsgFont    : TBitmapFont;
-private
+  function Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
+protected
+  FAudio       : TDoomAudio;
+  FMessages    : TRLMessages;
   FTime        : QWord;
   FLoading     : TUILoadingScreen;
-  FMCursor     : TDoomMouseCursor;
-  FQuadSheet   : TGLQuadList;
-  FTextSheet   : TGLQuadList;
-  FPostSheet   : TGLQuadList;
-  FQuadRenderer: TGLQuadRenderer;
-  FProjection  : TMatrix44;
-  FSettings   : array [Boolean] of
-  record
-    Width  : Integer;
-    Height : Integer;
-    FMult  : Integer;
-    TMult  : Integer;
-    MiniM  : Integer;
-  end;
   FMTarget     : TCoord2D;
-  FVPadding    : DWord;
-  FFontMult    : Byte;
-  FTileMult    : Byte;
-  FMiniScale   : Byte;
-  FLinespace   : Word;
   FKeyCode     : TIOKeyCode;
-  FLastTick    : TDateTime;
-  FSoundKeys   : TAnsiStringArray;
-  FSoundValues : TAnsiStringArray;
-  FMusicKeys   : TAnsiStringArray;
-  FMusicValues : TAnsiStringArray;
-  FSoundEvents : TSoundEventHeap;
+  FOldASCII       : TASCIIImageMap;
+  FNewASCII       : TASCIIImageMap;
+  FLayers      : TInterfaceLayerStack;
+  FUIMouseLast : TIOPoint;
+  FUIMouse     : TIOPoint;
+
+  FHudEnabled  : Boolean;
+  FWaiting     : Boolean;
+  FStoredHint  : AnsiString;
+  FHint        : AnsiString;
 public
-  property KeyCode   : TIOKeyCode read FKeyCode write FKeyCode;
-  property QuadSheet : TGLQuadList read FQuadSheet;
-  property TextSheet : TGLQuadList read FTextSheet;
-  property PostSheet : TGLQuadList read FPostSheet;
-  property MiniScale : Byte read FMiniScale;
-  property FontMult  : Byte read FFontMult;
-  property TileMult  : Byte read FTileMult;
-  property MCursor   : TDoomMouseCursor read FMCursor;
-  property MTarget   : TCoord2D read FMTarget write FMTarget;
+  property KeyCode    : TIOKeyCode     read FKeyCode    write FKeyCode;
+  property Audio      : TDoomAudio     read FAudio;
+  property MTarget    : TCoord2D       read FMTarget    write FMTarget;
+  property OldASCII      : TASCIIImageMap read FOldASCII;
+  property NewASCII      : TASCIIImageMap read FNewASCII;
 end;
 
 var IO : TDoomIO;
@@ -106,176 +153,168 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 
 implementation
 
-uses video, vlog, vdebug,
-     variants, vdf, dateutils,
-     vutil,
-     vsound, vimage, vglimage,
-     vfmodsound,
-     vsdlsound,
-     vuiconsole, vcolor,
-     {$IFDEF WINDOWS}
-     vtextio, vtextconsole,
-     {$ELSE}
-     vcursesio, vcursesconsole,
-     {$ENDIF}
-     vsdlio, vglconsole,
-     vgl3library,
-     doomtextures,  doombase,
-     dfdata, dfoutput, dfplayer;
+uses math, video, dateutils, variants,
+     vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
+     vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
+     doombase, doommoreview, doomlua, dflevel, dfplayer, dfitem;
 
-
-function DoomIOSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
+procedure TInterfaceLayer.Tick( aDTick : Integer );
 begin
-       if Item1.Time < Item2.Time then Exit(1)
-  else if Item1.Time > Item2.Time then Exit(-1)
-  else Exit(0);
 end;
+
+function TInterfaceLayer.IsModal : Boolean;
+begin
+  Exit( False );
+end;
+
+function TInterfaceLayer.HandleEvent( const aEvent : TIOEvent ) : Boolean;
+begin
+  Exit( IsModal );
+end;
+
+{
+procedure OutPutRestore;
+var vx,vy : byte;
+begin
+  if GraphicsVersion then Exit;
+  for vx := 1 to 80 do for vy := 1 to 25 do VideoBuf^[(vx-1)+(vy-1)*ScreenSizeX] := GFXCapture[vy,vx];
+end;
+}
+
+//type TGFXScreen = array[1..25,1..80] of Word;
+//var  GFXCapture : TGFXScreen;
+
+
+procedure TDoomIO.BloodSlideDown( aDelayTime : Word );
+{
+const BloodPic : TPictureRec = (Picture : ' '; Color : 16*Red);
+var Temp  : TGFXScreen;
+    Blood : TGFXScreen;
+    vx,vy : byte;
+}
+begin
+  if Option_NoBloodSlide or GraphicsVersion then
+  begin
+    exit;
+  end;
+{
+  for vx := 1 to 80 do for vy := 1 to 25 do Temp [vy,vx] := VideoBuf^[(vx-1)+(vy-1)*ScreenSizeX];
+  OutputRestore;
+  FillWord(Blood,25*80,Word(BloodPic));
+  SlideDown(DelayTime,Blood);
+  SlideDown(DelayTime,Temp);
+}
+end;
+
+procedure TDoomIO.WaitForAnimation;
+begin
+  if FWaiting then Exit;
+  if Doom.State <> DSPlaying then Exit;
+  FWaiting := True;
+  while AnimationsRunning do
+  begin
+    IO.Delay(5);
+  end;
+  FWaiting := False;
+  Doom.Level.RevealBeings;
+end;
+
+procedure TDoomIO.addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite );
+begin
+
+end;
+
+procedure TDoomIO.addScreenMoveAnimation( aDuration : DWord; aDelay : DWord; aTo : TCoord2D );
+begin
+
+end;
+
+procedure TDoomIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+begin
+
+end;
+
+procedure TDoomIO.Explosion( aSequence : Integer; aWhere: TCoord2D; aRange, aDelay: Integer;
+  aColor: byte; aExplSound: Word; aFlags: TExplosionFlags);
+var iCoord    : TCoord2D;
+    iDistance : Byte;
+    iVisible  : boolean;
+    iLevel    : TLevel;
+begin
+  iLevel := Doom.Level;
+  if not iLevel.isProperCoord( aWhere ) then Exit;
+
+  if aExplSound <> 0 then
+    addSoundAnimation( aSequence, aWhere, aExplSound );
+
+  for iCoord in NewArea( aWhere, aRange ).Clamped( iLevel.Area ) do
+    begin
+      if aRange < 10 then if iLevel.isVisible(iCoord) then iVisible := True else Continue;
+      if aRange < 10 then if not iLevel.isEyeContact( iCoord, aWhere ) then Continue;
+      iDistance := Distance(iCoord, aWhere);
+      if iDistance > aRange then Continue;
+      ExplosionMark( iCoord, aColor, 3*aDelay, aSequence+iDistance*aDelay );
+    end;
+  if aRange >= 10 then iVisible := True;
+
+  // TODO : events
+  if efAfterBlink in aFlags then
+  begin
+    Blink(LightGreen,50,aSequence+aDelay*aRange);
+    Blink(White,50,aSequence+aDelay*aRange+60);
+  end;
+
+  if not iVisible then if aRange > 3 then
+    IO.Msg( 'You hear an explosion!' );
+end;
+
+{
+procedure TDoomUI.SlideDown(DelayTime : word; var NewScreen : TGFXScreen);
+var Pos  : array[1..80] of Byte;
+    cn,t, vx,vy : byte;
+  procedure MoveColumn(x : byte);
+  var y : byte;
+  begin
+    if pos[x]+1 > 25 then Exit;
+    for y := 24 downto pos[x]+1 do
+      VideoBuf^[(x-1)+y*LongInt(ScreenSizeX)] := VideoBuf^[(x-1)+(y-1)*LongInt(ScreenSizeX)];
+    VideoBuf^[(x-1)+pos[x]*LongInt(ScreenSizeX)] := NewScreen[pos[x]+1,x];
+    Inc(pos[x]);
+  end;
+
+begin
+  if GraphicsVersion then Exit;
+  for cn := 1 to 80  do Pos[cn] := 0;
+  for cn := 1 to 160 do MoveColumn(Random(80)+1);
+  t := 1;
+  repeat
+    Inc(t);
+    IO.Delay(DelayTime);
+    for cn := 1 to 80 do MoveColumn(cn);
+  until t = 25;
+  for vx := 1 to 80 do for vy := 1 to 25 do VideoBuf^[(vx-1)+(vy-1)*ScreenSizeX] := NewScreen[vy,vx];
+
+end;
+}
 
 { TDoomIO }
 
 constructor TDoomIO.Create;
 var iStyle      : TUIStyle;
-    iCoreData   : TVDataFile;
-    iImage      : TImage;
-    iFontTexture: TTextureID;
-    iFont       : TBitmapFont;
-    iStream     : TStream;
-    iFullscreen : Boolean;
-    iCurrentWH  : TIOPoint;
-    iDoQuery    : Boolean;
-    iSDLFlags   : TSDLIOFlags;
-    iMode       : TIODisplayMode;
-  procedure ParseSettings( aFull : Boolean; const aPrefix : AnsiString; aDef : TIOPoint );
-  begin
-    with FSettings[ aFull ] do
-    begin
-      Width  := Config.Configure( aPrefix+'Width', aDef.X );
-      Height := Config.Configure( aPrefix+'Height', aDef.Y );
-      FMult  := Config.Configure( aPrefix+'FontMult', -1 );
-      TMult  := Config.Configure( aPrefix+'TileMult', -1 );
-      MiniM  := Config.Configure( aPrefix+'MiniMapSize', -1 );
-      if Width  = -1 then Width  := iCurrentWH.X;
-      if Height = -1 then Height := iCurrentWH.Y;
-      if FMult  = -1 then
-        if (Width >= 1600) and (Height >= 900)
-          then FMult := 2
-          else FMult := 1;
-      if TMult  = -1 then
-        if (Width >= 1050) and (Height >= 1050)
-          then TMult := 2
-          else TMult := 1;
-      if MiniM = -1 then
-      begin
-        MiniM := Width div 220;
-        MiniM := Max( 3, MiniM );
-        MiniM := Min( 9, MiniM );
-      end;
-    end;
-  end;
-
 begin
-  FTime := 0;
-  FSoundEvents := TSoundEventHeap.Create( @DoomIOSoundEventCompare );
   FLoading := nil;
   IO := Self;
-  FVPadding := 0;
-  FFontMult := 1;
-  FTileMult := 1;
-  FMCursor := nil;
-  FQuadSheet := nil;
-  FTextSheet := nil;
-  FPostSheet := nil;
-  Textures   := nil;
-  FQuadRenderer := nil;
+  FTime := 0;
+  FAudio    := TDoomAudio.Create;
+  FMessages := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
+  FOldASCII    := TASCIIImageMap.Create( True );
+  FNewASCII    := TASCIIImageMap.Create( True );
+  FLayers   := TInterfaceLayerStack.Create;
 
-  if GraphicsVersion then
-  begin
-    {$IFDEF WINDOWS}
-    if not GodMode then
-    begin
-      FreeConsole;
-      vdebug.DebugWriteln := nil;
-    end
-    else
-    begin
-      Logger.AddSink( TConsoleLogSink.Create( LOGDEBUG, True ) );
-    end;
-    {$ENDIF}
-    iFullScreen := Config.Configure( 'StartFullscreen', False ) or ForceFullscreen;
-    {$IFDEF WINDOWS}
-    iDoQuery := Config.Configure( 'FullscreenQuery', True );
-    if iDoQuery then
-      iFullScreen := MessageBox( 0, 'Do you want to run in fullscreen mode?'#10'You can toggle fullscreen any time by pressing Alt-Enter.'#10#10'You can also set the defaults in config.lua, to avoid this dialog.','DoomRL - Run fullscreen?', MB_YESNO or MB_ICONQUESTION ) = IDYES;
-    {$ENDIF}
-
-    if not TSDLIODriver.GetCurrentResolution( iCurrentWH ) then
-      iCurrentWH.Init(800,600);
-
-    ParseSettings( False, 'Windowed', vutil.Point(800,600) );
-    ParseSettings( True, 'Fullscreen', vutil.Point(-1,-1) );
-
-    with FSettings[ iFullscreen ] do
-    begin
-      iSDLFlags := [ SDLIO_OpenGL ];
-      if iFullscreen then Include( iSDLFlags, SDLIO_Fullscreen );
-      FIODriver := TSDLIODriver.Create( Width, Height, 32, iSDLFlags );
-      FFontMult := FMult;
-      FTileMult := TMult;
-      FMiniScale:= MiniM;
-    end;
-
-    begin
-      Log('Display modes (%d)', [FIODriver.DisplayModes.Size] );
-      Log('-------');
-      for iMode in FIODriver.DisplayModes do
-        Log('%d x %d @%d', [ iMode.Width, iMode.Height, iMode.Refresh ] );
-      Log('-------');
-    end;
-
-    Textures   := TDoomTextures.Create;
-
-    if GodMode then
-      iImage := LoadImage('font10x18.png')
-    else
-    begin
-      iCoreData := TVDataFile.Create(DataPath+'doomrl.wad');
-      iCoreData.DKKey := LoveLace;
-      iStream := iCoreData.GetFile( 'font10x18.png', 'fonts' );
-      iImage := LoadImage( iStream, iStream.Size );
-      FreeAndNil( iStream );
-      FreeAndNil( iCoreData );
-    end;
-    iFontTexture := Textures.AddImage( 'font10x18', iImage, Option_Blending );
-    Textures[ iFontTexture ].Image.SubstituteColor( ColorBlack, ColorZero );
-    Textures[ iFontTexture ].Upload;
-
-    iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
-    CalculateConsoleParams;
-    FConsole := TGLConsoleRenderer.Create( iFont, 80, 25, FLineSpace, [VIO_CON_CURSOR] );
-    TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
-    SpriteMap  := TDoomSpriteMap.Create;
-    FQuadSheet := TGLQuadList.Create;
-    FTextSheet := TGLQuadList.Create;
-    FPostSheet := TGLQuadList.Create;
-    FQuadRenderer := TGLQuadRenderer.Create;
-    FMCursor      := TDoomMouseCursor.Create;
-    TSDLIODriver( FIODriver ).ShowMouse( False );
-  end
-  else
-  begin
-    {$IFDEF WINDOWS}
-    FIODriver := TTextIODriver.Create( 80, 25 );
-    {$ELSE}
-    FIODriver := TCursesIODriver.Create( 80, 25 );
-    {$ENDIF}
-    if (FIODriver.GetSizeX < 80) or (FIODriver.GetSizeY < 25) then
-      raise EIOException.Create('Too small console available, resize your console to 80x25!');
-    {$IFDEF WINDOWS}
-    FConsole  := TTextConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
-    {$ELSE}
-    FConsole  := TCursesConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
-    {$ENDIF}
-  end;
+  FWaiting    := False;
+  FHudEnabled := False;
+  FStoredHint := '';
+  FHint       := '';
 
   FIODriver.SetTitle('Doom, the Roguelike','DoomRL');
 
@@ -307,127 +346,176 @@ begin
   iStyle.Add('text','fore_color', LightGray );
   iStyle.Add('text','back_color', ColorNone );
 
+  VTIG_Initialize( FConsole, FIODriver, False );
+
+  VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := #196+#196+'  '+#196+#196+#196+#196;
+//  VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := '--  ----';
+  VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ]  := YELLOW;
+  VTIGDefaultStyle.Color[ VTIG_FRAME_COLOR ]  := RED;
+  VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ] := LIGHTRED;
+  VTIGDefaultStyle.Color[ VTIG_SELECTED_TEXT_COLOR ] := YELLOW;
+  VTIGDefaultStyle.Color[ VTIG_SCROLL_COLOR ] := YELLOW;
   inherited Create( FIODriver, FConsole, iStyle );
   LoadStart;
+  FUIMouseLast := Point(-1,-1);
+  FUIMouse     := Point(-1,-1);
 
-  UI := TDoomUI.Create;
   IO := Self;
   FConsole.Clear;
   FConsole.HideCursor;
-  FLastTick := Now;
   FConsoleWindow := nil;
+  FUIRoot.UpdateOnRender := False;
   FullUpdate;
 end;
 
-procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
-var iCount   : DWord;
-    iProgress: DWord;
+procedure TDoomIO.PushLayer( aLayer : TInterfaceLayer );
 begin
-  FSoundEvents.Clear;
+  FLayers.Push( aLayer );
+end;
 
+function TDoomIO.IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
+begin
+  Exit( ( FLayers.Size > 0 ) and ( FLayers.Top = aLayer ) );
+end;
+
+function TDoomIO.IsModal : Boolean;
+var iLayer : TInterfaceLayer;
+begin
+  for iLayer in FLayers do
+    if iLayer.IsModal then Exit( True );
+  Exit( False );
+end;
+
+procedure TDoomIO.Tick( aDTick : Integer );
+var iLayer : TInterfaceLayer;
+begin
+  for iLayer in FLayers do
+    iLayer.Tick( aDTick );
+end;
+
+procedure TDoomIO.Clear;
+var iLayer : TInterfaceLayer;
+begin
+  for iLayer in FLayers do
+    iLayer.Free;
+  FLayers.Clear;
+end;
+
+function TDoomIO.OnEvent( const event : TIOEvent ) : Boolean;
+var i      : Integer;
+    iEvent : TIOEvent;
+begin
+  if ( event.EType = VEVENT_KEYDOWN ) then
+    case event.Key.Code of
+      VKEY_UP     : VTIG_GetIOState.EventState.SetState( VTIG_IE_UP, True );
+      VKEY_DOWN   : VTIG_GetIOState.EventState.SetState( VTIG_IE_DOWN, True );
+      VKEY_LEFT   : VTIG_GetIOState.EventState.SetState( VTIG_IE_LEFT, True );
+      VKEY_RIGHT  : VTIG_GetIOState.EventState.SetState( VTIG_IE_RIGHT, True );
+      VKEY_HOME   : VTIG_GetIOState.EventState.SetState( VTIG_IE_HOME, True );
+      VKEY_END    : VTIG_GetIOState.EventState.SetState( VTIG_IE_END, True );
+      VKEY_PGUP   : VTIG_GetIOState.EventState.SetState( VTIG_IE_PGUP, True );
+      VKEY_PGDOWN : VTIG_GetIOState.EventState.SetState( VTIG_IE_PGDOWN, True );
+      VKEY_ESCAPE : VTIG_GetIOState.EventState.SetState( VTIG_IE_CANCEL, True );
+      VKEY_ENTER  : VTIG_GetIOState.EventState.SetState( VTIG_IE_CONFIRM, True );
+      VKEY_SPACE  : VTIG_GetIOState.EventState.SetState( VTIG_IE_SELECT, True );
+      VKEY_BACK   : VTIG_GetIOState.EventState.SetState( VTIG_IE_BACKSPACE, True );
+      VKEY_TAB    : VTIG_GetIOState.EventState.SetState( VTIG_IE_TAB, True );
+      VKEY_0      : VTIG_GetIOState.EventState.SetState( VTIG_IE_0, True );
+      VKEY_1      : VTIG_GetIOState.EventState.SetState( VTIG_IE_1, True );
+      VKEY_2      : VTIG_GetIOState.EventState.SetState( VTIG_IE_2, True );
+      VKEY_3      : VTIG_GetIOState.EventState.SetState( VTIG_IE_3, True );
+      VKEY_4      : VTIG_GetIOState.EventState.SetState( VTIG_IE_4, True );
+      VKEY_5      : VTIG_GetIOState.EventState.SetState( VTIG_IE_5, True );
+      VKEY_6      : VTIG_GetIOState.EventState.SetState( VTIG_IE_6, True );
+      VKEY_7      : VTIG_GetIOState.EventState.SetState( VTIG_IE_7, True );
+      VKEY_8      : VTIG_GetIOState.EventState.SetState( VTIG_IE_8, True );
+      VKEY_9      : VTIG_GetIOState.EventState.SetState( VTIG_IE_9, True );
+    end;
+
+  if ( event.EType in [ VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
+  begin
+    iEvent := event;
+    iEvent.Mouse.Pos := DeviceCoordToConsoleCoord( event.Mouse.Pos );
+    VTIG_GetIOState.MouseState.HandleEvent( iEvent );
+    if event.EType = VEVENT_MOUSEDOWN then
+      VTIG_GetIOState.EventState.SetState( VTIG_IE_MCONFIRM, True );
+  end;
+
+  if ( event.EType in [ VEVENT_MOUSEMOVE ] ) then
+    FUIMouse := DeviceCoordToConsoleCoord( event.MouseMove.Pos );
+
+  if not FLayers.IsEmpty then
+    for i := FLayers.Size - 1 downto 0 do
+      if FLayers[i].HandleEvent( event ) then
+        Exit( True );
+  Exit( False );
+end;
+
+function TDoomIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
+begin
+  Exit( aCoord );
+end;
+
+function TDoomIO.ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
+begin
+  Exit( aCoord );
+end;
+
+procedure TDoomIO.RenderUIBackground( aUL, aBR : TIOPoint );
+begin
+  // noop
+end;
+
+procedure TDoomIO.FullLook( aID : Ansistring );
+begin
+  PushLayer( TMoreView.Create( aID ) );
+  //IO.RunUILoop( TUIMoreViewer.Create( IO.Root, ID ) );
+end;
+
+procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
+begin
   aConfig.ResetCommands;
   aConfig.LoadKeybindings('Keybindings');
-  FSoundEvents.Clear;
   // TODO : configurable
   if GodMode then
     RegisterDebugConsole( VKEY_F1 );
   FIODriver.RegisterInterrupt( VKEY_F9, @ScreenShotCallback );
   FIODriver.RegisterInterrupt( VKEY_F10, @BBScreenShotCallback );
-  if GraphicsVersion then
-  begin
-    FIODriver.RegisterInterrupt( IOKeyCode( VKEY_ENTER, [ VKMOD_ALT ] ), @FullScreenCallback );
-    FIODriver.RegisterInterrupt( IOKeyCode( VKEY_F12, [ VKMOD_CTRL ] ), @FullScreenCallback );
-  end;
-
   if Option_MessageBuffer < 20 then Option_MessageBuffer := 20;
-
-  if SoundVersion and (Option_SoundEngine <> 'NONE') then
-  begin
-    Option_SoundVol := aConfig.Configure('SoundVolume',Option_SoundVol);
-    Option_MusicVol := aConfig.Configure('MusicVolume',Option_MusicVol);
-
-    if Option_Music or Option_Sound then
-    begin
-      if Option_SoundVol > 25 then Option_SoundVol := 25;
-      if Option_MusicVol > 25 then Option_MusicVol := 25;
-      if not aReload then
-      begin
-        if Option_SoundEngine = 'FMOD'
-          then Sound := Systems.Add(TFMODSound.Create) as TSound
-          else Sound := Systems.Add(TSDLSound.Create(Option_SDLMixerFreq, Option_SDLMixerFormat, Option_SDLMixerChunkSize ) ) as TSound;
-      end
-      else
-        Sound.Reset;
-      Sound.SetSoundVolume(5*Option_SoundVol);
-      Sound.SetMusicVolume(5*Option_MusicVol);
-
-      if aReload then
-      begin
-        FSoundKeys   := TAnsiStringArray.Create;
-        FSoundValues := TAnsiStringArray.Create;
-        FMusicKeys   := TAnsiStringArray.Create;
-        FMusicValues := TAnsiStringArray.Create;
-        if Option_Music then
-          aConfig.EntryFeed('Music', @MusicQuery );
-        if Option_Sound then
-          aConfig.RecEntryFeed('Sound', @SoundQuery );
-
-        LoadStart;
-        FLoading.Max := (FSoundKeys.Size+FMusicKeys.Size) div 2 +FLoading.Max;
-        iProgress    := 0;
-
-        if FSoundKeys.Size > 0 then
-          for iCount := 0 to FSoundKeys.Size - 1 do
-          begin
-            Sound.RegisterSample(DataPath+FSoundValues[iCount],FSoundKeys[iCount]);
-            Inc( iProgress );
-            if iProgress mod 20 = 0 then
-              LoadProgress( iProgress div 2 );
-          end;
-
-        if FMusicKeys.Size > 0 then
-          for iCount := 0 to FMusicKeys.Size - 1 do
-          begin
-            Sound.RegisterMusic(DataPath+FMusicValues[iCount],FMusicKeys[iCount]);
-            Inc( iProgress );
-            if iProgress mod 20 = 0 then
-              LoadProgress( iProgress div 2 );
-          end;
-        LoadProgress( iProgress div 2 );
-        FreeAndNil( FSoundKeys );
-        FreeAndNil( FSoundValues );
-        FreeAndNil( FMusicKeys );
-        FreeAndNil( FMusicValues );
-      end;
-    end;
-  end;
-
+  FAudio.Configure( aConfig, aReload );
   if aReload then
     aConfig.EntryFeed('Colors', @ColorQuery );
-
+  if Option_MessageColoring then
+    aConfig.EntryFeed( 'Messages', @FMessages.AddHighlightCallback );
 end;
 
 function TDoomIO.RunUILoop( aElement : TUIElement = nil ) : DWord;
 begin
-  if (UI <> nil) and (UI.GameUI <> nil) then UI.GameUI.Enabled := False;
-  if IO.MCursor <> nil then IO.MCursor.Active := True;
+  FHudEnabled := False;
   FConsole.HideCursor;
   Result := inherited RunUILoop( aElement );
-  if (UI <> nil) and (UI.GameUI <> nil) then UI.GameUI.Enabled := True;
+  FHudEnabled := True;
+end;
+
+procedure TDoomIO.FullUpdate;
+begin
+  VTIG_NewFrame;
+  if FHudEnabled then
+    DrawHud;
+  inherited FullUpdate;
 end;
 
 destructor TDoomIO.Destroy;
+var iLayer : TInterfaceLayer;
 begin
-  FreeAndNil( FSoundEvents );
-  FreeAndNil( FMCursor );
+  FreeAndNil( FAudio );
+  FreeAndNil( FMessages );
+  FreeAndNil( FOldASCII );
+  FreeAndNil( FNewASCII );
 
-  FreeAndNil( SpriteMap );
-  FreeAndNil( Textures );
-  FreeAndNil( FQuadSheet );
-  FreeAndNil( FTextSheet );
-  FreeAndNil( FPostSheet );
-  FreeAndNil( FQuadRenderer );
-
+  for iLayer in FLayers do
+    iLayer.Free;
+  FreeAndNil( FLayers );
   IO := nil;
   inherited Destroy;
 end;
@@ -468,54 +556,139 @@ begin
              else UI.Msg('Screenshot created.');}
 end;
 
-procedure TDoomIO.SoundQuery(nkey,nvalue : Variant);
-var Key, Value : AnsiString;
+procedure TDoomIO.DrawHud;
+var iCon        : TUIConsole;
+    i, iMax     : DWord;
+    iColor      : TUIColor;
+    iHPP        : Integer;
+    iPos        : TIOPoint;
+    iBottom     : Integer;
+
+  function ArmorColor( aValue : Integer ) : TUIColor;
+  begin
+    case aValue of
+     -100.. 25  : Exit(LightRed);
+      26 .. 49  : Exit(Yellow);
+      50 ..1000 : Exit(LightGray);
+      else Exit(LightGray);
+    end;
+  end;
+  function NameColor( aValue : Integer ) : TUIColor;
+  begin
+    case aValue of
+     -100.. 25  : Exit(LightRed);
+      26 .. 49  : Exit(Yellow);
+      50 ..1000 : Exit(LightBlue);
+      else Exit(LightGray);
+    end;
+  end;
+  function WeaponColor( aWeapon : TItem ) : TUIColor;
+  begin
+    if aWeapon.IType = ITEMTYPE_MELEE then Exit(lightgray);
+    if ( aWeapon.Ammo = 0 ) and not ( aWeapon.Flags[ IF_NOAMMO ] ) then Exit(LightRed);
+    Exit(LightGray);
+  end;
+  function ExpString : AnsiString;
+  begin
+    if Player.ExpLevel >= MaxPlayerLevel - 1 then Exit('MAX');
+    Exit(IntToStr(Clamp(Floor(((Player.Exp-ExpTable[Player.ExpLevel]) / (ExpTable[Player.ExpLevel+1]-ExpTable[Player.ExpLevel]))*100),0,99))+'%');
+  end;
+
 begin
-  Key   := LowerCase(nKey);
-  Value := nValue;
-  FSoundKeys.Push( Key );
-  FSoundValues.Push( Value );
+  iCon.Init( FConsole );
+  if GraphicsVersion then
+    iCon.Clear;
+
+  if Player <> nil then
+  begin
+    iPos    := Point( 2,23 );
+    iBottom := 25;
+    iHPP    := Round((Player.HP/Player.HPMax)*100);
+
+    VTIG_FreeLabel( 'Armor :',                            iPos + Point(28,0), DarkGray );
+    VTIG_FreeLabel( Player.Name,                          iPos + Point(1,0),  NameColor(iHPP) );
+    VTIG_FreeLabel( 'Health:      Exp:   /      Weapon:', iPos + Point(1,1),  DarkGray );
+    VTIG_FreeLabel( IntToStr(iHPP)+'%',                   iPos + Point(9,1),  Red );
+    VTIG_FreeLabel( TwoInt(Player.ExpLevel),              iPos + Point(19,1), LightGray );
+    VTIG_FreeLabel( ExpString,                            iPos + Point(22,1), LightGray );
+
+    if Player.Inv.Slot[efWeapon] = nil
+      then VTIG_FreeLabel( 'none',                                iPos + Point(36,1), LightGray )
+      else VTIG_FreeLabel( Player.Inv.Slot[efWeapon].Description, iPos + Point(36,1), WeaponColor(Player.Inv.Slot[efWeapon]) );
+
+    if Player.Inv.Slot[efTorso] = nil
+      then VTIG_FreeLabel( 'none',                                iPos + Point(36,0), LightGray )
+      else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(36,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
+
+    iColor := Red;
+    if Doom.Level.Empty then iColor := Blue;
+    VTIG_FreeLabel( Doom.Level.Name, iPos + Point(61,2), iColor );
+    if Doom.Level.Name_Number >= 100 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(73,2), iColor )
+    else if Doom.Level.Name_Number <> 0 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(74,2), iColor );
+
+    with Player do
+    for i := 1 to MAXAFFECT do
+      if FAffects.IsActive(i) then
+      begin
+        if FAffects.IsExpiring(i)
+          then iColor := Affects[i].Color_exp
+          else iColor := Affects[i].Color;
+        VTIG_FreeLabel( Affects[i].name, Point( iPos.X+((Byte(i)-1)*4)+14, iBottom ), iColor )
+      end;
+
+    with Player do
+      if (FTactic.Current = TacticRunning) and (FTactic.Count < 6) then
+        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), Brown )
+      else
+        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
+  end;
+
+
+  if FHint <> '' then
+    VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 3 ), Yellow );
+
+  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
+  if FMessages.Content.Size > 0 then
+  for i := 1+FMessages.Scroll to iMax do
+  begin
+    iColor := DarkGray;
+    if i > iMax - FMessages.Active then iColor := LightGray;
+    iCon.Print( Point(1,i-FMessages.Scroll), FMessages.Content[ i-1 ], iColor, Black, Rectangle( 1,1, 78, 25 ) );
+  end;
+
+  {
+  VTIG_Begin( 'messages', Point(78,2), Point( 1,1 ) );
+  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
+  if FMessages.Content.Size > 0 then
+  for i := 1+FMessages.Scroll to iMax do
+  begin
+    iColor := FForeColor;
+    if i > iMax - FMessages.Active then iColor := iCon.BoldColor( FForeColor );
+    for iChunk in FMessages.Content[ i-1 ] do
+      VTIG_Text( iChunk.Content + ' ' );
+//      VTIG_FreeLabel( iChunk.Content, iChunk.Position + Point(1,i-FMessages.Scroll) , iColor );
+  end;
+  VTIG_End;
+  }
+
 end;
 
-procedure TDoomIO.MusicQuery(nkey,nvalue : Variant);
-var Key, Value : AnsiString;
+procedure TDoomIO.SetHint ( const aText : AnsiString ) ;
 begin
-  Key   := LowerCase(nKey);
-  Value := nValue;
-  FMusicKeys.Push( Key );
-  FMusicValues.Push( Value );
+  FStoredHint := aText;
+  FHint       := aText;
+end;
+
+procedure TDoomIO.SetTempHint ( const aText : AnsiString ) ;
+begin
+  if aText = ''
+    then FHint := FStoredHint
+    else FHint := aText;
 end;
 
 procedure TDoomIO.ColorQuery(nkey,nvalue : Variant);
 begin
     ColorOverrides[nkey] := nvalue;
-end;
-
-function TDoomIO.FullScreenCallback ( aEvent : TIOEvent ) : Boolean;
-var iFullscreen : Boolean;
-    iSDLFlags   : TSDLIOFlags;
-begin
-  iFullscreen := TSDLIODriver(FIODriver).FullScreen;
-  iFullscreen := not iFullscreen;
-  with FSettings[ iFullscreen ] do
-  begin
-    iSDLFlags := [ SDLIO_OpenGL ];
-    if not TSDLIODriver(FIODriver).FullScreen then Include( iSDLFlags, SDLIO_Fullscreen );
-    TSDLIODriver(FIODriver).ResetVideoMode( Width, Height, 32, iSDLFlags );
-    FTileMult := TMult;
-    FFontMult := FMult;
-    FMiniScale:= MiniM;
-  end;
-  ReuploadTextures;
-  CalculateConsoleParams;
-  TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
-  TGLConsoleRenderer( FConsole ).HideCursor;
-  if (UI <> nil) and (UI.GameUI <> nil) then UI.GameUI.SetMinimapScale(FMiniScale);
-  FUIRoot.DeviceChanged;
-  SpriteMap.Recalculate;
-  if Player <> nil then
-    SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
-  Exit( True );
 end;
 
 function TDoomIO.ScreenShotCallback ( aEvent : TIOEvent ) : Boolean;
@@ -530,75 +703,100 @@ begin
   Exit(True);
 end;
 
-procedure TDoomIO.PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
-var iVolume     : Byte;
-    iPan        : Byte;
-    iDist       : Word;
-    iPos        : TCoord2D;
-    iSoundEvent : TSoundEvent;
+function TDoomIO.Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
+var iCon       : TUIConsole;
+    iChunkList : TUIChunkList;
+    iPosition  : TUIPoint;
+    iColor     : TUIColor;
 begin
-  if aSoundID = 0 then Exit;
-  if (not SoundVersion) or (not Option_Sound) or SoundOff then Exit;
-  if aDelay > 0 then
+  iCon.Init( IO.Console );
+  iPosition  := Point(aStart,0);
+  iColor     := aColor;
+  iChunkList := nil;
+  iCon.ChunkifyEx( iChunkList, iPosition, iColor, aString, iColor, Point(78,2) );
+  Exit( iCon.LinifyChunkList( iChunkList ) );
+end;
+
+function ConvertOldStyleToNewStyle( aInput : AnsiString ) : Ansistring;
+var
+  i                  : Integer;
+  iColor, iNextColor : Char;
+begin
+  Result     := '';
+  iColor     := #0;
+  iNextColor := #0;
+
+  i := 1;
+  while i <= Length( aInput ) do
   begin
-    iSoundEvent.Coord   := aCoord;
-    iSoundEvent.SoundID := aSoundID;
-    iSoundEvent.Time    := FTime + aDelay;
-    FSoundEvents.Insert( iSoundEvent );
-    Exit;
+    if aInput[i] = '@' then
+    begin
+      if i < Length(aInput) then
+      begin
+        iNextColor := aInput[i + 1];
+        i += 2; // Move past the color marker
+        if iColor <> #0 then
+          Result += '}'; // Close previous color
+        Result += '{' + iNextColor;
+        iColor := iNextColor;
+      end
+      else
+        Inc(i); // Skip the '@' if it's the last character
+    end
+    else
+    begin
+      Result += aInput[i];
+      Inc(i);
+    end;
   end;
 
-  iPos := Player.Position;
-
-  iDist := Distance(aCoord,iPos);
-  if iDist <= 1 then iVolume := 127 else
-                    iVolume := Clamp((25 - iDist) * 6,0,127);
-  if iVolume <> 0 then
-    if iVolume < 30 then iVolume := 30;
-
-  iPan := Clamp((aCoord.x-iPos.x) * 15,-128,127)+128;
-  Sound.PlaySample(aSoundID,iVolume,iPan);
+  if iColor <> #0 then
+    Result += '}';
 end;
 
 
-function TDoomIO.ResolveSoundID(const ResolveIDs: array of AnsiString): Word;
-var c : DWord;
+procedure TDoomIO.ASCIILoader ( aStream : TStream; aName : Ansistring; aSize : DWord ) ;
+var iOldImage   : TUIStringArray;
+    iNewImage   : TUIStringArray;
+    iString     : Ansistring;
+    iCounter    : DWord;
+    iAmount     : DWord;
+    iIdent      : Ansistring;
 begin
-  if (not SoundVersion) or (not Option_Sound) or SoundOff then Exit(0);
-  for c := Low(ResolveIDs) to High(ResolveIDs) do
-    if ResolveIDs[c] <> '' then
-    begin
-      Result := Sound.GetSampleID(ResolveIDs[c]);
-      if Result <> 0 then Exit( Result );
-    end;
-  Exit(0);
+  iIdent  := LowerCase(LeftStr(aName,Length(aName)-4));
+  Log('Registering ascii file '+aName+' as '+iIdent+'...');
+  iAmount := aStream.ReadDWord;
+  iOldImage  := TUIStringArray.Create;
+  iNewImage  := TUIStringArray.Create;
+  for iCounter := 1 to Min(iAmount,25) do
+  begin
+    iString := aStream.ReadAnsiString;
+    iOldImage.Push( iString );
+    iNewImage.Push( ConvertOldStyleToNewStyle( iString ) );
+  end;
+  FOldASCII.Items[iIdent] := iOldImage;
+  FNewASCII.Items[iIdent] := iNewImage;
 end;
 
-function TDoomIO.EventWaitForMore ( aSender : TUIElement ) : Boolean;
+function TDoomIO.EventWaitForMore : Boolean;
 begin
   if Option_MorePrompt then
   begin
-    UI.SetHint('[more]');
+    SetHint('[more]');
     WaitForCommand([INPUT_OK,INPUT_MLEFT]);
-    UI.SetHint('');
+    SetHint('');
   end;
-  UI.MsgUpdate;
+  MsgUpdate;
   Exit( True );
 end;
 
-procedure TDoomIO.WADLoaded;
-begin
-  if GraphicsVersion then
-  begin
-    if IO.MCursor <> nil then MCursor.SetTextureID( Textures.TextureID['cursor'], 32 );
-    FMsgFont := Lua.LoadFont( 'message' );
-  end;
-end;
-
-procedure TDoomIO.LoadStart;
+procedure TDoomIO.LoadStart( aAdd : DWord = 0 );
 begin
   if FLoading = nil then
+  begin
     FLoading := TUILoadingScreen.Create(FUIRoot,100);
+    FLoading.Max := FLoading.Max + aAdd;
+  end;
 end;
 
 function TDoomIO.LoadCurrent : DWord;
@@ -610,7 +808,7 @@ end;
 procedure TDoomIO.LoadProgress ( aProgress : DWord ) ;
 begin
   if Assigned( FLoading ) then FLoading.OnProgress( aProgress );
-  IO.FullUpdate;
+  FullUpdate;
 end;
 
 procedure TDoomIO.LoadStop;
@@ -618,76 +816,42 @@ begin
   FreeAndNil( FLoading );
 end;
 
-procedure TDoomIO.ReuploadTextures;
-begin
-  Textures.Upload;
-  SpriteMap.ReassignTextures;
-end;
-
-procedure TDoomIO.CalculateConsoleParams;
-begin
-  FLineSpace := Max((FIODriver.GetSizeY - 25*18*FFontMult - 2*FVPadding) div 25 div FFontMult,0);
-end;
-
 procedure TDoomIO.Update( aMSec : DWord );
-var iMousePos   : TUIPoint;
-    iSoundEvent : TSoundEvent;
+var iLayer  : TInterfaceLayer;
+    i,j     : Integer;
+    iMEvent : TIOEvent;
 begin
+  if FUIMouse <> FUIMouseLast then
+  begin
+    iMEvent.EType:= VEVENT_MOUSEMOVE;
+    iMEvent.MouseMove.Pos := FUIMouse;
+    FUIMouseLast := FUIMouse;
+    VTIG_GetIOState.MouseState.HandleEvent( iMEvent );
+  end;
+
+  i := 0;
+  while i < FLayers.Size do
+    if FLayers[i].IsFinished then
+    begin
+      FLayers[i].Free;
+      if i < FLayers.Size - 1 then
+        for j := i to FLayers.Size - 2 do
+          FLayers[j] := FLayers[j + 1];
+      FLayers.Pop;
+    end
+    else
+      Inc( i );
+
+  for iLayer in FLayers do
+    iLayer.Update( Integer( aMSec ) );
   FTime += aMSec;
-  while (not FSoundEvents.isEmpty) and (FSoundEvents.Top.Time <= FTime) do
-  begin
-    iSoundEvent := FSoundEvents.Pop;
-    PlaySound( iSoundEvent.SoundID, iSoundEvent.Coord );
-  end;
-  if GraphicsVersion then
-  begin
-    if (Doom <> nil) and (UI <> nil) then UI.GFXAnimationUpdate( aMSec );
-    if GraphicsVersion then GraphicsDraw;
-    if FQuadRenderer <> nil then FQuadRenderer.Update( FProjection );
-    if FQuadSheet <> nil then FQuadRenderer.Render( FQuadSheet );
-  end;
+  FAudio.Update( aMSec );
   FUIRoot.OnUpdate( aMSec );
   FUIRoot.Render;
-  if FTextSheet <> nil then FQuadRenderer.Render( FTextSheet );
-  FConsole.Update;
-  if (FPostSheet <> nil) and (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos(iMousePos) then
-  begin
-    FMCursor.Draw( iMousePos.X, iMousePos.Y, FLastUpdate, FPostSheet );
-  end;
-  if FPostSheet <> nil then FQuadRenderer.Render( FPostSheet );
-end;
 
-procedure TDoomIO.GraphicsDraw;
-var iMeasure  : TDateTime;
-    iTickTime : DWord;
-    iSizeY    : DWord;
-    iSizeX    : DWord;
-begin
-  iMeasure := Now;
-  iTickTime := MilliSecondsBetween( iMeasure, FLastTick );
-  FLastTick := iMeasure;
-
-  iSizeY    := FIODriver.GetSizeY-2*FVPadding;
-  iSizeX    := FIODriver.GetSizeX;
-  glViewport( 0, FVPadding, iSizeX, iSizeY );
-
-  glEnable( GL_TEXTURE_2D );
-  glDisable( GL_DEPTH_TEST );
-  glEnable( GL_BLEND );
-  glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-  FProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -16384, 16384 );
-
-  if (Doom <> nil) and (Doom.State = DSPlaying) then
-  begin
-    if FConsoleWindow = nil then
-       FConsole.HideCursor;
-    //if not UI.AnimationsRunning then SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
-    SpriteMap.Update( iTickTime, FProjection );
-    UI.GFXAnimationDraw;
-    glEnable( GL_DEPTH_TEST );
-    SpriteMap.Draw;
-    glDisable( GL_DEPTH_TEST );
-  end;
+  VTIG_EndFrame;
+  VTIG_Render;
+  VTIG_EventClear;
 end;
 
 procedure TDoomIO.WaitForEnter;
@@ -779,7 +943,7 @@ begin
         FIODriver.PollEvent( aEvent );
       until (not FIODriver.EventPending);
     end;
-    if FUIRoot.OnEvent( aEvent ) then aEvent.EType := VEVENT_KEYUP;
+    if OnEvent( aEvent ) or FUIRoot.OnEvent( aEvent ) then aEvent.EType := VEVENT_KEYUP;
     if (aEvent.EType = VEVENT_SYSTEM) and (aEvent.System.Code = VIO_SYSEVENT_QUIT) then
       Exit;
   until aEvent.EType in iEndLoop;
@@ -799,37 +963,405 @@ begin
   Exit( iEvent.EType in [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ] );
 end;
 
-procedure TDoomIO.PlayMusic(const MusicID : Ansistring);
+procedure TDoomIO.Focus(aCoord: TCoord2D);
 begin
-  if (not SoundVersion) or (not Option_Music) then Exit;
-  try
-    if MusicID = '' then Sound.Silence;
-    if MusicOff then Exit;
-    if Sound.MusicExists(MusicID) then Sound.PlayMusic(MusicID)
-                                  else PlayMusic('level'+IntToStr(Random(23)+2));
-  except
-    on e : Exception do
-    begin
-      Log('PlayMusic raised exception (' + E.ClassName + '): ' + e.message);
-      UI.Msg( 'PlayMusic raised exception: ' + e.message );
-    end;
-  end;
+  FConsole.ShowCursor;
+  FConsole.MoveCursor(aCoord.x+1,aCoord.y+2);
 end;
 
-procedure TDoomIO.PlayMusicOnce(const MusicID : Ansistring);
+function TDoomIO.ChooseTarget( aActionName : string; aRange: byte;
+  aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D;
+var Key : byte;
+    Dir : TDirection;
+    Position : TCoord2D;
+    iTarget : TCoord2D;
+    iTargetColor : Byte;
+    iTargetRange : Byte;
+    iTargetLine  : TVisionRay;
+    iLevel : TLevel;
+    iDist : Byte;
+    iBlock : Boolean;
 begin
-  if (not SoundVersion) or (not Option_Music) then Exit;
-  try
-    if MusicID = '' then Sound.Silence;
-    if MusicOff then Exit;
-    if Sound.MusicExists(MusicID) then Sound.PlayMusicOnce(MusicID);
-  except
-      on e : Exception do
+  iLevel      := Doom.Level;
+  Position    := Player.Position;
+  iTarget     := aTargets.Current;
+  iTargetRange:= aRange;
+  iTargetColor := Green;
+
+  Msg( aActionName );
+  MsgUpDate;
+  Msg('You see : ');
+
+  LookDescription( iTarget );
+  repeat
+    if iTarget <> Position then
       begin
-        Log('PlayMusicOnce raised exception (' + E.ClassName + '): ' + e.message);
-        UI.Msg( 'PlayMusic raised exception: ' + e.message );
+        iTargetLine.Init(iLevel, Position, iTarget);
+        iBlock := false;
+        repeat
+          iTargetLine.Next;
+          if iLevel.cellFlagSet(iTargetLine.GetC, CF_BLOCKMOVE) then iBlock := true;
+        until iTargetLine.Done;
+      end
+    else iBlock := False;
+    if iBlock then iTargetColor := Red else iTargetColor := Green;
+
+    SetTarget( iTarget, iTargetColor, iTargetRange );
+    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE, INPUT_ESCAPE,INPUT_MORE,INPUT_FIRE,INPUT_ALTFIRE,INPUT_TACTIC, INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
+    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if Key in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then
+       begin
+         iTarget := IO.MTarget;
+         iDist := Distance(iTarget.x, iTarget.y, Position.x, Position.y);
+         if aLimitRange and (iDist > aRange - 1) then
+           begin
+             iDist := 0;
+             iTargetLine.Init(iLevel, Position, iTarget);
+             while iDist < (aRange - 1) do
+               begin
+                    iTargetLine.Next;
+                    iDist := Distance(iTargetLine.GetSource.x, iTargetLine.GetSource.y,  iTargetLine.GetC.x, iTargetLine.GetC.y);
+               end;
+             if Distance(iTargetLine.GetSource.x, iTargetLine.GetSource.y, iTargetLine.GetC.x, iTargetLine.GetC.y) > aRange-1
+             then iTarget := iTargetLine.prev
+             else iTarget := iTargetLine.GetC;
+           end;
+       end;
+    if Key in [ INPUT_ESCAPE, INPUT_MRIGHT ] then begin iTarget.x := 0; Break; end;
+    if Key = INPUT_TACTIC then iTarget := aTargets.Next;
+    if (Key in INPUT_MOVE) then
+    begin
+      Dir := InputDirection( Key );
+      if (iLevel.isProperCoord( iTarget + Dir ))
+        and ((not aLimitRange) or (Distance((iTarget + Dir).x, (iTarget + Dir).y, Position.x, Position.y) <= aRange-1)) then
+        iTarget += Dir;
+    end;
+    if (Key = INPUT_MORE) then
+    begin
+      with iLevel do
+      if Being[ iTarget ] <> nil then
+         FullLook( Being[ iTarget ].ID );
+    end;
+    LookDescription( iTarget );
+  until Key in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
+  MsgUpDate;
+
+  ChooseTarget := iTarget;
+end;
+
+procedure TDoomIO.LookMode;
+var Key    : byte;
+    Dir    : TDirection;
+    lc     : TCoord2D;
+    TargetColor : TColor;
+    Target  : TCoord2D;
+    iLevel  : TLevel;
+begin
+  iLevel := Doom.Level;
+  Target := Player.Position;
+  TargetColor := NewColor( White );
+  LookDescription( Target );
+  repeat
+    if SpriteMap <> nil then SpriteMap.SetTarget( Target, TargetColor, False );
+    TargetColor := NewColor( White );
+    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE,INPUT_ESCAPE,INPUT_MORE,INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
+    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if Key in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then Target := IO.MTarget;
+    if Key in [ INPUT_ESCAPE, INPUT_MRIGHT ] then Break;
+    if Key <> INPUT_MORE then
+    begin
+      lc := Target;
+      Dir := InputDirection( Key );
+      if iLevel.isProperCoord(lc + Dir) then
+      begin
+        Target := lc + Dir;
+        LookDescription( Target );
+        Focus( Target );
+      end
+      else
+      if Option_BlindMode then
+      begin
+        TargetColor := NewColor( Red );
+        FMessages.Pop;
+        Msg('Out of range!');
+        Continue;
       end;
+      if Option_BlindMode then
+      if lc = Target then
+      begin
+        TargetColor := NewColor( Red );
+        FMessages.Pop;
+        Msg('Out of range!');
+      end;
+     end;
+     if (Key in [ INPUT_MORE, INPUT_MLEFT ]) and iLevel.isVisible( Target ) then
+     begin
+       with iLevel do
+       if Being[Target] <> nil then
+          FullLook( Being[Target].ID );
+       Focus( Target );
+       LookDescription( Target );
+     end;
+  until False;
+  MsgUpDate;
+  if SpriteMap <> nil then SpriteMap.ClearTarget;
+end;
+
+function TDoomIO.ChooseDirection(aActionName : string): TDirection;
+var Key : byte;
+    Position : TCoord2D;
+    iTarget : TCoord2D;
+    iDone : Boolean;
+begin
+  Position := Player.Position;
+  Msg( aActionName + ' -- Choose direction...' );
+  iDone := False;
+  repeat
+    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE,INPUT_ESCAPE,INPUT_MLEFT,INPUT_MRIGHT]);
+    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if Key in INPUT_MOVE then
+    begin
+      ChooseDirection := InputDirection(Key);
+      iDone := True;
+    end;
+    if (Key = INPUT_MLEFT) then
+    begin
+      iTarget := IO.MTarget;
+      if (Distance( iTarget, Position) = 1) then
+      begin
+        ChooseDirection.Create(Position, iTarget);
+        iDone := True;
+      end;
+    end;
+    if (Key in [INPUT_MRIGHT,INPUT_ESCAPE]) then
+    begin
+      ChooseDirection.Create(DIR_CENTER);
+      iDone := True;
+    end;
+  until iDone;
+end;
+
+procedure TDoomIO.LookDescription(aWhere: TCoord2D);
+var LookDesc : string;
+begin
+  LookDesc := Doom.Level.GetLookDescription( aWhere );
+  if Option_BlindMode then LookDesc += ' | '+BlindCoord( aWhere - Player.Position );
+  if Doom.Level.isVisible(aWhere) and (Doom.Level.Being[aWhere] <> nil) then LookDesc += ' | [@<m@>]ore';
+  FMessages.Pop;
+  Msg('You see : '+LookDesc );
+end;
+
+procedure TDoomIO.Msg( const aText : AnsiString );
+begin
+  if FMessages <> nil then FMessages.Add(aText);
+end;
+
+procedure TDoomIO.Msg( const aText : AnsiString; const aParams : array of const );
+begin
+  Msg( Format( aText, aParams ) );
+end;
+
+procedure TDoomIO.MsgEnter( const aText: AnsiString);
+begin
+  Msg(aText+' Press <Enter>...');
+  WaitForEnter;
+  MsgUpDate;
+end;
+
+procedure TDoomIO.MsgEnter( const aText: AnsiString; const aParams: array of const);
+begin
+  Msg( aText+' Press <Enter>...', aParams );
+  WaitForEnter;
+  MsgUpDate;
+end;
+
+function TDoomIO.MsgConfirm( const aText: AnsiString; aStrong : Boolean = False): Boolean;
+var Key : byte;
+begin
+  if aStrong then Msg(aText+' [Y/n]')
+             else Msg(aText+' [y/n]');
+  if aStrong then Key := IO.WaitForKey([Ord('Y'),Ord('N'),Ord('n')])
+             else Key := IO.WaitForKey([Ord('Y'),Ord('y'),Ord('N'),Ord('n')]);
+  MsgConfirm := Key in [Ord('Y'),Ord('y')];
+  MsgUpDate;
+end;
+
+function TDoomIO.MsgChoice ( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
+var ChoiceStr : string;
+    Count     : Byte;
+begin
+  ChoiceStr := '';
+  for Count := 0 to 255 do
+    if Count in aChoices then
+      if Count in [31..126] then ChoiceStr += Chr(Count);
+
+  Msg(aText + ' ['+ChoiceStr+']');
+  MsgChoice := WaitForKey( aChoices );
+end;
+
+function TDoomIO.MsgCommandChoice ( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
+begin
+  Msg(aText);
+  repeat
+    Result := WaitForCommand( aChoices );
+  until Result in aChoices;
+end;
+
+function TDoomIO.MsgGetRecent : TUIChunkBuffer;
+begin
+  Exit( FMessages.Content );
+end;
+
+procedure TDoomIO.MsgReset;
+begin
+  FMessages.Reset;
+  FMessages.Update;
+end;
+
+procedure TDoomIO.MsgUpDate;
+begin
+  FMessages.Update;
+  SetTempHint('');
+end;
+
+procedure TDoomIO.ErrorReport(const aText: AnsiString);
+begin
+  MsgEnter('@RError:@> '+aText);
+  Msg('@yError written to error.log, please report!@>');
+end;
+
+procedure TDoomIO.ClearAllMessages;
+begin
+  FMessages.Clear;
+end;
+
+(**************************** LUA UI *****************************)
+
+function lua_ui_set_hint(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  if Option_Hints then
+    IO.SetHint( State.ToString( 1 ) );
+  Result := 0;
+end;
+
+{$HINTS OFF} // To supress Hint: Parameter "x" not found
+
+function lua_ui_blood_slide(L: Plua_State): Integer; cdecl;
+begin
+  IO.BloodSlideDown(20);
+  Result := 0;
+end;
+
+{$HINTS ON}
+
+function lua_ui_blink(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  IO.Blink(State.ToInteger(1),State.ToInteger(2));
+  Result := 0;
+end;
+
+function lua_ui_plot_screen(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  IO.RunUILoop( TConUIPlotViewer.Create( IO.Root, State.ToString(1), Rectangle( Point(10,5), 62, 15 ) ) );
+  Result := 0;
+end;
+
+function lua_ui_msg(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  IO.Msg(State.ToString(1));
+  Result := 0;
+end;
+
+function lua_ui_msg_clear(L: Plua_State): Integer; cdecl;
+begin
+  IO.MsgReset();
+  Result := 0;
+end;
+
+function lua_ui_msg_enter(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  if State.StackSize = 0 then Exit(0);
+  IO.MsgEnter(State.ToString(1));
+  Result := 0;
+end;
+
+function lua_ui_msg_confirm(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  if State.StackSize = 0 then Exit(0);
+  State.Push( IO.MsgConfirm(State.ToString(1), State.ToBoolean(2) ) );
+  Result := 1;
+end;
+
+function lua_ui_msg_choice(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Choices : TKeySet;
+    ChStr   : AnsiString;
+    Choice  : Byte;
+begin
+  State.Init(L);
+  if State.StackSize < 2 then Exit(0);
+  ChStr := State.ToString(2);
+  if Length(ChStr) < 2 then Exit(0);
+
+  Choices := [];
+  for Choice := 1 to Length(ChStr) do
+    Include(Choices,Ord(ChStr[Choice]));
+
+  ChStr := Chr( IO.MsgChoice( State.ToString(1), Choices ) );
+  State.Push(ChStr);
+  Result := 1;
+end;
+
+function lua_ui_msg_history(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Idx   : Integer;
+    Msg   : AnsiString;
+begin
+  State.Init(L);
+  if State.StackSize = 0 then Exit(0);
+  Idx := State.ToInteger(1)+1;
+  if Idx > IO.MsgGetRecent.Size then
+    State.PushNil
+  else
+  begin
+    Msg := ChunkListToString( IO.MsgGetRecent[-Idx] );
+    if Msg <> '' then
+      State.Push( Msg )
+    else
+      State.PushNil;
   end;
+  Result := 1;
+end;
+
+const lua_ui_lib : array[0..10] of luaL_Reg = (
+      ( name : 'msg';         func : @lua_ui_msg ),
+      ( name : 'msg_clear';   func : @lua_ui_msg_clear ),
+      ( name : 'msg_enter';   func : @lua_ui_msg_enter ),
+      ( name : 'msg_choice';  func : @lua_ui_msg_choice ),
+      ( name : 'msg_confirm'; func : @lua_ui_msg_confirm ),
+      ( name : 'msg_history'; func : @lua_ui_msg_history ),
+      ( name : 'blood_slide'; func : @lua_ui_blood_slide),
+      ( name : 'blink';       func : @lua_ui_blink),
+      ( name : 'plot_screen'; func : @lua_ui_plot_screen),
+      ( name : 'set_hint';    func : @lua_ui_set_hint ),
+      ( name : nil;          func : nil; )
+);
+
+class procedure TDoomIO.RegisterLuaAPI( State : TLuaState );
+begin
+  State.Register( 'ui', lua_ui_lib );
 end;
 
 procedure EmitCrashInfo ( const aInfo : AnsiString; aInGame : Boolean ) ;
@@ -871,7 +1403,6 @@ begin
     Readln;
   end;
 end;
-
 
 end.
 

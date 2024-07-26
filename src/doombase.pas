@@ -3,7 +3,7 @@ unit doombase;
 interface
 
 uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
-     dflevel, dfdata, dfhof,
+     dflevel, dfdata, dfhof, dfitem,
      doomhooks, doomlua, doommodule, doommenuview, doomcommand;
 
 type TDoomState = ( DSStart,      DSMenu,    DSLoading,
@@ -38,7 +38,7 @@ TDoom = class(TSystem)
        function HandleActionCommand( aCommand : Byte ) : Boolean;
        function HandleMoveCommand( aCommand : Byte ) : Boolean;
        function HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
-       function HandleUnloadCommand : Boolean;
+       function HandleUnloadCommand( aItem : TItem ) : Boolean;
        function HandleSwapWeaponCommand : Boolean;
        function HandleCommand( aCommand : TCommand ) : Boolean;
        procedure Run;
@@ -79,9 +79,10 @@ implementation
 
 uses Classes, SysUtils,
      vdebug, viotypes,
-     dfmap, dfitem, dfbeing,
-     dfoutput, doomio, zstream,
+     dfmap, dfbeing,
+     doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
+     doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
      doomhelp, doomconfig, doomviews, dfplayer;
 
 
@@ -165,7 +166,6 @@ begin
   Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
   ModuleID := 'DoomRL';
-  UI.CreateMessageWriter( Config );
   LoadModule( True );
 
   if GodMode and FileExists( WritePath + 'god.lua') then
@@ -173,7 +173,7 @@ begin
   HOF.Init;
   FLevel := TLevel.Create;
   if not GraphicsVersion then
-    UI.GameUI.Map.SetMap( FLevel );
+    (IO as TDoomTextIO).SetTextMap( FLevel );
   DataLoaded := True;
   IO.LoadStop;
 end;
@@ -206,7 +206,9 @@ end;
 
 procedure TDoom.CreateIO;
 begin
-  IO := TDoomIO.Create;
+  if GraphicsVersion
+    then IO := TDoomGFXIO.Create
+    else IO := TDoomTextIO.Create;
   ProgramRealTime := MSecNow();
   IO.Configure( Config );
 end;
@@ -238,9 +240,9 @@ procedure TDoom.PreAction;
 begin
   FLevel.CalculateVision( Player.Position );
   StatusEffect := Player.FAffects.getEffect;
-  UI.Focus( Player.Position );
+  IO.Focus( Player.Position );
   if GraphicsVersion then
-    UI.GameUI.UpdateMinimap;
+    (IO as TDoomGFXIO).UpdateMinimap;
   Player.PreAction;
 end;
 
@@ -257,17 +259,16 @@ begin
     INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
     INPUT_OPEN       : Exit( HandleActionCommand( INPUT_OPEN ) );
     INPUT_CLOSE      : Exit( HandleActionCommand( INPUT_CLOSE ) );
-    INPUT_UNLOAD     : Exit( HandleUnloadCommand );
-    INPUT_QUICKKEY_0 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'chainsaw' ) ) );
-    INPUT_QUICKKEY_1 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'knife' ) ) );
-    INPUT_QUICKKEY_2 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'pistol' ) ) );
-    INPUT_QUICKKEY_3 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'shotgun' ) ) );
-    INPUT_QUICKKEY_4 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'ashotgun' ) ) );
-    INPUT_QUICKKEY_5 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'dshotgun' ) ) );
-    INPUT_QUICKKEY_6 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'chaingun' ) ) );
-    INPUT_QUICKKEY_7 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'bazooka' ) ) );
-    INPUT_QUICKKEY_8 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'plasma' ) ) );
-    INPUT_QUICKKEY_9 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'bfg9000' ) ) );
+//    INPUT_QUICKKEY_0 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'chainsaw' ) ) );
+    INPUT_QUICKKEY_1 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '1' ) ) );
+    INPUT_QUICKKEY_2 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '2' ) ) );
+    INPUT_QUICKKEY_3 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '3' ) ) );
+    INPUT_QUICKKEY_4 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '4' ) ) );
+    INPUT_QUICKKEY_5 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '5' ) ) );
+    INPUT_QUICKKEY_6 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '6' ) ) );
+    INPUT_QUICKKEY_7 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '7' ) ) );
+    INPUT_QUICKKEY_8 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '8' ) ) );
+    INPUT_QUICKKEY_9 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '9' ) ) );
 
     INPUT_TACTIC     : Exit( HandleCommand( TCommand.Create( COMMAND_TACTIC ) ) );
     INPUT_WAIT       : Exit( HandleCommand( TCommand.Create( COMMAND_WAIT ) ) );
@@ -275,36 +276,21 @@ begin
     INPUT_ALTRELOAD  : Exit( HandleCommand( TCommand.Create( COMMAND_ALTRELOAD ) ) );
     INPUT_PICKUP     : Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) );
     INPUT_ENTER      : Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) );
-
-    INPUT_USE        : begin
-      iItem := Player.Inv.Choose([ITEMTYPE_PACK],'use');
-      if iItem = nil then Exit( False );
-      Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
-    end;
-    INPUT_DROP       : begin
-      iItem := Player.Inv.Choose([],'drop');
-      if iItem = nil then Exit( False );
-      Exit( HandleCommand( TCommand.Create( COMMAND_DROP, iItem ) ) );
-    end;
-
     INPUT_ALTPICKUP  : begin
       iItem := Level.Item[ Player.Position ];
       if ( iItem = nil ) or (not (iItem.isLever or iItem.isPack or iItem.isWearable) ) then
       begin
-        UI.Msg( 'There''s nothing to use on the ground!' );
+        IO.Msg( 'There''s nothing to use on the ground!' );
         Exit( False );
       end;
       Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
     end;
 
-    INPUT_INVENTORY   : Exit( HandleCommand( Player.Inv.View ) );
-    INPUT_EQUIPMENT   : Exit( HandleCommand( Player.Inv.RunEq ) );
     INPUT_MSCROLL     : Exit( HandleCommand( Player.Inv.DoScrollSwap ) );
-
     INPUT_SWAPWEAPON  : Exit( HandleSwapWeaponCommand );
   end;
 
-  UI.Msg('Unknown command. Press "?" for help.' );
+  IO.Msg('Unknown command. Press "?" for help.' );
   Exit( False );
 end;
 
@@ -364,16 +350,16 @@ begin
   if iCount = 0 then
   begin
     if iID = ''
-      then UI.Msg( 'There''s nothing you can act upon here.' )
-      else UI.Msg( 'There''s no door you can %s here.', [ iID ] );
+      then IO.Msg( 'There''s nothing you can act upon here.' )
+      else IO.Msg( 'There''s no door you can %s here.', [ iID ] );
     Exit( False );
   end;
 
   if iCount > 1 then
   begin
     if iID = ''
-      then iDir := UI.ChooseDirection('action')
-      else iDir := UI.ChooseDirection(Capitalized(iID)+' door');
+      then iDir := IO.ChooseDirection('action')
+      else iDir := IO.ChooseDirection(Capitalized(iID)+' door');
     if iDir.code = DIR_CENTER then Exit( False );
     iTarget := Player.Position + iDir;
   end;
@@ -385,15 +371,15 @@ begin
     begin
       if not Level.isEmpty( iTarget ,[EF_NOITEMS,EF_NOBEINGS] ) then
       begin
-        UI.Msg( 'There''s something in the way!' );
+        IO.Msg( 'There''s something in the way!' );
         Exit( False );
       end;
       // SUCCESS
       Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
     end;
     if iID = ''
-      then UI.Msg( 'You can''t do that!' )
-      else UI.Msg( 'You can''t %s that.', [ iID ] );
+      then IO.Msg( 'You can''t do that!' )
+      else IO.Msg( 'You can''t %s that.', [ iID ] );
   end;
   Exit( False );
 end;
@@ -406,7 +392,7 @@ begin
   Player.FLastTargetPos.Create(0,0);
   if BF_SESSILE in FFlags then
   begin
-    UI.Msg( 'You can''t!' );
+    IO.Msg( 'You can''t!' );
     Exit( False );
   end;
 
@@ -433,7 +419,7 @@ begin
            Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) )
          else
          begin
-           if Option_Blindmode then UI.Msg( 'You bump into a wall.' );
+           if Option_Blindmode then IO.Msg( 'You bump into a wall.' );
            Exit( False );
          end;
        end;
@@ -460,14 +446,14 @@ begin
   iItem := Player.Inv.Slot[ efWeapon ];
   if (iItem = nil) or (not iItem.isWeapon) then
   begin
-    UI.Msg( 'You have no weapon.' );
+    IO.Msg( 'You have no weapon.' );
     Exit( False );
   end;
   if not aAlt then
   begin
     if (not aMouse) and iItem.isMelee then
     begin
-      iDir := UI.ChooseDirection('Melee attack');
+      iDir := IO.ChooseDirection('Melee attack');
       if (iDir.code = DIR_CENTER) then Exit( False );
       iTarget := Player.Position + iDir;
       Exit( HandleCommand( TCommand.Create( COMMAND_MELEE, iTarget ) ) );
@@ -475,7 +461,7 @@ begin
 
     if (not iItem.isRanged) then
     begin
-      UI.Msg( 'You have no ranged weapon.' );
+      IO.Msg( 'You have no ranged weapon.' );
       Exit( False );
     end;
   end
@@ -483,7 +469,7 @@ begin
   begin
     if iItem.AltFire = ALT_NONE then
     begin
-      UI.Msg( 'This weapon has no alternate fire mode' );
+      IO.Msg( 'This weapon has no alternate fire mode' );
       Exit( False );
     end;
   end;
@@ -499,7 +485,7 @@ begin
         iLimitRange := MF_EXACT in Missiles[ iItem.Missile ].Flags;
         if not Player.doChooseTarget( 'Throw -- Choose target...', iRange, iLimitRange ) then
         begin
-          UI.Msg( 'Throwing canceled.' );
+          IO.Msg( 'Throwing canceled.' );
           Exit( False );
         end;
         iTarget := Player.TargetPos;
@@ -570,47 +556,49 @@ begin
 end;
 
 
-function TDoom.HandleUnloadCommand : Boolean;
+function TDoom.HandleUnloadCommand( aItem : TItem ) : Boolean;
 var iID         : AnsiString;
-    iName       : AnsiString;
-    iItem       : TItem;
     iItemTypes  : TItemTypeSet;
 begin
   iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack ];
-  if (BF_SCAVENGER in FFlags) then
+  if Player.Flags[ BF_SCAVENGER ] then
     iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack, ItemType_Melee, ItemType_Armor, ItemType_Boots ];
-  iItem := Level.Item[ Player.Position ];
-  if (iItem = nil) or ( not (iItem.IType in iItemTypes) ) then
+  if ( aItem = nil ) then
+    aItem := Level.Item[ Player.Position ];
+  if ( aItem = nil ) or ( not (aItem.IType in iItemTypes) ) then
   begin
-    iItem := Player.Inv.Choose( iItemTypes, 'unload' );
-    if iItem = nil then Exit( False );
+    IO.PushLayer( TPlayerView.CreateCommand( COMMAND_UNLOAD, Player.Flags[ BF_SCAVENGER ] ) );
+    Exit( True );
   end;
-  iName := iItem.Name;
 
-  if iItem.isAmmoPack then
-    if not UI.MsgConfirm('An ammopack might serve better in the Prepared slot. Continuing will unload the ammo destroying the pack. Are you sure?', True)
-      then Exit( False );
-
-  if (not iItem.isAmmoPack) and (BF_SCAVENGER in FFlags) and
-    ((iItem.Ammo = 0) or iItem.Flags[ IF_NOUNLOAD ] or iItem.Flags[ IF_RECHARGE ] or iItem.Flags[ IF_NOAMMO ]) and
-    (iItem.Flags[ IF_EXOTIC ] or iItem.Flags[ IF_UNIQUE ] or iItem.Flags[ IF_ASSEMBLED ] or iItem.Flags[ IF_MODIFIED ]) then
+  if aItem.isAmmoPack then
   begin
-    iID := LuaSystem.ProtectedCall( ['DoomRL','OnDisassemble'], [ iItem ] );
+    IO.PushLayer( TUnloadConfirmView.Create( aItem ) );
+    Exit( True );
+  end;
+
+  if (not aItem.isAmmoPack) and Player.Flags[ BF_SCAVENGER ] and
+    ((not aItem.isRanged) or (aItem.Ammo = 0) or aItem.Flags[ IF_NOUNLOAD ] or aItem.Flags[ IF_RECHARGE ] or aItem.Flags[ IF_NOAMMO ]) and
+    (aItem.Flags[ IF_EXOTIC ] or aItem.Flags[ IF_UNIQUE ] or aItem.Flags[ IF_ASSEMBLED ] or aItem.Flags[ IF_MODIFIED ]) then
+  begin
+    iID := LuaSystem.ProtectedCall( ['DoomRL','OnDisassemble'], [ aItem ] );
     if iID <> '' then
-      if not UI.MsgConfirm('Do you want to disassemble the '+iName+'?', True) then
-        iID := '';
+    begin
+      IO.PushLayer( TUnloadConfirmView.Create(aItem,iID) );
+      Exit;
+    end;
   end;
 
-  if ( iID = '' ) and ( not( iItem.IType in [ ItemType_Ranged, ItemType_AmmoPack ] ) ) then
+  if not( aItem.IType in [ ItemType_Ranged, ItemType_AmmoPack ] )  then
      Exit( False );
 
-  Exit( HandleCommand( TCommand.Create( COMMAND_UNLOAD, iItem, iID ) ) );
+  Exit( HandleCommand( TCommand.Create( COMMAND_UNLOAD, aItem, iID ) ) );
 end;
 
 function TDoom.HandleSwapWeaponCommand : Boolean;
 begin
-  if ( Player.Inv.Slot[ efWeapon ] <> nil )  and ( Player.Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then begin UI.Msg('You can''t!'); Exit( False ); end;
-  if ( Player.Inv.Slot[ efWeapon2 ] <> nil ) and ( Player.Inv.Slot[ efWeapon2 ].isAmmoPack )        then begin UI.Msg('Nothing to swap!'); Exit( False ); end;
+  if ( Player.Inv.Slot[ efWeapon ] <> nil )  and ( Player.Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then begin IO.Msg('You can''t!'); Exit( False ); end;
+  if ( Player.Inv.Slot[ efWeapon2 ] <> nil ) and ( Player.Inv.Slot[ efWeapon2 ].isAmmoPack )        then begin IO.Msg('Nothing to swap!'); Exit( False ); end;
   Exit( HandleCommand( TCommand.Create( COMMAND_SWAPWEAPON ) ) );
 end;
 
@@ -618,7 +606,7 @@ function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
 begin
   if aCommand.Command = COMMAND_NONE then
     Exit( False );
-  UI.MsgUpDate;
+  IO.MsgUpDate;
 try
   Player.HandleCommand( aCommand );
 except
@@ -628,19 +616,19 @@ except
     ErrorLogOpen('CRITICAL','Player action exception!');
     ErrorLogWriteln('Error message : '+e.Message);
     ErrorLogClose;
-    UI.ErrorReport(e.Message);
+    IO.ErrorReport(e.Message);
     CRASHMODE := True;
   end;
 end;
 
   if State <> DSPlaying then Exit( False );
-  UI.Focus( Player.Position );
+  IO.Focus( Player.Position );
   Player.UpdateVisual;
   while (Player.SCount < 5000) and (State = DSPlaying) do
   begin
     FLevel.CalculateVision( Player.Position );
     FLevel.Tick;
-    UI.WaitForAnimation;
+    IO.WaitForAnimation;
     if not Player.PlayerTick then Exit( True );
   end;
   PreAction;
@@ -665,13 +653,20 @@ begin
     if iButton = VMB_BUTTON_MIDDLE then
       if IO.MTarget = Player.Position
         then Exit( HandleSwapWeaponCommand )
-        else Exit( HandleCommand( Player.Inv.RunEq ) );
+        else begin
+          IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) );
+          Exit( True );
+        end;
 
     if iButton = VMB_BUTTON_LEFT then
     begin
       if IO.MTarget = Player.Position then
+      begin
         if iAlt then
-          Exit( HandleCommand( Player.Inv.View ) )
+        begin
+          IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
+          Exit( True );
+        end
         else
         if Level.cellFlagSet( Player.Position, CF_STAIRS ) then
           Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) )
@@ -682,7 +677,11 @@ begin
             else
               Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) )
           else
-            Exit( HandleCommand( Player.Inv.View ) )
+            begin
+              IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
+              Exit( True );
+            end
+      end
       else
       if Distance( Player.Position, IO.MTarget ) = 1
         then Exit( HandleMoveCommand( DirectionToInput( NewDirection( Player.Position, IO.MTarget ) ) ) )
@@ -690,13 +689,13 @@ begin
         begin
           if not Player.RunPath( IO.MTarget ) then
           begin
-            UI.Msg('Can''t get there!');
+            IO.Msg('Can''t get there!');
             Exit;
           end;
         end
         else
         begin
-          UI.Msg('You don''t know how to get there!');
+          IO.Msg('You don''t know how to get there!');
           Exit;
         end;
     end;
@@ -743,20 +742,28 @@ begin
     // Handle commands that should be handled by the UI
     // TODO: Fix
     case iCommand of
-      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
-      INPUT_LOOK       : begin UI.Msg( '-' ); UI.LookMode; Exit; end;
-      INPUT_PLAYERINFO : begin Player.doScreen; Exit; end;
+//      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+      INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
       INPUT_QUIT       : begin Player.doQuit; Exit; end;
-      INPUT_HELP       : begin Help.Run; Exit; end;
-      INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, UI.MsgGetRecent ) ); Exit; end;
-      INPUT_ASSEMBLIES : begin IO.RunUILoop( TUIAssemblyViewer.Create( IO.Root ) ); Exit; end;
+      INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
+      INPUT_LOOK       : begin IO.Msg( '-' ); IO.LookMode; Exit; end;
+      INPUT_PLAYERINFO : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
+      INPUT_INVENTORY  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;
+      INPUT_EQUIPMENT  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) ); Exit; end;
+      INPUT_ASSEMBLIES : begin IO.PushLayer( TAssemblyView.Create ); Exit; end;
+      INPUT_USE        : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_USE ) ); Exit; end;
+      INPUT_DROP       : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
+      INPUT_UNLOAD     : begin HandleUnloadCommand( nil ); Exit; end;
+
+      INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, IO.MsgGetRecent ) ); Exit; end;
+
       INPUT_HARDQUIT   : begin
         Option_MenuReturn := False;
         Player.doQuit(True);
         Exit;
       end;
       INPUT_SAVE      : begin Player.doSave; Exit; end;
-      INPUT_TRAITS    : begin IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @Player.FTraits, Player.ExpLevel ) );Exit; end;
+      INPUT_TRAITS    : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
       INPUT_RUNMODE   : begin Player.doRun;Exit; end;
 
       INPUT_EXAMINENPC   : begin Player.ExamineNPC; Exit; end;
@@ -765,8 +772,8 @@ begin
       INPUT_SOUNDTOGGLE  : begin SoundOff := not SoundOff; Exit; end;
       INPUT_MUSICTOGGLE  : begin
                                MusicOff := not MusicOff;
-                               if MusicOff then IO.PlayMusic('')
-                                           else IO.PlayMusic(Level.ID);
+                               if MusicOff then IO.Audio.PlayMusic('')
+                                           else IO.Audio.PlayMusic(Level.ID);
                                Exit;
                              end;
     end;
@@ -806,9 +813,9 @@ repeat
   NoPlayerRecord := False;
   NoScoreRecord  := False;
 
-  UI.ClearAllMessages;
+  IO.ClearAllMessages;
 
-  IO.PlayMusicOnce('start');
+  IO.Audio.PlayMusicOnce('start');
   SetState( DSMenu );
   iResult.Reset; // TODO : could reuse for same game!
   IO.RunUILoop( TMainMenuViewer.Create( IO.Root, iResult ) );
@@ -846,7 +853,7 @@ repeat
   repeat
     if Player.NukeActivated > 0 then
     begin
-      UI.Msg('You hear a gigantic explosion above!');
+      IO.Msg('You hear a gigantic explosion above!');
       Inc(Player.FScore,1000);
       Player.IncStatistic('levels_nuked');
       Player.NukeActivated := 0;
@@ -888,7 +895,7 @@ repeat
           FLevel.ScriptLevel(Player.SpecExit)
         else
         begin
-          if FLevel.Name_Number <> 0 then UI.Msg('You enter %s, level %d.',[ FLevel.Name, FLevel.Name_Number ]);
+          if FLevel.Name_Number <> 0 then IO.Msg('You enter %s, level %d.',[ FLevel.Name, FLevel.Name_Number ]);
           CallHookCheck(Hook_OnGenerate,[]);
           FLevel.AfterGeneration( True );
         end;
@@ -897,9 +904,9 @@ repeat
     
     FLevel.CalculateVision( Player.Position );
     SetState( DSPlaying );
-    UI.BloodSlideDown(20);
+    IO.BloodSlideDown(20);
     
-    IO.PlayMusic(FLevel.ID);
+    IO.Audio.PlayMusic(FLevel.ID);
     FLevel.PreEnter;
 
     FLevel.Tick;
@@ -922,16 +929,19 @@ repeat
       end;
 
       repeat
-        while not IO.Driver.EventPending do
+        while ( not IO.Driver.EventPending ) and ( State = DSPlaying ) do
         begin
           IO.FullUpdate;
           IO.Driver.Sleep(10);
         end;
+        if State <> DSPlaying then break;
         if not IO.Driver.PollEvent( iEvent ) then continue;
-        if IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
+        if IO.OnEvent( iEvent ) or IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
         if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
           break;
-      until ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
+      until ( State <> DSPlaying ) or ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
+
+      if ( State <> DSPlaying ) then Break;
 
       if (iEvent.EType = VEVENT_SYSTEM) then
       begin
@@ -954,7 +964,7 @@ repeat
     Inc(Player.FScore,100);
     if GameWon and (State <> DSNextLevel) then Player.WriteMemorial;
     FLevel.Clear;
-    UI.SetHint('');
+    IO.SetHint('');
   until (State <> DSNextLevel) or (GameType = GameSingle);
   except on e : Exception do
   begin
@@ -976,16 +986,16 @@ repeat
     if State = DSSaving then
     begin
       WriteSaveFile;
-      UI.MsgEnter('Game saved. Press <Enter> to exit.');
+      IO.MsgEnter('Game saved. Press <Enter> to exit.');
     end;
     if State = DSFinished then
     begin
       if GameWon then
       begin
-        IO.PlayMusic('victory');
+        IO.Audio.PlayMusic('victory');
         CallHookCheck(Hook_OnWinGame,[]);
       end
-      else IO.PlayMusic('bunny');
+      else IO.Audio.PlayMusic('bunny');
     end;
   end;
 
@@ -1009,7 +1019,7 @@ repeat
         IO.RunUILoop( TUIMortemViewer.Create( IO.Root ) );
     end;
 
-  UI.BloodSlideDown(20);
+  IO.BloodSlideDown(20);
   FreeAndNil(Player);
 
   if GameType <> GameStandard then
@@ -1070,7 +1080,7 @@ begin
       NoPlayerRecord := True;
       NoScoreRecord  := True;
     end;
-    UI.Msg('Game loaded.');
+    IO.Msg('Game loaded.');
 
     if Player.Dead then
       raise EException.Create('Player in save file is dead anyway.');

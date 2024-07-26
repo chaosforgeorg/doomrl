@@ -60,7 +60,7 @@ end;
 
 procedure TThing.playBasicSound(const SoundID: string);
 begin
-  IO.PlaySound( IO.ResolveSoundID( [FID+'.'+SoundID, SoundID] ), FPosition );
+  IO.Audio.PlaySound( IO.Audio.ResolveSoundID( [FID+'.'+SoundID, SoundID] ), FPosition );
 end;
 
 procedure TThing.CallHook ( Hook : Byte; const Params : array of const ) ;

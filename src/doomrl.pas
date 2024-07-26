@@ -24,7 +24,7 @@ program doomrl;
 uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
-     vdebug, doombase, dfoutput, vlog, vutil, vos, vparams,
+     vdebug, doombase, vlog, vutil, vos, vparams,
      dfdata, doommodule, doomnet, doomio, doomconfig;
 
 {$IFDEF WINDOWS}
@@ -120,6 +120,8 @@ try
     ErrorLogFileName := WritePath + 'error.log';
 
     Doom := Systems.Add(TDoom.Create) as TDoom;
+
+    Option_NetworkConnection := False;
 
     DoomNetwork := TDoomNetwork.Create;
     if DoomNetwork.AlertCheck then Halt(0);

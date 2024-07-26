@@ -1,7 +1,8 @@
-@rControls@>
+{rControls}
 
   Most keybindings can be redefined via the file keybindings.lua. The 
-  following set describes the standard layout.
+  following set describes the standard layout, and does not reflect
+  any changes you may have made to your keybindings.
 
   Arrows -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
   '.'    -- Wait
@@ -21,7 +22,7 @@
   'R'    -- Special reload weapon (depending on weapon)
   'u'    -- Use item from inventory (eg. Med-pack)/pull lever
   'U'    -- Unload weapon from inventory/from ground
-  '@@'    -- Show screen with character info (parameters of player
+  '@'    -- Show screen with character info (parameters of player
             and his equipment)
   't'    -- Show character traits
   'A'    -- Show known assemblies
@@ -30,30 +31,21 @@
   'P'    -- Show previous messages
   ','    -- Run command
   TAB    -- change tactic
-  '0'..'9' Weapon quick keys:
-      0  : chainsaw
-      1  : combat knife
-      2  : pistol
-      3  : shotgun
-      4  : combat shotgun
-      5  : double shotgun
-      6  : chaingun
-      7  : rocket launcher
-      8  : plasma rifle
-      9  : BFG9000
-
+  '1'..'9' -- weapon quick keys, set them up in the inventory screen
   '('    -- Toggle sound on and off
   ')'    -- Toggle music on and off
 
-  F10    -- Makes screenshot (in graphics mode a png screenshot, in console 
-            an ASCII symbol screenshot) and places it in "Screenshot" folder
-  F9     -- Makes screenshot (in graphics mode a png screenshot, in console 
-            colorful screenshot in BB codes - useful if you want to post it 
-            on forum) and places it in "Screenshot" folder
+  F10    -- Makes screenshot (in graphics mode a png screenshot, in 
+            console an ASCII symbol screenshot) and places it in 
+            "Screenshot" folder
+  F9     -- Makes screenshot (in graphics mode a png screenshot, in 
+            console colorful screenshot in BB codes - useful if you 
+            want to post it on forum) and places it in "Screenshot"
+            folder
   'K'    -- toggle grid view (only in graphics mode)
 
 
-@rKeys while targeting@>
+{rKeys while targeting}
    
   Arrows      -- move target line
   TAB         -- toggle target
@@ -62,37 +54,37 @@
   RMB,Escape  -- cancel
 
 
-@rMouse (in graphics mode)@>
+{rMouse (in graphics mode)}
 
 LMB, MMB, RMB is left/middle/right mouse button:
 
-  @<LMB@>             -- travel to given destination, open door if next to it, 
+  {!LMB}             -- travel to given destination, open door if next to it, 
                      melee attack if on enemy and next to him. Travel needs
                      to target explored square, and is automatic as long as
                      there are no enemies in sight, otherwise just one move
-  @<LMB@> on @<self@>     -- if on stairs, descend, if on lever - pull, if on item
+  {!LMB} on {!self}     -- if on stairs, descend, if on lever - pull, if on item
                      then pickup, else inventory
-  @<Alt-LMB@> on @<self@> -- inventory
+  {!Alt-LMB} on {!self} -- inventory
 
-  @<RMB@>             -- fire at the targeted square or enemy, reload if 
+  {!RMB}             -- fire at the targeted square or enemy, reload if 
                      magazine empty
-  @<RMB@> on @<self@>     -- reload
+  {!RMB} on {!self}     -- reload
 
-  @<MMB@>             -- swap weapon
-  @<MMB@> on @<self@>     -- equipment
+  {!MMB}             -- swap weapon
+  {!MMB} on {!self}     -- equipment
 
-  @<SCROLLWHEEL@>     -- change weapon (enters quick weapon choice)
+  {!SCROLLWHEEL}     -- change weapon (enters quick weapon choice)
 
 
-@rInventory screen@>
+{rInventory screen}
 
-  Press item letter to do the default action on a given item. Wearable
-  items will switch if one is already worn.
+  Select item and press Enter to do the default action on a given item.
+  Wearable items will switch if one is already worn.
   
   
-@rEquipment screen@>
+{rEquipment screen}
 
-  Pressing the letter of a worn item will unequip it. Pressing the 
-  letter of a empty slot will let you choose an item. Note though, that
-  switching through the inventory screen is faster.
+  Selecting a worn item will unequip it. Selecting an empty slot will
+  let you choose an item. Note though, that switching through the
+  inventory screen is faster.
   

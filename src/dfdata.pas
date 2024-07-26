@@ -23,7 +23,9 @@ var   MemorialWritten : Boolean;
 const PlayerSafeZone = 6;
 
 type
-  TIntHashMap  = specialize TGHashMap<Integer>;
+  TIntHashMap   = specialize TGHashMap<Integer>;
+  TStringGArray = specialize TGArray<AnsiString>;
+
 
 type
   // Error reporting.

@@ -42,7 +42,7 @@ implementation
 
 uses typinfo, variants, strutils, xmlread, dom,
      vnode, vdebug, viotypes, vluatools, vsystems, vluadungen, vluaentitynode,
-     dfoutput, dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, vsound, doomtextures, doomspritemap;
+     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, vsound, doomtextures, doomspritemap;
 
 function lua_core_is_playing(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
@@ -241,7 +241,7 @@ function lua_core_resolve_sound_id(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  State.Push(IO.ResolveSoundID([State.ToString(1),State.ToString(2),State.ToString(3)]));
+  State.Push(IO.Audio.ResolveSoundID([State.ToString(1),State.ToString(2),State.ToString(3)]));
   Result := 1;
 end;
 
@@ -249,7 +249,7 @@ function lua_core_play_music(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  IO.PlayMusic(State.ToString(1));
+  IO.Audio.PlayMusic(State.ToString(1));
   Result := 0;
 end;
 
@@ -336,7 +336,7 @@ begin
     RegisterModule(Module.ID, WAD);
     LoadStream(WAD,'','module.lua');
     LoadStream(WAD,'','main.lua');
-    WAD.RegisterLoader(FILETYPE_ASCII,@UI.ASCIILoader);
+    WAD.RegisterLoader(FILETYPE_ASCII,@IO.ASCIILoader);
     if SoundVersion then
     begin
       WAD.RegisterLoader(FILETYPE_MUSIC,@Sound.MusicStreamLoader);
@@ -401,7 +401,7 @@ begin
       FMainData.RegisterLoader(FILETYPE_IMAGE ,@Textures.LoadTextureCallback);
   end;
   FMainData.RegisterLoader(FILETYPE_HELP ,@Help.StreamLoader);
-  FMainData.RegisterLoader(FILETYPE_ASCII,@UI.ASCIILoader);
+  FMainData.RegisterLoader(FILETYPE_ASCII,@IO.ASCIILoader);
   IO.LoadProgress(iProgBase + 35);
   FMainData.Load('help');
   IO.LoadProgress(iProgBase + 40);
@@ -430,15 +430,13 @@ begin
     SpriteMap.PrepareTextures;
 
   IO.LoadProgress(iProgBase + 100);
-  IO.WADLoaded;
 end;
 
 procedure TDoomLua.OnError(const ErrorString : Ansistring);
 begin
-  // TODO: this is unsafe as Msg might not be loaded !
-  if (UI <> nil) and (Doom.State = DSPlaying) then
+  if (IO <> nil) and (Doom.State = DSPlaying) then
   begin
-    UI.ErrorReport( ErrorString );
+    IO.ErrorReport( ErrorString );
   end
   else
     raise ELuaException.Create('LuaError: '+ErrorString);
@@ -533,7 +531,7 @@ begin
   SetValue('GRAPHICSVERSION',GraphicsVersion);
 
   for Count := 0 to 15 do SetValue(ColorNames[Count],Count);
-  TDoomUI.RegisterLuaAPI( State );
+  TDoomIO.RegisterLuaAPI( State );
 
   Register( 'statistics', lua_statistics_lib );
   RegisterMetaTable('statistics',@lua_statistics_get, @lua_statistics_set );
@@ -599,9 +597,9 @@ begin
   if IsNumber( Index ) then
      Exit( ToInteger( Index ) )
   else if IsTable( Index ) then
-     Exit( IO.ResolveSoundID( ToStringArray( Index ) ) )
+     Exit( IO.Audio.ResolveSoundID( ToStringArray( Index ) ) )
   else
-     Exit( IO.ResolveSoundID( [ ToString(Index) ] ) );
+     Exit( IO.Audio.ResolveSoundID( [ ToString(Index) ] ) );
 end;
 
 function TDoomLuaState.ToPosition( Index : Integer ) : TCoord2D;

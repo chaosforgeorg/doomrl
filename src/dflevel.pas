@@ -9,8 +9,8 @@ unit dflevel;
 interface
 uses SysUtils, Classes,
      vluaentitynode, vutil, vvision, vcolor, vmath, viotypes, vrltools, vnode,
-     vluamapnode, vmaparea, vconuirl,
-     dfdata, dfmap, dfthing, dfbeing, dfitem, dfoutput,
+     vluamapnode, vmaparea, vconuirl, vtextmap,
+     dfdata, dfmap, dfthing, dfbeing, dfitem,
      doomhooks;
 
 const CellWalls   : TCellSet = [];
@@ -20,7 +20,7 @@ type
 
 { TLevel }
 
-TLevel = class(TLuaMapNode, IConUIASCIIMap)
+TLevel = class(TLuaMapNode, ITextMap)
     constructor Create; reintroduce;
     procedure Init( nStyle : byte; nLNum : Word;nName : string; nSpecExit : string; nDepth : Word; nDangerLevel : Word);
     procedure AfterGeneration( aGenerated : Boolean );
@@ -104,6 +104,7 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
     function getGylph( const aCoord : TCoord2D ) : TIOGylph;
     function EntityFromStream( aStream : TStream; aEntityID : Byte ) : TLuaEntityNode; override;
     function EnemiesLeft : DWord;
+    function GetLookDescription( aWhere : TCoord2D ) : Ansistring;
 
     class procedure RegisterLuaAPI();
 
@@ -172,7 +173,7 @@ TLevel = class(TLuaMapNode, IConUIASCIIMap)
 implementation
 
 uses typinfo, vluadungen, vluatools, vluasystem,
-     vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomspritemap;
+     vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomgfxio, doomspritemap;
 
 procedure TLevel.ScriptLevel(script : string);
 begin
@@ -187,7 +188,7 @@ begin
     if IsString('entry')   then Player.AddHistory( GetString('entry') );
     if IsString('welcome') then 
     begin
-      Ui.Msg( GetString('welcome') );
+      IO.Msg( GetString('welcome') );
       FFeeling := GetString('welcome');
     end;
     FStatus := 0;
@@ -248,17 +249,17 @@ end;
 
 procedure TLevel.playSound( const aSoundID: DWord; aCoord : TCoord2D; aDelay : DWord = 0 );
 begin
-  IO.PlaySound(aSoundID, aCoord, aDelay);
+  IO.Audio.PlaySound(aSoundID, aCoord, aDelay);
 end;
 
 procedure TLevel.playSound(const SoundID: string; coord : TCoord2D );
 begin
-  IO.PlaySound(IO.ResolveSoundID([SoundID]), coord );
+  IO.Audio.PlaySound(IO.Audio.ResolveSoundID([SoundID]), coord );
 end;
 
 procedure TLevel.playSound(const BaseID, SoundID: string; coord : TCoord2D );
 begin
-  IO.PlaySound(IO.ResolveSoundID([BaseID+'.'+SoundID,SoundID]), coord );
+  IO.Audio.PlaySound(IO.Audio.ResolveSoundID([BaseID+'.'+SoundID,SoundID]), coord );
 end;
 
 function TLevel.BeingsVisible : Word;
@@ -535,7 +536,7 @@ begin
       if SF_MULTI in Cells[CellBottom[c]].Sprite[0].Flags then
         FMap.Rotation[c.x,c.y] := SpriteMap.GetCellRotationMask(c);
 
-    UI.GameUI.UpdateMinimap;
+    (IO as TDoomGFXIO).UpdateMinimap;
     RecalcFluids;
     SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
   end;
@@ -552,7 +553,7 @@ begin
 
   if LF_UNIQUEITEM in FFlags then
   begin
-    UI.Msg('You feel there is something really valuable here!');
+    IO.Msg('You feel there is something really valuable here!');
     FFeeling := FFeeling + ' You feel there is something really valuable here!';
   end;
 
@@ -601,7 +602,7 @@ begin
       Player.AddHistory(Format('He left level %d as soon as possible.',[Player.CurrentLevel]));
   end;
 
-  UI.MsgReset;
+  IO.MsgReset;
 end;
 
 procedure TLevel.Clear;
@@ -835,7 +836,7 @@ begin
   if not isProperCoord( coord ) then Exit;
   if aItem <> nil then iItemUID := aItem.uid;
 
-  UI.Explosion( Sequence, coord, Range, Delay, Color, ExplSound, aFlags );
+  IO.Explosion( Sequence, coord, Range, Delay, Color, ExplSound, aFlags );
 
   for iNode in Self do
     if iNode is TBeing then
@@ -944,9 +945,9 @@ begin
           if KnockBacked then Continue;
           if isVisible then
           begin
-            if dmg > 10 then UI.Mark( tc, Red, '*', 200 )
-              else if dmg > 4 then UI.Mark( tc, LightRed, '*', 100 )
-                else UI.Mark( tc, LightGray, '*', 50 );
+            if dmg > 10 then IO.Mark( tc, Red, '*', 200 )
+              else if dmg > 4 then IO.Mark( tc, LightRed, '*', 100 )
+                else IO.Mark( tc, LightGray, '*', 50 );
           end;
           if dmg >= KnockBackValue then
           begin
@@ -959,7 +960,7 @@ begin
         
         DamageTile( tc, dmg, Shotgun.DamageType );
         if cellFlagSet(tc,CF_BLOCKMOVE) then
-          if isVisible(tc) then UI.Mark(tc,LightGray,'*',100);
+          if isVisible(tc) then IO.Mark(tc,LightGray,'*',100);
       end;
   ClearLightMapBits([lfDamage]);
 end;
@@ -1038,7 +1039,7 @@ begin
       if (not (LF_RESPAWN in FFlags)) and ( EnemiesLeft() = 0 ) then
       begin
         if not (Hook_OnKillAll in FHooks) then
-          UI.Msg('You feel relatively safe now.');
+          IO.Msg('You feel relatively safe now.');
         FEmpty := True;
         if ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
           Include( FFlags, LF_ITEMSVISIBLE );
@@ -1136,25 +1137,25 @@ begin
     if (Player.NukeActivated <> 0) then
     begin
       Nuke := Player.NukeActivated;
-      if (Nuke <= 100)   then begin if (Nuke mod 10  = 0) then UI.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
-      if (Nuke <= 10*60) then begin if (Nuke mod 100 = 0) then UI.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
-      if (Nuke mod (10*60) = 0) then UI.Msg('Warning! Explosion in %d minutes!',[Player.NukeActivated div 600]);
+      if (Nuke <= 100)   then begin if (Nuke mod 10  = 0) then IO.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
+      if (Nuke <= 10*60) then begin if (Nuke mod 100 = 0) then IO.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
+      if (Nuke mod (10*60) = 0) then IO.Msg('Warning! Explosion in %d minutes!',[Player.NukeActivated div 600]);
     end
     else
     begin
       Player.IncStatistic('levels_nuked');
       if Doom.State in [DSNextLevel,DSSaving] then
       begin
-        UI.MsgEnter('Right in the nick of time!');
+        IO.MsgEnter('Right in the nick of time!');
         Exit;
       end;
       for cn := 1 to 10 do
       begin
-        Explosion( cn*200, RandomCoord( [ EF_NOBLOCK ] ),8,10,NewDiceRoll(0,0,0),LightRed,IO.ResolveSoundID(['nuke','barrel.explode','explode']){}{}{}{}{}{}{}{}{}, Damage_Fire, nil);
-        UI.Blink(LightRed,40);
-        UI.Blink(White,40);
+        Explosion( cn*200, RandomCoord( [ EF_NOBLOCK ] ),8,10,NewDiceRoll(0,0,0),LightRed,IO.Audio.ResolveSoundID(['nuke','barrel.explode','explode']){}{}{}{}{}{}{}{}{}, Damage_Fire, nil);
+        IO.Blink(LightRed,40);
+        IO.Blink(White,40);
       end;
-      UI.Blink(White,2000);
+      IO.Blink(White,2000);
 
       Include( FFlags, LF_NUKED );
 
@@ -1272,6 +1273,36 @@ begin
   Exit( iCell.Sprite[ iStyle ] );
 end;
 
+function TLevel.GetLookDescription ( aWhere : TCoord2D ) : AnsiString;
+var iCellID : DWord;
+  procedure AddInfo( const what : AnsiString );
+  begin
+    if Result = '' then Result := what
+                   else Result += ' | ' + what;
+  end;
+begin
+  if isVisible( aWhere ) then
+  begin
+    Result := '';
+    if Being[ aWhere ] <> nil then
+    with Being[ aWhere ] do
+      AddInfo( GetName( false ) + ' (' + WoundStatus + ')' );
+    if Item[ aWhere ] <> nil then
+      if Item[ aWhere ].isLever then AddInfo( Player.DescribeLever( Item[ aWhere ] ) )
+                                else AddInfo( Item[ aWhere ].GetName( false ) );
+    if CellHook_OnDescribe in Cells[ Cell[ aWhere ] ].Hooks then
+       AddInfo( CallHook( aWhere, CellHook_OnDescribe ) )
+    else
+    begin
+      iCellID := GetCell(aWhere);
+      if LightFlag[ aWhere, LFBLOOD ] and (Cells[ iCellID ].bldesc <> '')
+        then AddInfo( Cells[ GetCell(aWhere) ].bldesc )
+        else AddInfo( Cells[ GetCell(aWhere) ].desc );
+    end;
+  end
+  else Result := 'out of vision';
+end;
+
 function lua_level_drop_being(L: Plua_State): Integer; cdecl;
 var State  : TDoomLuaState;
     iBeing : TBeing;
@@ -1350,10 +1381,10 @@ begin
   for Count := 1 to 10 do
   begin
     Level.Explosion(0,Level.RandomCoord( [ EF_NOBLOCK ] ),8,10,NewDiceRoll(0,0),LightRed,0{}{}{}{}{}{}{}{}{}, Damage_Fire, nil );
-    UI.Blink(LightRed,40);
-    UI.Blink(White,40);
+    IO.Blink(LightRed,40);
+    IO.Blink(White,40);
   end;
-  UI.Blink(White,1000);
+  IO.Blink(White,1000);
   Level.FArea.ForAllCells( @Level.NukeCell );
   Result := 0;
 end;
@@ -1425,7 +1456,7 @@ begin
   if iLevel.isVisible( iCoord ) then
   begin
     iSprite := iLevel.GetSpriteTop( iCoord );
-    UI.addCellAnimation( iSprite.Frametime * Abs( iValue ), 0, iCoord, iSprite, iValue );
+    IO.addCellAnimation( iSprite.Frametime * Abs( iValue ), 0, iCoord, iSprite, iValue );
   end;
   Result := 0;
 end;

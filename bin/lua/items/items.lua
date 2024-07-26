@@ -470,7 +470,7 @@ function DoomRL.loaditems()
 		--glow     = { 1.0,1.0,1.0,1.0 },
 		level    = 3,
 		weight   = 60,
-		desc     = "That reminds you about action films you've seen long ago.",
+		desc     = "That reminds you about action films you've seen long ago. Might be useful in the prepared slot.",
 
 		type    = ITEMTYPE_AMMOPACK,
 		ammo    = 250,
@@ -486,7 +486,7 @@ function DoomRL.loaditems()
 		--glow     = { 1.0,1.0,1.0,1.0 },
 		level    = 4,
 		weight   = 60,
-		desc     = "Packed shells, like sardines!",
+		desc     = "Packed shells, like sardines! Might be useful in the prepared slot.",
 
 		type    = ITEMTYPE_AMMOPACK,
 		ammo    = 100,
@@ -502,7 +502,7 @@ function DoomRL.loaditems()
 		--glow     = { 1.0,1.0,1.0,1.0 },
 		level    = 7,
 		weight   = 36,
-		desc     = "Now this is the REAL 'boombox'!",
+		desc     = "Now this is the REAL 'boombox'! Might be useful in the prepared slot.",
 
 		type    = ITEMTYPE_AMMOPACK,
 		ammo    = 25,
@@ -520,7 +520,7 @@ function DoomRL.loaditems()
 		level    = 10,
 		weight   = 18,
 		--desc     = "Ampere-hours of pure energy!",
-		desc     = "Joules of energetic fun!",
+		desc     = "Joules of energetic fun! Might be useful in the prepared slot.",
 
 		type    = ITEMTYPE_AMMOPACK,
 		ammo    = 120,

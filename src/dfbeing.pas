@@ -9,7 +9,7 @@ unit dfbeing;
 interface
 uses Classes, SysUtils,
      vluatable, vnode, vpath, vmath, vutil, vrltools,
-     dfdata, dfoutput, dfthing, dfitem,
+     dfdata, dfthing, dfitem,
      doominventory, doomcommand;
 
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
@@ -69,7 +69,6 @@ TBeing = class(TThing,IPathQuery)
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
     procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); virtual;
     function SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : ShortInt = 0; aToHitMod : ShortInt = 0; aShotCount : ShortInt = 0 ) : Boolean;
-    procedure FullLook; virtual;
     function  isActive : boolean;
     function  WoundStatus : string;
     function  IsPlayer : Boolean;
@@ -100,7 +99,8 @@ TBeing = class(TThing,IPathQuery)
     // All actions return True/False depending on success.
     // On success they do eat up action cost!
     function ActionSwapWeapon : boolean;
-    function ActionQuickKey( const aWeaponID : Ansistring ) : Boolean;
+    function ActionQuickKey( aIndex : Byte ) : Boolean;
+    function ActionQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
     function ActionDrop( Item : TItem ) : boolean;
     function ActionWear( aItem : TItem ) : boolean;
     function ActionSwap( aItem : TItem; aSlot : TEqSlot ) : boolean;
@@ -550,7 +550,40 @@ begin
   Exit( ID );
 end;
 
-function TBeing.ActionQuickKey( const aWeaponID : Ansistring ) : Boolean;
+function TBeing.ActionQuickKey( aIndex : Byte ) : Boolean;
+var iUID  : TUID;
+    iID   : string[32];
+    iItem : TItem;
+begin
+  if ( aIndex < 1 ) or ( aIndex > 9 ) then Exit( False );
+  with Player.FQuickSlots[ aIndex ] do
+  begin
+    iUID := UID;
+    iID  := ID;
+  end;
+  if iUID <> 0 then
+  begin
+    iItem := UIDs[ iUID ] as TItem;
+    if iItem <> nil then
+    begin
+      if FInv.Equipped( iItem )     then Exit( Fail( 'You''re already using it!', [] ) );
+      if not FInv.Contains( iItem ) then Exit( Fail( 'You no longer have it!', [] ) );
+      Exit( ActionWear( iItem ) );
+    end;
+  end
+  else
+  if iID <> '' then
+  begin
+    for iItem in Inv do
+      if iItem.isPack then
+        if iItem.id = iID then
+          Exit( ActionUse( iItem ) );
+    Exit( Fail( 'You no longer have any item like that!', [] ) );
+  end;
+  Exit( Fail( 'Quickslot %d is unassigned!', [aIndex] ) );
+end;
+
+function TBeing.ActionQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
 var iWeapon  : TItem;
     iItem    : TItem;
     iAmmo    : Byte;
@@ -730,7 +763,7 @@ begin
   end;
   
   if iPack and ( UIDs[ iAmmoUID ] = nil ) and IsPlayer then
-    UI.Msg( 'Your %s is depleted.', [AmmoName] );
+    IO.Msg( 'Your %s is depleted.', [AmmoName] );
   
   Exit( True );
 end;
@@ -915,7 +948,7 @@ begin
   begin
     if item.CallHookCheck(Hook_OnPickupCheck,[Self]) then
     begin
-      PlaySound( IO.ResolveSoundID([item.ID+'.powerup','powerup']) );
+      PlaySound( IO.Audio.ResolveSoundID([item.ID+'.powerup','powerup']) );
       CallHook( Hook_OnPickUpItem, [item] );
       item.CallHook(Hook_OnPickUp, [Self]);
     end;
@@ -943,7 +976,7 @@ begin
   if BF_IMPATIENT in FFlags then
     if item.isPack then
       begin
-        if isPlayer then UI.Msg('No time to waste.');
+        if isPlayer then IO.Msg('No time to waste.');
         CallHook( Hook_OnPickUpItem, [item] );
         Exit( ActionUse( item ) );
       end;
@@ -952,7 +985,7 @@ begin
 
   if not item.CallHookCheck(Hook_OnPickupCheck,[Self]) then  Exit( False );
   PlaySound(item.Sounds.Pickup);
-  if isPlayer then UI.Msg('You picked up %s.',[item.GetName(false)]);
+  if isPlayer then IO.Msg('You picked up %s.',[item.GetName(false)]);
   Inv.Add(item);
   CallHook( Hook_OnPickUpItem, [item] );
   Dec(FSpeedCount,ActionCostPickUp);
@@ -1078,8 +1111,8 @@ function TBeing.ActionMove( aTarget : TCoord2D ) : Boolean;
 begin
   if GraphicsVersion then
   begin
-    UI.addScreenMoveAnimation(100,0,aTarget);
-    UI.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
+    IO.addScreenMoveAnimation(100,0,aTarget);
+    IO.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
   end;
   Displace( aTarget );
   Dec( FSpeedCount, getMoveCost );
@@ -1102,7 +1135,7 @@ end;
 function TBeing.Fail ( const aText: AnsiString; const aParams: array of const ): Boolean;
 begin
   if FSilentAction then Exit( False );
-  if IsPlayer then UI.Msg( aText, aParams );
+  if IsPlayer then IO.Msg( aText, aParams );
   Exit( False );
 end;
 
@@ -1110,8 +1143,8 @@ function TBeing.FailConfirm ( const aText : AnsiString; const aParams : array of
 begin
   if FSilentAction then Exit( False );
   if IsPlayer then
-    if Option_EmptyConfirm then UI.MsgEnter( aText, aParams )
-                           else UI.Msg( aText, aParams );
+    if Option_EmptyConfirm then IO.MsgEnter( aText, aParams )
+                           else IO.Msg( aText, aParams );
   Exit( False );
 end;
 
@@ -1119,7 +1152,7 @@ function TBeing.Success ( const aText : AnsiString; const aParams : array of con
 begin
   if aCost <> 0 then Dec( FSpeedCount, aCost );
   if FSilentAction then Exit( True );
-  if IsPlayer then UI.Msg( aText, aParams );
+  if IsPlayer then IO.Msg( aText, aParams );
   Exit( True );
 end;
 
@@ -1134,8 +1167,8 @@ procedure TBeing.Emote ( const aPlayerText, aBeingText : AnsiString; const aPara
 begin
   if FSilentAction then Exit;
   if IsPlayer
-    then UI.Msg( aPlayerText, aParams )
-    else if isVisible then UI.Msg( Capitalized(GetName(true))+' '+aBeingText, aParams );
+    then IO.Msg( aPlayerText, aParams )
+    else if isVisible then IO.Msg( Capitalized(GetName(true))+' '+aBeingText, aParams );
 end;
 
 function TBeing.GetName(known : boolean) : string;
@@ -1213,7 +1246,7 @@ begin
   SCount := SCount - getMoveCost;
   if GraphicsVersion then
     if iLevel.BeingExplored( FPosition, Self ) or iLevel.BeingExplored( LastMove, Self ) or iLevel.BeingVisible( FPosition, Self ) or iLevel.BeingVisible( LastMove, Self ) then
-      UI.addMoveAnimation(100, 0, FUID,Position,LastMove,Sprite);
+      IO.addMoveAnimation(100, 0, FUID,Position,LastMove,Sprite);
   Displace( FMovePos );
   playSound( SoundHoof );
   HandlePostDisplace;
@@ -1395,7 +1428,7 @@ begin
     COMMAND_PICKUP    : Exit( ActionPickup );
     COMMAND_UNLOAD    : Exit( ActionUnLoad( aCommand.Item, aCommand.ID ) );
     COMMAND_SWAPWEAPON: Exit( ActionSwapWeapon );
-    COMMAND_QUICKKEY  : Exit( ActionQuickKey( aCommand.ID ) );
+    COMMAND_QUICKKEY  : Exit( ActionQuickKey( Ord( aCommand.ID[1] ) - Ord( '0' ) ) );
     COMMAND_TACTIC    : Exit( ActionTactic );
   else Exit( False );
   end;
@@ -1435,8 +1468,8 @@ begin
             iLevel.DropBeing( iBeing, sc );
             iLevel.Cell[sc] := LuaSystem.Defines[ Cells[ iCellID ].destroyto ];
             Include( iBeing.FFlags, BF_NoExp );
-            if isVisible then UI.Msg(Capitalized(GetName(true))+' raises his arms!');
-            if iBeing.isVisible then UI.Msg(Capitalized( iBeing.GetName(true))+' suddenly rises from the dead!');
+            if isVisible then IO.Msg(Capitalized(GetName(true))+' raises his arms!');
+            if iBeing.isVisible then IO.Msg(Capitalized( iBeing.GetName(true))+' suddenly rises from the dead!');
           except
             on e : EPlacementException do FreeAndNil( iBeing );
           end;
@@ -1558,7 +1591,7 @@ end;
 
 procedure TBeing.PlaySound( aSoundID : DWord; aDelay : DWord = 0 );
 begin
-  IO.PlaySound(aSoundID,FPosition,aDelay);
+  IO.Audio.PlaySound(aSoundID,FPosition,aDelay);
 end;
 
 procedure TBeing.Attack( aWhere : TCoord2D );
@@ -1658,7 +1691,7 @@ begin
   if Roll( 12 + iToHit ) < iDefence then
   begin
     if IsPlayer then iResult := ' miss ' else iResult := ' misses ';
-    if isVisible then UI.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
+    if isVisible then IO.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
     iMissed := True;
   end;
 
@@ -1669,7 +1702,7 @@ begin
 
     // Hit message
     if IsPlayer then iResult := ' hit ' else iResult := ' hits ';
-    if isVisible then UI.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
+    if isVisible then IO.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
 
     // Apply damage
     aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon );
@@ -1678,7 +1711,7 @@ begin
     if ( ( iWeapon <> nil ) and ( iWeapon.Flags[IF_CLEAVE] ) or ( BF_CLEAVE in FFlags ) ) and
       ( not TLevel(Parent).isAlive( iTargetUID ) ) then
       begin
-        UI.Msg('Next!');
+        IO.Msg('Next!');
         FSpeedCount := 5001;
       end;
 
@@ -1697,7 +1730,7 @@ begin
         if Player.FBersekerLimit > 4 - Min(Player.FEnemiesInVision div 2, 3) then
           begin
             TLevel(Parent).playSound('bpack','powerup',FPosition);
-            UI.Blink(Red,30);
+            IO.Blink(Red,30);
             Player.FTactic.Stop;
             if Player.FAffects.IsActive(LuaSystem.Defines['berserk']) then
             begin
@@ -1710,7 +1743,7 @@ begin
             end
             else
               Player.FAffects.Add(LuaSystem.Defines['berserk'],20);
-            UI.Msg('You''re going berserk!');
+            IO.Msg('You''re going berserk!');
             Player.FBersekerLimit := 0;
           end;
       end;
@@ -1840,13 +1873,13 @@ begin
     if (iArmor.Durability = 0) and (not iArmor.Flags[ IF_NODESTROY ]) then
     begin
       if IsPlayer then
-        if aTarget = Target_Torso then UI.Msg('Your '+iArmor.Name+' is completely destroyed!')
-                                  else UI.Msg('Your '+iArmor.Name+' are completely destroyed!');
+        if aTarget = Target_Torso then IO.Msg('Your '+iArmor.Name+' is completely destroyed!')
+                                  else IO.Msg('Your '+iArmor.Name+' are completely destroyed!');
       FreeAndNil( iArmor );
     end
     else if IsPlayer and ( iProtection <> iArmor.GetProtection ) then
-      if aTarget = Target_Torso then UI.Msg('Your '+iArmor.Name+' is damaged!')
-                                else UI.Msg('Your '+iArmor.Name+' are damaged!');
+      if aTarget = Target_Torso then IO.Msg('Your '+iArmor.Name+' is damaged!')
+                                else IO.Msg('Your '+iArmor.Name+' are damaged!');
 
   end;
 
@@ -1885,8 +1918,8 @@ begin
 
   FHP := Max( FHP - aDamage, 0 );
   if Dead and (not IsPlayer) then
-    if isVisible then UI.Msg(Capitalized(GetName(true))+' dies.')
-                 else UI.Msg('You hear the scream of a freed soul!');
+    if isVisible then IO.Msg(Capitalized(GetName(true))+' dies.')
+                 else IO.Msg('You hear the scream of a freed soul!');
   if Dead
     then Kill( Min( aDamage div 2, 15), aDamage >= iOverKillValue, TLevel(Parent).ActiveBeing, aSource )
     else CallHook( Hook_OnAttacked, [ TLevel(Parent).ActiveBeing, aSource ] );
@@ -1996,14 +2029,14 @@ begin
 
     if not iLevel.isEmpty( iCoord, [EF_NOBLOCK] ) then
     begin
-      if (iAimedBeing = Player) and (iDodged) then UI.Msg('You dodge!');
+      if (iAimedBeing = Player) and (iDodged) then IO.Msg('You dodge!');
 
       if aItem.Flags[ IF_DESTRUCTIVE ]
         then iLevel.DamageTile( iCoord, iDamage * 2, aItem.DamageType )
         else iLevel.DamageTile( iCoord, iDamage, aItem.DamageType );
 
       if iLevel.isVisible( iCoord ) then
-        UI.Msg('Boom!');
+        IO.Msg('Boom!');
       iCoord := iOldCoord;
       iHit   := True;
       Break;
@@ -2029,15 +2062,15 @@ begin
       begin
         if iLevel.Being[ iCoord ] = Player
           then iDirectHit := True
-          else if (iAimedBeing = Player) and (iDodged) then UI.Msg('You dodge!');
+          else if (iAimedBeing = Player) and (iDodged) then IO.Msg('You dodge!');
         if iLevel.isVisible( iCoord ) then
             if iBeing.IsPlayer then
             begin
               iFireDesc := LuaSystem.Get(['missiles',iMissile,'hitdesc'], '');
               if iFireDesc = '' then iFireDesc := 'You are hit!';
-              UI.Msg( Capitalized( iFireDesc ) );
+              IO.Msg( Capitalized( iFireDesc ) );
             end
-            else UI.Msg('The missile hits '+iBeing.GetName(true)+'.');
+            else IO.Msg('The missile hits '+iBeing.GetName(true)+'.');
 
         if not ( MF_HARD in Missiles[iMissile].Flags ) then
         begin
@@ -2074,7 +2107,7 @@ begin
       
     if ( iSteps >= iMaxRange ) or (MF_IMMIDATE in Missiles[iMissile].Flags) then
     begin
-      if (iAimedBeing = Player) and (iDodged) then UI.Msg('You dodge!');
+      if (iAimedBeing = Player) and (iDodged) then IO.Msg('You dodge!');
       break;
     end;
 
@@ -2088,17 +2121,17 @@ begin
 
   if UIDs[ iThisUID ] = nil then Exit( False );
 
-  iSound  := IO.ResolveSoundID([aItem.ID+'.fire',Missiles[iMissile].soundID+'.fire','fire']);
+  iSound  := IO.Audio.ResolveSoundID([aItem.ID+'.fire',Missiles[iMissile].soundID+'.fire','fire']);
   iSprite := Missiles[iMissile].Sprite;
   if iSound <> 0 then
-    UI.addSoundAnimation( aSequence, iSource, iSound );
+    IO.addSoundAnimation( aSequence, iSource, iSound );
 
   iDuration := (iSource - iMisslePath.GetC).LargerLength * iDelay;
   if not ( MF_IMMIDATE in Missiles[iMissile].Flags ) then
   begin
-    UI.addMissileAnimation( iDuration, aSequence,iSource,iMisslePath.GetC,iColor,Missiles[iMissile].Picture,iDelay,iSprite,MF_RAY in Missiles[iMissile].Flags);
+    IO.addMissileAnimation( iDuration, aSequence,iSource,iMisslePath.GetC,iColor,Missiles[iMissile].Picture,iDelay,iSprite,MF_RAY in Missiles[iMissile].Flags);
     if iHit and iLevel.isVisible( iMisslePath.GetC ) then
-      UI.addMarkAnimation(100, aSequence + iDuration, iMisslePath.GetC, Iif( iIsHit, LightRed, LightGray ), '*' );
+      IO.addMarkAnimation(100, aSequence + iDuration, iMisslePath.GetC, Iif( iIsHit, LightRed, LightGray ), '*' );
   end;
 
   if aItem.Flags[ IF_THROWDROP ] then
@@ -2116,18 +2149,13 @@ begin
     if BF_MAXDAMAGE in FFlags then
       iRoll.Init( 0,0, iRoll.Max );
 
-    iSound := IO.ResolveSoundID([aItem.ID+'.explode',Missiles[iMissile].soundID+'.explode','explode']);
+    iSound := IO.Audio.ResolveSoundID([aItem.ID+'.explode',Missiles[iMissile].soundID+'.explode','explode']);
     with Missiles[iMissile] do
     iLevel.Explosion( iDelay*(iSteps+(aShotCount*2)), iCoord, iRadius, ExplDelay, iRoll, ExplColor,
                     iSound, aItem.DamageType, aItem, ExplFlags, Content, iDirectHit );
   end;
   if (iAimedBeing = Player) and (iDodged) then Player.LastTurnDodge := True;
   Exit( UIDs[ iThisUID ] <> nil );
-end;
-
-procedure TBeing.FullLook;
-begin
-  IO.RunUILoop( TUIMoreViewer.Create( IO.Root, ID) );
 end;
 
 procedure TBeing.BloodFloor;
@@ -2177,11 +2205,11 @@ begin
     begin
       if isPlayer then
       begin
-        UI.WaitForAnimation;
-        UI.addScreenMoveAnimation( 50, 0, knock );
+        IO.WaitForAnimation;
+        IO.addScreenMoveAnimation( 50, 0, knock );
       end;
       if isVisible then
-        UI.addMoveAnimation( 50,0,FUID,Position,knock,Sprite);
+        IO.addMoveAnimation( 50,0,FUID,Position,knock,Sprite);
     end;
     Displace( knock );
     HandlePostDisplace;
@@ -2736,7 +2764,7 @@ begin
   if GraphicsVersion then
     if Thing is TBeing then
     begin
-      if Thing is TPlayer then UI.addScreenMoveAnimation(Distance(Thing.Position,Target)*10,0,Target);
+      if Thing is TPlayer then IO.addScreenMoveAnimation(Distance(Thing.Position,Target)*10,0,Target);
     end;
   Thing.Displace(Target);
   Result := 0;

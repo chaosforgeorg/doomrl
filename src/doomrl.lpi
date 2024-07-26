@@ -47,7 +47,12 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <Units Count="31">
+    <RequiredPackages Count="1">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+    </RequiredPackages>
+    <Units Count="38">
       <Unit0>
         <Filename Value="doomrl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -61,117 +66,145 @@
         <IsPartOfProject Value="True"/>
       </Unit2>
       <Unit3>
-        <Filename Value="doomui.pas"/>
+        <Filename Value="dfaffect.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit3>
       <Unit4>
-        <Filename Value="dfaffect.pas"/>
+        <Filename Value="dfbeing.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
-        <Filename Value="dfbeing.pas"/>
+        <Filename Value="dfdata.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit5>
       <Unit6>
-        <Filename Value="dfdata.pas"/>
+        <Filename Value="dfhof.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit6>
       <Unit7>
-        <Filename Value="dfhof.pas"/>
+        <Filename Value="dfitem.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
       <Unit8>
-        <Filename Value="dfitem.pas"/>
+        <Filename Value="dflevel.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
       <Unit9>
-        <Filename Value="dflevel.pas"/>
+        <Filename Value="dfmap.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit9>
       <Unit10>
-        <Filename Value="dfmap.pas"/>
+        <Filename Value="dfplayer.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit10>
       <Unit11>
-        <Filename Value="dfoutput.pas"/>
+        <Filename Value="doombase.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit11>
       <Unit12>
-        <Filename Value="dfplayer.pas"/>
+        <Filename Value="doomhelp.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit12>
       <Unit13>
-        <Filename Value="doombase.pas"/>
+        <Filename Value="dfthing.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit13>
       <Unit14>
-        <Filename Value="doomhelp.pas"/>
+        <Filename Value="doomtrait.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
       <Unit15>
-        <Filename Value="dfthing.pas"/>
+        <Filename Value="..\bin\version.txt"/>
         <IsPartOfProject Value="True"/>
       </Unit15>
       <Unit16>
-        <Filename Value="doomtrait.pas"/>
+        <Filename Value="doomanimation.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit16>
       <Unit17>
-        <Filename Value="..\bin\version.txt"/>
+        <Filename Value="doomnet.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit17>
       <Unit18>
-        <Filename Value="doomanimation.pas"/>
+        <Filename Value="doomconfig.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit18>
       <Unit19>
-        <Filename Value="doomnet.pas"/>
+        <Filename Value="doommodule.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit19>
       <Unit20>
-        <Filename Value="doomconfig.pas"/>
+        <Filename Value="..\bin\version_api.txt"/>
         <IsPartOfProject Value="True"/>
       </Unit20>
       <Unit21>
-        <Filename Value="doommodule.pas"/>
+        <Filename Value="doominventory.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit21>
       <Unit22>
-        <Filename Value="..\bin\version_api.txt"/>
+        <Filename Value="doomhooks.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit22>
       <Unit23>
-        <Filename Value="doominventory.pas"/>
+        <Filename Value="doomio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit23>
       <Unit24>
-        <Filename Value="doomhooks.pas"/>
+        <Filename Value="doomviews.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit24>
       <Unit25>
-        <Filename Value="doomio.pas"/>
+        <Filename Value="doommenuview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit25>
       <Unit26>
-        <Filename Value="doomviews.pas"/>
+        <Filename Value="doomtextures.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit26>
       <Unit27>
-        <Filename Value="doommenuview.pas"/>
+        <Filename Value="doomspritemap.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit27>
       <Unit28>
-        <Filename Value="doomtextures.pas"/>
+        <Filename Value="..\bin\core\constants.lua"/>
         <IsPartOfProject Value="True"/>
       </Unit28>
       <Unit29>
-        <Filename Value="doomspritemap.pas"/>
+        <Filename Value="doomaudio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit29>
       <Unit30>
-        <Filename Value="..\bin\core\constants.lua"/>
+        <Filename Value="doomgfxio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit30>
+      <Unit31>
+        <Filename Value="doomtextio.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit31>
+      <Unit32>
+        <Filename Value="doomplayerview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit32>
+      <Unit33>
+        <Filename Value="doomingamemenuview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit33>
+      <Unit34>
+        <Filename Value="doommoreview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit34>
+      <Unit35>
+        <Filename Value="doomhelpview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit35>
+      <Unit36>
+        <Filename Value="doomassemblyview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit36>
+      <Unit37>
+        <Filename Value="doomconfirmview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit37>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
