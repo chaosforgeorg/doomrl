@@ -3,7 +3,7 @@ unit doombase;
 interface
 
 uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
-     dflevel, dfdata, dfhof,
+     dflevel, dfdata, dfhof, dfitem,
      doomhooks, doomlua, doommodule, doommenuview, doomcommand;
 
 type TDoomState = ( DSStart,      DSMenu,    DSLoading,
@@ -38,7 +38,7 @@ TDoom = class(TSystem)
        function HandleActionCommand( aCommand : Byte ) : Boolean;
        function HandleMoveCommand( aCommand : Byte ) : Boolean;
        function HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
-       function HandleUnloadCommand : Boolean;
+       function HandleUnloadCommand( aItem : TItem ) : Boolean;
        function HandleSwapWeaponCommand : Boolean;
        function HandleCommand( aCommand : TCommand ) : Boolean;
        procedure Run;
@@ -79,7 +79,7 @@ implementation
 
 uses Classes, SysUtils,
      vdebug, viotypes,
-     dfmap, dfitem, dfbeing,
+     dfmap, dfbeing,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
@@ -259,7 +259,6 @@ begin
     INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
     INPUT_OPEN       : Exit( HandleActionCommand( INPUT_OPEN ) );
     INPUT_CLOSE      : Exit( HandleActionCommand( INPUT_CLOSE ) );
-    INPUT_UNLOAD     : Exit( HandleUnloadCommand );
 //    INPUT_QUICKKEY_0 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'chainsaw' ) ) );
     INPUT_QUICKKEY_1 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '1' ) ) );
     INPUT_QUICKKEY_2 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '2' ) ) );
@@ -557,41 +556,43 @@ begin
 end;
 
 
-function TDoom.HandleUnloadCommand : Boolean;
+function TDoom.HandleUnloadCommand( aItem : TItem ) : Boolean;
 var iID         : AnsiString;
-    iName       : AnsiString;
-    iItem       : TItem;
     iItemTypes  : TItemTypeSet;
 begin
   iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack ];
-  if (BF_SCAVENGER in FFlags) then
+  if Player.Flags[ BF_SCAVENGER ] then
     iItemTypes := [ ItemType_Ranged, ItemType_AmmoPack, ItemType_Melee, ItemType_Armor, ItemType_Boots ];
-  iItem := Level.Item[ Player.Position ];
-  if (iItem = nil) or ( not (iItem.IType in iItemTypes) ) then
+  if ( aItem = nil ) then
+    aItem := Level.Item[ Player.Position ];
+  if ( aItem = nil ) or ( not (aItem.IType in iItemTypes) ) then
   begin
-    iItem := Player.Inv.Choose( iItemTypes, 'unload' );
-    if iItem = nil then Exit( False );
+    IO.PushLayer( TPlayerView.CreateCommand( COMMAND_UNLOAD, Player.Flags[ BF_SCAVENGER ] ) );
+    Exit( True );
   end;
-  iName := iItem.Name;
 
-  if iItem.isAmmoPack then
-    if not IO.MsgConfirm('An ammopack might serve better in the Prepared slot. Continuing will unload the ammo destroying the pack. Are you sure?', True)
-      then Exit( False );
-
-  if (not iItem.isAmmoPack) and (BF_SCAVENGER in FFlags) and
-    ((iItem.Ammo = 0) or iItem.Flags[ IF_NOUNLOAD ] or iItem.Flags[ IF_RECHARGE ] or iItem.Flags[ IF_NOAMMO ]) and
-    (iItem.Flags[ IF_EXOTIC ] or iItem.Flags[ IF_UNIQUE ] or iItem.Flags[ IF_ASSEMBLED ] or iItem.Flags[ IF_MODIFIED ]) then
+  if aItem.isAmmoPack then
   begin
-    iID := LuaSystem.ProtectedCall( ['DoomRL','OnDisassemble'], [ iItem ] );
+    IO.PushLayer( TUnloadConfirmView.Create( aItem ) );
+    Exit( True );
+  end;
+
+  if (not aItem.isAmmoPack) and Player.Flags[ BF_SCAVENGER ] and
+    ((aItem.Ammo = 0) or aItem.Flags[ IF_NOUNLOAD ] or aItem.Flags[ IF_RECHARGE ] or aItem.Flags[ IF_NOAMMO ]) and
+    (aItem.Flags[ IF_EXOTIC ] or aItem.Flags[ IF_UNIQUE ] or aItem.Flags[ IF_ASSEMBLED ] or aItem.Flags[ IF_MODIFIED ]) then
+  begin
+    iID := LuaSystem.ProtectedCall( ['DoomRL','OnDisassemble'], [ aItem ] );
     if iID <> '' then
-      if not IO.MsgConfirm('Do you want to disassemble the '+iName+'?', True) then
-        iID := '';
+    begin
+      IO.PushLayer( TUnloadConfirmView.Create(aItem,iID) );
+      Exit;
+    end;
   end;
 
-  if ( iID = '' ) and ( not( iItem.IType in [ ItemType_Ranged, ItemType_AmmoPack ] ) ) then
+  if not( aItem.IType in [ ItemType_Ranged, ItemType_AmmoPack ] )  then
      Exit( False );
 
-  Exit( HandleCommand( TCommand.Create( COMMAND_UNLOAD, iItem, iID ) ) );
+  Exit( HandleCommand( TCommand.Create( COMMAND_UNLOAD, aItem, iID ) ) );
 end;
 
 function TDoom.HandleSwapWeaponCommand : Boolean;
@@ -660,8 +661,12 @@ begin
     if iButton = VMB_BUTTON_LEFT then
     begin
       if IO.MTarget = Player.Position then
+      begin
         if iAlt then
-          Exit( HandleCommand( Player.Inv.View ) )
+        begin
+          IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
+          Exit( True );
+        end
         else
         if Level.cellFlagSet( Player.Position, CF_STAIRS ) then
           Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) )
@@ -672,7 +677,11 @@ begin
             else
               Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) )
           else
-            Exit( HandleCommand( Player.Inv.View ) )
+            begin
+              IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
+              Exit( True );
+            end
+      end
       else
       if Distance( Player.Position, IO.MTarget ) = 1
         then Exit( HandleMoveCommand( DirectionToInput( NewDirection( Player.Position, IO.MTarget ) ) ) )
@@ -746,6 +755,7 @@ begin
       INPUT_ASSEMBLIES : begin IO.PushLayer( TAssemblyView.Create ); Exit; end;
       INPUT_USE        : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_USE ) ); Exit; end;
       INPUT_DROP       : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
+      INPUT_UNLOAD     : begin HandleUnloadCommand( nil ); Exit; end;
 
       INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, IO.MsgGetRecent ) ); Exit; end;
 

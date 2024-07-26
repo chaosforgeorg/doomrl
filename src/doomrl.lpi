@@ -52,7 +52,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="37">
+    <Units Count="38">
       <Unit0>
         <Filename Value="doomrl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -201,6 +201,10 @@
         <Filename Value="doomassemblyview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit36>
+      <Unit37>
+        <Filename Value="doomconfirmview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit37>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

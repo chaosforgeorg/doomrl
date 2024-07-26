@@ -2,9 +2,9 @@
 unit doominventory;
 interface
 uses SysUtils,
-     vnode, vuielements,
+     vnode,
      dfitem, dfthing, dfdata,
-     doomcommand, doomviews, doomhooks;
+     doomcommand, doomhooks;
 
 type
   TItemList      = array[TItemSlot] of TItem;
@@ -19,9 +19,7 @@ TInventory = class( TVObject )
        procedure Sort( var aList : TItemList );
        function  Size : byte;
        procedure Add( aItem : TItem );
-       function  Choose( aFilter : TItemTypeSet; const aAction : string) : TItem;
        function  SeekAmmo( aAmmoID : DWord ) : TItem;
-       function  View : TCommand;
        function  DoScrollSwap : TCommand;
        function  AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
        function  isFull : boolean;
@@ -40,13 +38,8 @@ TInventory = class( TVObject )
        destructor Destroy; override;
        procedure setSlot( aIndex : TEqSlot; aItem : TItem ); inline;
      private
-       function OnInvConfirm( aSender : TUICustomMenu; aResult : TUIItemResult ) : Boolean;
-       function OnEqConfirm( aSender : TUICustomMenu; aResult : TUIItemResult ) : Boolean;
-     private
        FOwner  : TThing;
        FChosen : TItem;
-       FSlot   : TEqSlot;
-       FAction : TUIItemResult;
        FSlots  : TEquipmentList;
        function  getSlot( aIndex : TEqSlot ) : TItem; inline;
      public
@@ -55,7 +48,7 @@ TInventory = class( TVObject )
 
 implementation
 
-uses vmath, vgenerics, vrltools, vluasystem, doomio, dfplayer, dfbeing, dflevel;
+uses vmath, vgenerics, vluasystem, doomio, dfplayer;
 
 { TInventoryEnumerator }
 
@@ -81,28 +74,6 @@ begin
   if aItem <> nil then aItem.CallHook( Hook_OnEquip, [FOwner] );
   if aItem <> nil then FOwner.Add( aItem );
   FSlots[aIndex] := aItem;
-end;
-
-function TInventory.OnInvConfirm ( aSender : TUICustomMenu; aResult : TUIItemResult ) : Boolean;
-begin
-  if (aSender.SelectedItem <> nil) and ( aSender.SelectedItem.Data <> nil ) then
-  begin
-    if aResult = ItemResultDrop
-      then TBeing(FOwner).ActionDrop( TItem( aSender.SelectedItem.Data ) )
-      else FChosen := TItem( aSender.SelectedItem.Data );
-  end;
-  Exit( True );
-end;
-
-function TInventory.OnEqConfirm ( aSender : TUICustomMenu; aResult : TUIItemResult ) : Boolean;
-begin
-  if (aSender.SelectedItem <> nil) and (aSender.Selected > 0) then
-  begin
-    FSlot   := TEqSlot(aSender.Selected-1);
-    FChosen := TItem( aSender.SelectedItem.Data );
-    FAction := aResult;
-  end;
-  Exit( True );
 end;
 
 procedure TInventory.RawSetSlot( aIndex: TEqSlot; aItem: TItem ); inline;
@@ -150,31 +121,6 @@ begin
         SwapItem(aList[iCount2],aList[iCount2+1]);
 end;
 
-function TInventory.Choose ( aFilter : TItemTypeSet; const aAction : string ) : TItem;
-var iList  : TItemList;
-    iItem  : TItem;
-    iCount : Integer;
-begin
-  for iCount in TItemSlot do
-    iList[ iCount ] := nil;
-
-  if aFilter = [] then aFilter := ItemsAll;
-  iCount := 0;
-  for iItem in Self do
-  if (not Equipped( iItem )) and (iItem.IType in aFilter) then
-  begin
-    Inc( iCount );
-    iList[ iCount ] := iItem;
-  end;
-
-  Sort( iList );
-
-  FChosen := nil;
-  IO.RunUILoop( TUIInventoryView.Create( IO.Root, @OnInvConfirm, iList, aAction ) );
-  Result := FChosen;
-  FChosen := nil;
-end;
-
 function TInventory.SeekAmmo( aAmmoID : DWord ) : TItem;
 var iAmmo      : TItem;
     iAmmoCount : Integer;
@@ -190,16 +136,6 @@ begin
          SeekAmmo   := iAmmo;
          iAmmoCount := iAmmo.Ammo;
        end;
-end;
-
-
-function TInventory.View : TCommand;
-begin
-  View.Command := COMMAND_NONE;
-  View.Item := Choose([],'');
-  if View.Item = nil then Exit;
-  if View.Item.isWearable then View.Command := COMMAND_WEAR;
-  if View.Item.isPack     then View.Command := COMMAND_USE;
 end;
 
 type TItemArray = specialize TGObjectArray< TItem >;

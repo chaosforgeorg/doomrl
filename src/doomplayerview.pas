@@ -1,7 +1,9 @@
 {$INCLUDE doomrl.inc}
 unit doomplayerview;
 interface
-uses viotypes, vgenerics, doomio, dfitem, dfdata, doomtrait;
+uses viotypes, vgenerics,
+     dfitem, dfdata,
+     doomio, doomtrait, doomconfirmview;
 
 type TPlayerViewState = (
   PLAYERVIEW_INVENTORY,
@@ -41,7 +43,7 @@ type TTraitViewArray = specialize TGArray< TTraitViewEntry >;
 type TPlayerView = class( TInterfaceLayer )
   constructor Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
   constructor CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0; aCallback : TOnPickTrait = nil );
-  constructor CreateCommand( aCommand : Byte );
+  constructor CreateCommand( aCommand : Byte; aScavenger : Boolean = False );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
@@ -74,18 +76,28 @@ protected
   FSwapMode    : Boolean;
   FTraitMode   : Boolean;
   FTraitFirst  : Boolean;
+  FScavenger   : Boolean;
   FSSlot       : TEqSlot;
   FTraits      : TTraitViewArray;
   FOnPick      : TOnPickTrait;
   FCommandMode : Byte;
 end;
 
+type TUnloadConfirmView = class( TConfirmView )
+  constructor Create( aItem : TItem; aID : Ansistring = '' );
+protected
+  procedure OnConfirm; override;
+protected
+  FItem : TItem;
+  FID   : Ansistring;
+end;
+
 implementation
 
 uses sysutils, variants,
-     vutil, vtig, vtigio, vgltypes, vluasystem,
+     vutil, vtig, vtigio, vluasystem,
      dfplayer,
-     doomcommand, doombase, doominventory, doomgfxio;
+     doomcommand, doombase, doominventory;
 
 constructor TPlayerView.Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
 begin
@@ -106,15 +118,19 @@ begin
     else ReadTraits( Player.Klass )
 end;
 
-constructor TPlayerView.CreateCommand( aCommand : Byte );
+constructor TPlayerView.CreateCommand( aCommand : Byte; aScavenger : Boolean = False );
 begin
   Initialize;
   FCommandMode := aCommand;
+  FScavenger   := aScavenger;
   FState       := PLAYERVIEW_INVENTORY;
   ReadInv;
   case aCommand of
-    COMMAND_USE  : begin FAction := 'use';  FITitle := 'Choose item to use';  Filter( [ITEMTYPE_PACK] ); end;
-    COMMAND_DROP : begin FAction := 'drop'; FITitle := 'Choose item to drop'; end;
+    COMMAND_USE    : begin FAction := 'use';  FITitle := 'Choose item to use';  Filter( [ITEMTYPE_PACK] ); end;
+    COMMAND_DROP   : begin FAction := 'drop'; FITitle := 'Choose item to drop'; end;
+    COMMAND_UNLOAD : if aScavenger
+                       then begin FAction := 'unload/scavenge';  FITitle := 'Choose item to unload/scavenge';  Filter( [ITEMTYPE_RANGED, ITEMTYPE_AMMOPACK, ITEMTYPE_MELEE, ITEMTYPE_ARMOR, ITEMTYPE_BOOTS] ); end
+                       else begin FAction := 'unload';           FITitle := 'Choose item to unload';  Filter( [ITEMTYPE_RANGED, ITEMTYPE_AMMOPACK] ); end;
   end;
 end;
 
@@ -124,6 +140,7 @@ begin
   VTIG_ResetSelect( 'inventory' );
   VTIG_ResetSelect( 'equipment' );
   VTIG_ResetSelect( 'traits' );
+  VTIG_ResetSelect( 'unload_confirm' );
   FState       := PLAYERVIEW_INVENTORY;
   FSize        := Point( 80, 25 );
   FInv         := nil;
@@ -212,7 +229,6 @@ var iEntry    : TItemViewEntry;
   function MarkQSlot( aIndex, aValue : Byte ) : Boolean;
   var iItem : TItem;
       i     : Integer;
-      ID: String;
   begin
     if ( aIndex < FInv.Size ) and Assigned( FInv[ aIndex ].Item ) then
     begin
@@ -328,7 +344,9 @@ begin
         begin
           iCommand := FCommandMode;
           FState := PLAYERVIEW_DONE;
-          if iCommand <> COMMAND_NONE then
+               if iCommand = COMMAND_UNLOAD then
+            Doom.HandleUnloadCommand( FInv[iSelected].Item )
+          else if iCommand <> COMMAND_NONE then
             Doom.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
         end;
       end;
@@ -824,6 +842,24 @@ begin
   FAction   := 'wear/wield';
   Filter( ItemEqFilters[ aSlot ] );
   FSSlot := aSlot;
+end;
+
+constructor TUnloadConfirmView.Create( aItem : TItem; aID : Ansistring = '' );
+begin
+  inherited Create;
+  FItem := aItem;
+  FID   := aID;
+  if FID = ''
+    then FMessage := 'An ammopack might serve better in the Prepared slot. Continuing will unload the ammo destroying the pack. Are you sure?'
+    else FMessage := 'Do you want to disassemble the '+FItem.Name+'?';
+  if FID = ''
+    then FSize := Point( 50,10 )
+    else FSize := Point( 50, 9 );
+end;
+
+procedure TUnloadConfirmView.OnConfirm;
+begin
+  Doom.HandleCommand( TCommand.Create( COMMAND_UNLOAD, FItem, FID ) );
 end;
 
 end.
