@@ -767,7 +767,6 @@ begin
     else
       FCharacter.Push( 'He has no resistance to knockback.' );
     FCharacter.Push( '' );
-    FCharacter.Push( '' );
     FCharacter.Push( Format( 'Enemies left : {!%d}', [Doom.Level.EnemiesLeft] ) );
     if Doom.Level.Feeling <> '' then
       FCharacter.Push( Format( 'Level feel : {!%s}', [Doom.Level.Feeling] ) )
