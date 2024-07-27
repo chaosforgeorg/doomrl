@@ -563,6 +563,7 @@ var iCon        : TUIConsole;
     iHPP        : Integer;
     iPos        : TIOPoint;
     iBottom     : Integer;
+    iLevelName  : string[64];
 
   function ArmorColor( aValue : Integer ) : TUIColor;
   begin
@@ -601,8 +602,13 @@ begin
 
   if Player <> nil then
   begin
-    iPos    := Point( 2,23 );
-    iBottom := 25;
+    iPos    := Point( 2,22 );
+    iBottom := 24;
+    if GraphicsVersion then
+    begin
+      iPos    := Point( 2,23 );
+      iBottom := 22;
+    end;
     iHPP    := Round((Player.HP/Player.HPMax)*100);
 
     VTIG_FreeLabel( 'Armor :',                            iPos + Point(28,0), DarkGray );
@@ -622,9 +628,10 @@ begin
 
     iColor := Red;
     if Doom.Level.Empty then iColor := Blue;
-    VTIG_FreeLabel( Doom.Level.Name, iPos + Point(61,2), iColor );
-    if Doom.Level.Name_Number >= 100 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(73,2), iColor )
-    else if Doom.Level.Name_Number <> 0 then VTIG_FreeLabel( 'Lev'+IntToStr(Doom.Level.Name_Number), iPos + Point(74,2), iColor );
+    iLevelName := Doom.Level.Name;
+    if Doom.Level.Name_Number > 0 then
+      iLevelName += ' Lev '+IntToStr( Doom.Level.Name_Number );
+    VTIG_FreeLabel( iLevelName, Point( -2-Length( iLevelName), iBottom ), iColor );
 
     with Player do
     for i := 1 to MAXAFFECT do

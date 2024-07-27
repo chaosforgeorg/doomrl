@@ -348,6 +348,7 @@ var iMousePos : TIOPoint;
     iShift    : TCoord2D;
     iSizeY    : DWord;
     iSizeX    : DWord;
+    iMinus    : Integer;
     iAbsolute : TIORect;
     iP1, iP2  : TIOPoint;
 begin
@@ -416,12 +417,15 @@ begin
       FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ),
       ZeroTex, UnitTex, FMinimapTexture );
 
-    iAbsolute := vutil.Rectangle( 1,1,78,25 );
+    iAbsolute := vutil.Rectangle( 1,1,80,25 );
     iP1 := IO.Root.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
     iP2 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
     QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.8 ) );
 
-    iP1 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x, iAbsolute.y2-1 ) );
+    iMinus := 1;
+    if StatusEffect = StatusInvert then
+      iMinus := 2;
+    iP1 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x, iAbsolute.y2-iMinus ) );
     iP2 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
     QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.8 ) );
   end;
