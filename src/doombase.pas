@@ -390,7 +390,7 @@ var iDir        : TDirection;
     iMoveResult : TMoveResult;
 begin
   Player.FLastTargetPos.Create(0,0);
-  if BF_SESSILE in FFlags then
+  if Player.Flags[ BF_SESSILE ] then
   begin
     IO.Msg( 'You can''t!' );
     Exit( False );
@@ -473,7 +473,7 @@ begin
       Exit( False );
     end;
   end;
-  if not iItem.CallHookCheck( Hook_OnFire, [Self,aAlt] ) then Exit( False );
+  if not iItem.CallHookCheck( Hook_OnFire, [Player,aAlt] ) then Exit( False );
 
   if aAlt then
   begin
