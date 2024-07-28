@@ -808,6 +808,8 @@ var iCount  : Integer;
     iSize   : Integer;
 begin
   iSize := 0;
+  if FInv = nil then ReadInv;
+  if FInv.Size > 0 then
   for iCount := 0 to FInv.Size - 1 do
     if FInv[ iCount ].Item.IType in aSet then
     begin
