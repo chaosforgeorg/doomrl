@@ -50,6 +50,8 @@ type TDoomGFXIO = class( TDoomIO )
     FVPadding    : DWord;
     FCellX       : Integer;
     FCellY       : Integer;
+    FFontSizeX   : Byte;
+    FFontSizeY   : Byte;
 
     FSettings   : array [Boolean] of
     record
@@ -88,6 +90,9 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
      dfplayer,
      doombase, doomtextures;
 
+const ConsoleSizeX = 80;
+      ConsoleSizeY = 25;
+
 constructor TDoomGFXIO.Create;
 var iCoreData   : TVDataFile;
     iImage      : TImage;
@@ -99,6 +104,7 @@ var iCoreData   : TVDataFile;
     iDoQuery    : Boolean;
     iSDLFlags   : TSDLIOFlags;
     iMode       : TIODisplayMode;
+    iFontName   : Ansistring;
 
   procedure ParseSettings( aFull : Boolean; const aPrefix : AnsiString; aDef : TIOPoint );
   begin
@@ -185,25 +191,34 @@ begin
 
   Textures   := TDoomTextures.Create;
 
+  iFontName := 'font10x18.png';
+  FFontSizeX := 10;
+  FFontSizeY := 18;
   if GodMode then
-    iImage := LoadImage('font10x18.png')
+    iImage := LoadImage(iFontName)
   else
   begin
     iCoreData := TVDataFile.Create(DataPath+'doomrl.wad');
     iCoreData.DKKey := LoveLace;
-    iStream := iCoreData.GetFile( 'font10x18.png', 'fonts' );
+    iStream := iCoreData.GetFile( iFontName, 'fonts' );
     iImage := LoadImage( iStream, iStream.Size );
     FreeAndNil( iStream );
     FreeAndNil( iCoreData );
   end;
-  iFontTexture := Textures.AddImage( 'font10x18', iImage, Option_Blending );
+  iFontTexture := Textures.AddImage( iFontName, iImage, Option_Blending );
   Textures[ iFontTexture ].Image.SubstituteColor( ColorBlack, ColorZero );
   Textures[ iFontTexture ].Upload;
 
   iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
   CalculateConsoleParams;
-  FConsole := TGLConsoleRenderer.Create( iFont, 80, 25, FLineSpace, [VIO_CON_CURSOR, VIO_CON_BGCOLOR, VIO_CON_EXTCOLOR ] );
-  TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
+  FConsole := TGLConsoleRenderer.Create( iFont, ConsoleSizeX, ConsoleSizeY, FLineSpace, [VIO_CON_CURSOR, VIO_CON_BGCOLOR, VIO_CON_EXTCOLOR ] );
+
+  TGLConsoleRenderer( FConsole ).SetPositionScale(
+    (FIODriver.GetSizeX - ConsoleSizeX*FFontSizeX*FFontMult) div 2,
+    0,
+    FLineSpace,
+    FFontMult
+  );
   SpriteMap  := TDoomSpriteMap.Create;
   FMCursor      := TDoomMouseCursor.Create;
   TSDLIODriver( FIODriver ).ShowMouse( False );
@@ -417,16 +432,16 @@ begin
       FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ),
       ZeroTex, UnitTex, FMinimapTexture );
 
-    iAbsolute := vutil.Rectangle( 1,1,80,25 );
-    iP1 := IO.Root.ConsoleCoordToDeviceCoord( iAbsolute.Pos );
-    iP2 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
+    iAbsolute := vutil.Rectangle( 1,1,ConsoleSizeX,ConsoleSizeY );
+    iP1 := ConsoleCoordToDeviceCoord( iAbsolute.Pos );
+    iP2 := ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
     QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.8 ) );
 
     iMinus := 1;
     if StatusEffect = StatusInvert then
       iMinus := 2;
-    iP1 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x, iAbsolute.y2-iMinus ) );
-    iP2 := IO.Root.ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
+    iP1 := ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x, iAbsolute.y2-iMinus ) );
+    iP2 := ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y2+2 ) );
     QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.8 ) );
   end;
 
@@ -460,7 +475,7 @@ begin
   end;
   ReuploadTextures;
   CalculateConsoleParams;
-  TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
+  TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - ConsoleSizeX*FFontSizeX*FFontMult) div 2, 0, FLineSpace, FFontMult );
   TGLConsoleRenderer( FConsole ).HideCursor;
   SetMinimapScale(FMiniScale);
   DeviceChanged;
@@ -478,7 +493,7 @@ end;
 
 procedure TDoomGFXIO.CalculateConsoleParams;
 begin
-  FLineSpace := Max((FIODriver.GetSizeY - 25*18*FFontMult - 2*FVPadding) div 25 div FFontMult,0);
+  FLineSpace := Max((FIODriver.GetSizeY - ConsoleSizeY*FFontSizeY*FFontMult - 2*FVPadding) div ConsoleSizeY div FFontMult,0);
 end;
 
 function TDoomGFXIO.OnEvent( const event : TIOEvent ) : Boolean;

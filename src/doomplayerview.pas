@@ -81,6 +81,7 @@ protected
   FTraits      : TTraitViewArray;
   FOnPick      : TOnPickTrait;
   FCommandMode : Byte;
+  FRect        : TIORect;
 end;
 
 type TUnloadConfirmView = class( TConfirmView )
@@ -200,7 +201,7 @@ begin
         end;
   end;
 
-  IO.RenderUIBackground( PointZero, FSize );
+  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 function TPlayerView.IsFinished : Boolean;
@@ -263,6 +264,7 @@ var iEntry    : TItemViewEntry;
 begin
   if FInv = nil then ReadInv;
   VTIG_BeginWindow( FITitle, 'inventory', FSize );
+    FRect := VTIG_GetWindowRect;
     VTIG_BeginGroup( 50 );
     for iEntry in FInv do
       if iEntry.QSlot <> 0
@@ -388,6 +390,7 @@ var iEntry       : TItemViewEntry;
 begin
   if FEq = nil then ReadEq;
   VTIG_BeginWindow('Equipment', 'equipment', FSize );
+    FRect := VTIG_GetWindowRect;
     VTIG_BeginGroup( 9, True );
 
       VTIG_BeginGroup( 50 );
@@ -505,6 +508,7 @@ var iString : Ansistring;
 begin
   if FCharacter = nil then ReadCharacter;
   VTIG_BeginWindow(FCTitle, 'character', FSize );
+  FRect := VTIG_GetWindowRect;
   iCount := 0;
   for iString in IO.NewAscii[Player.ASCIIMoreCode] do
   begin
@@ -524,6 +528,7 @@ begin
   if FTraitMode
     then VTIG_BeginWindow('Select trait to upgrade', 'traits', FSize )
     else VTIG_BeginWindow('Traits', 'traits', FSize );
+  FRect := VTIG_GetWindowRect;
 
   VTIG_BeginGroup( 23 );
     VTIG_AdjustPadding( Point(0,-1) );

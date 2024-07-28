@@ -564,6 +564,8 @@ var iCon        : TUIConsole;
     iPos        : TIOPoint;
     iBottom     : Integer;
     iLevelName  : string[64];
+    iCNormal    : DWord;
+    iCBold      : DWord;
 
   function ArmorColor( aValue : Integer ) : TUIColor;
   begin
@@ -596,34 +598,37 @@ var iCon        : TUIConsole;
   end;
 
 begin
+  iCNormal := DarkGray;
+  iCBold   := LightGray;
+
   iCon.Init( FConsole );
   if GraphicsVersion then
     iCon.Clear;
 
   if Player <> nil then
   begin
-    iPos    := Point( 2,22 );
-    iBottom := 24;
+    iPos    := Point( 2,FConsole.SizeY-3 );
+    iBottom := FConsole.SizeY-1;
     if GraphicsVersion then
     begin
-      iPos    := Point( 2,23 );
-      iBottom := 22;
+      iPos    := Point( 2,FConsole.SizeY-2 );
+      iBottom := FConsole.SizeY-3;
     end;
     iHPP    := Round((Player.HP/Player.HPMax)*100);
 
-    VTIG_FreeLabel( 'Armor :',                            iPos + Point(28,0), DarkGray );
+    VTIG_FreeLabel( 'Armor :',                            iPos + Point(28,0), iCNormal );
     VTIG_FreeLabel( Player.Name,                          iPos + Point(1,0),  NameColor(iHPP) );
-    VTIG_FreeLabel( 'Health:      Exp:   /      Weapon:', iPos + Point(1,1),  DarkGray );
+    VTIG_FreeLabel( 'Health:      Exp:   /      Weapon:', iPos + Point(1,1),  iCNormal );
     VTIG_FreeLabel( IntToStr(iHPP)+'%',                   iPos + Point(9,1),  Red );
-    VTIG_FreeLabel( TwoInt(Player.ExpLevel),              iPos + Point(19,1), LightGray );
-    VTIG_FreeLabel( ExpString,                            iPos + Point(22,1), LightGray );
+    VTIG_FreeLabel( TwoInt(Player.ExpLevel),              iPos + Point(19,1), iCBold );
+    VTIG_FreeLabel( ExpString,                            iPos + Point(22,1), iCBold );
 
     if Player.Inv.Slot[efWeapon] = nil
-      then VTIG_FreeLabel( 'none',                                iPos + Point(36,1), LightGray )
+      then VTIG_FreeLabel( 'none',                                iPos + Point(36,1), iCBold )
       else VTIG_FreeLabel( Player.Inv.Slot[efWeapon].Description, iPos + Point(36,1), WeaponColor(Player.Inv.Slot[efWeapon]) );
 
     if Player.Inv.Slot[efTorso] = nil
-      then VTIG_FreeLabel( 'none',                                iPos + Point(36,0), LightGray )
+      then VTIG_FreeLabel( 'none',                                iPos + Point(36,0), iCBold )
       else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(36,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
 
     iColor := Red;
@@ -658,8 +663,8 @@ begin
   if FMessages.Content.Size > 0 then
   for i := 1+FMessages.Scroll to iMax do
   begin
-    iColor := DarkGray;
-    if i > iMax - FMessages.Active then iColor := LightGray;
+    iColor := iCNormal;
+    if i > iMax - FMessages.Active then iColor := iCBold;
     iCon.Print( Point(1,i-FMessages.Scroll), FMessages.Content[ i-1 ], iColor, Black, Rectangle( 1,1, 78, 25 ) );
   end;
 
