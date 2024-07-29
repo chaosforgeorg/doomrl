@@ -1069,9 +1069,8 @@ var Stream    : TStream;
 begin
   try
     try
-      Stream := TDebugStream.Create(
-        TGZFileStream.Create( WritePath + 'save',gzOpenRead )
-      );
+      Stream := TGZFileStream.Create( WritePath + 'save',gzOpenRead );
+      //      Stream := TDebugStream.Create( Stream );
 
       ModuleID        := Stream.ReadAnsiString;
       UIDs            := TUIDStore.CreateFromStream( Stream );
@@ -1126,9 +1125,8 @@ begin
   Player.FStatistics.RealTime += MSecNow() - GameRealTime;
   Player.IncStatistic('save_count');
 
-  Stream := TDebugStream.Create(
-    TGZFileStream.Create( WritePath + 'save',gzOpenWrite )
-  );
+  Stream := TGZFileStream.Create( WritePath + 'save',gzOpenWrite );
+  //      Stream := TDebugStream.Create( Stream );
 
   Stream.WriteAnsiString( ModuleID );
   UIDs.WriteToStream( Stream );
