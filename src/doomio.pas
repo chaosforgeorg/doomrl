@@ -193,8 +193,13 @@ var Temp  : TGFXScreen;
     vx,vy : byte;
 }
 begin
+  if GraphicsVersion then
+    if Player <> nil then
+      SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
+
   if Option_NoBloodSlide or GraphicsVersion then
   begin
+
     exit;
   end;
 {
