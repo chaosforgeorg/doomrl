@@ -506,9 +506,9 @@ end;
 function TPlayer.doSave : Boolean;
 begin
   //if Doom.Difficulty >= DIFF_NIGHTMARE then Exit( Fail( 'There''s no escape from a NIGHTMARE! Stand and fight like a man!', [] ) );
-  if not (CellHook_OnExit in Cells[ TLevel(Parent).Cell[ FPosition ] ].Hooks) then Exit( Fail( 'You can only save the game standing on the stairs to the next level.', [] ) );
+  //if not (CellHook_OnExit in Cells[ TLevel(Parent).Cell[ FPosition ] ].Hooks) then Exit( Fail( 'You can only save the game standing on the stairs to the next level.', [] ) );
   Doom.SetState( DSSaving );
-  TLevel(Parent).CallHook( Position, CellHook_OnExit );
+  //TLevel(Parent).CallHook( Position, CellHook_OnExit );
 end;
 
 procedure TPlayer.doQuit( aNoConfirm : Boolean = False );
