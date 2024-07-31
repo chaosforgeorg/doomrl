@@ -103,6 +103,9 @@ TLevel = class(TLuaMapNode, ITextMap)
     function GetMiniMapColor( aCoord : TCoord2D ) : TColor;
     function getGylph( const aCoord : TCoord2D ) : TIOGylph;
     function EntityFromStream( aStream : TStream; aEntityID : Byte ) : TLuaEntityNode; override;
+    constructor CreateFromStream( Stream: TStream ); override;
+    procedure WriteToStream( Stream: TStream ); override;
+
     function EnemiesLeft : DWord;
     function GetLookDescription( aWhere : TCoord2D ) : Ansistring;
 
@@ -454,6 +457,53 @@ begin
     ENTITY_BEING : Exit( TBeing.CreateFromStream(aStream) );
     ENTITY_ITEM  : Exit( TItem.CreateFromStream(aStream) );
   end;
+end;
+
+constructor TLevel.CreateFromStream( Stream: TStream );
+begin
+  inherited CreateFromStream( Stream );
+
+  Stream.Read( FMap, SizeOf( FMap ) );
+  FStatus := Stream.ReadWord();
+  FStyle  := Stream.ReadByte();
+  FLNum   := Stream.ReadWord();
+  FLTime  := Stream.ReadDWord();
+  Stream.Read( FEmpty, SizeOf( FEmpty ) );
+  FDangerLevel := Stream.ReadWord();
+  Stream.Read( FToHitBonus, SizeOf( FToHitBonus ) );
+  FFloorCell   := Stream.ReadWord();
+  FFloorStyle  := Stream.ReadByte();
+  FID          := Stream.ReadAnsiString();
+  FFeeling     := Stream.ReadAnsiString();
+  FSpecExit    := Stream.ReadAnsiString();
+
+  FActiveBeing := nil;
+  FNextNode    := nil;
+end;
+
+procedure TLevel.WriteToStream( Stream: TStream );
+var aID : Ansistring;
+begin
+  aID := FID;
+  FID := 'default';
+  inherited WriteToStream( Stream );
+
+  Stream.Write( FMap, SizeOf( FMap ) );
+  Stream.WriteWord( FStatus );
+  Stream.WriteByte( FStyle );
+  Stream.WriteWord( FLNum );
+  Stream.WriteDWord( FLTime );
+  Stream.Write( FEmpty, SizeOf( FEmpty ) );
+  Stream.WriteWord( FDangerLevel );
+  Stream.Write( FToHitBonus, SizeOf( FToHitBonus ) );
+  Stream.WriteWord( FFloorCell );
+  Stream.WriteByte( FFloorStyle );
+  Stream.WriteAnsiString( aID );
+  Stream.WriteAnsiString( FFeeling );
+  Stream.WriteAnsiString( FSpecExit );
+
+//    FActiveBeing : TBeing;
+//    FNextNode    : TNode;
 end;
 
 function TLevel.EnemiesLeft: DWord;

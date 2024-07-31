@@ -6,7 +6,7 @@ uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
      dflevel, dfdata, dfhof, dfitem,
      doomhooks, doomlua, doommodule, doommenuview, doomcommand;
 
-type TDoomState = ( DSStart,      DSMenu,    DSLoading,
+type TDoomState = ( DSStart,      DSMenu,    DSLoading,   DSCrashLoading,
                     DSPlaying,    DSSaving,  DSNextLevel,
                     DSQuit,       DSFinished );
 
@@ -21,6 +21,7 @@ TDoom = class(TSystem)
        ArchAngel     : Boolean;
        DataLoaded    : Boolean;
        GameWon       : Boolean;
+       CrashSave     : Boolean;
        GameType      : TDoomGameType;
        Module        : TDoomModule;
        NVersion      : TVersion;
@@ -31,7 +32,7 @@ TDoom = class(TSystem)
        procedure Load;
        procedure UnLoad;
        function LoadSaveFile : Boolean;
-       procedure WriteSaveFile;
+       procedure WriteSaveFile( aCrash : Boolean );
        function SaveExists : Boolean;
        procedure SetupLuaConstants;
        function Action( aCommand : Byte ) : Boolean;
@@ -197,6 +198,7 @@ begin
   GameType   := GameStandard;
   GameWon    := False;
   DataLoaded := False;
+  CrashSave  := False;
   SetState( DSStart );
   FModuleHooks := [];
   FChallengeHooks := [];
@@ -788,6 +790,7 @@ var iRank       : THOFRank;
     iResult     : TMenuResult;
     iEvent      : TIOEvent;
     iCommand    : Byte;
+    iFullLoad   : Boolean;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
@@ -824,7 +827,9 @@ repeat
 
   if iResult.Loaded then
   begin
-    SetState( DSLoading );
+    if CrashSave
+      then SetState( DSCrashLoading )
+      else SetState( DSLoading );
     SetupLuaConstants;
   end
   else
@@ -838,78 +843,84 @@ repeat
 
   if GameType = GameEpisode then LoadModule( False );
 
-  if (not (State = DSLoading)) then
+  if (not (State in [DSLoading, DSCrashLoading])) then
     CallHookCheck( Hook_OnIntro, [Option_NoIntro] );
 
 
-  if (GameType <> GameSingle) and (State <> DSLoading) then
+  if (GameType <> GameSingle) and (not(State in [DSLoading, DSCrashLoading])) then
   begin
     CallHook( Hook_OnCreateEpisode, [] );
   end;
-  CallHook( Hook_OnLoaded, [State = DSLoading] );
+  CallHook( Hook_OnLoaded, [(State in [DSLoading, DSCrashLoading])] );
 
   GameRealTime := MSecNow();
   try
   repeat
-    if Player.NukeActivated > 0 then
+    if State <> DSLoading then
     begin
-      IO.Msg('You hear a gigantic explosion above!');
-      Inc(Player.FScore,1000);
-      Player.IncStatistic('levels_nuked');
-      Player.NukeActivated := 0;
-    end;
-
-    with Player do
-    begin
-      FStatistics.Update;
-    end;
-
-    if GameType = GameSingle then
-       RunSingle
-    else
-    begin
-      if Player.SpecExit = '' then
-        Inc(Player.CurrentLevel)
-      else
-        Player.IncStatistic('bonus_levels_visited');
-
-      with LuaSystem.GetTable(['player','episode',Player.CurrentLevel]) do
-      try
-        FLevel.Init(getInteger('style',0),
-                   getInteger('number',0),
-                   getString('name',''),
-                   getString('special',''),
-                   Player.CurrentLevel,
-                   getInteger('danger',0));
-
-        if Player.SpecExit <> ''
-          then FLevel.Flags[ LF_BONUS ] := True
-          else Player.SpecExit := getString('script','');
-
-      finally
-        Free;
+      if (Player.NukeActivated > 0) then
+      begin
+        IO.Msg('You hear a gigantic explosion above!');
+        Inc(Player.FScore,1000);
+        Player.IncStatistic('levels_nuked');
+        Player.NukeActivated := 0;
       end;
 
-      if Player.SpecExit <> ''
-        then
-          FLevel.ScriptLevel(Player.SpecExit)
+      with Player do
+      begin
+        FStatistics.Update;
+      end;
+
+      if GameType = GameSingle then
+         RunSingle
+      else
+      begin
+        if Player.SpecExit = '' then
+          Inc(Player.CurrentLevel)
         else
-        begin
-          if FLevel.Name_Number <> 0 then IO.Msg('You enter %s, level %d.',[ FLevel.Name, FLevel.Name_Number ]);
-          CallHookCheck(Hook_OnGenerate,[]);
-          FLevel.AfterGeneration( True );
+          Player.IncStatistic('bonus_levels_visited');
+
+        with LuaSystem.GetTable(['player','episode',Player.CurrentLevel]) do
+        try
+          FLevel.Init(getInteger('style',0),
+                     getInteger('number',0),
+                     getString('name',''),
+                     getString('special',''),
+                     Player.CurrentLevel,
+                     getInteger('danger',0));
+
+          if Player.SpecExit <> ''
+            then FLevel.Flags[ LF_BONUS ] := True
+            else Player.SpecExit := getString('script','');
+
+        finally
+          Free;
         end;
-      Player.SpecExit := '';
+
+        if Player.SpecExit <> ''
+          then
+            FLevel.ScriptLevel(Player.SpecExit)
+          else
+          begin
+            if FLevel.Name_Number <> 0 then IO.Msg('You enter %s, level %d.',[ FLevel.Name, FLevel.Name_Number ]);
+            CallHookCheck(Hook_OnGenerate,[]);
+            FLevel.AfterGeneration( True );
+          end;
+        Player.SpecExit := '';
+      end;
     end;
-    
+    iFullLoad := State = DSLoading;
+
     FLevel.CalculateVision( Player.Position );
     SetState( DSPlaying );
     IO.BloodSlideDown(20);
-    
     IO.Audio.PlayMusic(FLevel.ID);
-    FLevel.PreEnter;
 
-    FLevel.Tick;
+    if not iFullLoad then
+    begin
+      FLevel.PreEnter;
+      FLevel.Tick;
+    end;
     PreAction;
 
     while ( State = DSPlaying ) do
@@ -958,12 +969,15 @@ repeat
         HandleKeyEvent( iEvent );
     end;
 
-    if State in [ DSNextLevel, DSSaving ] then
+    if State = DSNextLevel then
       FLevel.Leave;
 
-    Inc(Player.FScore,100);
+    if State = DSSaving
+      then
+      else Inc(Player.FScore,100);
     if GameWon and (State <> DSNextLevel) then Player.WriteMemorial;
-    FLevel.Clear;
+    if State <> DSSaving then
+      FLevel.Clear;
     IO.SetHint('');
   until (State <> DSNextLevel) or (GameType = GameSingle);
   except on e : Exception do
@@ -975,7 +989,7 @@ repeat
       if Player.CurrentLevel <> 1 then Dec(Player.CurrentLevel);
       Player.IncStatistic('crash_count');
       Player.SpecExit := '';
-      WriteSaveFile;
+      WriteSaveFile( True );
     end;
     raise;
   end;
@@ -985,7 +999,7 @@ repeat
   begin
     if State = DSSaving then
     begin
-      WriteSaveFile;
+      WriteSaveFile( False );
       IO.MsgEnter('Game saved. Press <Enter> to exit.');
     end;
     if State = DSFinished then
@@ -1051,11 +1065,12 @@ begin
 end;
 
 function TDoom.LoadSaveFile: Boolean;
-var Stream : TStream;
+var Stream    : TStream;
 begin
   try
     try
       Stream := TGZFileStream.Create( WritePath + 'save',gzOpenRead );
+      //      Stream := TDebugStream.Create( Stream );
 
       ModuleID        := Stream.ReadAnsiString;
       UIDs            := TUIDStore.CreateFromStream( Stream );
@@ -1067,6 +1082,14 @@ begin
       SChallenge      := Stream.ReadAnsiString;
 
       Player := TPlayer.CreateFromStream( Stream );
+      CrashSave := Stream.ReadByte <> 0;
+
+      if not CrashSave then
+      begin
+        FreeAndNil( FLevel );
+        FLevel := TLevel.CreateFromStream( Stream );
+        FLevel.Place( Player, Player.Position );
+      end;
     finally
       Stream.Destroy;
     end;
@@ -1096,13 +1119,14 @@ begin
   end;
 end;
 
-procedure TDoom.WriteSaveFile;
+procedure TDoom.WriteSaveFile( aCrash : Boolean );
 var Stream : TStream;
 begin
   Player.FStatistics.RealTime += MSecNow() - GameRealTime;
   Player.IncStatistic('save_count');
 
   Stream := TGZFileStream.Create( WritePath + 'save',gzOpenWrite );
+  //      Stream := TDebugStream.Create( Stream );
 
   Stream.WriteAnsiString( ModuleID );
   UIDs.WriteToStream( Stream );
@@ -1114,8 +1138,16 @@ begin
   Stream.WriteAnsiString( SChallenge );
 
   Player.WriteToStream(Stream);
+  Player.Detach;
+  if aCrash
+    then Stream.WriteByte( 1 )
+    else Stream.WriteByte( 0 );
+
+  if not aCrash then
+    FLevel.WriteToStream( Stream );
 
   FreeAndNil( Stream );
+  FLevel.Clear;
 end;
 
 function TDoom.SaveExists : Boolean;

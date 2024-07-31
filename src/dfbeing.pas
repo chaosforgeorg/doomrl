@@ -337,7 +337,7 @@ begin
   Stream.WriteByte( FArmor );
   Stream.WriteWord( FExpValue );
 
-  Stream.WriteByte( Player.Inv.Size );
+  Stream.WriteByte( FInv.Size );
   for Item in FInv do
     if not FInv.Equipped( Item ) then
       Item.WriteToStream( Stream );

@@ -193,8 +193,13 @@ var Temp  : TGFXScreen;
     vx,vy : byte;
 }
 begin
+  if GraphicsVersion then
+    if Player <> nil then
+      SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
+
   if Option_NoBloodSlide or GraphicsVersion then
   begin
+
     exit;
   end;
 {
@@ -437,7 +442,7 @@ begin
     iEvent := event;
     iEvent.Mouse.Pos := DeviceCoordToConsoleCoord( event.Mouse.Pos );
     VTIG_GetIOState.MouseState.HandleEvent( iEvent );
-    if event.EType = VEVENT_MOUSEDOWN then
+    if ( event.EType = VEVENT_MOUSEDOWN ) and ( event.Mouse.Button = VMB_BUTTON_LEFT ) then
       VTIG_GetIOState.EventState.SetState( VTIG_IE_MCONFIRM, True );
   end;
 
