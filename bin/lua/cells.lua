@@ -110,17 +110,9 @@ function DoomRL.loadcells()
 		ascii      = "#",
 		color      = { DARKGRAY, BROWN, RED },
 		sprite     = {
-			sprite = SPRITE_CAVEWALL, 
-			-- first five are in tech, rest in cave levels (for floor matching)
-			{ coscolor   = { 0.3,0.3,0.3,1.0 }, },
-			{ coscolor   = { 1.0,0.6,0.2,1.0 }, },
-			{ coscolor   = { 1.0,0.2,0.2,1.0 }, },
-			{ coscolor   = { 0.3,0.3,0.3,1.0 }, },
-			{ coscolor   = { 1.0,0.6,0.2,1.0 }, },
-
-			{ coscolor   = { 0.3,0.3,0.3,1.0 }, }, -- 5
-			{ coscolor   = { 1.0,0.6,0.2,1.0 }, }, -- 6
-			{ coscolor   = { 1.0,0.2,0.2,1.0 }, }, -- 7
+			{ sprite = SPRITE_CAVEWALL, coscolor   = { 0.3,0.3,0.3,1.0 }, }, -- 5
+			{ sprite = SPRITE_CAVEWALL, coscolor   = { 1.0,0.6,0.2,1.0 }, }, -- 6
+			{ sprite = SPRITE_LAVAWALL, }, -- 7
 		},
 		destroyto  = "wall_destroyed",
 		blcolor    = RED,
@@ -130,6 +122,23 @@ function DoomRL.loadcells()
 		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
 		blsprite   = SPRITE_WALLBLOOD,
 		sflags     = { SF_MULTI },
+	}
+
+	register_cell "cfloor"
+	{
+		name       = "floor",
+		ascii      = "\250",
+		asciilow   = '.',
+		set        = CELLSET_FLOORS,
+		blname     = "blood",
+		blcolor    = RED;
+		bloodto    = "bloodpool";
+		blsprite   = SPRITE_BLOOD;
+		sprite     = {
+			SPRITE_CAVEFLOOR, -- cave 0
+			SPRITE_HELLFLOOR, -- cave 1
+			SPRITE_REDFLOOR,  -- cave 2
+		}
 	}
 
 -- Cave Walls End --

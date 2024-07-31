@@ -78,11 +78,18 @@ function DoomRL.OnLoadBase()
 		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 0,  },
 		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 1,  },
 		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 2, },
+		-- boss levels (4)
 		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 0,  },
-		-- caves
-		{ floor = "floor",  wall = "cwall", door="door",  odoor = "odoor", style = 5,  },
-		{ floor = "floor",  wall = "cwall", door="door",  odoor = "odoor", style = 6,  },
-		{ floor = "floor",  wall = "cwall", door="door",  odoor = "odoor", style = 7,  },
+		-- unused (5-9)
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 0,  },
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 0,  },
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 0,  },
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 0,  },
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 0,  },
+		-- caves (10-12)
+		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 0,  },
+		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 1,  },
+		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 2,  },
 	}
 end
 
