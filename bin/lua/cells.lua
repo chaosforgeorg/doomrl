@@ -44,7 +44,7 @@ function DoomRL.loadcells()
 		name       = "base wall",
 		blname     = "blooded wall",
 		ascii      = "#",
-		color      = { LIGHTGRAY, DARKGRAY, },
+		color      = { LIGHTGRAY, DARKGRAY, LIGHTGRAY, WHITE, BLUE, BROWN, BROWN },
 		blcolor    = RED,
 		armor      = 10,
 		hp         = 10,
