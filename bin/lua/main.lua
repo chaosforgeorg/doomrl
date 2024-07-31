@@ -78,11 +78,22 @@ function DoomRL.OnLoadBase()
 		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 0,  },
 		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 1,  },
 		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 2, },
+		-- boss levels (4)
 		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 0,  },
-		-- caves
-		{ floor = "floor",  wall = "cwall", door="door",  odoor = "odoor", style = 5,  },
-		{ floor = "floor",  wall = "cwall", door="door",  odoor = "odoor", style = 6,  },
-		{ floor = "floor",  wall = "cwall", door="door",  odoor = "odoor", style = 7,  },
+		-- alt-style for phobos
+		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 3,  },
+		-- alt-style for deimos
+		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 4,  },
+		-- alt-style for hell
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 5,  },
+		-- alt-style for phobos 2
+		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 6,  },
+		-- babel
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 7,  },
+		-- caves (10-12)
+		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 0,  },
+		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 1,  },
+		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 2,  },
 	}
 end
 
@@ -700,18 +711,19 @@ function DoomRL.OnCreateEpisode()
 		{"the_lava_pits","mt_erebus"},-- 22/6
 	}
 
-	player.episode[1]   = { script = "intro", style = 1, deathname = "the Phobos base" }
-	for i=2,8 do
-		player.episode[i] = { style = 1, number = i, name = "Phobos", danger = i, deathname = "the Phobos base" }
+	player.episode[1] = { script = "intro", style = 1, deathname = "the Phobos base" }
+	player.episode[2] = { style = 1, number = 2, name = "Phobos", danger = 2, deathname = "the Phobos base" }
+	for i=3,8 do
+		player.episode[i] = { style = table.random_pick{1,5,8}, number = i, name = "Phobos", danger = i, deathname = "the Phobos base" }
 	end
 	for i=9,16 do
-		player.episode[i] = { style = 2, number = i-8, name = "Deimos", danger = i, deathname = "the Deimos base" }
+		player.episode[i] = { style = table.random_pick{2,6}, number = i-8, name = "Deimos", danger = i, deathname = "the Deimos base" }
 	end
 	for i=17,BOSS_LEVEL-1 do
-		player.episode[i] = { style = 3, number = i-16, name = "Hell", danger = i }
+		player.episode[i] = { style = table.random_pick{3,7}, number = i-16, name = "Hell", danger = i }
 	end
 	player.episode[8]            = { script = "hellgate", style = 4, deathname = "the Hellgate" }
-	player.episode[16]           = { script = "tower_of_babel", style = 4, deathname = "the Tower of Babel" }
+	player.episode[16]           = { script = "tower_of_babel", style = 9, deathname = "the Tower of Babel" }
 	player.episode[BOSS_LEVEL]   = { script = "dis", style = 4, deathname = "the City of Dis" }
 	player.episode[BOSS_LEVEL+1] = { script = "hell_fortress", style = 4, deathname = "the Hell Fortress" }
 

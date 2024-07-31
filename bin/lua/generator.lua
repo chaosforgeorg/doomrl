@@ -358,10 +358,10 @@ end
 function generator.generate_caves_dungeon()
 	core.log("generator.generate_caves_dungeon()")
 	local dlevel = level.danger_level
-	local style  = 5
-	if dlevel > 8  then style = 6 end
-	if dlevel > 16 then style = 7 end
-	if dlevel > 30 then style = math.random( 5, 7 ) end
+	local style  = 10
+	if dlevel > 8  then style = 11 end
+	if dlevel > 16 then style = 12 end
+	if dlevel > 30 then style = math.random( 10, 12 ) end
 	
 	level:set_generator_style( style )
 
@@ -478,10 +478,10 @@ function generator.generate_caves_2_dungeon()
 	local dlevel = level.danger_level
 	local wall_cell  = cells[generator.styles[ level.style ].wall].nid
 	local door_cell  = cells[generator.styles[ level.style ].door].nid
-	local style  = 5
-	if dlevel > 8  then style = 6 end
-	if dlevel > 16 then style = 7 end
-	if dlevel > 30 then style = math.random( 5, 7 ) end
+	local style  = 10
+	if dlevel > 8  then style = 11 end
+	if dlevel > 16 then style = 12 end
+	if dlevel > 30 then style = math.random( 10, 12 ) end
 	level:set_generator_style( style )
 
 	local floor_cell = cells[generator.styles[ level.style ].floor].nid
