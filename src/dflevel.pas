@@ -462,6 +462,7 @@ end;
 constructor TLevel.CreateFromStream( Stream: TStream );
 begin
   inherited CreateFromStream( Stream );
+  RegisterDungen( FGenerator );
 
   Stream.Read( FMap, SizeOf( FMap ) );
   FStatus := Stream.ReadWord();
