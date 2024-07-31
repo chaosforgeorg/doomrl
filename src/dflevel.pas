@@ -473,6 +473,7 @@ begin
   Stream.Read( FToHitBonus, SizeOf( FToHitBonus ) );
   FFloorCell   := Stream.ReadWord();
   FFloorStyle  := Stream.ReadByte();
+  FID          := Stream.ReadAnsiString();
   FFeeling     := Stream.ReadAnsiString();
   FSpecExit    := Stream.ReadAnsiString();
 
@@ -481,7 +482,10 @@ begin
 end;
 
 procedure TLevel.WriteToStream( Stream: TStream );
+var aID : Ansistring;
 begin
+  aID := FID;
+  FID := 'default';
   inherited WriteToStream( Stream );
 
   Stream.Write( FMap, SizeOf( FMap ) );
@@ -494,6 +498,7 @@ begin
   Stream.Write( FToHitBonus, SizeOf( FToHitBonus ) );
   Stream.WriteWord( FFloorCell );
   Stream.WriteByte( FFloorStyle );
+  Stream.WriteAnsiString( aID );
   Stream.WriteAnsiString( FFeeling );
   Stream.WriteAnsiString( FSpecExit );
 
