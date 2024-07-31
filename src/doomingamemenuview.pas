@@ -21,7 +21,7 @@ end;
 
 implementation
 
-uses vtig, vutil, vluasystem, dfplayer, doombase;
+uses vtig, vutil, vluasystem, dfplayer, doombase, doomhelpview;
 
 constructor TInGameMenuView.Create;
 begin
@@ -42,8 +42,10 @@ begin
   begin
     FFinished := True;
   end;
-  if VTIG_Selectable( 'Help', False ) then
+  if VTIG_Selectable( 'Help' ) then
   begin
+    IO.PushLayer( THelpView.Create );
+    FFinished := True;
   end;
   if VTIG_Selectable( 'Settings', False ) then
   begin
