@@ -224,7 +224,7 @@ begin
     .SetName('More info on target')
     .SetDescription('Open up target information screen.')
     ;
-  iGroup.AddInteger( 'input_drop', VKEY_BACKSPACE )
+  iGroup.AddInteger( 'input_drop', VKEY_BACK )
     .SetName('Drop item')
     .SetDescription('Drop item while in inventory.')
     ;
