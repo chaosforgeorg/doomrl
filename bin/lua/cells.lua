@@ -11,14 +11,14 @@ function DoomRL.loadcells()
 		bloodto    = "bloodpool";
 		blsprite   = SPRITE_BLOOD;
 		sprite     = {
-			SPRITE_FLOOR, -- tech 0
-			SPRITE_FLOOR, -- tech 1
-			SPRITE_HELLFLOOR, -- tech hell
-			SPRITE_FLOOR, -- unused 3
-			SPRITE_FLOOR, -- unused 4
-			SPRITE_FLOOR,     -- cave 5
-			SPRITE_CAVEFLOOR, -- cave 6
-			SPRITE_HELLFLOOR, -- cave 7
+			SPRITE_FLOOR, -- phobos
+			SPRITE_PLATEFLOOR, -- deimos
+			SPRITE_BIOFLOOR, -- hell alt
+			SPRITE_TETRISFLOOR, -- phobos alt
+			SPRITE_GRATEFLOOR, -- deimos alt
+			SPRITE_HELLFLOOR, -- hell
+			SPRITE_HEXFLOOR, -- phobos alt 2
+			SPRITE_GREENFLOOR, -- babel
 		}
 	}
 
@@ -50,7 +50,15 @@ function DoomRL.loadcells()
 		hp         = 10,
 		set        = CELLSET_WALLS,
 		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
-		sprite     = { SPRITE_WALL, SPRITE_TECHWALL },
+		sprite     = { 
+			SPRITE_WALL, -- phobos
+			SPRITE_TECHWALL, -- deimos
+			SPRITE_WALL, -- hell (unused)
+			SPRITE_PANELWALL, -- phobos (alt)
+			{ sprite = SPRITE_CYBERWALL, coscolor   = { 0.1,0.1,0.8,1.0 }, }, -- 5
+			SPRITE_WALL, -- hell (unused)
+			SPRITE_PIPEWALL, -- phobos (alt 2)
+		},
 		blsprite   = SPRITE_WALLBLOOD,
 		destroyto  = "wall_destroyed",
 		sflags     = { SF_MULTI },
@@ -71,8 +79,17 @@ function DoomRL.loadcells()
 		hp         = 15,
 		set        = CELLSET_WALLS,
 		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_STICKWALL },
-		coscolor   = { 1.0,0.2,0.2,1.0 },
-		sprite     = SPRITE_BRICKWALL,
+		coscolor   = { 1.0,0.1,0.1,1.0 },
+		sprite     = {
+			SPRITE_BRICKWALL,
+			SPRITE_BRICKWALL,
+			SPRITE_BRICKWALL,
+			SPRITE_BRICKWALL,
+			SPRITE_STONEWALL,
+			SPRITE_STONEWALL,
+			SPRITE_STONEWALL,
+			SPRITE_STONEWALL,
+		},
 		blsprite   = SPRITE_WALLBLOOD,
 		destroyto  = "wall_destroyed",
 		sflags     = { SF_MULTI },
@@ -209,7 +226,15 @@ function DoomRL.loadcells()
 		armor      = 4,
 		hp         = 6,
 		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_FRAGILE, CF_OVERLAY, CF_STICKWALL, CF_OPENABLE, CF_RUNSTOP, CF_HIGHLIGHT},
-		sprite     = { SPRITE_DOOR, SPRITE_DOOR, SPRITE_HELLDOOR, },
+		sprite     = { 
+			SPRITE_STRONGDOOR, 
+			SPRITE_DOOR,
+			SPRITE_HELLDOOR,
+			SPRITE_IRONDOOR,
+			SPRITE_UACDOOR,
+			SPRITE_BROWNDOOR,
+			SPRITE_GREENDOOR,
+		},
 		sftime     = 25,
 
 		OnAct = function(c,being)
@@ -228,7 +253,16 @@ function DoomRL.loadcells()
 		ascii      = "/",
 		color      = BROWN,
 		flags      = {CF_NOCHANGE, CF_NORUN, CF_OVERLAY, CF_STICKWALL, CF_CLOSABLE, CF_RUNSTOP, CF_NUKABLE, CF_HIGHLIGHT },
-		sprite     = { SPRITE_OPENDOOR, SPRITE_OPENDOOR, SPRITE_HELLOPENDOOR, },
+		sprite     = {
+			SPRITE_STRONGOPENDOOR,
+			SPRITE_OPENDOOR,
+			SPRITE_HELLOPENDOOR,
+			SPRITE_IRONOPENDOOR,
+			SPRITE_UACOPENDOOR,
+			SPRITE_SKULLOPENDOOR,
+			SPRITE_BROWNOPENDOOR,
+			SPRITE_GREENOPENDOOR,
+		},
 		sftime     = 25,
 
 		OnAct = function(c,being)
