@@ -1259,7 +1259,7 @@ function lua_ui_set_hint(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  if Option_Hints then
+  if not Setting_HideHints then
     IO.SetHint( State.ToString( 1 ) );
   Result := 0;
 end;

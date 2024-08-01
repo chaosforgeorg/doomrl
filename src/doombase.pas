@@ -213,6 +213,10 @@ begin
   if Assigned( IO ) then
     (IO as TDoomIO).Reconfigure( Config );
   Setting_AlwaysRandomName := Configuration.GetBoolean( 'always_random_name' );
+  Setting_NoIntro          := Configuration.GetBoolean( 'skip_intro' );
+  Setting_NoFlash          := Configuration.GetBoolean( 'no_flashing' );
+  Setting_RunOverItems     := Configuration.GetBoolean( 'run_over_items' );
+  Setting_HideHints        := Configuration.GetBoolean( 'hide_hints' );
 end;
 
 procedure TDoom.CreateIO;
@@ -854,7 +858,7 @@ repeat
   if GameType = GameEpisode then LoadModule( False );
 
   if (not (State in [DSLoading, DSCrashLoading])) then
-    CallHookCheck( Hook_OnIntro, [Option_NoIntro] );
+    CallHookCheck( Hook_OnIntro, [Setting_NoIntro] );
 
 
   if (GameType <> GameSingle) and (not(State in [DSLoading, DSCrashLoading])) then

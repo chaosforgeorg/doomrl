@@ -39,9 +39,6 @@ begin
 
   Option_HighASCII        := Configure('AllowHighAscii',Option_HighASCII);
   Option_AlwaysName       := Configure('AlwaysName',Option_AlwaysName);
-  Option_NoIntro          := Configure('SkipIntro',Option_NoIntro);
-  Option_NoFlash          := Configure('NoFlashing',Option_NoFlash);
-  Option_RunOverItems     := Configure('RunOverItems',Option_RunOverItems);
   Option_Music            := Configure('GameMusic',Option_Music);
   Option_Sound            := Configure('GameSound',Option_Sound);
   Option_MenuSound        := Configure('MenuSound',Option_MenuSound);
@@ -58,7 +55,6 @@ begin
   Option_LockBreak        := Configure('LockBreak',Option_LockBreak);
   Option_LockClose        := Configure('LockClose',Option_LockClose);
   Option_TimeStamp        := Configure('TimeStamp',Option_TimeStamp);
-  Option_Hints            := Configure('Hints',Option_Hints);
   Option_NetworkConnection:= Configure('NetworkConnection',Option_NetworkConnection);
   Option_VersionCheck     := Configure('VersionCheck',Option_VersionCheck);
   Option_AlertCheck       := Configure('AlertCheck',Option_AlertCheck);

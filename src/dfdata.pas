@@ -112,12 +112,13 @@ const
 
 const
   Setting_AlwaysRandomName : Boolean = False;
+  Setting_NoIntro          : Boolean = False;
+  Setting_NoFlash          : Boolean = False;
+  Setting_RunOverItems     : Boolean = False;
+  Setting_HideHints        : Boolean = False;
 
 const
   Option_HighASCII        : Boolean = {$IFDEF WINDOWS}True{$ELSE}False{$ENDIF};
-  Option_NoIntro          : Boolean = False;
-  Option_NoFlash          : Boolean = False;
-  Option_RunOverItems     : Boolean = False;
   Option_Music            : Boolean = False;
   Option_Sound            : Boolean = False;
   Option_MenuSound        : Boolean = False;
@@ -134,7 +135,6 @@ const
   Option_ColoredInventory : Boolean = True;
   Option_LockBreak        : Boolean = True;
   Option_LockClose        : Boolean = True;
-  Option_Hints            : Boolean = True;
   Option_RunDelay         : Byte = 0;
   Option_MessageBuffer    : DWord = 100;
   Option_MaxRun           : DWord = 100;

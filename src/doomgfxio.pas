@@ -289,7 +289,8 @@ end;
 
 procedure TDoomGFXIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
 begin
-  FAnimations.AddAnimation( TDoomBlink.Create(aDuration,aDelay,aColor) );
+  if not Setting_NoFlash then
+    FAnimations.AddAnimation( TDoomBlink.Create(aDuration,aDelay,aColor) );
 end;
 
 procedure TDoomGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite );

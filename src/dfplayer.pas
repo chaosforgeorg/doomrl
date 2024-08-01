@@ -596,7 +596,7 @@ begin
   FSpeedCount := iTempSC;
 
   if FRun.Active and (not FPathRun) then
-    if RunStopNear or ((not Option_RunOverItems) and (TLevel( Parent ).Item[ FPosition ] <> nil)) then
+    if RunStopNear or ((not Setting_RunOverItems) and (TLevel( Parent ).Item[ FPosition ] <> nil)) then
     begin
       FPathRun := False;
       FRun.Stop;
