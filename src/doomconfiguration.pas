@@ -58,7 +58,7 @@ begin
     ;
 
   iGroup := AddGroup( 'display' );
-  iGroup.AddInteger( 'display_mode', -1 );
+  iGroup.AddInteger( 'display_mode', 0 );
   iGroup.AddInteger( 'screen_width', 0 );
   iGroup.AddInteger( 'screen_height', 0 );
 

@@ -33,17 +33,19 @@ protected
   procedure Reset( aGroup : TConfigurationGroup );
   function KeyCapture( aValue : PInteger; aSelected : Boolean ) : Boolean;
 protected
-  FState   : TSettingsViewState;
-  FSize    : TIOPoint;
-  FRect    : TIORect;
-  FCapture : Boolean;
-  FKey     : Word;
+  FState       : TSettingsViewState;
+  FSize        : TIOPoint;
+  FRect        : TIORect;
+  FCapture     : Boolean;
+  FKey         : Word;
+  FResInput    : Boolean;
+  FResolutions : array of Ansistring;
 end;
 
 implementation
 
-uses sysutils, vutil, vdebug, vtig, vtigio,
-     doomconfiguration;
+uses math, sysutils, vutil, vdebug, vtig, vtigio,
+     dfdata, doomconfiguration;
 
 const CStates : array[ TSettingsViewState ] of record Title, ID : Ansistring; end = (
    ( Title : 'Settings'; ID : 'general' ),
@@ -67,12 +69,24 @@ const CSub : array[ 1..6 ] of record State : TSettingsViewState; Select, Desc : 
 
 
 constructor TSettingsView.Create;
+var i, iCount : Integer;
 begin
   inherited Create;
   VTIG_EventClear;
   VTIG_ResetSelect( 'settings' );
   FSize := Point( 80, 25 );
-  FCapture := False;
+  FCapture  := False;
+  FResInput := False;
+
+  if GraphicsVersion then
+  begin
+    iCount := Min( 17, IO.Driver.DisplayModes.Size );
+    SetLength( FResolutions, iCount + 1);
+    FResolutions[0] := 'Automatic';
+    for i := 1 to iCount do
+      with IO.Driver.DisplayModes[i-1] do
+        FResolutions[i] := IntToStr( Width ) + 'x' + IntToStr( Height )
+  end;
 end;
 
 procedure TSettingsView.Update( aDTime : Integer );
@@ -83,6 +97,7 @@ var iSelected : Integer;
     iGroup    : TConfigurationGroup;
     iEntry    : TConfigurationEntry;
     iHover    : TConfigurationEntry;
+    iMode     : TIntegerConfigurationEntry;
     i         : Integer;
 begin
   if ( FState = SETTINGSVIEW_DONE ) then Exit;
@@ -92,11 +107,16 @@ begin
   if CStates[ FState ].ID <> '' then
     iGroup := Configuration.Group[ CStates[ FState ].ID ];
 
+  iMode := Configuration.CastInteger( 'display_mode' );
+
   VTIG_BeginWindow( CStates[ FState ].Title, 'settings', FSize );
     FRect := VTIG_GetWindowRect;
     VTIG_BeginGroup( 18, True );
 
     VTIG_BeginGroup( 50 );
+      if FState = SETTINGSVIEW_DISPLAY then
+        VTIG_Selectable( 'Resolution' );
+
       if FState = SETTINGSVIEW_GENERAL then
         for i := 1 to 6 do
           if VTIG_Selectable( CSub[i].Select ) then
@@ -136,6 +156,19 @@ begin
             end;
         end
         else
+        begin
+          if FState = SETTINGSVIEW_DISPLAY then
+          begin
+            if GraphicsVersion then
+            begin
+              VTIG_EnumInput( iMode.Access, iSelected = i, @FResInput, FResolutions );
+            end
+            else
+              VTIG_InputField('Unavailable');
+
+            Inc( i );
+          end;
+
           for iEntry in iGroup.Entries do
             if iEntry.Name <> '' then
             begin
@@ -148,6 +181,7 @@ begin
               if iSelected = i then iHover := iEntry;
               Inc( i );
             end;
+        end;
       end;
     VTIG_EndGroup;
 
@@ -165,6 +199,14 @@ begin
     if iSelected = i   then VTIG_Text( 'Resets values from this screen to default values.' );
     if iSelected = i+1 then VTIG_Text( 'Apply changes and return to previous menu.' );
   end;
+  if ( FState = SETTINGSVIEW_DISPLAY ) and ( iSelected = 0 )then
+  begin
+    if GraphicsVersion
+      then VTIG_Text( 'Choose screen resolution. Pick {!Automatic} to use native in fullscreen.' )
+      else VTIG_Text( 'Resolution choice unavailable in ASCII mode. You can still reset it to default if needed.' );
+  end;
+
+
   if iHover <> nil
     then VTIG_Text( iHover.Description );
 
