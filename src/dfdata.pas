@@ -118,12 +118,14 @@ const
   Setting_HideHints        : Boolean = False;
   Setting_EmptyConfirm     : Boolean = False;
   Setting_UnlockAll        : Boolean = False;
+  Setting_MenuSound        : Boolean = False;
+  Setting_MusicVolume      : Byte = 25;
+  Setting_SoundVolume      : Byte = 25;
 
 const
   Option_HighASCII        : Boolean = {$IFDEF WINDOWS}True{$ELSE}False{$ENDIF};
   Option_Music            : Boolean = False;
   Option_Sound            : Boolean = False;
-  Option_MenuSound        : Boolean = False;
   Option_BlindMode        : Boolean = False;
   Option_ClearMessages    : Boolean = False;
   Option_MorePrompt       : Boolean = True;
@@ -145,8 +147,6 @@ const
   Option_SoundEngine      : string = 'DEFAULT';
   Option_AlwaysName       : string = '';
   Option_TimeStamp        : string = 'yyyy/mm/dd hh:nn:ss';
-  Option_MusicVol         : Byte = 25;
-  Option_SoundVol         : Byte = 25;
   Option_SDLMixerFreq     : Integer = 22050;
   Option_SDLMixerFormat   : Word = $8010;
   Option_SDLMixerChunkSize: Integer = 1024;

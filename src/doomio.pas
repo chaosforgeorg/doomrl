@@ -475,7 +475,7 @@ end;
 
 procedure TDoomIO.Reconfigure( aConfig : TLuaConfig );
 begin
-  Configure( aConfig, True );
+  FAudio.Reconfigure;
 end;
 
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;

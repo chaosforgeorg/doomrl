@@ -55,6 +55,7 @@ try
     RootPath := GetResourcesPath();
     DataPath          := RootPath;
     ConfigurationPath := RootPath + 'config.lua';
+    SettingsPath      := RootPath + 'settings.lua';
     {$ENDIF}
     {$ELSE}
       {$IFDEF UNIX}
@@ -65,6 +66,7 @@ try
     RootPath := ExtractFilePath( ParamStr(0) );
     DataPath          := RootPath;
     ConfigurationPath := RootPath + 'config.lua';
+    SettingsPath      := RootPath + 'settings.lua';
     {$ENDIF}
 
     {$IFDEF WINDOWS}
@@ -96,9 +98,9 @@ try
         ForceConsole := True;
       end;
 
-      if FileExists( RootPath + 'settings.lua' )
-        then Configuration.Read( RootPath + 'settings.lua' )
-        else Configuration.Write( RootPath + 'settings.lua' );
+      if FileExists( SettingsPath )
+        then Configuration.Read( SettingsPath )
+        else Configuration.Write( SettingsPath );
 
       Config := TDoomConfig.Create( ConfigurationPath, False );
       DataPath     := Config.Configure( 'DataPath', DataPath );

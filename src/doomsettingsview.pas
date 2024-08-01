@@ -173,8 +173,14 @@ begin
             if iEntry.Name <> '' then
             begin
               if iEntry is TIntegerConfigurationEntry then
+              begin
                 with iEntry as TIntegerConfigurationEntry do
-                  VTIG_IntInput( Access, iSelected = i, Min, Max, Step )
+                  if VTIG_IntInput( Access, iSelected = i, Min, Max, Step ) then
+                  begin
+                    if FState = SETTINGSVIEW_AUDIO then
+                      IO.Audio.Reconfigure;
+                  end;
+              end
               else if iEntry is TToggleConfigurationEntry then
                  with iEntry as TToggleConfigurationEntry do
                    VTIG_EnabledInput( Access, iSelected = i );
@@ -255,13 +261,13 @@ begin
     if aEvent.Key.Code = VKEY_ESCAPE
       then FKey := VKEY_ESCAPE
       else FKey := IOKeyEventToIOKeyCode( aEvent.Key );
-    Log( IOKeyEventToString( aEvent.Key ) );
   end;
   Exit( True );
 end;
 
 destructor TSettingsView.Destroy;
 begin
+  Configuration.Write( SettingsPath );
   inherited Destroy;
 end;
 

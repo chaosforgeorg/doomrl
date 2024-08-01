@@ -115,13 +115,13 @@ const
 constructor TMainMenuConMenu.Create ( aParent : TUIElement; aRect : TUIRect ) ;
 begin
   inherited Create ( aParent, aRect ) ;
-  FSound := Option_Sound and Option_MenuSound and (Sound <> nil);
+  FSound := Option_Sound and (Sound <> nil);
   FLast  := 0;
 end;
 
 function TMainMenuConMenu.OnSelect : Boolean;
 begin
-  if (FLast <> 0) and (FLast <> Selected) and FSound then
+  if Setting_MenuSound and (FLast <> 0) and (FLast <> Selected) and FSound then
     Sound.PlaySample('menu.change');
   FLast := Selected;
   Result := inherited OnSelect;
@@ -129,14 +129,14 @@ end;
 
 function TMainMenuConMenu.OnConfirm : Boolean;
 begin
-  if FSound then
+  if Setting_MenuSound and FSound then
     Sound.PlaySample('menu.pick');
   Result := inherited OnConfirm;
 end;
 
 function TMainMenuConMenu.OnCancel : Boolean;
 begin
-  if FSound then
+  if Setting_MenuSound and FSound then
     Sound.PlaySample('menu.cancel');
   Result := inherited OnCancel;
 end;

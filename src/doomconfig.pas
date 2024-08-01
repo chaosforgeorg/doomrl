@@ -41,7 +41,6 @@ begin
   Option_AlwaysName       := Configure('AlwaysName',Option_AlwaysName);
   Option_Music            := Configure('GameMusic',Option_Music);
   Option_Sound            := Configure('GameSound',Option_Sound);
-  Option_MenuSound        := Configure('MenuSound',Option_MenuSound);
   Option_BlindMode        := Configure('BlindMode',Option_BlindMode);
   Option_ClearMessages    := Configure('ClearMessages',Option_ClearMessages);// TODO : Reimplement
   Option_MorePrompt       := Configure('MorePrompt',Option_MorePrompt);
@@ -97,7 +96,6 @@ begin
   begin
     Option_Music     := False;
     Option_Sound     := False;
-    Option_MenuSound := False;
     SoundVersion     := False;
   end
   else

@@ -81,13 +81,13 @@ begin
     ;
 
   iGroup := AddGroup( 'audio' );
-  iGroup.AddInteger( 'sound_volume', 100 )
-    .SetRange(0,100,5)
+  iGroup.AddInteger( 'sound_volume', 25 )
+    .SetRange(0,25)
     .SetName('Sound volume')
     .SetDescription('Control sound volume. Set to {!0} to turn off sounds.')
     ;
-  iGroup.AddInteger( 'music_volume', 100 )
-    .SetRange(0,100,5)
+  iGroup.AddInteger( 'music_volume', 25 )
+    .SetRange(0,25)
     .SetName('Music volume')
     .SetDescription('Control music volume. Set to {!0} to turn off music.')
     ;
