@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomsettingsview;
 interface
-uses viotypes, vioevent, doomio;
+uses viotypes, vioevent, vconfiguration, doomio;
 
 type TSettingsViewState = (
   SETTINGSVIEW_GENERAL,
@@ -29,6 +29,8 @@ type TSettingsView = class( TInterfaceLayer )
   function HandleEvent( const aEvent : TIOEvent ) : Boolean; override;
   destructor Destroy; override;
 protected
+  procedure Reconfigure;
+  procedure Reset( aGroup : TConfigurationGroup );
   function KeyCapture( aValue : PInteger; aSelected : Boolean ) : Boolean;
 protected
   FState   : TSettingsViewState;
@@ -40,7 +42,7 @@ end;
 
 implementation
 
-uses sysutils, vutil, vdebug, vtig, vtigio, vconfiguration,
+uses sysutils, vutil, vdebug, vtig, vtigio,
      doomconfiguration;
 
 const CStates : array[ TSettingsViewState ] of record Title, ID : Ansistring; end = (
@@ -176,7 +178,7 @@ begin
     FState := iNext;
   end;
 
-  if VTIG_EventCancel then
+  if VTIG_EventCancel or iApply then
     if FState = SETTINGSVIEW_GENERAL
       then FState := SETTINGSVIEW_DONE
       else begin
@@ -184,6 +186,11 @@ begin
         FState := SETTINGSVIEW_GENERAL;
       end;
 
+  if iApply then Reconfigure;
+  if iReset then
+     if FState = SETTINGSVIEW_GENERAL
+       then Reset( nil )
+       else Reset( iGroup );
 end;
 
 function TSettingsView.IsFinished : Boolean;
@@ -242,6 +249,25 @@ begin
       end;
   end;
   Exit( False );
+end;
+
+procedure TSettingsView.Reset( aGroup : TConfigurationGroup );
+var iEntry : TConfigurationEntry;
+begin
+  if aGroup = nil then
+  begin
+    for aGroup in Configuration.Groups do
+      Reset( aGroup );
+    Exit;
+  end;
+
+  for iEntry in aGroup.Entries do
+    iEntry.Reset;
+end;
+
+procedure TSettingsView.Reconfigure;
+begin
+
 end;
 
 end.
