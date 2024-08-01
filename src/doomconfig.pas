@@ -41,13 +41,11 @@ begin
   Option_AlwaysName       := Configure('AlwaysName',Option_AlwaysName);
   Option_NoIntro          := Configure('SkipIntro',Option_NoIntro);
   Option_NoFlash          := Configure('NoFlashing',Option_NoFlash);
-  Option_NoBloodSlide     := Configure('NoBloodSlides',Option_NoBloodSlide);
   Option_RunOverItems     := Configure('RunOverItems',Option_RunOverItems);
   Option_Music            := Configure('GameMusic',Option_Music);
   Option_Sound            := Configure('GameSound',Option_Sound);
   Option_MenuSound        := Configure('MenuSound',Option_MenuSound);
   Option_BlindMode        := Configure('BlindMode',Option_BlindMode);
-  Option_ColorBlindMode   := Configure('ColorBlindMode',Option_ColorBlindMode);
   Option_ClearMessages    := Configure('ClearMessages',Option_ClearMessages);// TODO : Reimplement
   Option_MorePrompt       := Configure('MorePrompt',Option_MorePrompt);
   Option_MessageColoring  := Configure('MessageColoring',Option_MessageColoring);
@@ -66,9 +64,6 @@ begin
   Option_AlertCheck       := Configure('AlertCheck',Option_AlertCheck);
   Option_BetaCheck        := Configure('BetaCheck',Option_BetaCheck);
   Option_CustomModServer  := Configure('CustomModServer',Option_CustomModServer);
-  Option_InvMenuStyle     := Configure('InvMenuStyle',Option_InvMenuStyle);
-  Option_EqMenuStyle      := Configure('EqMenuStyle',Option_EqMenuStyle);
-  Option_HelpMenuStyle    := Configure('HelpMenuStyle',Option_HelpMenuStyle);
   Option_UnlockAll        := Configure('UnlockAll',Option_UnlockAll );
 
   Option_PlayerBackups    := Configure('PlayerBackups',Option_PlayerBackups);

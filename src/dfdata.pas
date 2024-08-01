@@ -117,7 +117,6 @@ const
   Option_HighASCII        : Boolean = {$IFDEF WINDOWS}True{$ELSE}False{$ENDIF};
   Option_NoIntro          : Boolean = False;
   Option_NoFlash          : Boolean = False;
-  Option_NoBloodSlide     : Boolean = False;
   Option_RunOverItems     : Boolean = False;
   Option_Music            : Boolean = False;
   Option_Sound            : Boolean = False;
@@ -129,7 +128,6 @@ const
   Option_InvFullDrop      : Boolean = False;
   Option_MortemArchive    : Boolean = False;
   Option_MenuReturn       : Boolean = False;
-  Option_ColorBlindMode   : Boolean = False;
   Option_EmptyConfirm     : Boolean = False;
   Option_SoundEquipPickup : Boolean = False;
   Option_UnlockAll        : Boolean = False;
@@ -160,9 +158,6 @@ const
   Option_VersionCheck     : Boolean = True;
   Option_AlertCheck       : Boolean = True;
   Option_BetaCheck        : Boolean = False;
-  Option_InvMenuStyle     : AnsiString = 'HYBRID';
-  Option_EqMenuStyle      : AnsiString = 'HYBRID';
-  Option_HelpMenuStyle    : AnsiString = 'HYBRID';
   Option_CustomModServer  : AnsiString = '';
 
 

@@ -64,13 +64,6 @@ FullscreenMiniMapSize = -1
 -- Specifies wether items in inventory and equipment should be colored
 ColoredInventory = true
 
--- Menu styles can be LETTER for letter choince only menus, CHOICE for only arrow 
--- selection or HYBRID for both. Note that additional commands (like BACKSPACE for 
--- in-menu drop and TAB for swap) wont work in the LETTER mode.
-InvMenuStyle     = "HYBRID"
-EqMenuStyle      = "HYBRID"
-HelpMenuStyle    = "HYBRID"
-
 -- Setting this to anything except "" will always use that as the name.
 -- Warning - no error checking, so don't use too long names, or especially
 -- the "@" sign (it's a control char). This setting overrides the one above!
@@ -78,9 +71,6 @@ AlwaysName       = ""
 
 -- Setting to true will skip the intro
 SkipIntro        = false
-
--- Setting to true will remove the bloodslide effect
-NoBloodSlides    = false
 
 -- Setting to true will remove the flashing effect
 NoFlashing       = false
@@ -100,9 +90,6 @@ MenuSound        = true
 -- Setting to true will turn on enhancements for blind people playing
 -- DoomRL using a screen reader. Yes, some do.
 BlindMode        = false
-
--- Setting to true will turn on enhancements for colorblind people.
-ColorBlindMode   = false
 
 -- Setting to true will make old messages disappear from the screen 
 -- (useful in BlindMode)

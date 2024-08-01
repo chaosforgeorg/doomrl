@@ -198,11 +198,6 @@ begin
     if Player <> nil then
       SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
 
-  if Option_NoBloodSlide or GraphicsVersion then
-  begin
-
-    exit;
-  end;
 {
   for vx := 1 to 80 do for vy := 1 to 25 do Temp [vy,vx] := VideoBuf^[(vx-1)+(vy-1)*ScreenSizeX];
   OutputRestore;

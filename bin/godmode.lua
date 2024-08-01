@@ -54,9 +54,6 @@ AlwaysName       = ""
 -- Setting to false will skip the intro
 SkipIntro        = true
 
--- Setting to false will remove the bloodslide effect
-NoBloodSlides    = true
-
 -- Setting to false will remove the flashing effect
 NoFlashing       = false
 
@@ -75,9 +72,6 @@ MenuSound        = true
 -- Setting to false will turn on enhancements for blind people playing
 -- DoomRL using a screen reader. Yes, some do.
 BlindMode        = false
-
--- Setting to false will turn on enhancements for colorblind people.
-ColorBlindMode   = false
 
 -- Setting to true will make old messages disappear from the screen 
 -- (useful in BlindMode)
