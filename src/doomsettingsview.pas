@@ -80,12 +80,12 @@ var iSelected : Integer;
     iReset    : Boolean;
     iGroup    : TConfigurationGroup;
     iEntry    : TConfigurationEntry;
-    iPick     : TConfigurationEntry;
+    iHover    : TConfigurationEntry;
     i         : Integer;
 begin
   if ( FState = SETTINGSVIEW_DONE ) then Exit;
-  iNext := SETTINGSVIEW_DONE;
-  iPick := nil;
+  iNext  := SETTINGSVIEW_DONE;
+  iHover := nil;
 
   if CStates[ FState ].ID <> '' then
     iGroup := Configuration.Group[ CStates[ FState ].ID ];
@@ -103,8 +103,7 @@ begin
       if iGroup <> nil then
         for iEntry in iGroup.Entries do
           if iEntry.Name <> '' then
-            if VTIG_Selectable( iEntry.Name ) then
-              iPick := iEntry;
+            VTIG_Selectable( iEntry.Name );
 
       // options
 
@@ -130,6 +129,7 @@ begin
             begin
               with iEntry as TIntegerConfigurationEntry do
                 KeyCapture( Access, iSelected = i );
+              if iSelected = i then iHover := iEntry;
               Inc( i );
             end;
         end
@@ -143,6 +143,7 @@ begin
               else if iEntry is TToggleConfigurationEntry then
                  with iEntry as TToggleConfigurationEntry do
                    VTIG_EnabledInput( Access, iSelected = i );
+              if iSelected = i then iHover := iEntry;
               Inc( i );
             end;
       end;
@@ -151,8 +152,19 @@ begin
   VTIG_EndGroup( True );
 
   if FState = SETTINGSVIEW_GENERAL then
-    if iSelected in [0..5] then
-      VTIG_Text( CSub[iSelected + 1].Desc );
+  begin
+    if iSelected in [0..5]
+      then VTIG_Text( CSub[iSelected + 1].Desc );
+    if iSelected = i   then VTIG_Text( 'Resets ALL configuration values to default values.' );
+    if iSelected = i+1 then VTIG_Text( 'Apply changes and exit.' );
+  end
+  else
+  begin
+    if iSelected = i   then VTIG_Text( 'Resets values from this screen to default values.' );
+    if iSelected = i+1 then VTIG_Text( 'Apply changes and return to previous menu.' );
+  end;
+  if iHover <> nil
+    then VTIG_Text( iHover.Description );
 
   VTIG_End('{l<{!Up,Down}> select, <{!Enter}> change or enter submenu, <{!Escape}> back}');
 
