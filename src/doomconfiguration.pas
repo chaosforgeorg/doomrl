@@ -25,32 +25,32 @@ begin
   iGroup.AddToggle( 'first_run', True );
   iGroup.AddToggle( 'always_random_name', False )
     .SetName('Always random name')
-    .SetDescription( 'Setting to Enabled will skip name entry and always supply a random name.')
+    .SetDescription( 'Setting to {!Enabled} will skip name entry and always supply a random name.')
     ;
   iGroup.AddToggle( 'skip_intro', False )
     .SetName('Skip intro')
-    .SetDescription('Setting to Enabled will skip the plot intro text before playing.')
+    .SetDescription('Setting to {!Enabled} will skip the plot intro text before playing.')
     ;
   iGroup.AddToggle( 'hide_hints', False )
     .SetName('Hide hints')
-    .SetDescription('Setting to Enabled will hide the hints in the top right corner.')
+    .SetDescription('Setting to {!Enabled} will hide the hints in the top right corner.')
     ;
   iGroup.AddToggle( 'no_flashing', False )
     .SetName('Disable screen flashing')
-    .SetDescription('Setting to Enabled will disable screen flash FX.')
+    .SetDescription('Setting to {!Enabled} will disable screen flash FX.')
     ;
   iGroup.AddToggle( 'empty_confirm', False )
     .SetName('Confirm firing empty weapon')
-    .SetDescription('Setting to Enabled will make the game wait for confirmation if trying to fire an empty weapon')
+    .SetDescription('Setting to {!Enabled} will make the game wait for confirmation if trying to fire an empty weapon')
     ;
   iGroup.AddToggle( 'run_over_items', False )
     .SetName('Run over items')
-    .SetDescription('Setting to Enabled will make the run command not stop on items.')
+    .SetDescription('Setting to {!Enabled} will make the run command not stop on items.')
     ;
   iGroup.AddInteger( 'run_delay', 20 )
     .SetRange( 0, 200, 5 )
     .SetName('Run delay')
-    .SetDescription('Setting to Enabled will make the run command not stop on items.')
+    .SetDescription('Setting to {!Enabled} will make the run command not stop on items.')
     ;
   iGroup.AddToggle( 'unlock_all', False )
     .SetName('Unlock all unlocks')
@@ -64,41 +64,41 @@ begin
 
   iGroup.AddToggle( 'fullscreen', True )
     .SetName('Fullscreen')
-    .SetDescription('Set to Disabled to make the game launch in windowed mode.')
+    .SetDescription('Set to {!Disabled} to make the game launch in windowed mode.')
     ;
 
   iGroup.AddInteger( 'font_multiplier', 0 )
     .SetRange(0,3)
     .SetName('Font size multiplier')
-    .SetDescription('Control font size multiplier. Set to 0 to pick one based on resolution.')
+    .SetDescription('Control font size multiplier. Set to {!0} to pick one based on resolution.')
     ;
 
   iGroup.AddInteger( 'tile_multiplier', 0 )
     .SetRange(0,3)
     .SetName('Tile size multiplier')
-    .SetDescription('Control tile size multiplier. Set to 0 to pick one based on resolution.')
+    .SetDescription('Control tile size multiplier. Set to {!0} to pick one based on resolution.')
     ;
 
   iGroup.AddInteger( 'minimap_multiplier', 0 )
     .SetRange(0,3)
     .SetName('Minimap size multiplier')
-    .SetDescription('Control minimap size multiplier. Set to 0 to pick one based on resolution.')
+    .SetDescription('Control minimap size multiplier. Set to {!0} to pick one based on resolution.')
     ;
 
   iGroup := AddGroup( 'audio' );
   iGroup.AddInteger( 'sound_volume', 100 )
     .SetRange(0,100,5)
     .SetName('Sound volume')
-    .SetDescription('Control sound volume. Set to 0 to turn off sounds.')
+    .SetDescription('Control sound volume. Set to {!0} to turn off sounds.')
     ;
   iGroup.AddInteger( 'music_volume', 100 )
     .SetRange(0,100,5)
     .SetName('Music volume')
-    .SetDescription('Control music volume. Set to 0 to turn off music.')
+    .SetDescription('Control music volume. Set to {!0} to turn off music.')
     ;
   iGroup.AddToggle( 'menu_sound', True )
     .SetName('Menu sounds')
-    .SetDescription('Set to Disabled to disable the chunky menu sounds.')
+    .SetDescription('Set to {!Disabled} to disable the chunky menu sounds.')
     ;
 
   iGroup := AddGroup( 'keybindings_hidden' );
