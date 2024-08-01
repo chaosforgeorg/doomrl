@@ -21,7 +21,7 @@ end;
 
 implementation
 
-uses vtig, vutil, vluasystem, dfplayer, doombase, doomhelpview;
+uses vtig, vutil, vluasystem, dfplayer, doombase, doomhelpview, doomsettingsview;
 
 constructor TInGameMenuView.Create;
 begin
@@ -47,8 +47,10 @@ begin
     IO.PushLayer( THelpView.Create );
     FFinished := True;
   end;
-  if VTIG_Selectable( 'Settings', False ) then
+  if VTIG_Selectable( 'Settings' ) then
   begin
+    IO.PushLayer( TSettingsView.Create );
+    FFinished := True;
   end;
   if VTIG_Selectable( 'Abandon Run' ) then
   begin

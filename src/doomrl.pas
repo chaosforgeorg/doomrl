@@ -25,7 +25,7 @@ uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
      vdebug, doombase, vlog, vutil, vos, vparams,
-     dfdata, doommodule, doomnet, doomio, doomconfig;
+     dfdata, doommodule, doomnet, doomio, doomconfig, doomconfiguration;
 
 {$IFDEF WINDOWS}
 var Handle : HWND;
@@ -45,8 +45,10 @@ var RootPath : AnsiString = '';
 begin
 try
   try
-    DoomNetwork := nil;
-    Modules     := nil;
+    DoomNetwork   := nil;
+    Modules       := nil;
+    Configuration := TDoomConfiguration.Create;
+
 
     {$IFDEF Darwin}
     {$IFDEF OSX_APP_BUNDLE}
@@ -93,6 +95,10 @@ try
         GraphicsVersion := False;
         ForceConsole := True;
       end;
+
+      if FileExists( RootPath + 'settings.lua' )
+        then Configuration.Read( RootPath + 'settings.lua' )
+        else Configuration.Write( RootPath + 'settings.lua' );
 
       Config := TDoomConfig.Create( ConfigurationPath, False );
       DataPath     := Config.Configure( 'DataPath', DataPath );
@@ -148,6 +154,7 @@ try
     {$ENDIF}
     Doom.Run;
   finally
+    FreeAndNil( Configuration );
     FreeAndNil( Modules );
     FreeAndNil( DoomNetwork );
     FreeAndNil( Systems );

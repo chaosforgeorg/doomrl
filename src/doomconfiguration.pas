@@ -1,17 +1,19 @@
 {$INCLUDE doomrl.inc}
 unit doomconfiguration;
 interface
-uses vconfiguration, vlua;
+uses vconfiguration;
 
 type TDoomConfiguration = class( TConfigurationManager )
-  constructor Create( aState : PLua_State = nil );
+  constructor Create;
 end;
+
+var Configuration : TDoomConfiguration;
 
 implementation
 
 uses vioevent;
 
-constructor TDoomConfiguration.Create( aState : PLua_State = nil );
+constructor TDoomConfiguration.Create;
 var iGroup : TConfigurationGroup;
 begin
   inherited Create;
@@ -38,7 +40,8 @@ begin
     .SetDescription('Setting to Enabled will disable screen flash FX.')
     ;
   iGroup.AddToggle( 'empty_confirm', False )
-    .SetName('Setting to Enabled will make the game wait for confirmation if trying to fire an empty weapon')
+    .SetName('Confirm firing empty weapon')
+    .SetDescription('Setting to Enabled will make the game wait for confirmation if trying to fire an empty weapon')
     ;
   iGroup.AddToggle( 'run_over_items', False )
     .SetName('Run over items')
@@ -116,7 +119,7 @@ begin
     .SetDescription('Keybind to walk up.')
     ;
   iGroup.AddInteger( 'input_walkdown', VKEY_DOWN )
-    .SetName('Walk up')
+    .SetName('Walk down')
     .SetDescription('Keybind to walk down.')
     ;
   iGroup.AddInteger( 'input_walkupleft', VKEY_HOME )
@@ -178,15 +181,15 @@ begin
     .SetDescription('Unload weapon from ground (if present) or inventory.')
     ;
   // TODO: SHIFT ENCODING!
-  iGroup.AddInteger( 'input_altpickup', VKEY_G + 1000 )
+  iGroup.AddInteger( 'input_altpickup', VKEY_G + IOKeyCodeShiftMask )
     .SetName('Alternative pickup')
     .SetDescription('Use item from ground if possible.')
     ;
-  iGroup.AddInteger( 'input_altfire', VKEY_F + 1000 )
+  iGroup.AddInteger( 'input_altfire', VKEY_F + IOKeyCodeShiftMask )
     .SetName('Alternative fire')
     .SetDescription('Use weapons alternative fire mode (if present).')
     ;
-  iGroup.AddInteger( 'input_altreload', VKEY_R + 1000 )
+  iGroup.AddInteger( 'input_altreload', VKEY_R + IOKeyCodeShiftMask )
     .SetName('Alternative reload')
     .SetDescription('Use weapons alternative reload (if present).')
     ;
