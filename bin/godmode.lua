@@ -43,10 +43,6 @@ FullscreenTileMult = -1
 -- on the screen.
 AllowHighAscii   = false
 
--- Setting to false will skip name entry procedure and choose a random name
--- instead
-AlwaysRandomName = false
-
 -- Specifies wether items in inventory and equipment should be colored
 ColoredInventory = true
 

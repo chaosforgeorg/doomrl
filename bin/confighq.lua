@@ -61,10 +61,6 @@ FullscreenMiniMapSize = -1
 -- is true on Windows and false on OS X and Linux
 -- AllowHighAscii   = true
 
--- Setting to true will skip name entry procedure and choose a random name
--- instead
-AlwaysRandomName = false
-
 -- Specifies wether items in inventory and equipment should be colored
 ColoredInventory = true
 

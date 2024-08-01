@@ -27,6 +27,7 @@ TDoom = class(TSystem)
        NVersion      : TVersion;
        ModuleID      : AnsiString;
        constructor Create; override;
+       procedure Reconfigure;
        procedure CreateIO;
        procedure Apply( aResult : TMenuResult );
        procedure Load;
@@ -84,7 +85,7 @@ uses Classes, SysUtils,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
-     doomhelp, doomconfig, doomviews, dfplayer;
+     doomconfiguration, doomhelp, doomconfig, doomviews, dfplayer;
 
 
 procedure TDoom.ModuleMainHook(Hook: AnsiString; const Params: array of const);
@@ -204,6 +205,14 @@ begin
   FChallengeHooks := [];
   NVersion := ArrayToVersion(VERSION_ARRAY);
   Log( VersionToString( NVersion ) );
+  Reconfigure;
+end;
+
+procedure TDoom.Reconfigure;
+begin
+  if Assigned( IO ) then
+    (IO as TDoomIO).Reconfigure( Config );
+  Setting_AlwaysRandomName := Configuration.GetBoolean( 'always_random_name' );
 end;
 
 procedure TDoom.CreateIO;
@@ -213,6 +222,7 @@ begin
     else IO := TDoomTextIO.Create;
   ProgramRealTime := MSecNow();
   IO.Configure( Config );
+  (IO as TDoomIO).Reconfigure( Config );
 end;
 
 procedure TDoom.Apply ( aResult : TMenuResult ) ;
@@ -1054,7 +1064,7 @@ begin
   if Option_AlwaysName <> '' then
     Player.Name := Option_AlwaysName
   else
-    if (Option_AlwaysRandomName) or (aResult.Name = '')
+    if (Setting_AlwaysRandomName) or (aResult.Name = '')
       then Player.Name := LuaSystem.ProtectedCall(['DoomRL','random_name'],[])
       else Player.Name := aResult.Name;
 

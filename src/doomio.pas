@@ -41,6 +41,7 @@ type TInterfaceLayerStack = specialize TGArray<TInterfaceLayer>;
 
 type TDoomIO = class( TIO )
   constructor Create; reintroduce;
+  procedure Reconfigure( aConfig : TLuaConfig );
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
   function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
   procedure FullUpdate; override;
@@ -475,6 +476,11 @@ procedure TDoomIO.FullLook( aID : Ansistring );
 begin
   PushLayer( TMoreView.Create( aID ) );
   //IO.RunUILoop( TUIMoreViewer.Create( IO.Root, ID ) );
+end;
+
+procedure TDoomIO.Reconfigure( aConfig : TLuaConfig );
+begin
+  Configure( aConfig, True );
 end;
 
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;

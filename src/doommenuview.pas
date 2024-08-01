@@ -722,7 +722,7 @@ begin
   FResult.Trait := aTrait;
   DestroyChildren;
   FLogo := False;
-  if (Option_AlwaysName <> '') or Option_AlwaysRandomName
+  if (Option_AlwaysName <> '') or Setting_AlwaysRandomName
     then Free
     else InitName;
   Exit( True );

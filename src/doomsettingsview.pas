@@ -45,7 +45,7 @@ end;
 implementation
 
 uses math, sysutils, vutil, vdebug, vtig, vtigio,
-     dfdata, doomconfiguration;
+     dfdata, doomconfiguration, doombase;
 
 const CStates : array[ TSettingsViewState ] of record Title, ID : Ansistring; end = (
    ( Title : 'Settings'; ID : 'general' ),
@@ -230,9 +230,12 @@ begin
 
   if iApply then Reconfigure;
   if iReset then
-     if FState = SETTINGSVIEW_GENERAL
-       then Reset( nil )
-       else Reset( iGroup );
+  begin
+    if FState = SETTINGSVIEW_GENERAL
+      then Reset( nil )
+      else Reset( iGroup );
+    Reconfigure;
+  end;
 end;
 
 function TSettingsView.IsFinished : Boolean;
@@ -309,7 +312,7 @@ end;
 
 procedure TSettingsView.Reconfigure;
 begin
-
+  Doom.Reconfigure;
 end;
 
 end.

@@ -38,7 +38,6 @@ begin
   Option_SDLMixerChunkSize:= Configure('SDLMixerChunkSize',Option_SDLMixerChunkSize);
 
   Option_HighASCII        := Configure('AllowHighAscii',Option_HighASCII);
-  Option_AlwaysRandomName := Configure('AlwaysRandomName',Option_AlwaysRandomName);
   Option_AlwaysName       := Configure('AlwaysName',Option_AlwaysName);
   Option_NoIntro          := Configure('SkipIntro',Option_NoIntro);
   Option_NoFlash          := Configure('NoFlashing',Option_NoFlash);

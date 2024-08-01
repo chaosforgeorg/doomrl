@@ -111,8 +111,10 @@ const
   KnockbackValue = 7;
 
 const
+  Setting_AlwaysRandomName : Boolean = False;
+
+const
   Option_HighASCII        : Boolean = {$IFDEF WINDOWS}True{$ELSE}False{$ENDIF};
-  Option_AlwaysRandomName : Boolean = False;
   Option_NoIntro          : Boolean = False;
   Option_NoFlash          : Boolean = False;
   Option_NoBloodSlide     : Boolean = False;
