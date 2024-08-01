@@ -47,11 +47,6 @@ begin
     .SetName('Run over items')
     .SetDescription('Setting to {!Enabled} will make the run command not stop on items.')
     ;
-  iGroup.AddInteger( 'run_delay', 20 )
-    .SetRange( 0, 200, 5 )
-    .SetName('Run delay')
-    .SetDescription('Setting to {!Enabled} will make the run command not stop on items.')
-    ;
   iGroup.AddToggle( 'unlock_all', False )
     .SetName('Unlock all unlocks')
     .SetDescription('For returning players so they don''t have to unlock everything again. Otherwise a cheat!')

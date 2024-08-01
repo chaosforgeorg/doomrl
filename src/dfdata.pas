@@ -116,6 +116,8 @@ const
   Setting_NoFlash          : Boolean = False;
   Setting_RunOverItems     : Boolean = False;
   Setting_HideHints        : Boolean = False;
+  Setting_EmptyConfirm     : Boolean = False;
+  Setting_UnlockAll        : Boolean = False;
 
 const
   Option_HighASCII        : Boolean = {$IFDEF WINDOWS}True{$ELSE}False{$ENDIF};
@@ -129,16 +131,14 @@ const
   Option_InvFullDrop      : Boolean = False;
   Option_MortemArchive    : Boolean = False;
   Option_MenuReturn       : Boolean = False;
-  Option_EmptyConfirm     : Boolean = False;
   Option_SoundEquipPickup : Boolean = False;
-  Option_UnlockAll        : Boolean = False;
   Option_ColoredInventory : Boolean = True;
   Option_LockBreak        : Boolean = True;
   Option_LockClose        : Boolean = True;
-  Option_RunDelay         : Byte = 0;
   Option_MessageBuffer    : DWord = 100;
   Option_MaxRun           : DWord = 100;
   Option_MaxWait          : DWord = 20;
+  Option_RunDelay         : Byte = 0;
   Option_Graphics         : string = 'TILES';
   Option_Blending         : Boolean = False;
   Option_SaveOnCrash      : Boolean = True;

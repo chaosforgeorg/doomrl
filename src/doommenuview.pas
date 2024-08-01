@@ -315,9 +315,9 @@ begin
   iMenu := TMainMenuConMenu.Create( Self, Rectangle( 9,18, 10,6 ) );
 //  iMenu.SelectInactive := False;
   iMenu.OnSelectEvent  := @OnChalMenuSelect;
-  iMenu.Add( ChallengeType[1].Name, (HOF.SkillRank > 0) or (GodMode) or (Option_UnlockAll) );
-  iMenu.Add( ChallengeType[2].Name, (HOF.SkillRank > 3) or (GodMode) or (Option_UnlockAll) );
-  iMenu.Add( ChallengeType[3].Name, (HOF.SkillRank > 3) or (GodMode) or (Option_UnlockAll) );
+  iMenu.Add( ChallengeType[1].Name, (HOF.SkillRank > 0) or (GodMode) or (Setting_UnlockAll) );
+  iMenu.Add( ChallengeType[2].Name, (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll) );
+  iMenu.Add( ChallengeType[3].Name, (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll) );
   iMenu.Add( ChallengeType[4].Name, Modules.ChallengeModules.Size > 0 );
   iMenu.OnConfirmEvent := @OnPickChallengeType;
   iMenu.OnCancelEvent  := @OnCancel;

@@ -217,6 +217,8 @@ begin
   Setting_NoFlash          := Configuration.GetBoolean( 'no_flashing' );
   Setting_RunOverItems     := Configuration.GetBoolean( 'run_over_items' );
   Setting_HideHints        := Configuration.GetBoolean( 'hide_hints' );
+  Setting_EmptyConfirm     := Configuration.GetBoolean( 'empty_confirm' );
+  Setting_UnlockAll        := Configuration.GetBoolean( 'unlock_all' );
 end;
 
 procedure TDoom.CreateIO;

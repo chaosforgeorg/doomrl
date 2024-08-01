@@ -69,15 +69,6 @@ ColoredInventory = true
 -- the "@" sign (it's a control char). This setting overrides the one above!
 AlwaysName       = ""
 
--- Setting to true will skip the intro
-SkipIntro        = false
-
--- Setting to true will remove the flashing effect
-NoFlashing       = false
-
--- Setting to true will make the run command not stop on items
-RunOverItems     = false
-
 -- Setting to false will turn off music during gameplay
 GameMusic        = true
 
@@ -99,19 +90,11 @@ ClearMessages    = false
 -- when too many messages are printed in a turn. Usefull for Speedrunning.
 MorePrompt       = true
 
--- Setting to true will make the game wait for an enter/space key if
--- trying to fire an empty weapon.
-EmptyConfirm     = false
-
 -- If set to true, pickup sound will be used for quickkeys and weapon
 -- swapping.
 SoundEquipPickup = false
 
--- Controls whether gameplay hints appear on the intro level. Once you learn
--- to use the game, you can safely turn it off!
-Hints            = true
-
--- Sets the delay value when running. Value is in milliseconds. Set to 0 for no delay.
+-- (ASCII Only) Sets the delay value when running. Value is in milliseconds. Set to 0 for no delay.
 RunDelay         = 20
 
 -- Music volume in the range of 0..25

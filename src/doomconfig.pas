@@ -49,7 +49,6 @@ begin
   Option_InvFullDrop      := Configure('InvFullDrop',Option_InvFullDrop);
   Option_MortemArchive    := Configure('MortemArchive',Option_MortemArchive);
   Option_MenuReturn       := Configure('MenuReturn',Option_MenuReturn);
-  Option_EmptyConfirm     := Configure('EmptyConfirm',Option_EmptyConfirm);
   Option_SoundEquipPickup := Configure('SoundEquipPickup',Option_SoundEquipPickup);
   Option_ColoredInventory := Configure('ColoredInventory',Option_ColoredInventory);
   Option_LockBreak        := Configure('LockBreak',Option_LockBreak);
@@ -60,7 +59,6 @@ begin
   Option_AlertCheck       := Configure('AlertCheck',Option_AlertCheck);
   Option_BetaCheck        := Configure('BetaCheck',Option_BetaCheck);
   Option_CustomModServer  := Configure('CustomModServer',Option_CustomModServer);
-  Option_UnlockAll        := Configure('UnlockAll',Option_UnlockAll );
 
   Option_PlayerBackups    := Configure('PlayerBackups',Option_PlayerBackups);
   Option_ScoreBackups     := Configure('ScoreBackups',Option_ScoreBackups);
