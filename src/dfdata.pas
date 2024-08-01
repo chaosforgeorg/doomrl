@@ -15,6 +15,7 @@ const ConfigurationPath : AnsiString = 'config.lua';
       DataPath          : AnsiString = '';
       WritePath         : AnsiString = '';
       ScorePath         : AnsiString = '';
+      SettingsPath      : AnsiString = 'settings.lua';
 
 {$INCLUDE version.inc}
 
