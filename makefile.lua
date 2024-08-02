@@ -46,7 +46,7 @@ makefile = {
 				wav        = "*.wav",
 				music      = "*.mid",
 			},
-			other = { "keybindings.lua", "colors.lua", "sound.lua", "music.lua", "manual.txt", "version.txt", "version_api.txt", "doomrl.wad", "core.wad" },
+			other = { "colors.lua", "sound.lua", "music.lua", "manual.txt", "version.txt", "version_api.txt", "doomrl.wad", "core.wad" },
 		},
 		hq = {
 			exec = { "doomrl" },
@@ -64,7 +64,7 @@ makefile = {
 				wavhq      = "*.wav",
 				mp3        = "*.mp3",
 			},
-			other = { "keybindings.lua", "colors.lua", "soundhq.lua", "musichq.lua", "manual.txt", "version.txt", "version_api.txt", "doomrl.wad", "core.wad" },
+			other = { "colors.lua", "soundhq.lua", "musichq.lua", "manual.txt", "version.txt", "version_api.txt", "doomrl.wad", "core.wad" },
 		}
 	},
 	commands = {

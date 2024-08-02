@@ -503,7 +503,7 @@ begin
   FPrefix := '';
   if aArch then FPrefix := 'arch_';
   for iCount := 0 to High( aChallenges ) do
-    FMenu.Add(LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'name']),(aRank >= LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'rank'],0)) or (GodMode) or (Option_UnlockAll), Pointer(aChallenges[iCount]) );
+    FMenu.Add(LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'name']),(aRank >= LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'rank'],0)) or (GodMode) or (Setting_UnlockAll), Pointer(aChallenges[iCount]) );
 
 end;
 

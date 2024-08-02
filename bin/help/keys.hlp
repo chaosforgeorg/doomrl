@@ -1,49 +1,34 @@
 {rControls}
 
-  Most keybindings can be redefined via the file keybindings.lua. The 
+  Most keybindings can be redefined via the file Settings menu. The 
   following set describes the standard layout, and does not reflect
   any changes you may have made to your keybindings.
 
-  Arrows -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
-  '.'    -- Wait
-  '?'    -- Run on-line help
-  SPACE  -- Action - open doors, close doors, use levers/switches or 
+  Escape  -- exit menu, or show game menu (Save, Quit, Help, Settings)
+  Arrows  -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
+  .(period)- Wait
+  h       -- Run on-line help
+  SPACE   -- Action - open doors, close doors, use levers/switches or 
             go down stairs (you won't be able to come back!)
-  'g'    -- Pick up item from floor
-  'G'    -- Use/wield/wear item from floor/pull lever/switch
-  'z'    -- Swap weapon (with prepared weapon)
-  'd'    -- Drop item
-  'i'    -- Show inventory
-  'e'    -- Show or change equipment/show traits
-  'l'    -- Toggle LookMode (Escape to exit)
-  'f'    -- Fire of equipped weapon
-  'F'    -- Alternative Fire of equipped weapon (if available)
-  'r'    -- Reload equipped weapon
-  'R'    -- Special reload weapon (depending on weapon)
-  'u'    -- Use item from inventory (eg. Med-pack)/pull lever
-  'U'    -- Unload weapon from inventory/from ground
-  '@'    -- Show screen with character info (parameters of player
+  g       -- Pick up item from floor
+  SHIFT-g -- Use/wield/wear item from floor/pull lever/switch
+  z       -- Swap weapon (with prepared weapon)
+  i       -- Show inventory
+  e       -- Show or change equipment/show traits
+  l       -- Toggle LookMode (Escape to exit)
+  f       -- Fire of equipped weapon
+  SHIFT-f -- Alternative Fire of equipped weapon (if available)
+  r       -- Reload equipped weapon
+  SHIFT-r -- Special reload weapon (depending on weapon)
+  u       -- Unload weapon from inventory/from ground
+  p       -- Show screen with character info (parameters of player
             and his equipment)
-  't'    -- Show character traits
-  'A'    -- Show known assemblies
-  'S'    -- Save game (works ONLY on the stairs to the next level)
-  'Q'    -- Quit game (without saving)
-  'P'    -- Show previous messages
-  ','    -- Run command
-  TAB    -- change tactic
+  t       -- Show character traits
+  a       -- Show known assemblies
+  s       -- Show previous messages
+  ,(comma)-- Run command
+  TAB     -- change tactic
   '1'..'9' -- weapon quick keys, set them up in the inventory screen
-  '('    -- Toggle sound on and off
-  ')'    -- Toggle music on and off
-
-  F10    -- Makes screenshot (in graphics mode a png screenshot, in 
-            console an ASCII symbol screenshot) and places it in 
-            "Screenshot" folder
-  F9     -- Makes screenshot (in graphics mode a png screenshot, in 
-            console colorful screenshot in BB codes - useful if you 
-            want to post it on forum) and places it in "Screenshot"
-            folder
-  'K'    -- toggle grid view (only in graphics mode)
-
 
 {rKeys while targeting}
    

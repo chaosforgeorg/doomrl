@@ -14,6 +14,7 @@ type TAnsiStringArray = specialize TGArray< AnsiString >;
 
 type TDoomAudio = class
   constructor Create;
+  procedure Reconfigure;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False );
   procedure Update( aMSec : DWord );
   procedure PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
@@ -26,6 +27,7 @@ private
   procedure SoundQuery( nkey, nvalue : Variant );
   procedure MusicQuery( nkey, nvalue : Variant );
 private
+  FLastMusic   : Ansistring;
   FTime        : QWord;
   FSoundEvents : TSoundEventHeap;
 
@@ -40,7 +42,7 @@ implementation
 
 uses sysutils,
      vdebug, vsystems, vmath, vsound, vfmodsound, vsdlsound,
-     doomio, dfplayer, dfdata;
+     doomio, doomconfiguration, dfplayer, dfdata;
 
 function DoomSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
 begin
@@ -53,6 +55,27 @@ constructor TDoomAudio.Create;
 begin
   FSoundEvents := TSoundEventHeap.Create( @DoomSoundEventCompare );
   FTime        := 0;
+  FLastMusic   := '';
+end;
+
+procedure TDoomAudio.Reconfigure;
+var iOldMusic : Integer;
+begin
+  if not Assigned( Sound ) then Exit;
+
+  iOldMusic := Setting_MusicVolume;
+
+  Setting_MenuSound        := Configuration.GetBoolean( 'menu_sound' );
+  Setting_MusicVolume      := Configuration.GetInteger( 'music_volume' );
+  Setting_SoundVolume      := Configuration.GetInteger( 'sound_volume' );
+
+  Sound.SetSoundVolume(5*Setting_SoundVolume);
+  Sound.SetMusicVolume(5*Setting_MusicVolume);
+
+  if Setting_MusicVolume = 0
+    then Sound.Silence
+    else if iOldMusic = 0 then
+       PlayMusic( FLastMusic );
 end;
 
 procedure TDoomAudio.Update( aMSec : DWord );
@@ -71,15 +94,10 @@ var iCount   : DWord;
     iProgress: DWord;
 begin
   FSoundEvents.Clear;
-    if SoundVersion and (Option_SoundEngine <> 'NONE') then
+  if SoundVersion and (Option_SoundEngine <> 'NONE') then
   begin
-    Option_SoundVol := aConfig.Configure('SoundVolume',Option_SoundVol);
-    Option_MusicVol := aConfig.Configure('MusicVolume',Option_MusicVol);
-
     if Option_Music or Option_Sound then
     begin
-      if Option_SoundVol > 25 then Option_SoundVol := 25;
-      if Option_MusicVol > 25 then Option_MusicVol := 25;
       if not aReload then
       begin
         if Option_SoundEngine = 'FMOD'
@@ -88,8 +106,6 @@ begin
       end
       else
         Sound.Reset;
-      Sound.SetSoundVolume(5*Option_SoundVol);
-      Sound.SetMusicVolume(5*Option_MusicVol);
 
       if aReload then
       begin
@@ -158,7 +174,7 @@ var iVolume     : Byte;
     iSoundEvent : TSoundEvent;
 begin
   if aSoundID = 0 then Exit;
-  if (not SoundVersion) or (not Option_Sound) or SoundOff then Exit;
+  if (not SoundVersion) or (not Option_Sound) or SoundOff or ( Setting_MusicVolume = 0 ) then Exit;
   if aDelay > 0 then
   begin
     iSoundEvent.Coord   := aCoord;
@@ -196,7 +212,8 @@ end;
 
 procedure TDoomAudio.PlayMusic(const MusicID : Ansistring);
 begin
-  if (not SoundVersion) or (not Option_Music) then Exit;
+  FLastMusic := MusicID;
+  if (not SoundVersion) or (not Option_Music) or ( Setting_MusicVolume = 0 ) then Exit;
   try
     if MusicID = '' then Sound.Silence;
     if MusicOff then Exit;
@@ -213,7 +230,7 @@ end;
 
 procedure TDoomAudio.PlayMusicOnce(const MusicID : Ansistring);
 begin
-  if (not SoundVersion) or (not Option_Music) then Exit;
+  if (not SoundVersion) or (not Option_Music) or ( Setting_MusicVolume = 0 )  then Exit;
   try
     if MusicID = '' then Sound.Silence;
     if MusicOff then Exit;

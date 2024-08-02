@@ -137,9 +137,10 @@ Your pistol and ammo are not going to last you very long, though.  Press
 "g" to pick up new weapons (represented by "}") and ammo ("|").  If you
 walk around that first level you're likely to run into some small medkits
 (red "+") that you can pick up and add to your inventory. Later on you
-might find other consumable items, they're all "+"s. Press "u" at any time
-to use a consumable. If you ever want to drop something (usually to make
-room for new weapons or items), press "d" to open the drop menu.
+might find other consumable items, they're all "+"s. Press "i" at any time
+and a consumable to use it at any time. If you ever want to drop something
+(usually to make room for new weapons or items), press "Backspace" in the
+inventory screen to drop items.
 
 Along the way, you're bound to run into levers ("&") and barrels ("0"). To
 pull a lever, stand on it and press "SPACE" to use them. The effects are
@@ -163,7 +164,7 @@ allow an alternative fire mode, such as the chainfiring mode of the
 chaingun.
 
 Ok, I hear you cry -- "Out of ammo!" Don't panic. Press "r" to reload your
-weapon. (Some weapons allow you an alternative reload by pressing "R".)
+weapon (Some weapons allow you an alternative reload by pressing SHIFT-r).
 Reloading the correct ammo is automatic if you have it in your inventory.
 But what if you don't? You can try pounding on the enemy with your fists
 or a hand-to-hand weapon -- to do that just walk into him.  Pick up a
@@ -197,7 +198,7 @@ Additionally each armor may grant additional resistance to specific damage
 types. This information can be obtained in the inventory and equipment 
 screens.
 
-Try to check out player information screen by pressing "@" -- some useful
+Try to check out player information screen by pressing "p" -- some useful
 information is written there. First, there are your main parameters:
 movement, firing, and reloading speeds, as well as your chance to hit with
 the weapon you currently have equipped (from point blank range). Next are
@@ -245,7 +246,7 @@ weaknesses by modding them.
 
 Whenever you see something that you aren't familiar with, press "l" to
 trigger the Look command -- moving the cursor with the arrow keys will
-show what's under the cursor in the message bar. You can also press "?"
+show what's under the cursor in the message bar. You can also press "h"
 in-game to open up the help menu.
 
 Happy fragging!

@@ -9,8 +9,6 @@ dofile "colors.lua"
 dofile "music.lua" 
 dofile "sound.lua"
 
-dofile "keybindings.lua"
-
 -- Graphics mode. Can be CONSOLE for raw console, or TILES for graphical 
 -- tiles. Overriden by -graphics and -console command line parameters.
 Graphics = "TILES"
@@ -28,69 +26,18 @@ SDLMixerFreq      = 44100
 SDLMixerFormat    = 32784
 SDLMixerChunkSize = 1024
 
--- Windows and GFX mode only:
--- Set to false to turn off the Fullscreen query at run time. If false you
--- can use StartFullscreen to control fullscreen at startup.
-FullscreenQuery  = true
-
--- whether to start in fullscreen mode, use ALT-Enter to toggle, only
--- used when FullscreenQuery is set to false
-StartFullscreen  = false
-
--- Windowed sizes
-WindowedWidth       = 1280
-WindowedHeight      = 720
--- Multiplication values of font and tile display - use at most 2
-WindowedFontMult    = 1
-WindowedTileMult    = 1
--- minimap size multiplication, set to 0 to remove minimap, -1 is auto
--- choice based on resolution
-WindowedMiniMapSize = -1
-
--- Fullscreen resolution sizes
--- -1 means auto-detection of screen size, and fontmult and tilemult and 
--- minimap based on it
-FullscreenWidth       = -1
-FullscreenHeight      = -1
-FullscreenFontMult    = -1
-FullscreenTileMult    = -1
-FullscreenMiniMapSize = -1
-
 -- Whether to allow high-ASCII signs. Set to false if you see weird signs 
 -- on the screen. Not setting it at all will use the default which
 -- is true on Windows and false on OS X and Linux
 -- AllowHighAscii   = true
 
--- Setting to true will skip name entry procedure and choose a random name
--- instead
-AlwaysRandomName = false
-
 -- Specifies wether items in inventory and equipment should be colored
 ColoredInventory = true
-
--- Menu styles can be LETTER for letter choince only menus, CHOICE for only arrow 
--- selection or HYBRID for both. Note that additional commands (like BACKSPACE for 
--- in-menu drop and TAB for swap) wont work in the LETTER mode.
-InvMenuStyle     = "HYBRID"
-EqMenuStyle      = "HYBRID"
-HelpMenuStyle    = "HYBRID"
 
 -- Setting this to anything except "" will always use that as the name.
 -- Warning - no error checking, so don't use too long names, or especially
 -- the "@" sign (it's a control char). This setting overrides the one above!
 --AlwaysName       = ""
-
--- Setting to true will skip the intro
-SkipIntro        = false
-
--- Setting to true will remove the bloodslide effect
-NoBloodSlides    = false
-
--- Setting to true will remove the flashing effect
-NoFlashing       = false
-
--- Setting to true will make the run command not stop on items
-RunOverItems     = false
 
 -- Setting to false will turn off music during gameplay
 GameMusic        = true
@@ -98,15 +45,9 @@ GameMusic        = true
 -- Setting to false will turn off sounds during gameplay
 GameSound        = true
 
--- Setting to false will turn off Menu change/select sound
-MenuSound        = true
-
 -- Setting to true will turn on enhancements for blind people playing
 -- DoomRL using a screen reader. Yes, some do.
 BlindMode        = false
-
--- Setting to true will turn on enhancements for colorblind people.
-ColorBlindMode   = false
 
 -- Setting to true will make old messages disappear from the screen 
 -- (useful in BlindMode)
@@ -116,26 +57,12 @@ ClearMessages    = false
 -- when too many messages are printed in a turn. Usefull for Speedrunning.
 MorePrompt       = true
 
--- Setting to true will make the game wait for an enter/space key if
--- trying to fire an empty weapon.
-EmptyConfirm     = false
-
 -- If set to true, pickup sound will be used for quickkeys and weapon
 -- swapping.
 SoundEquipPickup = false
 
--- Controls whether gameplay hints appear on the intro level. Once you learn
--- to use the game, you can safely turn it off!
-Hints            = true
-
--- Sets the delay value when running. Value is in milliseconds. Set to 0 for no delay.
+-- (ASCII Only) Sets the delay value when running. Value is in milliseconds. Set to 0 for no delay.
 RunDelay         = 20
-
--- Music volume in the range of 0..25
-MusicVolume      = 12
-
--- Sound volume in the range of 0..25
-SoundVolume      = 20
 
 -- Handles what should be done in case of trying to unwield an item when inventory
 -- is full : if set to false will ask the player if he wants to drop it. If set
@@ -225,12 +152,6 @@ AlertCheck = true
 -- unofficial server, for example for mods in testing. You can specify it 
 -- here. Note that this overrides the default server.
 CustomModServer = ''
-
--- For returning veterans - this option unlocks all the difficulties and 
--- challenges. For new players this definitely is considered a cheat.
--- If you can't unlock Angelic Badges, you're definitely not ready to 
--- try to get them anyway :P
-UnlockAll = false
 
 -- Message coloring system. Works only if MessageColoring
 -- variable is set to true. Use basic color names available in 

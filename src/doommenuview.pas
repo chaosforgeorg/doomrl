@@ -97,7 +97,7 @@ type TMainMenuViewer = class( TUIElement )
 implementation
 
 uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
-     doombase, doomio, doomgfxio, doomnet, doomviews, doomplayerview, doomhelpview;
+     doombase, doomio, doomgfxio, doomnet, doomviews, doomplayerview, doomhelpview, doomsettingsview;
 
 const
   TextContinueGame  = '@b--@> Continue game @b---@>';
@@ -109,19 +109,20 @@ const
   TextShowPlayer    = '@b---@> Show player @b----@>';
   TextExit          = '@b-------@> Exit @b-------@>';
   TextHelp          = '@b-------@> Help @b-------@>';
+  TextSettings      = '@b-----@> Settings @b-----@>';
 
 { TMainMenuConMenu }
 
 constructor TMainMenuConMenu.Create ( aParent : TUIElement; aRect : TUIRect ) ;
 begin
   inherited Create ( aParent, aRect ) ;
-  FSound := Option_Sound and Option_MenuSound and (Sound <> nil);
+  FSound := Option_Sound and (Sound <> nil);
   FLast  := 0;
 end;
 
 function TMainMenuConMenu.OnSelect : Boolean;
 begin
-  if (FLast <> 0) and (FLast <> Selected) and FSound then
+  if Setting_MenuSound and (FLast <> 0) and (FLast <> Selected) and FSound then
     Sound.PlaySample('menu.change');
   FLast := Selected;
   Result := inherited OnSelect;
@@ -129,14 +130,14 @@ end;
 
 function TMainMenuConMenu.OnConfirm : Boolean;
 begin
-  if FSound then
+  if Setting_MenuSound and FSound then
     Sound.PlaySample('menu.pick');
   Result := inherited OnConfirm;
 end;
 
 function TMainMenuConMenu.OnCancel : Boolean;
 begin
-  if FSound then
+  if Setting_MenuSound and FSound then
     Sound.PlaySample('menu.cancel');
   Result := inherited OnCancel;
 end;
@@ -237,6 +238,7 @@ begin
   iMenu.Add(TextShowHighscore);
   iMenu.Add(TextShowPlayer);
   iMenu.Add(TextHelp);
+  iMenu.Add(TextSettings);
   iMenu.Add(TextExit);
   iMenu.OnConfirmEvent := @OnPickMain;
   iMenu.OnCancelEvent  := @OnMainCancel;
@@ -315,9 +317,9 @@ begin
   iMenu := TMainMenuConMenu.Create( Self, Rectangle( 9,18, 10,6 ) );
 //  iMenu.SelectInactive := False;
   iMenu.OnSelectEvent  := @OnChalMenuSelect;
-  iMenu.Add( ChallengeType[1].Name, (HOF.SkillRank > 0) or (GodMode) or (Option_UnlockAll) );
-  iMenu.Add( ChallengeType[2].Name, (HOF.SkillRank > 3) or (GodMode) or (Option_UnlockAll) );
-  iMenu.Add( ChallengeType[3].Name, (HOF.SkillRank > 3) or (GodMode) or (Option_UnlockAll) );
+  iMenu.Add( ChallengeType[1].Name, (HOF.SkillRank > 0) or (GodMode) or (Setting_UnlockAll) );
+  iMenu.Add( ChallengeType[2].Name, (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll) );
+  iMenu.Add( ChallengeType[3].Name, (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll) );
   iMenu.Add( ChallengeType[4].Name, Modules.ChallengeModules.Size > 0 );
   iMenu.OnConfirmEvent := @OnPickChallengeType;
   iMenu.OnCancelEvent  := @OnCancel;
@@ -547,7 +549,8 @@ begin
     4 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
     5 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
     6 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
-    7 : FResult.Quit := True;
+    7 : begin FLogo := False; IO.PushLayer( TSettingsView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
+    8 : FResult.Quit := True;
   end;
   if iFull <> nil then
   begin
@@ -722,7 +725,7 @@ begin
   FResult.Trait := aTrait;
   DestroyChildren;
   FLogo := False;
-  if (Option_AlwaysName <> '') or Option_AlwaysRandomName
+  if (Option_AlwaysName <> '') or Setting_AlwaysRandomName
     then Free
     else InitName;
   Exit( True );

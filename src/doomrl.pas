@@ -25,7 +25,7 @@ uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
      vdebug, doombase, vlog, vutil, vos, vparams,
-     dfdata, doommodule, doomnet, doomio, doomconfig;
+     dfdata, doommodule, doomnet, doomio, doomconfig, doomconfiguration;
 
 {$IFDEF WINDOWS}
 var Handle : HWND;
@@ -45,14 +45,17 @@ var RootPath : AnsiString = '';
 begin
 try
   try
-    DoomNetwork := nil;
-    Modules     := nil;
+    DoomNetwork   := nil;
+    Modules       := nil;
+    Configuration := TDoomConfiguration.Create;
+
 
     {$IFDEF Darwin}
     {$IFDEF OSX_APP_BUNDLE}
     RootPath := GetResourcesPath();
     DataPath          := RootPath;
     ConfigurationPath := RootPath + 'config.lua';
+    SettingsPath      := RootPath + 'settings.lua';
     {$ENDIF}
     {$ELSE}
       {$IFDEF UNIX}
@@ -63,6 +66,7 @@ try
     RootPath := ExtractFilePath( ParamStr(0) );
     DataPath          := RootPath;
     ConfigurationPath := RootPath + 'config.lua';
+    SettingsPath      := RootPath + 'settings.lua';
     {$ENDIF}
 
     {$IFDEF WINDOWS}
@@ -81,7 +85,6 @@ try
       end;
       if isSet('config')     then ConfigurationPath := get('config');
       if isSet('nonet')      then ForceNoNet := True;
-      if isSet('fullscreen') then ForceFullscreen := True;
       if isSet('nosound')    then ForceNoAudio    := True;
       if isSet('graphics')   then
       begin
@@ -93,6 +96,10 @@ try
         GraphicsVersion := False;
         ForceConsole := True;
       end;
+
+      if FileExists( SettingsPath )
+        then Configuration.Read( SettingsPath )
+        else Configuration.Write( SettingsPath );
 
       Config := TDoomConfig.Create( ConfigurationPath, False );
       DataPath     := Config.Configure( 'DataPath', DataPath );
@@ -148,6 +155,7 @@ try
     {$ENDIF}
     Doom.Run;
   finally
+    FreeAndNil( Configuration );
     FreeAndNil( Modules );
     FreeAndNil( DoomNetwork );
     FreeAndNil( Systems );

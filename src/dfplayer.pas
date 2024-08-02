@@ -5,7 +5,7 @@ interface
 uses classes, sysutils,
      vuielement, vutil, vrltools,
      dfbeing, dfhof, dfdata, dfitem, dfaffect,
-     doomtrait;
+     doomtrait, doomkeybindings;
 
 type
 
@@ -81,7 +81,7 @@ TPlayer = class(TBeing)
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
   procedure PreAction;
-  function GetRunInput : Byte;
+  function GetRunInput : TInputKey;
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
@@ -398,7 +398,7 @@ begin
 end;
 
 procedure TPlayer.doRun;
-var Key : Byte;
+var iInput : TInputKey;
 begin
   FPathRun := False;
   if FEnemiesInVision > 1 then
@@ -406,9 +406,9 @@ begin
     Fail( 'Can''t run, there are enemies present.',[] );
     Exit;
   end;
-  Key := IO.MsgCommandChoice('Run - direction...',INPUT_MOVE+[INPUT_ESCAPE,INPUT_WAIT]);
-  if Key = INPUT_ESCAPE then Exit;
-  FRun.Start( InputDirection(Key) );
+  iInput := IO.MsgCommandChoice('Run - direction...',INPUT_MOVE+[INPUT_ESCAPE,INPUT_WAIT]);
+  if iInput = INPUT_ESCAPE then Exit;
+  FRun.Start( InputDirection(iInput) );
 end;
 
 procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem ) ;
@@ -596,17 +596,17 @@ begin
   FSpeedCount := iTempSC;
 
   if FRun.Active and (not FPathRun) then
-    if RunStopNear or ((not Option_RunOverItems) and (TLevel( Parent ).Item[ FPosition ] <> nil)) then
+    if RunStopNear or ((not Setting_RunOverItems) and (TLevel( Parent ).Item[ FPosition ] <> nil)) then
     begin
       FPathRun := False;
       FRun.Stop;
     end;
 end;
 
-function TPlayer.GetRunInput : Byte;
+function TPlayer.GetRunInput : TInputKey;
 var iDir : TDirection;
 begin
-  GetRunInput := 0;
+  GetRunInput := INPUT_NONE;
   if FRun.Active then
   begin
     Inc( FRun.Count );
@@ -615,7 +615,7 @@ begin
       FPathRun := False;
       FRun.Stop;
       Fail('You can''t!',[] );
-      Exit( 0 );
+      Exit( INPUT_NONE );
     end;
 
     if FPathRun then
@@ -624,7 +624,7 @@ begin
       begin
         FPathRun := False;
         FRun.Stop;
-        Exit( 0 );
+        Exit( INPUT_NONE );
       end;
       iDir := NewDirection( FPosition, FPath.Start.Coord );
       FPath.Start := FPath.Start.Child;

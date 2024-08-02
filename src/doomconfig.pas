@@ -38,39 +38,26 @@ begin
   Option_SDLMixerChunkSize:= Configure('SDLMixerChunkSize',Option_SDLMixerChunkSize);
 
   Option_HighASCII        := Configure('AllowHighAscii',Option_HighASCII);
-  Option_AlwaysRandomName := Configure('AlwaysRandomName',Option_AlwaysRandomName);
   Option_AlwaysName       := Configure('AlwaysName',Option_AlwaysName);
-  Option_NoIntro          := Configure('SkipIntro',Option_NoIntro);
-  Option_NoFlash          := Configure('NoFlashing',Option_NoFlash);
-  Option_NoBloodSlide     := Configure('NoBloodSlides',Option_NoBloodSlide);
-  Option_RunOverItems     := Configure('RunOverItems',Option_RunOverItems);
   Option_Music            := Configure('GameMusic',Option_Music);
   Option_Sound            := Configure('GameSound',Option_Sound);
-  Option_MenuSound        := Configure('MenuSound',Option_MenuSound);
   Option_BlindMode        := Configure('BlindMode',Option_BlindMode);
-  Option_ColorBlindMode   := Configure('ColorBlindMode',Option_ColorBlindMode);
   Option_ClearMessages    := Configure('ClearMessages',Option_ClearMessages);// TODO : Reimplement
   Option_MorePrompt       := Configure('MorePrompt',Option_MorePrompt);
   Option_MessageColoring  := Configure('MessageColoring',Option_MessageColoring);
   Option_InvFullDrop      := Configure('InvFullDrop',Option_InvFullDrop);
   Option_MortemArchive    := Configure('MortemArchive',Option_MortemArchive);
   Option_MenuReturn       := Configure('MenuReturn',Option_MenuReturn);
-  Option_EmptyConfirm     := Configure('EmptyConfirm',Option_EmptyConfirm);
   Option_SoundEquipPickup := Configure('SoundEquipPickup',Option_SoundEquipPickup);
   Option_ColoredInventory := Configure('ColoredInventory',Option_ColoredInventory);
   Option_LockBreak        := Configure('LockBreak',Option_LockBreak);
   Option_LockClose        := Configure('LockClose',Option_LockClose);
   Option_TimeStamp        := Configure('TimeStamp',Option_TimeStamp);
-  Option_Hints            := Configure('Hints',Option_Hints);
   Option_NetworkConnection:= Configure('NetworkConnection',Option_NetworkConnection);
   Option_VersionCheck     := Configure('VersionCheck',Option_VersionCheck);
   Option_AlertCheck       := Configure('AlertCheck',Option_AlertCheck);
   Option_BetaCheck        := Configure('BetaCheck',Option_BetaCheck);
   Option_CustomModServer  := Configure('CustomModServer',Option_CustomModServer);
-  Option_InvMenuStyle     := Configure('InvMenuStyle',Option_InvMenuStyle);
-  Option_EqMenuStyle      := Configure('EqMenuStyle',Option_EqMenuStyle);
-  Option_HelpMenuStyle    := Configure('HelpMenuStyle',Option_HelpMenuStyle);
-  Option_UnlockAll        := Configure('UnlockAll',Option_UnlockAll );
 
   Option_PlayerBackups    := Configure('PlayerBackups',Option_PlayerBackups);
   Option_ScoreBackups     := Configure('ScoreBackups',Option_ScoreBackups);
@@ -109,7 +96,6 @@ begin
   begin
     Option_Music     := False;
     Option_Sound     := False;
-    Option_MenuSound := False;
     SoundVersion     := False;
   end
   else

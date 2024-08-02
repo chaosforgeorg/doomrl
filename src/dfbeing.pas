@@ -1143,8 +1143,8 @@ function TBeing.FailConfirm ( const aText : AnsiString; const aParams : array of
 begin
   if FSilentAction then Exit( False );
   if IsPlayer then
-    if Option_EmptyConfirm then IO.MsgEnter( aText, aParams )
-                           else IO.Msg( aText, aParams );
+    if Setting_EmptyConfirm then IO.MsgEnter( aText, aParams )
+                            else IO.Msg( aText, aParams );
   Exit( False );
 end;
 
