@@ -36,7 +36,6 @@ cp -R "$BINDIR"/doomrl.wad \
       "$BINDIR"/version.txt \
       "$BINDIR"/unix_notes.txt \
       "$BINDIR"/colors.lua \
-      "$BINDIR"/keybindings.lua \
       "$BINDIR"/sound.lua \
       "$BINDIR"/music.lua \
       "$BINDIR"/musicmp3.lua \
