@@ -400,6 +400,12 @@ var iMousePos : TIOPoint;
 begin
   if not Assigned( FQuadRenderer ) then Exit;
 
+  if FTime - FLastMouseTime > 3000 then
+  begin
+    FMCursor.Active := False;
+    SetTempHint('');
+  end;
+
   if (FMCursor.Active) and FIODriver.GetMousePos( iPoint ) and (not FMouseLock) and (not isModal) then
   begin
     iMaxX   := FIODriver.GetSizeX;
