@@ -9,8 +9,6 @@ dofile "colors.lua"
 dofile "musichq.lua" 
 dofile "soundhq.lua"
 
-dofile "keybindings.lua"
-
 -- Graphics mode. Can be CONSOLE for raw console, or TILES for graphical 
 -- tiles. Overriden by -graphics and -console command line parameters.
 Graphics = "TILES"
@@ -96,12 +94,6 @@ SoundEquipPickup = false
 
 -- (ASCII Only) Sets the delay value when running. Value is in milliseconds. Set to 0 for no delay.
 RunDelay         = 20
-
--- Music volume in the range of 0..25
-MusicVolume      = 12
-
--- Sound volume in the range of 0..25
-SoundVolume      = 20
 
 -- Handles what should be done in case of trying to unwield an item when inventory
 -- is full : if set to false will ask the player if he wants to drop it. If set

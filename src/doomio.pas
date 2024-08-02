@@ -4,7 +4,7 @@ interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vrlmsg, vuitypes, vluastate,
      viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
-     dfdata, doomspritemap, doomviews, doomaudio;
+     dfdata, doomspritemap, doomviews, doomaudio, doomkeybindings;
 
 const TIG_EV_NONE      = 0;
       TIG_EV_DROP      = 1;
@@ -57,7 +57,7 @@ type TDoomIO = class( TIO )
   procedure Update( aMSec : DWord ); override;
 
   procedure WaitForEnter;
-  function WaitForCommand( const aSet : TCommandSet ) : Byte;
+  function WaitForInput( const aSet : TInputKeySet ) : TInputKey;
   function WaitForKey( const aSet : TKeySet ) : Byte;
   procedure WaitForKeyEvent( out aEvent : TIOEvent; aMouseClick : Boolean = False; aMouseMove : Boolean = False );
   function CommandEventPending : Boolean;
@@ -78,7 +78,7 @@ type TDoomIO = class( TIO )
   procedure MsgEnter( const aText : AnsiString; const aParams : array of const );
   function  MsgConfirm( const aText : AnsiString; aStrong : Boolean = False ) : Boolean;
   function  MsgChoice( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
-  function  MsgCommandChoice( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
+  function  MsgCommandChoice( const aText : AnsiString; const aChoices : TInputKeySet ) : TInputKey;
   function  MsgGetRecent : TUIChunkBuffer;
   procedure MsgReset;
   // TODO: Could this be removed as well?
@@ -157,7 +157,8 @@ implementation
 uses math, video, dateutils, variants,
      vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
-     doombase, doommoreview, doomlua, dflevel, dfplayer, dfitem;
+     dflevel, dfplayer, dfitem,
+     doomconfiguration, doombase, doommoreview, doomlua;
 
 procedure TInterfaceLayer.Tick( aDTick : Integer );
 begin
@@ -474,21 +475,30 @@ begin
 end;
 
 procedure TDoomIO.Reconfigure( aConfig : TLuaConfig );
+var iInput : TInputKey;
 begin
   FAudio.Reconfigure;
+  aConfig.ResetCommands;
+  if aConfig.TableExists('Keytable') then
+    aConfig.LoadKeybindings('Keytable');
+
+  for iInput in TInputKey do
+    if KeyInfo[iInput].ID <> '' then
+      aConfig.Commands[ Configuration.GetInteger(KeyInfo[iInput].ID) ] := Word(iInput);
 end;
 
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
 begin
-  aConfig.ResetCommands;
-  aConfig.LoadKeybindings('Keybindings');
   // TODO : configurable
+
   if GodMode then
     RegisterDebugConsole( VKEY_F1 );
   FIODriver.RegisterInterrupt( VKEY_F9, @ScreenShotCallback );
   FIODriver.RegisterInterrupt( VKEY_F10, @BBScreenShotCallback );
+
   if Option_MessageBuffer < 20 then Option_MessageBuffer := 20;
   FAudio.Configure( aConfig, aReload );
+
   if aReload then
     aConfig.EntryFeed('Colors', @ColorQuery );
   if Option_MessageColoring then
@@ -801,7 +811,7 @@ begin
   if Option_MorePrompt then
   begin
     SetHint('[more]');
-    WaitForCommand([INPUT_OK,INPUT_MLEFT]);
+    WaitForInput([INPUT_OK,INPUT_MLEFT]);
     SetHint('');
   end;
   MsgUpdate;
@@ -874,16 +884,16 @@ end;
 
 procedure TDoomIO.WaitForEnter;
 begin
-  WaitForCommand([INPUT_OK,INPUT_MLEFT]);
+  WaitForInput([INPUT_OK,INPUT_MLEFT]);
 end;
 
-function TDoomIO.WaitForCommand ( const aSet : TCommandSet ) : Byte;
-var iCommand : Byte;
-    iEvent   : TIOEvent;
-    iPoint   : TIOPoint;
+function TDoomIO.WaitForInput ( const aSet : TInputKeySet ) : TInputKey;
+var iInput : TInputKey;
+    iEvent : TIOEvent;
+    iPoint : TIOPoint;
 begin
   repeat
-    iCommand := 0;
+    iInput := INPUT_NONE;
     WaitForKeyEvent( iEvent, GraphicsVersion, GraphicsVersion and (INPUT_MMOVE in aSet) );
     if (iEvent.EType = VEVENT_SYSTEM) then
       if Option_LockClose
@@ -910,17 +920,17 @@ begin
           VMB_WHEEL_UP        : Exit( INPUT_MSCRUP );
           VMB_WHEEL_DOWN      : Exit( INPUT_MSCRDOWN );
         end;
-        if (aSet = []) then Exit(iCommand);
+        if (aSet = []) then Exit(iInput);
       end;
     end
     else
     begin
       FKeyCode := IOKeyEventToIOKeyCode( iEvent.Key );
-      iCommand := Config.Commands[ FKeyCode ];
-      if (aSet = []) and ((FKeyCode mod 256) <> 0) then Exit( iCommand );
+      iInput   := TInputKey( Config.Commands[ FKeyCode ] );
+      if (aSet = []) and ((FKeyCode mod 256) <> 0) then Exit( iInput );
     end;
-  until (iCommand in aSet);
-  Exit( iCommand )
+  until (iInput in aSet);
+  Exit( iInput )
 end;
 
 function TDoomIO.WaitForKey ( const aSet : TKeySet ) : Byte;
@@ -989,8 +999,8 @@ end;
 
 function TDoomIO.ChooseTarget( aActionName : string; aRange: byte;
   aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D;
-var Key : byte;
-    Dir : TDirection;
+var iInput : TInputKey;
+    iDir   : TDirection;
     Position : TCoord2D;
     iTarget : TCoord2D;
     iTargetColor : Byte;
@@ -1025,9 +1035,9 @@ begin
     if iBlock then iTargetColor := Red else iTargetColor := Green;
 
     SetTarget( iTarget, iTargetColor, iTargetRange );
-    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE, INPUT_ESCAPE,INPUT_MORE,INPUT_FIRE,INPUT_ALTFIRE,INPUT_TACTIC, INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
-    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if Key in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then
+    iInput := IO.WaitForInput(INPUT_MOVE+[INPUT_TOGGLEGRID, INPUT_ESCAPE,INPUT_MORE,INPUT_FIRE,INPUT_ALTFIRE,INPUT_TACTIC, INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
+    if (iInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if iInput in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then
        begin
          iTarget := IO.MTarget;
          iDist := Distance(iTarget.x, iTarget.y, Position.x, Position.y);
@@ -1045,30 +1055,30 @@ begin
              else iTarget := iTargetLine.GetC;
            end;
        end;
-    if Key in [ INPUT_ESCAPE, INPUT_MRIGHT ] then begin iTarget.x := 0; Break; end;
-    if Key = INPUT_TACTIC then iTarget := aTargets.Next;
-    if (Key in INPUT_MOVE) then
+    if iInput in [ INPUT_ESCAPE, INPUT_MRIGHT ] then begin iTarget.x := 0; Break; end;
+    if iInput = INPUT_TACTIC then iTarget := aTargets.Next;
+    if (iInput in INPUT_MOVE) then
     begin
-      Dir := InputDirection( Key );
-      if (iLevel.isProperCoord( iTarget + Dir ))
-        and ((not aLimitRange) or (Distance((iTarget + Dir).x, (iTarget + Dir).y, Position.x, Position.y) <= aRange-1)) then
-        iTarget += Dir;
+      iDir := InputDirection( iInput );
+      if (iLevel.isProperCoord( iTarget + iDir ))
+        and ((not aLimitRange) or (Distance((iTarget + iDir).x, (iTarget + iDir).y, Position.x, Position.y) <= aRange-1)) then
+        iTarget += iDir;
     end;
-    if (Key = INPUT_MORE) then
+    if (iInput = INPUT_MORE) then
     begin
       with iLevel do
       if Being[ iTarget ] <> nil then
          FullLook( Being[ iTarget ].ID );
     end;
     LookDescription( iTarget );
-  until Key in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
+  until iInput in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
   MsgUpDate;
 
   ChooseTarget := iTarget;
 end;
 
 procedure TDoomIO.LookMode;
-var Key    : byte;
+var iInput : TInputKey;
     Dir    : TDirection;
     lc     : TCoord2D;
     TargetColor : TColor;
@@ -1082,14 +1092,14 @@ begin
   repeat
     if SpriteMap <> nil then SpriteMap.SetTarget( Target, TargetColor, False );
     TargetColor := NewColor( White );
-    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE,INPUT_ESCAPE,INPUT_MORE,INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
-    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if Key in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then Target := IO.MTarget;
-    if Key in [ INPUT_ESCAPE, INPUT_MRIGHT ] then Break;
-    if Key <> INPUT_MORE then
+    iInput := IO.WaitForInput(INPUT_MOVE+[INPUT_TOGGLEGRID,INPUT_ESCAPE,INPUT_MORE,INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
+    if (iInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if iInput in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then Target := IO.MTarget;
+    if iInput in [ INPUT_ESCAPE, INPUT_MRIGHT ] then Break;
+    if iInput <> INPUT_MORE then
     begin
       lc := Target;
-      Dir := InputDirection( Key );
+      Dir := InputDirection( iInput );
       if iLevel.isProperCoord(lc + Dir) then
       begin
         Target := lc + Dir;
@@ -1112,7 +1122,7 @@ begin
         Msg('Out of range!');
       end;
      end;
-     if (Key in [ INPUT_MORE, INPUT_MLEFT ]) and iLevel.isVisible( Target ) then
+     if (iInput in [ INPUT_MORE, INPUT_MLEFT ]) and iLevel.isVisible( Target ) then
      begin
        with iLevel do
        if Being[Target] <> nil then
@@ -1126,7 +1136,7 @@ begin
 end;
 
 function TDoomIO.ChooseDirection(aActionName : string): TDirection;
-var Key : byte;
+var iInput : TInputKey;
     Position : TCoord2D;
     iTarget : TCoord2D;
     iDone : Boolean;
@@ -1135,14 +1145,14 @@ begin
   Msg( aActionName + ' -- Choose direction...' );
   iDone := False;
   repeat
-    Key := IO.WaitForCommand(INPUT_MOVE+[INPUT_GRIDTOGGLE,INPUT_ESCAPE,INPUT_MLEFT,INPUT_MRIGHT]);
-    if (Key = INPUT_GRIDTOGGLE) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if Key in INPUT_MOVE then
+    iInput := IO.WaitForInput(INPUT_MOVE+[INPUT_TOGGLEGRID,INPUT_ESCAPE,INPUT_MLEFT,INPUT_MRIGHT]);
+    if (iInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
+    if iInput in INPUT_MOVE then
     begin
-      ChooseDirection := InputDirection(Key);
+      ChooseDirection := InputDirection(iInput);
       iDone := True;
     end;
-    if (Key = INPUT_MLEFT) then
+    if (iInput = INPUT_MLEFT) then
     begin
       iTarget := IO.MTarget;
       if (Distance( iTarget, Position) = 1) then
@@ -1151,7 +1161,7 @@ begin
         iDone := True;
       end;
     end;
-    if (Key in [INPUT_MRIGHT,INPUT_ESCAPE]) then
+    if (iInput in [INPUT_MRIGHT,INPUT_ESCAPE]) then
     begin
       ChooseDirection.Create(DIR_CENTER);
       iDone := True;
@@ -1217,11 +1227,11 @@ begin
   MsgChoice := WaitForKey( aChoices );
 end;
 
-function TDoomIO.MsgCommandChoice ( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
+function TDoomIO.MsgCommandChoice ( const aText : AnsiString; const aChoices : TInputKeySet ) : TInputKey;
 begin
   Msg(aText);
   repeat
-    Result := WaitForCommand( aChoices );
+    Result := WaitForInput( aChoices );
   until Result in aChoices;
 end;
 

@@ -48,7 +48,7 @@ TInventory = class( TVObject )
 
 implementation
 
-uses vmath, vgenerics, vluasystem, doomio, dfplayer;
+uses vmath, vgenerics, vluasystem, doomio, doomkeybindings, dfplayer;
 
 { TInventoryEnumerator }
 
@@ -144,7 +144,7 @@ function TInventory.DoScrollSwap : TCommand;
 var iArray   : TItemArray;
     iItem    : TItem;
     iIdx     : Integer;
-    iInput   : Byte;
+    iInput   : TInputKey;
 begin
   DoScrollSwap.Command := COMMAND_NONE;
   iArray := TItemArray.Create( False );
@@ -173,11 +173,11 @@ begin
     if Slot[ efWeapon ] = nil then iIdx := 0;
     repeat
       IO.SetHint( iArray[iIdx].Description );
-      iInput := IO.WaitForCommand( [INPUT_MSCRUP,INPUT_MSCRDOWN,INPUT_MLEFT,INPUT_MRIGHT,INPUT_ESCAPE,INPUT_ENTER] );
+      iInput := IO.WaitForInput( [INPUT_MSCRUP,INPUT_MSCRDOWN,INPUT_MLEFT,INPUT_MRIGHT,INPUT_ESCAPE,INPUT_OK] );
       if iInput = INPUT_MSCRUP   then if iIdx = 0 then iIdx := iArray.Size-1 else iIdx -= 1;
       if iInput = INPUT_MSCRDOWN then iIdx := (iIdx + 1) mod iArray.Size;
-    until iInput in [0,INPUT_ESCAPE,INPUT_ENTER,INPUT_MLEFT,INPUT_MRIGHT];
-    if iInput in [INPUT_ENTER,INPUT_MLEFT] then
+    until iInput in [0,INPUT_ESCAPE,INPUT_OK,INPUT_MLEFT,INPUT_MRIGHT];
+    if iInput in [INPUT_OK,INPUT_MLEFT] then
     begin
       if iArray[ iIdx ] = Slot[ efWeapon2 ] then
       begin

@@ -3,14 +3,11 @@
 --  If you mess up something overwrite with a new godmode.lua.
 -- ----------------------------------------------------------------------
 
-dofile "core/commands.lua"
 dofile "colors.lua"
 
 -- pick here what music set to use (see music.lua and musicmp3.lua)
 dofile "musichq.lua" 
 dofile "soundhq.lua"
-
-dofile "keybindings.lua"
 
 -- Temporary
 StartFullscreen  = false
@@ -57,9 +54,6 @@ GameMusic        = true
 -- Setting to false will turn off sounds during gameplay
 GameSound        = true
 
--- Setting to false will turn off Menu change/select sound
-MenuSound        = true
-
 -- Setting to false will turn on enhancements for blind people playing
 -- DoomRL using a screen reader. Yes, some do.
 BlindMode        = false
@@ -78,12 +72,6 @@ SoundEquipPickup = false
 
 -- (ASCII Only) Sets the delay value when running. Value is in milliseconds. Set to 0 for no delay.
 RunDelay         = 20
-
--- Music volume in the range of 0..25
-MusicVolume      = 12
-
--- Sound volume in the range of 0..25
-SoundVolume      = 20
 
 -- Handles what should be done in case of trying to unwield an item when inventory
 -- is full : if set to false will ask the player if he wants to drop it. If set
@@ -189,27 +177,28 @@ Messages = {
 	["You feel relatively safe now."] = BLUE
 }
 
+Keytable = {}
+
 -- God commands
-Keybindings["W"]        = function() 
+Keytable["W"]        = function() 
 	ui.msg('Invulnerability!')
 	player:set_affect("inv",50) 
 end
 
-
 -- XXX Does this even work?
-Keybindings["SHIFT+BACKSPACE"] = function() 
+Keytable["SHIFT+BACKSPACE"] = function() 
 	ui.msg('Supercharge!')
 	player.hp = 2 * player.hpmax 
 end
-Keybindings["BACKSPACE"] = function() 
+Keytable["BACKSPACE"] = function() 
 	ui.msg('Heal!')
 	player.hp = player.hpmax 
 end
-Keybindings["BQUOTE"] = function() 
+Keytable["BQUOTE"] = function() 
 	ui.msg('Home!')
 	player:phase("stairs")
 end
-Keybindings["SHIFT+3"]        = function() 
+Keytable["SHIFT+3"]        = function() 
 	if player:is_affect( "inv" ) then
 		player:remove_affect( "inv" )
 	else
@@ -217,7 +206,7 @@ Keybindings["SHIFT+3"]        = function()
 		player:set_affect("inv", 5000) 
 	end
 end
-Keybindings["SHIFT+4"]        = function() 
+Keytable["SHIFT+4"]        = function() 
 	if player:is_affect( "berserk" ) then
 		player:remove_affect( "berserk" )
 	else
@@ -225,7 +214,7 @@ Keybindings["SHIFT+4"]        = function()
 		player:set_affect("berserk", 5000) 
 	end
 end
-Keybindings["SHIFT+5"]        = function() 
+Keytable["SHIFT+5"]        = function() 
 	if player:is_affect( "enviro" ) then
 		player:remove_affect( "enviro" )
 	else
@@ -234,21 +223,20 @@ Keybindings["SHIFT+5"]        = function()
 	end
 end
 
-
-Keybindings["F3"] = function() 
+Keytable["F3"] = function() 
 	ui.msg('Next level!')
 	player:exit()
 end
-Keybindings["F4"] = function() 
+Keytable["F4"] = function() 
 	ui.msg('Endgame!')
 	-- Different ending floors for different challenges (this should be fairly independent code)
 	player:exit(table.getn(player.episode))
 end
-Keybindings["F5"] = function() 
+Keytable["F5"] = function() 
 	ui.msg('+500 Experience!')
 	player:add_exp(500)
 end
-Keybindings["F6"] = function() 
+Keytable["F6"] = function() 
 	ui.msg('ARMAGEDDON!')
 	for b in level:beings() do
 		if not b:is_player() then
@@ -256,11 +244,11 @@ Keybindings["F6"] = function()
 		end
 	end
 end 
-Keybindings["F7"] = function() 
+Keytable["F7"] = function() 
 	ui.msg('Teleport!')
 	player:phase()
 end
-Keybindings["F8"]        = function() 
+Keytable["F8"]        = function() 
 	player.inv:clear()
 	ui.msg('idkfa!')
 	player.inv:add( 'ashotgun' )
@@ -277,7 +265,7 @@ Keybindings["F8"]        = function()
 		player.inv:add( 'shell', { ammo = 50 } )
 	end
 end
-Keybindings["BSLASH"] = function() 
+Keytable["BSLASH"] = function() 
 	ui.msg('Visibility!')
 	level.flags[ LF_BEINGSVISIBLE ] = not level.flags[ LF_BEINGSVISIBLE ]
 	level.flags[ LF_ITEMSVISIBLE  ] = not level.flags[ LF_ITEMSVISIBLE  ]

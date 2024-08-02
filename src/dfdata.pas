@@ -9,7 +9,7 @@ unit dfdata;
 interface
 uses Classes, SysUtils, idea,
      vgenerics, vcolor, vutil, vrltools, vuitypes, vluatable,
-     doomconfig;
+     doomconfig, doomkeybindings;
 
 const ConfigurationPath : AnsiString = 'config.lua';
       DataPath          : AnsiString = '';
@@ -101,12 +101,6 @@ const
 {$include ../bin/dkey.inc}
 
 const
-  INPUT_MMOVE    = 240;
-  INPUT_MRIGHT   = 241;
-  INPUT_MMIDDLE  = 242;
-  INPUT_MLEFT    = 243;
-  INPUT_MSCRUP   = 244;
-  INPUT_MSCRDOWN = 245;
   COMMAND_NONE     = 0;
 
   KnockbackValue = 7;
@@ -170,10 +164,10 @@ var
 
 const
 {$include ../bin/core/commands.lua}
-  INPUT_MOVE        = [INPUT_WALKNORTH,INPUT_WALKSOUTH,
-                       INPUT_WALKEAST, INPUT_WALKWEST,
-                       INPUT_WALKNE,   INPUT_WALKSE,
-                       INPUT_WALKNW,   INPUT_WALKSW];
+  INPUT_MOVE        = [INPUT_WALKUP,     INPUT_WALKDOWN,
+                       INPUT_WALKRIGHT,  INPUT_WALKLEFT,
+                       INPUT_WALKUPRIGHT,INPUT_WALKDOWNRIGHT,
+                       INPUT_WALKUPLEFT, INPUT_WALKDOWNLEFT];
 
 type TCellSet = set of Byte;
      TExplosionFlags = set of TExplosionFlag;
@@ -312,8 +306,8 @@ const ExpTable : array[1..MaxPlayerLevel] of LongInt =
                900000,10000000);
                
 function Roll(stat : Integer) : Integer;
-function InputDirection(Command : byte) : TDirection;
-function DirectionToInput(Dir : TDirection) : Byte;
+function InputDirection( aInput : TInputKey ) : TDirection;
+function DirectionToInput(Dir : TDirection) : TInputKey;
 function TwoInt(x : integer) : string;
 function ToProperFilename(s : string) : string;
 function toHitPercent(EffSkill : ShortInt) : string;
@@ -467,33 +461,33 @@ end;
 
 
 
-function InputDirection(Command : byte) : TDirection;
+function InputDirection(aInput : TInputKey) : TDirection;
 begin
-  case Command of
-    INPUT_WALKWEST  : InputDirection.Create(4);
-    INPUT_WALKEAST  : InputDirection.Create(6);
-    INPUT_WALKNORTH : InputDirection.Create(8);
-    INPUT_WALKSOUTH : InputDirection.Create(2);
-    INPUT_WALKNW    : InputDirection.Create(7);
-    INPUT_WALKNE    : InputDirection.Create(9);
-    INPUT_WALKSW    : InputDirection.Create(1);
-    INPUT_WALKSE    : InputDirection.Create(3);
-    INPUT_WAIT      : InputDirection.Create(5);
+  case aInput of
+    INPUT_WALKLEFT      : InputDirection.Create(4);
+    INPUT_WALKRIGHT     : InputDirection.Create(6);
+    INPUT_WALKUP        : InputDirection.Create(8);
+    INPUT_WALKDOWN      : InputDirection.Create(2);
+    INPUT_WALKUPLEFT    : InputDirection.Create(7);
+    INPUT_WALKUPRIGHT   : InputDirection.Create(9);
+    INPUT_WALKDOWNLEFT  : InputDirection.Create(1);
+    INPUT_WALKDOWNRIGHT : InputDirection.Create(3);
+    INPUT_WAIT          : InputDirection.Create(5);
     else InputDirection.Create(0);
   end;
 end;
 
-function DirectionToInput(Dir : TDirection) : Byte;
+function DirectionToInput(Dir : TDirection) : TInputKey;
 begin
   case Dir.code of
-    4 : Exit( INPUT_WALKWEST );
-    6 : Exit( INPUT_WALKEAST );
-    8 : Exit( INPUT_WALKNORTH);
-    2 : Exit( INPUT_WALKSOUTH);
-    7 : Exit( INPUT_WALKNW );
-    9 : Exit( INPUT_WALKNE );
-    1 : Exit( INPUT_WALKSW );
-    3 : Exit( INPUT_WALKSE );
+    4 : Exit( INPUT_WALKLEFT );
+    6 : Exit( INPUT_WALKRIGHT );
+    8 : Exit( INPUT_WALKUP );
+    2 : Exit( INPUT_WALKDOWN );
+    7 : Exit( INPUT_WALKUPLEFT );
+    9 : Exit( INPUT_WALKUPRIGHT );
+    1 : Exit( INPUT_WALKDOWNLEFT );
+    3 : Exit( INPUT_WALKDOWNRIGHT );
     5 : Exit( INPUT_WAIT );
     else Exit( INPUT_WAIT );
   end;
