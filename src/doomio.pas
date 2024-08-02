@@ -41,7 +41,7 @@ type TInterfaceLayerStack = specialize TGArray<TInterfaceLayer>;
 
 type TDoomIO = class( TIO )
   constructor Create; reintroduce;
-  procedure Reconfigure( aConfig : TLuaConfig );
+  procedure Reconfigure( aConfig : TLuaConfig ); virtual;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
   function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
   procedure FullUpdate; override;

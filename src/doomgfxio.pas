@@ -5,8 +5,13 @@ uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vima
      vrltools, vutil,
      doomio, doomspritemap, doomanimation, dfdata;
 
-type TDoomGFXIO = class( TDoomIO )
+type
+
+{ TDoomGFXIO }
+
+ TDoomGFXIO = class( TDoomIO )
     constructor Create; reintroduce;
+    procedure Reconfigure( aConfig : TLuaConfig ); override;
     procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
     procedure Update( aMSec : DWord ); override;
     function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
@@ -34,7 +39,9 @@ type TDoomGFXIO = class( TDoomIO )
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
+    procedure ResetVideoMode;
     procedure ReuploadTextures;
+    procedure RecalculateScaling( aInitialize : Boolean );
     procedure CalculateConsoleParams;
     procedure SetMinimapScale( aScale : Byte );
   private
@@ -52,15 +59,7 @@ type TDoomGFXIO = class( TDoomIO )
     FCellY       : Integer;
     FFontSizeX   : Byte;
     FFontSizeY   : Byte;
-
-    FSettings   : array [Boolean] of
-    record
-      Width  : Integer;
-      Height : Integer;
-      FMult  : Integer;
-      TMult  : Integer;
-      MiniM  : Integer;
-    end;
+    FFullscreen  : Boolean;
 
     FLastMouseTime : QWord;
     FMouseLock     : Boolean;
@@ -93,46 +92,69 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
 const ConsoleSizeX = 80;
       ConsoleSizeY = 25;
 
+
+procedure TDoomGFXIO.RecalculateScaling( aInitialize : Boolean );
+var iWidth        : Integer;
+    iHeight       : Integer;
+    iOldFontMult  : Integer;
+    iOldTileMult  : Integer;
+    iOldMiniScale : Integer;
+begin
+  iWidth      := FIODriver.GetSizeX;
+  iHeight     := FIODriver.GetSizeY;
+  iOldFontMult  := FFontMult;
+  iOldTileMult  := FTileMult;
+  iOldMiniScale := FMiniScale;
+  FFontMult   := Configuration.GetInteger( 'font_multiplier' );
+  FTileMult   := Configuration.GetInteger( 'tile_multiplier' );
+  FMiniScale  := Configuration.GetInteger( 'minimap_multiplier' );
+
+
+  if FFontMult = 0 then
+    if (iWidth >= 1600) and (iHeight >= 900)
+      then FFontMult := 2
+      else FFontMult := 1;
+  if FTileMult  = 0 then
+    if (iWidth >= 1050) and (iHeight >= 1050)
+      then FTileMult := 2
+      else FTileMult := 1;
+  if FMiniScale = 0 then
+  begin
+    FMiniScale := iWidth div 220;
+    FMiniScale := Max( 3, FMiniScale );
+    FMiniScale := Min( 9, FMiniScale );
+  end;
+
+  if aInitialize then Exit;
+
+  if FMiniScale <> iOldMiniScale then
+    SetMinimapScale( FMiniScale );
+
+  if FTileMult <> iOldTileMult then
+  begin
+    SpriteMap.Recalculate;
+    if Player <> nil then
+      SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
+  end;
+
+  if FFontMult <> iOldFontMult then
+  begin
+    CalculateConsoleParams;
+    TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - ConsoleSizeX*FFontSizeX*FFontMult) div 2, 0, FLineSpace, FFontMult );
+  end;
+end;
+
 constructor TDoomGFXIO.Create;
 var iCoreData   : TVDataFile;
     iImage      : TImage;
     iFontTexture: TTextureID;
     iFont       : TBitmapFont;
     iStream     : TStream;
-    iFullscreen : Boolean;
-    iCurrentWH  : TIOPoint;
-    iDoQuery    : Boolean;
     iSDLFlags   : TSDLIOFlags;
     iMode       : TIODisplayMode;
     iFontName   : Ansistring;
-
-  procedure ParseSettings( aFull : Boolean; const aPrefix : AnsiString; aDef : TIOPoint );
-  begin
-    with FSettings[ aFull ] do
-    begin
-      Width  := Config.Configure( aPrefix+'Width', aDef.X );
-      Height := Config.Configure( aPrefix+'Height', aDef.Y );
-      FMult  := Config.Configure( aPrefix+'FontMult', -1 );
-      TMult  := Config.Configure( aPrefix+'TileMult', -1 );
-      MiniM  := Config.Configure( aPrefix+'MiniMapSize', -1 );
-      if Width  = -1 then Width  := iCurrentWH.X;
-      if Height = -1 then Height := iCurrentWH.Y;
-      if FMult  = -1 then
-        if (Width >= 1600) and (Height >= 900)
-          then FMult := 2
-          else FMult := 1;
-      if TMult  = -1 then
-        if (Width >= 1050) and (Height >= 1050)
-          then TMult := 2
-          else TMult := 1;
-      if MiniM = -1 then
-      begin
-        MiniM := Width div 220;
-        MiniM := Max( 3, MiniM );
-        MiniM := Min( 9, MiniM );
-      end;
-    end;
-  end;
+    iWidth      : Integer;
+    iHeight     : Integer;
 
 begin
   FLastMouseTime := 0;
@@ -158,23 +180,13 @@ begin
     Logger.AddSink( TConsoleLogSink.Create( LOGDEBUG, True ) );
   end;
   {$ENDIF}
-  iFullScreen := Configuration.GetBoolean( 'fullscreen' );
+  FFullscreen := Configuration.GetBoolean( 'fullscreen' );
+  iWidth      := Configuration.GetInteger( 'screen_width' );
+  iHeight     := Configuration.GetInteger( 'screen_height' );
 
-  if not TSDLIODriver.GetCurrentResolution( iCurrentWH ) then
-    iCurrentWH.Init(800,600);
-
-  ParseSettings( False, 'Windowed', vutil.Point(800,600) );
-  ParseSettings( True, 'Fullscreen', vutil.Point(-1,-1) );
-
-  with FSettings[ iFullscreen ] do
-  begin
-    iSDLFlags := [ SDLIO_OpenGL ];
-    if iFullscreen then Include( iSDLFlags, SDLIO_Fullscreen );
-    FIODriver := TSDLIODriver.Create( Width, Height, 32, iSDLFlags );
-    FFontMult := FMult;
-    FTileMult := TMult;
-    FMiniScale:= MiniM;
-  end;
+  iSDLFlags := [ SDLIO_OpenGL ];
+  if FFullscreen then Include( iSDLFlags, SDLIO_Fullscreen );
+  FIODriver := TSDLIODriver.Create( iWidth, iHeight, 32, iSDLFlags );
 
   begin
     Log('Display modes (%d)', [FIODriver.DisplayModes.Size] );
@@ -205,6 +217,9 @@ begin
   Textures[ iFontTexture ].Upload;
 
   iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
+
+  RecalculateScaling( True );
+
   CalculateConsoleParams;
   FConsole := TGLConsoleRenderer.Create( iFont, ConsoleSizeX, ConsoleSizeY, FLineSpace, [VIO_CON_CURSOR, VIO_CON_BGCOLOR, VIO_CON_EXTCOLOR ] );
 
@@ -223,7 +238,6 @@ begin
   VTIGDefaultStyle.Color[ VTIG_INPUT_TEXT_COLOR ]          := LightGray;
   VTIGDefaultStyle.Color[ VTIG_INPUT_BACKGROUND_COLOR ]    := $442222FF;
 
-
   inherited Create;
 
   FQuadSheet := TGLQuadList.Create;
@@ -240,6 +254,24 @@ begin
   SetMinimapScale( FMiniScale );
 
   FAnimations := TAnimationManager.Create;
+end;
+
+procedure TDoomGFXIO.Reconfigure(aConfig: TLuaConfig);
+var iWidth  : Integer;
+    iHeight : Integer;
+begin
+  iWidth  := Configuration.GetInteger('screen_width');
+  iHeight := Configuration.GetInteger('screen_height');
+  if ( ( iWidth > 0 ) and ( iWidth <> FIODriver.GetSizeX ) ) or
+     ( ( iHeight > 0 ) and ( iHeight <> FIODriver.GetSizeY ) ) or
+     ( Configuration.GetBoolean('fullscreen') <> FFullscreen ) then
+  begin
+    FFullscreen := Configuration.GetBoolean('fullscreen');
+    ResetVideoMode;
+  end
+  else
+    RecalculateScaling( False );
+  inherited Reconfigure(aConfig);
 end;
 
 destructor TDoomGFXIO.Destroy;
@@ -457,21 +489,17 @@ begin
   if FPostSheet <> nil then FQuadRenderer.Render( FPostSheet );
 end;
 
-function TDoomGFXIO.FullScreenCallback ( aEvent : TIOEvent ) : Boolean;
-var iFullscreen : Boolean;
-    iSDLFlags   : TSDLIOFlags;
+procedure TDoomGFXIO.ResetVideoMode;
+var iSDLFlags   : TSDLIOFlags;
+    iWidth      : Integer;
+    iHeight     : Integer;
 begin
-  iFullscreen := TSDLIODriver(FIODriver).FullScreen;
-  iFullscreen := not iFullscreen;
-  with FSettings[ iFullscreen ] do
-  begin
-    iSDLFlags := [ SDLIO_OpenGL ];
-    if not TSDLIODriver(FIODriver).FullScreen then Include( iSDLFlags, SDLIO_Fullscreen );
-    TSDLIODriver(FIODriver).ResetVideoMode( Width, Height, 32, iSDLFlags );
-    FTileMult := TMult;
-    FFontMult := FMult;
-    FMiniScale:= MiniM;
-  end;
+  iSDLFlags := [ SDLIO_OpenGL ];
+  iWidth    := Configuration.GetInteger('screen_width');
+  iHeight   := Configuration.GetInteger('screen_height');
+  if FFullscreen then Include( iSDLFlags, SDLIO_Fullscreen );
+  TSDLIODriver(FIODriver).ResetVideoMode( iWidth, iHeight, 32, iSDLFlags );
+  RecalculateScaling( True );
   ReuploadTextures;
   CalculateConsoleParams;
   TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - ConsoleSizeX*FFontSizeX*FFontMult) div 2, 0, FLineSpace, FFontMult );
@@ -481,6 +509,12 @@ begin
   SpriteMap.Recalculate;
   if Player <> nil then
     SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
+end;
+
+function TDoomGFXIO.FullScreenCallback ( aEvent : TIOEvent ) : Boolean;
+begin
+  FFullscreen := not TSDLIODriver(FIODriver).FullScreen;
+  ResetVideoMode;
   Exit( True );
 end;
 

@@ -73,7 +73,7 @@ begin
   iGroup.AddInteger( 'font_multiplier', 0 )
     .SetRange(0,3)
     .SetName('Font size multiplier')
-    .SetDescription('Control fonCInputGroupst size multiplier. Set to {!0} to pick one based on resolution.')
+    .SetDescription('Control font size multiplier. Set to {!0} to pick one based on resolution.')
     ;
 
   iGroup.AddInteger( 'tile_multiplier', 0 )
@@ -83,7 +83,7 @@ begin
     ;
 
   iGroup.AddInteger( 'minimap_multiplier', 0 )
-    .SetRange(0,3)
+    .SetRange(0,9)
     .SetName('Minimap size multiplier')
     .SetDescription('Control minimap size multiplier. Set to {!0} to pick one based on resolution.')
     ;

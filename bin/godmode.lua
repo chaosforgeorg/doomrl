@@ -18,20 +18,6 @@ SDLMixerFreq      = 44100
 SDLMixerFormat    = 32784
 SDLMixerChunkSize = 1024
 
--- Windowed sizes
-WindowedWidth    = 1280
-WindowedHeight   = 720
--- Multiplication values of font and tile display - use at most 2
-WindowedFontMult = 1
-WindowedTileMult = 1
-
--- Fullscreen resolution sizes
--- -1 means auto-detection of screen size, and fontmult and tilemult based on it
-FullscreenWidth    = -1
-FullscreenHeight   = -1
-FullscreenFontMult = -1
-FullscreenTileMult = -1
-
 -- Whether to allow high-ASCII signs. Set to false if you see weird signs 
 -- on the screen.
 AllowHighAscii   = false

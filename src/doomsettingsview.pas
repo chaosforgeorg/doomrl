@@ -161,7 +161,21 @@ begin
           begin
             if GraphicsVersion then
             begin
-              VTIG_EnumInput( iMode.Access, iSelected = i, @FResInput, FResolutions );
+              if VTIG_EnumInput( iMode.Access, iSelected = i, @FResInput, FResolutions ) then
+              begin
+                if iMode.Value = 0 then
+                begin
+                  Configuration.AccessInteger( 'screen_width' )^  := 0;
+                  Configuration.AccessInteger( 'screen_height' )^ := 0;
+                end
+                else
+                with IO.Driver.DisplayModes[ iMode.Value - 1 ] do
+                begin
+                  Configuration.AccessInteger( 'screen_width' )^  := Width;
+                  Configuration.AccessInteger( 'screen_height' )^ := Height;
+                end;
+                Doom.Reconfigure;
+              end;
             end
             else
               VTIG_InputField('Unavailable');
@@ -179,6 +193,8 @@ begin
                   begin
                     if FState = SETTINGSVIEW_AUDIO then
                       IO.Audio.Reconfigure;
+                    if FState = SETTINGSVIEW_DISPLAY then
+                      Doom.Reconfigure;
                   end;
               end
               else if iEntry is TToggleConfigurationEntry then
