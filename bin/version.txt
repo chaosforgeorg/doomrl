@@ -1,5 +1,6 @@
 0.9.9.8 BETA 9
 [new] -- GH#071: in-game settings menu, including graphics and keybinings!
+[mod] -- GH#135: intro levels flipped horizontally for better UX
 
 0.9.9.8 BETA 8b
 [new] -- GH#120: alternative visual tilesets for each episode!
