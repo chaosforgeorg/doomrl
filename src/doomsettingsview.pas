@@ -1,7 +1,9 @@
 {$INCLUDE doomrl.inc}
 unit doomsettingsview;
 interface
-uses viotypes, vioevent, vconfiguration, doomio;
+uses viotypes, vioevent, vconfiguration, doomio,
+     vuielement // deleteme
+     ;
 
 type TSettingsViewState = (
   SETTINGSVIEW_GENERAL,
@@ -22,7 +24,7 @@ const SETTINGSVIEW_KEYS : set of TSettingsViewState = [
 ];
 
 type TSettingsView = class( TInterfaceLayer )
-  constructor Create;
+  constructor Create( aDeleteMe : TUINotifyEvent = nil );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
@@ -40,6 +42,8 @@ protected
   FKey         : Word;
   FResInput    : Boolean;
   FResolutions : array of Ansistring;
+
+  FDeleteMe : TUINotifyEvent;
 end;
 
 implementation
@@ -68,9 +72,11 @@ const CSub : array[ 1..6 ] of record State : TSettingsViewState; Select, Desc : 
 );
 
 
-constructor TSettingsView.Create;
+constructor TSettingsView.Create( aDeleteMe : TUINotifyEvent = nil );
 var i, iCount : Integer;
 begin
+  FDeleteMe := aDeleteMe;
+
   inherited Create;
   VTIG_EventClear;
   VTIG_ResetSelect( 'settings' );
@@ -285,6 +291,7 @@ destructor TSettingsView.Destroy;
 begin
   Configuration.Write( SettingsPath );
   inherited Destroy;
+  if Assigned( FDeleteMe ) then FDeleteMe( nil );
 end;
 
 function TSettingsView.KeyCapture( aValue : PInteger; aSelected : Boolean ) : Boolean;

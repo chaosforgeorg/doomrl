@@ -97,7 +97,7 @@ type TMainMenuViewer = class( TUIElement )
 implementation
 
 uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
-     doombase, doomio, doomgfxio, doomnet, doomviews, doomplayerview, doomhelpview;
+     doombase, doomio, doomgfxio, doomnet, doomviews, doomplayerview, doomhelpview, doomsettingsview;
 
 const
   TextContinueGame  = '@b--@> Continue game @b---@>';
@@ -109,6 +109,7 @@ const
   TextShowPlayer    = '@b---@> Show player @b----@>';
   TextExit          = '@b-------@> Exit @b-------@>';
   TextHelp          = '@b-------@> Help @b-------@>';
+  TextSettings      = '@b-----@> Settings @b-----@>';
 
 { TMainMenuConMenu }
 
@@ -237,6 +238,7 @@ begin
   iMenu.Add(TextShowHighscore);
   iMenu.Add(TextShowPlayer);
   iMenu.Add(TextHelp);
+  iMenu.Add(TextSettings);
   iMenu.Add(TextExit);
   iMenu.OnConfirmEvent := @OnPickMain;
   iMenu.OnCancelEvent  := @OnMainCancel;
@@ -547,7 +549,8 @@ begin
     4 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
     5 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
     6 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
-    7 : FResult.Quit := True;
+    7 : begin FLogo := False; IO.PushLayer( TSettingsView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
+    8 : FResult.Quit := True;
   end;
   if iFull <> nil then
   begin
