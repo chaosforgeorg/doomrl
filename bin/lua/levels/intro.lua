@@ -219,9 +219,9 @@ register_level "intro"
 			if p.x > 64 then
 				ui.set_hint("Hint : use numpad or arrows to move around!")
 			elseif p.x > 60 then
-				ui.set_hint("Hint : press \"?\" to read full help!")
+				ui.set_hint("Hint : press \"h\" to read full help!")
 			elseif p.x > 56 then
-				ui.set_hint("Hint : you can turn off hints by editing config.lua!")
+				ui.set_hint("Hint : you can turn off hints in the Settings menu!")
 			end
 			if player.exp < 30  and player.beingsinvision > 1 then
 				ui.set_hint("Hint : press \"f\" to fire your weapon!")

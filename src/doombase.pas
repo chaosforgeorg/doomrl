@@ -305,7 +305,7 @@ begin
     INPUT_SWAPWEAPON  : Exit( HandleSwapWeaponCommand );
   end;
 
-  IO.Msg('Unknown command. Press "?" for help.' );
+  IO.Msg('Unknown command. Press "h" for help.' );
   Exit( False );
 end;
 
