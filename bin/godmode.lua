@@ -9,10 +9,6 @@ dofile "colors.lua"
 dofile "musichq.lua" 
 dofile "soundhq.lua"
 
--- Temporary
-StartFullscreen  = false
-FullscreenQuery  = false
-
 SoundEngine = "DEFAULT"
 
 -- SDL sound only options. See SDL_mixer manual on what to put here if

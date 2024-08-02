@@ -67,7 +67,6 @@ const
   ForceNoAudio    : Boolean = False;
   ForceConsole    : Boolean = False;
   ForceGraphics   : Boolean = False;
-  ForceFullscreen : Boolean = False;
   VisionBaseValue : Byte = 8;
 
   ThisSeed       : Cardinal = 0;

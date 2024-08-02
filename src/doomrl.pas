@@ -85,7 +85,6 @@ try
       end;
       if isSet('config')     then ConfigurationPath := get('config');
       if isSet('nonet')      then ForceNoNet := True;
-      if isSet('fullscreen') then ForceFullscreen := True;
       if isSet('nosound')    then ForceNoAudio    := True;
       if isSet('graphics')   then
       begin

@@ -26,15 +26,6 @@ SDLMixerFreq      = 44100
 SDLMixerFormat    = 32784
 SDLMixerChunkSize = 1024
 
--- Windows and GFX mode only:
--- Set to false to turn off the Fullscreen query at run time. If false you
--- can use StartFullscreen to control fullscreen at startup.
-FullscreenQuery  = true
-
--- whether to start in fullscreen mode, use ALT-Enter to toggle, only
--- used when FullscreenQuery is set to false
-StartFullscreen  = false
-
 -- Windowed sizes
 WindowedWidth       = 1280
 WindowedHeight      = 720

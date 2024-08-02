@@ -88,7 +88,7 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
      vdebug, vlog, vmath, vdf, vgl3library, vtigstyle,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfplayer,
-     doombase, doomtextures;
+     doombase, doomtextures, doomconfiguration;
 
 const ConsoleSizeX = 80;
       ConsoleSizeY = 25;
@@ -158,12 +158,7 @@ begin
     Logger.AddSink( TConsoleLogSink.Create( LOGDEBUG, True ) );
   end;
   {$ENDIF}
-  iFullScreen := Config.Configure( 'StartFullscreen', False ) or ForceFullscreen;
-  {$IFDEF WINDOWS}
-  iDoQuery := Config.Configure( 'FullscreenQuery', True );
-  if iDoQuery then
-    iFullScreen := MessageBox( 0, 'Do you want to run in fullscreen mode?'#10'You can toggle fullscreen any time by pressing Alt-Enter.'#10#10'You can also set the defaults in config.lua, to avoid this dialog.','DoomRL - Run fullscreen?', MB_YESNO or MB_ICONQUESTION ) = IDYES;
-  {$ENDIF}
+  iFullScreen := Configuration.GetBoolean( 'fullscreen' );
 
   if not TSDLIODriver.GetCurrentResolution( iCurrentWH ) then
     iCurrentWH.Init(800,600);
