@@ -705,7 +705,7 @@ function DoomRL.OnCreateEpisode()
 		{"the_wall","containment_area"}, -- 11/3
 		{"city_of_skulls","abyssal_plains"}, -- 12/4
 		{"halls_of_carnage","spiders_lair"}, -- 14/6
-		{"house_of_pain"}, -- 17/3
+		{"the_vaults","house_of_pain"}, -- 17/3
 		{"unholy_cathedral"}, -- 19/1
 		{"the_mortuary","limbo"},-- 20/4
 		{"the_lava_pits","mt_erebus"},-- 22/6
@@ -749,18 +749,13 @@ function DoomRL.logo_text()
 @rDoom HQ SFX : @yPer Kristian Risvik
 
 @rMajor changes since last version (see @yversion.txt@r for full list)
-@R  * mod-server! Dual-Angel, Archangel and Custom Challenges!
-@R  * new special levels paired with old ones, and new level generators!
-@R  * several minor features, bugfixes and balance changes
+@R  * start of UX overhaul, save/load at any point, settings menu!
+@R  * new sprites, new tilesets, basic animation!
+@R  * tons of minor features, bugfixes and balance changes
 
-@B facebook.com/ChaosForge   twitter.com/chaosforge_org   gplus.to/ChaosForge
+@B facebook.com/ChaosForge  x.com/chaosforge_org  discord.gg/jupiterhell
 @r                                          Press <@yEnter@r> to continue...
 ]]
-end
-
-function DoomRL.donator_text()
-	return
-[[@rIf you enjoy this game, please consider making a @Ldonation@r! Latest donators: @y 2DeviationsOut, AcidLead, adhominem, ahoge, Akisu, Alesak, AlterAsc, Ander Hammer, appuru, Ashannar, AtTheGates, AukonDK, awebster, Azirel, Blade, Blood, briareoh, ceb, Cheesybox, Cocodor, Cotonou, Darren Grey, DeathDealer, doshu, dtsund, ecmwie, EfronLicht, Essegi, Estwald, fallout, fidsah, fire_and_ice, Flame_US3r, fooziex, fwoop, Game Hunter, Gamera, GermanJoey, gilgatex, Goatmeat, GrAVit, gunthos, Hamster, Igor Savin, IronBeer, KhaaL, Klear, Kolya, konijn, Lagonazer, LinuxIsFinanciallyViable, LordSloth, LuckyDee, MaiZure, mcz117chief, MICu, Mogul, Moog, Napsterbater, neadlak, Neolander, NullPointer, Omega Tyrant, Peter5930, ppiixx, Q2ZOv, Reef Blastbody, repvblic, saltylicorice, Seacow, Seven Deadly Sins, Shadow Fox, shark20061, Shroomsy, Skiv, slartie, spiderwebby, spillblood, stargazer-3, Steve, SuperVGA, Tavana, tehtmi, Templeton, Thann, thelaptop, Thexare, Thomas, Tormuse, Tuor Huorson, UAC421, UnderAPaleGreySky, Uranium, VANDAM, vurt, White Rider, WorthlessBums, Xi over Xi-bar, zakastra, Zalminen, Zeb, zeroDi and ZicherCZ ]]
 end
 
 function DoomRL.OnWinGame()
@@ -791,21 +786,20 @@ end
 
 function DoomRL.first_text()
 	return
-[[@yWelcome to Doom the Roguelike!
+[[@yWelcome to @RD**m the Roguelike@y!
 
-You are running DoomRL for the first time. I hope you will find this roguelike game as enjoyable as it was for me to write it.
+You are running DRL for the first time. I hope you will find this roguelike game as enjoyable as it was for me to write it.
 
-This game is in active development, and as such please be always sure that you have the most recent version, for bugs are fixed, new features appear, and the game becomes better at every iteration. You can find the lastest version on DoomRL website:
+This game is in active development (again?), and as such please be always sure that you have the most recent version, for bugs are fixed, new features appear, and the game becomes better at every iteration. You can find the lastest version on DRL website:
 
 @Bhttps://drl.chaosforge.org/@y
 
-Also, if you enjoy this game, join the forums:
+Also, if you enjoy this game, join the Discord and/or the forums:
 
+@Bhttp://discord.gg/jupiterhell@y
 @Bhttp://forum.chaosforge.org/@y
 
-Also on Facebook (@BChaosForge@y), and on Twitter (@B@@chaosforge_org@y).
-
-But most importantly, if you find yourself enjoying the game, drop by ChaosForge and donate - it's these donations that keep DoomRL (and other CF roguelikes) in active development. You can make a difference.
+You can also follow me on X (@B@@chaosforge_org@y/@B@@epyoncf@y).
 
 Press @<Enter@y to continue...
 ]]

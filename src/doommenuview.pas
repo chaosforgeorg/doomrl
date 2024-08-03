@@ -53,7 +53,6 @@ end;
 
 type TMainMenuViewer = class( TUIElement )
     constructor CreateFirst( aParent : TUIElement );
-    constructor CreateDonator( aParent : TUIElement );
     constructor CreateMain( aParent : TUIElement );
     constructor Create( aParent : TUIElement; aResult : TMenuResult );
     procedure Init;
@@ -85,7 +84,7 @@ type TMainMenuViewer = class( TUIElement )
     function OnChalMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
     procedure OnRedraw; override;
   private
-    FMode        : (MenuModeFirst, MenuModeDonator, MenuModeLogo, MenuModeMain, MenuModeDiff, MenuModeChal, MenuModeKlass, MenuModeName);
+    FMode        : (MenuModeFirst, MenuModeLogo, MenuModeMain, MenuModeDiff, MenuModeChal, MenuModeKlass, MenuModeName);
     FLogo        : Boolean;
     FLabel       : TConUILabel;
     FText        : TConUIText;
@@ -151,19 +150,7 @@ begin
   Init;
   FMode   := MenuModeFirst;
 
-  TConUIText.Create( Self, Rectangle(5,1,70,23),AnsiString( LuaSystem.ProtectedCall( ['DoomRL','first_text'], [] ) ) );
-end;
-
-constructor TMainMenuViewer.CreateDonator ( aParent : TUIElement ) ;
-begin
-  inherited Create( aParent, aParent.GetDimRect );
-  Init;
-  CreateLogo;
-//  CreateSubLogo;
-  FMode   := MenuModeDonator;
-
-  TConUIText.Create( Self, Rectangle(2,9,77,16), AnsiString( LuaSystem.ProtectedCall( ['DoomRL','donator_text'], [] ) ) ).BackColor:=FBackColor;
-  TConUILabel.Create( Self, Point( Dim.X - 20, Dim.Y-1 ),'@rPress <@yEnter@r>...' );
+  TConUIText.Create( Self, Rectangle(5,2,70,23),AnsiString( LuaSystem.ProtectedCall( ['DoomRL','first_text'], [] ) ) );
 end;
 
 constructor TMainMenuViewer.CreateMain ( aParent : TUIElement ) ;
@@ -210,10 +197,11 @@ end;
 
 procedure TMainMenuViewer.CreateSubLogo;
 begin
-  TConUIText.Create( Self, Rectangle(28,10,48,3),
+  TConUIText.Create( Self, Rectangle(28,9,48,4),
     '@rDoom Roguelike @R'+VERSION_STRING+#10+
     '@rby @RKornel Kisielewicz'#10+
-    '@rgraphics by @RDerek Yu' ).BackColor:=FBackColor;
+    '@rgraphics by @RDerek Yu'#10+
+    '@rand @RLukasz Sliwinski').BackColor:=FBackColor;
 end;
 
 procedure TMainMenuViewer.InitMain;
@@ -242,6 +230,8 @@ begin
   iMenu.Add(TextExit);
   iMenu.OnConfirmEvent := @OnPickMain;
   iMenu.OnCancelEvent  := @OnMainCancel;
+  if GraphicsVersion then
+    iMenu.BackColor := $10000000;
 end;
 
 procedure TMainMenuViewer.InitDifficulty;
@@ -267,6 +257,8 @@ begin
 
   iMenu.OnConfirmEvent := @OnPickDifficulty;
   iMenu.OnCancelEvent  := @OnCancel;
+  if GraphicsVersion then
+    iMenu.BackColor := $10000000;
 end;
 
 procedure TMainMenuViewer.InitKlass;
@@ -285,6 +277,8 @@ begin
       iMenu.Add(LuaSystem.Get(['klasses',iCount,'name']));
   iMenu.OnConfirmEvent := @OnPickKlass;
   iMenu.OnCancelEvent  := @OnCancel;
+  if GraphicsVersion then
+    iMenu.BackColor := $10000000;
 end;
 
 procedure TMainMenuViewer.InitTrait;
@@ -323,6 +317,8 @@ begin
   iMenu.Add( ChallengeType[4].Name, Modules.ChallengeModules.Size > 0 );
   iMenu.OnConfirmEvent := @OnPickChallengeType;
   iMenu.OnCancelEvent  := @OnCancel;
+  if GraphicsVersion then
+    iMenu.BackColor := $10000000;
 end;
 
 procedure TMainMenuViewer.OnRender;
@@ -384,9 +380,9 @@ begin
       iSizeX := IO.Driver.GetSizeX;
       iSizeY := IO.Driver.GetSizeY;
       iMinY  := Floor(iSizeY / 25) * (-8);
-      if (FMode <> MenuModeLogo) and (FMode <> MenuModeDonator)
+      if (FMode <> MenuModeLogo)
         then begin iMaxY  := Floor(iSizeY / 25) * 24; iMinY := Floor(iSizeY / 25) * (-10); end
-        else iMaxY  := Floor(iSizeY / 25) * 20;
+        else iMaxY  := Floor(iSizeY / 25) * 18;
       iMinX  := (iSizeX - (iMaxY - iMinY)) / 2;
       iMaxX  := (iSizeX + (iMaxY - iMinY)) / 2;
 
@@ -398,15 +394,9 @@ begin
       );
       iRoot := TConUIRoot(FRoot);
       case FMode of
-        MenuModeDonator :
-        begin
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(2,10) );
-          iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(80,26) );
-          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
-        end;
         MenuModeLogo :
         begin
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(26,11) );
+          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(26,10) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(56,14) );
           iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(2,15) );
@@ -416,7 +406,7 @@ begin
         MenuModeMain  :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,15) );
-          iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,24) );
+          iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,25) );
           iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(1,25) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(81,26) );
@@ -500,9 +490,9 @@ function TMainMenuViewer.OnMainCancel ( aSender : TUIElement ) : Boolean;
 var iMenu : TUICustomMenu;
 begin
   iMenu := aSender as TUICustomMenu;
-  if iMenu.Selected = 7
+  if iMenu.Selected = 8
     then begin FResult.Quit := True; Free; end
-    else iMenu.SetSelected( 7 );
+    else iMenu.SetSelected( 8 );
   Exit( True );
 end;
 

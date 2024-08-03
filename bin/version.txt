@@ -1,35 +1,30 @@
-0.9.9.8 BETA 10
+0.9.9.8
 [mod] -- GH#103: non-lava fluids will appear on Ao100/666 at lvl 30+
-
-0.9.9.8 BETA 9
-[new] -- GH#071: in-game settings menu, including graphics and keybinings!
-[mod] -- GH#135: intro levels flipped horizontally for better UX
-
-0.9.9.8 BETA 8b
-[new] -- GH#120: alternative visual tilesets for each episode!
-[mod] -- GH#103: allow non-hell tilesets on Ao100/666
-[fix] -- BETA  : fixed save/load
-
-0.9.9.8 BETA 7
 [new] -- GH#086: you no longer need to be on the stairs to Save the game!
-[fix] -- BETA  : fixed scrollwheel behaviour
-
-0.9.9.8 BETA 6b
+[new] -- GH#071: in-game settings menu, including graphics and keybinings!
 [new] -- GH#119: paneled inventory/equipment/trait/character screen!
 [new] -- GH#090: game menu (Help, Settings, Abandon, Quit ) under Escape key
 [new] -- GH#087: proper quickslot system in inventory!
-[fix] -- BETA  : fixed disassembly of armors
-
-0.9.9.8 BETA 5
-[new] -- GH#120: G-version - sprites updated!
+[new] -- GH#120: G-version - alternative visual tilesets for each episode!
+[new] -- GH#120: G-version - new sprites added!
 [new] -- GH#120: G-version - animations for idle and for doors!
 [new] -- GH#083: G-version - overlay FX done by shaders, less in your face!
 [new] -- GH#120: G-version - better wall tile flow and style handling!
 [new] -- GH#121: G-version - debris where destroyed walls were!
 [new] -- GH#126: added an ammo dispensing lever to the lever pool
+[new] -- GH#093: The Vaults alternative added - House of Pain
 [new] -- GH#126: enemies left count and level feel info in character screen
 [new] -- GH#126: last 3 enemies are revealed unless boss or special level
 [new] -- GH#126: items are revealed on clear unless boss or special level
+[new] -- GH#080: keybindings updates - SPACE is action key (open, close, descend, pull)
+[new] -- GH#080: keybindings updates - SHIFT-G is use/wear/wield/pull from ground
+[new] -- GH#074: Unlock all option in Settings to unlock Challenges and Difficulties
+[new] -- GH#063: WK3 available for techs at clev 12+ and allows 1 more assembly mod!
+[new] -- TR#307: description for badges and medals in mortem.txt
+[new] -- TR#---: event added: darkness
+[mod] -- GH#028: G-version - ported the game to SDL2
+[mod] -- GH#048: G-version - ported the game to OpenGL 3.3 core
+[mod] -- GH#135: intro levels flipped horizontally for better UX
 [mod] -- GH#126: "running" status name fades in the last 5 moves left
 [mod] -- GH#126: added special level feeling for agony and lava elemental caves
 [mod] -- GH#115: Mjollnir can appear from level 5 and has 1d25 damage
@@ -39,13 +34,6 @@
 [mod] -- GH#126: all medals with "Badge" in name changed to "Pin"
 [mod] -- GH#126: clarified "everything" to "only" in medal kill requirements
 [mod] -- GH#126: adjusted Iron Skull and Gambler's Shield values
-[fix] -- GH#115: expiring messages for affects appear again
-[fix] -- GH#115: unexpirable affects will no longer expire after a long time
-
-0.9.9.8 BETA 4
-[new] -- BETA  : WARNING - speed/command system rewrites!
-[new] -- GH#093: The Vaults alternative added - House of Pain
-[mod] -- BETA  : House of Pain always generates instead of Vaults until balanced
 [mod] -- GH#107: ammo rooms can now contain a variety of ammo, even on Ao100/666
 [mod] -- GH#117: Technical mod packs on armors add resistances instead of knockback res
 [mod] -- GH#112: Survivalist - Ironman 2, and double heals from smed and globes
@@ -56,14 +44,7 @@
 [mod] -- GH#116: buffs - bullet-proof vest, power armor
 [mod] -- GH#111: stat screen includes running dodge bonus
 [mod] -- GH#108: all elite formers deal 5 + 1d3 melee damage
-[mod] -- BETA  : duelist armor - 0/75/0
-[fix] -- BETA  : fixed SHIFT-L previous level feeling
-
-0.9.9.8 BETA 3
-[new] -- GH#080: keybindings updates - SPACE is action key (open, close, descend, pull)
-[new] -- GH#080: keybindings updates - SHIFT-G is use/wear/wield/pull from ground
-[new] -- GH#074: UnlockAll option in config.lua to unlock Challenges and Difficulties
-[new] -- GH#063: WK3 available for techs at clev 12+ and allows 1 more assembly mod!
+[mod] -- GH#103: allow non-hell tilesets on Ao100/666
 [mod] -- GH#078: increased amount of enemies on Deimos and Hell
 [mod] -- GH#075: overcharging a BFG doubles dice count instead of +2 dice
 [mod] -- GH#075: assembly buffs - micro launcher, tower shield, ballistic armor, env boots
@@ -80,21 +61,6 @@
 [mod] -- GH#078: former commandos and pain elemental spawn level range increased
 [mod] -- GH#078: lava elemental buffed, Erebus/Lava pits have diff dependent envirosuits
 [mod] -- GH#077: swapped positions of Vaults and Cathedral, Vaults enemies buffed
-[fix] -- GH#050: Containment Area conquered status only achieved by full clear
-[fix] -- GH#049: Deimos Lab conquered status only achieved by killing the Shamblers
-[fix] -- GH#040: fixed loud/silent sound for wall-destroying levers
-[fix] -  GH#052: fixed error message when attacking crates with a melee weapon on AoPc
-[fix] -- BETA  : fixed MIL and env boot assemblies
-[fix] -- BETA  : Medical Powerarmor heals to 50%
-[fix] -- BETA  : fixed on-kill effects (crash with DS/BA and Beretta wins and Megabuster)
-[fix] -- BETA  : fixed Backpack/Schematics bug
-[fix] -- BETA  : fixed Ironman + Berserk granting resistance above 95%
-[fix] -- BETA  : Vampyre blocks Ironman
-[fix] -- BETA  : yet another fix for the OnAttacked bug
-
-0.9.9.8 BETA 2
-[mod] -- GH#028: ported the game to SDL2
-[mod] -- GH#048: ported the game to OpenGL 3.3 core
 [mod] -- GH#062: Marines start with +20% fire/acid/plasma resistance
 [mod] -- GH#062: Scout stair-sense works on regular stairs only
 [mod] -- GH#062: Tech can single-mod: Cleaver, Mjollnir, Silent, Trigun,
@@ -113,16 +79,6 @@
 [mod] -- GH#066: Medical Powerarmor armor 4 -> 6
 [mod] -- TR#294: MF_EXACT weapons locked to vision range
 [mod] -- TR#---: pick bottom-most stack when reloading
-[fix] -- TR#---: improve mouse responsiveness
-[fix] -- TR#---: fix current kill spree showing best kill spree
-[fix] -- GH#054: fixed error when DS/BA has no room to spawn demons
-[fix] -- BETA  : fixed post-mortem crash related to kill types (OT Bug #7/#8)
-[fix] -- BETA  : fixed kill source related crashes (OT Bug #4)
-[fix] -- BETA  : fixed feet resistance not respected by lava/acid (OT Bug #2)
-
-0.9.9.8 BETA 1
-[new] -- TR#307: description for badges and medals in mortem.txt
-[new] -- TR#---: event added: darkness
 [mod] -- TR#---: Nightmare no longer prevents saving
 [mod] -- TR#---: animation engine upgrade
 [mod] -- TR#310: character screen (@) shows dodge and knockback modifiers.
@@ -132,6 +88,15 @@
 [mod] -- TR#---: curses used on Linux instead of FPCVideo
 [mod] -- TR#061: DS/B demons no longer give XP (fixes exploit)
 [mod] -- TR#---: graphical intuition is a symbol
+[fix] -- GH#115: expiring messages for affects appear again
+[fix] -- GH#115: unexpirable affects will no longer expire after a long time
+[fix] -- GH#050: Containment Area conquered status only achieved by full clear
+[fix] -- GH#049: Deimos Lab conquered status only achieved by killing the Shamblers
+[fix] -- GH#040: fixed loud/silent sound for wall-destroying levers
+[fix] -  GH#052: fixed error message when attacking crates with a melee weapon on AoPc
+[fix] -- TR#---: improve mouse responsiveness
+[fix] -- TR#---: fix current kill spree showing best kill spree
+[fix] -- GH#054: fixed error when DS/BA has no room to spawn demons
 [fix] -- TR#---: melee kills tracked properly AoLT and ArchAoLT now working as intended
 [fix] -- TR#---: kills are only assigned to an item if the item was used to kill
 [fix] -- TR#---: weapon OnKill is called only if weapon is used to kill the enemy

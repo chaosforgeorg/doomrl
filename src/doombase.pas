@@ -268,7 +268,6 @@ end;
 function TDoom.Action( aInput : TInputKey ) : Boolean;
 var iItem : TItem;
 begin
-
   if aInput in INPUT_MOVE then
     Exit( HandleMoveCommand( aInput ) );
 
@@ -303,8 +302,9 @@ begin
     end;
 
     INPUT_SWAPWEAPON  : Exit( HandleSwapWeaponCommand );
+    INPUT_NONE        : Exit;
   end;
-
+  IO.MsgUpDate;
   IO.Msg('Unknown command. Press "h" for help.' );
   Exit( False );
 end;
@@ -796,7 +796,13 @@ begin
                              end;
     end;
     Exit( Action( iInput ) );
-  end;
+  end
+    else
+    begin
+      IO.MsgUpDate;
+      IO.Msg('Unknown command. Press "h" for help.' );
+    end;
+
   Exit( False );
 end;
 
@@ -811,11 +817,10 @@ begin
   iResult    := TMenuResult.Create;
   Doom.Load;
 
-  if not FileExists( WritePath + 'doom.prc' ) then DoomFirst;
+  if not FileExists( WritePath + 'doom.prc' ) then
+    DoomFirst;
 
   IO.RunUILoop( TMainMenuViewer.CreateMain( IO.Root ) );
-  if FState <> DSQuit then
-    IO.RunUILoop( TMainMenuViewer.CreateDonator( IO.Root ) );
   if FState <> DSQuit then
 repeat
   if not DataLoaded then
