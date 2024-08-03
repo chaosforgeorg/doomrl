@@ -63,6 +63,8 @@ try
 
     {$IFDEF Windows}
     RootPath := ExtractFilePath( ParamStr(0) );
+    if not FileExists( RootPath + 'config.lua' ) then
+      RootPath := '';
     DataPath          := RootPath;
     ConfigurationPath := RootPath + 'config.lua';
     SettingsPath      := RootPath + 'settings.lua';
