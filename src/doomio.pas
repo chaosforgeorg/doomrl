@@ -1373,17 +1373,27 @@ begin
   Result := 1;
 end;
 
-const lua_ui_lib : array[0..10] of luaL_Reg = (
-      ( name : 'msg';         func : @lua_ui_msg ),
-      ( name : 'msg_clear';   func : @lua_ui_msg_clear ),
-      ( name : 'msg_enter';   func : @lua_ui_msg_enter ),
-      ( name : 'msg_choice';  func : @lua_ui_msg_choice ),
-      ( name : 'msg_confirm'; func : @lua_ui_msg_confirm ),
-      ( name : 'msg_history'; func : @lua_ui_msg_history ),
-      ( name : 'blood_slide'; func : @lua_ui_blood_slide),
-      ( name : 'blink';       func : @lua_ui_blink),
-      ( name : 'plot_screen'; func : @lua_ui_plot_screen),
-      ( name : 'set_hint';    func : @lua_ui_set_hint ),
+function lua_ui_strip_enc(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  if State.StackSize = 0 then Exit(0);
+  State.Push( StripEncoding(State.ToString(1) ) );
+  Result := 1;
+end;
+
+const lua_ui_lib : array[0..11] of luaL_Reg = (
+      ( name : 'msg';           func : @lua_ui_msg ),
+      ( name : 'msg_clear';     func : @lua_ui_msg_clear ),
+      ( name : 'msg_enter';     func : @lua_ui_msg_enter ),
+      ( name : 'msg_choice';    func : @lua_ui_msg_choice ),
+      ( name : 'msg_confirm';   func : @lua_ui_msg_confirm ),
+      ( name : 'msg_history';   func : @lua_ui_msg_history ),
+      ( name : 'blood_slide';   func : @lua_ui_blood_slide),
+      ( name : 'blink';         func : @lua_ui_blink),
+      ( name : 'plot_screen';   func : @lua_ui_plot_screen),
+      ( name : 'set_hint';      func : @lua_ui_set_hint ),
+      ( name : 'strip_encoding';func : @lua_ui_strip_enc ),
       ( name : nil;          func : nil; )
 );
 

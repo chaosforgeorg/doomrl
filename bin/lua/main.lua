@@ -323,7 +323,7 @@ function DoomRL.print_mortem()
 	if game_type == GAMESTANDARD then
 		for k,v in ipairs( medals ) do
 			if player:has_medal( v.id ) then
-				player:mortem_print( "  "..padded( v.name, 26 ).." "..v.desc )
+				player:mortem_print( "  "..padded( v.name, 26 ).." "..ui.strip_encoding( v.desc ) )
 				awarded = true
 			end
 		end
@@ -337,7 +337,7 @@ function DoomRL.print_mortem()
 				--	player:mortem_print( "* "..v.name )
 				--	new_awarded = true
 				--end
-				player:mortem_print( "  "..padded( v.name, 26 ).." "..v.desc )
+				player:mortem_print( "  "..padded( v.name, 26 ).." "..ui.strip_encoding( v.desc ) )
 				awarded = true
 			end
 		end
