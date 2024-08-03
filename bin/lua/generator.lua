@@ -570,6 +570,7 @@ end
 function generator.generate_fluids( drunk_area )
 	core.log("generator.generate_fluids()")
 	local lvl = level.danger_level
+	if lvl > 30 then lvl = math.random(20) + 5 end
 	    if lvl < 7  then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, "water", nil, nil, drunk_area )
 	elseif lvl < 12 then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, "acid", nil, nil, drunk_area )
 	elseif lvl < 17 then generator.drunkard_walks( math.random(5)-1, math.random(50)+2, "lava", nil, nil, drunk_area )

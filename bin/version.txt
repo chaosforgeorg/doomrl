@@ -1,3 +1,6 @@
+0.9.9.8 BETA 10
+[mod] -- GH#103: non-lava fluids will appear on Ao100/666 at lvl 30+
+
 0.9.9.8 BETA 9
 [new] -- GH#071: in-game settings menu, including graphics and keybinings!
 [mod] -- GH#135: intro levels flipped horizontally for better UX
