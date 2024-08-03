@@ -220,6 +220,7 @@ begin
   Setting_HideHints        := Configuration.GetBoolean( 'hide_hints' );
   Setting_EmptyConfirm     := Configuration.GetBoolean( 'empty_confirm' );
   Setting_UnlockAll        := Configuration.GetBoolean( 'unlock_all' );
+  Setting_MenuSound        := Configuration.GetBoolean( 'menu_sound' );
 end;
 
 procedure TDoom.CreateIO;
