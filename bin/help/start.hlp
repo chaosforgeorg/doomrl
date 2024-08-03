@@ -1,17 +1,17 @@
 {rGetting Started}
 
-When you first start a game of DoomRL, you're presented with a menu screen
+When you first start a game of DRL, you're presented with a menu screen
 with a few different options:
 
 {YNew game} will, well, start a new game!
 {YChallenge game} is initially locked, and becomes unlocked after you reach
 Corporal rank (need to survive 10 levels for it). Challenge games force you
 to play the game a certain way (e.g. using only melee), and you can raise
-your player rank in DoomRL by completing them. As your rank goes higher, 
+your player rank in DRL by completing them. As your rank goes higher, 
 more challenges will be made available to you.
 {YCustom game} brings up a selection screen where you can view and load
 modules. Modules are player-created levels, episodes, or entirely new games
-that bring a completely new experience to the DoomRL engine.
+that bring a completely new experience to the DRL engine.
 {YShow highscores} displays the highscore list, not surprisingly.
 {YShow player} displays your player statistics, which include your player 
 rank, number of kills, and number of wins. It has several screens which
@@ -20,7 +20,7 @@ can be scrolled with the arrow keys.
 currently reading.
 
 For now, select {YNew game} with the arrow keys and press ENTER to start
-your very first game of DoomRL!
+your very first game of DRL!
 
 Before you start your game, you have to make a few decisions. The first is
 the difficulty level. At the beginning, only three difficulty levels are
@@ -28,7 +28,7 @@ available: "I'm too young to die", "Hey, Not Too Rough", and "Hurt Me
 Plenty". At higher difficulties, more monsters appear and tougher monsters
 appear earlier. "Ultra-Violence" and "Nightmare!" difficulties are unlocked
 as your player rank rises. At Nightmare! difficulty, only the most insane
-DoomRL warriors will stand a chance!
+DRL warriors will stand a chance!
 
 The second decision is choosing a character class. Classes differ by 
 starting perks, availability of one advanced trait as basic, and each of
@@ -40,7 +40,7 @@ and wear the name of a random legendary warrior...
 
 The fourth and final choice to make is select a starting "trait". 
 Traits are upgrades or "perks" that you earn when you gain levels in 
-DoomRL (by killing monsters). Traits can raise your max health, let you
+DRL (by killing monsters). Traits can raise your max health, let you
 run faster, deal more damage per shot, or otherwise make you more awesome.
 Some traits can be levelled up individually.
 

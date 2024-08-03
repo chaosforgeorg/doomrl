@@ -11,5 +11,5 @@
                 #####        ##         ##      #      ###
                 ###                                    ###
                 #         Doom, the Roguelike            #
-                           Version @v
-                   (c) 2002-2012 by Kornel Kisielewicz
+                           Version 0.9.9.8
+                   (c) 2002-2024 by Kornel Kisielewicz

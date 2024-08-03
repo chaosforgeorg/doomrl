@@ -4,39 +4,39 @@
   following set describes the standard layout, and does not reflect
   any changes you may have made to your keybindings.
 
-  Escape  -- exit menu, or show game menu (Save, Quit, Help, Settings)
-  Arrows  -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
-  .(period)- Wait
-  h       -- Run on-line help
-  SPACE   -- Action - open doors, close doors, use levers/switches or 
+  {!Escape}  -- exit menu, or show game menu (Save, Quit, Help, Settings)
+  {!Arrows}  -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
+  {!.}(period)- Wait
+  {!h}       -- Run on-line help
+  {!SPACE}   -- Action - open doors, close doors, use levers/switches or 
             go down stairs (you won't be able to come back!)
-  g       -- Pick up item from floor
-  SHIFT-g -- Use/wield/wear item from floor/pull lever/switch
-  z       -- Swap weapon (with prepared weapon)
-  i       -- Show inventory
-  e       -- Show or change equipment/show traits
-  l       -- Toggle LookMode (Escape to exit)
-  f       -- Fire of equipped weapon
-  SHIFT-f -- Alternative Fire of equipped weapon (if available)
-  r       -- Reload equipped weapon
-  SHIFT-r -- Special reload weapon (depending on weapon)
-  u       -- Unload weapon from inventory/from ground
-  p       -- Show screen with character info (parameters of player
+  {!g}       -- Pick up item from floor
+  {!SHIFT-g} -- Use/wield/wear item from floor/pull lever/switch
+  {!z}       -- Swap weapon (with prepared weapon)
+  {!i}       -- Show inventory
+  {!e}       -- Show or change equipment/show traits
+  {!l}       -- Toggle LookMode (Escape to exit)
+  {!f}       -- Fire of equipped weapon
+  {!SHIFT-f} -- Alternative Fire of equipped weapon (if available)
+  {!r}       -- Reload equipped weapon
+  {!SHIFT-r} -- Special reload weapon (depending on weapon)
+  {!u}       -- Unload weapon from inventory/from ground
+  {!p}       -- Show screen with character info (parameters of player
             and his equipment)
-  t       -- Show character traits
-  a       -- Show known assemblies
-  s       -- Show previous messages
-  ,(comma)-- Run command
-  TAB     -- change tactic
-  '1'..'9' -- weapon quick keys, set them up in the inventory screen
+  {!t}       -- Show character traits
+  {!a}       -- Show known assemblies
+  {!s}       -- Show previous messages
+  {!,}(comma)-- Run command
+  {!TAB}     -- change tactic
+  {!1}..{!9} -- weapon quick keys, set them up in the inventory screen
 
 {rKeys while targeting}
    
-  Arrows      -- move target line
-  TAB         -- toggle target
-  m           -- more information
-  f,SPACE,LMB -- fire
-  RMB,Escape  -- cancel
+  {!Arrows}      -- move target line
+  {!TAB}         -- toggle target
+  {!m}           -- more information
+  {!f},{!SPACE},{!LMB} -- fire
+  {!RMB},{!Escape}  -- cancel
 
 
 {rMouse (in graphics mode)}
@@ -65,11 +65,16 @@ LMB, MMB, RMB is left/middle/right mouse button:
 
   Select item and press Enter to do the default action on a given item.
   Wearable items will switch if one is already worn.
-  
+
+  {!Backspace} -- drop selected item
+  {!1}..{!9}     -- mark as quick use/wear/wield
   
 {rEquipment screen}
 
   Selecting a worn item will unequip it. Selecting an empty slot will
   let you choose an item. Note though, that switching through the
   inventory screen is faster.
+  
+  {!Backspace} -- drop selected item
+  {!Tab}       -- swap item with item in inventory
   
