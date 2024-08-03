@@ -95,7 +95,7 @@ type TMainMenuViewer = class( TUIElement )
 
 implementation
 
-uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
+uses {$IFDEF WINDOWS}Windows,{$ENDIF}math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
      doombase, doomio, doomgfxio, doomviews, doomplayerview, doomhelpview, doomsettingsview;
 
 const
@@ -104,11 +104,15 @@ const
   TextChallengeGame = '@b--@> Challenge game @b--@>';
   TextCustomGame    = '@b---@> Custom game @b----@>';
 //  TextReplay        = '@b-@> Replay last game @b-@>';
+  TextJHC           = '@B==@> Wishlist JHC! @B===@>';
   TextShowHighscore = '@b-@> Show highscores @b--@>';
   TextShowPlayer    = '@b---@> Show player @b----@>';
-  TextExit          = '@b-------@> Exit @b-------@>';
-  TextHelp          = '@b-------@> Help @b-------@>';
-  TextSettings      = '@b-----@> Settings @b-----@>';
+  TextExit          = '@b------@> Exit @b--------@>';
+  TextHelp          = '@b------@> Help @b--------@>';
+  TextSettings      = '@b----@> Settings @b------@>';
+
+const
+  JHCURL = 'http://jupiterhellclassic.com/';
 
 { TMainMenuConMenu }
 
@@ -214,9 +218,9 @@ begin
   iSaveExists := Doom.SaveExists;
   CreateLogo;
 
-//  TConUILabel.Create( Self, Point(2,24), '@B'+DoomNetwork.MOTD );
+  TConUILabel.Create( Self, Point(2,24), '@BSupport the game by @Lwishlisting@B the DRL expansion at @Ljupiterhellclassic.com@B!' );
 
-  iMenu := TMainMenuConMenu.Create( Self, Rectangle( 30,15,24,9 ) );
+  iMenu := TMainMenuConMenu.Create( Self, Rectangle( 30,13,24,9 ) );
   if iSaveExists then
     iMenu.Add(TextContinueGame)
   else
@@ -227,6 +231,7 @@ begin
   iMenu.Add(TextShowPlayer);
   iMenu.Add(TextHelp);
   iMenu.Add(TextSettings);
+  iMenu.Add(TextJHC);
   iMenu.Add(TextExit);
   iMenu.OnConfirmEvent := @OnPickMain;
   iMenu.OnCancelEvent  := @OnMainCancel;
@@ -405,8 +410,12 @@ begin
         end;
         MenuModeMain  :
         begin
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,15) );
-          iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,25) );
+          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,13) );
+          iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,24) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+
+          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(1,25) );
+          iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(81,26) );
           iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeDiff  :
@@ -487,9 +496,9 @@ function TMainMenuViewer.OnMainCancel ( aSender : TUIElement ) : Boolean;
 var iMenu : TUICustomMenu;
 begin
   iMenu := aSender as TUICustomMenu;
-  if iMenu.Selected = 8
+  if iMenu.Selected = 9
     then begin FResult.Quit := True; Free; end
-    else iMenu.SetSelected( 8 );
+    else iMenu.SetSelected( 9 );
   Exit( True );
 end;
 
@@ -508,6 +517,16 @@ var iMenu       : TConUIMenu;
     iFull       : TUIFullWindow;
 begin
   iMenu := aSender as TConUIMenu;
+  if iMenu.Selected = 8 then
+  begin
+    {$IFDEF UNIX}
+    fpSystem('xdg-open ' + URL); // Unix-based systems
+    {$ENDIF}
+    {$IFDEF WINDOWS}
+      ShellExecute(0, 'open', PChar(JHCURL), nil, nil, SW_SHOWNORMAL); // Windows
+    {$ENDIF}
+    Exit( False );
+  end;
   DestroyChildren;
   iFull := nil;
   case iMenu.Selected of
@@ -537,7 +556,7 @@ begin
     5 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
     6 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
     7 : begin FLogo := False; IO.PushLayer( TSettingsView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
-    8 : FResult.Quit := True;
+    9 : FResult.Quit := True;
   end;
   if iFull <> nil then
   begin
