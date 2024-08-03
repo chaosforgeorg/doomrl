@@ -276,6 +276,8 @@ begin
     INPUT_FIRE       : Exit( HandleFireCommand( False, False ) );
     INPUT_ALTFIRE    : Exit( HandleFireCommand( True, False ) );
     INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
+    INPUT_LEGACYOPEN : Exit( HandleActionCommand( INPUT_LEGACYOPEN ) );
+    INPUT_LEGACYCLOSE: Exit( HandleActionCommand( INPUT_LEGACYCLOSE ) );
 //    INPUT_QUICKKEY_0 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, 'chainsaw' ) ) );
     INPUT_QUICKKEY_1 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '1' ) ) );
     INPUT_QUICKKEY_2 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '2' ) ) );
@@ -333,19 +335,17 @@ begin
     end;
   end;
 
-  {
-  if ( aInput = INPUT_OPEN ) then
+  if ( aInput = INPUT_LEGACYOPEN ) then
   begin
     iID := 'open';
     iFlag := CF_OPENABLE;
   end;
 
-  if ( aInput = INPUT_CLOSE ) then
+  if ( aInput = INPUT_LEGACYCLOSE ) then
   begin
     iID := 'close';
     iFlag := CF_CLOSABLE;
   end;
-  }
 
   iCount := 0;
   if iFlag = 0 then
@@ -769,8 +769,8 @@ begin
       INPUT_INVENTORY  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;
       INPUT_EQUIPMENT  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) ); Exit; end;
       INPUT_ASSEMBLIES : begin IO.PushLayer( TAssemblyView.Create ); Exit; end;
-//      INPUT_USE        : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_USE ) ); Exit; end;
-      INPUT_DROP       : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
+      INPUT_LEGACYUSE  : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_USE ) ); Exit; end;
+      INPUT_LEGACYDROP : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
       INPUT_UNLOAD     : begin HandleUnloadCommand( nil ); Exit; end;
 
       INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, IO.MsgGetRecent ) ); Exit; end;
@@ -781,7 +781,7 @@ begin
         Exit;
       end;
 
-      //      INPUT_SAVE      : begin Player.doSave; Exit; end;
+      INPUT_LEGACYSAVE: begin Player.doSave; Exit; end;
       INPUT_TRAITS    : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
       INPUT_RUN       : begin Player.doRun;Exit; end;
 
