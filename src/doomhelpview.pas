@@ -81,10 +81,28 @@ begin
   VTIG_BeginWindow( 'Help topics', 'help_view', FSize );
   iSelect := 0;
   for i := 1 to Help.HNum do
-    if VTIG_Selectable( Help.RegHelps[i].Desc ) then
+    if VTIG_Selectable( '      '+Help.RegHelps[i].Desc ) then
        iSelect := i;
-  if VTIG_Selectable( 'Quit help' ) then
+  if VTIG_Selectable(   '      '+'Quit help' ) then
      FMode := HELPVIEW_DONE;
+
+  VTIG_Ruler;
+
+  VTIG_Text('Select help topic above. Quick (default) kebindings primer:');
+  VTIG_Text('');
+  VTIG_Text('  {!Escape}    - game menu (Save, Quit, Settings, Help, etc)');
+  VTIG_Text('  {!Arrows}    - movement (Home,End,PgUp,PgDown - diagonals)');
+  VTIG_Text('  {!.}(period) - wait (pass turn)');
+  VTIG_Text('  {!SPACE}     - action (open,close,press button,descend stairs)');
+  VTIG_Text('  {!I},{!E},{!P},{!T}   - inventory, equipment etc (left/right to switch while open)');
+  VTIG_Text('  {!F}         - fire weapon (SHIFT for alternative mode)');
+  VTIG_Text('  {!R}         - reload weapon (SHIFT for alternative mode)');
+  VTIG_Text('  {!G}         - get item (pickup) from floor (SHIFT to use)');
+  VTIG_Text('  ...          see "Controls" entry for the rest');
+
+
+
+
   VTIG_End('{l<{!Up},{!Down}> select, <{!Enter}> open, <{!Escape}> exit}');
   if iSelect > 0 then
   begin
