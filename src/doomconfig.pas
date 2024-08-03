@@ -53,11 +53,6 @@ begin
   Option_LockBreak        := Configure('LockBreak',Option_LockBreak);
   Option_LockClose        := Configure('LockClose',Option_LockClose);
   Option_TimeStamp        := Configure('TimeStamp',Option_TimeStamp);
-  Option_NetworkConnection:= Configure('NetworkConnection',Option_NetworkConnection);
-  Option_VersionCheck     := Configure('VersionCheck',Option_VersionCheck);
-  Option_AlertCheck       := Configure('AlertCheck',Option_AlertCheck);
-  Option_BetaCheck        := Configure('BetaCheck',Option_BetaCheck);
-  Option_CustomModServer  := Configure('CustomModServer',Option_CustomModServer);
 
   Option_PlayerBackups    := Configure('PlayerBackups',Option_PlayerBackups);
   Option_ScoreBackups     := Configure('ScoreBackups',Option_ScoreBackups);
@@ -70,15 +65,6 @@ begin
 
   Option_MaxRun           := Configure('MaxRun',Option_MaxRun);
   Option_MaxWait          := Configure('MaxWait',Option_MaxWait);
-
-  if ForceNoNet then Option_NetworkConnection := False;
-
-  if not Option_NetworkConnection then
-  begin
-    Option_VersionCheck     := False;
-    Option_AlertCheck       := False;
-    Option_BetaCheck        := False;
-  end;
 
   if ForceNoAudio then
   begin

@@ -124,38 +124,6 @@ TimeStamp        = "yyyy/mm/dd hh:nn:ss"
 -- to turn this off
 SaveOnCrash      = true
 
--- This is the global internet connection switch, allowing DoomRL
--- to use internet connection features. Think twice before disabling
--- it, or you'll loose the features listed below and MOTD and ModServer
--- support!
-NetworkConnection = false
-
--- Should DoomRL check if there's a new version at runtime. If 
--- NetworkConnection is set to true this check is made regardless,
--- but there will be no alert if set to false.
-VersionCheck = true
-
--- Should DoomRL check if there's a new BETA version at runtime. If 
--- NetworkConnection is set to true this check is made regardless,
--- but there will be no alert if set to false. BETA versions are only
--- available to Supporters, but why not hop in and join the fun?
--- By default it's set to VERSION_BETA which is true for beta releases
--- and false for stable releases. Set to true, to get notified of the
--- next BETA batch!
-BetaCheck = VERSION_BETA
-
--- Should DoomRL check for other alerts. Sometimes we will want to
--- point you out to a major ChaosForge release or news flash. This feature
--- will not be abused, and each alert will be displayed only once, so 
--- please consider leaving this set to true! :)
-AlertCheck = true
-
--- DoomRL by default uses it's own mod server, where we host only screened
--- mods from the DoomRL community. A day may come when there will be an
--- unofficial server, for example for mods in testing. You can specify it 
--- here. Note that this overrides the default server.
-CustomModServer = ''
-
 -- Message coloring system. Works only if MessageColoring
 -- variable is set to true. Use basic color names available in 
 -- colors.lua.
@@ -171,3 +139,24 @@ Messages = {
 	["Your * damaged!"]               = BROWN,
 	["You feel relatively safe now."] = BLUE
 }
+
+-- == Path configuration ==
+-- You can use command line switch -config=/something/something/config.lua 
+-- to load a different config!
+
+-- Uncomment the following paths if needed:
+
+-- This is the directory path to the read only data folder (current dir by
+-- default, needs slash at end if changed). -datapath= to override on 
+-- command line.
+--DataPath = ""
+
+-- This is the directory path for writing (save, log) (current dir by
+-- default, needs slash at end if changed). -writepath= to override on 
+-- command line.
+--WritePath = ""
+
+-- This is the directory path for score table (by default it will be the
+-- same as WritePath, change for multi-user systems. -scorepath= to override
+-- on command line.
+--ScorePath = ""

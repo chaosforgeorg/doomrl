@@ -63,7 +63,6 @@ const
   EXCEPTEMMITED   : Boolean = False;
   GraphicsVersion : Boolean = True;
   SoundVersion    : Boolean = True;
-  ForceNoNet      : Boolean = False;
   ForceNoAudio    : Boolean = False;
   ForceConsole    : Boolean = False;
   ForceGraphics   : Boolean = False;
@@ -148,12 +147,6 @@ const
   Option_ScoreBackups     : DWord = 7;
   Option_IntuitionColor   : Byte = LIGHTGRAY;
   Option_IntuitionChar    : Char = '.';
-  Option_NetworkConnection: Boolean = True;
-  Option_VersionCheck     : Boolean = True;
-  Option_AlertCheck       : Boolean = True;
-  Option_BetaCheck        : Boolean = False;
-  Option_CustomModServer  : AnsiString = '';
-
 
 var
   SoundOff  : boolean = False;

@@ -96,7 +96,7 @@ type TMainMenuViewer = class( TUIElement )
 implementation
 
 uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
-     doombase, doomio, doomgfxio, doomnet, doomviews, doomplayerview, doomhelpview, doomsettingsview;
+     doombase, doomio, doomgfxio, doomviews, doomplayerview, doomhelpview, doomsettingsview;
 
 const
   TextContinueGame  = '@b--@> Continue game @b---@>';
@@ -214,7 +214,7 @@ begin
   iSaveExists := Doom.SaveExists;
   CreateLogo;
 
-  TConUILabel.Create( Self, Point(2,24), '@B'+DoomNetwork.MOTD );
+//  TConUILabel.Create( Self, Point(2,24), '@B'+DoomNetwork.MOTD );
 
   iMenu := TMainMenuConMenu.Create( Self, Rectangle( 30,15,24,9 ) );
   if iSaveExists then
@@ -408,9 +408,6 @@ begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,15) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,25) );
           iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(1,25) );
-          iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(81,26) );
-          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeDiff  :
         begin
@@ -535,7 +532,7 @@ begin
           InitChallenge;
           Exit( True );
         end;
-    3 : iFull := TUIModViewer.Create( Self, Option_NetworkConnection and (DoomNetwork.ModServer <> ''), @OnPickMod );
+    3 : iFull := TUIModViewer.Create( Self, False, @OnPickMod );
     4 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
     5 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
     6 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;

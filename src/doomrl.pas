@@ -25,7 +25,7 @@ uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
      vdebug, doombase, vlog, vutil, vos, vparams,
-     dfdata, doommodule, doomnet, doomio, doomconfig, doomconfiguration;
+     dfdata, doommodule, doomio, doomconfig, doomconfiguration;
 
 {$IFDEF WINDOWS}
 var Handle : HWND;
@@ -45,7 +45,6 @@ var RootPath : AnsiString = '';
 begin
 try
   try
-    DoomNetwork   := nil;
     Modules       := nil;
     Configuration := TDoomConfiguration.Create;
 
@@ -84,7 +83,6 @@ try
         ConfigurationPath := RootPath + 'godmode.lua';
       end;
       if isSet('config')     then ConfigurationPath := get('config');
-      if isSet('nonet')      then ForceNoNet := True;
       if isSet('nosound')    then ForceNoAudio    := True;
       if isSet('graphics')   then
       begin
@@ -128,11 +126,6 @@ try
 
     Doom := Systems.Add(TDoom.Create) as TDoom;
 
-    Option_NetworkConnection := False;
-
-    DoomNetwork := TDoomNetwork.Create;
-    if DoomNetwork.AlertCheck then Halt(0);
-
     Modules     := TDoomModules.Create;
 
     Randomize;
@@ -157,7 +150,6 @@ try
   finally
     FreeAndNil( Configuration );
     FreeAndNil( Modules );
-    FreeAndNil( DoomNetwork );
     FreeAndNil( Systems );
   end;
 except on e : Exception do

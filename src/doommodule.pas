@@ -1,7 +1,7 @@
 unit doommodule;
 {$mode objfpc}
 interface
-uses Classes, SysUtils, vutil, vluasystem, vnode, vgenerics, dfdata, doomnet;
+uses Classes, SysUtils, vutil, vluasystem, vnode, vgenerics, dfdata;
 
 type TModuleException = Exception;
 
@@ -45,8 +45,8 @@ type
 TDoomModules = class(TVObject)
   constructor Create;
   procedure RefreshLocalModules;
-  function DownloadRemoteLists( aProgress : TNetProgressFunc = nil ) : Boolean;
-  function DownloadModule( aModule : TDoomModule; aProgress : TNetProgressFunc = nil ) : Boolean;
+//  function DownloadRemoteLists( aProgress : TNetProgressFunc = nil ) : Boolean;
+//  function DownloadModule( aModule : TDoomModule; aProgress : TNetProgressFunc = nil ) : Boolean;
   function FindLocalMod( const aID : AnsiString ) : TDoomModule;
   function FindLocalRawMod( const aID : AnsiString ) : TDoomModule;
   procedure RegisterAwards( L : PLua_State );
@@ -167,6 +167,7 @@ begin
   Log('DoomModules destroyed.');
 end;
 
+{
 function TDoomModules.DownloadRemoteLists( aProgress : TNetProgressFunc = nil ) : Boolean;
 var iModInfo : TVXMLDocument;
     iXML     : TXMLDocument;
@@ -238,7 +239,7 @@ begin
     Free;
   end;
 end;
-
+}
 function TDoomModules.FindLocalMod( const aID : AnsiString ) : TDoomModule;
 var iModule : TDoomModule;
 begin

@@ -632,6 +632,7 @@ begin
     FTitle := '@yChoose Module to Play';
     iList := Modules.LocalModules;
   end
+  {
   else
   begin
     (* TODO Separate network error (actually cannot download the file) from local error (file system cannot write the file because the directory is missing etc) *)
@@ -642,8 +643,7 @@ begin
     end;
     FTitle := '@yChoose Module to Download';
     iList := Modules.RemoteModules;
-  end;
-
+  end};
   FMenu.Clear;
   for iModule in iList do
     FMenu.Add( iModule.Name+IIf( iModule.Raw, ' (raw)'), True, iModule );
@@ -733,7 +733,7 @@ begin
       EmitWarning( OlderWarning, @OnConfirm )
     else
       OnConfirm( FMenu );
-  end
+  end{
   else
   begin
     FBar.Visible := True;
@@ -748,7 +748,7 @@ begin
       Modules.RefreshLocalModules;
     end;
     FBar.Visible := False;
-  end;
+  end};
   Exit( True );
 end;
 
