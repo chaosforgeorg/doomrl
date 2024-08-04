@@ -11,7 +11,7 @@ If you enjoy this Open Source release, please consider pledging!
 
 Parts of this codebase date back to 2002, please do not judge! :P
 
-This FreePascal source code release is provided as is. You can try compiling it using the latest version of Lazarus ( http://www.lazarus-ide.org/ ). You will also need the FPC Valkyrie library ( https://github.com/ChaosForge/fpcvalkyrie/ ). You will also probably need the binary files of the full game downloadable from http://drl.chaosforge.org/ (in particular the sound, soundhq, music and mp3 folder contents, and the premade doomrl.wad and core.wad if you don't want to create it yourself).
+This FreePascal source code release is provided as is. You can try compiling it using the latest version of Lazarus ( http://www.lazarus-ide.org/ ). You will also need the FPC Valkyrie library ( https://github.com/ChaosForge/fpcvalkyrie/ ). You will also probably need the binary files of the full game downloadable from http://drl.chaosforge.org/ (in particular the sound, soundhq, music and mp3 folder contents, and the premade drl.wad and core.wad if you don't want to create it yourself).
 
 The current public versions are 32-bit, but going forward only 64-bit releases will be supported.
 
@@ -19,12 +19,12 @@ Detailed compilation instructions will appear at some later point after the Jupi
 
 Short version:
 
-1. Download DoomRL from http://drl.chaosforge.org/
-2. Copy bin/mp3, bin/music, bin/sound, bin/soundhq from the DoomRL folders to the source tree bin folder
+1. Download DRL from http://drl.chaosforge.org/
+2. Copy bin/mp3, bin/music, bin/sound, bin/soundhq from the DRL folders to the source tree bin folder
 3. Download 64-bit Lazarus
 4. Open src/makewad.lpi build, do not run
-5. Run makewad.exe from the command line in the bin folder to generate doomrl.wad and core.wad (precompiled lua files)
-6. Open src/doomrl.lpi, build and run
+5. Run makewad.exe from the command line in the bin folder to generate drl.wad and core.wad (precompiled lua files)
+6. Open src/drl.lpi, build and run
 7. Profit (?)
 
 Lua makefile path (tested on Windows, might work on Linux):
