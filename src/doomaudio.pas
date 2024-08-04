@@ -41,7 +41,7 @@ end;
 implementation
 
 uses sysutils,
-     vdebug, vsystems, vmath, vsound, vfmodsound, vsdlsound,
+     vdebug, vsystems, vmath, vsound, vfmod2sound, vsdlsound,
      doomio, doomconfiguration, dfplayer, dfdata;
 
 function DoomSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
@@ -101,7 +101,7 @@ begin
       if not aReload then
       begin
         if Option_SoundEngine = 'FMOD'
-          then Sound := Systems.Add(TFMODSound.Create) as TSound
+          then Sound := Systems.Add( TFMOD2Sound.Create ) as TSound
           else Sound := Systems.Add( TSDLSound.Create ) as TSound;
       end
       else
