@@ -318,7 +318,7 @@ begin
   FStoredHint := '';
   FHint       := '';
 
-  FIODriver.SetTitle('Doom, the Roguelike','DoomRL');
+  FIODriver.SetTitle('DRL','DRL');
 
   iStyle := TUIStyle.Create('default');
   iStyle.Add('','fore_color', LightGray );
@@ -547,7 +547,7 @@ begin
      then iExt := '.png'
      else iExt := '.txt';
 
-  iName := 'DoomRL';
+  iName := 'DRL';
   if Player <> nil then iName := Player.Name;
   iFName := 'screenshot'+PathDelim+ToProperFilename('['+FormatDateTime(Option_TimeStamp,Now)+'] '+iName)+iExt;
   iCount := 1;
@@ -1415,12 +1415,12 @@ begin
   {$IFDEF WINDOWS}
   if GraphicsVersion then
   begin
-    iErrorMessage := 'DoomRL crashed!'#10#10'Reason : '+aInfo+#10#10
+    iErrorMessage := 'DRL crashed!'#10#10'Reason : '+aInfo+#10#10
      +'If this reason doesn''t seem your fault, please submit a bug report at http://forum.chaosforge.org/'#10
      +'Be sure to include the last entries in your error.log that will get created once you hit OK.'
-     +Iff(aInGame and Option_SaveOnCrash,#10'DoomRL will also attempt to save your game, so you may continue on the next level.');
+     +Iff(aInGame and Option_SaveOnCrash,#10'DRL will also attempt to save your game, so you may continue on the next level.');
     MessageBox( 0, PChar(iErrorMessage),
-     'DoomRL - Fatal Error!', MB_OK or MB_ICONERROR );
+     'DRL - Fatal Error!', MB_OK or MB_ICONERROR );
   end
   else
   {$ENDIF}
@@ -1438,7 +1438,7 @@ begin
     Writeln('your error.log that will get created once you hit Enter.');
     if aInGame and Option_SaveOnCrash then
     begin
-      Writeln( 'DoomRL will also attempt to save your game, so you may continue on' );
+      Writeln( 'DRL will also attempt to save your game, so you may continue on' );
       Writeln( 'the next level.' );
     end;
     Readln;

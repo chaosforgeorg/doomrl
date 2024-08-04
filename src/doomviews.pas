@@ -147,7 +147,7 @@ uses SysUtils,
      vgltypes, variants, vutil, vmath, vuiconsole, vluasystem,
      doombase, doomhelp, doomio, doomgfxio, dfplayer, dfhof;
 
-const HelpHeader       = 'DoomRL Help System';
+const HelpHeader       = 'DRL Help System';
       PostMortemHeader = 'PostMortem (@<mortem.txt@>)';
       MessagesHeader   = 'Past messages viewer';
 
@@ -692,10 +692,10 @@ end;
 
 function TUIModViewer.OnMenuPick ( aSender : TUIElement ) : Boolean;
 const OlderWarning = 'This module is designed for an older version'#10+
-                     '  of DoomRL, and as such might not work on your'#10+
+                     '  of DRL, and as such might not work on your'#10+
                      '  version. Do you want to try to load it anyway?';
       NewerWarning = 'This module is designed for a newer version'#10+
-                     '  of DoomRL, and as such might not work on your'#10+
+                     '  of DRL, and as such might not work on your'#10+
                      '  version. Do you want to try to load it anyway?';
       GVerWarning  = 'This module was not designed with graphics'#10+
                      '  support in mind. It might crash and look'#10+

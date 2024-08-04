@@ -10,7 +10,7 @@ var WAD         : TVDataCreator;
 begin
   if ParamCount < 1 then
   begin
-    Writeln( 'DoomRL WAD Creator, Copyright (c) ChaosForge.org' );
+    Writeln( 'DRL WAD Creator, Copyright (c) ChaosForge.org' );
     Writeln( 'Usage : drlwad [module_id]' );
     Halt(0);
   end;

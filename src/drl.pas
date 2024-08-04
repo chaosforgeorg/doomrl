@@ -1,6 +1,6 @@
 {
 -------------------------------------------------------
-DoomRL.PAS -- Main Program
+DRL.PAS -- Main Program
 Copyright (c) 2002-2006 by Kornel "Anubis" Kisielewicz
 -------------------------------------------------------
 }
@@ -20,7 +20,7 @@ Copyright (c) 2002-2006 by Kornel "Anubis" Kisielewicz
 
 {$INCLUDE doomrl.inc}
 
-program doomrl;
+program drl;
 uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
@@ -71,7 +71,7 @@ try
     {$ENDIF}
 
     {$IFDEF WINDOWS}
-    Title := 'DoomRL - Doom, the Roguelike';
+    Title := 'DRL - D**m, the Roguelike';
     SetConsoleTitle(PChar(Title));
     Sleep(40);
     {$ENDIF}

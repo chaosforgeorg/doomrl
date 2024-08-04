@@ -14,7 +14,7 @@ begin
   EnKeyIdea(UserKey,EKey);
   DeKeyIdea(EKey,DKKey);
   
-  WAD := TVDataCreator.Create('doomrl.wad');
+  WAD := TVDataCreator.Create('drl.wad');
   WAD.SetKey( EKey );
 
   WAD.Add('help/*.hlp',FILETYPE_HELP,[vdfCompressed,vdfEncrypted], 'ascii' );

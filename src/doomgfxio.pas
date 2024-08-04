@@ -205,7 +205,7 @@ begin
     iImage := LoadImage(iFontName)
   else
   begin
-    iCoreData := TVDataFile.Create(DataPath+'doomrl.wad');
+    iCoreData := TVDataFile.Create(DataPath+'drl.wad');
     iCoreData.DKKey := LoveLace;
     iStream := iCoreData.GetFile( iFontName, 'fonts' );
     iImage := LoadImage( iStream, iStream.Size );

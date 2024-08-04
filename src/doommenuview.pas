@@ -7,16 +7,16 @@ type TChallengeDesc = record Name : AnsiString; Desc : AnsiString; end;
 const ChallengeType : array[1..4] of TChallengeDesc =
 ((
    Name : 'Angel Game';
-   Desc : 'Play one of the DoomRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach @yPrivate FC@> rank to unlock!';
+   Desc : 'Play one of the DRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach @yPrivate FC@> rank to unlock!';
 ),(
    Name : 'Dual-angel Game';
-   Desc : 'Mix two DoomRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach @ySergeant@> rank to unlock!';
+   Desc : 'Mix two DRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach @ySergeant@> rank to unlock!';
 ),(
    Name : 'Archangel Game';
-   Desc : 'Play one of the DoomRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach @ySergeant@> rank to unlock!';
+   Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach @ySergeant@> rank to unlock!';
 ),(
    Name : 'Custom Challenge';
-   Desc : 'Play one of many custom DoomRL challenge levels and episodes. Download new ones from the @yCustom game/Download Mods@> option in the main menu.';
+   Desc : 'Play one of many custom DRL challenge levels and episodes. Download new ones from the @yCustom game/Download Mods@> option in the main menu.';
 ));
 
 
@@ -202,7 +202,7 @@ end;
 procedure TMainMenuViewer.CreateSubLogo;
 begin
   TConUIText.Create( Self, Rectangle(28,9,48,4),
-    '@rDoom Roguelike @R'+VERSION_STRING+#10+
+    '@rDRL version @R'+VERSION_STRING+#10+
     '@rby @RKornel Kisielewicz'#10+
     '@rgraphics by @RDerek Yu'#10+
     '@rand @RLukasz Sliwinski').BackColor:=FBackColor;

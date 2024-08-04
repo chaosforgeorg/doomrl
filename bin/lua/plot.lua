@@ -55,7 +55,7 @@ You've done it! The hideous Cyberdemon lord that ruled the lost Deimos moon base
 
 Deimos floats above Hell itself! You've never heard of anyone escaping from Hell, but you'll make the bastards sorry they ever heard of you! Quickly, you rappel down to the surface of Hell.
 
-Now, it's on to the final chapter of DoomRL -- Inferno!]])
+Now, it's on to the final chapter of DRL -- Inferno!]])
 end
 
 function DoomRL.plot_outro_3()
@@ -101,7 +101,7 @@ Or will they?
 
 This will be revealed in...
 
-DoomRL II : Hell on Earth!]])
+DRL II : Hell on Earth!]])
 end
 
 function DoomRL.plot_outro_final_nuked()
@@ -125,5 +125,5 @@ You've beaten the forces of Hell, and yet, you've also managed to emerge victori
 You can rest easily...
 At least until...
 
-DoomRL II : Hell on Earth!]])
+DRL II : Hell on Earth!]])
 end
