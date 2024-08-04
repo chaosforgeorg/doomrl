@@ -17,7 +17,7 @@ Graphics = "TILES"
 -- Windows you'll need SDL_mixer.dll and smpeg.dll from SDL_mixer website.
 -- For using FMOD on *nix systems you'll need the proper packages.
 -- Possible values are FMOD, SDL, NONE, DEFAULT
-SoundEngine = "SDL"
+SoundEngine = "DEFAULT"
 
 -- Whether to allow high-ASCII signs. Set to false if you see weird signs 
 -- on the screen. Not setting it at all will use the default which
