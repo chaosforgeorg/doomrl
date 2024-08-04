@@ -1,0 +1,17 @@
+Welcome to DRL!
+
+You will be running DRL for the first time. I hope you will find this roguelike game as enjoyable as it was for me to write it!
+
+This release is dedicated to the upcoming DRL total conversion/expansion/commercial version - Jupiter Hell Classic - wishlist it on Steam!
+
+http://jupiterhellclassic.com/
+
+DRL is in active development (again?), and as such please be always sure that you have the most recent version, for bugs are fixed, new features appear, and the game becomes better at every iteration. You can find the lastest version on DRL website:
+
+https://drl.chaosforge.org/
+
+Also, if you enjoy this game, join the Discord and/or the forums:
+
+http://discord.gg/jupiterhell
+http://forum.chaosforge.org/
+
