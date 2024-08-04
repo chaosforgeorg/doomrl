@@ -719,16 +719,17 @@ begin
 end;
 
 function TDoomSpriteMap.ShiftValue ( aFocus : TCoord2D ) : TCoord2D;
+const YFactor = 6;
 begin
   ShiftValue.X := S5Interpolate(FMinShift.X,FMaxShift.X, (aFocus.X-2)/(MAXX-3));
   if FMaxShift.Y - FMinShift.Y > 4*FTileSize then
   begin
-    if aFocus.Y < 6 then
+    if aFocus.Y < YFactor then
       ShiftValue.Y := FMinShift.Y
-    else if aFocus.Y > MAXY-6 then
+    else if aFocus.Y > MAXY-YFactor then
       ShiftValue.Y := FMaxShift.Y
     else
-      ShiftValue.Y := S3Interpolate(FMinShift.Y,FMaxShift.Y,(aFocus.Y-6)/(MAXY-12));
+      ShiftValue.Y := S3Interpolate(FMinShift.Y,FMaxShift.Y,(aFocus.Y-YFactor)/(MAXY-10));
 
   end
   else
