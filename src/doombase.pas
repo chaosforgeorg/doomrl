@@ -818,7 +818,7 @@ begin
   iResult    := TMenuResult.Create;
   Doom.Load;
 
-  if not FileExists( WritePath + 'doom.prc' ) then
+  if not FileExists( WritePath + 'drl.prc' ) then
     DoomFirst;
 
   IO.RunUILoop( TMainMenuViewer.CreateMain( IO.Root ) );
@@ -1187,9 +1187,9 @@ end;
 procedure TDoom.DoomFirst;
 var T : Text;
 begin
-  Assign(T, WritePath + 'doom.prc');
+  Assign(T, WritePath + 'drl.prc');
   Rewrite(T);
-  Writeln(T,'Doom was already run.');
+  Writeln(T,'DRL was already run.');
   Close(T);
   IO.RunUILoop( TMainMenuViewer.CreateFirst( IO.Root ) );
 end;

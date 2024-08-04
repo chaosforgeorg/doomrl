@@ -50,7 +50,7 @@ require( "doomrl:levels/house" )
 -- main DoomRL lua script file --
 
 function DoomRL.OnLoaded()
-	ui.msg('Welcome to the @RDoom@> Roguelike...')
+	ui.msg('Welcome to the @RDRL@>...')
 end
 
 function DoomRL.OnLoadBase()
@@ -206,7 +206,7 @@ function DoomRL.print_mortem()
 
 
 	player:mortem_print( "--------------------------------------------------------------" )
-	player:mortem_print( " DoomRL ("..VERSION_STRING..") roguelike post-mortem character dump")
+	player:mortem_print( " DRL ("..VERSION_STRING..") roguelike post-mortem character dump")
 	if game_type ~= GAMESTANDARD then
 		player:mortem_print( " Module : "..module.name.." ("..version_string(module.version)..")")
 		game_module = _G[module.id]
@@ -746,7 +746,7 @@ function DoomRL.logo_text()
 	return
 [[@rAdd. coding : @ytehtmi@r, @yGame Hunter@r, @yshark20061@r and @yadd
 @rMusic tracks: @ySonic Clang@r (remixes), @ySimon Volpert@r (special levels)
-@rDoom HQ SFX : @yPer Kristian Risvik
+@rHQ SFX      : @yPer Kristian Risvik
 
 @rMajor changes since last version (see @yversion.txt@r for full list)
 @R  * start of UX overhaul, save/load at any point, settings menu!
@@ -775,7 +775,7 @@ function DoomRL.OnWinGame()
 
 
 
-             Doom, the Roguelike ]]..VERSION_STRING..[[
+             D**m, the Roguelike ]]..VERSION_STRING..[[
 
                    Congratulations!
            Look further for the next release

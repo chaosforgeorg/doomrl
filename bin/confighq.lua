@@ -1,5 +1,5 @@
 -- ----------------------------------------------------------------------
---  This is the DoomRL initialization file. Modify at your own risk :). 
+--  This is the DRL initialization file. Modify at your own risk :). 
 --  If you mess up something overwrite with a new config.lua.
 -- ----------------------------------------------------------------------
 
@@ -42,14 +42,14 @@ GameSound        = true
 MenuSound        = true
 
 -- Setting to true will turn on enhancements for blind people playing
--- DoomRL using a screen reader. Yes, some do.
+-- DRL using a screen reader. Yes, some do.
 BlindMode        = false
 
 -- Setting to true will make old messages disappear from the screen 
 -- (useful in BlindMode)
 ClearMessages    = false
 
--- Setting to false will prevent DoomRL from waiting for confirmation
+-- Setting to false will prevent DRL from waiting for confirmation
 -- when too many messages are printed in a turn. Usefull for Speedrunning.
 MorePrompt       = true
 
@@ -83,10 +83,6 @@ PlayerBackups    = 7
 -- is held for a given day.
 ScoreBackups     = 7
 
--- If set to false DoomRL will quit on death and quitting. Normally it will go back
--- to the main menu.
-MenuReturn       = true
-
 -- Defines the maximum repeat for the run command. Setting it to larger than 80
 -- basically means no limit.
 MaxRun           = 100
@@ -98,7 +94,7 @@ MaxWait          = 20
 -- true by default.
 LockBreak        = true
 
--- Windows only - Disables closing of DoomRL by console close button. 
+-- Windows only - Disables closing of DRL by console close button. 
 -- true by default.
 LockClose        = true
 

@@ -373,7 +373,7 @@ begin
   Result.Pages   := TUIPageArray.Create( True );
   Result.Titles  := TUIStringArray.Create;
   Result.Headers := TUIStringArray.Create;
-  Result.Title   := 'DoomRL Player Info';
+  Result.Title   := 'DRL Player Info';
 
   iDiffCnt := LuaSystem.Get([ 'diff', '__counter' ]);
 
@@ -680,7 +680,7 @@ end;
 
 function THOF.GetHOFReport : TUIHOFReport;
 begin
-  Result.Title   := 'DoomRL Hall of Fame';
+  Result.Title   := 'DRL Hall of Fame';
   Result.Footer  := '@<a@>,@<emhun@>,@<'+ChallengeStr+'-@>,@<<Enter>@>';
   Result.Filters := 'a-emhun'+ChallengeStr;
   Result.Callback:= @(GetScores)

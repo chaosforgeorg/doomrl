@@ -12,7 +12,7 @@
         <CompatibilityMode Value="True"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="Doom, the Roguelike"/>
+      <Title Value="DRL"/>
       <UseAppBundle Value="False"/>
       <Icon Value="0"/>
     </General>
@@ -20,9 +20,9 @@
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="9"/>
       <RevisionNr Value="9"/>
-      <BuildNr Value="6"/>
+      <BuildNr Value="8"/>
       <CharSet Value="0000"/>
-      <StringTable CompanyName="ChaosForge" ProductName="Doom, the Roguelike" LegalCopyright="(c) 2002-2012 by Kornel Kisielewicz" FileDescription="Doom, the Roguelike"/>
+      <StringTable CompanyName="ChaosForge" FileDescription="D**m, the Roguelike" LegalCopyright="(c) 2002-2024 by Kornel Kisielewicz" ProductName="D**m, the Roguelike"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="default" Default="True"/>
@@ -54,7 +54,7 @@
     </RequiredPackages>
     <Units Count="40">
       <Unit0>
-        <Filename Value="doomrl.pas"/>
+        <Filename Value="drl.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
@@ -219,7 +219,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="..\bin\doomrl"/>
+      <Filename Value="..\bin\drl"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="..\bin;..\bin\lua;..\..\fpcvalkyrie\libs;..\..\fpcvalkyrie\src;$(ProjOutDir)"/>

@@ -670,7 +670,7 @@ function DoomRL.loadchallenges()
 	register_challenge "challenge_aop"
 	{
 		name        = "Angel of Purity",
-		description = "Who needs those powerups anyway? Try to finish DoomRL without them. But remember that health globes are also a powerup!",
+		description = "Who needs those powerups anyway? Try to finish DRL without them. But remember that health globes are also a powerup!",
 		rating      = "BLADE",
 		rank        = 4,
 		abbr        = "AoP",
@@ -837,7 +837,7 @@ function DoomRL.loadchallenges()
 	register_challenge "challenge_aod"
 	{
 		name        = "Angel of Darkness",
-		description = "You think the DoomRL levels are dark? Try this challenge, and feel a bit of painful claustrophobia! As a bonus to all that is unjust in this challenge, you level up twice as fast.",
+		description = "You think the DRL levels are dark? Try this challenge, and feel a bit of painful claustrophobia! As a bonus to all that is unjust in this challenge, you level up twice as fast.",
 		rating      = "VERY HARD",
 		rank        = 5,
 		abbr        = "AoD",
@@ -1167,7 +1167,7 @@ function DoomRL.loadchallenges()
 			elseif l == 90 then ui.msg_enter("Ten more! Can you really take the heat?")
 			elseif l == 99 then ui.msg_enter("Just one more! Just one more! Will you die here?")
 			elseif l == 100 then
-				ui.msg_enter("You did it! You completed 100 levels of DoomRL! You're the champion!")
+				ui.msg_enter("You did it! You completed 100 levels of DRL! You're the champion!")
 				if ARCHANGEL then
 					ui.msg_enter("Or wait... false alarm. Still 566 to go.")
 				else
@@ -1601,7 +1601,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 	register_challenge "challenge_aoh"
 	{
 		name        = "Angel of Haste",
-		description = "DoomRL is too long, you want to fight your way through, as fast as possible. Half as many levels, twice the danger increase.",
+		description = "DRL is too long, you want to fight your way through, as fast as possible. Half as many levels, twice the danger increase.",
 		rating      = "HARD",
 		rank        = 4,
 		abbr        = "AoH",

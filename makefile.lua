@@ -4,7 +4,7 @@ VALKYRIE_ROOT = VALKYRIE_ROOT or os.getenv("FPCVALKYRIE_ROOT") or "../fpcvalkyri
 dofile (VALKYRIE_ROOT.."scripts/lua_make.lua")
 
 makefile = {
-	name = "doomrl",
+	name = "drl",
 	fpc_params = {
 		"-Fu"..VALKYRIE_ROOT.."src",
 		"-Fu"..VALKYRIE_ROOT.."libs",
@@ -28,14 +28,14 @@ makefile = {
 	post_build = function()
 		os.execute_in_dir( "makewad", "bin" )
 	end,
-	source_files = { "doomrl.pas", "makewad.pas", "drlwad.pas" },
+	source_files = { "drl.pas", "makewad.pas", "drlwad.pas" },
 	publish = {
 		lq = {
-			exec = { "doomrl" },
+			exec = { "drl" },
 			files = { "config.lua" },
 			os = {
-				WINDOWS = { "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "doomrl_console.bat" },
-				LINUX   = { "unix_notes.txt", "doomrl_gnome-terminal", "doomrl_konsole", "doomrl_xterm" },
+				WINDOWS = { "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "drl_console.bat" },
+				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm" },
 				MACOSX  = { "unix_notes.txt" },
 			},
 			subdirs = {
@@ -46,14 +46,14 @@ makefile = {
 				wav        = "*.wav",
 				music      = "*.mid",
 			},
-			other = { "colors.lua", "sound.lua", "music.lua", "manual.txt", "version.txt", "version_api.txt", "doomrl.wad", "core.wad" },
+			other = { "colors.lua", "sound.lua", "music.lua", "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
 		},
 		hq = {
-			exec = { "doomrl" },
+			exec = { "drl" },
 			files = { { "confighq.lua", "config.lua" } },
 			os = {
-				WINDOWS = { "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "doomrl_console.bat" },
-				LINUX   = { "unix_notes.txt", "doomrl_gnome-terminal", "doomrl_konsole", "doomrl_xterm" },
+				WINDOWS = { "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "drl_console.bat" },
+				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm" },
 				MACOSX  = { "unix_notes.txt" },
 			},
 			subdirs = {
@@ -64,7 +64,7 @@ makefile = {
 				wavhq      = "*.wav",
 				mp3        = "*.mp3",
 			},
-			other = { "colors.lua", "soundhq.lua", "musichq.lua", "manual.txt", "version.txt", "version_api.txt", "doomrl.wad", "core.wad" },
+			other = { "colors.lua", "soundhq.lua", "musichq.lua", "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
 		}
 	},
 	commands = {
@@ -101,22 +101,22 @@ makefile = {
 	},
 	install = {
 		guid        = "E78C63C9-9849-45FA-8315-2AE38A293E2E",
-		name        = "DoomRL",
+		name        = "DRL",
 		publisher   = "ChaosForge",
-		license     = "bin\\license.txt",
-		info_after  = "bin\\install_after.txt",
+		license     = "install\\install_license.txt",
+		info_after  = "install\\install_after.txt",
 		iss_icon    = "src\\icon.ico",
-		iss_image   = "install-banner.bmp",
-		iss_simage  = "install-logo.bmp",
+		iss_image   = "install\\install.bmp",
+		iss_simage  = "install\\install_small.bmp",
 		iss_url     = "http://www.chaosforge.org/",
 		iss_nocomp  = { "wad", "mp3" },
 		iss_eicons  = {
-			{ name = "DoomRL", exe = "doomrl" },
-			{ name = "DoomRL (console mode)", exe = "doomrl", parameters = "-console" },
-			{ name = "DoomRL Manual", file = "manual.txt" },
+			{ name = "DRL", exe = "drl" },
+			{ name = "DRL (console mode)", exe = "drl", parameters = "-console" },
+			{ name = "DRL Manual", file = "manual.txt" },
 			{ name = "ChaosForge Website", url = "http://www.chaosforge.org/" },
-			{ name = "DoomRL Website", url = "https://drl.chaosforge.org/" },
-			{ name = "DoomRL Forum", url = "http://forum.chaosforge.org/" },
+			{ name = "DRL Website", url = "https://drl.chaosforge.org/" },
+			{ name = "DRL Forum", url = "http://forum.chaosforge.org/" },
 		},
 		dmg_size   = 128000,
 		app_icon   = "bin/iconfile.icns",

@@ -579,7 +579,7 @@ begin
   LuaSystem.GetClassInfo( TPlayer ).RegisterHooks( BeingHooks, HookNames );
   LuaSystem.GetClassInfo( TItem ).RegisterHooks( ItemHooks, HookNames );
 
-  ReadWAD('doomrl.wad');
+  ReadWAD('drl.wad');
 
 end;
 
