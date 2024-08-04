@@ -17,14 +17,7 @@ Graphics = "TILES"
 -- Windows you'll need SDL_mixer.dll and smpeg.dll from SDL_mixer website.
 -- For using FMOD on *nix systems you'll need the proper packages.
 -- Possible values are FMOD, SDL, NONE, DEFAULT
-SoundEngine = "SDL"
-
--- SDL sound only options. See SDL_mixer manual on what to put here if
--- defaults don't get you working audio. Format needs to be decoded because
--- Lua doesn't support hex notation.
-SDLMixerFreq      = 44100
-SDLMixerFormat    = 32784
-SDLMixerChunkSize = 1024
+SoundEngine = "DEFAULT"
 
 -- Whether to allow high-ASCII signs. Set to false if you see weird signs 
 -- on the screen. Not setting it at all will use the default which

@@ -33,9 +33,6 @@ begin
   Option_Blending         := Configure('Blending',Option_Blending);
   Option_SaveOnCrash      := Configure('SaveOnCrash',Option_SaveOnCrash);
   Option_SoundEngine      := Configure('SoundEngine',Option_SoundEngine);
-  Option_SDLMixerFreq     := Configure('SDLMixerFreq',Option_SDLMixerFreq);
-  Option_SDLMixerFormat   := Configure('SDLMixerFormat',Option_SDLMixerFormat);
-  Option_SDLMixerChunkSize:= Configure('SDLMixerChunkSize',Option_SDLMixerChunkSize);
 
   Option_HighASCII        := Configure('AllowHighAscii',Option_HighASCII);
   Option_AlwaysName       := Configure('AlwaysName',Option_AlwaysName);

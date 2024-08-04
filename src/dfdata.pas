@@ -140,9 +140,6 @@ const
   Option_SoundEngine      : string = 'DEFAULT';
   Option_AlwaysName       : string = '';
   Option_TimeStamp        : string = 'yyyy/mm/dd hh:nn:ss';
-  Option_SDLMixerFreq     : Integer = 22050;
-  Option_SDLMixerFormat   : Word = $8010;
-  Option_SDLMixerChunkSize: Integer = 1024;
   Option_PlayerBackups    : DWord = 7;
   Option_ScoreBackups     : DWord = 7;
   Option_IntuitionColor   : Byte = LIGHTGRAY;

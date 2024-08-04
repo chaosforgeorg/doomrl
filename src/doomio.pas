@@ -155,7 +155,7 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 implementation
 
 uses math, video, dateutils, variants,
-     vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
+     vsound, vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
      dflevel, dfplayer, dfitem,
      doomconfiguration, doombase, doommoreview, doomlua;
@@ -849,6 +849,9 @@ var iLayer  : TInterfaceLayer;
     i,j     : Integer;
     iMEvent : TIOEvent;
 begin
+  if Assigned( Sound ) then
+    Sound.Update;
+
   if FUIMouse <> FUIMouseLast then
   begin
     iMEvent.EType:= VEVENT_MOUSEMOVE;
