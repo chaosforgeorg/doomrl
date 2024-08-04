@@ -102,7 +102,7 @@ begin
       begin
         if Option_SoundEngine = 'FMOD'
           then Sound := Systems.Add(TFMODSound.Create) as TSound
-          else Sound := Systems.Add(TSDLSound.Create(Option_SDLMixerFreq, Option_SDLMixerFormat, Option_SDLMixerChunkSize ) ) as TSound;
+          else Sound := Systems.Add( TSDLSound.Create ) as TSound;
       end
       else
         Sound.Reset;
