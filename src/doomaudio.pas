@@ -174,7 +174,7 @@ var iVolume     : Byte;
     iSoundEvent : TSoundEvent;
 begin
   if aSoundID = 0 then Exit;
-  if (not SoundVersion) or (not Option_Sound) or SoundOff or ( Setting_MusicVolume = 0 ) then Exit;
+  if (not SoundVersion) or (not Option_Sound) or SoundOff or ( Setting_SoundVolume = 0 ) then Exit;
   if aDelay > 0 then
   begin
     iSoundEvent.Coord   := aCoord;

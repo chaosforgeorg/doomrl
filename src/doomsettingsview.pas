@@ -50,7 +50,7 @@ end;
 
 implementation
 
-uses math, sysutils, vutil, vdebug, vtig, vtigio,
+uses math, sysutils, vutil, vdebug, vtig, vtigio, vsound,
      dfdata, doomconfiguration, doombase;
 
 const CStates : array[ TSettingsViewState ] of record Title, ID : Ansistring; end = (
@@ -201,7 +201,11 @@ begin
                   if VTIG_IntInput( Access, iSelected = i, Min, Max, Step ) then
                   begin
                     if FState = SETTINGSVIEW_AUDIO then
+                    begin
                       IO.Audio.Reconfigure;
+                      if iEntry.ID = 'sound_volume' then
+                         Sound.PlaySample('menu.change');
+                    end;
                     if FState = SETTINGSVIEW_DISPLAY then
                       Doom.Reconfigure;
                   end;
