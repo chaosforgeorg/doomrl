@@ -747,6 +747,7 @@ end;
 function TDoom.HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
 var iInput : TInputKey;
 begin
+  if aEvent.Key.Code = 0 then Exit;
   IO.KeyCode := IOKeyEventToIOKeyCode( aEvent.Key );
   iInput     := TInputKey( Config.Commands[ IO.KeyCode ] );
   if ( Byte(iInput) = 255 ) then // GodMode Keys
