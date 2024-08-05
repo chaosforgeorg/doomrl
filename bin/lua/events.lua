@@ -169,7 +169,7 @@ function DoomRL.load_events()
 			generator.setup_explosion_event( math.max( 100 - DIFFICULTY * 10, 50 ), {2,3}, damage, "lava" )
 		end,
 	}
-
+--[=[
   register_event "darkness_event"
   {
     message    = "This floor is pitch-black!",
@@ -194,6 +194,7 @@ function DoomRL.load_events()
 
     end,
   }
+--]=]
 
 end
 

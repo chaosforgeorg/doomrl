@@ -20,7 +20,6 @@
 [new] -- GH#074: Unlock all option in Settings to unlock Challenges and Difficulties
 [new] -- GH#063: WK3 available for techs at clev 12+ and allows 1 more assembly mod!
 [new] -- TR#307: description for badges and medals in mortem.txt
-[new] -- TR#---: event added: darkness
 [mod] -- GH#103: non-lava fluids will appear on Ao100/666 at lvl 30+
 [mod] -- GH#028: G-version - ported the game to SDL2
 [mod] -- GH#048: G-version - ported the game to OpenGL 3.3 core
