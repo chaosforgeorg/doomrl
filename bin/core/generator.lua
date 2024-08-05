@@ -382,9 +382,25 @@ function generator.roll_event()
 	local event = choice:roll()
 
 	core.log("generator.roll_event() > setting up event : "..event.id)
+	level.data.event = {}
+	level.data.event.id = event.id
 	event.setup()
+	generator.OnTick = event.on_tick
+	generator.OnExit = event.on_leave
 	if event.message then ui.msg_feel( event.message ) end
 	if event.history then player:add_history( event.history ) end
+end
+
+function generator.on_save()
+	generator.OnTick = nil
+	generator.OnExit = nil
+end
+
+function generator.on_load()
+	if level.data.event then
+		generator.OnTick = events[ level.data.event.id ].on_tick
+		generator.OnExit = events[ level.data.event.id ].on_leave
+	end
 end
 
 
