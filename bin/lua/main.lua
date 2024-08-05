@@ -661,6 +661,7 @@ function DoomRL.loadbasedata()
 			self:add_property( "items_found", {} )
 			self:add_property( "history", {} )
 			self:add_property( "episode", {} )
+			self:add_property( "level_data", {} )
 
 			if rawget(_G,"DIFFICULTY") then
 				self.hp    = 50

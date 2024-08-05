@@ -1110,6 +1110,8 @@ begin
         FreeAndNil( FLevel );
         FLevel := TLevel.CreateFromStream( Stream );
         FLevel.Place( Player, Player.Position );
+        LuaSystem.SetValue('level', FLevel );
+        LuaSystem.ProtectedCall( [ 'generator', 'on_load' ], [] );
       end;
     finally
       Stream.Destroy;
@@ -1143,6 +1145,8 @@ end;
 procedure TDoom.WriteSaveFile( aCrash : Boolean );
 var Stream : TStream;
 begin
+  LuaSystem.ProtectedCall( [ 'generator', 'on_save' ], [] );
+
   Player.FStatistics.RealTime += MSecNow() - GameRealTime;
   Player.IncStatistic('save_count');
 

@@ -539,6 +539,8 @@ core.register_blueprint "event"
 	history    = { false, core.TSTRING },
 	message    = { false, core.TSTRING },
 	setup      = { true,  core.TFUNC },
+	on_tick    = { false, core.TFUNC },
+	on_leave   = { false, core.TFUNC },
 }
 
 core.register_blueprint "room"

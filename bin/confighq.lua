@@ -30,16 +30,13 @@ ColoredInventory = true
 -- Setting this to anything except "" will always use that as the name.
 -- Warning - no error checking, so don't use too long names, or especially
 -- the "@" sign (it's a control char). This setting overrides the one above!
-AlwaysName       = ""
+--AlwaysName       = ""
 
 -- Setting to false will turn off music during gameplay
 GameMusic        = true
 
 -- Setting to false will turn off sounds during gameplay
 GameSound        = true
-
--- Setting to false will turn off Menu change/select sound
-MenuSound        = true
 
 -- Setting to true will turn on enhancements for blind people playing
 -- DRL using a screen reader. Yes, some do.
@@ -82,6 +79,10 @@ PlayerBackups    = 7
 -- Sets the amount of score.wad backups. Set 0 to turn off.  At most one backup
 -- is held for a given day.
 ScoreBackups     = 7
+
+-- If set to false DRL will quit on death and quitting. Normally it will go back
+-- to the main menu.
+MenuReturn       = true
 
 -- Defines the maximum repeat for the run command. Setting it to larger than 80
 -- basically means no limit.
