@@ -338,20 +338,23 @@ function level:items_in_range( position, range )
 	return self:children_in_range( position, range, ENTITY_ITEM )
 end
 
+-- TODO: this depends on player having a proper propety registered!
 level.data = setmetatable({}, {
 	__newindex = function (_, k,v)
-		local l = levels[level.id]
-		if not l.data then 
-			l.data = {}
+		local l = player.level_data[level.id]
+		if not l then 
+			player.level_data[level.id] = {}
+			l = player.level_data[level.id]
 		end
-		l.data[k] = v
+		l[k] = v
 	end,
 	__index = function (_, k,v)
-		local l = levels[level.id]
-		if not l.data then 
-			l.data = {}
+		local l = player.level_data[level.id]
+		if not l then 
+			player.level_data[level.id] = {}
+			l = player.level_data[level.id]
 		end
-		return l.data[k]
+		return l[k]
 	end,
 })
 
