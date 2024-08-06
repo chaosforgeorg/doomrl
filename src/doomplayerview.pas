@@ -559,7 +559,7 @@ begin
     then VTIG_End('{l<{!Up,Down}> scroll, <{!Enter}> select}')
     else VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> scroll, <{!Escape}> exit}');
 
-  if (iSelected >= 0) and FTraitMode then
+  if (iSelected >= 0) and FTraitMode and FTraits[iSelected].Available then
     if VTIG_EventConfirm then
     begin
       FState := PLAYERVIEW_CLOSING;
