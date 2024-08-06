@@ -40,7 +40,7 @@ function DoomRL.load_mod_arrays()
 
 		OnApply = function (item)
 			item.name       = "speedloader pistol"
-			item.reloadtime = 6
+			item.reloadtime = 4
 			item.usetime    = item.__proto.fire
 			item.acc        = item.__proto.acc
 		end,
@@ -84,7 +84,7 @@ function DoomRL.load_mod_arrays()
 		OnApply = function (item)
 			item.name         = "micro launcher"
 			item.reloadtime   = 8
-			item.usetime      = 8
+			item.usetime      = 5
 			item.damage_dice  = 5
 			item.damage_sides = 5
 			item.acc          = 7
@@ -189,13 +189,13 @@ function DoomRL.load_mod_arrays()
 		OnApply = function (item)
 			item.name             = "powered "..item.name
 			item.armor            = item.__proto.armor + 1
-			item.movemod          = 0
+			item.movemod          = item.__proto.movemod + 20
 			item.knockmod         = -25
 			if (item.resist.bullet or 0) > 0 then
-				item.resist.bullet   = math.min( (item.resist.bullet or 0) * 2, 95 )
+				item.resist.bullet   = math.min( (item.resist.bullet or 0) * 5, 95 )
 			end
 			if (item.resist.shrapnel or 0) > 0 then
-				item.resist.shrapnel = math.min( (item.resist.shrapnel or 0) * 2, 95 )
+				item.resist.shrapnel = math.min( (item.resist.shrapnel or 0) * 5, 95 )
 			end
 			if (item.resist.fire or 0) > 0 then
 				item.resist.fire     = math.min( (item.resist.fire or 0) * 2, 95 )
@@ -204,7 +204,7 @@ function DoomRL.load_mod_arrays()
 				item.resist.acid     = math.min( (item.resist.acid or 0) * 2, 95 )
 			end
 			if (item.resist.plasma or 0) > 0 then
-				item.resist.plasma   = math.min( (item.resist.plasma or 0) * 2, 95 )
+				item.resist.plasma   = math.min( (item.resist.plasma or 0) * 3, 95 )
 			end
 			item.resist.melee        = 25
 
@@ -241,9 +241,9 @@ function DoomRL.load_mod_arrays()
 		OnApply = function (item)
 			item.name           = "tower shield"
 			item.armor          = 12
-			item.durability     = 150
-			item.maxdurability  = 150
-			item.movemod        = -50
+			item.durability     = 200
+			item.maxdurability  = 200
+			item.movemod        = -30
 			item.knockmod       = -90
 			item.resist.fire       = 0
 			item.flags[ IF_NOREPAIR ] = true
@@ -295,10 +295,10 @@ function DoomRL.load_mod_arrays()
 			item.name          = "ballistic "..item.name
 			item.movemod       = item.__proto.movemod
 			item.knockmod      = item.__proto.knockmod
-			item.resist.melee     = math.min( (item.resist.melee or 0) + 30, 95 )
-			item.resist.bullet    = math.min( (item.resist.bullet or 0) + 30, 95 )
-			item.resist.shrapnel  = math.min( (item.resist.shrapnel or 0) + 30, 95 )
-			item.resist.fire      = (item.resist.fire or 0) - 30
+			item.resist.melee     = math.min( (item.resist.melee or 0) + 40, 95 )
+			item.resist.bullet    = math.min( (item.resist.bullet or 0) + 40, 95 )
+			item.resist.shrapnel  = math.min( (item.resist.shrapnel or 0) + 40, 95 )
+			item.resist.fire      = (item.resist.fire or 0) - 20
 			item.resist.plasma    = 0
 			item.resist.acid      = 0
 		end,
@@ -361,9 +361,9 @@ function DoomRL.load_mod_arrays()
 
 		OnApply = function (item)
 			item.name         = "double chainsaw"
-			item.damage_dice  = 8
-			item.damage_sides = 6
-			item.acc          = -2
+			item.damage_dice  = 4
+			item.damage_sides = 12
+			item.acc          = -1
 		end,
 	}
 
@@ -419,7 +419,7 @@ function DoomRL.load_mod_arrays()
 
 		OnApply = function (item)
 			item.name         = "assault "..item.name
-			item.acc          = item.__proto.acc + 2
+			item.acc          = item.__proto.acc + 3
 			item.shots        = math.ceil(item.__proto.shots / 2)
 			item.shotcost     = math.max(item.__proto.shotcost,1) * 2
 			item.reloadtime   = item.__proto.reload / 2
@@ -501,7 +501,7 @@ function DoomRL.load_mod_arrays()
 	{
 		name  = "environmental boots",
 		level = 1,
-		mods  = { P = 1, B = 1, T = 1 },
+		mods  = { B = 2, T = 1 },
 		request_type = ITEMTYPE_BOOTS,
 
 		OnApply = function (item)
@@ -511,8 +511,9 @@ function DoomRL.load_mod_arrays()
 			item.armor         = item.__proto.armor
 			item.maxdurability = item.__proto.durability
 			item.durability    = math.min( item.durability, item.maxdurability )
-			item.resist.fire      = math.min( (item.__proto.resist.fire or 0) + 75, 90 )
-			item.resist.acid      = math.min( (item.__proto.resist.acid or 0) + 75, 90 )
+			local presist = item.__proto.resist or {}
+			item.resist.fire      = math.min( (presist.fire or 0) + 95, 95 )
+			item.resist.acid      = math.min( (presist.acid or 0) + 95, 95 )
 		end,
 	}
 
@@ -775,14 +776,14 @@ function DoomRL.load_mod_arrays()
 	register_mod_array "mother"
 	{
 		name  = "Mother-In-Law",
-		mods  = { P = 3, F = 1, N = 1 },
+		mods  = { P = 2, F = 1, N = 1 },
 		level = 2,
 		request_id = "bazooka",
 
 		OnApply = function (item)
 			-- Original mother-in-law is rocket launcher + F1N1P3
 			item.name         = "Mother-In-Law"
-			item.desc         = "Simon-v's legendary rocket launcher."
+			--item.desc         = "Simon-v's legendary rocket launcher."
 			item.damage_dice  = 6
 			item.damage_sides = 9
 			item.blastradius  = 6

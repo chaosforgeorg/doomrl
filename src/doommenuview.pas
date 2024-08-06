@@ -1,22 +1,22 @@
 {$INCLUDE doomrl.inc}
 unit doommenuview;
 interface
-uses vuielements, vuielement, vglui, viotypes, vuitypes, vioevent, vconui, dfdata, doomtextures, doommodule;
+uses vuielements, vuielement, viotypes, vuitypes, vioevent, vconui, dfdata, doomtextures, doommodule;
 
 type TChallengeDesc = record Name : AnsiString; Desc : AnsiString; end;
 const ChallengeType : array[1..4] of TChallengeDesc =
 ((
    Name : 'Angel Game';
-   Desc : 'Play one of the DoomRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach @yPrivate FC@> rank to unlock!';
+   Desc : 'Play one of the DRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach @yPrivate FC@> rank to unlock!';
 ),(
    Name : 'Dual-angel Game';
-   Desc : 'Mix two DoomRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach @ySergeant@> rank to unlock!';
+   Desc : 'Mix two DRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach @ySergeant@> rank to unlock!';
 ),(
    Name : 'Archangel Game';
-   Desc : 'Play one of the DoomRL challenge in it''s ultra hard form. Do not expect fairness here!'#10#10'Reach @ySergeant@> rank to unlock!';
+   Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach @ySergeant@> rank to unlock!';
 ),(
    Name : 'Custom Challenge';
-   Desc : 'Play one of many custom DoomRL challenge levels and episodes. Download new ones from the @yCustom game/Download Mods@> option in the main menu.';
+   Desc : 'Play one of many custom DRL challenge levels and episodes. Download new ones from the @yCustom game/Download Mods@> option in the main menu.';
 ));
 
 
@@ -53,7 +53,6 @@ end;
 
 type TMainMenuViewer = class( TUIElement )
     constructor CreateFirst( aParent : TUIElement );
-    constructor CreateDonator( aParent : TUIElement );
     constructor CreateMain( aParent : TUIElement );
     constructor Create( aParent : TUIElement; aResult : TMenuResult );
     procedure Init;
@@ -78,14 +77,14 @@ type TMainMenuViewer = class( TUIElement )
     function OnPickSecondChallenge( aSender : TUIElement ) : Boolean;
     function OnPickDifficulty( aSender : TUIElement ) : Boolean;
     function OnPickKlass( aSender : TUIElement ) : Boolean;
-    function OnPickTrait( aSender : TUIElement ) : Boolean;
+    function OnPickTrait( aTrait : Byte ) : Boolean;
     function OnPickName( aSender : TUIElement ) : Boolean;
     function OnPickMod( aSender : TUIElement ) : Boolean;
     function OnKlassMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
     function OnChalMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
     procedure OnRedraw; override;
   private
-    FMode        : (MenuModeFirst, MenuModeDonator, MenuModeLogo, MenuModeMain, MenuModeDiff, MenuModeChal, MenuModeKlass, MenuModeName);
+    FMode        : (MenuModeFirst, MenuModeLogo, MenuModeMain, MenuModeDiff, MenuModeChal, MenuModeKlass, MenuModeName);
     FLogo        : Boolean;
     FLabel       : TConUILabel;
     FText        : TConUIText;
@@ -96,8 +95,8 @@ type TMainMenuViewer = class( TUIElement )
 
 implementation
 
-uses math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, dfoutput, vgltypes,
-     doombase, doomio, doomnet, doomviews, vgllibrary;
+uses {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
+     doombase, doomio, doomgfxio, doomviews, doomplayerview, doomhelpview, doomsettingsview;
 
 const
   TextContinueGame  = '@b--@> Continue game @b---@>';
@@ -105,23 +104,28 @@ const
   TextChallengeGame = '@b--@> Challenge game @b--@>';
   TextCustomGame    = '@b---@> Custom game @b----@>';
 //  TextReplay        = '@b-@> Replay last game @b-@>';
+  TextJHC           = '@B==@> Wishlist JHC! @B===@>';
   TextShowHighscore = '@b-@> Show highscores @b--@>';
   TextShowPlayer    = '@b---@> Show player @b----@>';
-  TextExit          = '@b-------@> Exit @b-------@>';
-  TextHelp          = '@b-------@> Help @b-------@>';
+  TextExit          = '@b------@> Exit @b--------@>';
+  TextHelp          = '@b------@> Help @b--------@>';
+  TextSettings      = '@b----@> Settings @b------@>';
+
+const
+  JHCURL = 'http://jupiterhellclassic.com/';
 
 { TMainMenuConMenu }
 
 constructor TMainMenuConMenu.Create ( aParent : TUIElement; aRect : TUIRect ) ;
 begin
   inherited Create ( aParent, aRect ) ;
-  FSound := Option_Sound and Option_MenuSound and (Sound <> nil);
+  FSound := Option_Sound and (Sound <> nil);
   FLast  := 0;
 end;
 
 function TMainMenuConMenu.OnSelect : Boolean;
 begin
-  if (FLast <> 0) and (FLast <> Selected) and FSound then
+  if Setting_MenuSound and (FLast <> 0) and (FLast <> Selected) and FSound then
     Sound.PlaySample('menu.change');
   FLast := Selected;
   Result := inherited OnSelect;
@@ -129,14 +133,14 @@ end;
 
 function TMainMenuConMenu.OnConfirm : Boolean;
 begin
-  if FSound then
+  if Setting_MenuSound and FSound then
     Sound.PlaySample('menu.pick');
   Result := inherited OnConfirm;
 end;
 
 function TMainMenuConMenu.OnCancel : Boolean;
 begin
-  if FSound then
+  if Setting_MenuSound and FSound then
     Sound.PlaySample('menu.cancel');
   Result := inherited OnCancel;
 end;
@@ -150,19 +154,7 @@ begin
   Init;
   FMode   := MenuModeFirst;
 
-  TConUIText.Create( Self, Rectangle(5,1,70,23),AnsiString( LuaSystem.ProtectedCall( ['DoomRL','first_text'], [] ) ) );
-end;
-
-constructor TMainMenuViewer.CreateDonator ( aParent : TUIElement ) ;
-begin
-  inherited Create( aParent, aParent.GetDimRect );
-  Init;
-  CreateLogo;
-//  CreateSubLogo;
-  FMode   := MenuModeDonator;
-
-  TConUIText.Create( Self, Rectangle(2,9,77,16), AnsiString( LuaSystem.ProtectedCall( ['DoomRL','donator_text'], [] ) ) ).BackColor:=Black;
-  TConUILabel.Create( Self, Point( Dim.X - 20, Dim.Y-1 ),'@rPress <@yEnter@r>...' );
+  TConUIText.Create( Self, Rectangle(5,2,70,23),AnsiString( LuaSystem.ProtectedCall( ['DoomRL','first_text'], [] ) ) );
 end;
 
 constructor TMainMenuViewer.CreateMain ( aParent : TUIElement ) ;
@@ -172,9 +164,6 @@ begin
   CreateLogo;
   CreateSubLogo;
   FMode   := MenuModeLogo;
-  if GraphicsVersion then
-    TGLUILabel.Create( Self, IO.TextSheet, IO.FMsgFont, Point( 10, 10 ), 'DoomRL version 0.9.9.7G' );
-
   TConUIText.Create( Self, Rectangle(2,14,77,11), AnsiString( LuaSystem.ProtectedCall( ['DoomRL','logo_text'], [] ) ) );
 end;
 
@@ -192,6 +181,7 @@ begin
   begin
     FBGTexture   := Textures.TextureID['background'];
     FLogoTexture := Textures.TextureID['logo'];
+    FBackColor   := $10000000;
   end;
   FEventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN, VEVENT_SYSTEM ];
   IO.Root.Console.HideCursor;
@@ -206,15 +196,16 @@ begin
   if GraphicsVersion then
     FLogo   := True
   else
-    TConUIStringList.Create( Self, Rectangle(17,0,46,20), UI.Ascii['logo'], False );
+    TConUIStringList.Create( Self, Rectangle(17,0,46,20), IO.OldAscii['logo'], False );
 end;
 
 procedure TMainMenuViewer.CreateSubLogo;
 begin
-  TConUIText.Create( Self, Rectangle(28,10,48,3),
-    '@rDoom Roguelike @R'+VERSION_STRING+#10+
+  TConUIText.Create( Self, Rectangle(28,9,48,4),
+    '@rDRL version @R'+VERSION_STRING+#10+
     '@rby @RKornel Kisielewicz'#10+
-    '@rgraphics by @RDerek Yu' ).BackColor:=Black;
+    '@rgraphics by @RDerek Yu'#10+
+    '@rand @RLukasz Sliwinski').BackColor:=FBackColor;
 end;
 
 procedure TMainMenuViewer.InitMain;
@@ -227,9 +218,9 @@ begin
   iSaveExists := Doom.SaveExists;
   CreateLogo;
 
-  TConUILabel.Create( Self, Point(2,24), '@B'+DoomNetwork.MOTD );
+  TConUILabel.Create( Self, Point(2,24), '@BSupport the game by @Lwishlisting@B the DRL expansion at @Ljupiterhellclassic.com@B!' );
 
-  iMenu := TMainMenuConMenu.Create( Self, Rectangle( 30,15,24,9 ) );
+  iMenu := TMainMenuConMenu.Create( Self, Rectangle( 30,13,24,9 ) );
   if iSaveExists then
     iMenu.Add(TextContinueGame)
   else
@@ -239,9 +230,13 @@ begin
   iMenu.Add(TextShowHighscore);
   iMenu.Add(TextShowPlayer);
   iMenu.Add(TextHelp);
+  iMenu.Add(TextSettings);
+  iMenu.Add(TextJHC);
   iMenu.Add(TextExit);
   iMenu.OnConfirmEvent := @OnPickMain;
   iMenu.OnCancelEvent  := @OnMainCancel;
+  if GraphicsVersion then
+    iMenu.BackColor := $10000000;
 end;
 
 procedure TMainMenuViewer.InitDifficulty;
@@ -267,6 +262,8 @@ begin
 
   iMenu.OnConfirmEvent := @OnPickDifficulty;
   iMenu.OnCancelEvent  := @OnCancel;
+  if GraphicsVersion then
+    iMenu.BackColor := $10000000;
 end;
 
 procedure TMainMenuViewer.InitKlass;
@@ -285,14 +282,14 @@ begin
       iMenu.Add(LuaSystem.Get(['klasses',iCount,'name']));
   iMenu.OnConfirmEvent := @OnPickKlass;
   iMenu.OnCancelEvent  := @OnCancel;
+  if GraphicsVersion then
+    iMenu.BackColor := $10000000;
 end;
 
 procedure TMainMenuViewer.InitTrait;
-var iFull : TUITraitsViewer;
 begin
   FLogo := False;
-  iFull := TUITraitsViewer.Create( Self, FResult.Klass, @OnPickTrait );
-  iFull.OnCancelEvent  := @OnCancel;
+  IO.PushLayer( TPlayerView.CreateTrait( True, FResult.Klass, @OnPickTrait ) );
 end;
 
 procedure TMainMenuViewer.InitName;
@@ -319,12 +316,14 @@ begin
   iMenu := TMainMenuConMenu.Create( Self, Rectangle( 9,18, 10,6 ) );
 //  iMenu.SelectInactive := False;
   iMenu.OnSelectEvent  := @OnChalMenuSelect;
-  iMenu.Add( ChallengeType[1].Name, (HOF.SkillRank > 0) or (GodMode) );
-  iMenu.Add( ChallengeType[2].Name, (HOF.SkillRank > 3) or (GodMode)  );
-  iMenu.Add( ChallengeType[3].Name, (HOF.SkillRank > 3) or (GodMode)  );
+  iMenu.Add( ChallengeType[1].Name, (HOF.SkillRank > 0) or (GodMode) or (Setting_UnlockAll) );
+  iMenu.Add( ChallengeType[2].Name, (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll) );
+  iMenu.Add( ChallengeType[3].Name, (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll) );
   iMenu.Add( ChallengeType[4].Name, Modules.ChallengeModules.Size > 0 );
   iMenu.OnConfirmEvent := @OnPickChallengeType;
   iMenu.OnCancelEvent  := @OnCancel;
+  if GraphicsVersion then
+    iMenu.BackColor := $10000000;
 end;
 
 procedure TMainMenuViewer.OnRender;
@@ -335,9 +334,13 @@ var iSizeX, iSizeY : Single;
     iImage         : TImage;
     iP1,iP2        : TPoint;
     iRoot          : TConUIRoot;
+    iIO            : TDoomGFXIO;
 begin
   if GraphicsVersion then
   begin
+    iIO    := IO as TDoomGFXIO;
+    Assert( iIO <> nil );
+
     iImage := Textures.Texture[ FBGTexture ].Image;
     iTX    := iImage.RawX / iImage.SizeX;
     iTY    := iImage.RawY / iImage.SizeY;
@@ -360,7 +363,7 @@ begin
       iMaxY  := iMinY + iSizeY;
     end;
 
-    IO.QuadSheet.PostTexturedQuad(
+    iIO.QuadSheet.PushTexturedQuad(
       TGLVec2i.Create(Floor(iMinX), Floor(iMinY)),
       TGLVec2i.Create(Floor(iMaxX), Floor(iMaxY)),
       TGLVec2f.Create(0,0),TGLVec2f.Create(iTX,iTY),
@@ -372,7 +375,7 @@ begin
       iRoot := TConUIRoot(FRoot);
       iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(5,2) );
       iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(77,25) );
-      IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+      iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
       FLogo := False;
     end;
 
@@ -382,13 +385,13 @@ begin
       iSizeX := IO.Driver.GetSizeX;
       iSizeY := IO.Driver.GetSizeY;
       iMinY  := Floor(iSizeY / 25) * (-8);
-      if (FMode <> MenuModeLogo) and (FMode <> MenuModeDonator)
+      if (FMode <> MenuModeLogo)
         then begin iMaxY  := Floor(iSizeY / 25) * 24; iMinY := Floor(iSizeY / 25) * (-10); end
-        else iMaxY  := Floor(iSizeY / 25) * 20;
+        else iMaxY  := Floor(iSizeY / 25) * 18;
       iMinX  := (iSizeX - (iMaxY - iMinY)) / 2;
       iMaxX  := (iSizeX + (iMaxY - iMinY)) / 2;
 
-      IO.QuadSheet.PostTexturedQuad(
+      iIO.QuadSheet.PushTexturedQuad(
         TGLVec2i.Create(Floor(iMinX), Floor(iMinY)),
         TGLVec2i.Create(Floor(iMaxX), Floor(iMaxY)),
         TGLVec2f.Create( 0,0 ), TGLVec2f.Create( 1,1 ),
@@ -396,61 +399,56 @@ begin
       );
       iRoot := TConUIRoot(FRoot);
       case FMode of
-        MenuModeDonator :
-        begin
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(2,10) );
-          iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(80,26) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
-        end;
         MenuModeLogo :
         begin
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(26,11) );
+          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(26,10) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(56,14) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(2,15) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(80,26) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeMain  :
         begin
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,15) );
+          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,13) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,24) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(1,25) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(81,26) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeDiff  :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,16) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,23) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeKlass :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(10,18) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(26,23) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
 
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(29,16) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(78,25) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeChal :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(8,18) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(27,24) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
 
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(29,16) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(78,25) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
         MenuModeName  :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(23,18) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(59,22) );
-          IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
         end;
       end;
     end;
@@ -498,9 +496,9 @@ function TMainMenuViewer.OnMainCancel ( aSender : TUIElement ) : Boolean;
 var iMenu : TUICustomMenu;
 begin
   iMenu := aSender as TUICustomMenu;
-  if iMenu.Selected = 7
+  if iMenu.Selected = 9
     then begin FResult.Quit := True; Free; end
-    else iMenu.SetSelected( 7 );
+    else iMenu.SetSelected( 9 );
   Exit( True );
 end;
 
@@ -519,6 +517,16 @@ var iMenu       : TConUIMenu;
     iFull       : TUIFullWindow;
 begin
   iMenu := aSender as TConUIMenu;
+  if iMenu.Selected = 8 then
+  begin
+    {$IFDEF UNIX}
+    fpSystem('xdg-open ' + JHCURL); // Unix-based systems
+    {$ENDIF}
+    {$IFDEF WINDOWS}
+      ShellExecute(0, 'open', PChar(JHCURL), nil, nil, SW_SHOWNORMAL); // Windows
+    {$ENDIF}
+    Exit( False );
+  end;
   DestroyChildren;
   iFull := nil;
   case iMenu.Selected of
@@ -536,18 +544,19 @@ begin
           TUINotifyBox.Create( Self, Rectangle( 15, 15, 50, 10 ),
             #10#10#10+
             '@r    Save file corrupted! Removing corrupted'#10+
-            '@r    save file, sorry. Press <@yEnter@r>...').BackColor := Black;
+            '@r    save file, sorry. Press <@yEnter@r>...').BackColor := FBackColor;
           Exit( True );
         end;
     2 : begin
           InitChallenge;
           Exit( True );
         end;
-    3 : iFull := TUIModViewer.Create( Self, Option_NetworkConnection and (DoomNetwork.ModServer <> ''), @OnPickMod );
+    3 : iFull := TUIModViewer.Create( Self, False, @OnPickMod );
     4 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
     5 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
-    6 : iFull := TUIHelpViewer.Create( Self );
-    7 : FResult.Quit := True;
+    6 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
+    7 : begin FLogo := False; IO.PushLayer( TSettingsView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
+    9 : FResult.Quit := True;
   end;
   if iFull <> nil then
   begin
@@ -577,6 +586,7 @@ begin
   case iResult of
     1 :
     begin
+      iChallenges := nil;
       SetLength( iChallenges, iChalCount );
       for iCount := 1 to iChalCount do
         iChallenges[iCount-1] := iCount;
@@ -643,6 +653,7 @@ begin
   DestroyChildren;
 
   iChalCount := LuaSystem.Get( ['chal','__counter'] );
+  iChallenges := nil;
   SetLength( iChallenges, iChalCount );
   iChoices := 0;
   with LuaSystem.GetTable([ 'chal', FResult.Challenge, 'secondary' ]) do
@@ -688,7 +699,7 @@ begin
         TUIYesNoBox.Create( Self, Rectangle( 23, 15, 34, 7 ),
           '@r        Are you sure?'#10+
           '@r  This difficulty level isn''t'#10+
-          '@r   even remotely fair! [@yy@r/@yn@r]', @Self.OnPickDifficulty ).BackColor := Black;
+          '@r   even remotely fair! [@yy@r/@yn@r]', @Self.OnPickDifficulty ).BackColor := FBackColor;
         Exit( True );
       end;
     end;
@@ -710,13 +721,17 @@ begin
   Exit( True );
 end;
 
-function TMainMenuViewer.OnPickTrait ( aSender : TUIElement ) : Boolean;
+function TMainMenuViewer.OnPickTrait( aTrait : Byte ) : Boolean;
 begin
-  FResult.Trait := Word((aSender as TUICustomMenu).SelectedItem.Data);
+  if aTrait = 255 then
+  begin
+    OnCancel( nil );
+    Exit( True );
+  end;
+  FResult.Trait := aTrait;
   DestroyChildren;
   FLogo := False;
-
-  if (Option_AlwaysName <> '') or Option_AlwaysRandomName
+  if (Option_AlwaysName <> '') or Setting_AlwaysRandomName
     then Free
     else InitName;
   Exit( True );
@@ -774,6 +789,7 @@ var iCon   : TUIConsole;
 begin
   inherited OnRedraw;
   iCon.Init( TConUIRoot(FRoot).Renderer );
+  FBackColor := $10000000;
   iCon.ClearRect( FAbsolute, FBackColor );
 end;
 

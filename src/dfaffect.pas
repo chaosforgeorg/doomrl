@@ -1,16 +1,16 @@
 {$INCLUDE doomrl.inc}
 unit dfaffect;
 interface
-uses vutil, dfoutput, dfdata;
+uses vutil, dfdata;
 
 type
 
 { TAffects }
 
 TAffects = object
-  List : array[1..MAXAFFECT] of DWord;
+  List : array[1..MAXAFFECT] of LongInt;
   constructor Clear;
-  procedure   Add( affnum : Byte; duration : dword);
+  procedure   Add( affnum : Byte; duration : LongInt );
   function    Remove( affnum : Byte ) : boolean;
   procedure   Tick;
   function    IsActive( affnum : Byte ) : boolean;
@@ -25,7 +25,7 @@ end;
 
 implementation
 
-uses vdebug, vluasystem, dfplayer;
+uses vdebug, vluasystem, dfplayer, doomio;
 
 constructor TAffects.Clear;
 var aff : Word;
@@ -42,7 +42,7 @@ end;
 function TAffects.IsExpiring(affnum : Byte): boolean;
 begin
   Exit(List[affnum] <= 5);
-  UI.Msg( LuaSystem.Get([ 'affects', affnum, 'message_ending' ],'') );
+  IO.Msg( LuaSystem.Get([ 'affects', affnum, 'message_ending' ],'') );
 end;
 
 function TAffects.getEffect : TStatusEffect;
@@ -65,16 +65,17 @@ begin
   Exit(List[affnum]);
 end;
 
-procedure   TAffects.Add(affnum : Byte; duration : dword);
+procedure   TAffects.Add(affnum : Byte; duration : LongInt);
 begin
   if duration     = 0  then Exit;
   if List[affnum] = 0  then
   begin
-    UI.Msg( LuaSystem.Get([ 'affects', affnum, 'message_init' ],'') );
+    IO.Msg( LuaSystem.Get([ 'affects', affnum, 'message_init' ],'') );
     if AffectHookOnAdd in Affects[affnum].Hooks then
       LuaSystem.ProtectedCall( [ 'affects',affnum,'OnAdd' ],[Player]);
   end;
-  List[affnum] := List[affnum] + duration;
+  if List[affnum] >= 0 then
+    List[affnum] += duration;
 end;
 
 function    TAffects.Remove(affnum : Byte) : boolean;
@@ -89,7 +90,7 @@ begin
   List[affnum] := 0;
   if AffectHookOnRemove in Affects[affnum].Hooks then
     LuaSystem.ProtectedCall( [ 'affects',affnum,'OnRemove'],[Player]);
-  UI.Msg( LuaSystem.Get([ 'affects', affnum, 'message_done' ],'') );
+  IO.Msg( LuaSystem.Get([ 'affects', affnum, 'message_done' ],'') );
 end;
 
 procedure   TAffects.Tick;
@@ -98,7 +99,8 @@ begin
   for cn := 1 to MAXAFFECT do
     if List[cn] <> 0 then
       begin
-        Dec(List[cn]);
+        if List[cn] > 0  then Dec(List[cn]);
+        if List[cn] = 5  then IO.Msg( LuaSystem.Get([ 'affects', cn, 'message_ending' ],'') );
         if List[cn] <> 0 then Run(cn)
                          else Expire(cn);
       end;

@@ -7,7 +7,7 @@ function DoomRL.loaditems()
 		name     = "combat knife",
 		color    = WHITE,
 		sprite   = SPRITE_KNIFE,
-		psprite  = 2,
+		psprite  = SPRITE_PLAYER_KNIFE,
 		--glow     = { 1.0,1.0,1.0,1.0 },
 		level    = 1,
 		weight   = 640,
@@ -151,7 +151,11 @@ function DoomRL.loaditems()
 		OnPickup = function(self,being)
 			being:msg("You feel better.")
 			being.tired = false
-			being.hp = math.min( being.hp + 10 * diff[DIFFICULTY].powerfactor, 2*being.hpmax )
+			local amount =  10 * diff[DIFFICULTY].powerfactor
+			if being.flags[ BF_MEDPLUS ] then
+				amount = amount * 2
+			end
+			being.hp = math.min( being.hp +  amount, 2*being.hpmax )
 		end,
 	}
 
@@ -179,6 +183,7 @@ function DoomRL.loaditems()
 		name     = "Invulnerability Globe",
 		color    = WHITE,
 		sprite   = SPRITE_INV,
+		sframes  = 2,
 		level    = 7,
 		weight   = 200,
 
@@ -195,6 +200,7 @@ function DoomRL.loaditems()
 		name     = "Supercharge Globe",
 		color    = LIGHTBLUE ,
 		sprite   = SPRITE_SUPERCHARGE,
+		sframes  = 2,
 		level    = 4,
 		weight   = 150,
 		flags    = { IF_GLOBE },
@@ -223,7 +229,11 @@ function DoomRL.loaditems()
 		OnPickup = function(self,being)
 			being:msg("You feel like new!")
 			being.tired = false
-			being.hp = math.min( being.hp + 10 * diff[DIFFICULTY].powerfactor, 2*being.hpmax )
+			local amount =  10 * diff[DIFFICULTY].powerfactor
+			if being.flags[ BF_MEDPLUS ] then
+				amount = amount * 2
+			end
+			being.hp = math.min( being.hp + amount, 2*being.hpmax )
 			if being.hp < being.hpmax then
 				being.hp = being.hpmax
 			end
@@ -235,6 +245,7 @@ function DoomRL.loaditems()
 		name     = "Megasphere",
 		color    = LIGHTMAGENTA,
 		sprite   = SPRITE_MEGASPHERE,
+		sframes  = 2,
 		level    = 16,
 		weight   = 60,
 
@@ -257,6 +268,7 @@ function DoomRL.loaditems()
 		name     = "Computer Map",
 		color    = GREEN,
 		sprite   = SPRITE_MAP,
+		sframes  = 2,
 		level    = 1,
 		weight   = 200,
 
@@ -284,6 +296,7 @@ function DoomRL.loaditems()
 		name     = "Tracking Map",
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_TMAP,
+		sframes  = 2,
 		level    = 1,
 		weight   = 80,
 
@@ -308,6 +321,7 @@ function DoomRL.loaditems()
 		name     = "Light-Amp Goggles",
 		color    = BROWN,
 		sprite   = SPRITE_LIGHTAMP,
+		sframes  = 2,
 		level    = 1,
 		weight   = 80,
 
@@ -327,7 +341,8 @@ function DoomRL.loaditems()
 		level    = 200,
 		weight   = 0,
 		firstmsg = "Duh, I'll ditch my junk here.",
-
+		flags    = { IF_NODESTROY },
+		
 		type    = ITEMTYPE_POWER,
 
 		OnPickup = function(self,being)
@@ -335,6 +350,7 @@ function DoomRL.loaditems()
 				ui.msg("Another backpack? Who needs two anyway.")
 				return
 			end
+			self.flags[ IF_NODESTROY ] = false
 			ui.msg("BackPack!")
 			ui.blink(YELLOW,50)
 			being:power_backpack()
@@ -346,6 +362,7 @@ function DoomRL.loaditems()
 		name     = "armor shard",
 		color    = YELLOW,
 		sprite   = SPRITE_SHARD,
+		sframes  = 2,
 		level    = 5,
 		weight   = 700,
 
@@ -434,6 +451,7 @@ function DoomRL.loaditems()
 		name     = "power cell",
 		color    = CYAN,
 		sprite   = SPRITE_CELL,
+		sframes  = 2,
 		--glow     = { 1.0,1.0,1.0,1.0 },
 		level    = 8,
 		weight   = 200,
@@ -452,7 +470,7 @@ function DoomRL.loaditems()
 		--glow     = { 1.0,1.0,1.0,1.0 },
 		level    = 3,
 		weight   = 60,
-		desc     = "That reminds you about action films you've seen long ago.",
+		desc     = "That reminds you about action films you've seen long ago. Might be useful in the prepared slot.",
 
 		type    = ITEMTYPE_AMMOPACK,
 		ammo    = 250,
@@ -468,7 +486,7 @@ function DoomRL.loaditems()
 		--glow     = { 1.0,1.0,1.0,1.0 },
 		level    = 4,
 		weight   = 60,
-		desc     = "Packed shells, like sardines!",
+		desc     = "Packed shells, like sardines! Might be useful in the prepared slot.",
 
 		type    = ITEMTYPE_AMMOPACK,
 		ammo    = 100,
@@ -484,11 +502,11 @@ function DoomRL.loaditems()
 		--glow     = { 1.0,1.0,1.0,1.0 },
 		level    = 7,
 		weight   = 36,
-		desc     = "Now this is the REAL 'boombox'!",
+		desc     = "Now this is the REAL 'boombox'! Might be useful in the prepared slot.",
 
 		type    = ITEMTYPE_AMMOPACK,
-		ammo    = 20,
-		ammomax = 20,
+		ammo    = 25,
+		ammomax = 25,
 		ammo_id = "rocket",
 	}
 
@@ -497,11 +515,12 @@ function DoomRL.loaditems()
 		name     = "power battery",
 		color    = CYAN,
 		sprite   = SPRITE_PCELL,
+		sframes  = 2,
 		--glow     = { 1.0,1.0,1.0,1.0 },
 		level    = 10,
 		weight   = 18,
 		--desc     = "Ampere-hours of pure energy!",
-		desc     = "Joules of energetic fun!",
+		desc     = "Joules of energetic fun! Might be useful in the prepared slot.",
 
 		type    = ITEMTYPE_AMMOPACK,
 		ammo    = 120,
@@ -740,8 +759,11 @@ function DoomRL.loaditems()
 					being:msg("Nothing happens.")
 					return true
 				end
-				local heal = (being.hpmax * diff[DIFFICULTY].powerfactor) / 4 + 2
-				being.hp = math.min( being.hp + heal, being.hpmax * 2 )
+				local amount = (being.hpmax * diff[DIFFICULTY].powerfactor) / 4 + 2
+				if being.flags[ BF_MEDPLUS ] then
+					amount = amount * 2
+				end
+				being.hp = math.min( being.hp + amount, being.hpmax * 2 )
 				if not being.flags[ BF_MEDPLUS ] then being.hp = math.min( being.hp, being.hpmax ) end
 				being:msg("You feel healed.",being:get_name(true,true).." looks healthier!")
 			end
@@ -787,6 +809,7 @@ function DoomRL.loaditems()
 		ascii    = "+",
 		color    = BLUE,
 		sprite   = SPRITE_PHASE,
+		sframes  = 2,
 		coscolor = { 0.0,0.0,0.7,1.0 },
 		level    = 5,
 		weight   = 200,
@@ -814,6 +837,7 @@ function DoomRL.loaditems()
 		level    = 7,
 		weight   = 100,
 		sprite   = SPRITE_PHASE,
+		sframes  = 2,
 		coscolor = { 0.3,0.3,1.0,1.0 },
 		desc = "This upgraded phase device will definitely save your skin.",
 		flags    = { IF_AIHEALPACK },
@@ -920,6 +944,7 @@ function DoomRL.loaditems()
 		ascii    = "\"",
 		color    = LIGHTRED,
 		sprite   = SPRITE_MOD,
+		sframes  = 2,
 		coscolor = { 1.0,0.0,0.0,1.0 },
 		level    = 7,
 		weight   = 120,		
@@ -962,10 +987,11 @@ function DoomRL.loaditems()
 		ascii    = "\"",
 		color    = YELLOW,
 		sprite   = SPRITE_MOD,
+		sframes  = 2,
 		coscolor = { 1.0,1.0,0.0,1.0 },
 		level    = 5,
 		weight   = 120,
-		desc     = "Technical modification kit -- decreases fire time for weapons, or increases armor knockback resistance.",
+		desc     = "Technical modification kit -- decreases fire time for weapons, or increases armor resistances.",
 
 		type       = ITEMTYPE_PACK,
 		mod_letter = "T",
@@ -983,7 +1009,12 @@ function DoomRL.loaditems()
 			if (item.itype == ITEMTYPE_RANGED) or (item.itype == ITEMTYPE_MELEE) then
 				item.usetime = item.usetime * 0.85
 			elseif item.itype == ITEMTYPE_ARMOR or item.itype == ITEMTYPE_BOOTS then
-				item.knockmod = item.knockmod - 25
+				item.resist.bullet   = (item.resist.bullet or 0)   + 20
+				item.resist.melee    = (item.resist.melee or 0)    + 20
+				item.resist.shrapnel = (item.resist.shrapnel or 0) + 20
+				item.resist.acid     = (item.resist.acid or 0)     + 10
+				item.resist.fire     = (item.resist.fire or 0)     + 10
+				item.resist.plasma   = (item.resist.plasma or 0)   + 10
 			end
 			item:add_mod('T')
 			return true
@@ -999,6 +1030,7 @@ function DoomRL.loaditems()
 		coscolor = { 0.0,1.0,1.0,1.0 },
 		level    = 6,
 		sprite   = SPRITE_MOD,
+		sframes  = 2,
 		desc     = "Agility modification kit -- increases weapon accuracy or quickens armor move speed modifier.",
 
 		type       = ITEMTYPE_PACK,
@@ -1036,6 +1068,7 @@ function DoomRL.loaditems()
 		ascii    = "\"",
 		color    = LIGHTBLUE,
 		sprite   = SPRITE_MOD,
+		sframes  = 2,
 		coscolor = { 0.0,0.0,1.0,1.0 },
 		level    = 6,
 		weight   = 120,
@@ -1241,9 +1274,13 @@ function DoomRL.loaditems()
 
 		OnUse = function(self,being)
 			local room = self.target_area:clamped( area.FULL_SHRINKED )
+			player:play_sound("barrel.explode")
 			for c in room() do
 				local tile = cells[level.map[c]]
 				if tile.set == CELLSET_WALLS then
+					if math.random(10) == 1 then
+						player:play_sound("barrel.explode", math.random(500))
+					end
 					level.map[c] = generator.styles[ level.style ].floor
 					level.light[c][LFPERMANENT] = false
 				end
@@ -1387,18 +1424,59 @@ function DoomRL.loaditems()
 		end,
 	}
 
+	register_item "lever_ammo"
+	{
+		name     = "lever",
+		color    = WHITE,
+		sprite   = SPRITE_LEVER,
+		weight   = 0,
+		color_id = "lever",
+
+		type       = ITEMTYPE_LEVER,
+		good       = "beneficial",
+		desc       = "ammo dispenser",
+
+		OnCreate = function( self )
+			self:add_property( "charges", math.random(3) + 1 )
+		end,
+
+		OnUseCheck = function(self,being)
+			if not being.eq.weapon then
+				ui.msg("Nothing happens.")
+				return false
+			end
+			local weapon = being.eq.weapon
+			if weapon.ammoid == 0 then
+				ui.msg("Nothing happens.")
+				return false
+			end
+			return true
+		end,
+
+		OnUse = function(self,being)
+			ui.msg("Ammo dispenser. Dispensing requested ammo...")
+			self.charges = self.charges - 1
+			local ammo_id = items[being.eq.weapon.ammoid].id
+			level:drop_item( ammo_id, being.position )
+			return self.charges == 0
+		end,
+	}
+
 	register_item "schematic_0"
 	{
 		name     = "schematics",
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_SCHEMATIC,
+		sframes  = 2,
 		level    = 9999,
 		weight   = 3,
-
+		flags  = { IF_NODESTROY },
+		
 		type    = ITEMTYPE_POWER,
 		slevel  = 0,
 
 		OnPickup = function(self,being)
+			self.flags[ IF_NODESTROY ] = false
 			ui.blink(LIGHTGREEN,100)
 			player:add_assembly(mod_arrays[self.ammo].id)
 			ui.msg_enter("You suddenly know how to assemble "..mod_arrays[self.ammo].name.."!")
@@ -1410,13 +1488,16 @@ function DoomRL.loaditems()
 		name     = "schematics",
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_SCHEMATIC,
+		sframes  = 2,
 		level    = 9999,
 		weight   = 2,
-
+		flags  = { IF_NODESTROY },
+		
 		type    = ITEMTYPE_POWER,
 		slevel  = 1,
 
 		OnPickup = function(self,being)
+			self.flags[ IF_NODESTROY ] = false
 			ui.blink(LIGHTGREEN,100)
 			player:add_assembly(mod_arrays[self.ammo].id)
 			ui.msg_enter("You suddenly know how to assemble "..mod_arrays[self.ammo].name.."!")
@@ -1428,13 +1509,16 @@ function DoomRL.loaditems()
 		name     = "schematics",
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_SCHEMATIC,
+		sframes  = 2,
 		level    = 9999,
 		weight   = 1,
-
+		flags  = { IF_NODESTROY },
+		
 		type    = ITEMTYPE_POWER,
 		slevel  = 2,
 
 		OnPickup = function(self,being)
+			self.flags[ IF_NODESTROY ] = false
 			ui.blink(LIGHTGREEN,100)
 			player:add_assembly(mod_arrays[self.ammo].id)
 			ui.msg_enter("You suddenly know how to assemble "..mod_arrays[self.ammo].name.."!")
@@ -1448,6 +1532,7 @@ function DoomRL.loaditems()
 		color  = WHITE,
 		level  = 200,
 		sprite = SPRITE_LAVAINV,
+		sflags = { SF_LARGE },
 		weight = 0,
 		type   = ITEMTYPE_PACK,
 		ascii  = "+",

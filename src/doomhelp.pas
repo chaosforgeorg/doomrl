@@ -18,7 +18,6 @@ type THelp = class(TVObject)
     HNum     : byte;
     constructor Create;
     procedure StreamLoader(Stream : TStream; Name : Ansistring; Size : DWord);
-    procedure Run;
     destructor Destroy; override;
 end;
 
@@ -29,6 +28,32 @@ implementation
 
 uses SysUtils, vutil,
      doomio, doomviews;
+
+function StripTags( const aInput: AnsiString ): AnsiString;
+var i, iLen : Integer;
+begin
+  Result := '';
+  i := 1;
+  iLen := Length(aInput);
+  while i <= iLen do
+  begin
+    if aInput[i] = '{' then
+    begin
+      if (i < iLen) then
+      begin
+        Inc(i, 2);
+        Continue;
+      end;
+    end
+    else if aInput[i] = '}' then
+    begin
+      Inc(i);
+      Continue;
+    end;
+    Result += aInput[i];
+    Inc(i);
+  end;
+end;
 
 constructor THelp.Create;
 var c : byte;
@@ -50,7 +75,7 @@ begin
   for Count := 1 to Amount do
     RegHelps[HNum].Text.Push( Stream.ReadAnsiString );
 
-  RegHelps[HNum].desc  := StripEncoding( RegHelps[HNum].Text[0] );
+  RegHelps[HNum].desc  := StripTags( RegHelps[HNum].Text[0] );
 end;
 {$HINTS ON}
 
@@ -60,11 +85,5 @@ begin
   for c := 1 to MaxHelpFiles do
     FreeAndNil(RegHelps[c].Text);
 end;
-
-procedure THelp.Run;
-begin
-  IO.RunUILoop( TUIHelpViewer.Create( IO.Root ) );
-end;
-
 
 end.

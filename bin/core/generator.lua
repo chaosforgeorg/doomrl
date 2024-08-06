@@ -39,6 +39,19 @@ function generator.transmute_marker( marker, fill, ar )
 	end
 end
 
+function generator.transmute_style( from, to, fstyle, tstyle, ar )
+	local a = ar or area.FULL
+	for c in a() do 
+		if level.map[ c ] == from and level:get_raw_style( c ) == fstyle then
+			level.map[ c ] = to
+			if tstyle then
+				level:set_raw_style( c, tstyle )
+			end
+		end
+	end
+end
+
+
 function generator.scatter_blood(scatter_area,good,count)
 	if type(good) == "string" then good = cells[good].nid end
 	for c = 1, count do
@@ -65,12 +78,19 @@ function generator.place_dungen_tile( code, tile_object, tile_pos )
 		local char       = string.char( tile_object:get_ascii(c) )
 		local tile_entry = code[ char ]
 		assert( tile_entry, "Character in map not defined -> "..char)
-		if tile_entry.being then level:drop_being_ext( tile_entry.being, tile_pos + c - coord.UNIT ) end
-		if tile_entry.item  then level:drop_item_ext( tile_entry.item, tile_pos + c - coord.UNIT ) end
+		local p = tile_pos + c - coord.UNIT
+		if tile_entry.being then level:drop_being_ext( tile_entry.being, p ) end
+		if tile_entry.item  then level:drop_item_ext( tile_entry.item, p ) end
 		if tile_entry.flags then
 			for _, flag in ipairs(tile_entry.flags) do
-				level.light[tile_pos + c - coord.UNIT][flag] = true
+				level.light[p][flag] = true
 			end
+		end
+		if tile_entry.style then
+			level:set_raw_style( p, generator.styles[ tile_entry.style ].style )
+		end
+		if tile_entry.deco then
+			level:set_raw_deco( p, tile_entry.deco )
 		end
 	end
 end
@@ -362,9 +382,25 @@ function generator.roll_event()
 	local event = choice:roll()
 
 	core.log("generator.roll_event() > setting up event : "..event.id)
+	level.data.event = {}
+	level.data.event.id = event.id
 	event.setup()
+	generator.OnTick = event.on_tick
+	generator.OnExit = event.on_leave
 	if event.message then ui.msg_feel( event.message ) end
 	if event.history then player:add_history( event.history ) end
+end
+
+function generator.on_save()
+	generator.OnTick = nil
+	generator.OnExit = nil
+end
+
+function generator.on_load()
+	if level.data.event then
+		generator.OnTick = events[ level.data.event.id ].on_tick
+		generator.OnExit = events[ level.data.event.id ].on_leave
+	end
 end
 
 
@@ -380,6 +416,7 @@ function generator.reset()
 	generator.room_list = {}
 	generator.room_meta = {}
 
+	level:set_generator_style( level.style )
 	generator.fill( generator.styles[ level.style ].floor )
 	generator.fill_edges( generator.styles[ level.style ].wall )
 end

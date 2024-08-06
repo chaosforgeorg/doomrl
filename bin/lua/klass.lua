@@ -26,14 +26,14 @@ function DoomRL.load_klasses()
 			{ id = "triggerhappy", requires = {{ "bitch",      2 }}, max = 2 },
 			{ id = "whizkid",      requires = {{ "finesse",    2 }}, max = 2 },
 
-			{ id = "vampyre",      requires = {{ "berserker",    1 }, { "badass",       1 },               }, blocks = { "eagle",      "bitch",     "hellrunner", }, reqlevel = 6, master = true },
-			{ id = "bulletdance",  requires = {{ "dualgunner",   1 }, { "triggerhappy", 1 },               }, blocks = { "hellrunner", "eagle",     "brute",      },               master = true },
-			{ id = "armydead",     requires = {{ "shottyman",    1 }, { "badass",       1 },               }, blocks = { "finesse",    "eagle",     "hellrunner", }, reqlevel = 6, master = true },
+			{ id = "vampyre",      requires = {{ "berserker",    1 }, { "badass",       1 },               }, blocks = { "ironman",    "bitch",     "hellrunner", }, reqlevel = 6, master = true },
+			{ id = "bulletdance",  requires = {{ "dualgunner",   1 }, { "triggerhappy", 1 },               }, blocks = { "hellrunner", "intuition", "brute",      },               master = true },
+			{ id = "armydead",     requires = {{ "shottyman",    1 }, { "badass",       1 },               }, blocks = { "gun",        "eagle",     "hellrunner", }, reqlevel = 6, master = true },
 			{ id = "ammochain",    requires = {{ "triggerhappy", 2 }, { "reloader",     2 },               }, blocks = { "nails",      "gun",       "eagle",      },               master = true },
-			{ id = "survivalist",  requires = {{ "badass",       1 }, { "ironman",      3 }, {"nails", 2}, }, blocks = { "hellrunner", "berserker", "bitch",      },               master = true },
+			{ id = "survivalist",  requires = {{ "badass",       1 }, { "ironman",      2 }, {"nails", 2}, }, blocks = { "hellrunner", "berserker", "bitch",      },               master = true },
 		},
 
-		desc = "Marines are the backbone of the UAC, resilient and hardy. They start with 10 more health points and powerups they use have a +50% duration bonus (+25% on Nightmare).",
+		desc = "Marines are the backbone of the UAC, resilient and hardy. They start with 10 more health points, +20% fire/acid/plasma resistance and powerups they use have a +50% duration bonus (+25% on Nightmare).",
 
 		OnPick = function( being )
 			being.flags[ BF_POWERBONUS ] = true
@@ -44,6 +44,10 @@ function DoomRL.load_klasses()
 			being.inv:add( "ammo", { ammo = 40 } )
 			being.inv:add( "smed" )
 			being.inv:add( "smed" )
+
+			being.resist.fire   = 20
+			being.resist.acid   = 20
+			being.resist.plasma = 20
 		end
 	}
 
@@ -76,7 +80,7 @@ function DoomRL.load_klasses()
 			{ id = "gunkata",      requires = {{ "dualgunner",   1 }, { "dodgemaster", 1},                      }, blocks = { "nails",    "bitch", "brute",      },               master = true },
 			{ id = "shottyhead",   requires = {{ "juggler",      1 }, { "shottyman",   1}, { "hellrunner", 1 }, }, blocks = { "nails",    "bitch", "eagle",      },               master = true },
 			{ id = "cateye",       requires = {{ "triggerhappy", 1 }, { "intuition",   1},                      }, blocks = { "reloader", "brute", "nails",      }, reqlevel = 6, master = true },
-			{ id = "gunrunner",    requires = {{ "dodgemaster",  1 }, { "juggler",     1},                      }, blocks = { "bitch",    "nails", "whizkid",    },               master = true },
+			{ id = "gunrunner",    requires = {{ "dodgemaster",  1 }, { "juggler",     1},                      }, blocks = { "bitch",    "nails", "brute",      },               master = true },
 		},
 
 		desc = "Scouts are agile and have the best intel. They are generally 10% faster and inherently know the location of stairs on any given level.",
@@ -106,7 +110,7 @@ function DoomRL.load_klasses()
 			{ id = "reloader",   max = 2, max_12 = 3 },
 			{ id = "eagle",      max = 3, max_12 = 5 },
 			{ id = "brute",      max = 3, max_12 = 5 },
-			{ id = "whizkid",    max = 2 },
+			{ id = "whizkid",    max = 2, max_12 = 3 },
 
 			{ id = "juggler",      requires = {{ "finesse",    1 }},         },
 			{ id = "berserker",    requires = {{ "brute",      2 }},         },
@@ -123,7 +127,7 @@ function DoomRL.load_klasses()
 			{ id = "entrenchment", requires = {{ "triggerhappy", 1 }, { "badass",    1 },                   }, blocks = { "finesse",      "reloader",  "gun",        },               master = true },
 			{ id = "scavenger",    requires = {{ "whizkid",      2 }, { "intuition", 1 },                   }, blocks = { "triggerhappy", "berserker", "dualgunner", }, reqlevel = 6, master = true },
 		},
-		desc = "Technicians are masters of equipment and tinkering. They use consumables almost instantly and can hack computer maps for tracking data.",
+		desc = "Technicians are masters of equipment and tinkering. They use consumables almost instantly and can hack computer maps for tracking data. Only they can also mod some really unique tech.",
 
 		OnPick = function( being )
 			being.flags[ BF_INSTAUSE ] = true

@@ -1,4 +1,5 @@
 0.9.9.7 -> 0.9.9.8
+ * play_sound takes last optional parameter delay - if > 0 then sound will be delayed
  * "res_" properties removed.  Use new resist table to access resistances. (e.g. resist.bullet)
  * new prototype syntax for resistances -- resist = { resistance = value, ... }
  * level:explosion and being:apply_damage takes source item as parameter

@@ -12,7 +12,7 @@ register_level "deimos_lab"
 	end,
 
 	OnCompletedCheck = function ()
-		return level.status > 1
+		return level.status > 6
 	end,
 
 	OnRegister = function ()
@@ -56,8 +56,8 @@ register_level "deimos_lab"
 
 
 	Create = function ()
-		level.style = 1
-		generator.fill( "dwall", area.FULL )
+		level:set_generator_style( 2 )
+		generator.fill( "wall", area.FULL )
 		level.data.vault1 = area.new(38,9,41,12)
 		level.data.vault2 = area.new(37,10,42,11)
 		level.data.bridge = area.new(47,10,51,11)
@@ -71,8 +71,8 @@ register_level "deimos_lab"
 		local translation = {
 			['.'] = "floor",
 			[','] = { "floor", flags = { LFBLOOD } },
-			['%'] = "wall",
-			['#'] = "dwall",
+			['%'] = { "wall",  style = 1, },
+			['#'] = "wall",
 			['Z'] = { "rwall", flags = { LFPERMANENT } },
 			['V'] = { "gwall", flags = { LFPERMANENT } },
 			['+'] = "door",

@@ -36,14 +36,14 @@ function register_corpse( being_proto )
 		armor = math.max(being_proto.armor, 1);
 		hp = being_proto.hp;
 		flags = {CF_CORPSE, CF_NOCHANGE, CF_OVERLAY, CF_VBLOODY, CF_RAISABLE};
-		sprite = being_proto.sprite + ROW_SKIP;
+		sprite = being_proto.sprite + 2 * DRL_COLS;
 		set = CELLSET_FLOORS;
 		destroyto = "bloodpool";
 		raiseto = being_proto.id;
 	}
-	if being_proto.flags[ F_LARGE ] then
-		proto.flags = { F_LARGE, CF_CORPSE, CF_NOCHANGE, CF_OVERLAY, CF_VBLOODY, CF_RAISABLE}
-		proto.sprite = being_proto.sprite + LARGE_CORPSE_SKIP
+	if being_proto.sflags[ SF_LARGE ] then
+		proto.sflags = { SF_LARGE }
+		proto.sprite = being_proto.sprite + 4 * DRL_COLS
 	end
 	return register_cell( being_proto.id.."corpse" ) (proto)
 end

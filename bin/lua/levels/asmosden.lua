@@ -18,6 +18,8 @@ register_level "the_asmos_den"
 			ascii        = "H",
 			color        = LIGHTRED,
 			sprite       = SPRITE_MASTER,
+			sframes      = 2,
+			sflags       = { SF_LARGE },
 			hp           = 1,
 			armor        = 0,
 			attackchance = 50,
@@ -110,7 +112,7 @@ register_level "the_asmos_den"
 	end,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "rwall", area.FULL )
 		local asmosden_armor = {
 			level = 25,

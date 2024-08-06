@@ -7,12 +7,15 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfdata;
 interface
-uses Classes, SysUtils, idea, DOM, vgenerics, vcolor, vutil, vrltools,
-     doomconfig, vuitypes;
+uses Classes, SysUtils, idea,
+     vgenerics, vcolor, vutil, vrltools, vuitypes, vluatable,
+     doomconfig, doomkeybindings;
 
-const ConfigurationPath : AnsiString = '';
+const ConfigurationPath : AnsiString = 'config.lua';
       DataPath          : AnsiString = '';
-      SaveFilePath      : AnsiString = '';
+      WritePath         : AnsiString = '';
+      ScorePath         : AnsiString = '';
+      SettingsPath      : AnsiString = 'settings.lua';
 
 {$INCLUDE version.inc}
 
@@ -21,7 +24,9 @@ var   MemorialWritten : Boolean;
 const PlayerSafeZone = 6;
 
 type
-  TIntHashMap  = specialize TGHashMap<Integer>;
+  TIntHashMap   = specialize TGHashMap<Integer>;
+  TStringGArray = specialize TGArray<AnsiString>;
+
 
 type
   // Error reporting.
@@ -58,19 +63,15 @@ const
   EXCEPTEMMITED   : Boolean = False;
   GraphicsVersion : Boolean = True;
   SoundVersion    : Boolean = True;
-  ForceNoNet      : Boolean = False;
   ForceNoAudio    : Boolean = False;
   ForceConsole    : Boolean = False;
   ForceGraphics   : Boolean = False;
-  ForceFullscreen : Boolean = False;
   VisionBaseValue : Byte = 8;
 
   ThisSeed       : Cardinal = 0;
 
   NoPlayerRecord : Boolean = False;
   NoScoreRecord  : Boolean = False;
-
-  ConfigFile   : string  = 'config.lua';
 
   GodMode      : Boolean = False;
 
@@ -98,27 +99,26 @@ const
 {$include ../bin/dkey.inc}
 
 const
-  COMMAND_MMOVE    = 240;
-  COMMAND_MRIGHT   = 241;
-  COMMAND_MMIDDLE  = 242;
-  COMMAND_MLEFT    = 243;
-  COMMAND_MSCRUP   = 244;
-  COMMAND_MSCRDOWN = 245;
-  COMMAND_YIELD    = 254;
+  COMMAND_NONE     = 0;
 
   KnockbackValue = 7;
 
+const
+  Setting_AlwaysRandomName : Boolean = False;
+  Setting_NoIntro          : Boolean = False;
+  Setting_NoFlash          : Boolean = False;
+  Setting_RunOverItems     : Boolean = False;
+  Setting_HideHints        : Boolean = False;
+  Setting_EmptyConfirm     : Boolean = False;
+  Setting_UnlockAll        : Boolean = False;
+  Setting_MenuSound        : Boolean = False;
+  Setting_MusicVolume      : Byte = 25;
+  Setting_SoundVolume      : Byte = 25;
 
 const
   Option_HighASCII        : Boolean = {$IFDEF WINDOWS}True{$ELSE}False{$ENDIF};
-  Option_AlwaysRandomName : Boolean = False;
-  Option_NoIntro          : Boolean = False;
-  Option_NoFlash          : Boolean = False;
-  Option_NoBloodSlide     : Boolean = False;
-  Option_RunOverItems     : Boolean = False;
   Option_Music            : Boolean = False;
   Option_Sound            : Boolean = False;
-  Option_MenuSound        : Boolean = False;
   Option_BlindMode        : Boolean = False;
   Option_ClearMessages    : Boolean = False;
   Option_MorePrompt       : Boolean = True;
@@ -126,41 +126,24 @@ const
   Option_InvFullDrop      : Boolean = False;
   Option_MortemArchive    : Boolean = False;
   Option_MenuReturn       : Boolean = False;
-  Option_ColorBlindMode   : Boolean = False;
-  Option_EmptyConfirm     : Boolean = False;
   Option_SoundEquipPickup : Boolean = False;
   Option_ColoredInventory : Boolean = True;
   Option_LockBreak        : Boolean = True;
   Option_LockClose        : Boolean = True;
-  Option_Hints            : Boolean = True;
-  Option_RunDelay         : Byte = 0;
   Option_MessageBuffer    : DWord = 100;
   Option_MaxRun           : DWord = 100;
   Option_MaxWait          : DWord = 20;
+  Option_RunDelay         : Byte = 0;
   Option_Graphics         : string = 'TILES';
   Option_Blending         : Boolean = False;
   Option_SaveOnCrash      : Boolean = True;
   Option_SoundEngine      : string = 'DEFAULT';
   Option_AlwaysName       : string = '';
   Option_TimeStamp        : string = 'yyyy/mm/dd hh:nn:ss';
-  Option_MusicVol         : Byte = 25;
-  Option_SoundVol         : Byte = 25;
-  Option_SDLMixerFreq     : Integer = 22050;
-  Option_SDLMixerFormat   : Word = $8010;
-  Option_SDLMixerChunkSize: Integer = 1024;
   Option_PlayerBackups    : DWord = 7;
   Option_ScoreBackups     : DWord = 7;
   Option_IntuitionColor   : Byte = LIGHTGRAY;
   Option_IntuitionChar    : Char = '.';
-  Option_NetworkConnection: Boolean = True;
-  Option_VersionCheck     : Boolean = True;
-  Option_AlertCheck       : Boolean = True;
-  Option_BetaCheck        : Boolean = False;
-  Option_InvMenuStyle     : AnsiString = 'HYBRID';
-  Option_EqMenuStyle      : AnsiString = 'HYBRID';
-  Option_HelpMenuStyle    : AnsiString = 'HYBRID';
-  Option_CustomModServer  : AnsiString = '';
-
 
 var
   SoundOff  : boolean = False;
@@ -170,25 +153,24 @@ var
 
 const
 {$include ../bin/core/commands.lua}
-  COMMANDS_MOVE        = [COMMAND_WALKNORTH,COMMAND_WALKSOUTH,
-                          COMMAND_WALKEAST,COMMAND_WALKWEST,
-                          COMMAND_WALKNE,COMMAND_WALKSE,
-                          COMMAND_WALKNW,COMMAND_WALKSW];
+  INPUT_MOVE        = [INPUT_WALKUP,     INPUT_WALKDOWN,
+                       INPUT_WALKRIGHT,  INPUT_WALKLEFT,
+                       INPUT_WALKUPRIGHT,INPUT_WALKDOWNRIGHT,
+                       INPUT_WALKUPLEFT, INPUT_WALKDOWNLEFT];
 
 type TCellSet = set of Byte;
      TExplosionFlags = set of TExplosionFlag;
      TSprite = record
-       Large    : Boolean;
-       Overlay  : Boolean;
-       CosColor : Boolean;
-       Glow     : Boolean;
-       Color    : TColor;
-       GlowColor: TColor;
-       SpriteID : Word;
+       Color     : TColor;
+       GlowColor : TColor;
+       SpriteID  : DWord;
+       Flags     : TFlags;
+       Frames    : Word;
+       Frametime : Word;
      end;
 
-function NewSprite( ID : Word ) : TSprite;
-function NewSprite( ID : Word; Color : TColor ) : TSprite;
+function NewSprite( ID : DWord ) : TSprite;
+function NewSprite( ID : DWord; Color : TColor ) : TSprite;
 
 const
   ActionCostPickUp = 1000;
@@ -198,6 +180,7 @@ const
   ActionCostWear   = 1000;
   ActionCostMove   = 1000;
   ActionCostFire   = 1000;
+  ActionCostTactic = 100;
 
   ActSoundChance    = 30;
 
@@ -312,8 +295,8 @@ const ExpTable : array[1..MaxPlayerLevel] of LongInt =
                900000,10000000);
                
 function Roll(stat : Integer) : Integer;
-function CommandDirection(Command : byte) : TDirection;
-function DirectionToCommand(Dir : TDirection) : Byte;
+function InputDirection( aInput : TInputKey ) : TDirection;
+function DirectionToInput(Dir : TDirection) : TInputKey;
 function TwoInt(x : integer) : string;
 function ToProperFilename(s : string) : string;
 function toHitPercent(EffSkill : ShortInt) : string;
@@ -328,14 +311,14 @@ function MSecNow : Comp;
 function DurationString( aSeconds : int64 ) : Ansistring;
 function BlindCoord( const where : TCoord2D ) : string;
 function SlotName(slot : TEqSlot) : string;
+function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
 
 var ColorOverrides : TIntHashMap;
 
-Function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; PreferStrings: Boolean = True): Variant;
-
+function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; PreferStrings: Boolean = True): Variant;
 
 implementation
-uses typinfo, strutils, XMLRead, math, vdebug;
+uses typinfo, strutils, math, vdebug, dfitem;
 
 // change also in mortem lua!
 function SlotName(slot : TEqSlot) : string;
@@ -467,55 +450,53 @@ end;
 
 
 
-function CommandDirection(Command : byte) : TDirection;
+function InputDirection(aInput : TInputKey) : TDirection;
 begin
-  case Command of
-    COMMAND_WALKWEST  : CommandDirection.Create(4);
-    COMMAND_WALKEAST  : CommandDirection.Create(6);
-    COMMAND_WALKNORTH : CommandDirection.Create(8);
-    COMMAND_WALKSOUTH : CommandDirection.Create(2);
-    COMMAND_WALKNW    : CommandDirection.Create(7);
-    COMMAND_WALKNE    : CommandDirection.Create(9);
-    COMMAND_WALKSW    : CommandDirection.Create(1);
-    COMMAND_WALKSE    : CommandDirection.Create(3);
-    COMMAND_WAIT      : CommandDirection.Create(5);
-    else CommandDirection.Create(0);
+  case aInput of
+    INPUT_WALKLEFT      : InputDirection.Create(4);
+    INPUT_WALKRIGHT     : InputDirection.Create(6);
+    INPUT_WALKUP        : InputDirection.Create(8);
+    INPUT_WALKDOWN      : InputDirection.Create(2);
+    INPUT_WALKUPLEFT    : InputDirection.Create(7);
+    INPUT_WALKUPRIGHT   : InputDirection.Create(9);
+    INPUT_WALKDOWNLEFT  : InputDirection.Create(1);
+    INPUT_WALKDOWNRIGHT : InputDirection.Create(3);
+    INPUT_WAIT          : InputDirection.Create(5);
+    else InputDirection.Create(0);
   end;
 end;
 
-function DirectionToCommand(Dir : TDirection) : Byte;
+function DirectionToInput(Dir : TDirection) : TInputKey;
 begin
   case Dir.code of
-    4 : Exit( COMMAND_WALKWEST );
-    6 : Exit( COMMAND_WALKEAST );
-    8 : Exit( COMMAND_WALKNORTH);
-    2 : Exit( COMMAND_WALKSOUTH);
-    7 : Exit( COMMAND_WALKNW );
-    9 : Exit( COMMAND_WALKNE );
-    1 : Exit( COMMAND_WALKSW );
-    3 : Exit( COMMAND_WALKSE );
-    5 : Exit( COMMAND_WAIT );
-    else Exit( COMMAND_WAIT );
+    4 : Exit( INPUT_WALKLEFT );
+    6 : Exit( INPUT_WALKRIGHT );
+    8 : Exit( INPUT_WALKUP );
+    2 : Exit( INPUT_WALKDOWN );
+    7 : Exit( INPUT_WALKUPLEFT );
+    9 : Exit( INPUT_WALKUPRIGHT );
+    1 : Exit( INPUT_WALKDOWNLEFT );
+    3 : Exit( INPUT_WALKDOWNRIGHT );
+    5 : Exit( INPUT_WAIT );
+    else Exit( INPUT_WAIT );
   end;
 end;
 
-function NewSprite ( ID : Word ) : TSprite;
+function NewSprite ( ID : DWord ) : TSprite;
 begin
-  NewSprite.CosColor := False;
-  NewSprite.Overlay  := False;
-  NewSprite.Glow     := False;
-  NewSprite.Large    := False;
-  NewSprite.SpriteID := ID;
+  NewSprite.Flags     := [];
+  NewSprite.SpriteID  := ID;
+  NewSprite.Frames    := 0;
+  NewSprite.Frametime := 0;
 end;
 
-function NewSprite ( ID : Word; Color : TColor ) : TSprite;
+function NewSprite ( ID : DWord; Color : TColor ) : TSprite;
 begin
-  NewSprite.Overlay  := False;
-  NewSprite.Glow     := False;
-  NewSprite.Large    := False;
-  NewSprite.CosColor := True;
-  NewSprite.Color    := Color;
-  NewSprite.SpriteID := ID;
+  NewSprite.Flags     := [ SF_COSPLAY ];
+  NewSprite.Color     := Color;
+  NewSprite.SpriteID  := ID;
+  NewSprite.Frames    := 0;
+  NewSprite.Frametime := 0;
 end;
 
 function Roll(stat : Integer) : Integer;
@@ -567,6 +548,45 @@ function BonusStr(i: integer): string;
 begin
   if i < 0 then BonusStr := IntToStr(i)
            else BonusStr := '+'+IntToStr(i);
+end;
+
+function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
+var iTable : TLuaTable;
+begin
+  ReadSprite := False;
+  if aTable.IsNumber( 'sprite' ) then
+  begin
+    aSprite.SpriteID  := aTable.getInteger('sprite',0);
+    ReadSprite        := True;
+  end;
+  if aTable.IsTable( 'sflags' ) then
+    aSprite.Flags     := aTable.getFlags('sflags');
+  if aTable.IsNumber( 'sframes' ) then
+    aSprite.Frames    := aTable.getInteger('sframes',0);
+  if aTable.IsNumber( 'sftime' ) then
+    aSprite.Frametime := aTable.getInteger('sftime',FRAME_TIME);
+  if not aTable.isNil( 'overlay' ) then
+  begin
+    Include( aSprite.Flags, SF_OVERLAY );
+    aSprite.Color := NewColor( aTable.GetVec4f('overlay' ) );
+  end;
+  if not aTable.isNil( 'coscolor' ) then
+  begin
+    Include( aSprite.Flags, SF_COSPLAY );
+    aSprite.Color := NewColor( aTable.GetVec4f('coscolor' ) );
+  end;
+  if not aTable.isNil( 'glow' ) then
+  begin
+    Include( aSprite.Flags, SF_GLOW );
+    aSprite.GlowColor := NewColor( aTable.GetVec4f('glow' ) );
+  end;
+  // so we can later move to in-sprite table sprite info definitions slowly
+  if aTable.IsTable( 'sprite' ) then
+  begin
+    iTable := aTable.GetTable( 'sprite' );
+    Result := ReadSprite( iTable, aSprite );
+    iTable.Free;
+  end;
 end;
 
 end.

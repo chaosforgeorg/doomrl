@@ -8,13 +8,13 @@ register_level "containment_area"
 	level = 11,
 
 	Create = function ()
-		level.style = 1
-		generator.fill( "dwall", area.FULL )
+		level:set_generator_style( 2 )
+		generator.fill( "wall", area.FULL )
 
 		local translation = {
 			['.'] = "floor",
-			['#'] = "wall",
-			['P'] = { "dwall", flags = { LFPERMANENT } },
+			['#'] = { "wall", style = 1, },
+			['P'] = { "wall", flags = { LFPERMANENT } },
 			['*'] = "gwall",
 			[','] = { "floor", flags = { LFBLOOD } },
 			['+'] = "door",
@@ -124,5 +124,9 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 				player:add_badge("wall2")
 			end
 		end
+	end,
+
+	OnCompletedCheck = function ()
+		return level.status > 3
 	end,
 }

@@ -64,16 +64,6 @@ protected
   FIcons      : TConUIScrollableIcons;
 end;
 
-type TUIHelpViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement );
-  function OnHelpConfirm( aSender : TUIElement ) : Boolean;
-  function OnKeyDown( const event : TIOKeyEvent ) : Boolean; override;
-protected
-  FMenu   : TConUIMenu;
-  FText   : TConUIStringList;
-  FIcons  : TConUIScrollableIcons;
-end;
-
 type TUIHOFViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; aReport : TUIHOFReport );
   constructor Create( aParent : TUIElement; const aTitle : TUIString; aContent : TUIStringArray );
@@ -90,43 +80,8 @@ protected
   FCallback   : TUIHOFCallback;
 end;
 
-type TUIMoreViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement; const aSID : AnsiString );
-end;
-
-type TUIPlayerViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement );
-end;
-
-type TUIAssemblyViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement );
-end;
-
 type TUIRankUpViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; aRank : THOFRank );
-end;
-
-type
-
-{ TUITraitsViewer }
-
- TUITraitsViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement; aTraits : PTraits; aLevel : Byte; aOnConfirm : TUINotifyEvent = nil ); overload;
-  constructor Create( aParent : TUIElement; aKlass : Byte; aOnConfirm : TUINotifyEvent = nil ); overload;
-  procedure AddTrait( aID : Byte; aValue : Byte; aActive : Boolean );
-  function OnCancel : Boolean; override;
-  function OnMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
-private
-  function Value( aIndex : Byte ) : Byte;
-  procedure Initialize;
-protected
-  FKlass     : Byte;
-  FLevel     : Byte;
-  FTraits    : PTraits;
-  FMenu      : TConUIMenu;
-  FLabel     : TConUILabel;
-  FDesc      : TConUIText;
-  FOnConfirm : TUINotifyEvent;
 end;
 
 type TUIChallengesViewer = class( TUIFullWindow )
@@ -173,32 +128,6 @@ protected
   FOnConfirm : TUINotifyEvent;
 end;
 
-type TUIItemResult    = ( ItemResultCancel, ItemResultPick, ItemResultDrop, ItemResultSwap );
-type TUIItemResultSet = set of TUIItemResult;
-type TUIItemConfirm   = function( aSender : TUICustomMenu; aResult : TUIItemResult ) : Boolean of object;
-type TUIBaseItemView = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement; aOnConfirm : TUIItemConfirm; const aTitle : AnsiString; const aActions : TUIItemResultSet );
-  function OnMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
-  function OnKeyDown( const event : TIOKeyEvent ) : Boolean; override;
-  function OnConfirm( aSender : TUIElement ) : Boolean;
-protected
-  FActions   : TUIItemResultSet;
-  FMenu      : TConUIMenu;
-  FDesc      : TConUIText;
-  FStats     : TConUIText;
-  FOnConfirm : TUIItemConfirm;
-end;
-
-type TUIInventoryView = class( TUIBaseItemView )
-  constructor Create( aParent : TUIElement; aOnConfirm : TUIItemConfirm; const aItems : array of TItem; const aAction : TUIString = '' );
-protected
-  FGeneral   : Boolean;
-end;
-
-type TUIEquipmentView = class( TUIBaseItemView )
-  constructor Create( aParent : TUIElement; aOnConfirm : TUIItemConfirm );
-end;
-
 type TUILoadingScreen = class( TUIElement )
   constructor Create( aParent : TUIElement; aMax : DWord );
   procedure OnRedraw; override;
@@ -216,9 +145,9 @@ implementation
 
 uses SysUtils,
      vgltypes, variants, vutil, vmath, vuiconsole, vluasystem,
-     doombase, doomhelp, doomio, dfoutput, dfplayer, dfhof;
+     doombase, doomhelp, doomio, doomgfxio, dfplayer, dfhof;
 
-const HelpHeader       = 'DoomRL Help System';
+const HelpHeader       = 'DRL Help System';
       PostMortemHeader = 'PostMortem (@<mortem.txt@>)';
       MessagesHeader   = 'Past messages viewer';
 
@@ -256,21 +185,22 @@ var iSize   : TGLVec2i;
 begin
   inherited OnRedraw;
   if GraphicsVersion and ( FMax > 0 ) then
-  begin
-    iSize.Init( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
-    iStep.Init( iSize.X div 15, iSize.Y div 15 );
-    iPoint.Init( iSize.X div 400, iSize.X div 400 );
-    iV1.Init(           iStep.X, iStep.Y * 7 );
-    iV2.Init( iSize.X - iStep.X, iStep.Y * 8 );
-    IO.QuadSheet.PostColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0,0,1 ) );
-    iV1 := iV1 + iPoint;
-    iV2 := iV2 - iPoint;
-    IO.QuadSheet.PostColoredQuad( iV1, iV2, TGLVec4f.Create( 0,0,0,1 ) );
-    iV1 := iV1 + iPoint.Scaled(2);
-    iV2 := iV2 - iPoint.Scaled(2);
-    iV2.X := Round( ( iV2.X - iV1.X ) * (FCurrent / FMax) ) + iV1.X;
-    IO.QuadSheet.PostColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0.9,0,1 ) );
-  end;
+    with IO as TDoomGFXIO do
+    begin
+      iSize.Init( Driver.GetSizeX, Driver.GetSizeY );
+      iStep.Init( iSize.X div 15, iSize.Y div 15 );
+      iPoint.Init( iSize.X div 400, iSize.X div 400 );
+      iV1.Init(           iStep.X, iStep.Y * 7 );
+      iV2.Init( iSize.X - iStep.X, iStep.Y * 8 );
+      QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0,0,1 ) );
+      iV1 := iV1 + iPoint;
+      iV2 := iV2 - iPoint;
+      QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 0,0,0,1 ) );
+      iV1 := iV1 + iPoint.Scaled(2);
+      iV2 := iV2 - iPoint.Scaled(2);
+      iV2.X := Round( ( iV2.X - iV1.X ) * (FCurrent / FMax) ) + iV1.X;
+      QuadSheet.PushColoredQuad( iV1, iV2, TGLVec4f.Create( 1,0.9,0,1 ) );
+    end;
 end;
 
 procedure TUILoadingScreen.OnUpdate ( aTime : DWord ) ;
@@ -369,7 +299,7 @@ begin
     iRoot := TConUIRoot(FRoot);
     iP1 := iRoot.ConsoleCoordToDeviceCoord( FAbsolute.Pos );
     iP2 := iRoot.ConsoleCoordToDeviceCoord( Point( FAbsolute.x2+1, FAbsolute.y2+1 ) );
-    IO.QuadSheet.PostColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
+    (IO as TDoomGFXIO).QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
   end;
 
   inherited OnRender;
@@ -383,7 +313,7 @@ var iRect    : TUIRect;
 begin
   inherited Create( aParent, PostMortemHeader, ScrollFooterOn );
   iRect := aParent.GetDimRect.Shrinked(1,2);
-  iContent := TConUIStringList.Create( Self, iRect, TextFileToUIStringArray(SaveFilePath+'mortem.txt'), True );
+  iContent := TConUIStringList.Create( Self, iRect, TextFileToUIStringArray( WritePath + 'mortem.txt' ), True );
   iContent.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
   TConUIScrollableIcons.Create( Self, iContent, iRect, Point( FAbsolute.x2 - 7, FAbsolute.y ) );
 end;
@@ -402,63 +332,6 @@ begin
   iContent.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
   if iContent.Count <= iContent.VisibleCount then Footer := ScrollFooterOff;
   TConUIScrollableIcons.Create( Self, iContent, iRect, Point( FAbsolute.x2 - 7, FAbsolute.Y ) );
-end;
-
-{ TUIHelpViewer }
-
-constructor TUIHelpViewer.Create ( aParent : TUIElement ) ;
-var i : Byte;
-    iRect : TUIRect;
-begin
-  inherited Create( aParent, HelpHeader, HelpFooter );
-  FEventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
-  iRect := aParent.GetDimRect;
-  FMenu := CreateMenu( Option_HelpMenuStyle, Self,iRect.Shrinked(2) );
-
-  for i := 1 to Help.HNum do
-    FMenu.Add( Help.RegHelps[i].Desc, True, @(Help.RegHelps[i]) );
-  FMenu.Add('Quit Help');
-  FMenu.OnConfirmEvent := @OnHelpConfirm;
-
-  iRect  := aParent.GetDimRect.Shrinked(1,2);
-  FText  := TConUIStringList.Create( Self, iRect );
-  FIcons := TConUIScrollableIcons.Create( Self, FText, iRect, Point( FAbsolute.X2 - 7, FAbsolute.Y ) );
-  FText.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
-  FText.Enabled := False;
-  FIcons.Enabled := False;
-end;
-
-function TUIHelpViewer.OnHelpConfirm( aSender : TUIElement ) : Boolean;
-begin
-  if FMenu.SelectedItem.Data = nil then Exit( OnCancel );
-  FText.SetContent( PHelpRecord(FMenu.SelectedItem.Data)^.Text, False );
-  FTitle := ' '+PHelpRecord(FMenu.SelectedItem.Data)^.Desc+' ';
-  if FText.Count <= FText.VisibleCount
-    then FFooter := ScrollFooterOff
-    else FFooter := ScrollFooterOn;
-  FText.Enabled := True;
-  FIcons.Enabled := True;
-  FMenu.Enabled := False;
-  Exit( True );
-end;
-
-function TUIHelpViewer.OnKeyDown ( const event : TIOKeyEvent ) : Boolean;
-begin
-  if (event.Code = VKEY_ESCAPE) or (event.Code = VKEY_ENTER) or (event.Code = VKEY_SPACE) then
-  begin
-    if FText.Enabled then
-    begin
-      FText.Enabled := False;
-      FIcons.Enabled := False;
-      FMenu.Enabled := True;
-      FTitle := HelpHeader;
-      FFooter := HelpFooter;
-    end
-    else
-      Exit( OnCancel );
-    Exit( True );
-  end;
-  Result := False;
 end;
 
 { TUIPagedViewer }
@@ -588,161 +461,6 @@ begin
   Result := inherited OnKeyDown ( event );
 end;
 
-{ TUIMoreViewer }
-
-constructor TUIMoreViewer.Create ( aParent : TUIElement; const aSID : AnsiString ) ;
-var iName  : AnsiString;
-    iASCII : AnsiString;
-    iDesc  : AnsiString;
-begin
-  iName := Capitalized(LuaSystem.Get(['beings',aSID,'name']));
-  iDesc := LuaSystem.Get(['beings',aSID,'desc']);
-  if aSID = 'soldier'
-    then iASCII := Player.ASCIIMoreCode
-    else iASCII := aSID;
-
-  inherited Create( aParent, iName, EscapeFooter );
-
-  if UI.Ascii.Exists(iASCII) then
-    TConUIStringList.Create( Self, FAbsolute.Shrinked(2,1), UI.Ascii[iASCII], False )
-  else
-    TConUIText.Create( Self, Rectangle(10,10,10,2), '@rPicture'#10'  N/A' );
-
-  TConUIText.Create( Self, Rectangle(40,8,38,1),'@r'+iName );
-  TConUIText.Create( Self, Rectangle(40,9,38,14),'@l'+iDesc );
-end;
-
-
-{ TUIPlayerViewer }
-
-constructor TUIPlayerViewer.Create ( aParent : TUIElement ) ;
-var iStatus  : AnsiString;
-    iContent : TUIStringArray;
-    iText    : TConUIStringList;
-    
-    iDepth      : DWord;
-    iGameTime   : DWord;
-    iRealTime   : DWord;
-    iDamTotal   : DWord;
-    iDamLevel   : DWord;
-    iKills      : DWord;
-    iMaxKills   : DWord;
-    iKillSpree  : DWord;
-    iKillRecord : DWord;
-    iDodgeBonus : Word;
-    iKnockMod   : Integer;
-
-begin
-  iStatus := LuaSystem.Get([ 'diff', Doom.Difficulty, 'code' ]);
-  if Doom.Challenge <> ''  then iStatus += '@> / ' + LuaSystem.Get(['chal',Doom.Challenge,'abbr']);
-  if Doom.SChallenge <> '' then iStatus += ' + ' + LuaSystem.Get(['chal',Doom.SChallenge,'abbr']);
-  iStatus := '( '+iStatus+'@> )';
-
-  inherited Create( aParent, 'DoomRL Character Info '+iStatus, EscapeFooter );
-
-  TConUIStringList.Create( Self, Rectangle(48,3,30,21), UI.Ascii[Player.ASCIIMoreCode], False );
-
-  iContent := TUIStringArray.Create;
-
-  with Player do
-  begin
-    FStatistics.Update();
-    iDepth      := CurrentLevel;
-    iGameTime   := FStatistics.Map['game_time'];
-    iRealTime   := FStatistics.Map['real_time'];
-    iDamTotal   := FStatistics.Map['damage_taken'];
-    iDamLevel   := FStatistics.Map['damage_on_level'];
-    iKills      := FStatistics.Map['kills'];
-    iMaxKills   := FStatistics.Map['max_kills'];
-    iKillSpree  := FKills.BestNoDamageSequence;
-    iKillRecord := FStatistics.Map['kills_non_damage'];
-    if iKillSpree > iKillRecord then iKillRecord := iKillSpree;
-
-    iContent.Push( Format( '@L%s@l, level @L%d@l @L%s,',[Name,ExpLevel,AnsiString(LuaSystem.Get(['klasses',Klass,'name']))] ) );
-    iContent.Push( Format( 'currently on level @L%d@l of the Phobos base. ', [iDepth] ) );
-    iContent.Push( Format( 'He survived @L%d@l turns, which took him @L%d@l seconds. ', [ iGameTime, iRealTime ] ) );
-    iContent.Push( Format( 'He took @L%d@l damage, @L%d@l on this floor alone. ', [ iDamTotal, iDamLevel ] ) );
-    iContent.Push( Format( 'He killed @L%d@l out of @L%d@l enemies total. ', [ iKills, iMaxKills ] ) );
-    iContent.Push( Format( 'His current killing spree is @L%d@l, with a record of @L%d@l. ', [ iKillSpree, iKillRecord ] ) );
-    iContent.Push( '' );
-    iContent.Push( Format( 'Current movement speed is @L%.2f@l second/move.', [getMoveCost/(Speed*10.0)] ) );
-    iContent.Push( Format( 'Current fire speed is @L%.2f@l second/%s.', [getFireCost/(Speed*10.0),IIf(canDualGun,'dualshot','shot')] ) );
-    iContent.Push( Format( 'Current reload speed is @L%.2f@l second/reload.', [getReloadCost/(Speed*10.0)] ) );
-    iContent.Push( Format( 'Current to hit chance (point blank) is @L%s',[toHitPercent(10+getToHitRanged(Inv.Slot[efWeapon]))]));
-    iContent.Push( Format( 'Current melee hit chance is @L%s',[toHitPercent(10+getToHitMelee(Inv.Slot[efWeapon]))]));
-    iContent.Push( '' );
-
-    iDodgeBonus := getDodgeMod;
-    iKnockMod   := getKnockMod;
-
-    { Dodge Bonus }
-    if iDodgeBonus <> 0
-    then iContent.Push( Format( 'He has a @L%d%%@l bonus toward dodging attacks.', [iDodgeBonus]))
-    else iContent.Push( 'He has no bonus toward dodging attacks.' );
-
-    { Knockback Modifier }
-    if ( ( iKnockMod <> 100 ) and ( BodyBonus <> 0 ) ) then
-    begin
-      if ( iKnockMod < 100 )
-      then iContent.Push( Format( 'He resists @L%d%%@l of knockback', [100-iKnockMod]))
-      else iContent.Push( Format( 'He receives @L%d%%@l extra knockback', [iKnockMod-100]));
-      iContent.Push( Format( '%s prevents @L%d@l space%s of knockback.', [IIf( iKnockMod < 100, 'and', 'but' ), BodyBonus, IIf(BodyBonus <> 1, 's') ]));
-    end
-    else if ( iKnockMod <> 100 ) then
-      if ( iKnockMod < 100 )
-      then iContent.Push( Format( 'He resists @L%d%%@l of knockback.', [100-iKnockMod]))
-      else iContent.Push( Format( 'He receives @L%d%%@l extra knockback.', [iKnockMod-100]))
-    else if ( BodyBonus <> 0 )
-      then iContent.Push( Format( 'He prevents @L%d@l space%s of knockback.', [BodyBonus, IIf(BodyBonus <> 1,'s')]))
-    else
-      iContent.Push( 'He has no resistance to knockback.' );
-    iContent.Push( '' );
-  end;
-
-  iText := TConUIStringList.Create( Self, FAbsolute.Shrinked(2,2), iContent, True );
-  iText.ForeColor := LightGray;
-  iText.BackColor := ColorNone;
-end;
-
-{ TUIAssemblyViewer }
-
-constructor TUIAssemblyViewer.Create ( aParent : TUIElement ) ;
-var iRect            : TUIRect;
-    iContent         : TUIStringArray;
-    iText            : TConUIStringList;
-    iType, iFound, i : DWord;
-    iString, iID     : AnsiString;
-const TypeName : array[0..2] of string = ('Basic','Advanced','Master');
-begin
-  inherited Create( aParent, 'Known assemblies', ScrollFooterOn );
-  iContent := TUIStringArray.Create;
-  for iType := 0 to 2 do
-  begin
-    iContent.Push('@y'+TypeName[iType]+' assemblies');
-    iContent.Push('');
-    for i := 1 to LuaSystem.Get(['mod_arrays','__counter']) do
-    if LuaSystem.Get(['mod_arrays',i,'level']) = iType then
-    begin
-      iID    := LuaSystem.Get(['mod_arrays',i,'id']);
-      iFound := HOF.GetCounted( 'assemblies','assembly', iID );
-      if LuaSystem.Get( [ 'player','__props', 'assemblies', iID ], 0 ) > 0 then Inc( iFound );
-      if iFound = 0
-        then if iType = 0
-          then iString := '  @d'+LuaSystem.Get(['mod_arrays',i,'name'])+' (@L-@d)'
-          else iString := '  @d  -- ? -- (@L-@d)'
-        else iString := '  @y'+Padded(LuaSystem.Get(['mod_arrays',i,'name'])+' (@L'+IntToStr(iFound)+'@d@y)',36)
-                        + '@l' + LuaSystem.Get(['mod_arrays',i,'desc']);
-      iContent.Push( iString );
-    end;
-    if iType <> 2 then iContent.Push('');
-  end;
-
-  iRect := GetDimRect.Shrinked(2,2);
-  iText := TConUIStringList.Create( Self, iRect, iContent, True );
-  iText.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
-  TConUIScrollableIcons.Create( Self, iText, iRect, Point( FAbsolute.X2 - 7, FAbsolute.Y ) );
-end;
-
 { TUIRankUpViewer }
 
 constructor TUIRankUpViewer.Create ( aParent : TUIElement; aRank : THOFRank ) ;
@@ -762,149 +480,6 @@ begin
   iText += #10#10'Press <@yEnter@r>...';
 
   TConUIText.Create( Self, GetAvailableDim.Shrinked(12,4), iText, False );
-end;
-
-{ TUISelectionViewer }
-
-constructor TUITraitsViewer.Create ( aParent : TUIElement; aKlass : Byte; aOnConfirm : TUINotifyEvent ) ;
-begin
-  inherited Create( aParent, '@yChoose a trait to upgrade', MenuFooter );
-  FOnConfirm := aOnConfirm;
-  FKlass  := aKlass;
-  FLevel  := 0;
-  FTraits := nil;
-  Initialize;
-end;
-
-constructor TUITraitsViewer.Create(aParent: TUIElement; aTraits: PTraits; aLevel : Byte; aOnConfirm: TUINotifyEvent);
-begin
-  inherited Create( aParent, '@yChoose a trait to upgrade', MenuFooter );
-  FOnConfirm := aOnConfirm;
-  FLevel  := aLevel;
-  FTraits := aTraits;
-  FKlass  := aTraits^.Klass;
-  Initialize;
-end;
-
-procedure TUITraitsViewer.Initialize;
-var iTrait, i : byte;
-    iTraits   : Variant;
-begin
-  if not Assigned( FOnConfirm ) then
-  begin
-    FTitle  := 'Character traits';
-    FFooter := '@<Up,Down to select, Enter or Escape to exit@>';
-  end
-  else
-    if FTraits <> nil then
-      FFooter := '@<Up,Down to select, Enter to pick@>';
-  FMenu       := TConUIMenu.Create( Self, Rectangle( 3,1,22,23 ) );
-  FLabel      := TConUILabel.Create( Self, Point( 27, 2 ), StringOfChar('-',57) );
-  FDesc       := TConUIText.Create( Self, Rectangle( 29,4,47,21 ),'' );
-  FLabel.ForeColor      := Red;
-  FMenu.ForeColor       := LightRed;
-  FMenu.SelectedColor   := Yellow;
-  FMenu.OnSelectEvent   := @OnMenuSelect;
-  FMenu.OnConfirmEvent  := FOnConfirm;
-  FMenu.ForceChoice     := (FTraits <> nil) and Assigned( FOnConfirm );
-  FMenu.ConfirmInactive := not Assigned( FOnConfirm );
-
-  iTraits := LuaSystem.Get(['klasses',FKlass,'traitlist']);
-  for i := VarArrayLowBound(iTraits, 1) to VarArrayHighBound(iTraits, 1) do
-  begin
-    iTrait := iTraits[ i ];
-    if FTraits <> nil
-      then AddTrait( iTrait, Value( iTrait ), FTraits^.CanPick( iTrait, FLevel ) )
-      else AddTrait( iTrait, 0, TTraits.CanPickInitially( iTrait, FKlass ) );
-  end;
-end;
-
-
-procedure TUITraitsViewer.AddTrait ( aID : Byte; aValue : Byte; aActive : Boolean ) ;
-begin
-  FMenu.Add( Padded(LuaSystem.Get(['traits',aID,'name']),16)+' (@<'+IntToStr(aValue)+'@>)', aActive, Pointer(aID) );
-end;
-
-function TUITraitsViewer.OnCancel : Boolean;
-begin
-  if FMenu.ForceChoice then Exit( True );
-  Result := inherited OnCancel;
-end;
-
-function TUITraitsViewer.OnMenuSelect ( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
-var iCount  : Byte;
-    iSize   : Word;
-    iValue  : Word;
-    iNID    : Word;
-    iTID    : Word;
-    iString : AnsiString;
-    iDesc   : AnsiString;
-    iName   : AnsiString;
-    iTable  : TLuaTable;
-const RG : array[Boolean] of Char = ('G','R');
-      RL : array[Boolean] of Char = ('L','R');
-begin
-  if not FMenu.IsValid( aIndex ) then Exit( True );
-  iTID := Word(aItem.Data);
-
-  FLabel.Text := Padded( '- @<' + LuaSystem.Get(['traits',iTID,'name']) + ' @>', 54, '-');
-
-  iString := '';
-  iDesc   := '';
-
-  with LuaSystem.GetTable(['klasses',FKlass,'trait',iTID]) do
-  try
-    if GetTableSize('requires') > 0 then
-    for iTable in ITables('requires') do
-    begin
-      iNID    := iTable.GetValue( 1 );
-      iName   := LuaSystem.Get(['traits',iNID,'name']);
-      iValue  := iTable.GetValue( 2 );
-      iString += '@'+RG[Value(iNID) < iValue]+iName+' @l(@<'+IntToStr(iValue)+'@l), ';
-    end;
-
-    iValue := GetInteger('reqlevel',0);
-    if iValue > 0
-      then iString += '@'+RG[FLevel < iValue]+'Level @l(@<'+IntToStr(iValue)+'@l)'
-      else Delete( iString, Length(iString) - 1, 2 );
-
-    if iString <> '' then iDesc += #10#10'Requires : '+iString;
-
-    iString := '';
-    iSize   := GetTableSize('blocks');
-    if iSize > 0 then
-    begin
-      with GetTable('blocks') do
-      try
-        for iCount := 1 to iSize do
-        begin
-          iNID    := GetValue( iCount );
-          iName   := LuaSystem.Get(['traits',iNID,'name']);
-          iString += '@'+RL[Value(iNID) > 0]+iName+'@l, ';
-        end;
-      finally
-        Free;
-      end;
-      Delete( iString, Length(iString) - 1, 2 );
-    end;
-    if iString <> '' then iDesc += #10'Blocks   : '+iString;
-  finally
-    Free;
-  end;
-
-  with LuaSystem.GetTable(['traits',iTID]) do
-  try
-    FDesc.Text  := '@y'+getString('quote')+#10#10+'@l'+getString('full')+iDesc;
-  finally
-    Free;
-  end;
-  Exit( True );
-end;
-
-function TUITraitsViewer.Value ( aIndex : Byte ) : Byte;
-begin
-  if FTraits <> nil then Exit( FTraits^.Values[ aIndex ] );
-  Exit(0);
 end;
 
 { TUIChallengesViewer }
@@ -928,7 +503,7 @@ begin
   FPrefix := '';
   if aArch then FPrefix := 'arch_';
   for iCount := 0 to High( aChallenges ) do
-    FMenu.Add(LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'name']),(aRank >= LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'rank'],0)) or GodMode, Pointer(aChallenges[iCount]) );
+    FMenu.Add(LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'name']),(aRank >= LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'rank'],0)) or (GodMode) or (Setting_UnlockAll), Pointer(aChallenges[iCount]) );
 
 end;
 
@@ -936,7 +511,7 @@ function TUIChallengesViewer.OnMenuSelect ( aSender : TUIElement; aIndex : DWord
 var iChoice : Byte;
 begin
   if not FMenu.IsValid( aIndex ) then Exit( True );
-  iChoice := Byte(FMenu.SelectedItem.Data);
+  iChoice := Byte( FMenu.SelectedItem.Data );
   FLabel.Text := Padded( '- @<' + LuaSystem.Get(['chal',iChoice,FPrefix+'name']) + ' @>', 53, '-');
   FDesc.Text  := '@rRating: @y'+LuaSystem.Get(['chal',iChoice,FPrefix+'rating'],'UNRATED')+#10#10+
                  '@l'+LuaSystem.Get(['chal',iChoice,FPrefix+'description']);
@@ -1057,6 +632,7 @@ begin
     FTitle := '@yChoose Module to Play';
     iList := Modules.LocalModules;
   end
+  {
   else
   begin
     (* TODO Separate network error (actually cannot download the file) from local error (file system cannot write the file because the directory is missing etc) *)
@@ -1067,8 +643,7 @@ begin
     end;
     FTitle := '@yChoose Module to Download';
     iList := Modules.RemoteModules;
-  end;
-
+  end};
   FMenu.Clear;
   for iModule in iList do
     FMenu.Add( iModule.Name+IIf( iModule.Raw, ' (raw)'), True, iModule );
@@ -1117,10 +692,10 @@ end;
 
 function TUIModViewer.OnMenuPick ( aSender : TUIElement ) : Boolean;
 const OlderWarning = 'This module is designed for an older version'#10+
-                     '  of DoomRL, and as such might not work on your'#10+
+                     '  of DRL, and as such might not work on your'#10+
                      '  version. Do you want to try to load it anyway?';
       NewerWarning = 'This module is designed for a newer version'#10+
-                     '  of DoomRL, and as such might not work on your'#10+
+                     '  of DRL, and as such might not work on your'#10+
                      '  version. Do you want to try to load it anyway?';
       GVerWarning  = 'This module was not designed with graphics'#10+
                      '  support in mind. It might crash and look'#10+
@@ -1158,7 +733,7 @@ begin
       EmitWarning( OlderWarning, @OnConfirm )
     else
       OnConfirm( FMenu );
-  end
+  end{
   else
   begin
     FBar.Visible := True;
@@ -1173,7 +748,7 @@ begin
       Modules.RefreshLocalModules;
     end;
     FBar.Visible := False;
-  end;
+  end};
   Exit( True );
 end;
 
@@ -1228,185 +803,6 @@ begin
   end;
   Free;
   Exit( True );
-end;
-
-{ TUIBaseItemView }
-
-constructor TUIBaseItemView.Create ( aParent : TUIElement;
-  aOnConfirm : TUIItemConfirm; const aTitle : AnsiString; const aActions : TUIItemResultSet ) ;
-begin
-  inherited Create( aParent, aTitle, '');
-  FOnConfirm := aOnConfirm;
-  FActions   := aActions;
-end;
-
-function TUIBaseItemView.OnMenuSelect ( aSender : TUIElement; aIndex : DWord;
-  aItem : TUIMenuItem ) : Boolean;
-var iItem : TItem;
-    iDesc : AnsiString;
-    iSet  : AnsiString;
-begin
-  if not FMenu.IsValid(aIndex) then Exit( True );
-  iItem := TItem( aItem.Data );
-  if iItem = nil then
-  begin
-    FDesc.Text  := '';
-    FStats.Text := '';
-    Exit( True );
-  end;
-  iDesc := LuaSystem.Get(['items',iItem.ID,'desc']);
-  if iItem.Flags[ IF_SETITEM ] then
-  begin
-    iSet := LuaSystem.Get(['items',iItem.ID,'set']);
-    iDesc := Format('@<%s@> (1/%d)', [
-      AnsiString( LuaSystem.Get(['itemsets',iSet,'name']) ),
-      Byte( LuaSystem.Get(['itemsets',iSet,'trigger']) ) ])
-      + #10+iDesc;
-  end;
-  FDesc.Text := iDesc;
-  FStats.Text := iItem.DescriptionBox;
-  Exit( True )
-end;
-
-function TUIBaseItemView.OnKeyDown ( const event : TIOKeyEvent ) : Boolean;
-begin
-  if (FMenu <> nil) and Assigned(FOnConfirm) and (event.ModState = []) and (FMenu.IsValid( FMenu.Selected ) ) and (FMenu.SelectedItem.Data <> nil) then
-  begin
-    if (ItemResultDrop in FActions) and  (event.Code = VKEY_BACK) then
-    begin
-      FOnConfirm( FMenu, ItemResultDrop );
-      Free;
-      Exit( True );
-    end;
-    if (ItemResultSwap in FActions) and  (event.Code = VKEY_TAB) then
-    begin
-      FOnConfirm( FMenu, ItemResultSwap );
-      Free;
-      Exit( True );
-    end;
-  end;
-  Result := inherited OnKeyDown ( event );
-end;
-
-function TUIBaseItemView.OnConfirm ( aSender : TUIElement ) : Boolean;
-begin
-  if Assigned( FOnConfirm ) then FOnConfirm( FMenu, ItemResultPick );
-  Free;
-  Exit( True );
-end;
-
-
-{ TUIInventoryView }
-
-constructor TUIInventoryView.Create ( aParent : TUIElement; aOnConfirm : TUIItemConfirm; const aItems : array of TItem; const aAction : TUIString = ''  ) ;
-var iVSep  : TUICustomSeparator;
-    iHSep  : TUICustomSeparator;
-    iCont  : TUIElement;
-    iCount : DWord;
-    iMax   : DWord;
-    iDesc  : AnsiString;
-begin
-  FGeneral := aAction = '';
-  if FGeneral
-    then inherited Create( aParent, aOnConfirm, '@yInventory', [ ItemResultPick, ItemResultDrop ] )
-    else inherited Create( aParent, aOnConfirm, '@yChoose item (@W'+aAction+'@y)', [ ItemResultPick ] );
-
-  iCont := TUIElement.Create( Self, aParent.GetDimRect.Shrinked(0,1) );
-  iVSep := TConUISeparator.Create( iCont, VORIENT_VERTICAL, 54 );
-  iHSep := TConUISeparator.Create( iVSep.Right, VORIENT_HORIZONTAL, 16 );
-  iHSep.Top.SetPadding( PointUnit );
-  iHSep.Bottom.SetPadding( Point(1,0) );
-
-  iMax := 0;
-  for iCount := Low( aItems ) to High( aItems ) do
-    if aItems [ iCount ] <> nil then Inc(iMax);
-
-  FMenu := nil;
-  if iMax = 0 then
-    TConUILabel.Create( iVSep.Left, Point( 1,1 ), 'No items, Press <Enter>' )
-  else
-  begin
-    FMenu       := CreateMenu( Option_InvMenuStyle, iVSep.Left, Rectangle( 2,1,50,22 ) );
-    FDesc       := TConUIText.Create( iHSep.Top, '' );
-    FStats      := TConUIText.Create( iHSep.Top, Rectangle( 0,7,28,6 ),'' );
-
-    FOnConfirm := aOnConfirm;
-    FMenu.SelectedColor  := White;
-    FMenu.OnSelectEvent  := @OnMenuSelect;
-    FMenu.OnConfirmEvent := @OnConfirm;
-
-    for iCount := Low( aItems ) to High( aItems ) do
-      if aItems [ iCount ] <> nil then
-        FMenu.Add( aItems[ iCount ].Description, True, aItems[ iCount ], aItems[ iCount ].MenuColor );
-  end;
-
-  if FGeneral
-    then iDesc := 'Press @<Escape@> to exit, to wear/wield or use an item press the item letter or use @<Up/Down@> to browse and @<Enter@> to choose, or @<Backspace@> to drop.'
-    else iDesc := 'To '+aAction+' an item press the item letter or use @<Up/Down@> to browse and @<Enter@> to accept. Press @<Escape@> to exit.';
-
-  TConUIText.Create( iHSep.Bottom, iDesc );
-end;
-
-
-{ TUIEquipmentView }
-
-constructor TUIEquipmentView.Create ( aParent : TUIElement; aOnConfirm : TUIItemConfirm ) ;
-const ResNames : array[TResistance] of AnsiString = ('Bullet','Melee','Shrap','Acid','Fire','Plasma');
-      ResIDs   : array[TResistance] of AnsiString = ('bullet','melee','shrapnel','acid','fire','plasma');
-var iVSep  : TUICustomSeparator;
-    iHSep  : TUICustomSeparator;
-    iCont  : TUIElement;
-    iName  : AnsiString;
-    iDesc1 : AnsiString;
-    iDesc2 : AnsiString;
-    iSlot  : TEqSlot;
-    iCount : DWord;
-    iRes   : TResistance;
-begin
-  inherited Create( aParent, aOnConfirm, '@yEquipment and Character Info', [ ItemResultPick, ItemResultDrop, ItemResultSwap ] );
-  FFooter := '@<up/down/letter (pick), Enter (wear/wield), Backspace (drop), TAB (swap)@>';
-
-  iCont := TUIElement.Create( Self, aParent.GetDimRect.Shrinked(0,1) );
-  iHSep := TConUISeparator.Create( iCont, VORIENT_HORIZONTAL, 11 );
-  iVSep := TConUISeparator.Create( iHSep.Top, VORIENT_VERTICAL, 54 );
-  iVSep.Right.SetPadding( PointUnit );
-
-  FMenu       := CreateMenu( Option_EqMenuStyle, iVSep.Left, Rectangle( 2,1,50,4 ) );
-  FDesc       := TConUIText.Create( iHSep.Top, Rectangle( 2,6,50,2 ),'' );
-  FStats      := TConUIText.Create( iVSep.Right, '' );
-
-  FOnConfirm := aOnConfirm;
-  FMenu.SelectedColor  := White;
-  FMenu.OnSelectEvent  := @OnMenuSelect;
-  FMenu.OnConfirmEvent := @OnConfirm;
-
-  for iSlot := Low(TEqSlot) to High(TEqSlot) do
-     if Player.Inv.Slot[iSlot] <> nil
-       then FMenu.Add( Player.Inv.Slot[iSlot].Description, True, Player.Inv.Slot[iSlot], Player.Inv.Slot[iSlot].MenuColor )
-       else FMenu.Add( SlotName(iSlot), True, nil, DarkGray );
-
-  iDesc1 := '@lBasic traits@d'#10;
-  iDesc2 := '@lAdvanced traits@d'#10;
-  for iCount := 1 to MAXTRAITS do
-    if Player.FTraits.Values[iCount] > 0 then
-    begin
-      iName := LuaSystem.Get(['traits',iCount,'name']);
-      if iCount < 10
-        then iDesc1 += Padded(iName,16)+'@d (@l'+IntToStr(Player.FTraits.Values[iCount])+'@d)'#10
-        else iDesc2 += Padded(iName,16)+'@d (@l'+IntToStr(Player.FTraits.Values[iCount])+'@d)'#10;
-    end;
-
-  TConUIText.Create( iHSep.Bottom, Rectangle( 1,1,20,9 ), iDesc1);
-  TConUIText.Create( iHSep.Bottom, Rectangle( 22,1,20,9 ), iDesc2);
-
-  iDesc1 := '@lResistances@d'#10;
-  for iRes := Low(TResistance) to High(TResistance) do
-    iDesc1 +=  '@d'+Padded(ResNames[iRes],7)+'@l'+Padded(BonusStr(LuaSystem.Get(['player','resist',ResIDs[iRes]],0))+'%',5)+
-       '@d Torso @l'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_TORSO))+'%',5)+
-       '@d Feet @l'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_FEET))+'%',5)+#10;
-
-  TConUIText.Create( iHSep.Bottom, Rectangle( 44,1,36,9 ), iDesc1);
-
 end;
 
 end.

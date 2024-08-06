@@ -1,4 +1,4 @@
--- Custom coloring based on entity ID's. Search the DoomRL wiki
+-- Custom coloring based on entity ID's. Search the DRL wiki
 -- for id's for entities.
 --
 -- In case of cells, there are two overrides - [id]_light and [id]_dark
@@ -21,7 +21,7 @@ LIGHTMAGENTA= 13
 YELLOW      = 14
 WHITE       = 15
 
--- An example of how to change DoomRL's color scheme.
+-- An example of how to change DRL's color scheme.
 Colors = {
 --	floor_dark  = GREEN,
 --	floor_light = BLUE,

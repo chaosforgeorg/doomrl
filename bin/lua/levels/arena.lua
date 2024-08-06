@@ -89,7 +89,7 @@ register_level "hells_arena"
 	end,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill("rwall", area.FULL )
 		generator.fill("floor", area.FULL_SHRINKED )
 		local translation = {

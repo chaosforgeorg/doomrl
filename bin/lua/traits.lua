@@ -3,15 +3,19 @@ function DoomRL.load_traits()
 	register_trait "ironman"
 	{
 		name   = "Ironman",
-		desc   = "Increases hitpoints by 20% starting HP/lv.",
+		desc   = "Increase HP by +20%/lv, bullet/sharpnel/melee resist +10%/lv",
 		quote  = "\"Just a couple of broken ribs, it's nothing. To stop me... you've got to smash my head or take my heart out.\"",
-		full   = "You're a diehard piece of shit. You'll keep on fighting until all your bones are broken and you have no blood left. Every level of this trait increases your health by 20% of your starting HP.",
+		full   = "You're a diehard piece of shit. You'll keep on fighting until all your bones are broken and you have no blood left. Every level of this trait increases your health by 20% of your starting HP. Additionally bullet, shrapnel and melee resistance goes up by 10% per level.",
 		abbr   = "Iro",
 
 		OnPick = function (being)
 			local inc = math.floor(0.2 * being.hpnom)
 			being.hpmax = being.hpmax + inc
 			being.hp    = being.hp + inc
+
+			being.resist.bullet   = ( being.resist.bullet   or 0 ) + 10
+			being.resist.shrapnel = ( being.resist.shrapnel or 0 ) + 10
+			being.resist.melee    = ( being.resist.melee    or 0 ) + 10
 		end,
 	}
 
@@ -84,13 +88,13 @@ function DoomRL.load_traits()
 	register_trait "reloader"
 	{
 		name   = "Reloader",
-		desc   = "Each level reduces reload time by 20%.",
+		desc   = "Each level reduces reload time by 30%.",
 		quote  = "\"The humanity! My big gun is out of bullets! I can't believe it!\"",
-		full   = "So you're out of ammo... no problem! You're especially gifted at keeping your gun well-fed - for every level of this trait, you can reload your gun 20% faster than the average marine!",
+		full   = "So you're out of ammo... no problem! You're especially gifted at keeping your gun well-fed - for every level of this trait, you can reload your gun 30% faster than the average marine!",
 		abbr   = "Rel",
 
 		OnPick = function (being)
-			being.reloadtime = being.reloadtime - 20
+			being.reloadtime = being.reloadtime - 30
 		end,
 	}
 
@@ -124,9 +128,9 @@ function DoomRL.load_traits()
 	register_trait "juggler"
 	{
 		name   = "Juggler",
-		desc   = "Uses melee weapon if prepared.",
+		desc   = "Instant swap and melee weapon use",
 		quote  = "\"Allow me to communicate to you my desire to have your guns.\"",
-		full   = "Your hands are so nimble you could work at a circus.  Unfortunately, the army got you first. The only benefit of your skill now is that you instantly swap prepared and quickkeyed weapons, and automatically use a prepared melee weapon when need arises!",
+		full   = "Your hands are so nimble you could work at a circus.  Unfortunately, the army got you first. The only benefit of your skill now is that you instantly swap prepared and inventory weapons, and automatically use a prepared melee weapon when need arises!",
 		abbr   = "Jug",
 
 		OnPick = function (being)
@@ -199,7 +203,7 @@ function DoomRL.load_traits()
 		name   = "Whizkid",
 		desc   = "Increases maximum amount of mod slots",
 		quote  = "\"Not big guns, but they are guns!  And I need guns!\"",
-		full   = "You were always a brainy guy... Mom said you could have been an inventor but the Marine Corps picked you up first. Whether it's a toaster or a chaingun, there's always room for improvement! And with each level of this trait you can increase the number of mod slots on a weapon by 2 (by 1 for armor/boot).",
+		full   = "You were always a brainy guy... Mom said you could have been an inventor but the Marine Corps picked you up first. Whether it's a toaster or a chaingun, there's always room for improvement! And with each level of this trait you can increase the number of mod slots on a weapon by 2 (by 1 for armor/boot). Also, at level 2+ you can slap (level-1) mods onto an assembly!",
 		author = "Kornel",
 		abbr   = "WK",
 
@@ -449,7 +453,7 @@ function DoomRL.load_traits()
 		name   = "Survivalist",
 		desc   = "No minimum damage taken, medpacks heal over 100%",
 		quote  = "\"You want a piece of me? C'mon, c'mon. Come at me with it!\"",
-		full   = "You're the mean motherfucker who gets through every predicament! Half the time you completely shrug off damage that would graze others and you heal over 100% using simple medpacks!",
+		full   = "You're the mean motherfucker who gets through every predicament! Half the time you completely shrug off damage that would graze others and you heal over 100% using simple medpacks! Additionally small medpacks and globes are twice as effective!",
 		abbr   = "MSv",
 		master = true,
 

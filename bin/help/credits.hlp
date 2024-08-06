@@ -1,10 +1,12 @@
-@rCredits@>
+{rCredits}
 
 Credits in this particular production go to Ilya Bely, for feedback, ideas
 and the enthusiasm that allowed me to actually finish something I started,
 and (my oh my!) release it...
 
 Many thanks go to Derek Yu for tiles and graphics for the graphics version.
+Many thanks to Lukasz Sliwinski, for a ton of additional tilesets, doodads,
+animations and other additional graphics for the graphical version.
 
 Thanks to my first beta-testers: Joseph Hewitt, Igor Savin, Timo Viitanen,
 ABCGi, David Damerell and Andrzej Kosnikowski.
@@ -12,12 +14,12 @@ ABCGi, David Damerell and Andrzej Kosnikowski.
 Special thanks to tehtmi and Game Hunter for direct help with coding, 
 especially AI and bugfixing!
 
-Big thanks to Simon Volpert for the DoomRL special level music tracks, and
-Game Hunter for the youtube DoomRL tutorials!
+Big thanks to Simon Volpert for the DRL special level music tracks, and
+Game Hunter for the youtube DRL tutorials!
 
-High quality remixes of the original Doom music used in the graphical version
-are a courtesy of Sonic Clang ( http://sonicclang.ringdev.com/ ) used with
-permission.
+High quality remixes of the original Doom music used in the graphical 
+version are a courtesy of Sonic Clang ( http://sonicclang.ringdev.com/ ) 
+used with permission.
 
 High quality recreation of the original Doom sounds used in the graphical 
 version is a courtesy of Per Kristian Risvik ( http://www.perkristian.net )
@@ -25,10 +27,10 @@ used with permission.
 
 Original MIDI tracks and sound effects are of course by Id Software.
 
-Special thanks goes to all the DoomRL forum regulars, especially (but not 
+Special thanks goes to all the DRL forum regulars, especially (but not 
 only!) to Aki, Anticheese, Dervis, Derek Yu, jake250, Malek, Santiago 
 Zapata, Thomas, Jorge Alonso, tehtmi, Game Hunter, UnderAPaleGreySky, 
-Jered Cain and Turgor for providing valuable ideas to DoomRL.
+Jered Cain and Turgor for providing valuable ideas to DRL.
 
 Also, a big thanks to the #chaosforge IRC Channel Lurkers and Regulars :).
 
@@ -39,9 +41,9 @@ Also big thanks goes to MaiZure for his help with marketing and PR :)
 Finally a big thanks to Gargulec, for PR, press releases, ideas, motivation
 kicks and being epic in general!
 
-And of course a *huge* thanks to id Software, who created the original Doom, 
-which in many was (as seen here) provides us with tons of entertainment even
-almost 20 years after it's release...
+And of course a *huge* thanks to id Software, who created the original 
+Doom, which in many was (as seen here) provides us with tons of 
+entertainment even almost 20 years after it's release...
 
 He's the list of the TOP 15 people who keep ChaosForge running, based on 
 donations:
@@ -111,5 +113,5 @@ WorthlessBums, XC3N, Xi over Xi-bar, xpsg, Yamstis, Yando The Man, you,
 yupsi, zaimoni, zakastra, Zalminen, zchris13, Zeb, ZellSF, zeroDi and
 ZicherCZ
  
-Also thanks to the whole crew of @Brec.games.roguelike.development@> for
+Also thanks to the whole crew of {Brec.games.roguelike.development} for
 the years spent together and the warm welcome of my game!

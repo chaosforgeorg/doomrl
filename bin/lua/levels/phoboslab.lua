@@ -12,7 +12,7 @@ register_level "phobos_lab"
 		{
 			name   = "lever",
 			color  = MAGENTA,
-			sprite = 248,
+			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
 			flags  = { IF_NODESTROY },
@@ -34,7 +34,7 @@ register_level "phobos_lab"
 		{
 			name   = "lever",
 			color  = MAGENTA,
-			sprite = 248,
+			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
 			flags  = { IF_NODESTROY },
@@ -59,7 +59,7 @@ register_level "phobos_lab"
 	end,	
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "floor", area.FULL )
 		level.data.bridge = area.new(50,10,60,11)
 		level.data.door1  = area.new(45,10,45,11)
@@ -74,8 +74,8 @@ register_level "phobos_lab"
 		local translation = {
 			['.'] = "floor",
 			['#'] = { "wall",   flags = { LFPERMANENT } },
-			['%'] = { "cwall1", flags = { LFPERMANENT } },
-			['X'] = { "dwall",  flags = { LFPERMANENT } },
+			['%'] = { "cwall",  flags = { LFPERMANENT }, style = 1, },
+			['X'] = { "wall",   flags = { LFPERMANENT }, style = 2, },
 			['+'] = { "door",   flags = { LFPERMANENT } },
 			['L'] = { "ldoor",  flags = { LFPERMANENT } },
 			['='] = "acid",

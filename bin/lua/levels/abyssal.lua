@@ -9,7 +9,7 @@ register_level "abyssal_plains"
 
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "wall", area.FULL )
 
 		local roll_mod = function ()

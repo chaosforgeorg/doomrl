@@ -1,7 +1,10 @@
 {$INCLUDE doomrl.inc}
 unit doominventory;
 interface
-uses SysUtils, vnode, vuielements, dfitem, dfoutput, dfthing, dfdata, doomviews, doomhooks;
+uses SysUtils,
+     vnode,
+     dfitem, dfthing, dfdata,
+     doomcommand, doomhooks;
 
 type
   TItemList      = array[TItemSlot] of TItem;
@@ -16,18 +19,17 @@ TInventory = class( TVObject )
        procedure Sort( var aList : TItemList );
        function  Size : byte;
        procedure Add( aItem : TItem );
-       function  Choose( aFilter : TItemTypeSet; const aAction : string) : TItem;
        function  SeekAmmo( aAmmoID : DWord ) : TItem;
-       function  View : boolean;
-       function  DoScrollSwap : Boolean;
+       function  DoScrollSwap : TCommand;
        function  AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
        function  isFull : boolean;
        procedure RawSetSlot( aIndex : TEqSlot; aItem : TItem ); inline;
-       function  RunEq : boolean;
        procedure EqSwap( aSlot1, aSlot2 : TEqSlot );
        procedure EqTick;
        procedure ClearSlot( aItem : TItem );
        function DoWear( aItem : TItem ) : Boolean;
+       // no checking if slot fits!
+       function DoWear( aItem : TItem; aSlot : TEqSlot ) : Boolean;
        function Wear( aItem : TItem ) : Boolean;
        function Contains( aItem : TItem ) : Boolean;
        function FindSlot( aItem : TItem ) : TEqSlot;
@@ -36,13 +38,8 @@ TInventory = class( TVObject )
        destructor Destroy; override;
        procedure setSlot( aIndex : TEqSlot; aItem : TItem ); inline;
      private
-       function OnInvConfirm( aSender : TUICustomMenu; aResult : TUIItemResult ) : Boolean;
-       function OnEqConfirm( aSender : TUICustomMenu; aResult : TUIItemResult ) : Boolean;
-     private
        FOwner  : TThing;
        FChosen : TItem;
-       FSlot   : TEqSlot;
-       FAction : TUIItemResult;
        FSlots  : TEquipmentList;
        function  getSlot( aIndex : TEqSlot ) : TItem; inline;
      public
@@ -51,63 +48,9 @@ TInventory = class( TVObject )
 
 implementation
 
-uses vmath, vgenerics, vmaparea, vrltools, vluasystem, doomio, dfplayer, dfbeing, dflevel;
+uses vmath, vgenerics, vluasystem, doomio, doomkeybindings, dfplayer;
 
 { TInventoryEnumerator }
-
-function TInventory.RunEq : boolean;
-var iItem   : TItem;
-    iSlot   : TEqSlot;
-    iCoord  : TCoord2D;
-    iName   : AnsiString;
-begin
-  RunEq := False;
-  FChosen := nil;
-  FAction := ItemResultCancel;
-  IO.RunUILoop( TUIEquipmentView.Create( IO.Root, @OnEqConfirm ) );
-  if FAction = ItemResultCancel then Exit( False );
-  iSlot := FSlot;
-
-  if FAction = ItemResultPick then
-  begin
-    if (FSlots[iSlot] <> nil) and isFull then
-    begin
-      if not Option_InvFullDrop then
-      begin
-        if not UI.MsgConfirm('No room in inventory! Should it be dropped?') then Exit( False );
-      end;
-      FAction := ItemResultDrop;
-    end;
-  end;
-  if (FSlots[iSlot] <> nil) and FSlots[iSlot].Flags[ IF_CURSED ] then begin UI.Msg('You can''t, it''s cursed!'); Exit(False); end;
-
-  if (FSlots[iSlot] = nil) or (FAction = ItemResultSwap) then
-  begin
-    iItem := Choose(ItemEqFilters[iSlot],'wear/wield');
-    if iItem = nil then Exit;
-    if not iItem.CallHookCheck( Hook_OnEquipCheck,[FOwner] ) then Exit( False );
-    setSlot( iSlot, iItem );
-    Exit( True );
-  end;
-
-  if FAction = ItemResultDrop then
-  try
-    iName := FSlots[ iSlot ].GetName(false);
-    iCoord := TLevel(FOwner.Parent).MapArea.Drop( FOwner.Position, [EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS] );
-    TLevel(FOwner.Parent).DropItem( FSlots[ iSlot ], iCoord );
-    UI.Msg('You dropped '+iName+'.');
-    setSlot( iSlot, nil );
-    Exit( True );
-  except
-    on e : EPlacementException do
-    begin
-      UI.Msg('No room on the floor to drop the equipped item!');
-      Exit;
-    end;
-  end;
-  setSlot( iSlot, nil );
-  Exit( True );
-end;
 
 function TInventory.Wear( aItem : TItem ) : Boolean;
 begin
@@ -131,28 +74,6 @@ begin
   if aItem <> nil then aItem.CallHook( Hook_OnEquip, [FOwner] );
   if aItem <> nil then FOwner.Add( aItem );
   FSlots[aIndex] := aItem;
-end;
-
-function TInventory.OnInvConfirm ( aSender : TUICustomMenu; aResult : TUIItemResult ) : Boolean;
-begin
-  if (aSender.SelectedItem <> nil) and ( aSender.SelectedItem.Data <> nil ) then
-  begin
-    if aResult = ItemResultDrop
-      then TBeing(FOwner).ActionDrop( TItem( aSender.SelectedItem.Data ) )
-      else FChosen := TItem( aSender.SelectedItem.Data );
-  end;
-  Exit( True );
-end;
-
-function TInventory.OnEqConfirm ( aSender : TUICustomMenu; aResult : TUIItemResult ) : Boolean;
-begin
-  if (aSender.SelectedItem <> nil) and (aSender.Selected > 0) then
-  begin
-    FSlot   := TEqSlot(aSender.Selected-1);
-    FChosen := TItem( aSender.SelectedItem.Data );
-    FAction := aResult;
-  end;
-  Exit( True );
 end;
 
 procedure TInventory.RawSetSlot( aIndex: TEqSlot; aItem: TItem ); inline;
@@ -200,31 +121,6 @@ begin
         SwapItem(aList[iCount2],aList[iCount2+1]);
 end;
 
-function TInventory.Choose ( aFilter : TItemTypeSet; const aAction : string ) : TItem;
-var iList  : TItemList;
-    iItem  : TItem;
-    iCount : Integer;
-begin
-  for iCount in TItemSlot do
-    iList[ iCount ] := nil;
-
-  if aFilter = [] then aFilter := ItemsAll;
-  iCount := 0;
-  for iItem in Self do
-  if (not Equipped( iItem )) and (iItem.IType in aFilter) then
-  begin
-    Inc( iCount );
-    iList[ iCount ] := iItem;
-  end;
-
-  Sort( iList );
-
-  FChosen := nil;
-  IO.RunUILoop( TUIInventoryView.Create( IO.Root, @OnInvConfirm, iList, aAction ) );
-  Result := FChosen;
-  FChosen := nil;
-end;
-
 function TInventory.SeekAmmo( aAmmoID : DWord ) : TItem;
 var iAmmo      : TItem;
     iAmmoCount : Integer;
@@ -235,66 +131,67 @@ begin
   for iAmmo in Self do
      if iAmmo.isAmmo then
        if iAmmo.NID = aAmmoID then
-       if iAmmo.Ammo < iAmmoCount then
+       if iAmmo.Ammo <= iAmmoCount then
        begin
          SeekAmmo   := iAmmo;
          iAmmoCount := iAmmo.Ammo;
        end;
 end;
 
-
-function TInventory.View : boolean;
-var iItem : TItem;
-begin
-  View := False;
-  iItem := Choose([],'');
-  if iItem = nil then Exit;
-  if iItem.isWearable then Exit(DoWear(iItem));
-  if iItem.isPack then (FOwner as TBeing).ActionUse(iItem);
-end;
-
 type TItemArray = specialize TGObjectArray< TItem >;
 
-function TInventory.DoScrollSwap : Boolean;
+function TInventory.DoScrollSwap : TCommand;
 var iArray   : TItemArray;
     iItem    : TItem;
     iIdx     : Integer;
-    iCommand : Byte;
+    iInput   : TInputKey;
 begin
+  DoScrollSwap.Command := COMMAND_NONE;
   iArray := TItemArray.Create( False );
-  if Slot[ efWeapon ]  <> nil then iArray.Push( Slot[ efWeapon ] );
+  if Slot[ efWeapon ]  <> nil then
+  begin
+    iArray.Push( Slot[ efWeapon ] );
+    if Slot[ efWeapon ].Flags[ IF_CURSED ] then
+    begin
+      IO.Msg('You can''t!');
+      FreeAndNil( iArray );
+      Exit;
+    end;
+  end;
   if (Slot[ efWeapon2 ] <> nil) and Slot[ efWeapon2 ].isWeapon then iArray.Push( Slot[ efWeapon2 ] );
   for iItem in Self do
     if not Equipped( iItem ) then
       if iItem.isWeapon then
         iArray.Push( iItem );
-  DoScrollSwap := False;
-  if iArray.Size = 0 then UI.Msg('You have no weapons!');
-  if iArray.Size = 1 then UI.Msg('You have no other weapons!');
+
+  if iArray.Size = 0 then IO.Msg('You have no weapons!');
+  if iArray.Size = 1 then IO.Msg('You have no other weapons!');
   if iArray.Size > 1 then
   begin
-    UI.Msg('Use @<scroll@> to choose weapon, @<left@> button to wield, @<right@> to cancel...');
+    IO.Msg('Use @<scroll@> to choose weapon, @<left@> button to wield, @<right@> to cancel...');
     iIdx := 1;
     if Slot[ efWeapon ] = nil then iIdx := 0;
     repeat
-      UI.SetHint( iArray[iIdx].Description );
-      iCommand := IO.WaitForCommand( [COMMAND_MSCRUP,COMMAND_MSCRDOWN,COMMAND_MLEFT,COMMAND_MRIGHT,COMMAND_ESCAPE,COMMAND_ENTER] );
-      if iCommand = COMMAND_MSCRUP   then if iIdx = 0 then iIdx := iArray.Size-1 else iIdx -= 1;
-      if iCommand = COMMAND_MSCRDOWN then iIdx := (iIdx + 1) mod iArray.Size;
-    until iCommand in [0,COMMAND_ESCAPE,COMMAND_ENTER,COMMAND_MLEFT,COMMAND_MRIGHT];
-    if iCommand in [COMMAND_ENTER,COMMAND_MLEFT] then
+      IO.SetHint( iArray[iIdx].Description );
+      iInput := IO.WaitForInput( [INPUT_MSCRUP,INPUT_MSCRDOWN,INPUT_MLEFT,INPUT_MRIGHT,INPUT_ESCAPE,INPUT_OK] );
+      if iInput = INPUT_MSCRUP   then if iIdx = 0 then iIdx := iArray.Size-1 else iIdx -= 1;
+      if iInput = INPUT_MSCRDOWN then iIdx := (iIdx + 1) mod iArray.Size;
+    until iInput in [0,INPUT_ESCAPE,INPUT_OK,INPUT_MLEFT,INPUT_MRIGHT];
+    if iInput in [INPUT_OK,INPUT_MLEFT] then
     begin
       if iArray[ iIdx ] = Slot[ efWeapon2 ] then
       begin
-        TBeing(FOwner).ActionQuickSwap;
-        DoScrollSwap := False;
+        DoScrollSwap.Command := COMMAND_SWAPWEAPON
       end
       else
       if iArray[ iIdx ] <> Slot[ efWeapon ] then
-        DoScrollSwap := DoWear( iArray[ iIdx ] ) and (not FOwner.Flags[BF_QUICKSWAP]);
+      begin
+        DoScrollSwap.Command := COMMAND_WEAR;
+        DoScrollSwap.Item    := iArray[ iIdx ];
+      end;
     end;
   end;
-  UI.SetHint('');
+  IO.SetHint('');
   FreeAndNil( iArray );
 end;
 
@@ -368,9 +265,22 @@ begin
   if aItem.Hooks[ Hook_OnEquipCheck ] then
     if not aItem.CallHookCheck( Hook_OnEquipCheck,[FOwner] ) then Exit( False );
   iItem := FSlots[aItem.eqSlot];
-  if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin UI.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
-  UI.Msg('You wear/wield : '+aItem.GetName(false));
+  if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin IO.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
+  IO.Msg('You wear/wield : '+aItem.GetName(false));
   Wear( aItem );
+  Exit( True );
+end;
+
+function TInventory.DoWear ( aItem : TItem; aSlot : TEqSlot ) : Boolean;
+var iItem : TItem;
+begin
+  if aItem = nil then Exit( False );
+  if aItem.Hooks[ Hook_OnEquipCheck ] then
+    if not aItem.CallHookCheck( Hook_OnEquipCheck,[FOwner] ) then Exit( False );
+  iItem := FSlots[aSlot];
+  if (iItem <> nil) and iItem.Flags[ IF_CURSED ] then begin IO.Msg('You can''t, your '+iItem.Name+' is cursed!'); Exit( False ); end;
+  IO.Msg('You wear/wield : '+aItem.GetName(false));
+  setSlot( aSlot, aItem );
   Exit( True );
 end;
 

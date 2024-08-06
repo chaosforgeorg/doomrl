@@ -8,13 +8,25 @@ function DoomRL.loadexoticitems()
 
 		OnEquip = function (self,being)
 			being.flags[ BF_SESSILE ] = true
-			being.armor = being.armor + 4
+			being.armor = being.armor + 2
+			being.resist.bullet   = (being.resist.bullet or 0) + 40
+			being.resist.melee    = (being.resist.melee or 0) + 40
+			being.resist.shrapnel = (being.resist.shrapnel or 0) + 40
+			being.resist.acid     = (being.resist.acid or 0) + 40
+			being.resist.fire     = (being.resist.fire or 0) + 40
+			being.resist.plasma   = (being.resist.plasma or 0) + 40
 			being:msg( "Suddenly you feel immobilized. You feel like a fortress!" )
 		end,
 
 		OnRemove = function (self,being)
 			being.flags[ BF_SESSILE ] = false
-			being.armor = being.armor - 4
+			being.armor = being.armor - 2
+			being.resist.bullet   = (being.resist.bullet or 0) - 40
+			being.resist.melee    = (being.resist.melee or 0) - 40
+			being.resist.shrapnel = (being.resist.shrapnel or 0) - 40
+			being.resist.acid     = (being.resist.acid or 0) - 40
+			being.resist.fire     = (being.resist.fire or 0) - 40
+			being.resist.plasma   = (being.resist.plasma or 0) - 40
 			being:msg( "You feel more agile and less protected." )
 		end,
 	}
@@ -406,7 +418,7 @@ function DoomRL.loadexoticitems()
 		acc           = 4,
 		fire          = 15,
 		reload        = 20,
-		shotcost      = 10,
+		shotcost      = 5,
 		missile       = "mplasma",
 
 		OnHitBeing = function(self,being,target)
@@ -557,15 +569,14 @@ function DoomRL.loadexoticitems()
 		desc     = "Handy stuff on the battlefield, why don't they give it to regular marines?",
 		flags    = { IF_EXOTIC },
 
-		resist = { bullet = 20, melee = 20, shrapnel = 20},
-
+		resist     = { fire = 15, acid = 15, plasma = 15 },
 		type       = ITEMTYPE_ARMOR,
 		armor      = 2,
 		movemod    = -15,
 
 		OnEquipTick = function(self, being)
 			if self.durability > 20 then
-				if being.hp < being.hpmax / 4 then
+				if being.hp < being.hpmax / 2 then
 					being.hp = being.hp + 1
 					self.durability = self.durability - 1
 				end
@@ -584,7 +595,7 @@ function DoomRL.loadexoticitems()
 		desc     = "A little archaic, but a surprisingly well-kept armor.",
 		flags    = { IF_EXOTIC },
 
-		resist = { bullet = 50, melee = 50, shrapnel = 50},
+		resist = { melee = 75, },
 
 		type       = ITEMTYPE_ARMOR,
 		armor      = 2,
@@ -599,11 +610,11 @@ function DoomRL.loadexoticitems()
 		sprite   = SPRITE_ARMOR,
 		coscolor = { 0.6,0.6,0.6,1.0 },
 		level    = 2,
-		weight   = 4,
+		weight   = 6,
 		desc     = "Maybe too specialized for most tastes.",
 		flags    = { IF_EXOTIC },
 
-		resist = { bullet  = 80 },
+		resist = { bullet  = 95 },
 
 		type       = ITEMTYPE_ARMOR,
 		armor      = 1,
@@ -719,6 +730,7 @@ function DoomRL.loadexoticitems()
 		ascii    = "\"",
 		color    = RED,
 		sprite   = SPRITE_MOD,
+		sframes  = 2,
 		coscolor = { 1.0,0.0,1.0,1.0 },
 		level    = 10,
 		weight   = 4,
@@ -753,9 +765,9 @@ function DoomRL.loadexoticitems()
 		OnUse = function(self,being)
 			if self:has_property( "assembled" ) then return true end
 			local item = being.eq.weapon
-			if item.shots >= 3 then
+			if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
 				item.shots = item.shots + 2
-			elseif item.blastradius >= 3 then
+			elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
 				item.blastradius = item.blastradius + 2
 			else
 				ui.msg( "Only a rapid-fire or explosive weapon can be modded!" )
@@ -773,7 +785,8 @@ function DoomRL.loadexoticitems()
 		ascii    = "\"",
 		color    = MAGENTA,
 		sprite   = SPRITE_MOD,
-		coscolor = { 1.0,0.0,1.0,1.0 },
+		sframes  = 2,
+		coscolor = { 0.0,0.5,0.0,1.0 },
 		level    = 10,
 		weight   = 4,
 		desc     = "A high-tech modification for ranged weapons -- implements an advanced auto-hit mechanism.",
@@ -831,6 +844,7 @@ function DoomRL.loadexoticitems()
 		ascii    = "\"",
 		color    = GREEN,
 		sprite   = SPRITE_MOD,
+		sframes  = 2,
 		coscolor = { 0.5,0.5,1.0,1.0 },
 		level    = 10,
 		weight   = 4,
@@ -885,6 +899,7 @@ function DoomRL.loadexoticitems()
 		ascii    = "\"",
 		color    = LIGHTGRAY,
 		sprite   = SPRITE_MOD,
+		sframes  = 2,
 		coscolor = { 0.0,0.0,0.0,1.0 },
 		level    = 10,
 		weight   = 4,
@@ -923,6 +938,7 @@ function DoomRL.loadexoticitems()
 		ascii    = "+",
 		color    = LIGHTMAGENTA,
 		sprite   = SPRITE_PHASE,
+		sframes  = 2,
 		coscolor = { 0.7,0.0,0.0,1.0 },
 		level    = 5,
 		weight   = 10,
@@ -944,6 +960,7 @@ function DoomRL.loadexoticitems()
 		ascii    = "+",
 		color    = LIGHTMAGENTA,
 		sprite   = SPRITE_SKULL,
+		sframes  = 2,
 		coscolor = { 1.0,0.0,0.0,1.0 },
 		level    = 5,
 		weight   = 8,
@@ -973,6 +990,7 @@ function DoomRL.loadexoticitems()
 		ascii    = "+",
 		color    = LIGHTMAGENTA,
 		sprite   = SPRITE_SKULL,
+		sframes  = 2,
 		coscolor = { 1.0,1.0,0.0,1.0 },
 		level    = 7,
 		weight   = 8,
@@ -1001,6 +1019,7 @@ function DoomRL.loadexoticitems()
 		ascii    = "+",
 		color    = LIGHTMAGENTA,
 		sprite   = SPRITE_SKULL,
+		sframes  = 2,
 		coscolor = { 1.0,0.7,0.0,1.0 },
 		level    = 9,
 		weight   = 8,
@@ -1037,7 +1056,7 @@ function DoomRL.loadexoticitems()
 		sprite   = SPRITE_CHAINSAW,
 		psprite  = SPRITE_PLAYER_CHAINSAW,
 		level    = 12,
-		weight   = 3,
+		weight   = 6,
 		group    = "weapon-melee",
 		desc     = "Chainsaw -- cuts through flesh like a hot knife through butter.",
 		flags    = { IF_EXOTIC },
@@ -1067,7 +1086,7 @@ function DoomRL.loadexoticitems()
 		sprite   = SPRITE_BFG9000,
 		psprite  = SPRITE_PLAYER_BFG9000,
 		level    = 20,
-		weight   = 2,
+		weight   = 4,
 		group    = "weapon-bfg",
 		desc     = "The Big Fucking Gun. Hell wouldn't be fun without it.",
 		flags    = { IF_EXOTIC },
@@ -1100,7 +1119,7 @@ function DoomRL.loadexoticitems()
 			if not self:can_overcharge("This will destroy the weapon after the next shot...") then return false end
 			self.missile       = missiles[ "mbfgover" ].nid
 			self.blastradius   = self.blastradius * 2
-			self.damage_dice   = self.damage_dice + 2
+			self.damage_dice   = self.damage_dice * 2
 			self.shotcost      = self.ammomax
 			self.ammomax       = self.shotcost
 			self.ammo          = self.shotcost

@@ -93,13 +93,23 @@ end
 
 
 function generator.being_weight()
-	    if DIFFICULTY == DIFF_EASY      then return math.ceil( level.danger_level*2.2+6 )
-	elseif DIFFICULTY == DIFF_MEDIUM    then return math.ceil( math.sqrt(level.danger_level*500)*0.6)
-	elseif DIFFICULTY == DIFF_HARD      then return math.ceil( math.sqrt(level.danger_level)*20)
-	elseif DIFFICULTY == DIFF_VERYHARD  then return math.ceil( math.sqrt(level.danger_level)*32)
-	elseif DIFFICULTY == DIFF_NIGHTMARE then return math.ceil( math.sqrt(level.danger_level)*40)
-	else return math.ceil( math.sqrt(level.danger_level)*40)
+	local danger = level.danger_level
+	if danger > 16 then
+		danger = danger + 2
+	elseif danger > 8 then
+		danger = danger + 1
 	end
+	local weight = 0
+
+	    if DIFFICULTY == DIFF_EASY      then weight = math.ceil( danger*2.2+6 )
+	elseif DIFFICULTY == DIFF_MEDIUM    then weight = math.ceil( math.sqrt(danger*500)*0.6)
+	elseif DIFFICULTY == DIFF_HARD      then weight = math.ceil( math.sqrt(danger)*20)
+	elseif DIFFICULTY == DIFF_VERYHARD  then weight = math.ceil( math.sqrt(danger)*32)
+	elseif DIFFICULTY == DIFF_NIGHTMARE then weight = math.ceil( math.sqrt(danger)*40)
+	else weight = math.ceil( math.sqrt(danger)*40)
+	end
+	core.log( "generator.being_weight() "..level.danger_level.." > "..weight )
+	return weight
 end
 
 function generator.item_amount()
@@ -193,7 +203,7 @@ end
 -- TODO: use Cells generated cellsets!
 function generator.add_rooms()
 	core.log("generator.add_rooms()")
-	local cell_meta_list = { "wall", "rwall", "door", "odoor", "doorb", "odoorb" }
+	local cell_meta_list = { "wall", "rwall", "door", "odoor", }
 	local cell_meta = generator.cell_set( cell_meta_list )
 	local room_begin = function(c)
 		if c.x == MAXX or c.y == MAXY then return false end
@@ -348,11 +358,12 @@ end
 function generator.generate_caves_dungeon()
 	core.log("generator.generate_caves_dungeon()")
 	local dlevel = level.danger_level
-	local style  = 5
-	if dlevel > 8  then style = 6 end
-	if dlevel > 16 then style = 7 end
-	if dlevel > 30 then style = math.random( 5, 7 ) end
-	level.style = style
+	local style  = 10
+	if dlevel > 8  then style = 11 end
+	if dlevel > 16 then style = 12 end
+	if dlevel > 30 then style = math.random( 10, 12 ) end
+	
+	level:set_generator_style( style )
 
 	local wall_cell    = generator.styles[ level.style ].wall
 	local floor_cell   = generator.styles[ level.style ].floor
@@ -413,8 +424,8 @@ function generator.generate_caves_dungeon()
 		{ level = { 30 },     weight = 5, list = "ndemon",         history = "On level @1 he stumbled into a nightmare demon cave!" },
 		{ level = { 40 },     weight = 5, list = "narachno",       history = "On level @1 he stumbled into a nightmare arachnotron cave!" },
 		{ level = { 50 },     weight = 5, list = "ncacodemon",     history = "On level @1 he stumbled into a nightmare cacodemon cave!" },
-		{ level = { 60 },     weight = 1, list = "agony",          history = "On level @1 he stumbled into a agony elemental cave!", min_diff = 3 },
-		{ level = { 70 },     weight = 1, list = "lava_elemental", history = "On level @1 he stumbled into a lava elemental cave!", min_diff = 3 },
+		{ level = { 60 },     weight = 1, list = "agony",          history = "On level @1 he stumbled into a agony elemental cave!", min_diff = 3, feeling = "You hear echoing wails of agony!" },
+		{ level = { 70 },     weight = 1, list = "lava_elemental", history = "On level @1 he stumbled into a lava elemental cave!", min_diff = 3, feeling = "The cave temperature is insanely hot!" },
 	}
 
 	local mlevel = math.max( level.danger_level + (DIFFICULTY - 2)*3, 0 )
@@ -437,7 +448,7 @@ function generator.generate_caves_dungeon()
 		level:flood_monsters{ list = set.list, danger = amount }
 	end
 
-  	ui.msg_feel( "Twisted passages carry the smell of death..." )
+  	ui.msg_feel( set.feeling or "Twisted passages carry the smell of death..." )
 
 	generator.set_permanence( area.FULL )
 end
@@ -467,11 +478,11 @@ function generator.generate_caves_2_dungeon()
 	local dlevel = level.danger_level
 	local wall_cell  = cells[generator.styles[ level.style ].wall].nid
 	local door_cell  = cells[generator.styles[ level.style ].door].nid
-	local style  = 5
-	if dlevel > 8  then style = 6 end
-	if dlevel > 16 then style = 7 end
-	if dlevel > 30 then style = math.random( 5, 7 ) end
-	level.style = style
+	local style  = 10
+	if dlevel > 8  then style = 11 end
+	if dlevel > 16 then style = 12 end
+	if dlevel > 30 then style = math.random( 10, 12 ) end
+	level:set_generator_style( style )
 
 	local floor_cell = cells[generator.styles[ level.style ].floor].nid
 	local cave_cell  = cells[generator.styles[ level.style ].wall ].nid
@@ -559,6 +570,7 @@ end
 function generator.generate_fluids( drunk_area )
 	core.log("generator.generate_fluids()")
 	local lvl = level.danger_level
+	if lvl > 30 then lvl = math.random(20) + 5 end
 	    if lvl < 7  then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, "water", nil, nil, drunk_area )
 	elseif lvl < 12 then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, "acid", nil, nil, drunk_area )
 	elseif lvl < 17 then generator.drunkard_walks( math.random(5)-1, math.random(50)+2, "lava", nil, nil, drunk_area )

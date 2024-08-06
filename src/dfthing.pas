@@ -7,7 +7,7 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfthing;
 interface
-uses SysUtils, Classes, vluaentitynode, vutil, vrltools, vluatable, dfdata, doomhooks;
+uses SysUtils, Classes, vluaentitynode, vutil, vluatable, dfdata, doomhooks;
 
 type
 
@@ -34,7 +34,7 @@ implementation
 
 uses typinfo, variants,
      vluasystem, vcolor, vdebug,
-     doomlua, doombase, doomio;
+     doombase, doomio;
 
 constructor TThing.Create( const aID : AnsiString );
 begin
@@ -43,18 +43,12 @@ end;
 
 procedure TThing.LuaLoad(Table: TLuaTable);
 var iColorID : AnsiString;
-    iRes     : TResistance;
-    iResist  : TLuaTable;
 begin
   FGylph.ASCII := Table.getChar('ascii');
   FGylph.Color := Table.getInteger('color');
   Name         := Table.getString('name');
-
-  FSprite.SpriteID := Table.getInteger('sprite',0);
-  FSprite.CosColor := not Table.isNil( 'coscolor' );
-  FSprite.Overlay  := not Table.isNil( 'overlay' );
-  FSprite.Glow     := not Table.isNil( 'glow' );
-  FSprite.Large    := F_LARGE    in FFlags;
+  FillChar( FSprite, SizeOf( FSprite ), 0 );
+  ReadSprite( Table, FSprite );
 
   iColorID := FID;
   if Table.IsString('color_id') then iColorID := Table.getString('color_id');
@@ -62,14 +56,11 @@ begin
   if ColorOverrides.Exists(iColorID) then
     FGylph.Color := ColorOverrides[iColorID];
 
-  if FSprite.Overlay  then FSprite.Color     := NewColor( Table.GetVec4f('overlay' ) );
-  if FSprite.CosColor then FSprite.Color     := NewColor( Table.GetVec4f('coscolor' ) );
-  if FSprite.Glow     then FSprite.GlowColor := NewColor( Table.GetVec4f('glow' ) );
 end;
 
 procedure TThing.playBasicSound(const SoundID: string);
 begin
-  IO.PlaySound( IO.ResolveSoundID( [FID+'.'+SoundID, SoundID] ), FPosition );
+  IO.Audio.PlaySound( IO.Audio.ResolveSoundID( [FID+'.'+SoundID, SoundID] ), FPosition );
 end;
 
 procedure TThing.CallHook ( Hook : Byte; const Params : array of const ) ;

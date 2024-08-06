@@ -51,7 +51,7 @@ register_level "hells_armory"
 
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "plava", area.FULL )
 
 		local special = DoomRL.get_special_item( player.name )

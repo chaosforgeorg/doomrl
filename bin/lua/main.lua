@@ -45,11 +45,12 @@ require( "doomrl:levels/mterebus" )
 require( "doomrl:levels/lavapits" )
 require( "doomrl:levels/asmosden" )
 require( "doomrl:levels/containment" )
+require( "doomrl:levels/house" )
 
 -- main DoomRL lua script file --
 
 function DoomRL.OnLoaded()
-	ui.msg('Welcome to the @RDoom@> Roguelike...')
+	ui.msg('Welcome to the @RDRL@>...')
 end
 
 function DoomRL.OnLoadBase()
@@ -74,14 +75,25 @@ function DoomRL.OnLoadBase()
 	DoomRL.load_rooms()
 
 	generator.styles = {
-		{ floor = "floor",  wall = "wall",  door="door",  odoor = "odoor"  },
-		{ floor = "floor",  wall = "dwall", door="door",  odoor = "odoor"  },
-		{ floor = "floorb", wall = "rwall", door="doorb", odoor = "odoorb" },
-		{ floor = "floor",  wall = "rwall", door="door",  odoor = "odoor"  },
-		-- caves
-		{ floor = "floor",   wall = "cwall1", door="door",  odoor = "odoor"  },
-		{ floor = "floorc",  wall = "cwall2", door="door",  odoor = "odoor"  },
-		{ floor = "floorb",  wall = "cwall3", door="door",  odoor = "odoor"  },
+		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 0,  },
+		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 1,  },
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 2, },
+		-- boss levels (4)
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 0,  },
+		-- alt-style for phobos
+		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 3,  },
+		-- alt-style for deimos
+		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 4,  },
+		-- alt-style for hell
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 5,  },
+		-- alt-style for phobos 2
+		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 6,  },
+		-- babel
+		{ floor = "floor", wall = "rwall", door="door",  odoor = "odoor",  style = 7,  },
+		-- caves (10-12)
+		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 0,  },
+		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 1,  },
+		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 2,  },
 	}
 end
 
@@ -194,7 +206,7 @@ function DoomRL.print_mortem()
 
 
 	player:mortem_print( "--------------------------------------------------------------" )
-	player:mortem_print( " DoomRL ("..VERSION_STRING..") roguelike post-mortem character dump")
+	player:mortem_print( " DRL ("..VERSION_STRING..") roguelike post-mortem character dump")
 	if game_type ~= GAMESTANDARD then
 		player:mortem_print( " Module : "..module.name.." ("..version_string(module.version)..")")
 		game_module = _G[module.id]
@@ -311,7 +323,7 @@ function DoomRL.print_mortem()
 	if game_type == GAMESTANDARD then
 		for k,v in ipairs( medals ) do
 			if player:has_medal( v.id ) then
-				player:mortem_print( "  "..padded( v.name, 26 ).." "..v.desc )
+				player:mortem_print( "  "..padded( v.name, 26 ).." "..ui.strip_encoding( v.desc ) )
 				awarded = true
 			end
 		end
@@ -325,7 +337,7 @@ function DoomRL.print_mortem()
 				--	player:mortem_print( "* "..v.name )
 				--	new_awarded = true
 				--end
-				player:mortem_print( "  "..padded( v.name, 26 ).." "..v.desc )
+				player:mortem_print( "  "..padded( v.name, 26 ).." "..ui.strip_encoding( v.desc ) )
 				awarded = true
 			end
 		end
@@ -584,6 +596,7 @@ function DoomRL.loadbasedata()
 		name     = "teleport",
 		color    = LIGHTCYAN,
 		sprite   = SPRITE_TELEPORT,
+		sframes  = 2,
 		weight   = 0,
 		flags    = { IF_NODESTROY, IF_NUKERESIST },
 
@@ -629,6 +642,8 @@ function DoomRL.loadbasedata()
 		ascii        = "@" ,
 		color        = LIGHTGRAY,
 		sprite       = SPRITE_PLAYER,
+		sframes      = 2,
+		sftime       = 500,
 		min_lev      = 200,
 		corpse       = "corpse",
 		danger       = 0,
@@ -646,6 +661,7 @@ function DoomRL.loadbasedata()
 			self:add_property( "items_found", {} )
 			self:add_property( "history", {} )
 			self:add_property( "episode", {} )
+			self:add_property( "level_data", {} )
 
 			if rawget(_G,"DIFFICULTY") then
 				self.hp    = 50
@@ -690,24 +706,25 @@ function DoomRL.OnCreateEpisode()
 		{"the_wall","containment_area"}, -- 11/3
 		{"city_of_skulls","abyssal_plains"}, -- 12/4
 		{"halls_of_carnage","spiders_lair"}, -- 14/6
-		{"unholy_cathedral"}, -- 17/1
-		{"the_vaults"},--,"house_of_pain"}, -- 19/3
+		{"the_vaults","house_of_pain"}, -- 17/3
+		{"unholy_cathedral"}, -- 19/1
 		{"the_mortuary","limbo"},-- 20/4
 		{"the_lava_pits","mt_erebus"},-- 22/6
 	}
 
-	player.episode[1]   = { script = "intro", style = 1, deathname = "the Phobos base" }
-	for i=2,8 do
-		player.episode[i] = { style = 1, number = i, name = "Phobos", danger = i, deathname = "the Phobos base" }
+	player.episode[1] = { script = "intro", style = 1, deathname = "the Phobos base" }
+	player.episode[2] = { style = 1, number = 2, name = "Phobos", danger = 2, deathname = "the Phobos base" }
+	for i=3,8 do
+		player.episode[i] = { style = table.random_pick{1,5,8}, number = i, name = "Phobos", danger = i, deathname = "the Phobos base" }
 	end
 	for i=9,16 do
-		player.episode[i] = { style = 2, number = i-8, name = "Deimos", danger = i, deathname = "the Deimos base" }
+		player.episode[i] = { style = table.random_pick{2,6}, number = i-8, name = "Deimos", danger = i, deathname = "the Deimos base" }
 	end
 	for i=17,BOSS_LEVEL-1 do
-		player.episode[i] = { style = 3, number = i-16, name = "Hell", danger = i }
+		player.episode[i] = { style = table.random_pick{3,7}, number = i-16, name = "Hell", danger = i }
 	end
 	player.episode[8]            = { script = "hellgate", style = 4, deathname = "the Hellgate" }
-	player.episode[16]           = { script = "tower_of_babel", style = 4, deathname = "the Tower of Babel" }
+	player.episode[16]           = { script = "tower_of_babel", style = 9, deathname = "the Tower of Babel" }
 	player.episode[BOSS_LEVEL]   = { script = "dis", style = 4, deathname = "the City of Dis" }
 	player.episode[BOSS_LEVEL+1] = { script = "hell_fortress", style = 4, deathname = "the Hell Fortress" }
 
@@ -730,21 +747,16 @@ function DoomRL.logo_text()
 	return
 [[@rAdd. coding : @ytehtmi@r, @yGame Hunter@r, @yshark20061@r and @yadd
 @rMusic tracks: @ySonic Clang@r (remixes), @ySimon Volpert@r (special levels)
-@rDoom HQ SFX : @yPer Kristian Risvik
+@rHQ SFX      : @yPer Kristian Risvik
 
 @rMajor changes since last version (see @yversion.txt@r for full list)
-@R  * mod-server! Dual-Angel, Archangel and Custom Challenges!
-@R  * new special levels paired with old ones, and new level generators!
-@R  * several minor features, bugfixes and balance changes
+@R  * start of UX overhaul, save/load at any point, settings menu!
+@R  * new sprites, new tilesets, basic animation!
+@R  * tons of minor features, bugfixes and balance changes
 
-@B facebook.com/ChaosForge   twitter.com/chaosforge_org   gplus.to/ChaosForge
+@B facebook.com/ChaosForge  x.com/chaosforge_org  discord.gg/jupiterhell
 @r                                          Press <@yEnter@r> to continue...
 ]]
-end
-
-function DoomRL.donator_text()
-	return
-[[@rIf you enjoy this game, please consider making a @Ldonation@r! Latest donators: @y 2DeviationsOut, AcidLead, adhominem, ahoge, Akisu, Alesak, AlterAsc, Ander Hammer, appuru, Ashannar, AtTheGates, AukonDK, awebster, Azirel, Blade, Blood, briareoh, ceb, Cheesybox, Cocodor, Cotonou, Darren Grey, DeathDealer, doshu, dtsund, ecmwie, EfronLicht, Essegi, Estwald, fallout, fidsah, fire_and_ice, Flame_US3r, fooziex, fwoop, Game Hunter, Gamera, GermanJoey, gilgatex, Goatmeat, GrAVit, gunthos, Hamster, Igor Savin, IronBeer, KhaaL, Klear, Kolya, konijn, Lagonazer, LinuxIsFinanciallyViable, LordSloth, LuckyDee, MaiZure, mcz117chief, MICu, Mogul, Moog, Napsterbater, neadlak, Neolander, NullPointer, Omega Tyrant, Peter5930, ppiixx, Q2ZOv, Reef Blastbody, repvblic, saltylicorice, Seacow, Seven Deadly Sins, Shadow Fox, shark20061, Shroomsy, Skiv, slartie, spiderwebby, spillblood, stargazer-3, Steve, SuperVGA, Tavana, tehtmi, Templeton, Thann, thelaptop, Thexare, Thomas, Tormuse, Tuor Huorson, UAC421, UnderAPaleGreySky, Uranium, VANDAM, vurt, White Rider, WorthlessBums, Xi over Xi-bar, zakastra, Zalminen, Zeb, zeroDi and ZicherCZ ]]
 end
 
 function DoomRL.OnWinGame()
@@ -764,7 +776,7 @@ function DoomRL.OnWinGame()
 
 
 
-             Doom, the Roguelike ]]..VERSION_STRING..[[
+             D**m, the Roguelike ]]..VERSION_STRING..[[
 
                    Congratulations!
            Look further for the next release
@@ -775,21 +787,20 @@ end
 
 function DoomRL.first_text()
 	return
-[[@yWelcome to Doom the Roguelike!
+[[@yWelcome to @RD**m the Roguelike@y!
 
-You are running DoomRL for the first time. I hope you will find this roguelike game as enjoyable as it was for me to write it.
+You are running DRL for the first time. I hope you will find this roguelike game as enjoyable as it was for me to write it.
 
-This game is in active development, and as such please be always sure that you have the most recent version, for bugs are fixed, new features appear, and the game becomes better at every iteration. You can find the lastest version on DoomRL website:
+This game is in active development (again?), and as such please be always sure that you have the most recent version, for bugs are fixed, new features appear, and the game becomes better at every iteration. You can find the lastest version on DRL website:
 
 @Bhttps://drl.chaosforge.org/@y
 
-Also, if you enjoy this game, join the forums:
+Also, if you enjoy this game, join the Discord and/or the forums:
 
+@Bhttp://discord.gg/jupiterhell@y
 @Bhttp://forum.chaosforge.org/@y
 
-Also on Facebook (@BChaosForge@y), and on Twitter (@B@@chaosforge_org@y).
-
-But most importantly, if you find yourself enjoying the game, drop by ChaosForge and donate - it's these donations that keep DoomRL (and other CF roguelikes) in active development. You can make a difference.
+You can also follow me on X (@B@@chaosforge_org@y/@B@@epyoncf@y).
 
 Press @<Enter@y to continue...
 ]]
@@ -880,9 +891,9 @@ function DoomRL.quit_message()
 		"Your system will get overrun by imps!",
 		"If I were your boss I'd deathmatch you in a minute!",
 		"Let's beat it -- it's turning into a bloodbath!",
-		"You're trying to say you like Windows better then me, eh?",
+		"You're trying to say you like the internet better then me, eh?",
 		"Please don't leave -- there're more demons to roast!",
-		"I wouldn't leave if I were you. Windows is much worse!",
+		"I wouldn't leave if I were you. The internet is much worse!",
 		"Get outta here and go back to your boring programs...!",
 		"Go ahead and leave. See if I care.",
 		"Ya know. Next time ya gonna come here, I'm gonna toast ya."

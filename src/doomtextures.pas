@@ -34,43 +34,22 @@ end;
 }
 
 procedure TDoomTextures.PrepareTextures;
-var iColorKey : TColor;
-    iBase     : TImage;
-
-    function SheetInv( aBase : TImage ) : TImage;
-    begin
-      SheetInv := aBase.Clone;
-      SheetInv.LinearSaturation( 0 );
-      SheetInv.Invert;
-    end;
-
-    function SheetBerserk( aBase : TImage ) : TImage;
-    begin
-      SheetBerserk := aBase.Clone;
-      SheetBerserk.Contrast( 30 );
-      SheetBerserk.LinearSaturation( 0 );
-      SheetBerserk.LinearSaturation( 1.5,0.1,0.15 );
-    end;
-
-    function SheetEnviro( aBase : TImage ) : TImage;
-    begin
-      SheetEnviro := aBase.Clone;
-      SheetEnviro.SimpleSaturation( 0.1 );
-      SheetEnviro.Saturation( 0.1, 1.0, 0.1 );
-    end;
-
 begin
   Textures[ 'logo' ].Blend := True;
   Textures[ 'background' ].Blend := True;
-  iBase     := Textures['spritesheet'].Image;
-  iColorKey := iBase.Color[0];
-  iBase.SubstituteColor( iColorKey, ColorZero );
-
-  AddImage( 'spritesheet_inv',     SheetInv( iBase ), Option_Blending );
-  AddImage( 'spritesheet_berserk', SheetBerserk( iBase ), Option_Blending );
-  AddImage( 'spritesheet_enviro',  SheetEnviro( iBase ), Option_Blending );
-
-  AddImage( 'spritesheet_glow',    GenerateGlow( Textures['spritesheet_shadow'].Image ), Option_Blending );
+  Textures[ 'lut_clear' ].Blend := True;
+  Textures[ 'lut_iddqd' ].Blend := True;
+  Textures[ 'lut_enviro' ].Blend := True;
+  Textures[ 'lut_berserk' ].Blend := True;
+  Textures[ 'lut_clear' ].Is3D := True;
+  Textures[ 'lut_iddqd' ].Is3D := True;
+  Textures[ 'lut_enviro' ].Is3D := True;
+  Textures[ 'lut_berserk' ].Is3D := True;
+  AddImage( 'doomguy_glow',              GenerateGlow( Textures['doomguy_shadow'].Image ), Option_Blending );
+  AddImage( 'enemies_glow',              GenerateGlow( Textures['enemies_shadow'].Image ), Option_Blending );
+  AddImage( 'enemies_big_glow',          GenerateGlow( Textures['enemies_big_shadow'].Image ), Option_Blending );
+  AddImage( 'guns_and_pickups_glow',     GenerateGlow( Textures['guns_and_pickups_shadow'].Image ), Option_Blending );
+  AddImage( 'doors_and_decorations_glow',GenerateGlow( Textures['doors_and_decorations_shadow'].Image ), Option_Blending );
 
   Upload;
 end;

@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, math,
-  vnode, vutil, vcolor, vgenerics, vmath, vrltools, vvision, vgltypes, vanimation,
+  vnode, vutil, vcolor, vmath, vrltools, vvision, vgltypes, vanimation,
   dfdata;
 
 type TAnimation        = vanimation.TAnimation;
@@ -105,11 +105,23 @@ private
 end;
 
 
+TDoomAnimateCell = class(TAnimation)
+  constructor Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+  procedure OnStart; override;
+  procedure OnDraw; override;
+  destructor Destroy; override;
+private
+  FSprite : TSprite;
+  FCoord  : TCoord2D;
+  FValue  : Integer;
+end;
+
+
 implementation
 
-uses viotypes, vuid,
-     dfoutput, dfbeing,
-     doombase, doomio, doomspritemap;
+uses viotypes, vuid, vlog,
+     dfbeing,
+     doombase, doomgfxio, doomio, doomspritemap;
 
 { TDoomMissile }
 
@@ -156,7 +168,7 @@ begin
   if Doom.Level.isProperCoord( FPath.GetC ) and Doom.Level.isVisible( FPath.GetC ) then
   begin
     v := Lerp( FSource, FTarget, Minf(FTime / FDuration, 1.0) );
-    SpriteMap.PushSpriteRotated( v.x, v.y, FSprite, FHeading + PI/2)
+    SpriteMap.PushSpriteFXRotated( v.x, v.y, FSprite, FHeading + PI/2)
   end;
 end;
 
@@ -188,12 +200,9 @@ end;
 procedure TDoomMark.OnDraw;
 var iMarkSprite : TSprite;
 begin
-  iMarkSprite.Large    := False;
-  iMarkSprite.Glow     := False;
-  iMarkSprite.CosColor := False;
-  iMarkSprite.Overlay  := False;
+  iMarkSprite.Flags    := [];
   iMarkSprite.SpriteID := HARDSPRITE_HIT;
-  SpriteMap.PushSprite( FCoord.X, FCoord.Y, iMarkSprite )
+  SpriteMap.PushSpriteFX( FCoord.X, FCoord.Y, iMarkSprite )
 end;
 
 { TDoomExplodeMark }
@@ -220,10 +229,7 @@ end;
 procedure TDoomExplodeMark.OnDraw;
 var iMarkSprite : TSprite;
 begin
-  iMarkSprite.Large    := False;
-  iMarkSprite.Glow     := False;
-  iMarkSprite.CosColor := False;
-  iMarkSprite.Overlay  := True;
+  iMarkSprite.Flags    := [ SF_OVERLAY ];
   iMarkSprite.SpriteID := HARDSPRITE_EXPL;
 
   case (( FTime * 3 ) div FDuration) of
@@ -232,7 +238,7 @@ begin
     2 : iMarkSprite.Color    := FGColor3;
   else iMarkSprite.Color    := FGColor2;
   end;
-  SpriteMap.PushSprite( FCoord.X, FCoord.Y, iMarkSprite );
+  SpriteMap.PushSpriteFX( FCoord.X, FCoord.Y, iMarkSprite );
 end;
 
 { TDoomSoundEvent }
@@ -246,7 +252,7 @@ end;
 
 procedure TDoomSoundEvent.OnStart;
 begin
-  IO.PlaySound( FSoundID, FPosition );
+  IO.Audio.PlaySound( FSoundID, FPosition );
 end;
 
 { TDoomBlink }
@@ -259,7 +265,8 @@ end;
 
 procedure TDoomBlink.OnDraw;
 begin
-  IO.PostSheet.PostColoredQuad( TGLVec2i.Create(0,0), TGLVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TGLVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
+  if GraphicsVersion then
+    (IO as TDoomGFXIO).PostSheet.PushColoredQuad( TGLVec2i.Create(0,0), TGLVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TGLVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
 end;
 
 { TDoomMove }
@@ -300,7 +307,7 @@ begin
   iValue    := Clampf( FTime / FDuration, 0, 1 );
   iLight    := Lerp( FLightStart, FLightEnd, iValue );
   iPosition := Lerp( FSource, FTarget, iValue );
-  SpriteMap.PushSpriteXY( iPosition.X, iPosition.Y, FSprite, iLight );
+  SpriteMap.PushSpriteBeing( iPosition.X, iPosition.Y, FSprite, iLight );
 end;
 
 destructor TDoomMove.Destroy;
@@ -337,6 +344,37 @@ end;
 destructor TDoomScreenMove.Destroy;
 begin
   SpriteMap.NewShift := FDest;
+  inherited Destroy;
+end;
+
+constructor TDoomAnimateCell.Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+begin
+  inherited Create( aDuration, aDelay, 0 );
+  FCoord := aCoord;
+  FSprite := aSprite;
+  FValue  := aValue - Sgn( FValue );
+end;
+
+procedure TDoomAnimateCell.OnStart;
+begin
+  Doom.Level.LightFlag[ FCoord, LFANIMATING ] := True;
+end;
+
+procedure TDoomAnimateCell.OnDraw;
+var iSprite  : TSprite;
+    iSegment : Integer;
+begin
+  iSprite := FSprite;
+  iSegment := ( FTime * FValue ) div FDuration;
+  if ( iSegment <> FValue ) then
+    iSegment += Sgn( FValue );
+  iSprite.SpriteID += ( FValue - iSegment ) * DRL_COLS;
+  SpriteMap.PushSpriteDoodad( FCoord.X, FCoord.Y, iSprite );
+end;
+
+destructor TDoomAnimateCell.Destroy;
+begin
+  Doom.Level.LightFlag[ FCoord, LFANIMATING ] := False;
   inherited Destroy;
 end;
 

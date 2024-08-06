@@ -618,6 +618,8 @@ function DoomRL.loadchallenges()
 				player.inv:add( "mod_tech" )
 				player.inv:add( "mod_power" )
 				player.inv:add( "mod_bulk" )
+			end
+			if CHALLENGE ~= "challenge_aoi"  then
 				if player.klass == klasses.technician.nid then
 					player.inv:add("mod_tech")
 				end
@@ -668,7 +670,7 @@ function DoomRL.loadchallenges()
 	register_challenge "challenge_aop"
 	{
 		name        = "Angel of Purity",
-		description = "Who needs those powerups anyway? Try to finish DoomRL without them. But remember that health globes are also a powerup!",
+		description = "Who needs those powerups anyway? Try to finish DRL without them. But remember that health globes are also a powerup!",
 		rating      = "BLADE",
 		rank        = 4,
 		abbr        = "AoP",
@@ -828,14 +830,14 @@ function DoomRL.loadchallenges()
 	register_badge "darkness5"
 	{
 		name  = "Hunter Diamond Badge",
-		desc  = "Complete AoD on N! w/Explorer Badge",
+		desc  = "Complete AoD on N! w/Explorer Pin",
 		level = 5,
 	}
 
 	register_challenge "challenge_aod"
 	{
 		name        = "Angel of Darkness",
-		description = "You think the DoomRL levels are dark? Try this challenge, and feel a bit of painful claustrophobia! As a bonus to all that is unjust in this challenge, you level up twice as fast.",
+		description = "You think the DRL levels are dark? Try this challenge, and feel a bit of painful claustrophobia! As a bonus to all that is unjust in this challenge, you level up twice as fast.",
 		rating      = "VERY HARD",
 		rank        = 5,
 		abbr        = "AoD",
@@ -893,7 +895,7 @@ function DoomRL.loadchallenges()
 	register_badge "carnage3"
 	{
 		name  = "Destroyer Gold Badge",
-		desc  = "Complete AoMC on HMP w/Untouchable Badge",
+		desc  = "Complete AoMC on HMP w/Untouchable Pin",
 		level = 3,
 	}
 
@@ -1114,13 +1116,23 @@ function DoomRL.loadchallenges()
 			if ARCHANGEL then LevCount = 666 end
 
 			for i=1,LevD - 1 do
-				player.episode[i] = { style = 1, number = i, name = "Phobos", danger = i, deathname = "the Phobos base" }
+				player.episode[i] = { style = table.random_pick{1,5,8}, number = i, name = "Phobos", danger = i, deathname = "the Phobos base" }
 			end
 			for i=LevD, LevH - 1 do
-				player.episode[i] = { style = 2, number = i, name = "Deimos", danger = i, deathname = "the Deimos base" }
+				player.episode[i] = { style = table.random_pick{2,6}, number = i, name = "Deimos", danger = i, deathname = "the Deimos base" }
 			end
 			for i=LevH,LevCount-1 do
-				player.episode[i] = { style = 3, number = i, name = "Hell", danger = i }
+				if i < 25 then
+					player.episode[i] = { style = table.random_pick{3,7}, number = i, name = "Hell", danger = i }
+				else
+					local mod_value = {
+						{1,5,8},
+						{2,6},
+						{3,7},
+					}
+					local list = mod_value[math.floor(i / 5) % 3 + 1]
+					player.episode[i] = { style = table.random_pick(list), number = i, name = "Beyond", danger = i }
+				end
 			end
 
 			-- Here is where we can add some Ao100 specific special levels like #88
@@ -1155,7 +1167,7 @@ function DoomRL.loadchallenges()
 			elseif l == 90 then ui.msg_enter("Ten more! Can you really take the heat?")
 			elseif l == 99 then ui.msg_enter("Just one more! Just one more! Will you die here?")
 			elseif l == 100 then
-				ui.msg_enter("You did it! You completed 100 levels of DoomRL! You're the champion!")
+				ui.msg_enter("You did it! You completed 100 levels of DRL! You're the champion!")
 				if ARCHANGEL then
 					ui.msg_enter("Or wait... false alarm. Still 566 to go.")
 				else
@@ -1266,6 +1278,9 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 				player.inv:add( "lmed" )
 			end
 			player.inv:add( "nuke" )
+			if player.klass == klasses.technician.nid then
+				player.inv:add("mod_tech")
+			end
 		end,
 
 		OnEnter = function (l,lid)
@@ -1356,7 +1371,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 
 		arch_name        = "Archangel of Humanity",
 		arch_description = "You're no hero. Try beating the game with a mere 10 HP. Oh, and don't count on Ironman, it will only give you +2 HP per level. To ease your suffering a little, you gain some useful junk at start. Actually, traits are so unrealistic, take just one at the start.",
-		arch_rating      = "TWODEV",
+		arch_rating      = "TORMUSE",
 		arch_rank        = 9,
 
 		OnCreatePlayer = function ()
@@ -1504,6 +1519,11 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 				player.inv:add( "mod_power" )
 				player.inv:add( "mod_bulk" )
 			end
+			if CHALLENGE ~= "challenge_aoi" then
+				if player.klass == klasses.technician.nid then
+					player.inv:add("mod_tech")
+				end
+			end
 		end,
 
 		OnMortem = function ()
@@ -1581,7 +1601,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 	register_challenge "challenge_aoh"
 	{
 		name        = "Angel of Haste",
-		description = "DoomRL is too long, you want to fight your way through, as fast as possible. Half as many levels, twice the danger increase.",
+		description = "DRL is too long, you want to fight your way through, as fast as possible. Half as many levels, twice the danger increase.",
 		rating      = "HARD",
 		rank        = 4,
 		abbr        = "AoH",

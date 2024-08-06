@@ -134,7 +134,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 2,
 		desc     = "Now that is a BIG cleaver. Butcher them!",
 		firstmsg = "Aaaah, fresh meat!",
-		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_CLEAVE, IF_BLADE },
+		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_CLEAVE, IF_BLADE, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "5d6",
@@ -148,14 +148,15 @@ function DoomRL.loaduniqueitems()
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_CLEAVER,
 		psprite  = SPRITE_PLAYER_CLEAVER,
-		level    = 15,
+		level    = 5,
 		weight   = 1,
 		group    = "weapon-melee",
+		scavenge = { "umod_onyx" },
 		desc     = "Forged by the dwarves Eitri and Brokk, in response to Loki's challenge, Mjollnir is an indestructible war hammer.",
-		flags    = { IF_UNIQUE, IF_NODESTROY },
+		flags    = { IF_UNIQUE, IF_NODESTROY, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
-		damage      = "1d15",
+		damage      = "1d25",
 		damagetype  = DAMAGE_MELEE,
 		acc         = 0,
 		altfire     = ALT_THROW,
@@ -184,7 +185,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 1,
 		desc     = "A weapon that can cut the very fabric of reality. Too bad it's only eight inches long...",
 		firstmsg = "Looks very inconspicious.",
-		flags    = { IF_UNIQUE, IF_BLADE },
+		flags    = { IF_UNIQUE, IF_BLADE, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "3d5",
@@ -198,14 +199,13 @@ function DoomRL.loaduniqueitems()
 				ui.msg("You are too tired to invoke the Knife!");
 			else
 				ui.msg("You feel your health drained!");
-				being.hpmax  = math.max( being.hpmax - 2, 5 )
-				being.hp     = math.max( being.hp - 2, 1 )
+				being.hp     = math.max( being.hp - 5, 1 )
 				being.tired  = true
 				being.scount = being.scount - 1000
 				for b in level:beings() do
 					if not b:is_player() and b:is_visible() then
 						level:explosion( b.position, 1, 50, 0, 0, BLUE, "none", DAMAGE_SPLASMA, self, { EFSELFSAFE } )
-						b:apply_damage( 10, TARGET_INTERNAL, DAMAGE_SPLASMA, self )
+						b:apply_damage( 15, TARGET_INTERNAL, DAMAGE_SPLASMA, self )
 					end
 				end
 			end
@@ -224,7 +224,7 @@ function DoomRL.loaduniqueitems()
 		group    = "weapon-pistol",
 		desc     = "One of the deadliest weapons ever made. Nyooo >O.o<",
 		scavenge = { "umod_nano" },
-		flags    = { IF_UNIQUE, IF_PISTOL },
+		flags    = { IF_UNIQUE, IF_PISTOL, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -265,7 +265,8 @@ function DoomRL.loaduniqueitems()
 		weight   = 2,
 		group    = "weapon-pistol",
 		desc     = "In the name of God, impure souls of the living dead shall be banished into eternal damnation. Amen.",
-		flags    = { IF_UNIQUE, IF_PISTOL },
+		flags    = { IF_UNIQUE, IF_PISTOL, IF_MODABLE, IF_SINGLEMOD },
+		scavenge = { "umod_firestorm" },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -302,7 +303,7 @@ function DoomRL.loaduniqueitems()
 		fire          = 10,
 		reload        = 35,
 		shots         = 3,
-		shotcost      = 5,
+		shotcost      = 3,
 		missile       = "mchaingun",
 
 		OnKill = function (self,being,target)
@@ -429,7 +430,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 2,
 		group    = "weapon-shotgun",
 		desc     = "The Pancor Corporation Jackhammer is a 12-gauge, gas-operated automatic weapon.",
-		flags    = { IF_UNIQUE, IF_SHOTGUN },
+		flags    = { IF_UNIQUE, IF_SHOTGUN, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -468,12 +469,12 @@ function DoomRL.loaduniqueitems()
 		weight   = 1,
 		group    = "weapon-shotgun",
 		desc     = "Advanced pulverization technology converts bullets into shrapnel.",
-		flags    = { IF_UNIQUE, IF_SHOTGUN },
+		flags    = { IF_UNIQUE, IF_SHOTGUN, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
 		ammomax       = 16,
-		shotcost      = 4,
+		shotcost      = 2,
 		damage        = "7d3",
 		damagetype    = DAMAGE_SHARPNEL,
 		fire          = 15,
@@ -492,7 +493,7 @@ function DoomRL.loaduniqueitems()
 		group    = "weapon-rocket",
 		desc     = "Two can play the homing missile game.",
 		scavenge = { "umod_sniper" },
-		flags    = { IF_UNIQUE, IF_ROCKET },
+		flags    = { IF_UNIQUE, IF_ROCKET, IF_MODABLE },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "rocket",
@@ -649,10 +650,11 @@ function DoomRL.loaduniqueitems()
 		sprite   = SPRITE_ARMOR,
 		coscolor = { 1.0,0.0,0.4,1.0 },
 		level    = 15,
-		weight   = 3,
+		weight   = 2,
 		desc     = "The personal armor of the most famous Imperial Inquisitor.",
 		flags    = { IF_UNIQUE, IF_RECHARGE, IF_NODESTROY },
 		set      = "inquisitor",
+		scavenge = { "umod_nano" },
 
 		rechargeamount = 5,
 		rechargedelay  = 10,
@@ -661,7 +663,7 @@ function DoomRL.loaduniqueitems()
 
 		type       = ITEMTYPE_ARMOR,
 		armor      = 3,
-		movemod    = 25,
+		movemod    = 20,
 	}
 
 	register_item "ucarmor"
@@ -680,7 +682,7 @@ function DoomRL.loaduniqueitems()
 		movemod    = -30,
 		knockmod   = -30,
 
-		resist = { shrapnel = 50, melee = 50, bullet = 50 },
+		resist = { shrapnel = 20, melee = 20, bullet = 20, acid = 20, fire = 20, plasma = 20  },
 	}
 
 	register_item "unarmor"
@@ -694,7 +696,7 @@ function DoomRL.loaduniqueitems()
 		desc     = "Something about this armor gives you the chills.",
 		flags    = { IF_UNIQUE, IF_NECROCHARGE, IF_NODESTROY },
 
-		rechargeamount = 2,
+		rechargeamount = 5,
 		rechargedelay  = 0,
 
 		type       = ITEMTYPE_ARMOR,
@@ -715,12 +717,12 @@ function DoomRL.loaduniqueitems()
 		flags    = { IF_UNIQUE, IF_NODESTROY },
 
 		type       = ITEMTYPE_ARMOR,
-		armor      = 4,
+		armor      = 6,
 		movemod    = -15,
 
 		OnEquipTick = function(self, being)
 			if self.durability > 20 then
-				if being.hp < being.hpmax / 4 then
+				if being.hp < being.hpmax / 2 then
 					being.hp = being.hp + 1
 					self.durability = self.durability - 1
 				end
@@ -738,6 +740,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 2,
 		desc     = "This armor glows!",
 		flags    = { IF_UNIQUE, IF_NODESTROY, IF_NOREPAIR },
+		scavenge = { "umod_firestorm" },
 
 		resist = { fire = 75, plasma = 50 },
 
@@ -781,7 +784,7 @@ function DoomRL.loaduniqueitems()
 		sprite   = SPRITE_BOOTS,
 		coscolor = { 1.0,0.0,0.3,1.0 },
 		level    = 15,
-		weight   = 3,
+		weight   = 2,
 		desc     = "The famous boots of the famous Imperial Inquisitor.",
 		flags    = { IF_UNIQUE, IF_RECHARGE, IF_NODESTROY, IF_PLURALNAME },
 		set      = "inquisitor",
@@ -793,7 +796,7 @@ function DoomRL.loaduniqueitems()
 
 		type       = ITEMTYPE_BOOTS,
 		armor      = 6,
-		movemod    = 25,
+		movemod    = 20,
 	}
 
 	register_item "ushieldarmor"
@@ -806,6 +809,7 @@ function DoomRL.loaduniqueitems()
 		weight   = 2,
 		desc     = "So massive, you no longer fear the little ones!",
 		flags    = { IF_UNIQUE, IF_NODURABILITY },
+		scavenge = { "umod_onyx" },
 
 		resist = { shrapnel = 90, melee = 90, bullet = 90 },
 
@@ -821,6 +825,7 @@ function DoomRL.loaduniqueitems()
 		ascii    = "+",
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_PHASE,
+		sframes  = 2,
 		coscolor = { 1.0,0.2,0.2,1.0 },
 		level    = 10,
 		weight   = 4,
@@ -898,7 +903,9 @@ function DoomRL.load_doom_unique_items()
 			if math.random(20) == 1 then
 				-- Meh.  Nightmare demons are too easy anyway.  This should convince the player to wear BA only when it is time to summon the Apostle.
 				local demon = level:summon( "ncacodemon" )
-				demon.flags[ BF_NOEXP ] = true
+				if demon then
+					demon.flags[ BF_NOEXP ] = true
+				end
 			end
 		end,
 	}
@@ -971,8 +978,7 @@ function DoomRL.load_doom_unique_items()
 			ui.blink(RED,20)
 			ui.blink(LIGHTRED,20)
 			ui.msg("Release the power of the BERSERKER!")
-			-- I hope this number is truly infinite.
-			being:set_affect("berserk",10000000);
+			being:set_affect("berserk",-1);
 		end,
 
 		OnKill = function (self,being,target)
@@ -985,7 +991,9 @@ function DoomRL.load_doom_unique_items()
 			if math.random(40) == 1 then
 				-- The DS shouldn't be an easy I-Win! button.  Make YAAM harder.
 				local demon = level:summon( "ndemon" )
-				demon.flags[ BF_NOEXP ] = true
+				if demon then
+					demon.flags[ BF_NOEXP ] = true
+				end
 			end
 		end,
 	}

@@ -5,7 +5,7 @@ register_level "unholy_cathedral"
 	name  = "Unholy Cathedral",
 	entry = "On level @1 he invaded the Unholy Cathedral!",
 	welcome = "You arrive at the Unholy Cathedral. You feel something sinister in the air.",
-	level = 17,
+	level = 19,
 
 	canGenerate = function ()
 		return DIFFICULTY > 1
@@ -122,7 +122,7 @@ register_level "unholy_cathedral"
 	end,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "rwall", area.FULL )
 		local reward = "spear"
 		if statistics.kills == statistics.max_kills and DIFFICULTY >= DIFF_HARD then

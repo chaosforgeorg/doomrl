@@ -1,6 +1,6 @@
 {
 -------------------------------------------------------
-DoomRL.PAS -- Main Program
+DRL.PAS -- Main Program
 Copyright (c) 2002-2006 by Kornel "Anubis" Kisielewicz
 -------------------------------------------------------
 }
@@ -20,12 +20,12 @@ Copyright (c) 2002-2006 by Kornel "Anubis" Kisielewicz
 
 {$INCLUDE doomrl.inc}
 
-program doomrl;
+program drl;
 uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
-     vdebug, doombase, dfoutput, vlog, vutil, vos,
-     dfdata, doommodule, doomnet, doomio;
+     vdebug, doombase, vlog, vutil, vos, vparams,
+     dfdata, doommodule, doomio, doomconfig, doomconfiguration;
 
 {$IFDEF WINDOWS}
 var Handle : HWND;
@@ -45,16 +45,16 @@ var RootPath : AnsiString = '';
 begin
 try
   try
-    DoomNetwork := nil;
-    Modules     := nil;
+    Modules       := nil;
+    Configuration := TDoomConfiguration.Create;
+
 
     {$IFDEF Darwin}
     {$IFDEF OSX_APP_BUNDLE}
     RootPath := GetResourcesPath();
     DataPath          := RootPath;
-    ConfigurationPath := RootPath;
-    SaveFilePath      := RootPath;
-    Logger.Log( LOGINFO, 'Root path set to - '+RootPath );
+    ConfigurationPath := RootPath + 'config.lua';
+    SettingsPath      := RootPath + 'settings.lua';
     {$ENDIF}
     {$ELSE}
       {$IFDEF UNIX}
@@ -63,30 +63,70 @@ try
 
     {$IFDEF Windows}
     RootPath := ExtractFilePath( ParamStr(0) );
+    if not FileExists( RootPath + 'config.lua' ) then
+      RootPath := '';
     DataPath          := RootPath;
-    ConfigurationPath := RootPath;
-    SaveFilePath      := RootPath;
-    Logger.Log( LOGINFO, 'Root path set to - '+RootPath );
+    ConfigurationPath := RootPath + 'config.lua';
+    SettingsPath      := RootPath + 'settings.lua';
     {$ENDIF}
 
-    Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, RootPath+'log.txt', False ) );
-    LogSystemInfo();
-    Logger.Log( LOGINFO, 'Root path set to - '+RootPath );
-
     {$IFDEF WINDOWS}
-    Title := 'DoomRL - Doom, the Roguelike';
+    Title := 'DRL - D**m, the Roguelike';
     SetConsoleTitle(PChar(Title));
     Sleep(40);
     {$ENDIF}
+    ColorOverrides := nil;
+
+    with TParams.Create do
+    try
+      if isSet('god')    then
+      begin
+        GodMode           := True;
+        ConfigurationPath := RootPath + 'godmode.lua';
+      end;
+      if isSet('config')     then ConfigurationPath := get('config');
+      if isSet('nosound')    then ForceNoAudio    := True;
+      if isSet('graphics')   then
+      begin
+        GraphicsVersion := True;
+        ForceGraphics := True;
+      end;
+      if isSet('console')    then
+      begin
+        GraphicsVersion := False;
+        ForceConsole := True;
+      end;
+
+      if FileExists( SettingsPath )
+        then Configuration.Read( SettingsPath )
+        else Configuration.Write( SettingsPath );
+
+      Config := TDoomConfig.Create( ConfigurationPath, False );
+      DataPath     := Config.Configure( 'DataPath', DataPath );
+      WritePath    := Config.Configure( 'WritePath', WritePath );
+      ScorePath    := Config.Configure( 'ScorePath', ScorePath );
+
+      if isSet('datapath')   then DataPath          := get('datapath');
+      if isSet('writepath')  then WritePath         := get('writepath');
+      if isSet('scorepath')  then ScorePath         := get('scorepath');
+      if isSet('name')       then Option_AlwaysName := get('name');
+    finally
+      Free;
+    end;
+
 
     {$IFDEF HEAPTRACE}
-    SetHeapTraceOutput(RootPath+'heap.txt');
+    SetHeapTraceOutput( WritePath + 'heap.txt');
     {$ENDIF}
 
-    Doom := Systems.Add(TDoom.Create) as TDoom;
+    Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, WritePath + 'log.txt', False ) );
+    LogSystemInfo();
+    Logger.Log( LOGINFO, 'Log path set to - ' + WritePath );
 
-    DoomNetwork := TDoomNetwork.Create;
-    if DoomNetwork.AlertCheck then Halt(0);
+    if ScorePath = '' then ScorePath := WritePath;
+    ErrorLogFileName := WritePath + 'error.log';
+
+    Doom := Systems.Add(TDoom.Create) as TDoom;
 
     Modules     := TDoomModules.Create;
 
@@ -110,8 +150,8 @@ try
     {$ENDIF}
     Doom.Run;
   finally
+    FreeAndNil( Configuration );
     FreeAndNil( Modules );
-    FreeAndNil( DoomNetwork );
     FreeAndNil( Systems );
   end;
 except on e : Exception do

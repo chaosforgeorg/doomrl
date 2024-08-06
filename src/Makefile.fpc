@@ -1,14 +1,10 @@
-# Regenerate on michalis.ii by
-#   fpcmake -Ti386-linux,i386-win32
-# That is, you want Makefile to support *at least* these two targets.
-
 [target]
 programs=doomrl makewad
 
 [prerules]
-SDLPATH := ../../../JEDI-SDLv1.0/
-VALKYRIEPATH := ../../../fpcvalkyrie/trunk/src/
-LUAPATH := ../../../fpcvalkyrie/trunk/lua
+VALKYRIEPATH := ../../fpcvalkyrie/src/
+LIBSPATH := ../../fpcvalkyrie/libs/
+LUAPATH := ../../fpcvalkyrie/lua/
 
 [require]
 packages=
@@ -17,12 +13,13 @@ packages=
 fpcpackage=n
 
 [compiler]
-unitdir=$(VALKYRIEPATH) $(LUAPATH) $(SDLPATH)SDL/Pas $(SDLPATH)fmod/Pas $(SDLPATH)SDL_Mixer/Pas $(SDLPATH)smpeg/Pas
+unitdir=$(VALKYRIEPATH) $(LUAPATH) $(LIBSPATH)
 unittargetdir=../temp
-includedir=../bin/lua $(SDLPATH)SDL/Pas
-# options="-O2 -S2 -Sc -Si"
+includedir=../bin
+options=-O2 -S2
 targetdir=../bin
-version=2.2.4
+version=3.2.2
+options=-gl -Mobjfpc
 
 [dist]
 destdir=../

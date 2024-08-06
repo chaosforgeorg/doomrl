@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit dfhof;
 interface
-uses Classes, XMLRead, XMLWrite, DOM, vnode, vxml, vxmldata, MD5, dfdata, vuitypes;
+uses Classes, DOM, vnode, vxml, vxmldata, dfdata, vuitypes;
 
 const MaxHofEntries = 500;
       MaxID         = 1023;
@@ -75,7 +75,7 @@ var HOF : THOF;
 
 implementation
 
-uses math, sysutils, strutils, variants, vluasystem, doombase, dfplayer, vdebug, vutil, vrltools, zstream;
+uses math, sysutils, strutils, variants, vluasystem, doombase, dfplayer, vdebug, vutil, vrltools;
 
 const HOFOpen : Boolean = False;
 
@@ -373,7 +373,7 @@ begin
   Result.Pages   := TUIPageArray.Create( True );
   Result.Titles  := TUIStringArray.Create;
   Result.Headers := TUIStringArray.Create;
-  Result.Title   := 'DoomRL Player Info';
+  Result.Title   := 'DRL Player Info';
 
   iDiffCnt := LuaSystem.Get([ 'diff', '__counter' ]);
 
@@ -680,7 +680,7 @@ end;
 
 function THOF.GetHOFReport : TUIHOFReport;
 begin
-  Result.Title   := 'DoomRL Hall of Fame';
+  Result.Title   := 'DRL Hall of Fame';
   Result.Footer  := '@<a@>,@<emhun@>,@<'+ChallengeStr+'-@>,@<<Enter>@>';
   Result.Filters := 'a-emhun'+ChallengeStr;
   Result.Callback:= @(GetScores)
@@ -693,14 +693,19 @@ begin
   SkillRank := 0;
   ExpRank   := 0;
 
-  FScore := TScoreFile.Create(ConfigurationPath+ScoreFile, MaxHOFEntries );
+  FScore := TScoreFile.Create( ScorePath + ScoreFile, MaxHOFEntries );
   FScore.SetCRC( '344ef'+{ModuleID+}'3321', '738af'+{ModuleID+}'92-5' );
-  FScore.SetBackup(  ConfigurationPath+'backup'+PathDelim, Option_ScoreBackups );
-  FScore.Load;
+  FScore.SetBackup(  ScorePath+'backup'+PathDelim, Option_ScoreBackups );
+  FScore.Lock;
+  try
+    FScore.Load;
+  finally
+    FScore.Unlock;
+  end;
 
-  FPlayerInfo := TVXMLDataFile.Create( ConfigurationPath+PlayerFile, 'player' );
+  FPlayerInfo := TVXMLDataFile.Create( WritePath + PlayerFile, 'player' );
   FPlayerInfo.SetCRC( '344ef'+{ModuleID+}'3321', '738af'+{ModuleID+}'92-5' );
-  FPlayerInfo.SetBackup(  ConfigurationPath+'backup'+PathDelim, Option_PlayerBackups );
+  FPlayerInfo.SetBackup(  WritePath + 'backup'+PathDelim, Option_PlayerBackups );
   FPlayerInfo.Load;
 
   SkillRank := GetRank('skill');
@@ -783,18 +788,15 @@ begin
 end;
 
 procedure THOF.Add( const Name : AnsiString; aScore : LongInt; const aKillerID : AnsiString; Level, DLev : Word; nChal : AnsiString );
-var cn : DWord;
-
-    XMLElement : TDOMElement;
+var XMLElement : TDOMElement;
     XMLSubElement : TDOMElement;
     XMLEntry   : TDOMElement;
     iScoreEntry : TScoreEntry;
-    VS,VSS : String;
+    VS : String;
     iGameResultID : AnsiString;
     iString : String;
     iGameResult : String;
     iKills : DWord;
-    iWeaponID : DWord;
     iChalAbbr  : string;
     iChalInc : shortint;
     iDiffID : string;
@@ -806,7 +808,10 @@ var cn : DWord;
   begin
     if aID = 'other' then Exit('other');
     if aID = 'melee' then Exit('weapon-melee');
-    Exit( LuaSystem.Get(['items',aID,'group'] ) );
+    if LuaSystem.Defined( ['items',aID,'group'] ) then
+        Exit( LuaSystem.Get( ['items',aID,'group'] ) )
+    else
+        Exit( 'other' );
   end;
 
 begin
@@ -894,18 +899,25 @@ begin
   begin
     VS := LuaSystem.ProtectedCall(['DoomRL','get_result_description'],[iGameResultID,true]);
 
-    iScoreEntry := FScore.Add( aScore );
-    if iScoreEntry <> nil then
-    begin
-      //Score.Add(Name,aScore,Level,DLev,Doom.Difficulty,VS,VSS,LuaSystem.Get(['klasses',Player.Klass,'id']));
-      iScoreEntry.SetAttribute('name', Name );
-      iScoreEntry.SetAttribute('level', IntToStr(Level) );
-      iScoreEntry.SetAttribute('depth', IntToStr(DLev) );
-      iScoreEntry.SetAttribute('klass', LuaSystem.Get(['klasses',Player.Klass,'id']) );
-      iScoreEntry.SetAttribute('killed', VS );
-      iScoreEntry.SetAttribute('difficulty', IntToStr(Doom.Difficulty) );
-      if nChal <> '' then
-        iScoreEntry.SetAttribute('challenge', LuaSystem.Get(['chal',nChal,'abbr']) );
+    FScore.Lock;
+    try
+      FScore.Load;
+      iScoreEntry := FScore.Add( aScore );
+      if iScoreEntry <> nil then
+      begin
+        //Score.Add(Name,aScore,Level,DLev,Doom.Difficulty,VS,VSS,LuaSystem.Get(['klasses',Player.Klass,'id']));
+        iScoreEntry.SetAttribute('name', Name );
+        iScoreEntry.SetAttribute('level', IntToStr(Level) );
+        iScoreEntry.SetAttribute('depth', IntToStr(DLev) );
+        iScoreEntry.SetAttribute('klass', LuaSystem.Get(['klasses',Player.Klass,'id']) );
+        iScoreEntry.SetAttribute('killed', VS );
+        iScoreEntry.SetAttribute('difficulty', IntToStr(Doom.Difficulty) );
+        if nChal <> '' then
+          iScoreEntry.SetAttribute('challenge', LuaSystem.Get(['chal',nChal,'abbr']) );
+        FScore.Save;
+      end;
+    finally
+      FScore.Unlock;
     end;
   end;
   Save;
@@ -954,7 +966,6 @@ begin
   ProgramRealTime := MSecNow();
   IncreaseXMLCount( FPlayerInfo.XML.DocumentElement, 'time', iSeconds );
 
-  FScore.Save;
   FPlayerInfo.Save;
 end;
 

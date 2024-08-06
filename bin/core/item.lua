@@ -108,11 +108,6 @@ function item:check_mod_array( nextmod, techbonus )
 	ui.msg("You assemble the "..found_mod_array.name..".")
 	found_mod_array.OnApply(self)
 	self.color = LIGHTCYAN
-	if techbonus == 2 then
-		self.flags[ IF_SINGLEMOD ] = true
-	else
-		self.flags[ IF_NONMODABLE ] = true
-	end
 	self.flags[ IF_MODIFIED ] = false
 	self.flags[ IF_ASSEMBLED ] = true
 	self:clear_mods()

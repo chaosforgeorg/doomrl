@@ -70,7 +70,7 @@ register_level "the_chained_court"
 		{
 			name   = "lever",
 			color  = MAGENTA,
-			sprite = 248,
+			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
 			flags  = { IF_NODESTROY },
@@ -96,7 +96,7 @@ register_level "the_chained_court"
 		{
 			name   = "lever",
 			color  = MAGENTA,
-			sprite = 248,
+			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
 			flags  = { IF_NODESTROY },
@@ -123,7 +123,7 @@ register_level "the_chained_court"
 			id     = "lever_chain3",
 			name   = "lever",
 			color  = MAGENTA,
-			sprite = 248,
+			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
 			flags  = { IF_NODESTROY },
@@ -151,6 +151,8 @@ register_level "the_chained_court"
 			ascii        = "V",
 			color        = LIGHTGREEN,
 			sprite       = SPRITE_MASTER,
+			sframes      = 2,
+			sflags       = { SF_LARGE },
 			hp           = 80,
 			armor        = 2,
 			attackchance = 50,
@@ -198,7 +200,7 @@ register_level "the_chained_court"
 	end,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		-- level.status 1 == chained court
 		-- level.status 0 == unchained court (w/ Arena Master)
 		if player:has_medal("hellchampion") or player:has_medal("hellchampion2") or player:has_medal("hellchampion3") then

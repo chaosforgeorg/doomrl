@@ -8,7 +8,7 @@ register_level "halls_of_carnage"
 	level = 14,
 
 	Create = function ()
-		level.style = 1
+		level:set_generator_style( 1 )
 		generator.fill( "rwall", area.FULL )
 
 		local mod1,mod2 = generator.roll_pair{"mod_power","mod_agility","mod_bulk","mod_tech"}
@@ -67,7 +67,16 @@ register_level "halls_of_carnage"
 		generator.set_permanence( area.new( 66,9,70,12 ) )
 		level:player(8,18)
 		local tick = core.bydiff{ 80, 60, 50, 30, 20 }
-		generator.setup_flood_event( 1, tick, "lava" )
+
+		level.data.event = {
+			id         = "flood_lava_event",
+			timer      = 0,
+			step       = tick,
+			direction  = (math.random(2)*2)-3,
+			flood_min  = 0,
+			cell		= "lava",
+		}
+		generator.OnTick = events.flood_lava_event.on_tick
 	end,
 
 	OnTick = function()

@@ -129,6 +129,7 @@ register_level "hellgate"
 
 		level:player(2,10)
 		level.flags[ LF_NOHOMING ] = true
+		level.flags[ LF_BOSS     ] = true
 	end,
 
 	OnEnter = function ()
@@ -188,19 +189,21 @@ register_level "tower_of_babel"
 		local scatter_area = area.new( 5,3,68,15 )
 		local translation = {
 			['.'] = { "floor", flags = { LFBLOOD } },
-			['#'] = "gwall",
+			['#'] = "gwall", 
+			['D'] = { "gwall", deco = 1 },
 			['>'] = "stairs",
 		}
 		generator.scatter_put(scatter_area,translation, [[
 .....
 .###.
 .###.
-.###.
+.#D#.
 .....
 ]]
 		,"floor",12)
 
 		level.flags[ LF_NOHOMING ] = true
+		level.flags[ LF_BOSS     ] = true
 		generator.scatter_blood(area.FULL_SHRINKED,"floor",100)
 	end,
 
@@ -289,6 +292,7 @@ WWWWWWWWWWWWWWWWWWWWW...............####...............WWWWWWWWWWWWWWWWWWWWW
 		generator.set_permanence( area.new( MAXX-10, 1, MAXX, MAXY ) )
 
 		level.flags[ LF_NOHOMING ] = true
+		level.flags[ LF_BOSS     ] = true
 		if math.random( 2 ) == 1 then
 			level:player(19,11)
 		else
@@ -351,6 +355,7 @@ register_level "hell_fortress"
 		, 2,2 )
 
 		level.flags[ LF_NOHOMING ] = true
+		level.flags[ LF_BOSS     ] = true
 		level:player(2,10)
 
 		local boss

@@ -5,7 +5,7 @@ interface
 uses classes, sysutils,
      vuielement, vutil, vrltools,
      dfbeing, dfhof, dfdata, dfitem, dfaffect,
-     doomtrait;
+     doomtrait, doomkeybindings;
 
 type
 
@@ -39,6 +39,10 @@ TStatistics = object
   procedure UpdateNDCount( aCount : DWord );
 end;
 
+TQuickSlotInfo = record
+  UID : TUID;
+  ID  : string[32];
+end;
 
 { TPlayer }
 
@@ -66,21 +70,21 @@ TPlayer = class(TBeing)
   FTactic         : TTacticData;
   FAffects        : TAffects;
   FPathRun        : Boolean;
+  FQuickSlots     : array[1..9] of TQuickSlotInfo;
+
+  FLastTargetPos  : TCoord2D;
 
   constructor Create; reintroduce;
   procedure Initialize; reintroduce;
   constructor CreateFromStream( Stream: TStream ); override;
   procedure WriteToStream( Stream: TStream ); override;
-  procedure AIControl;
+  function PlayerTick : Boolean;
+  procedure HandlePostMove; override;
+  procedure PreAction;
+  function GetRunInput : TInputKey;
   procedure LevelEnter;
   procedure doUpgradeTrait;
-  function doAct( aFlagID : byte; const aActName : string ) : Boolean;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
-  function doUnLoad : Boolean;
-  procedure doScreen;
-  procedure doDrop;
-  function doQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
-  procedure doFire( aAlternative : Boolean = False );
   procedure doQuit( aNoConfirm : Boolean = False );
   procedure doRun;
   procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); override;
@@ -97,14 +101,14 @@ TPlayer = class(TBeing)
   procedure UpdateVisual;
   function ASCIIMoreCode : AnsiString; override;
   function CreateAutoTarget( aRange : Integer ): TAutoTarget;
-  function doChooseTarget( aActionName : string; aRadius : Byte ) : boolean;
-  private
-  function OnTraitConfirm( aSender : TUIElement ) : Boolean;
+  function doChooseTarget( aActionName : string; aRadius : Byte; aLimitRange : Boolean ) : Boolean;
+  function RunPath( const aCoord : TCoord2D ) : Boolean;
   procedure ExamineNPC;
   procedure ExamineItem;
   private
+  function OnTraitConfirm( aSender : TUIElement ) : Boolean;
+  private
   FLastTargetUID  : TUID;
-  FLastTargetPos  : TCoord2D;
   FExp            : LongInt;
   FExpLevel       : Byte;
   private
@@ -136,11 +140,11 @@ var   Player : TPlayer;
 
 implementation
 
-uses math, vpath, variants, vioevent, vgenerics,
+uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
-     dfmap, dflevel, dfoutput,
-     doomhooks, doomio,  doomanimation, doomspritemap, doomviews, doombase,
-     doomlua, doominventory;
+     dfmap, dflevel,
+     doomhooks, doomio, doomspritemap, doomviews, doombase,
+     doomlua, doominventory, doomcommand, doomhelp, doomplayerview;
 
 var MortemText    : Text;
     WritingMortem : Boolean = False;
@@ -195,7 +199,7 @@ begin
     Dec( Count );
     if Count = 0 then
     begin
-      UI.Msg('You stop running.');
+      IO.Msg('You stop running.');
       Current := tacticTired;
     end;
   end;
@@ -211,13 +215,13 @@ function TTacticData.Change : Boolean;
 begin
   Change := False;
   case Current of
-    tacticTired   : UI.Msg('Too tired to do that right now.');
+    tacticTired   : IO.Msg('Too tired to do that right now.');
     tacticRunning : begin
-                      UI.Msg('You stop running.');
+                      IO.Msg('You stop running.');
                       Current := tacticTired;
                     end;
     tacticNormal  : begin
-                      UI.Msg('You start running!');
+                      IO.Msg('You start running!');
                       Count := Max;
                       Current := tacticRunning;
                       Change := True;
@@ -271,6 +275,7 @@ begin
   FExpFactor := 1.0;
 
   Initialize;
+  FillChar( FQuickSlots, SizeOf(FQuickSlots), 0 );
 
   CallHook( Hook_OnCreate, [] );
 end;
@@ -311,6 +316,7 @@ begin
   Stream.Write( FRun,       SizeOf( FRun ) );
   Stream.Write( FTactic,    SizeOf( FTactic ) );
   Stream.Write( FStatistics,SizeOf( FStatistics ) );
+  Stream.Write( FQuickSlots,SizeOf( FQuickSlots ) );
 
   FKills.WriteToStream( Stream );
   FStatistics.Map.WriteToStream( Stream );
@@ -334,6 +340,7 @@ begin
   Stream.Read( FRun,       SizeOf( FRun ) );
   Stream.Read( FTactic,    SizeOf( FTactic ) );
   Stream.Read( FStatistics,SizeOf( FStatistics ) );
+  Stream.Read( FQuickSlots,SizeOf( FQuickSlots ) );
 
   FKills          := TKillTable.CreateFromStream( Stream );
   FStatistics.Map := TIntHashMap.CreateFromStream( Stream );
@@ -344,10 +351,10 @@ end;
 procedure TPlayer.LevelUp;
 begin
   Inc( FExpLevel );
-  UI.Blink( LightBlue, 100 );
-  UI.MsgEnter( 'You advance to level %d!', [ FExpLevel ] );
+  IO.Blink( LightBlue, 100 );
+  IO.MsgEnter( 'You advance to level %d!', [ FExpLevel ] );
   if not Doom.CallHookCheck( Hook_OnPreLevelUp, [ FExpLevel ] ) then Exit;
-  UI.BloodSlideDown( 20 );
+  IO.BloodSlideDown( 20 );
   doUpgradeTrait();
   Doom.CallHook( Hook_OnLevelUp, [ FExpLevel ] );
 end;
@@ -364,86 +371,6 @@ begin
   while FExp >= ExpTable[ FExpLevel + 1 ] do LevelUp;
 end;
 
-
-
-function TPlayer.doQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
-var iWeapon  : TItem;
-    iItem    : TItem;
-    iAmmo    : Byte;
-begin
-  if (not LuaSystem.Defines.Exists(aWeaponID)) or (LuaSystem.Defines[aWeaponID] = 0)then Exit( False );
-
-  if Inv.Slot[ efWeapon ] <> nil then
-  begin
-    if Inv.Slot[ efWeapon ].ID = aWeaponID then Exit( Fail( 'You already have %s in your hands.', [ Inv.Slot[ efWeapon ].GetName(true) ] ) );
-    if Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] then Exit( Fail( 'You can''t!', [] ) );
-  end;
-
-  if Inv.Slot[ efWeapon2 ] <> nil then
-    if Inv.Slot[ efWeapon2 ].ID = aWeaponID then
-      Exit( ActionQuickSwap );
-
-  iAmmo   := 0;
-  iWeapon := nil;
-  for iItem in Inv do
-    if iItem.isWeapon then
-      if iItem.ID = aWeaponID then
-      if iItem.Ammo >= iAmmo then
-      begin
-        iWeapon := iItem;
-        iAmmo   := iItem.Ammo;
-      end;
-
-  if iWeapon = nil then Exit( Fail( 'You don''t have a %s!', [ Ansistring(LuaSystem.Get([ 'items', aWeaponID, 'name' ])) ] ) );
-
-  Inv.Wear( iWeapon );
-
-  if Option_SoundEquipPickup
-    then PlaySound( iWeapon.Sounds.Pickup )
-    else PlaySound( iWeapon.Sounds.Reload );
-
-  if not ( BF_QUICKSWAP in FFlags )
-     then Exit( Success( 'You prepare the %s!',[ iWeapon.Name ], 1000 ) )
-     else Exit( Success( 'You prepare the %s instantly!',[ iWeapon.Name ] ) );
-end;
-
-function TPlayer.doUnLoad : Boolean;
-var iItem : TItem;
-    iModID : AnsiString;
-    iName  : AnsiString;
-begin
-  iItem := TLevel(Parent).Item[ FPosition ];
-  if (iItem = nil) or ( not (iItem.isRanged or iItem.isAmmoPack ) ) then
-  begin
-    iItem := Inv.Choose( [ ItemType_Ranged, ItemType_AmmoPack ] , 'unload' );
-    if iItem = nil then Exit( False );
-  end;
-  iName := iItem.Name;
-
-  if iItem.isAmmoPack then
-    if not UI.MsgConfirm('An ammopack might serve better in the Prepared slot. Continuing will unload the ammo destroying the pack. Are you sure?', True)
-       then Exit( False );
-
-  if (not iItem.isAmmoPack) and (BF_SCAVENGER in FFlags) and
-     ((iItem.Ammo = 0) or iItem.Flags[ IF_NOUNLOAD ] or iItem.Flags[ IF_RECHARGE ] or iItem.Flags[ IF_NOAMMO ]) and
-     (iItem.Flags[ IF_EXOTIC ] or iItem.Flags[ IF_UNIQUE ] or iItem.Flags[ IF_ASSEMBLED ] or iItem.Flags[ IF_MODIFIED ]) then
-  begin
-    iModId := LuaSystem.ProtectedCall( ['DoomRL','OnDisassemble'], [ iItem ] );
-    if iModID = '' then Exit( ActionUnload( iItem ) );
-    if UI.MsgConfirm('Do you want to disassemble the '+iName+'?', True) then
-    begin
-      FreeAndNil( iItem );
-      iItem := TItem.Create( iModId );
-      playSound(iItem.Sounds.Reload);
-      if not Inv.isFull
-        then Inv.Add( iItem )
-        else TLevel(Parent).DropItem( iItem, FPosition );
-      Exit( Success( 'You disassemble the %s.',[iName], ActionCostReload ) );
-    end;
-  end;
-  Exit( ActionUnload( iItem ) );
-end;
-
 procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageType: TDamageType; aSource : TItem);
 begin
   if aDamage < 0 then Exit;
@@ -453,10 +380,10 @@ begin
   if BF_INV in FFlags then Exit;
   if ( aDamage >= Max( FHPNom div 3, 10 ) ) then
   begin
-    UI.Blink(Red,100);
+    IO.Blink(Red,100);
     if BF_BERSERKER in FFlags then
     begin
-      UI.Msg('That hurt! You''re going berserk!');
+      IO.Msg('That hurt! You''re going berserk!');
       FTactic.Stop;
       FAffects.Add(LuaSystem.Defines['berserk'],20);
     end;
@@ -470,15 +397,8 @@ begin
   inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource );
 end;
 
-procedure TPlayer.doDrop;
-var Item : TItem;
-begin
-  Item := Inv.Choose([],'drop');
-  if Item <> nil then ActionDrop( Item );
-end;
-
 procedure TPlayer.doRun;
-var Key : Byte;
+var iInput : TInputKey;
 begin
   FPathRun := False;
   if FEnemiesInVision > 1 then
@@ -486,40 +406,9 @@ begin
     Fail( 'Can''t run, there are enemies present.',[] );
     Exit;
   end;
-  Key := UI.MsgCommandChoice('Run - direction...',COMMANDS_MOVE+[COMMAND_ESCAPE,COMMAND_WAIT]);
-  if Key = COMMAND_ESCAPE then Exit;
-  FRun.Start( CommandDirection(Key) );
-end;
-
-function TPlayer.doAct( aFlagID : byte; const aActName : string) : Boolean;
-var iLevel  : TLevel;
-    iDir    : TDirection;
-    iScan   : TCoord2D;
-    iAct    : TCoord2D;
-    iCount  : byte;
-begin
-  iLevel := TLevel(Parent);
-  iCount := 0;
-  for iScan in NewArea( FPosition, 1 ).Clamped( iLevel.Area ) do
-    if iLevel.cellFlagSet(iScan, aFlagID) and iLevel.isEmpty( iScan ,[EF_NOITEMS,EF_NOBEINGS] ) then
-    begin
-      Inc(iCount);
-      iAct := iScan;
-    end;
-    
-  if iCount = 0 then Exit( Fail( 'There''s no door you can %s here.', [ aActName ] ) );
-
-  if iCount > 1 then
-  begin
-    iDir := UI.ChooseDirection(Capitalized(aActName)+' door');
-    if iDir.code = DIR_CENTER then Exit;
-    iAct := FPosition + iDir;
-  end;
-
-  if iLevel.isProperCoord( iAct ) and iLevel.cellFlagSet( iAct, aFlagID )
-    then iLevel.CallHook( iAct, Self, CellHook_OnAct )
-    else Exit( Fail( 'You can''t %s that.', [ aActName ] ) );
-  Exit( True );
+  iInput := IO.MsgCommandChoice('Run - direction...',INPUT_MOVE+[INPUT_ESCAPE,INPUT_WAIT]);
+  if iInput = INPUT_ESCAPE then Exit;
+  FRun.Start( InputDirection(iInput) );
 end;
 
 procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem ) ;
@@ -548,7 +437,7 @@ begin
         Result.AddTarget( iCoord );
 end;
 
-function TPlayer.doChooseTarget( aActionName : string; aRadius : Byte ) : boolean;
+function TPlayer.doChooseTarget( aActionName : string; aRadius : Byte; aLimitRange : Boolean ) : boolean;
 var iTargets : TAutoTarget;
     iTarget  : TBeing;
     iLevel   : TLevel;
@@ -574,13 +463,16 @@ begin
         if Distance( FLastTargetPos, FPosition ) <= aRadius then
           iTargets.PriorityTarget( FLastTargetPos );
 
-  FTargetPos := UI.ChooseTarget(aActionName, aRadius+1, iTargets, FChainFire > 0);
+  FTargetPos := IO.ChooseTarget(aActionName, aRadius+1, aLimitRange, iTargets, FChainFire > 0 );
+  if FLastTargetPos.X*FLastTargetPos.Y <> 0
+     then FPrevTargetPos := FLastTargetPos
+     else FPrevTargetPos := FTargetPos;
   FreeAndNil(iTargets);
   if FTargetPos.X = 0 then Exit( False );
 
   if FTargetPos = FPosition then
   begin
-    UI.Msg( 'Find a more constructive way to commit suicide.' );
+    IO.Msg( 'Find a more constructive way to commit suicide.' );
     Exit( False );
   end;
 
@@ -591,6 +483,18 @@ begin
   Exit( True );
 end;
 
+function TPlayer.RunPath( const aCoord : TCoord2D ) : boolean;
+begin
+  if FPath.Run( FPosition, aCoord, 200) then
+  begin
+    FPath.Start := FPath.Start.Child;
+    FRun.Active := True;
+    FPathRun := True;
+    Exit( True );
+  end;
+  Exit( False );
+end;
+
 function TPlayer.OnTraitConfirm ( aSender : TUIElement ) : Boolean;
 begin
   with aSender as TUICustomMenu do
@@ -599,40 +503,22 @@ begin
   Exit( True );
 end;
 
-procedure TPlayer.doFire( aAlternative : Boolean = False );
-var iDirection : TDirection;
-    iWeapon    : TItem;
-begin
-  iWeapon := Inv.Slot[ efWeapon ];
-  if (not aAlternative) and (iWeapon <> nil) and iWeapon.isMelee then
-  begin
-    iDirection := UI.ChooseDirection('Melee attack');
-    if (iDirection.code = DIR_CENTER) then Exit;
-    Attack( FPosition + iDirection );
-    Exit;
-  end;
-
-  if aAlternative
-     then ActionAltFire( True, FTargetPos{unused}, iWeapon )
-     else ActionFire( True, FTargetPos{unused}, iWeapon );
-end;
-
 function TPlayer.doSave : Boolean;
 begin
-  if Doom.Difficulty >= DIFF_NIGHTMARE then Exit( Fail( 'There''s no escape from a NIGHTMARE! Stand and fight like a man!', [] ) );
-  if not (CellHook_OnExit in Cells[ TLevel(Parent).Cell[ FPosition ] ].Hooks) then Exit( Fail( 'You can only save the game standing on the stairs to the next level.', [] ) );
+  //if Doom.Difficulty >= DIFF_NIGHTMARE then Exit( Fail( 'There''s no escape from a NIGHTMARE! Stand and fight like a man!', [] ) );
+  //if not (CellHook_OnExit in Cells[ TLevel(Parent).Cell[ FPosition ] ].Hooks) then Exit( Fail( 'You can only save the game standing on the stairs to the next level.', [] ) );
   Doom.SetState( DSSaving );
-  TLevel(Parent).CallHook( Position, CellHook_OnExit );
+  //TLevel(Parent).CallHook( Position, CellHook_OnExit );
 end;
 
 procedure TPlayer.doQuit( aNoConfirm : Boolean = False );
 begin
   if not aNoConfirm then
   begin
-    UI.Msg( LuaSystem.ProtectedCall(['DoomRL','quit_message'],[]) );
-    if not UI.MsgConfirm('Are you sure you want to commit suicide?', true) then
+    IO.Msg( LuaSystem.ProtectedCall(['DoomRL','quit_message'],[]) );
+    if not IO.MsgConfirm('Are you sure you want to commit suicide?', true) then
     begin
-      UI.Msg('Ok, then. Stay and take what''s coming to ya...');
+      IO.Msg('Ok, then. Stay and take what''s coming to ya...');
       Exit;
     end;
   end;
@@ -640,334 +526,164 @@ begin
   FScore      := -100000;
 end;
 
-procedure TPlayer.AIControl;
-var iLevel      : TLevel;
-    iCommand    : Byte;
-    iDir        : TDirection;
-    iMove       : TCoord2D;
-    iItem       : TItem;
-    iAlt        : Boolean;
-    iMoveResult : TMoveResult;
-    iTempSC     : LongInt;
-    function RunStopNear : boolean;
-    begin
-      if iLevel.isProperCoord( FPosition.ifIncX(+1) ) and iLevel.cellFlagSet( FPosition.ifIncX(+1), CF_RUNSTOP ) then Exit( True );
-      if iLevel.isProperCoord( FPosition.ifIncX(-1) ) and iLevel.cellFlagSet( FPosition.ifIncX(-1), CF_RUNSTOP ) then Exit( True );
-      if iLevel.isProperCoord( FPosition.ifIncY(+1) ) and iLevel.cellFlagSet( FPosition.ifIncY(+1), CF_RUNSTOP ) then Exit( True );
-      if iLevel.isProperCoord( FPosition.ifIncY(-1) ) and iLevel.cellFlagSet( FPosition.ifIncY(-1), CF_RUNSTOP ) then Exit( True );
-      Exit( False );
-    end;
+function TPlayer.PlayerTick : Boolean;
+var iThisUID    : DWord;
 begin
-  iLevel := TLevel(Parent);
-  UI.WaitForAnimation;
+  iThisUID := UID;
+  TLevel(Parent).CallHook( FPosition, Self, CellHook_OnEnter );
+  if UIDs[ iThisUID ] = nil then Exit( False );
+
   MasterDodge := False;
   FAffects.Tick;
-  FLastPos := FPosition;
-  if Doom.State <> DSPlaying then Exit;
+  if Doom.State <> DSPlaying then Exit( False );
   FTactic.Tick;
   Inv.EqTick;
-repeat
-  iCommand := 0;
-  // FArmor color //
-  StatusEffect := FAffects.getEffect;
-  UI.Focus( FPosition );
-  iLevel.CalculateVision( FPosition );
-  if GraphicsVersion then
-    UI.GameUI.UpdateMinimap;
-  FEnemiesInVision := iLevel.BeingsVisible;
-  if FEnemiesInVision > 1 then begin FPathRun := False; FRun.Stop; end;
+  FLastPos := FPosition;
+  FMeleeAttack := False;
+  Exit( True );
+end;
 
-  if iLevel.Item[ FPosition ] <> nil then
-    if iLevel.Item[ FPosition ].Hooks[ Hook_OnEnter ] then
-    begin
-      iLevel.Item[ FPosition ].CallHook( Hook_OnEnter, [ Self ] );
-      if (FSpeedCount < 5000) or (Doom.State <> DSPlaying) then Exit;
-    end
-    else
-    if not FPathRun then
-      with iLevel.Item[ FPosition ] do
-        if isLever then
-           UI.Msg('There is a %s here.', [ DescribeLever( iLevel.Item[ FPosition ] ) ] )
-        else
-          if Flags[ IF_PLURALNAME ]
-            then UI.Msg('There are %s lying here.', [ GetName( False ) ] )
-            else UI.Msg('There is %s lying here.', [ GetName( False ) ] );
-
-  if FRun.Active then
+procedure TPlayer.HandlePostMove;
+var iTempSC : LongInt;
+    iItem   : TItem;
+  function RunStopNear : boolean;
   begin
-    if IO.CommandEventPending then
+    if TLevel( Parent ).isProperCoord( FPosition.ifIncX(+1) ) and TLevel( Parent ).cellFlagSet( FPosition.ifIncX(+1), CF_RUNSTOP ) then Exit( True );
+    if TLevel( Parent ).isProperCoord( FPosition.ifIncX(-1) ) and TLevel( Parent ).cellFlagSet( FPosition.ifIncX(-1), CF_RUNSTOP ) then Exit( True );
+    if TLevel( Parent ).isProperCoord( FPosition.ifIncY(+1) ) and TLevel( Parent ).cellFlagSet( FPosition.ifIncY(+1), CF_RUNSTOP ) then Exit( True );
+    if TLevel( Parent ).isProperCoord( FPosition.ifIncY(-1) ) and TLevel( Parent ).cellFlagSet( FPosition.ifIncY(-1), CF_RUNSTOP ) then Exit( True );
+    Exit( False );
+  end;
+
+begin
+  iTempSC := FSpeedCount;
+  if Inv.Slot[ efWeapon ] <> nil then
+  with Inv.Slot[ efWeapon ] do
+    if isRanged then
+    begin // Autoreloading
+     if Ammo < AmmoMax then
+       if ( ( ( IF_SHOTGUN in FFlags ) and ( BF_SHOTTYMAN in Self.FFlags ) ) or
+          ( ( IF_ROCKET  in FFlags ) and ( BF_ROCKETMAN in Self.FFlags ) ) )
+          and (not (IF_RECHARGE in FFlags)) then
+       begin
+         iItem := Inv.SeekAmmo(AmmoID);
+         if iItem <> nil then
+           Reload( iItem, IF_SINGLERELOAD in FFlags )
+         else if canPackReload then
+           Reload( FInv.Slot[ efWeapon2 ], IF_SINGLERELOAD in FFlags );
+       end;
+     if IF_PUMPACTION in FFlags then
+       if (IF_CHAMBEREMPTY in FFlags) and (Ammo <> 0) then
+       begin
+         TLevel( Parent ).playSound( ID, 'pump', Player.FPosition );
+         Exclude( FFlags, IF_CHAMBEREMPTY );
+         IO.Msg( 'You pump a shell into the shotgun chamber.' );
+       end;
+     if (BF_GUNRUNNER in Self.FFlags) and canFire and (Shots < 3) and GetRunning then
+     with CreateAutoTarget( Player.Vision ) do
+     try
+       FTargetPos := Current;
+       if FTargetPos <> FPosition then
+       begin
+         // TODO: fix?
+         if Inv.Slot[ efWeapon ].CallHookCheck( Hook_OnFire, [Self,false] ) then
+           ActionFire( FTargetPos, Inv.Slot[ efWeapon ] );
+       end;
+     finally
+       Free;
+     end;
+    end;
+  FSpeedCount := iTempSC;
+
+  if FRun.Active and (not FPathRun) then
+    if RunStopNear or ((not Setting_RunOverItems) and (TLevel( Parent ).Item[ FPosition ] <> nil)) then
     begin
       FPathRun := False;
       FRun.Stop;
-      IO.ClearEventBuffer;
-    end
-    else
-    begin
-      iCommand := COMMAND_WALKNORTH;
-
-      if not GraphicsVersion then
-        IO.Delay( Option_RunDelay );
     end;
+end;
+
+function TPlayer.GetRunInput : TInputKey;
+var iDir : TDirection;
+begin
+  GetRunInput := INPUT_NONE;
+  if FRun.Active then
+  begin
+    Inc( FRun.Count );
+    if BF_SESSILE in FFlags then
+    begin
+      FPathRun := False;
+      FRun.Stop;
+      Fail('You can''t!',[] );
+      Exit( INPUT_NONE );
+    end;
+
+    if FPathRun then
+    begin
+      if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
+      begin
+        FPathRun := False;
+        FRun.Stop;
+        Exit( INPUT_NONE );
+      end;
+      iDir := NewDirection( FPosition, FPath.Start.Coord );
+      FPath.Start := FPath.Start.Child;
+    end
+    else iDir := FRun.Dir;
+
+    if iDir.code = 5 then
+    begin
+      if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
+    end;
+    Exit( DirectionToInput( iDir ) );
+  end;
+end;
+
+procedure TPlayer.PreAction;
+var iLevel      : TLevel;
+begin
+  iLevel := TLevel( Parent );
+
+  if iLevel.Item[ FPosition ] <> nil then
+  begin
+    if not FPathRun then
+      with iLevel.Item[ FPosition ] do
+        if isLever then
+           IO.Msg('There is a %s here.', [ DescribeLever( iLevel.Item[ FPosition ] ) ] )
+        else
+          if Flags[ IF_PLURALNAME ]
+            then IO.Msg('There are %s lying here.', [ GetName( False ) ] )
+            else IO.Msg('There is %s lying here.', [ GetName( False ) ] );
   end;
 
+  FEnemiesInVision := iLevel.BeingsVisible;
   if FEnemiesInVision < 2 then
   begin
     FChainFire := 0;
     if FBersekerLimit > 0 then Dec( FBersekerLimit );
   end;
 
-try
+  if FEnemiesInVision > 1 then
+  begin
+    FPathRun := False;
+    FRun.Stop;
+  end;
 
-  if FChainFire > 0 then
-    iCommand := COMMAND_ALTFIRE;
-
-  if iCommand = 0
-    then iCommand := IO.GetCommand
-    else UI.MsgUpDate;
-
-  if iCommand in [ COMMAND_MLEFT, COMMAND_MRIGHT ] then
-    iAlt := VKMOD_ALT in IO.Driver.GetModKeyState;
-
-  if iCommand = COMMAND_MMIDDLE then
-    if IO.MTarget = FPosition
-      then iCommand := COMMAND_SWAPWEAPON
-      else iCommand := COMMAND_EQUIPMENT;
-
-  if iCommand = COMMAND_MLEFT then
-    if IO.MTarget = FPosition then
-      if iAlt then iCommand := COMMAND_INVENTORY
-      else
-      if iLevel.cellFlagSet( FPosition, CF_STAIRS ) then
-        iCommand := COMMAND_ENTER
-      else
-        if iLevel.Item[ FPosition ] <> nil then
-          if iLevel.Item[ FPosition ].isLever then
-            iCommand := COMMAND_USE
-          else
-            iCommand := COMMAND_PICKUP
-          else
-            iCommand := COMMAND_INVENTORY
+  if FRun.Active then
+  begin
+    if IO.CommandEventPending then
+    begin
+      IO.Msg('Pending stop');
+      FPathRun := False;
+      FRun.Stop;
+      IO.ClearEventBuffer;
+    end
     else
-    if Distance( FPosition, IO.MTarget ) = 1
-      then iCommand := DirectionToCommand( NewDirection( FPosition, IO.MTarget ) )
-      else if iLevel.isExplored( IO.MTarget ) then
-      begin
-        if FPath.Run( FPosition, IO.MTarget, 200) then
-        begin
-          FPath.Start := FPath.Start.Child;
-          FRun.Active := True;
-          FPathRun := True;
-        end
-        else
-        begin
-          UI.Msg('Can''t get there!');
-          continue;
-        end;
-      end
-      else
-      begin
-        UI.Msg('You don''t know how to get there!');
-        continue;
-      end;
-
-  if ( iCommand in COMMANDS_MOVE ) or FRun.Active then
-  begin
-    FLastTargetPos.Create(0,0);
-    Inc( FRun.Count );
-    if BF_SESSILE in FFlags then
     begin
-      UI.Msg('You can''t!');
-      FPathRun := False;
-      FRun.Stop;
-      continue;
+      if not GraphicsVersion then
+        IO.Delay( Option_RunDelay );
     end;
-
-    
-    if FRun.Active
-      then
-        if FPathRun then
-        begin
-          if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
-          begin
-            FPathRun := False;
-            FRun.Stop;
-            Continue;
-          end;
-          iDir := NewDirection( FPosition, FPath.Start.Coord );
-          FPath.Start := FPath.Start.Child;
-        end
-        else iDir := FRun.Dir
-      else iDir := CommandDirection( iCommand );
-               
-    if iDir.code = 5 then
-    begin
-      if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
-      Dec( FSpeedCount, 1000 );
-      Break;
-    end;
-               
-    iMove := FPosition + iDir;
-    iMoveResult := TryMove( iMove );
-    
-    if (not FPathRun) and FRun.Active and (
-         ( FRun.Count >= Option_MaxRun ) or
-         ( iMoveResult <> MoveOk ) or
-         iLevel.cellFlagSet( iMove, CF_NORUN ) or
-         (not iLevel.isEmpty(iMove,[EF_NOTELE]))
-       ) then
-    begin
-      FPathRun := False;
-      FRun.Stop;
-      Continue;
-    end;
-    
-    case iMoveResult of
-       MoveBlock :
-         begin
-           if iLevel.isProperCoord( iMove ) and iLevel.cellFlagSet( iMove, CF_PUSHABLE ) then
-             iLevel.CallHook( iMove, Self, CellHook_OnAct )
-           else
-           begin
-             if Option_Blindmode then UI.Msg( 'You bump into a wall.' );
-             Continue;
-           end;
-         end;
-       MoveOk :
-         begin
-           if GraphicsVersion then
-           begin
-             UI.addScreenMoveAnimation(100,0,iMove);
-             UI.addMoveAnimation(100, 0, FUID, Position, iMove, Sprite );
-           end;
-
-           Displace( iMove );
-           BloodFloor;
-           Dec( FSpeedCount, getMoveCost );
-           iTempSC := FSpeedCount;
-           if Inv.Slot[ efWeapon ] <> nil then
-           with Inv.Slot[ efWeapon ] do
-             if isRanged then
-             begin // Autoreloading
-               if Ammo < AmmoMax then
-                 if ( ( ( IF_SHOTGUN in FFlags ) and ( BF_SHOTTYMAN in Self.FFlags ) ) or
-                    ( ( IF_ROCKET  in FFlags ) and ( BF_ROCKETMAN in Self.FFlags ) ) )
-                    and (not (IF_RECHARGE in FFlags)) then
-                 begin
-                   iItem := Inv.SeekAmmo(AmmoID);
-                   if iItem <> nil then
-                     Reload( iItem, IF_SINGLERELOAD in FFlags )
-                   else if canPackReload then
-                     Reload( FInv.Slot[ efWeapon2 ], IF_SINGLERELOAD in FFlags );
-                 end;
-               if IF_PUMPACTION in FFlags then
-                 if (IF_CHAMBEREMPTY in FFlags) and (Ammo <> 0) then
-                 begin
-                   iLevel.playSound( ID, 'pump', Player.FPosition );
-                   Exclude( FFlags, IF_CHAMBEREMPTY );
-                   UI.Msg( 'You pump a shell into the shotgun chamber.' );
-                 end;
-               if (BF_GUNRUNNER in Self.FFlags) and canFire and (Shots < 3) and GetRunning then
-               with CreateAutoTarget( Player.Vision ) do
-               try
-                 FTargetPos := Current;
-                 if FTargetPos <> FPosition then
-                   ActionFire( False, FTargetPos, Inv.Slot[ efWeapon ] );
-               finally
-                 Free;
-               end;
-             end;
-           FSpeedCount := iTempSC;
-         end;
-       MoveBeing : Attack( iLevel.Being[ iMove ] );
-       MoveDoor  : iLevel.CallHook( iMove, Self, CellHook_OnAct );
-    end;
-    if FRun.Active and (not FPathRun) then
-      if RunStopNear or
-         (iMoveResult <> MoveOk) or
-         ((not Option_RunOverItems) and (iLevel.Item[ FPosition ] <> nil)) then
-      begin
-        FPathRun := False;
-        FRun.Stop;
-        continue;
-      end;
-  end
-  else
-  case iCommand of
-    COMMAND_GRIDTOGGLE: if GraphicsVersion then SpriteMap.ToggleGrid;
-    COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
-    COMMAND_ESCAPE    : if GodMode then begin Doom.SetState( DSQuit ); Exit; end;
-    COMMAND_UNLOAD    : doUnLoad;
-    COMMAND_ENTER     : iLevel.CallHook( Position, CellHook_OnExit );
-    COMMAND_PICKUP    : ActionPickup;
-    COMMAND_DROP      : doDrop;
-    COMMAND_INVENTORY : if Inv.View then Dec(FSpeedCount,1000);
-    COMMAND_EQUIPMENT : if Inv.RunEq then Dec(FSpeedCount,1000);
-    COMMAND_OPEN      : doAct( CF_OPENABLE, 'open' );
-    COMMAND_CLOSE     : doAct( CF_CLOSABLE, 'close' );
-    COMMAND_LOOK      : begin UI.Msg( '-' ); UI.LookMode end;
-    COMMAND_ALTFIRE   : doFire( True );
-    COMMAND_FIRE      : doFire();
-    COMMAND_USE       : ActionUse( nil );
-    COMMAND_PLAYERINFO: doScreen;
-    COMMAND_QUIT      : doQuit;
-    COMMAND_HARDQUIT  : begin
-      Option_MenuReturn := False;
-      doQuit(True);
-    end;
-    COMMAND_SAVE      : doSave;
-    COMMAND_MSCRUP,
-    COMMAND_MSCRDOWN  : if Inv.DoScrollSwap then Dec(FSpeedCount,1000);
-
-    COMMAND_MRIGHT    : if (IO.MTarget = FPosition) or
-                           ((Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) and (not (Inv.Slot[efWeapon].GetFlag(IF_NOAMMO))) and (Inv.Slot[ efWeapon ].Ammo = 0))  then
-                          if iAlt
-                            then ActionAltReload
-                            else ActionReload
-                        else if (Inv.Slot[ efWeapon ] <> nil) and (Inv.Slot[ efWeapon ].isRanged) then
-                          if iAlt
-                            then ActionAltFire( False, IO.MTarget, Inv.Slot[ efWeapon ] )
-                            else ActionFire( False, IO.MTarget, Inv.Slot[ efWeapon ] )
-                        else Attack( FPosition + NewDirectionSmooth( FPosition, IO.MTarget ) );
-    COMMAND_TRAITS    : IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel ) );
-    COMMAND_TACTIC    : if not (BF_BERSERK in FFlags) then
-                          if FTactic.Change then
-                            Dec(FSpeedCount,100);
-    COMMAND_RUNMODE   : doRun;
-
-    COMMAND_SWAPWEAPON   : ActionQuickSwap;
-
-    COMMAND_EXAMINENPC   : ExamineNPC;
-    COMMAND_EXAMINEITEM  : ExamineItem;
-
-    COMMAND_SOUNDTOGGLE  : SoundOff := not SoundOff;
-    COMMAND_MUSICTOGGLE  : begin
-                             MusicOff := not MusicOff;
-                             if MusicOff then IO.PlayMusic('')
-                                         else IO.PlayMusic(iLevel.ID);
-                           end;
-
-    255 {COMMAND_INVALID} :;
-    COMMAND_YIELD        :;
-    else UI.Msg('Unknown command. Press "?" for help.');
   end;
-  UI.Focus( FPosition );
-  UpdateVisual;
-except
-  on e : Exception do
-  begin
-    if CRASHMODE then raise;
-    ErrorLogOpen('CRITICAL','Player action exception!');
-    ErrorLogWriteln('Error message : '+e.Message);
-    ErrorLogClose;
-    UI.ErrorReport(e.Message);
-    CRASHMODE := True;
-  end;
-end;
-until (FSpeedCount < 5000) or (Doom.State <> DSPlaying);
-  CRASHMODE := False;
-  LastTurnDodge := False;
-  //UI.WaitForAnimation;
-  iLevel.CalculateVision( FPosition );
 end;
 
 procedure TPlayer.LevelEnter;
@@ -983,11 +699,6 @@ begin
   FChainFire := 0;
 end;
 
-procedure TPlayer.doScreen;
-begin
-  IO.RunUILoop( TUIPlayerViewer.Create( IO.Root ) );
-end;
-
 procedure TPlayer.ExamineNPC;
 var iLevel : TLevel;
     iWhere : TCoord2D;
@@ -1000,9 +711,9 @@ begin
     with iLevel.Being[iWhere] do
     begin
       Inc(iCount);
-      UI.Msg('You see '+ GetName(false) + ' (' + WoundStatus + ') ' + BlindCoord(iWhere-Self.FPosition)+'.');
+      IO.Msg('You see '+ GetName(false) + ' (' + WoundStatus + ') ' + BlindCoord(iWhere-Self.FPosition)+'.');
     end;
-  if iCount = 0 then UI.Msg('There are no monsters in sight.');
+  if iCount = 0 then IO.Msg('There are no monsters in sight.');
 end;
 
 procedure TPlayer.ExamineItem;
@@ -1018,9 +729,9 @@ begin
       with iLevel.Item[iWhere] do
       begin
         Inc(iCount);
-        UI.Msg('You see '+ GetName(false) + ' ' + BlindCoord(iWhere-Self.FPosition)+'.');
+        IO.Msg('You see '+ GetName(false) + ' ' + BlindCoord(iWhere-Self.FPosition)+'.');
       end;
-  if iCount = 0 then UI.Msg('There are no items in sight.');
+  if iCount = 0 then IO.Msg('There are no items in sight.');
 end;
 
 // pieczarki oliwki szynka kielbasa peperoni motzarella //
@@ -1062,16 +773,16 @@ begin
      then iLevel.playSound( 'gib',FPosition )
      else playSound(FSounds.Die);
 
-  UI.WaitForAnimation;
+  IO.WaitForAnimation;
 
-  UI.MsgEnter('You die!...');
+  IO.MsgEnter('You die!...');
   Doom.SetState( DSFinished );
 
   if NukeActivated > 0 then
   begin
     NukeActivated := 1;
     iLevel.NukeTick;
-    UI.WaitForAnimation;
+    IO.WaitForAnimation;
   end;
   WriteMemorial;
 end;
@@ -1087,7 +798,6 @@ begin
   Inc(Score,FExpLevel);
   Inc(Score,CurrentLevel*3);
 end;
-function lowASCII(c : char) : char; begin if c in ['ù',''] then Exit('.'); Exit(c); end;
 
 begin
   if MemorialWritten then Exit;
@@ -1114,7 +824,7 @@ begin
 
   HOF.Add(Name,FScore,FKilledBy,FExpLevel,CurrentLevel,Doom.Challenge);
 
-  Assign(MortemText,SaveFilePath+'mortem.txt');
+  Assign(MortemText, WritePath + 'mortem.txt' );
   Rewrite(MortemText);
   WritingMortem := True;
   LuaSystem.ProtectedCall(['DoomRL','print_mortem'],[]);
@@ -1125,11 +835,11 @@ begin
 
   if Option_MortemArchive then
   begin
-    iString := SaveFilePath+'mortem'+PathDelim+ToProperFilename('['+FormatDateTime(Option_TimeStamp,Now)+'] '+Name)+'.txt';
+    iString :=  WritePath + 'mortem'+PathDelim+ToProperFilename('['+FormatDateTime(Option_TimeStamp,Now)+'] '+Name)+'.txt';
     Assign(iCopyText,iString);
     Log('Writing mortem...: '+iString);
     Rewrite(iCopyText);
-    Assign(MortemText,SaveFilePath+'mortem.txt');
+    Assign(MortemText, WritePath + 'mortem.txt');
     Reset(MortemText);
     
     while not EOF(MortemText) do
@@ -1163,18 +873,17 @@ begin
   if Inv.Slot[ efTorso ] <> nil then
     Color := Inv.Slot[ efTorso ].Color;
   Gray := NewColor( 200,200,200 );
-  FSprite.CosColor := True;
+  Include( FSprite.Flags, SF_COSPLAY );
+  Exclude( FSprite.Flags, SF_GLOW );
   if Inv.Slot[ efTorso ] <> nil then
   begin
-    FSprite.Glow      := Inv.Slot[ efTorso ].Sprite.Glow;
+    if SF_GLOW in Inv.Slot[ efTorso ].Sprite.Flags then
+      Include( FSprite.Flags, SF_GLOW );
     FSprite.Color     := Inv.Slot[ efTorso ].Sprite.Color;
     FSprite.GlowColor := Inv.Slot[ efTorso ].Sprite.GlowColor;
   end
   else
-  begin
-    FSprite.Glow     := False;
     FSprite.Color    := GRAY;
-  end;
   FSprite.SpriteID := HARDSPRITE_PLAYER;
   if Inv.Slot[ efWeapon ] <> nil then
   begin
@@ -1191,7 +900,7 @@ end;
 
 function TPlayer.ASCIIMoreCode : AnsiString;
 begin
-  if (Inv.Slot[efTorso] <> nil) and (UI.ASCII.Exists(Inv.Slot[efTorso].ID)) then
+  if (Inv.Slot[efTorso] <> nil) and (IO.NewASCII.Exists(Inv.Slot[efTorso].ID)) then
     exit(Inv.Slot[efTorso].ID);
   Exit('player');
 end;
@@ -1228,7 +937,8 @@ end;
 
 procedure TPlayer.doUpgradeTrait;
 begin
-  IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel, @OnTraitConfirm) );
+  IO.PushLayer( TPlayerView.CreateTrait( False ) );
+  IO.WaitForLayer;
 end;
 
 function lua_player_set_affect(L: Plua_State): Integer; cdecl;
@@ -1414,7 +1124,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  Player.doQuickWeapon(State.ToString(2));
+  Player.ActionQuickWeapon(State.ToString(2));
   Result := 0;
 end;
 
