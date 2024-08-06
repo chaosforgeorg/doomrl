@@ -44,6 +44,7 @@ type TDoomIO = class( TIO )
   procedure Reconfigure( aConfig : TLuaConfig ); virtual;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
   function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
+  procedure WaitForLayer;
   procedure FullUpdate; override;
   destructor Destroy; override;
   procedure Screenshot( aBB : Boolean );
@@ -510,6 +511,17 @@ begin
   FHudEnabled := False;
   FConsole.HideCursor;
   Result := inherited RunUILoop( aElement );
+  FHudEnabled := True;
+end;
+
+procedure TDoomIO.WaitForLayer;
+begin
+  FHudEnabled := False;
+  repeat
+    Sleep(10);
+    FullUpdate;
+    HandleEvents;
+  until FLayers.IsEmpty;
   FHudEnabled := True;
 end;
 
