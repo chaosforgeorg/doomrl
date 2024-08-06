@@ -95,7 +95,7 @@ type TMainMenuViewer = class( TUIElement )
 
 implementation
 
-uses {$IFDEF WINDOWS}Windows,{$ENDIF}math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
+uses {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
      doombase, doomio, doomgfxio, doomviews, doomplayerview, doomhelpview, doomsettingsview;
 
 const
@@ -520,7 +520,7 @@ begin
   if iMenu.Selected = 8 then
   begin
     {$IFDEF UNIX}
-    fpSystem('xdg-open ' + URL); // Unix-based systems
+    fpSystem('xdg-open ' + JHCURL); // Unix-based systems
     {$ENDIF}
     {$IFDEF WINDOWS}
       ShellExecute(0, 'open', PChar(JHCURL), nil, nil, SW_SHOWNORMAL); // Windows
