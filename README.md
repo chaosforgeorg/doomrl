@@ -1,23 +1,21 @@
 # doomrl
 
-DRL a.k.a. doomrl, a.k.a, D**m, the Roguelike
+DRL a.k.a. doomrl, a.k.a, D**m, the Roguelike, version 0.9.9.8
 http://drl.chaosforge.org/
 
-This release is dedicated to *eniMax, and the Jupiter Hell Kickstarter:
+This release is dedicated to Jupiter Hell Classic, the newly announced commercial remake/expansion to DRL:
 
-https://www.kickstarter.com/projects/2020043306/jupiter-hell-a-modern-turn-based-sci-fi-roguelike
+https://store.steampowered.com/app/3126530/Jupiter_Hell_Classic/
 
-If you enjoy this Open Source release, please consider pledging!
+If you enjoy this Open Source release, please consider wishlisting and later buying Jupiter Hell Classic! Also, you might be interested in DRL's modern 3D spiritual successor, Jupiter Hell (yes, it's still turn-based :P):
+
+https://store.steampowered.com/app/811320/Jupiter_Hell/
 
 Parts of this codebase date back to 2002, please do not judge! :P
 
-This FreePascal source code release is provided as is. You can try compiling it using the latest version of Lazarus ( http://www.lazarus-ide.org/ ). You will also need the FPC Valkyrie library ( https://github.com/ChaosForge/fpcvalkyrie/ ). You will also probably need the binary files of the full game downloadable from http://drl.chaosforge.org/ (in particular the sound, soundhq, music and mp3 folder contents, and the premade drl.wad and core.wad if you don't want to create it yourself).
+This FreePascal source code release is provided as is. You can try compiling it using the latest version of Lazarus ( http://www.lazarus-ide.org/ ). You will also need the FPC Valkyrie library ( https://github.com/ChaosForge/fpcvalkyrie/ ), version 0.9.0. You will also probably need the binary files of the full game downloadable from http://drl.chaosforge.org/ (in particular the sound, soundhq, music and mp3 folder contents, and the premade drl.wad and core.wad if you don't want to create it yourself).
 
-The current public versions are 32-bit, but going forward only 64-bit releases will be supported.
-
-Detailed compilation instructions will appear at some later point after the Jupiter Hell Kickstarter finishes.
-
-Short version:
+Compilation instructions, short version:
 
 1. Download DRL from http://drl.chaosforge.org/
 2. Copy bin/mp3, bin/music, bin/sound, bin/soundhq from the DRL folders to the source tree bin folder
@@ -34,11 +32,11 @@ Lua makefile path (tested on Windows, might work on Linux):
 3. From the root folder run lua5.1 makefile.lua
 4. You can build packages by running "lua5.1 makefile.lua all" or lq or hq
 
-All code is (C) 2003-2023 Kornel Kisielewicz
+All code is (C) 2003-2024 Kornel Kisielewicz
 
 Code is distributed under the GPL 2.0 license (see LICENSE file in this folder)
 
-All art is (C) 2003-2023 Derek Yu
+All art is (C) 2003-2024 Derek Yu
 
 Art is distributed under the CC-BY-SA 4.0 license (see LICENSE file in the bin/graphics/ folder)
 
