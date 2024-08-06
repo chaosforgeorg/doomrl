@@ -938,7 +938,7 @@ end;
 procedure TPlayer.doUpgradeTrait;
 begin
   IO.PushLayer( TPlayerView.CreateTrait( False ) );
-//  IO.RunUILoop( TUITraitsViewer.Create( IO.Root, @FTraits, ExpLevel, @OnTraitConfirm) );
+  IO.WaitForLayer;
 end;
 
 function lua_player_set_affect(L: Plua_State): Integer; cdecl;
