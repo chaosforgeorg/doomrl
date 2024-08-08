@@ -36,10 +36,10 @@ All code is (C) 2003-2024 Kornel Kisielewicz
 
 Code is distributed under the GPL 2.0 license (see LICENSE file in this folder)
 
-All art is (C) 2003-2024 Derek Yu
+Original art (0.9.9.7) and sprites by Derek Yu, (C) 2003-2024, licensed under CC BY-SA 4.0. Modified version and additions (0.9.9.8+) by Łukasz Śliwiński, (C) 2024, licensed under CC BY-SA 4.0.
 
-Art is distributed under the CC-BY-SA 4.0 license (see LICENSE file in the bin/graphics/ folder)
+All art is distributed under the CC-BY-SA 4.0 license (see LICENSE file in the bin/graphics/ folder).
 
 sincerely,
-
-Kornel Kisielewicz of ChaosForge
+Kornel Kisielewicz 
+ChaosForge
