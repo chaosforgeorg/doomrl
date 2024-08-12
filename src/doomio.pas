@@ -541,8 +541,9 @@ begin
   FreeAndNil( FOldASCII );
   FreeAndNil( FNewASCII );
 
-  for iLayer in FLayers do
-    iLayer.Free;
+  if FLayers <> nil then
+    for iLayer in FLayers do
+      iLayer.Free;
   FreeAndNil( FLayers );
   IO := nil;
   inherited Destroy;
