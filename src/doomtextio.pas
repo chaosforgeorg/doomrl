@@ -79,6 +79,8 @@ end;
 procedure TDoomTextIO.Update( aMSec : DWord );
 begin
   FTextMap.Update( aMSec );
+  if FTargeting and FLayers.IsEmpty
+     then FConsole.ShowCursor;
   inherited Update( aMSec );
 end;
 
@@ -147,8 +149,8 @@ begin
   FTargetEnabled := True;
   FTarget        := aTarget;
   FTargetRange   := aRange;
-  // TODO: this clashes with TIG
-  IO.Console.ShowCursor;
+  if FLayers.IsEmpty then
+    IO.Console.ShowCursor;
   IO.Console.MoveCursor( aTarget.x+1, aTarget.y+2 );
 end;
 

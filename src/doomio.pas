@@ -139,6 +139,7 @@ protected
 
   FHudEnabled  : Boolean;
   FWaiting     : Boolean;
+  FTargeting   : Boolean;
   FStoredHint  : AnsiString;
   FHint        : AnsiString;
 public
@@ -316,6 +317,7 @@ begin
 
   FWaiting    := False;
   FHudEnabled := False;
+  FTargeting  := False;
   FStoredHint := '';
   FHint       := '';
 
@@ -373,6 +375,7 @@ end;
 
 procedure TDoomIO.PushLayer( aLayer : TInterfaceLayer );
 begin
+  FConsole.HideCursor;
   FLayers.Push( aLayer );
 end;
 
@@ -471,6 +474,7 @@ end;
 
 procedure TDoomIO.FullLook( aID : Ansistring );
 begin
+  FConsole.HideCursor;
   PushLayer( TMoreView.Create( aID ) );
   //IO.RunUILoop( TUIMoreViewer.Create( IO.Root, ID ) );
 end;
@@ -1009,7 +1013,6 @@ end;
 
 procedure TDoomIO.Focus(aCoord: TCoord2D);
 begin
-  FConsole.ShowCursor;
   FConsole.MoveCursor(aCoord.x+1,aCoord.y+2);
 end;
 
@@ -1037,6 +1040,7 @@ begin
   Msg('You see : ');
 
   LookDescription( iTarget );
+  FTargeting := True;
   repeat
     if iTarget <> Position then
       begin
@@ -1089,7 +1093,8 @@ begin
     LookDescription( iTarget );
   until iInput in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
   MsgUpDate;
-
+  FConsole.HideCursor;
+  FTargeting := False;
   ChooseTarget := iTarget;
 end;
 
@@ -1105,6 +1110,7 @@ begin
   Target := Player.Position;
   TargetColor := NewColor( White );
   LookDescription( Target );
+  FTargeting := True;
   repeat
     if SpriteMap <> nil then SpriteMap.SetTarget( Target, TargetColor, False );
     TargetColor := NewColor( White );
@@ -1148,6 +1154,8 @@ begin
      end;
   until False;
   MsgUpDate;
+  FConsole.HideCursor;
+  FTargeting := False;
   if SpriteMap <> nil then SpriteMap.ClearTarget;
 end;
 
