@@ -5,6 +5,8 @@
 [fix] -- GH#---: fixed cursor behavior in ASCII (and in edit line)
 [fix] -- GH#---: fixed a extra crash on exiting incorrectly
 [fix] -- GH#---: fixed batch file executable name
+[fix] -- GH#---: fixed targeting line color under Invulnerability
+[fix] -- GH#---: fixed armor sprite/color not updating in turn it's destroyed
 [fix] -- GH#---: yet another attempt to fix the OnAttacked bug
 
 0.9.9.8
