@@ -261,6 +261,7 @@ begin
   FLevel.CalculateVision( Player.Position );
   StatusEffect := Player.FAffects.getEffect;
   IO.Focus( Player.Position );
+  Player.UpdateVisual;
   if GraphicsVersion then
     (IO as TDoomGFXIO).UpdateMinimap;
   Player.PreAction;

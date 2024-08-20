@@ -211,6 +211,14 @@ begin
   if FMax = 0 then Exit;
   if not GraphicsVersion then
   begin
+    if FCurrent = 0 then
+    begin
+      // Don't ask. Simply don't ask. Either FPC video unit or Windows 11 console
+      // is so broken that without this part, the loading screen gets printed
+      // incorrectly. Why? No fucking clue.
+      Sleep(100);
+      Exit;
+    end;
     iMaxChar  := FAbsolute.w-1 - 20;
     iProgChar := Min( Round(( FCurrent / FMax ) * iMaxChar), iMaxChar );
     iCon.Init( TConUIRoot(FRoot).Renderer );
