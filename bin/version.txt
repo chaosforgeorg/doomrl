@@ -8,6 +8,7 @@
 [fix] -- GH#---: fixed targeting line color under Invulnerability
 [fix] -- GH#---: fixed armor sprite/color not updating in turn it's destroyed
 [fix] -- GH#---: fixed nightmare imp speed and elite captain melee damage
+[fix] -- GH#---: fixed "Unlock all unlocks" not unlocking difficulties
 [fix] -- GH#---: yet another attempt to fix the OnAttacked bug
 
 0.9.9.8
