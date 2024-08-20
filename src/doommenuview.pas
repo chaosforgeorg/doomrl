@@ -255,8 +255,8 @@ begin
   begin
     iAllow := True;
     if (FResult.Challenge <> '') and (not GetBoolean( 'challenge' )) then iAllow := False;
-    if GetInteger('req_skill',0) > HOF.SkillRank then iAllow := False;
-    if GetInteger('req_exp',0)   > HOF.ExpRank   then iAllow := False;
+    if GetInteger('req_skill',0) > HOF.SkillRank then iAllow := Setting_UnlockAll;
+    if GetInteger('req_exp',0)   > HOF.ExpRank   then iAllow := Setting_UnlockAll;
     iMenu.Add(GetString('name'), iAllow );
   end;
 

@@ -949,6 +949,7 @@ var a,b,tc  : TCoord2D;
     Reduce  : Single;
     Dir     : TDirection;
     iNode   : TNode;
+    iItemUID: TUID;
     procedure SendShotgunBeam( s : TCoord2D; tcc : TCoord2D );
     var shb : TVisionRay;
         cnt : byte;
@@ -968,6 +969,9 @@ begin
   Range  := Shotgun.MaxRange;
   Spread := Shotgun.Spread;
   Reduce := Shotgun.Reduce;
+
+  iItemUID := 0;
+  if aItem <> nil then iItemUID := aItem.uid;
 
   d   := Distance( source, target );
   if d = 0 then Exit;
@@ -1006,7 +1010,9 @@ begin
             Knockback( dir, dmg div KnockBackValue );
           end;
           KnockBacked := True;
+          if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
           ApplyDamage( dmg, Target_Torso, Shotgun.DamageType, aItem );
+          if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
         
         DamageTile( tc, dmg, Shotgun.DamageType );
