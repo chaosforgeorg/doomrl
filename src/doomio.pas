@@ -838,10 +838,8 @@ end;
 procedure TDoomIO.LoadStart( aAdd : DWord = 0 );
 begin
   if FLoading = nil then
-  begin
     FLoading := TUILoadingScreen.Create(FUIRoot,100);
-    FLoading.Max := FLoading.Max + aAdd;
-  end;
+  FLoading.Max := FLoading.Max + aAdd;
 end;
 
 function TDoomIO.LoadCurrent : DWord;
