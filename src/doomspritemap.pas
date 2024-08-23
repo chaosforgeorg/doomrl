@@ -265,8 +265,7 @@ const TargetSprite : TSprite = (
 
 begin
   iIO := IO as TDoomGFXIO;
-  FSpriteEngine.FPos.X := FShift.X;
-  FSpriteEngine.FPos.Y := FShift.Y;
+  FSpriteEngine.Position := GLVec2i( FShift.X, FShift.Y );
 
   if iIO.MCursor.Active and iIO.Driver.GetMousePos( iPoint ) then
   begin
@@ -322,49 +321,48 @@ begin
 
   with FSpriteEngine do
   begin
-    FLayers[ DRL_SPRITESHEET_ENVIRO ] := TSpriteDataSet.Create( FSpriteEngine,
+    Add( DRL_SPRITESHEET_ENVIRO, TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['levels'],
       Textures.Textures['levels_mask'],
       nil,
       0
-    );
-    FLayers[ DRL_SPRITESHEET_DOODAD ] := TSpriteDataSet.Create( FSpriteEngine,
+    ) );
+    Add( DRL_SPRITESHEET_DOODAD, TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['doors_and_decorations'],
       Textures.Textures['doors_and_decorations_mask'],
       Textures.Textures['doors_and_decorations_glow'],
       100
-    );
-    FLayers[ DRL_SPRITESHEET_ITEMS  ] := TSpriteDataSet.Create( FSpriteEngine,
+    ) );
+    Add( DRL_SPRITESHEET_ITEMS, TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['guns_and_pickups'],
       Textures.Textures['guns_and_pickups_mask'],
       Textures.Textures['doors_and_decorations_glow'],
       200
-    );
-    FLayers[ DRL_SPRITESHEET_BEINGS ] := TSpriteDataSet.Create( FSpriteEngine,
+    ) );
+    Add( DRL_SPRITESHEET_BEINGS, TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['enemies'],
       nil,
       Textures.Textures['enemies_glow'],
       300
-    );
-    FLayers[ DRL_SPRITESHEET_PLAYER ] := TSpriteDataSet.Create( FSpriteEngine,
+    ) );
+    Add( DRL_SPRITESHEET_PLAYER, TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['doomguy'],
       Textures.Textures['doomguy_mask'],
       Textures.Textures['doomguy_glow'],
       300
-    );
-    FLayers[ DRL_SPRITESHEET_LARGE  ] := TSpriteDataSet.Create( FSpriteEngine,
+    ) );
+    Add( DRL_SPRITESHEET_LARGE, TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['enemies_big'],
       nil,
       Textures.Textures['enemies_big_glow'],
       500
-    );
-    FLayers[ DRL_SPRITESHEET_FX     ] := TSpriteDataSet.Create( FSpriteEngine,
+    ) );
+    Add( DRL_SPRITESHEET_FX, TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['fx'],
       Textures.Textures['fx_mask'],
       nil,
       1000
-    );
-    FLayerCount := 7;
+    ) );
   end;
 end;
 
@@ -389,7 +387,7 @@ var iCoord    : TGLRawQCoord;
     Rotated.y := Round( pY * cos( aRotation ) + pX * sin( aRotation ) + aY );
   end;
 begin
-  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
 
   iSizeH := FSpriteEngine.Grid.X div 2;
@@ -431,7 +429,7 @@ var iSize     : Byte;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
 begin
-  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
 
   iSize := 1;
@@ -595,7 +593,7 @@ var i         : Byte;
   end;
 const TOP : Single = 8.0 / 32.0;
 begin
-  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
 
   iLight[0] := FLightMap[aX-1,aY-1];
@@ -687,7 +685,7 @@ var i         : Byte;
     iSpriteID : DWord;
     iLight    : array[0..3] of Byte;
 begin
-  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
 
   iLight[0] := FLightMap[aX-1,aY-1];
@@ -959,7 +957,7 @@ begin
     end;
 
   if FTargeting then
-    with FSpriteEngine.FLayers[ DRL_SPRITESHEET_FX ] do
+    with FSpriteEngine.Layers[ DRL_SPRITESHEET_FX ] do
     begin
       iColor := NewColor( 0, 128, 0 );
       if FTargetList.Size > 0 then
@@ -977,7 +975,7 @@ begin
   if FGridActive then
   for Y := 1 to MAXY do
     for X := DMinX to DMaxX do
-    with FSpriteEngine.FLayers[ DRL_SPRITESHEET_FX ] do
+    with FSpriteEngine.Layers[ DRL_SPRITESHEET_FX ] do
     begin
       Normal.Push( HARDSPRITE_GRID, TGLVec2i.Create( X, Y ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
     end;
