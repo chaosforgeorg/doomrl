@@ -54,6 +54,7 @@ function DoomRL.OnLoaded()
 end
 
 function DoomRL.OnLoadBase()
+	DoomRL.load_sprites()
 	DoomRL.load_difficulty()
 	DoomRL.loadbasedata()
 	DoomRL.loadaffects()

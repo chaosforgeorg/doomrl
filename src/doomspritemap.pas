@@ -257,13 +257,14 @@ var iPoint   : TPoint;
 const TargetSprite : TSprite = (
   Color     : (R:0;G:0;B:0;A:255);
   GlowColor : (R:0;G:0;B:0;A:0);
-  SpriteID  : HARDSPRITE_SELECT;
+  SpriteID  : 0;
   Flags     : [ SF_COSPLAY ];
   Frames    : 0;
   Frametime : 0;
 );
 
 begin
+  TargetSprite.SpriteID := HARDSPRITE_SELECT;
   iIO := IO as TDoomGFXIO;
   FSpriteEngine.Position := GLVec2i( FShift.X, FShift.Y );
 
@@ -957,7 +958,6 @@ begin
     end;
 
   if FTargeting then
-    with FSpriteEngine.Layers[ DRL_SPRITESHEET_FX ] do
     begin
       iColor := NewColor( 0, 128, 0 );
       if FTargetList.Size > 0 then
@@ -966,18 +966,20 @@ begin
         if (not Doom.Level.isVisible( FTargetList[L] )) or
            (not Doom.Level.isEmpty( FTargetList[L], [ EF_NOBLOCK, EF_NOVISION ] )) then
           iColor := NewColor( 128, 0, 0 );
-        Cosplay.Push( HARDSPRITE_SELECT, TGLVec2i.Create(FTargetList[L].X, FTargetList[L].Y ), iColor, DRL_Z_FX );
+        with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
+          Cosplay.Push( HARDSPRITE_SELECT mod 100000, TGLVec2i.Create(FTargetList[L].X, FTargetList[L].Y ), iColor, DRL_Z_FX );
       end;
       if FTargetList.Size > 0 then
-        Cosplay.Push( HARDSPRITE_MARK, TGLVec2i.Create( FTarget.X, FTarget.Y ), FTargetColor, DRL_Z_FX );
+        with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
+          Cosplay.Push( HARDSPRITE_MARK mod 100000, TGLVec2i.Create( FTarget.X, FTarget.Y ), FTargetColor, DRL_Z_FX );
     end;
 
   if FGridActive then
   for Y := 1 to MAXY do
     for X := DMinX to DMaxX do
-    with FSpriteEngine.Layers[ DRL_SPRITESHEET_FX ] do
+    with FSpriteEngine.Layers[ HARDSPRITE_GRID div 100000 ] do
     begin
-      Normal.Push( HARDSPRITE_GRID, TGLVec2i.Create( X, Y ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
+      Normal.Push( HARDSPRITE_GRID mod 100000, TGLVec2i.Create( X, Y ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
     end;
 
 end;

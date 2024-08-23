@@ -177,6 +177,14 @@ begin
   FLevel := TLevel.Create;
   if not GraphicsVersion then
     (IO as TDoomTextIO).SetTextMap( FLevel );
+
+  HARDSPRITE_PLAYER := Lua.Get( 'HARDSPRITE_PLAYER' );
+  HARDSPRITE_HIT    := Lua.Get( 'HARDSPRITE_HIT' );
+  HARDSPRITE_EXPL   := Lua.Get( 'HARDSPRITE_EXPL' );
+  HARDSPRITE_SELECT := Lua.Get( 'HARDSPRITE_SELECT' );
+  HARDSPRITE_MARK   := Lua.Get( 'HARDSPRITE_MARK' );
+  HARDSPRITE_GRID   := Lua.Get( 'HARDSPRITE_GRID' );
+
   DataLoaded := True;
   IO.LoadStop;
 end;
