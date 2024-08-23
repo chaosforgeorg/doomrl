@@ -45,8 +45,6 @@ type
   procedure Recalculate;
   procedure Update( aTime : DWord; aProjection : TMatrix44 );
   procedure Draw;
-  procedure PrepareTextures;
-  procedure ReassignTextures;
   function DevicePointToCoord( aPoint : TPoint ) : TPoint;
   procedure PushSpriteBeing( aX, aY : Integer; const aSprite : TSprite; aLight : Byte );
   procedure PushSpriteDoodad( aX,aY : Byte; const aSprite : TSprite; aLight : Integer = -1 );
@@ -57,6 +55,7 @@ type
   procedure SetTarget( aTarget : TCoord2D; aColor : TColor; aDrawPath : Boolean );
   procedure ClearTarget;
   procedure ToggleGrid;
+  function GetGridSize : Word;
   function GetCellRotationMask( cell: TCoord2D ): Byte;
   destructor Destroy; override;
 private
@@ -65,7 +64,6 @@ private
   FMinShift       : TPoint;
   FFluidX         : Single;
   FFluidY         : Single;
-  FTileSize       : Word;
   FTimer          : DWord;
   FFluidTime      : Double;
   FTargeting      : Boolean;
@@ -76,7 +74,6 @@ private
   FShift          : TCoord2D;
   FLastCoord      : TCoord2D;
   FSpriteEngine   : TSpriteEngine;
-  FTexturesLoaded : Boolean;
   FLightMap       : array[0..MAXX] of array[0..MAXY] of Byte;
   FFramebuffer    : TGLFramebuffer;
   FPostProgram    : TGLProgram;
@@ -94,11 +91,9 @@ private
   function GetSprite( aSprite : TSprite ) : TSprite;
   function GetSprite( aCell, aStyle : Byte ) : TSprite;
 public
-  property Loaded : Boolean read FTexturesLoaded;
+  property Engine : TSpriteEngine read FSpriteEngine;
   property MaxShift : TPoint read FMaxShift;
   property MinShift : TPoint read FMinShift;
-
-  property TileSize : Word read FTileSize;
   property Shift : TCoord2D read FShift;
   property NewShift : TCoord2D write FNewShift;
 end;
@@ -108,7 +103,7 @@ var SpriteMap : TDoomSpriteMap = nil;
 implementation
 
 uses math, vmath, viotypes, vvision, vgl3library,
-     doomtextures, doomio, doomgfxio, doombase,
+     doomio, doomgfxio, doombase,
      dfmap, dfitem, dfbeing, dfplayer;
 
 function SpritePartSetFill( aPart : TSpritePart ) : TSpritePartSet;
@@ -159,7 +154,7 @@ begin
     TGLVec2i.Create(x+FSize,y+FSize),
     iColor,
     TGLVec2f.Create(0,0), TGLVec2f.Create(1,1),
-    Textures[ FTextureID ].GLTexture
+    (IO as TDoomGFXIO).Textures[ FTextureID ].GLTexture
     );
 end;
 
@@ -194,8 +189,7 @@ begin
   FFluidTime := 0;
   FLutTexture := 0;
   FTarget.Create(0,0);
-  FTexturesLoaded := False;
-  FSpriteEngine := TSpriteEngine.Create;
+  FSpriteEngine := TSpriteEngine.Create( GLVec2i( 32, 32 ) );
   FGridActive     := False;
   FLastCoord.Create(0,0);
 
@@ -210,14 +204,16 @@ procedure TDoomSpriteMap.Recalculate;
 var iIO : TDoomGFXIO;
 begin
   iIO := (IO as TDoomGFXIO);
-  FTileSize := 32 * iIO.TileMult;
-  FSpriteEngine.FGrid.Init(FTileSize,FTileSize);
+  FSpriteEngine.SetScale( iIO.TileMult );
   FMinShift := Point(0,0);
-  FMaxShift := Point(Max(FTileSize*MAXX-iIO.Driver.GetSizeX,0),Max(FTileSize*MAXY-iIO.Driver.GetSizeY,0));
+  FMaxShift := Point(
+    Max(FSpriteEngine.Grid.X*MAXX-iIO.Driver.GetSizeX,0),
+    Max(FSpriteEngine.Grid.Y*MAXY-iIO.Driver.GetSizeY,0)
+  );
 
-  if IO.Driver.GetSizeY > 20*FTileSize then
+  if IO.Driver.GetSizeY > 20*FSpriteEngine.Grid.Y then
   begin
-    FMinShift.Y := -( IO.Driver.GetSizeY - 20*FTileSize ) div 2;
+    FMinShift.Y := -( IO.Driver.GetSizeY - 20*FSpriteEngine.Grid.Y ) div 2;
     FMaxShift.Y := FMinShift.Y;
   end
   else
@@ -258,16 +254,16 @@ var iPoint   : TPoint;
 const TargetSprite : TSprite = (
   Color     : (R:0;G:0;B:0;A:255);
   GlowColor : (R:0;G:0;B:0;A:0);
-  SpriteID  : HARDSPRITE_SELECT;
+  SpriteID  : 0;
   Flags     : [ SF_COSPLAY ];
   Frames    : 0;
   Frametime : 0;
 );
 
 begin
+  TargetSprite.SpriteID := HARDSPRITE_SELECT;
   iIO := IO as TDoomGFXIO;
-  FSpriteEngine.FPos.X := FShift.X;
-  FSpriteEngine.FPos.Y := FShift.Y;
+  FSpriteEngine.Position := GLVec2i( FShift.X, FShift.Y );
 
   if iIO.MCursor.Active and iIO.Driver.GetMousePos( iPoint ) then
   begin
@@ -314,65 +310,10 @@ begin
     FSpriteEngine.Draw;
 end;
 
-procedure TDoomSpriteMap.PrepareTextures;
-begin
-  if FTexturesLoaded then Exit;
-  FTexturesLoaded := True;
-
-  Textures.PrepareTextures;
-
-  with FSpriteEngine do
-  begin
-    FLayers[ DRL_SPRITESHEET_ENVIRO ] := TSpriteDataSet.Create( FSpriteEngine, true,  false, DRL_COLS, 36 );
-    FLayers[ DRL_SPRITESHEET_DOODAD ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 9 );
-    FLayers[ DRL_SPRITESHEET_ITEMS  ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 5 );
-    FLayers[ DRL_SPRITESHEET_BEINGS ] := TSpriteDataSet.Create( FSpriteEngine, false, true,  DRL_COLS, 6 );
-    FLayers[ DRL_SPRITESHEET_PLAYER ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 2 );
-    FLayers[ DRL_SPRITESHEET_LARGE  ] := TSpriteDataSet.Create( FSpriteEngine, false, true,  DRL_COLS, 12 );
-    FLayers[ DRL_SPRITESHEET_FX     ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 2 );
-    FLayerCount := 7;
-  end;
-
-  ReassignTextures;
-end;
-
-procedure TDoomSpriteMap.ReassignTextures;
-begin
-  with FSpriteEngine do
-  begin
-    FTextureSet.Layer[ DRL_SPRITESHEET_ENVIRO ].Normal  := Textures.Textures['levels'].GLTexture;
-    FTextureSet.Layer[ DRL_SPRITESHEET_ENVIRO ].Cosplay := Textures.Textures['levels_mask'].GLTexture;
-
-    FTextureSet.Layer[ DRL_SPRITESHEET_DOODAD ].Normal  := Textures.Textures['doors_and_decorations'].GLTexture;
-    FTextureSet.Layer[ DRL_SPRITESHEET_DOODAD ].Cosplay := Textures.Textures['doors_and_decorations_mask'].GLTexture;
-    FTextureSet.Layer[ DRL_SPRITESHEET_DOODAD ].Glow    := Textures.Textures['doors_and_decorations_glow'].GLTexture;
-
-    FTextureSet.Layer[ DRL_SPRITESHEET_ITEMS ].Normal   := Textures.Textures['guns_and_pickups'].GLTexture;
-    FTextureSet.Layer[ DRL_SPRITESHEET_ITEMS ].Cosplay  := Textures.Textures['guns_and_pickups_mask'].GLTexture;
-    FTextureSet.Layer[ DRL_SPRITESHEET_ITEMS ].Glow     := Textures.Textures['guns_and_pickups_glow'].GLTexture;
-
-    FTextureSet.Layer[ DRL_SPRITESHEET_BEINGS ].Normal  := Textures.Textures['enemies'].GLTexture;
-    //FTextureSet.Layer[ DRL_SPRITESHEET_BEINGS ].Cosplay := Textures.Textures['enemies_mask'].GLTexture;
-    FTextureSet.Layer[ DRL_SPRITESHEET_BEINGS ].Glow    := Textures.Textures['enemies_glow'].GLTexture;
-
-    FTextureSet.Layer[ DRL_SPRITESHEET_PLAYER ].Normal  := Textures.Textures['doomguy'].GLTexture;
-    FTextureSet.Layer[ DRL_SPRITESHEET_PLAYER ].Cosplay := Textures.Textures['doomguy_mask'].GLTexture;
-    FTextureSet.Layer[ DRL_SPRITESHEET_PLAYER ].Glow    := Textures.Textures['doomguy_glow'].GLTexture;
-
-    FTextureSet.Layer[ DRL_SPRITESHEET_LARGE ].Normal   := Textures.Textures['enemies_big'].GLTexture;
-    //FTextureSet.Layer[ DRL_SPRITESHEET_LARGE ].Cosplay  := Textures.Textures['enemies_big_mask'].GLTexture;
-    FTextureSet.Layer[ DRL_SPRITESHEET_LARGE ].Glow     := Textures.Textures['enemies_big_glow'].GLTexture;
-
-    FTextureSet.Layer[ DRL_SPRITESHEET_FX ].Normal      := Textures.Textures['fx'].GLTexture;
-    FTextureSet.Layer[ DRL_SPRITESHEET_FX ].Cosplay     := Textures.Textures['fx_mask'].GLTexture;
-  end;
-
-end;
-
 function TDoomSpriteMap.DevicePointToCoord ( aPoint : TPoint ) : TPoint;
 begin
-  Result.x := Floor((aPoint.x + FShift.X) / FTileSize)+1;
-  Result.y := Floor((aPoint.y + FShift.Y) / FTileSize)+1;
+  Result.x := Floor((aPoint.x + FShift.X) / FSpriteEngine.Grid.X)+1;
+  Result.y := Floor((aPoint.y + FShift.Y) / FSpriteEngine.Grid.Y)+1;
 end;
 
 procedure TDoomSpriteMap.PushSpriteFXRotated ( aX, aY : Integer;
@@ -390,10 +331,10 @@ var iCoord    : TGLRawQCoord;
     Rotated.y := Round( pY * cos( aRotation ) + pX * sin( aRotation ) + aY );
   end;
 begin
-  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
 
-  iSizeH := FTileSize div 2;
+  iSizeH := FSpriteEngine.Grid.X div 2;
 
   iCoord.Data[ 0 ] := Rotated( -iSizeH, -iSizeH );
   iCoord.Data[ 1 ] := Rotated( -iSizeH, +iSizeH );
@@ -432,15 +373,15 @@ var iSize     : Byte;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
 begin
-  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
 
   iSize := 1;
   if SF_LARGE in aSprite.Flags then
   begin
     iSize := 2;
-    aX -= FTileSize div 2;
-    aY -= FTileSize;
+    aX -= FSpriteEngine.Grid.X div 2;
+    aY -= FSpriteEngine.Grid.Y;
   end;
   ip := TGLVec2i.Create(aX,aY);
   with iLayer do
@@ -596,7 +537,7 @@ var i         : Byte;
   end;
 const TOP : Single = 8.0 / 32.0;
 begin
-  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
 
   iLight[0] := FLightMap[aX-1,aY-1];
@@ -623,8 +564,8 @@ begin
   iColors.Data[2] := TGLVec3b.CreateAll(BilinearLight( iEnd ) );
   iColors.Data[3] := TGLVec3b.CreateAll(BilinearLight( TGLVec2f.Create( iEnd.X, iStart.Y ) ) );
 
-  iGridF    := TGLVec2f.Create( FSpriteEngine.FGrid.X, FSpriteEngine.FGrid.Y );
-  iPosition := TGLVec2i.Create( (aX-1)*FTileSize, (aY-1)*FTileSize );
+  iGridF    := TGLVec2f.Create( FSpriteEngine.Grid.X, FSpriteEngine.Grid.Y );
+  iPosition := GLVec2i( aX-1, aY-1 ) * FSpriteEngine.Grid;
   iPStart   := iGridF * iStart;
   iPEnd     := iGridF * iEnd;
   iPa       := iPosition + TGLVec2i.Create( Round( iPStart.X ), Round( iPStart.Y ) );
@@ -672,12 +613,12 @@ begin
   if SF_COSPLAY in iSprite.Flags then
     iSprite.Color := ScaleColor( iSprite.Color, Byte(iLight) );
   iZ := aY * DRL_Z_LINE;
-  PushSprite( (aX-1)*FTileSize, (aY-1)*FTileSize, iSprite, iLight, iZ + DRL_Z_DOODAD );
+  PushSprite( (aX-1)*FSpriteEngine.Grid.X, (aY-1)*FSpriteEngine.Grid.Y, iSprite, iLight, iZ + DRL_Z_DOODAD );
 end;
 
 procedure TDoomSpriteMap.PushSpriteFX( aX, aY : Byte; const aSprite : TSprite ) ;
 begin
-  PushSprite( (aX-1) * FTileSize, (aY-1) * FTileSize, aSprite, 255, DRL_Z_FX );
+  PushSprite( (aX-1) * FSpriteEngine.Grid.X, (aY-1) * FSpriteEngine.Grid.Y, aSprite, 255, DRL_Z_FX );
 end;
 
 procedure TDoomSpriteMap.PushSpriteTerrain( aX, aY : Byte; const aSprite : TSprite; aZ : Integer; aTSX : Single; aTSY : Single ) ;
@@ -688,7 +629,7 @@ var i         : Byte;
     iSpriteID : DWord;
     iLight    : array[0..3] of Byte;
 begin
-  iLayer    := FSpriteEngine.FLayers[ aSprite.SpriteID div 100000 ];
+  iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
 
   iLight[0] := FLightMap[aX-1,aY-1];
@@ -699,7 +640,7 @@ begin
   for i := 0 to 3 do
     iColors.Data[i] := TGLVec3b.CreateAll( iLight[i] );
 
-  ip := TGLVec2i.Create( (aX-1)*FTileSize, (aY-1)*FTileSize );
+  ip := TGLVec2i.Create( aX-1, aY-1 ) * FSpriteEngine.Grid;
   with iLayer do
   begin
     Normal.PushXY( iSpriteID, 1, ip, @iColors, aTSX, aTSY, aZ );
@@ -722,7 +663,7 @@ function TDoomSpriteMap.ShiftValue ( aFocus : TCoord2D ) : TCoord2D;
 const YFactor = 6;
 begin
   ShiftValue.X := S5Interpolate(FMinShift.X,FMaxShift.X, (aFocus.X-2)/(MAXX-3));
-  if FMaxShift.Y - FMinShift.Y > 4*FTileSize then
+  if FMaxShift.Y - FMinShift.Y > 4* FSpriteEngine.Grid.Y then
   begin
     if aFocus.Y < YFactor then
       ShiftValue.Y := FMinShift.Y
@@ -783,9 +724,9 @@ end;
 procedure TDoomSpriteMap.ApplyEffect;
 begin
   case StatusEffect of
-    StatusRed    : FLutTexture := Textures['lut_berserk'].GLTexture;
-    StatusGreen  : FLutTexture := Textures['lut_enviro'].GLTexture;
-    StatusInvert : FLutTexture := Textures['lut_iddqd'].GLTexture;
+    StatusRed    : FLutTexture := (IO as TDoomGFXIO).Textures['lut_berserk'].GLTexture;
+    StatusGreen  : FLutTexture := (IO as TDoomGFXIO).Textures['lut_enviro'].GLTexture;
+    StatusInvert : FLutTexture := (IO as TDoomGFXIO).Textures['lut_iddqd'].GLTexture;
     else FLutTexture := 0;
   end;
 end;
@@ -859,8 +800,8 @@ var DMinX, DMaxX : Word;
     end;
 
 begin
-  DMinX := FShift.X div FTileSize + 1;
-  DMaxX := Min(FShift.X div FTileSize + (IO.Driver.GetSizeX div FTileSize + 1),MAXX);
+  DMinX := FShift.X div FSpriteEngine.Grid.X + 1;
+  DMaxX := Min(FShift.X div FSpriteEngine.Grid.X + (IO.Driver.GetSizeX div FSpriteEngine.Grid.X + 1),MAXX);
 
   for Y := 1 to MAXY do
     for X := DMinX to DMaxX do
@@ -918,8 +859,8 @@ var DMinX, DMaxX : Word;
     Spr          : TSprite;
     iColor       : TColor;
 begin
-  DMinX := FShift.X div FTileSize + 1;
-  DMaxX := Min(FShift.X div FTileSize + (IO.Driver.GetSizeX div FTileSize + 1),MAXX);
+  DMinX := FShift.X div FSpriteEngine.Grid.X + 1;
+  DMaxX := Min(FShift.X div FSpriteEngine.Grid.X + (IO.Driver.GetSizeX div FSpriteEngine.Grid.X + 1),MAXX);
 
   for Y := 1 to MAXY do
     for X := DMinX to DMaxX do
@@ -939,7 +880,7 @@ begin
       if Doom.Level.ItemVisible(c, iItem) or Doom.Level.ItemExplored(c, iItem) then
       begin
         if Doom.Level.ItemVisible(c, iItem) then L := 255 else L := 70;
-        PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, GetSprite( iItem.Sprite ), L, Z + DRL_Z_ITEMS );
+        PushSprite( (X-1)*FSpriteEngine.Grid.X, (Y-1)*FSpriteEngine.Grid.Y, GetSprite( iItem.Sprite ), L, Z + DRL_Z_ITEMS );
       end;
     end;
 
@@ -951,16 +892,15 @@ begin
       iBeing := Doom.Level.Being[c];
       if (iBeing <> nil) and (iBeing.AnimCount = 0) then
         if Doom.Level.BeingVisible(c, iBeing) then
-          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, GetSprite( iBeing.Sprite ), 255, Z + DRL_Z_BEINGS )
+          PushSprite( (X-1)*FSpriteEngine.Grid.X, (Y-1)*FSpriteEngine.Grid.Y, GetSprite( iBeing.Sprite ), 255, Z + DRL_Z_BEINGS )
         else if Doom.Level.BeingExplored(c, iBeing) then
-          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, GetSprite( iBeing.Sprite ), 40, Z + DRL_Z_BEINGS )
+          PushSprite( (X-1)*FSpriteEngine.Grid.X, (Y-1)*FSpriteEngine.Grid.Y, GetSprite( iBeing.Sprite ), 40, Z + DRL_Z_BEINGS )
         else if Doom.Level.BeingIntuited(c, iBeing) then
-          PushSprite( (X-1)*FTileSize, (Y-1)*FTileSize, NewSprite( HARDSPRITE_MARK, NewColor( Magenta ) ), 25, Z + DRL_Z_BEINGS )
+          PushSprite( (X-1)*FSpriteEngine.Grid.X, (Y-1)*FSpriteEngine.Grid.Y, NewSprite( HARDSPRITE_MARK, NewColor( Magenta ) ), 25, Z + DRL_Z_BEINGS )
 
     end;
 
   if FTargeting then
-    with FSpriteEngine.FLayers[ DRL_SPRITESHEET_FX ] do
     begin
       iColor := NewColor( 0, 128, 0 );
       if FTargetList.Size > 0 then
@@ -969,18 +909,20 @@ begin
         if (not Doom.Level.isVisible( FTargetList[L] )) or
            (not Doom.Level.isEmpty( FTargetList[L], [ EF_NOBLOCK, EF_NOVISION ] )) then
           iColor := NewColor( 128, 0, 0 );
-        Cosplay.Push( HARDSPRITE_SELECT, TGLVec2i.Create(FTargetList[L].X, FTargetList[L].Y ), iColor, DRL_Z_FX );
+        with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
+          Cosplay.Push( HARDSPRITE_SELECT mod 100000, TGLVec2i.Create(FTargetList[L].X, FTargetList[L].Y ), iColor, DRL_Z_FX );
       end;
       if FTargetList.Size > 0 then
-        Cosplay.Push( HARDSPRITE_MARK, TGLVec2i.Create( FTarget.X, FTarget.Y ), FTargetColor, DRL_Z_FX );
+        with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
+          Cosplay.Push( HARDSPRITE_MARK mod 100000, TGLVec2i.Create( FTarget.X, FTarget.Y ), FTargetColor, DRL_Z_FX );
     end;
 
   if FGridActive then
   for Y := 1 to MAXY do
     for X := DMinX to DMaxX do
-    with FSpriteEngine.FLayers[ DRL_SPRITESHEET_FX ] do
+    with FSpriteEngine.Layers[ HARDSPRITE_GRID div 100000 ] do
     begin
-      Normal.Push( HARDSPRITE_GRID, TGLVec2i.Create( X, Y ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
+      Normal.Push( HARDSPRITE_GRID mod 100000, TGLVec2i.Create( X, Y ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
     end;
 
 end;
@@ -1012,6 +954,11 @@ begin
   if iCell.Sprite[ aStyle ].SpriteID <> 0 then
     Exit( iCell.Sprite[ aStyle ] );
   Exit( iCell.Sprite[ 0 ] );
+end;
+
+function TDoomSpriteMap.GetGridSize: Word;
+begin
+  Exit( FSpriteEngine.Grid.X );
 end;
 
 end.

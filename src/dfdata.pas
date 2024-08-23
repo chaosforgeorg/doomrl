@@ -146,6 +146,14 @@ const
   Option_IntuitionChar    : Char = '.';
 
 var
+  HARDSPRITE_PLAYER  : DWord = 0;
+  HARDSPRITE_HIT     : DWord = 0;
+  HARDSPRITE_EXPL    : DWord = 0;
+  HARDSPRITE_SELECT  : DWord = 0;
+  HARDSPRITE_MARK    : DWord = 0;
+  HARDSPRITE_GRID    : DWord = 0;
+
+var
   SoundOff  : boolean = False;
   MusicOff  : boolean = False;
 

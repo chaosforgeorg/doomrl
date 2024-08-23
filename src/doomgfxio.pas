@@ -2,7 +2,7 @@
 unit doomgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
-     vrltools, vutil,
+     vrltools, vutil, vtextures,
      doomio, doomspritemap, doomanimation, dfdata;
 
 type
@@ -40,7 +40,6 @@ type
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
     procedure ResetVideoMode;
-    procedure ReuploadTextures;
     procedure RecalculateScaling( aInitialize : Boolean );
     procedure CalculateConsoleParams;
     procedure SetMinimapScale( aScale : Byte );
@@ -71,6 +70,7 @@ type
     FMinimapGLPos   : TGLVec2i;
 
     FAnimations     : TAnimationManager;
+    FTextures       : TTextureManager;
   public
     property QuadSheet : TGLQuadList read FQuadSheet;
     property TextSheet : TGLQuadList read FTextSheet;
@@ -78,6 +78,7 @@ type
     property FontMult  : Byte read FFontMult;
     property TileMult  : Byte read FTileMult;
     property MCursor   : TDoomMouseCursor read FMCursor;
+    property Textures  : TTextureManager read FTextures;
   end;
 
 implementation
@@ -87,7 +88,7 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
      vdebug, vlog, vmath, vdf, vgl3library, vtigstyle,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfplayer,
-     doombase, doomtextures, doomconfiguration;
+     doombase, doomconfiguration;
 
 const ConsoleSizeX = 80;
       ConsoleSizeY = 25;
@@ -167,7 +168,7 @@ begin
   FFontMult := 1;
   FTileMult := 1;
   FMCursor  := nil;
-  Textures  := nil;
+  FTextures := nil;
 
   {$IFDEF WINDOWS}
   if not GodMode then
@@ -196,7 +197,8 @@ begin
     Log('-------');
   end;
 
-  Textures   := TDoomTextures.Create;
+  FTextures  := TTextureManager.Create( Option_Blending );
+
 
   iFontName := 'font10x18.png';
   FFontSizeX := 10;
@@ -212,9 +214,9 @@ begin
     FreeAndNil( iStream );
     FreeAndNil( iCoreData );
   end;
-  iFontTexture := Textures.AddImage( iFontName, iImage, Option_Blending );
-  Textures[ iFontTexture ].Image.SubstituteColor( ColorBlack, ColorZero );
-  Textures[ iFontTexture ].Upload;
+  iFontTexture := FTextures.AddImage( iFontName, iImage, Option_Blending );
+  FTextures[ iFontTexture ].Image.SubstituteColor( ColorBlack, ColorZero );
+  FTextures[ iFontTexture ].Upload;
 
   iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
 
@@ -286,7 +288,7 @@ begin
   FreeAndNil( FAnimations );
 
   FreeAndNil( SpriteMap );
-  FreeAndNil( Textures );
+  FreeAndNil( FTextures );
 
   inherited Destroy;
 end;
@@ -506,7 +508,6 @@ begin
   if FFullscreen then Include( iSDLFlags, SDLIO_Fullscreen );
   TSDLIODriver(FIODriver).ResetVideoMode( iWidth, iHeight, 32, iSDLFlags );
   RecalculateScaling( True );
-  ReuploadTextures;
   CalculateConsoleParams;
   TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - ConsoleSizeX*FFontSizeX*FFontMult) div 2, 0, FLineSpace, FFontMult );
   TGLConsoleRenderer( FConsole ).HideCursor;
@@ -522,12 +523,6 @@ begin
   FFullscreen := not TSDLIODriver(FIODriver).FullScreen;
   ResetVideoMode;
   Exit( True );
-end;
-
-procedure TDoomGFXIO.ReuploadTextures;
-begin
-  Textures.Upload;
-  SpriteMap.ReassignTextures;
 end;
 
 procedure TDoomGFXIO.CalculateConsoleParams;
@@ -551,7 +546,7 @@ begin
   if FMCursor <> nil then
   begin
     if FMCursor.Size = 0 then
-      FMCursor.SetTextureID( Textures.TextureID['cursor'], 32 );
+      FMCursor.SetTextureID( FTextures.TextureID['cursor'], 32 );
     FMCursor.Active := True;
   end;
   Exit( inherited RunUILoop( aElement ) );
