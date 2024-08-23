@@ -137,7 +137,7 @@ begin
   FStep   := 0;
   FPath.Next;
   FPath.Prev := aSource;
-  iSize := SpriteMap.TileSize;
+  iSize := SpriteMap.GetGridSize;
 
   FSource.Init( aSource.X*iSize-iSize div 2, aSource.Y*iSize-iSize div 2 );
   FTarget.Init( aTarget.X*iSize-iSize div 2, aTarget.Y*iSize-iSize div 2 );
@@ -287,7 +287,7 @@ begin
     FLightEnd   := Max( FLightEnd, 40 );
   end;
 
-  iSize := SpriteMap.TileSize;
+  iSize := SpriteMap.GetGridSize;
   FSource.Init( (aFrom.X - 1)*iSize,(aFrom.Y - 1)*iSize);
   FTarget.Init( (aTo.X   - 1)*iSize,(aTo.Y   - 1)*iSize);
 end;
