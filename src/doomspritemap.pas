@@ -325,37 +325,44 @@ begin
     FLayers[ DRL_SPRITESHEET_ENVIRO ] := TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['levels'],
       Textures.Textures['levels_mask'],
-      nil
+      nil,
+      0
     );
     FLayers[ DRL_SPRITESHEET_DOODAD ] := TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['doors_and_decorations'],
       Textures.Textures['doors_and_decorations_mask'],
-      Textures.Textures['doors_and_decorations_glow']
+      Textures.Textures['doors_and_decorations_glow'],
+      100
     );
     FLayers[ DRL_SPRITESHEET_ITEMS  ] := TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['guns_and_pickups'],
       Textures.Textures['guns_and_pickups_mask'],
-      Textures.Textures['doors_and_decorations_glow']
+      Textures.Textures['doors_and_decorations_glow'],
+      200
     );
     FLayers[ DRL_SPRITESHEET_BEINGS ] := TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['enemies'],
       nil,
-      Textures.Textures['enemies_glow']
+      Textures.Textures['enemies_glow'],
+      300
     );
     FLayers[ DRL_SPRITESHEET_PLAYER ] := TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['doomguy'],
       Textures.Textures['doomguy_mask'],
-      Textures.Textures['doomguy_glow']
+      Textures.Textures['doomguy_glow'],
+      300
     );
     FLayers[ DRL_SPRITESHEET_LARGE  ] := TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['enemies_big'],
       nil,
-      Textures.Textures['enemies_big_glow']
+      Textures.Textures['enemies_big_glow'],
+      500
     );
     FLayers[ DRL_SPRITESHEET_FX     ] := TSpriteDataSet.Create( FSpriteEngine,
       Textures.Textures['fx'],
       Textures.Textures['fx_mask'],
-      nil
+      nil,
+      1000
     );
     FLayerCount := 7;
   end;
