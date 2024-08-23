@@ -322,43 +322,42 @@ begin
 
   with FSpriteEngine do
   begin
-    FLayers[ DRL_SPRITESHEET_ENVIRO ] := TSpriteDataSet.Create( FSpriteEngine, true,  false, DRL_COLS, 36 );
-    FLayers[ DRL_SPRITESHEET_DOODAD ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 9 );
-    FLayers[ DRL_SPRITESHEET_ITEMS  ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 5 );
-    FLayers[ DRL_SPRITESHEET_BEINGS ] := TSpriteDataSet.Create( FSpriteEngine, false, true,  DRL_COLS, 6 );
-    FLayers[ DRL_SPRITESHEET_PLAYER ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 2 );
-    FLayers[ DRL_SPRITESHEET_LARGE  ] := TSpriteDataSet.Create( FSpriteEngine, false, true,  DRL_COLS, 12 );
-    FLayers[ DRL_SPRITESHEET_FX     ] := TSpriteDataSet.Create( FSpriteEngine, true,  true,  DRL_COLS, 2 );
+    FLayers[ DRL_SPRITESHEET_ENVIRO ] := TSpriteDataSet.Create( FSpriteEngine,
+      Textures.Textures['levels'].GLTexture,
+      Textures.Textures['levels_mask'].GLTexture,
+      0,
+      DRL_COLS, 36 );
+    FLayers[ DRL_SPRITESHEET_DOODAD ] := TSpriteDataSet.Create( FSpriteEngine,
+      Textures.Textures['doors_and_decorations'].GLTexture,
+      Textures.Textures['doors_and_decorations_mask'].GLTexture,
+      Textures.Textures['doors_and_decorations_glow'].GLTexture,
+      DRL_COLS, 9 );
+    FLayers[ DRL_SPRITESHEET_ITEMS  ] := TSpriteDataSet.Create( FSpriteEngine,
+      Textures.Textures['guns_and_pickups'].GLTexture,
+      Textures.Textures['guns_and_pickups_mask'].GLTexture,
+      Textures.Textures['doors_and_decorations_glow'].GLTexture,
+      DRL_COLS, 5 );
+    FLayers[ DRL_SPRITESHEET_BEINGS ] := TSpriteDataSet.Create( FSpriteEngine,
+      Textures.Textures['enemies'].GLTexture,
+      0,
+      Textures.Textures['enemies_glow'].GLTexture,
+      DRL_COLS, 6 );
+    FLayers[ DRL_SPRITESHEET_PLAYER ] := TSpriteDataSet.Create( FSpriteEngine,
+      Textures.Textures['doomguy'].GLTexture,
+      Textures.Textures['doomguy_mask'].GLTexture,
+      Textures.Textures['doomguy_glow'].GLTexture,
+      DRL_COLS, 2 );
+    FLayers[ DRL_SPRITESHEET_LARGE  ] := TSpriteDataSet.Create( FSpriteEngine,
+      Textures.Textures['enemies_big'].GLTexture,
+      0,
+      Textures.Textures['enemies_big_glow'].GLTexture,
+      DRL_COLS, 12 );
+    FLayers[ DRL_SPRITESHEET_FX     ] := TSpriteDataSet.Create( FSpriteEngine,
+      Textures.Textures['fx'].GLTexture,
+      Textures.Textures['fx_mask'].GLTexture,
+      0,
+      DRL_COLS, 2 );
     FLayerCount := 7;
-  end;
-
-  with FSpriteEngine do
-  begin
-    FTextureSet[ DRL_SPRITESHEET_ENVIRO ].Normal  := Textures.Textures['levels'].GLTexture;
-    FTextureSet[ DRL_SPRITESHEET_ENVIRO ].Cosplay := Textures.Textures['levels_mask'].GLTexture;
-
-    FTextureSet[ DRL_SPRITESHEET_DOODAD ].Normal  := Textures.Textures['doors_and_decorations'].GLTexture;
-    FTextureSet[ DRL_SPRITESHEET_DOODAD ].Cosplay := Textures.Textures['doors_and_decorations_mask'].GLTexture;
-    FTextureSet[ DRL_SPRITESHEET_DOODAD ].Glow    := Textures.Textures['doors_and_decorations_glow'].GLTexture;
-
-    FTextureSet[ DRL_SPRITESHEET_ITEMS ].Normal   := Textures.Textures['guns_and_pickups'].GLTexture;
-    FTextureSet[ DRL_SPRITESHEET_ITEMS ].Cosplay  := Textures.Textures['guns_and_pickups_mask'].GLTexture;
-    FTextureSet[ DRL_SPRITESHEET_ITEMS ].Glow     := Textures.Textures['guns_and_pickups_glow'].GLTexture;
-
-    FTextureSet[ DRL_SPRITESHEET_BEINGS ].Normal  := Textures.Textures['enemies'].GLTexture;
-    //FTextureSet.Layer[ DRL_SPRITESHEET_BEINGS ].Cosplay := Textures.Textures['enemies_mask'].GLTexture;
-    FTextureSet[ DRL_SPRITESHEET_BEINGS ].Glow    := Textures.Textures['enemies_glow'].GLTexture;
-
-    FTextureSet[ DRL_SPRITESHEET_PLAYER ].Normal  := Textures.Textures['doomguy'].GLTexture;
-    FTextureSet[ DRL_SPRITESHEET_PLAYER ].Cosplay := Textures.Textures['doomguy_mask'].GLTexture;
-    FTextureSet[ DRL_SPRITESHEET_PLAYER ].Glow    := Textures.Textures['doomguy_glow'].GLTexture;
-
-    FTextureSet[ DRL_SPRITESHEET_LARGE ].Normal   := Textures.Textures['enemies_big'].GLTexture;
-    //FTextureSet.Layer[ DRL_SPRITESHEET_LARGE ].Cosplay  := Textures.Textures['enemies_big_mask'].GLTexture;
-    FTextureSet[ DRL_SPRITESHEET_LARGE ].Glow     := Textures.Textures['enemies_big_glow'].GLTexture;
-
-    FTextureSet[ DRL_SPRITESHEET_FX ].Normal      := Textures.Textures['fx'].GLTexture;
-    FTextureSet[ DRL_SPRITESHEET_FX ].Cosplay     := Textures.Textures['fx_mask'].GLTexture;
   end;
 end;
 
