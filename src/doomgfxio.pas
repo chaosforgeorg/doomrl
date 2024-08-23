@@ -40,7 +40,6 @@ type
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
     procedure ResetVideoMode;
-    procedure ReuploadTextures;
     procedure RecalculateScaling( aInitialize : Boolean );
     procedure CalculateConsoleParams;
     procedure SetMinimapScale( aScale : Byte );
@@ -506,7 +505,6 @@ begin
   if FFullscreen then Include( iSDLFlags, SDLIO_Fullscreen );
   TSDLIODriver(FIODriver).ResetVideoMode( iWidth, iHeight, 32, iSDLFlags );
   RecalculateScaling( True );
-  ReuploadTextures;
   CalculateConsoleParams;
   TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - ConsoleSizeX*FFontSizeX*FFontMult) div 2, 0, FLineSpace, FFontMult );
   TGLConsoleRenderer( FConsole ).HideCursor;
@@ -522,12 +520,6 @@ begin
   FFullscreen := not TSDLIODriver(FIODriver).FullScreen;
   ResetVideoMode;
   Exit( True );
-end;
-
-procedure TDoomGFXIO.ReuploadTextures;
-begin
-  Textures.Upload;
-  SpriteMap.ReassignTextures;
 end;
 
 procedure TDoomGFXIO.CalculateConsoleParams;
