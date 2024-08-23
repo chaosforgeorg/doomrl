@@ -103,7 +103,7 @@ var SpriteMap : TDoomSpriteMap = nil;
 implementation
 
 uses math, vmath, viotypes, vvision, vgl3library,
-     doomtextures, doomio, doomgfxio, doombase,
+     doomio, doomgfxio, doombase,
      dfmap, dfitem, dfbeing, dfplayer;
 
 function SpritePartSetFill( aPart : TSpritePart ) : TSpritePartSet;
@@ -154,7 +154,7 @@ begin
     TGLVec2i.Create(x+FSize,y+FSize),
     iColor,
     TGLVec2f.Create(0,0), TGLVec2f.Create(1,1),
-    Textures[ FTextureID ].GLTexture
+    (IO as TDoomGFXIO).Textures[ FTextureID ].GLTexture
     );
 end;
 
@@ -724,9 +724,9 @@ end;
 procedure TDoomSpriteMap.ApplyEffect;
 begin
   case StatusEffect of
-    StatusRed    : FLutTexture := Textures['lut_berserk'].GLTexture;
-    StatusGreen  : FLutTexture := Textures['lut_enviro'].GLTexture;
-    StatusInvert : FLutTexture := Textures['lut_iddqd'].GLTexture;
+    StatusRed    : FLutTexture := (IO as TDoomGFXIO).Textures['lut_berserk'].GLTexture;
+    StatusGreen  : FLutTexture := (IO as TDoomGFXIO).Textures['lut_enviro'].GLTexture;
+    StatusInvert : FLutTexture := (IO as TDoomGFXIO).Textures['lut_iddqd'].GLTexture;
     else FLutTexture := 0;
   end;
 end;

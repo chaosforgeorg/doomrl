@@ -83,7 +83,7 @@ uses Classes, SysUtils,
      vdebug, viotypes,
      dfmap, dfbeing,
      doomio, doomgfxio, doomtextio, zstream,
-     doomspritemap, doomtextures, // remove
+     doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
      doomconfiguration, doomhelp, doomconfig, doomviews, dfplayer;
 
@@ -172,7 +172,7 @@ begin
 
   LoadModule( True );
   if GraphicsVersion then
-    Textures.Upload;
+    (IO as TDoomGFXIO).Textures.Upload;
 
   if GodMode and FileExists( WritePath + 'god.lua') then
     Lua.LoadFile( WritePath + 'god.lua');

@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doommenuview;
 interface
-uses vuielements, vuielement, viotypes, vuitypes, vioevent, vconui, dfdata, doomtextures, doommodule;
+uses vuielements, vuielement, viotypes, vuitypes, vioevent, vconui, dfdata, vtextures, doommodule;
 
 type TChallengeDesc = record Name : AnsiString; Desc : AnsiString; end;
 const ChallengeType : array[1..4] of TChallengeDesc =
@@ -179,8 +179,8 @@ procedure TMainMenuViewer.Init;
 begin
   if GraphicsVersion then
   begin
-    FBGTexture   := Textures.TextureID['background'];
-    FLogoTexture := Textures.TextureID['logo'];
+    FBGTexture   := (IO as TDoomGFXIO).Textures.TextureID['background'];
+    FLogoTexture := (IO as TDoomGFXIO).Textures.TextureID['logo'];
     FBackColor   := $10000000;
   end;
   FEventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN, VEVENT_SYSTEM ];
@@ -341,7 +341,7 @@ begin
     iIO    := IO as TDoomGFXIO;
     Assert( iIO <> nil );
 
-    iImage := Textures.Texture[ FBGTexture ].Image;
+    iImage := iIO.Textures.Texture[ FBGTexture ].Image;
     iTX    := iImage.RawX / iImage.SizeX;
     iTY    := iImage.RawY / iImage.SizeY;
     iSizeX := IO.Driver.GetSizeX;
@@ -367,7 +367,7 @@ begin
       TGLVec2i.Create(Floor(iMinX), Floor(iMinY)),
       TGLVec2i.Create(Floor(iMaxX), Floor(iMaxY)),
       TGLVec2f.Create(0,0),TGLVec2f.Create(iTX,iTY),
-      Textures.Texture[ FBGTexture ].GLTexture
+      iIO.Textures.Texture[ FBGTexture ].GLTexture
     );
 
     if FMode = MenuModeFirst then
@@ -381,7 +381,7 @@ begin
 
     if FLogo then
     begin
-      iImage := Textures.Texture[ FLogoTexture ].Image;
+      iImage := iIO.Textures.Texture[ FLogoTexture ].Image;
       iSizeX := IO.Driver.GetSizeX;
       iSizeY := IO.Driver.GetSizeY;
       iMinY  := Floor(iSizeY / 25) * (-8);
@@ -395,7 +395,7 @@ begin
         TGLVec2i.Create(Floor(iMinX), Floor(iMinY)),
         TGLVec2i.Create(Floor(iMaxX), Floor(iMaxY)),
         TGLVec2f.Create( 0,0 ), TGLVec2f.Create( 1,1 ),
-        Textures.Texture[ FLogoTexture ].GLTexture
+        iIO.Textures.Texture[ FLogoTexture ].GLTexture
       );
       iRoot := TConUIRoot(FRoot);
       case FMode of

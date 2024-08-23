@@ -2,7 +2,7 @@
 unit doomgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
-     vrltools, vutil,
+     vrltools, vutil, vtextures,
      doomio, doomspritemap, doomanimation, dfdata;
 
 type
@@ -70,6 +70,7 @@ type
     FMinimapGLPos   : TGLVec2i;
 
     FAnimations     : TAnimationManager;
+    FTextures       : TTextureManager;
   public
     property QuadSheet : TGLQuadList read FQuadSheet;
     property TextSheet : TGLQuadList read FTextSheet;
@@ -77,6 +78,7 @@ type
     property FontMult  : Byte read FFontMult;
     property TileMult  : Byte read FTileMult;
     property MCursor   : TDoomMouseCursor read FMCursor;
+    property Textures  : TTextureManager read FTextures;
   end;
 
 implementation
@@ -86,7 +88,7 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
      vdebug, vlog, vmath, vdf, vgl3library, vtigstyle,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfplayer,
-     doombase, doomtextures, doomconfiguration;
+     doombase, doomconfiguration;
 
 const ConsoleSizeX = 80;
       ConsoleSizeY = 25;
@@ -166,7 +168,7 @@ begin
   FFontMult := 1;
   FTileMult := 1;
   FMCursor  := nil;
-  Textures  := nil;
+  FTextures := nil;
 
   {$IFDEF WINDOWS}
   if not GodMode then
@@ -195,7 +197,7 @@ begin
     Log('-------');
   end;
 
-  Textures   := TDoomTextures.Create;
+  FTextures  := TTextureManager.Create( Option_Blending );
 
 
   iFontName := 'font10x18.png';
@@ -212,9 +214,9 @@ begin
     FreeAndNil( iStream );
     FreeAndNil( iCoreData );
   end;
-  iFontTexture := Textures.AddImage( iFontName, iImage, Option_Blending );
-  Textures[ iFontTexture ].Image.SubstituteColor( ColorBlack, ColorZero );
-  Textures[ iFontTexture ].Upload;
+  iFontTexture := FTextures.AddImage( iFontName, iImage, Option_Blending );
+  FTextures[ iFontTexture ].Image.SubstituteColor( ColorBlack, ColorZero );
+  FTextures[ iFontTexture ].Upload;
 
   iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
 
@@ -286,7 +288,7 @@ begin
   FreeAndNil( FAnimations );
 
   FreeAndNil( SpriteMap );
-  FreeAndNil( Textures );
+  FreeAndNil( FTextures );
 
   inherited Destroy;
 end;
@@ -544,7 +546,7 @@ begin
   if FMCursor <> nil then
   begin
     if FMCursor.Size = 0 then
-      FMCursor.SetTextureID( Textures.TextureID['cursor'], 32 );
+      FMCursor.SetTextureID( FTextures.TextureID['cursor'], 32 );
     FMCursor.Active := True;
   end;
   Exit( inherited RunUILoop( aElement ) );

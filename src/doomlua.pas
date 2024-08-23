@@ -41,10 +41,52 @@ end;
 implementation
 
 uses typinfo, variants, strutils, xmlread, dom,
-     vnode, vdebug, viotypes, vluatools, vsystems, vluadungen, vluaentitynode, vtextures,
-     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, vsound, doomtextures, doomspritemap;
+     vnode, vdebug, viotypes, vluatools, vsystems, vluadungen, vluaentitynode,
+     vmath, vtextures, vimage,
+     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, vsound, doomgfxio, doomspritemap;
 
 var SpriteSheetCounter : Integer = -1;
+
+function GenerateGlow ( Shadow : TImage ) : TImage;
+const GaussSize = 1;
+var Glow        : TImage;
+    X,Y,P,XX,YY : Integer;
+    RX,RY       : Integer;
+    Value       : Integer;
+begin
+  Glow := TImage.Create( Shadow.SizeX, Shadow.SizeY );
+  Glow.Fill( ColorZero );
+  XX := 1 * 4;
+  YY := Glow.SizeX * 4;
+  for X := 1 to Glow.SizeX - 2 do
+    for Y := 1 to Glow.SizeY - 2 do
+    begin
+      P  := (Integer(Glow.SizeX)*Y + X) * 4;
+      RX := ( Shadow.Data[ P-YY ] - Shadow.Data[ P+YY ] );
+      RY := ( Shadow.Data[ P+XX ] - Shadow.Data[ P-XX ] );
+      Value := Clamp( Round( 0.1 * Sqrt( RX * RX + RY * RY ) ), 0, 255 );
+      Glow.Data[ P   ] := Value;
+      Glow.Data[ P+1 ] := Value;
+      Glow.Data[ P+2 ] := Value;
+      Glow.Data[ P+3 ] := Value;
+    end;
+  GenerateGlow := Glow.Clone;
+  for X := GaussSize to Glow.SizeX - 1 - GaussSize do
+    for Y := GaussSize to Glow.SizeY - 1 - GaussSize do
+    begin
+      Value := 0;
+      for RX := -GaussSize to GaussSize do
+        for RY := -GaussSize to GaussSize do
+          Value += Glow.Data[ (Integer(Glow.SizeX)*(Y+RY) + (X+RX)) * 4 ];
+      Value := Clamp( Value div ( GaussSize * GaussSize ), 0, 255 );
+      P  := (Integer(Glow.SizeX)*Y + X) * 4;
+      GenerateGlow.Data[ P   ] := Value;
+      GenerateGlow.Data[ P+1 ] := Value;
+      GenerateGlow.Data[ P+2 ] := Value;
+      GenerateGlow.Data[ P+3 ] := Value;
+    end;
+  FreeAndNil( Glow );
+end;
 
 function lua_core_is_playing(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
@@ -299,7 +341,7 @@ var State    : TDoomLuaState;
 begin
   State.Init(L);
   if not GraphicsVersion then Exit( 0 );
-  iTexture := Textures.Textures[ State.ToString(1) ];
+  iTexture := (IO as TDoomGFXIO).Textures.Textures[ State.ToString(1) ];
   if iTexture = nil then State.Error( 'Texture not found: '+State.ToString(1) );
   if State.IsBoolean( 2 ) and State.ToBoolean( 2 ) then iTexture.Blend := True;
   if State.IsBoolean( 3 ) and State.ToBoolean( 3 ) then iTexture.is3D  := True;
@@ -316,9 +358,9 @@ var State : TDoomLuaState;
 begin
   State.Init(L);
   if not GraphicsVersion then Exit( 0 );
-  iIn := Textures.Textures[ State.ToString(1) ];
+  iIn := (IO as TDoomGFXIO).Textures.Textures[ State.ToString(1) ];
   if iIn = nil then State.Error( 'Texture not found: '+State.ToString(1) );
-  Textures.AddImage( State.ToString(2), Textures.GenerateGlow( iIn.Image ), Option_Blending );
+  (IO as TDoomGFXIO).Textures.AddImage( State.ToString(2), GenerateGlow( iIn.Image ), Option_Blending );
   Result := 0;
 end;
 
@@ -332,7 +374,7 @@ var State    : TDoomLuaState;
   function LoadTexture( iIndex : Integer ) : TTexture;
   begin
     if not State.IsString( iIndex ) then Exit( nil );
-    LoadTexture := Textures.Textures[ State.ToString( iIndex ) ];
+    LoadTexture := (IO as TDoomGFXIO).Textures.Textures[ State.ToString( iIndex ) ];
     if LoadTexture = nil then State.Error( 'register_sprite_sheet - texture not found : "'+State.ToString( iIndex )+'"!');
     if LoadTexture.GLTexture = 0 then
       LoadTexture.Upload;
@@ -422,7 +464,7 @@ begin
   if GodMode
     then ReadXMLFile( iXML, DataPath + 'graphics' + DirectorySeparator + aFontName+'.xml' )
     else iXML := FMainData.GetXMLDocument(aFontName + '.xml','');
-  Result := TBitmapFont.CreateFromXML( Textures.TextureID[aFontName],iXML );
+  Result := TBitmapFont.CreateFromXML( (IO as TDoomGFXIO).Textures.TextureID[aFontName],iXML );
   FreeAndNil( iXML );
   {iStream := TFileStream.Create('aero.ttf', fmOpenRead);
   FMsgFont := TBitmapFont.CreateFromTTF( iStream, iStream.Size, 12 );
@@ -450,7 +492,7 @@ begin
     LoadFile( 'lua' + DirectorySeparator + 'main.lua' );
     IO.LoadProgress(iProgBase + 30);
     if GraphicsVersion then
-      Textures.LoadTextureFolder('graphics');
+      (IO as TDoomGFXIO).Textures.LoadTextureFolder('graphics');
   end
   else
   begin
@@ -461,7 +503,7 @@ begin
     LoadStream(FMainData,'','main.lua');
     IO.LoadProgress(iProgBase + 30);
     if GraphicsVersion then
-      FMainData.RegisterLoader(FILETYPE_IMAGE ,@Textures.LoadTextureCallback);
+      FMainData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
   end;
   FMainData.RegisterLoader(FILETYPE_HELP ,@Help.StreamLoader);
   FMainData.RegisterLoader(FILETYPE_ASCII,@IO.ASCIILoader);
