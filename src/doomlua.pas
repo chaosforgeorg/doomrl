@@ -41,8 +41,10 @@ end;
 implementation
 
 uses typinfo, variants, strutils, xmlread, dom,
-     vnode, vdebug, viotypes, vluatools, vsystems, vluadungen, vluaentitynode,
+     vnode, vdebug, viotypes, vluatools, vsystems, vluadungen, vluaentitynode, vtextures,
      dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, vsound, doomtextures, doomspritemap;
+
+var SpriteSheetCounter : Integer = -1;
 
 function lua_core_is_playing(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
@@ -291,6 +293,67 @@ begin
   Result := 0;
 end;
 
+function lua_core_texture_upload(L: Plua_State): Integer; cdecl;
+var State    : TDoomLuaState;
+    iTexture : TTexture;
+begin
+  State.Init(L);
+  if not GraphicsVersion then Exit( 0 );
+  iTexture := Textures.Textures[ State.ToString(1) ];
+  if iTexture = nil then State.Error( 'Texture not found: '+State.ToString(1) );
+  if State.IsBoolean( 2 ) and State.ToBoolean( 2 ) then iTexture.Blend := True;
+  if State.IsBoolean( 3 ) and State.ToBoolean( 3 ) then iTexture.is3D  := True;
+  if iTexture.GLTexture = 0
+    then iTexture.Upload
+    else Log( LOGWARN, 'Texture redefinition: '+State.ToString(1) );
+  Result := 0;
+end;
+
+
+function lua_core_texture_generate_glow(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    iIn   : TTexture;
+begin
+  State.Init(L);
+  if not GraphicsVersion then Exit( 0 );
+  iIn := Textures.Textures[ State.ToString(1) ];
+  if iIn = nil then State.Error( 'Texture not found: '+State.ToString(1) );
+  Textures.AddImage( State.ToString(2), Textures.GenerateGlow( iIn.Image ), Option_Blending );
+  Result := 0;
+end;
+
+
+function lua_core_register_sprite_sheet(L: Plua_State): Integer; cdecl;
+var State    : TDoomLuaState;
+    iNormal  : TTexture;
+    iCosplay : TTexture;
+    iGlow    : TTexture;
+
+  function LoadTexture( iIndex : Integer ) : TTexture;
+  begin
+    if not State.IsString( iIndex ) then Exit( nil );
+    LoadTexture := Textures.Textures[ State.ToString( iIndex ) ];
+    if LoadTexture = nil then State.Error( 'register_sprite_sheet - texture not found : "'+State.ToString( iIndex )+'"!');
+    if LoadTexture.GLTexture = 0 then
+      LoadTexture.Upload;
+  end;
+
+begin
+  State.Init(L);
+  if not GraphicsVersion then
+  begin
+    Inc( SpriteSheetCounter );
+    State.Push( Integer( SpriteSheetCounter * 100000 ) );
+    Exit( 1 );
+  end;
+  iNormal  := LoadTexture( 1 );
+  iCosplay := LoadTexture( 2 );
+  iGlow    := LoadTexture( 3 );
+  if iNormal = nil then State.Error( 'Bad parameters passes to register_sprite_sheet!');
+  State.Push( Integer( SpriteMap.Engine.Add( iNormal, iCosplay, iGlow, State.ToInteger(4) ) * 100000 ) );
+  Result := 1;
+end;
+
 // -------------------------------------------------------------------------------
 
 procedure TDoomLua.LoadModule(Module: TDoomModule);
@@ -386,7 +449,7 @@ begin
     IO.LoadProgress(iProgBase + 20);
     LoadFile( 'lua' + DirectorySeparator + 'main.lua' );
     IO.LoadProgress(iProgBase + 30);
-    if GraphicsVersion and (not SpriteMap.Loaded) then
+    if GraphicsVersion then
       Textures.LoadTextureFolder('graphics');
   end
   else
@@ -397,7 +460,7 @@ begin
     IO.LoadProgress(iProgBase + 20);
     LoadStream(FMainData,'','main.lua');
     IO.LoadProgress(iProgBase + 30);
-    if GraphicsVersion and (not SpriteMap.Loaded) then
+    if GraphicsVersion then
       FMainData.RegisterLoader(FILETYPE_IMAGE ,@Textures.LoadTextureCallback);
   end;
   FMainData.RegisterLoader(FILETYPE_HELP ,@Help.StreamLoader);
@@ -408,7 +471,7 @@ begin
   FMainData.Load('ascii');
   IO.LoadProgress(iProgBase + 50);
 
-  if (not GodMode) and GraphicsVersion and (not SpriteMap.Loaded) then
+  if (not GodMode) and GraphicsVersion then
   begin
     FMainData.Load('graphics');
 
@@ -423,12 +486,6 @@ begin
     FreeAndNil(T1);
     FreeAndNil(T2);
   end;
-
-  IO.LoadProgress(iProgBase + 100);
-
-  if GraphicsVersion then
-    SpriteMap.PrepareTextures;
-
   IO.LoadProgress(iProgBase + 100);
 end;
 
@@ -487,7 +544,7 @@ const lua_player_data_lib : array[0..4] of luaL_Reg = (
 );
 
 
-const lua_core_lib : array[0..11] of luaL_Reg = (
+const lua_core_lib : array[0..14] of luaL_Reg = (
     ( name : 'add_to_cell_set';func : @lua_core_add_to_cell_set),
     ( name : 'game_time';func : @lua_core_game_time),
     ( name : 'game_type';func : @lua_core_game_type),
@@ -500,6 +557,11 @@ const lua_core_lib : array[0..11] of luaL_Reg = (
 
     ( name : 'resolve_sound_id';func : @lua_core_resolve_sound_id),
     ( name : 'play_music';func : @lua_core_play_music),
+
+    ( name : 'texture_upload';        func : @lua_core_texture_upload),
+    ( name : 'texture_generate_glow'; func : @lua_core_texture_generate_glow),
+    ( name : 'register_sprite_sheet'; func : @lua_core_register_sprite_sheet),
+
     ( name : nil;          func : nil; )
 );
 

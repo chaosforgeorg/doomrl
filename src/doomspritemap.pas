@@ -45,7 +45,6 @@ type
   procedure Recalculate;
   procedure Update( aTime : DWord; aProjection : TMatrix44 );
   procedure Draw;
-  procedure PrepareTextures;
   function DevicePointToCoord( aPoint : TPoint ) : TPoint;
   procedure PushSpriteBeing( aX, aY : Integer; const aSprite : TSprite; aLight : Byte );
   procedure PushSpriteDoodad( aX,aY : Byte; const aSprite : TSprite; aLight : Integer = -1 );
@@ -75,7 +74,6 @@ private
   FShift          : TCoord2D;
   FLastCoord      : TCoord2D;
   FSpriteEngine   : TSpriteEngine;
-  FTexturesLoaded : Boolean;
   FLightMap       : array[0..MAXX] of array[0..MAXY] of Byte;
   FFramebuffer    : TGLFramebuffer;
   FPostProgram    : TGLProgram;
@@ -93,7 +91,7 @@ private
   function GetSprite( aSprite : TSprite ) : TSprite;
   function GetSprite( aCell, aStyle : Byte ) : TSprite;
 public
-  property Loaded : Boolean read FTexturesLoaded;
+  property Engine : TSpriteEngine read FSpriteEngine;
   property MaxShift : TPoint read FMaxShift;
   property MinShift : TPoint read FMinShift;
   property Shift : TCoord2D read FShift;
@@ -191,7 +189,6 @@ begin
   FFluidTime := 0;
   FLutTexture := 0;
   FTarget.Create(0,0);
-  FTexturesLoaded := False;
   FSpriteEngine := TSpriteEngine.Create( GLVec2i( 32, 32 ) );
   FGridActive     := False;
   FLastCoord.Create(0,0);
@@ -311,60 +308,6 @@ begin
   end
   else
     FSpriteEngine.Draw;
-end;
-
-procedure TDoomSpriteMap.PrepareTextures;
-begin
-  if FTexturesLoaded then Exit;
-  FTexturesLoaded := True;
-
-  Textures.PrepareTextures;
-
-  with FSpriteEngine do
-  begin
-    Add( DRL_SPRITESHEET_ENVIRO, TSpriteDataSet.Create( FSpriteEngine,
-      Textures.Textures['levels'],
-      Textures.Textures['levels_mask'],
-      nil,
-      0
-    ) );
-    Add( DRL_SPRITESHEET_DOODAD, TSpriteDataSet.Create( FSpriteEngine,
-      Textures.Textures['doors_and_decorations'],
-      Textures.Textures['doors_and_decorations_mask'],
-      Textures.Textures['doors_and_decorations_glow'],
-      100
-    ) );
-    Add( DRL_SPRITESHEET_ITEMS, TSpriteDataSet.Create( FSpriteEngine,
-      Textures.Textures['guns_and_pickups'],
-      Textures.Textures['guns_and_pickups_mask'],
-      Textures.Textures['doors_and_decorations_glow'],
-      200
-    ) );
-    Add( DRL_SPRITESHEET_BEINGS, TSpriteDataSet.Create( FSpriteEngine,
-      Textures.Textures['enemies'],
-      nil,
-      Textures.Textures['enemies_glow'],
-      300
-    ) );
-    Add( DRL_SPRITESHEET_PLAYER, TSpriteDataSet.Create( FSpriteEngine,
-      Textures.Textures['doomguy'],
-      Textures.Textures['doomguy_mask'],
-      Textures.Textures['doomguy_glow'],
-      300
-    ) );
-    Add( DRL_SPRITESHEET_LARGE, TSpriteDataSet.Create( FSpriteEngine,
-      Textures.Textures['enemies_big'],
-      nil,
-      Textures.Textures['enemies_big_glow'],
-      500
-    ) );
-    Add( DRL_SPRITESHEET_FX, TSpriteDataSet.Create( FSpriteEngine,
-      Textures.Textures['fx'],
-      Textures.Textures['fx_mask'],
-      nil,
-      1000
-    ) );
-  end;
 end;
 
 function TDoomSpriteMap.DevicePointToCoord ( aPoint : TPoint ) : TPoint;

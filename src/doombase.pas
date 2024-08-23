@@ -83,7 +83,7 @@ uses Classes, SysUtils,
      vdebug, viotypes,
      dfmap, dfbeing,
      doomio, doomgfxio, doomtextio, zstream,
-     doomspritemap, // remove
+     doomspritemap, doomtextures, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
      doomconfiguration, doomhelp, doomconfig, doomviews, dfplayer;
 
@@ -169,7 +169,10 @@ begin
   Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
   ModuleID := 'DoomRL';
+
   LoadModule( True );
+  if GraphicsVersion then
+    Textures.Upload;
 
   if GodMode and FileExists( WritePath + 'god.lua') then
     Lua.LoadFile( WritePath + 'god.lua');

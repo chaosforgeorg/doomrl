@@ -197,6 +197,7 @@ begin
 
   Textures   := TDoomTextures.Create;
 
+
   iFontName := 'font10x18.png';
   FFontSizeX := 10;
   FFontSizeY := 18;
