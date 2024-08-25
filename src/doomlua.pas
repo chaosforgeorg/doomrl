@@ -473,8 +473,7 @@ begin
 end;
 
 procedure TDoomLua.ReadWad(WADName : string);
-var T1,T2,T3  : TStream;
-    iProgBase : DWord;
+var iProgBase : DWord;
 begin
   FCoreData := TVDataFile.Create(DataPath+'core.wad');
   FMainData := TVDataFile.Create(DataPath+WADName);
@@ -514,20 +513,8 @@ begin
   IO.LoadProgress(iProgBase + 50);
 
   if (not GodMode) and GraphicsVersion then
-  begin
     FMainData.Load('graphics');
 
-    T1 := TMemoryStream.Create;
-    T3 := FMainData.GetFile('doom.png','graphics');
-    T1.CopyFrom( T3, FMainData.GetFileSize('doom.png','graphics') );
-    FreeAndNil(T3);
-    T1.Seek(0,soFromBeginning);
-
-    T2 := FMainData.GetFile('doom.ini');
-    //Textures.LoadFont( T1, CoreData.GetFileSize('doom.png','graphics'), T2 );
-    FreeAndNil(T1);
-    FreeAndNil(T2);
-  end;
   IO.LoadProgress(iProgBase + 100);
 end;
 

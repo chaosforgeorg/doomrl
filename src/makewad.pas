@@ -25,8 +25,6 @@ begin
   WAD.Add('data/drl/items/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'items' );
   WAD.Add('font*.png',FILETYPE_IMAGE,[], 'fonts' );
   WAD.Add('graphics/*.png',FILETYPE_IMAGE,[], 'graphics' );
-  WAD.Add('graphics/doom.ini', FILETYPE_ASCII, [], '' );
-  WAD.Add('graphics/message.xml', FILETYPE_FONT, [], '' );
 
   Assign(KeyFile,'dkey.inc');
   Rewrite(KeyFile);
