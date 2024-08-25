@@ -491,7 +491,7 @@ begin
     LoadFile( 'data' + DirectorySeparator + 'drl' + DirectorySeparator + 'main.lua' );
     IO.LoadProgress(iProgBase + 30);
     if GraphicsVersion then
-      (IO as TDoomGFXIO).Textures.LoadTextureFolder('graphics');
+      (IO as TDoomGFXIO).Textures.LoadTextureFolder( 'data' + DirectorySeparator + 'drl' + DirectorySeparator + 'graphics' );
   end
   else
   begin

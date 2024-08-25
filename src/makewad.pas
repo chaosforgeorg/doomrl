@@ -23,8 +23,8 @@ begin
   WAD.Add('data/drl/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], '' );
   WAD.Add('data/drl/levels/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'levels' );
   WAD.Add('data/drl/items/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'items' );
-  WAD.Add('font*.png',FILETYPE_IMAGE,[], 'fonts' );
-  WAD.Add('graphics/*.png',FILETYPE_IMAGE,[], 'graphics' );
+  WAD.Add('data/drl/fonts/font*.png',FILETYPE_IMAGE,[], 'fonts' );
+  WAD.Add('data/drl/graphics/*.png',FILETYPE_IMAGE,[], 'graphics' );
 
   Assign(KeyFile,'dkey.inc');
   Rewrite(KeyFile);
