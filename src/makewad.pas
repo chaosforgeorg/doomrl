@@ -17,9 +17,8 @@ begin
   WAD := TVDataCreator.Create('drl.wad');
   WAD.SetKey( EKey );
 
-  WAD.Add('help/*.hlp',FILETYPE_HELP,[vdfCompressed,vdfEncrypted], 'ascii' );
-  WAD.Add('help/*.asc',FILETYPE_ASCII,[vdfCompressed,vdfEncrypted], 'ascii' );
-  WAD.Add('help/logo.dat', FILETYPE_ASCII, [vdfCompressed,vdfEncrypted], 'ascii' );
+  WAD.Add('data/drl/help/*.hlp',FILETYPE_HELP,[vdfCompressed,vdfEncrypted], 'help' );
+  WAD.Add('data/drl/ascii/*.asc',FILETYPE_ASCII,[vdfCompressed,vdfEncrypted], 'ascii' );
   WAD.Add('data/drl/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], '' );
   WAD.Add('data/drl/levels/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'levels' );
   WAD.Add('data/drl/items/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'items' );
