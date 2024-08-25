@@ -486,10 +486,10 @@ begin
   if GodMode then
   begin
     RegisterModule( 'core', 'data' + DirectorySeparator + 'core' + DirectorySeparator );
-    RegisterModule( 'drl', 'lua' + DirectorySeparator );
+    RegisterModule( 'drl', 'data' + DirectorySeparator + 'drl' + DirectorySeparator );
     LoadFile( 'data' + DirectorySeparator + 'core' + DirectorySeparator + 'core.lua' );
     IO.LoadProgress(iProgBase + 20);
-    LoadFile( 'lua' + DirectorySeparator + 'main.lua' );
+    LoadFile( 'data' + DirectorySeparator + 'drl' + DirectorySeparator + 'main.lua' );
     IO.LoadProgress(iProgBase + 30);
     if GraphicsVersion then
       (IO as TDoomGFXIO).Textures.LoadTextureFolder('graphics');

@@ -20,9 +20,9 @@ begin
   WAD.Add('help/*.hlp',FILETYPE_HELP,[vdfCompressed,vdfEncrypted], 'ascii' );
   WAD.Add('help/*.asc',FILETYPE_ASCII,[vdfCompressed,vdfEncrypted], 'ascii' );
   WAD.Add('help/logo.dat', FILETYPE_ASCII, [vdfCompressed,vdfEncrypted], 'ascii' );
-  WAD.Add('lua/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], '' );
-  WAD.Add('lua/levels/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'levels' );
-  WAD.Add('lua/items/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'items' );
+  WAD.Add('data/drl/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], '' );
+  WAD.Add('data/drl/levels/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'levels' );
+  WAD.Add('data/drl/items/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'items' );
   WAD.Add('font*.png',FILETYPE_IMAGE,[], 'fonts' );
   WAD.Add('graphics/*.png',FILETYPE_IMAGE,[], 'graphics' );
   WAD.Add('graphics/doom.ini', FILETYPE_ASCII, [], '' );
