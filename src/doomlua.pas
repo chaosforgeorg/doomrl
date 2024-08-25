@@ -486,7 +486,7 @@ begin
   if GodMode then
   begin
     RegisterModule( 'core', 'core' + DirectorySeparator );
-    RegisterModule( 'doomrl', 'lua' + DirectorySeparator );
+    RegisterModule( 'drl', 'lua' + DirectorySeparator );
     LoadFile( 'core' + DirectorySeparator + 'core.lua' );
     IO.LoadProgress(iProgBase + 20);
     LoadFile( 'lua' + DirectorySeparator + 'main.lua' );
@@ -497,7 +497,7 @@ begin
   else
   begin
     RegisterModule('core',FCoreData);
-    RegisterModule('doomrl',FMainData);
+    RegisterModule('drl',FMainData);
     LoadStream(FCoreData,'','core.lua');
     IO.LoadProgress(iProgBase + 20);
     LoadStream(FMainData,'','main.lua');
