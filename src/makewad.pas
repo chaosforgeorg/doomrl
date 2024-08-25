@@ -39,6 +39,6 @@ begin
   FreeAndNil(WAD);
 
   WAD := TVDataCreator.Create('core.wad');
-  WAD.Add('core/*.lua',FILETYPE_LUA,[vdfCompressed], '' );
+  WAD.Add('data/core/*.lua',FILETYPE_LUA,[vdfCompressed], '' );
   FreeAndNil(WAD);
 end.

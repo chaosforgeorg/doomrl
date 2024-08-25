@@ -485,9 +485,9 @@ begin
 
   if GodMode then
   begin
-    RegisterModule( 'core', 'core' + DirectorySeparator );
+    RegisterModule( 'core', 'data' + DirectorySeparator + 'core' + DirectorySeparator );
     RegisterModule( 'drl', 'lua' + DirectorySeparator );
-    LoadFile( 'core' + DirectorySeparator + 'core.lua' );
+    LoadFile( 'data' + DirectorySeparator + 'core' + DirectorySeparator + 'core.lua' );
     IO.LoadProgress(iProgBase + 20);
     LoadFile( 'lua' + DirectorySeparator + 'main.lua' );
     IO.LoadProgress(iProgBase + 30);
