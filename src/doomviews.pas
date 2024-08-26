@@ -2,20 +2,9 @@
 unit doomviews;
 interface
 uses vuielement, vuielements, viotypes, vuitypes, vioevent, vconui, vconuiext, vconuirl,
-     dfdata, dfitem, doomtrait;
+     dfdata;
 
 type TUIChallengeList = array of Byte;
-
-type TUIDowloadBar = class( TUIElement )
-  constructor Create( aParent : TUIElement );
-  procedure Initialize( aMax : DWord );
-  procedure NetUpdate( aProgress : DWord );
-  procedure OnRedraw; override;
-protected
-  FMax     : DWord;
-  FCurrent : DWord;
-end;
-
 
 type TUIYesNoBox = class( TConUIWindow )
   constructor Create( aParent : TUIElement; aArea : TUIRect; const aText : AnsiString; aOnConfirm : TUINotifyEvent; aOnCancel : TUINotifyEvent = nil );
@@ -238,46 +227,6 @@ begin
     VKEY_ENTER  : Free;
   end;
   Exit( True );
-end;
-
-{ TUIDowloadBar }
-
-constructor TUIDowloadBar.Create ( aParent : TUIElement ) ;
-var iRect : TUIRect;
-begin
-  iRect := aParent.GetDimRect;
-  inherited Create( aParent, Rectangle( iRect.x+1, iRect.y2, iRect.w - 3, 1  ) );
-  Initialize( 0 );
-end;
-
-procedure TUIDowloadBar.Initialize ( aMax : DWord ) ;
-begin
-  FMax     := aMax;
-  FCurrent := 0;
-end;
-
-procedure TUIDowloadBar.NetUpdate ( aProgress : DWord ) ;
-begin
-  FCurrent := aProgress;
-  TConUIRoot( FRoot ).NeedRedraw := True;
-  FDirty := True;
-  IO.FullUpdate;
-end;
-
-procedure TUIDowloadBar.OnRedraw;
-var iCon      : TUIConsole;
-    iMaxChar  : DWord;
-    iProgChar : DWord;
-begin
-  if not isVisible then Exit;
-  if FMax = 0 then Exit;
-  iMaxChar  := FAbsolute.w-1;
-  iProgChar := Min( Round(( FCurrent / FMax ) * iMaxChar), iMaxChar );
-  iCon.Init( TConUIRoot(FRoot).Renderer );
-  iCon.RawPrint( FAbsolute.Pos, FForeColor, FBackColor, '['+StringOfChar( ' ',iMaxChar )+']');
-  iCon.RawPrint( FAbsolute.Pos + Point(1,0), LightRed, FBackColor, StringOfChar( '=', iProgChar ) );
-  TConUIRoot( FRoot ).NeedRedraw := True;
-  FDirty := True;
 end;
 
 { TUIFullWindow }
