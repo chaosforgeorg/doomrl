@@ -4,57 +4,57 @@ Sound = {
 	
 	-- Sound
 	menu     = {
-		change = "wav/dspstop.wav",
-		pick   = "wav/dspistol.wav",
-		cancel = "wav/dsswtchx.wav",
+		change = "data/drllq/sound/dspstop.wav",
+		pick   = "data/drllq/sound/dspistol.wav",
+		cancel = "data/drllq/sound/dsswtchx.wav",
 	},
 	
 	-- Barrel of Fuel
 	
 	barrel   = {
-		move		= "wav/dsstnmov.wav",
-		movefail	= "wav/dsnoway.wav",
-		explode		= "wav/dsbarexp.wav",
+		move		= "data/drllq/sound/dsstnmov.wav",
+		movefail	= "data/drllq/sound/dsnoway.wav",
+		explode		= "data/drllq/sound/dsbarexp.wav",
 	},
 	
 	-- Barrel of Acid
 	
 	barrela  = {
-		move		= "wav/dsstnmov.wav",
-		movefail	= "wav/dsnoway.wav",
-		explode		= "wav/dsbarexp.wav",
+		move		= "data/drllq/sound/dsstnmov.wav",
+		movefail	= "data/drllq/sound/dsnoway.wav",
+		explode		= "data/drllq/sound/dsbarexp.wav",
 	},
 	
 	-- Barrel of Napalm
 	
 	barreln  = {
-		move		= "wav/dsstnmov.wav",
-		movefail	= "wav/dsnoway.wav",
-		explode		= "wav/dsbarexp.wav",
+		move		= "data/drllq/sound/dsstnmov.wav",
+		movefail	= "data/drllq/sound/dsnoway.wav",
+		explode		= "data/drllq/sound/dsbarexp.wav",
 	},
 	
 	-- Door
 	
 	door			= {
-		open		= "wav/dsbdopn.wav",
-		close		= "wav/dsbdcls.wav",
+		open		= "data/drllq/sound/dsbdopn.wav",
+		close		= "data/drllq/sound/dsbdcls.wav",
 	},
 	
 	-- Teleport
 	
 	teleport = {
-		use			= "wav/dstelept.wav",
+		use			= "data/drllq/sound/dstelept.wav",
 	},
 	
 	-- Levers
 	
 	lever = {
-		use				= "wav/dsswtchn.wav",
+		use				= "data/drllq/sound/dsswtchn.wav",
 	},
 	
 	-- Gib
 	
-	gib				= "wav/dsslop.wav",
+	gib				= "data/drllq/sound/dsslop.wav",
 	
 	--
 	-- Powerups
@@ -63,49 +63,49 @@ Sound = {
 	-- Small Health Globe
 	
 	shglobe = {
-		powerup		= "wav/dsgetpow.wav",
+		powerup		= "data/drllq/sound/dsgetpow.wav",
 	},
 	
 	-- Large Health Globe
 	
 	lhglobe = {
-		powerup		= "wav/dsgetpow.wav",
+		powerup		= "data/drllq/sound/dsgetpow.wav",
 	},
 	
 	-- Supercharge Globe
 	
 	scglobe = {
-		powerup		= "wav/dsgetpow.wav",
+		powerup		= "data/drllq/sound/dsgetpow.wav",
 	},
 	
 	-- Invulnerability Globe
 	
 	iglobe = {
-		powerup		= "wav/dsgetpow.wav",
+		powerup		= "data/drllq/sound/dsgetpow.wav",
 	},
 	
 	-- Armor Shard
 	
 	ashard = {
-		powerup		= "wav/dsgetpow.wav",
+		powerup		= "data/drllq/sound/dsgetpow.wav",
 	},
 	
 	-- Berserk Pack
 	
 	bpack = {
-		powerup		= "wav/dsgetpow.wav",
+		powerup		= "data/drllq/sound/dsgetpow.wav",
 	},
 	
 	-- Computer Map
 	
 	map = {
-		powerup		= "wav/dsgetpow.wav",
+		powerup		= "data/drllq/sound/dsgetpow.wav",
 	},
 	
 	-- Backpack
 	
 	backpack = {
-		powerup		= "wav/dsgetpow.wav",
+		powerup		= "data/drllq/sound/dsgetpow.wav",
 	},
 	
 	--
@@ -115,64 +115,64 @@ Sound = {
 	-- Small Medkit
 	
 	smed = {
-		pickup		= "wav/dsitemup.wav",
-		use			= "wav/dsgetpow.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
+		use			= "data/drllq/sound/dsgetpow.wav",
 	},
 	
 	-- Large Medkit
 	
 	lmed = {
-		pickup		= "wav/dsitemup.wav",
-		use			= "wav/dsgetpow.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
+		use			= "data/drllq/sound/dsgetpow.wav",
 	},
 	
 	-- Phase Device
 	
 	phase = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Homing Phase Device
 	
 	hphase = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Envirosuit Pack
 	
 	epack = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Thermonuclear Device
 	
 	nuke = {
-		pickup		= "wav/dsitemup.wav",
-		explode		= "wav/dsfirxpl.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
+		explode		= "data/drllq/sound/dsfirxpl.wav",
 	},
 	
 	-- Power Mod Pack
 	
 	mod_power = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Agility Mod Pack
 	
 	mod_agility = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Bulk Mod Pack
 	
 	mod_bulk = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Technical Mod Pack
 	
 	mod_tech = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	--
@@ -182,37 +182,37 @@ Sound = {
 	-- Green Armor
 	
 	garmor = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Blue Armor
 	
 	barmor = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Red Armor
 	
 	rarmor = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Steel Boots
 	
 	sboots = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Protective Boots
 	
 	pboots = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Plasteel Boots
 	
 	psboots = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	--
@@ -222,25 +222,25 @@ Sound = {
 	-- 10mm Ammo
 	
 	ammo = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Shotgun Shell
 	
 	shell = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Rocket
 	
 	rocket = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	-- Power Cell
 	
 	cell = {
-		pickup		= "wav/dsitemup.wav",
+		pickup		= "data/drllq/sound/dsitemup.wav",
 	},
 	
 	--
@@ -250,72 +250,72 @@ Sound = {
 	-- Combat Knife
 	
 	knife = {
-		attack		= "wav/dspunch.wav",
-		pickup		= "wav/dswpnup.wav",
+		attack		= "data/drllq/sound/dspunch.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
 	},
 	
 	-- Pistol
 	
 	pistol = {
-		fire		= "wav/dspistol.wav",
-		pickup		= "wav/dswpnup.wav",
-		reload		= "wav/dswpnup.wav",
+		fire		= "data/drllq/sound/dspistol.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
+		reload		= "data/drllq/sound/dswpnup.wav",
 	},
 	
 	-- Shotgun
 	
 	shotgun = {
-		fire		= "wav/dsshotgn.wav",
-		pickup		= "wav/dswpnup.wav",
-		reload		= "wav/dswpnup.wav",
+		fire		= "data/drllq/sound/dsshotgn.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
+		reload		= "data/drllq/sound/dswpnup.wav",
 	},
 	
 	-- Combat Shotgun
 	
 	ashotgun = {
-		fire		= "wav/dsshotgn.wav",
-		pickup		= "wav/dswpnup.wav",
-		reload		= "wav/dswpnup.wav",
-		pump		= "wav/dssgcock.wav",
+		fire		= "data/drllq/sound/dsshotgn.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
+		reload		= "data/drllq/sound/dswpnup.wav",
+		pump		= "data/drllq/sound/dssgcock.wav",
 	},
 	
 	-- Double Shotgun
 	
 	dshotgun = {
-		fire		= "wav/dsdshtgn.wav",
-		pickup		= "wav/dswpnup.wav",
-		reload		= "wav/dswpnup.wav",
+		fire		= "data/drllq/sound/dsdshtgn.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
+		reload		= "data/drllq/sound/dswpnup.wav",
 	},
 	
 	--sshotgun = {
-	--	fire		= "wav/dsdshtgn.wav",
-	--	pickup		= "wav/dswpnup.wav",
-	--	reload		= "wav/dswpnup.wav",
+	--	fire		= "data/drllq/sound/dsdshtgn.wav",
+	--	pickup		= "data/drllq/sound/dswpnup.wav",
+	--	reload		= "data/drllq/sound/dswpnup.wav",
 	--},
 	
 	-- Chaingun
 	
 	chaingun = {
-		fire		= "wav/dspistol.wav",
-		pickup		= "wav/dswpnup.wav",
-		reload		= "wav/dswpnup.wav",
+		fire		= "data/drllq/sound/dspistol.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
+		reload		= "data/drllq/sound/dswpnup.wav",
 	},
 	
 	-- Plasma Rifle
 	
 	plasma = {
-		fire		= "wav/dsplasma.wav",
-		pickup		= "wav/dswpnup.wav",
-		reload		= "wav/dswpnup.wav",
+		fire		= "data/drllq/sound/dsplasma.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
+		reload		= "data/drllq/sound/dswpnup.wav",
 	},
 	
 	-- Rocket Launcher
 	
 	bazooka = {
-		fire		= "wav/dsrlaunc.wav",
-		pickup		= "wav/dswpnup.wav",
-		reload		= "wav/dswpnup.wav",
-		explode		= "wav/dsrxplod.wav",
+		fire		= "data/drllq/sound/dsrlaunc.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
+		reload		= "data/drllq/sound/dswpnup.wav",
+		explode		= "data/drllq/sound/dsrxplod.wav",
 	},
 	
 	--
@@ -325,222 +325,222 @@ Sound = {
 	-- Player
 	
 	soldier = {
-		die			= "wav/dspldeth.wav",
-		hit			= "wav/dsplpain.wav",
-		melee		= "wav/dspunch.wav",
-	--	hoof		= "wav/dshoof.wav";
-		phase		= "wav/dstelept.wav",
+		die			= "data/drllq/sound/dspldeth.wav",
+		hit			= "data/drllq/sound/dsplpain.wav",
+		melee		= "data/drllq/sound/dspunch.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
+		phase		= "data/drllq/sound/dstelept.wav",
 	},
 	
 	-- Former Human
 	
 	former = {
-		die			= "wav/dspodth1.wav",
-		act			= "wav/dsposact.wav",
-		hit			= "wav/dspopain.wav",
-		melee		= "wav/dspunch.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dspodth1.wav",
+		act			= "data/drllq/sound/dsposact.wav",
+		hit			= "data/drllq/sound/dspopain.wav",
+		melee		= "data/drllq/sound/dspunch.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Former Sergeant
 	
 	sergeant = {
-		die			= "wav/dspodth2.wav",
-		act			= "wav/dsposact.wav",
-		hit			= "wav/dspopain.wav",
-		melee		= "wav/dspunch.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dspodth2.wav",
+		act			= "data/drllq/sound/dsposact.wav",
+		hit			= "data/drllq/sound/dspopain.wav",
+		melee		= "data/drllq/sound/dspunch.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Former Captain
 	
 	captain = {
-		die			= "wav/dspodth2.wav",
-		act			= "wav/dsposact.wav",
-		hit			= "wav/dspopain.wav",
-		melee		= "wav/dspunch.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dspodth2.wav",
+		act			= "data/drllq/sound/dsposact.wav",
+		hit			= "data/drllq/sound/dspopain.wav",
+		melee		= "data/drllq/sound/dspunch.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Former Commando
 	
 	commando = {
-		die			= "wav/dspodth3.wav",
-		act			= "wav/dsposact.wav",
-		hit			= "wav/dspopain.wav",
-		melee		= "wav/dspunch.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dspodth3.wav",
+		act			= "data/drllq/sound/dsposact.wav",
+		hit			= "data/drllq/sound/dspopain.wav",
+		melee		= "data/drllq/sound/dspunch.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Imp
 	
 	imp = {
-		die			= "wav/dsbgdth1.wav",
-		act			= "wav/dsbgact.wav",
-		hit			= "wav/dspopain.wav",
-		melee		= "wav/dsclaw.wav",
-		fire		= "wav/dsfirsht.wav",
-		explode		= "wav/dsfirxpl.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dsbgdth1.wav",
+		act			= "data/drllq/sound/dsbgact.wav",
+		hit			= "data/drllq/sound/dspopain.wav",
+		melee		= "data/drllq/sound/dsclaw.wav",
+		fire		= "data/drllq/sound/dsfirsht.wav",
+		explode		= "data/drllq/sound/dsfirxpl.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Lost Soul
 	
 	lostsoul = {
-		die			= "wav/dsfirxpl.wav",
-		act			= "wav/dssklatk.wav",
-		hit			= "wav/dsdmpain.wav",
-		melee		= "wav/dssklatk.wav",
+		die			= "data/drllq/sound/dsfirxpl.wav",
+		act			= "data/drllq/sound/dssklatk.wav",
+		hit			= "data/drllq/sound/dsdmpain.wav",
+		melee		= "data/drllq/sound/dssklatk.wav",
 	},
 	
 	-- Pain Elemental
 	
 	pain = {
-		die			= "wav/dspedth.wav",
-		act			= "wav/dspesit.wav",
-		hit			= "wav/dspepain.wav",
-		melee		= "wav/dsclaw.wav";
+		die			= "data/drllq/sound/dspedth.wav",
+		act			= "data/drllq/sound/dspesit.wav",
+		hit			= "data/drllq/sound/dspepain.wav",
+		melee		= "data/drllq/sound/dsclaw.wav";
 	},
 	
 	-- Demon
 	
 	demon = {
-		die			= "wav/dssgtdth.wav",
-		act			= "wav/dsdmact.wav",
-		hit			= "wav/dsdmpain.wav",
-		melee		= "wav/dssgtatk.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dssgtdth.wav",
+		act			= "data/drllq/sound/dsdmact.wav",
+		hit			= "data/drllq/sound/dsdmpain.wav",
+		melee		= "data/drllq/sound/dssgtatk.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Cacodemon
 	
 	cacodemon = {
-		die			= "wav/dscacdth.wav",
-		act			= "wav/dscacsit.wav",
-		hit			= "wav/dsdmpain.wav",
-		melee		= "wav/dsclaw.wav",
-		fire		= "wav/dsfirsht.wav",
-		explode		= "wav/dsfirxpl.wav",
+		die			= "data/drllq/sound/dscacdth.wav",
+		act			= "data/drllq/sound/dscacsit.wav",
+		hit			= "data/drllq/sound/dsdmpain.wav",
+		melee		= "data/drllq/sound/dsclaw.wav",
+		fire		= "data/drllq/sound/dsfirsht.wav",
+		explode		= "data/drllq/sound/dsfirxpl.wav",
 	},
 	
 	-- Arachnotron
 	
 	arachno = {
-		die			= "wav/dsbspdth.wav",
-		act			= "wav/dsbspact.wav",
-		hit			= "wav/dsdmpain.wav",
-		melee		= "wav/dsclaw.wav",
-		fire		= "wav/dsplasma.wav",
-	--	hoof		= "wav/dsmetal.wav",
+		die			= "data/drllq/sound/dsbspdth.wav",
+		act			= "data/drllq/sound/dsbspact.wav",
+		hit			= "data/drllq/sound/dsdmpain.wav",
+		melee		= "data/drllq/sound/dsclaw.wav",
+		fire		= "data/drllq/sound/dsplasma.wav",
+	--	hoof		= "data/drllq/sound/dsmetal.wav",
 	},
 	
 	-- Hell Knight
 	
 	knight = {
-		die			= "wav/dskntdth.wav",
-		act			= "wav/dskntsit.wav",
-		hit			= "wav/dsdmpain.wav",
-		melee		= "wav/dsclaw.wav",
-		fire		= "wav/dsfirsht.wav",
-		explode		= "wav/dsfirxpl.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dskntdth.wav",
+		act			= "data/drllq/sound/dskntsit.wav",
+		hit			= "data/drllq/sound/dsdmpain.wav",
+		melee		= "data/drllq/sound/dsclaw.wav",
+		fire		= "data/drllq/sound/dsfirsht.wav",
+		explode		= "data/drllq/sound/dsfirxpl.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Baron of Hell
 	
 	baron = {
-		die			= "wav/dsbrsdth.wav",
-		act			= "wav/dsbrssit.wav",
-		hit			= "wav/dsdmpain.wav",
-		melee		= "wav/dsclaw.wav",
-		fire		= "wav/dsfirsht.wav",
-		explode		= "wav/dsfirxpl.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dsbrsdth.wav",
+		act			= "data/drllq/sound/dsbrssit.wav",
+		hit			= "data/drllq/sound/dsdmpain.wav",
+		melee		= "data/drllq/sound/dsclaw.wav",
+		fire		= "data/drllq/sound/dsfirsht.wav",
+		explode		= "data/drllq/sound/dsfirxpl.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Mancubus
 	
 	mancubus = {
-		die			= "wav/dsmandth.wav",
-		act			= "wav/dsmansit.wav",
-		hit			= "wav/dsmnpain.wav",
-		fire		= "wav/dsfirsht.wav",
-		explode		= "wav/dsfirxpl.wav",
-		attack      = "wav/dsmanatk.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dsmandth.wav",
+		act			= "data/drllq/sound/dsmansit.wav",
+		hit			= "data/drllq/sound/dsmnpain.wav",
+		fire		= "data/drllq/sound/dsfirsht.wav",
+		explode		= "data/drllq/sound/dsfirxpl.wav",
+		attack      = "data/drllq/sound/dsmanatk.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Revenant
 	
 	revenant = {
-		die			= "wav/dsskedth.wav",
-		act			= "wav/dsskesit.wav",
-		hit			= "wav/dspopain.wav",
-		melee		= "wav/dsskepch.wav",
-		fire		= "wav/dsskeatk.wav",
-		explode		= "wav/dsbarexp.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dsskedth.wav",
+		act			= "data/drllq/sound/dsskesit.wav",
+		hit			= "data/drllq/sound/dspopain.wav",
+		melee		= "data/drllq/sound/dsskepch.wav",
+		fire		= "data/drllq/sound/dsskeatk.wav",
+		explode		= "data/drllq/sound/dsbarexp.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Arch-vile
 	
 	arch = {
-		die			= "wav/dsvildth.wav",
-		act			= "wav/dsvilact.wav",
-		hit			= "wav/dsvipain.wav",
-		fire		= "wav/dsvilatk.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dsvildth.wav",
+		act			= "data/drllq/sound/dsvilact.wav",
+		hit			= "data/drllq/sound/dsvipain.wav",
+		fire		= "data/drllq/sound/dsvilatk.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Bruiser Brothers
 	
 	bruiser = {
-		die			= "wav/dsbrsdth.wav",
-		act			= "wav/dsbrssit.wav",
-		hit			= "wav/dsdmpain.wav",
-		melee		= "wav/dsclaw.wav",
-		fire		= "wav/dsfirsht.wav",
-		explode		= "wav/dsfirxpl.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dsbrsdth.wav",
+		act			= "data/drllq/sound/dsbrssit.wav",
+		hit			= "data/drllq/sound/dsdmpain.wav",
+		melee		= "data/drllq/sound/dsclaw.wav",
+		fire		= "data/drllq/sound/dsfirsht.wav",
+		explode		= "data/drllq/sound/dsfirxpl.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Cyberdemon
 	
 	cyberdemon = {
-		die			= "wav/dscybdth.wav",
-		act			= "wav/dscybsit.wav",
-		hit			= "wav/dsdmpain.wav",
-		hoof		= "wav/dshoof.wav",
+		die			= "data/drllq/sound/dscybdth.wav",
+		act			= "data/drllq/sound/dscybsit.wav",
+		hit			= "data/drllq/sound/dsdmpain.wav",
+		hoof		= "data/drllq/sound/dshoof.wav",
 	},
 	
 	-- JC
 
 	jc = {
-		die			= "wav/dspodth1.wav",
-		act			= "wav/dsposact.wav",
-		hit			= "wav/dspopain.wav",
-		melee		= "wav/dspunch.wav",
-	--	hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dspodth1.wav",
+		act			= "data/drllq/sound/dsposact.wav",
+		hit			= "data/drllq/sound/dspopain.wav",
+		melee		= "data/drllq/sound/dspunch.wav",
+	--	hoof		= "data/drllq/sound/dshoof.wav";
 	},
 
 	-- AoD
 
 	angel = {
-		die			= "wav/dsbrsdth.wav",
-		act			= "wav/dsbrssit.wav",
-		hit			= "wav/dsbrssit.wav",
-		melee		= "wav/dsclaw.wav",
-		hoof		= "wav/dshoof.wav";
+		die			= "data/drllq/sound/dsbrsdth.wav",
+		act			= "data/drllq/sound/dsbrssit.wav",
+		hit			= "data/drllq/sound/dsbrssit.wav",
+		melee		= "data/drllq/sound/dsclaw.wav",
+		hoof		= "data/drllq/sound/dshoof.wav";
 	},
 	
 	-- Mastermind
 	
 	mastermind = {
-		die			= "wav/dsspidth.wav",
-		act			= "wav/dsdmact.wav",
-		hit			= "wav/dsdmpain.wav",
-		melee		= "wav/dsclaw.wav",
-		hoof		= "wav/dsmetal.wav";
+		die			= "data/drllq/sound/dsspidth.wav",
+		act			= "data/drllq/sound/dsdmact.wav",
+		hit			= "data/drllq/sound/dsdmpain.wav",
+		melee		= "data/drllq/sound/dsclaw.wav",
+		hoof		= "data/drllq/sound/dsmetal.wav";
 	},
 	
 	--
@@ -550,17 +550,17 @@ Sound = {
 	-- Exotic #18 (Chainsaw)
 	
 	chainsaw = {
-		attack		= "wav/dssawhit.wav",
-		pickup		= "wav/dswpnup.wav",
+		attack		= "data/drllq/sound/dssawhit.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
 	},
 	
 	-- Exotic #19 (BFG 9000)
 	
 	bfg9000 = {
-		fire		= "wav/dsbfg.wav",
-		pickup		= "wav/dswpnup.wav",
-		reload		= "wav/dswpnup.wav",
-		explode		= "wav/dsrxplod.wav",
+		fire		= "data/drllq/sound/dsbfg.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
+		reload		= "data/drllq/sound/dswpnup.wav",
+		explode		= "data/drllq/sound/dsrxplod.wav",
 	},
 	
 	--
@@ -570,19 +570,19 @@ Sound = {
 	-- Unique #17 (Longinus Spear)
 	
 	spear = {
-		attack		= "wav/dsgetpow.wav",
-		pickup		= "wav/dswpnup.wav",
-		explode		= "wav/dsrxplod.wav",
+		attack		= "data/drllq/sound/dsgetpow.wav",
+		pickup		= "data/drllq/sound/dswpnup.wav",
+		explode		= "data/drllq/sound/dsrxplod.wav",
 	},
 	
 	--
 	-- Default sounds
 	--
 	
-	melee			= "wav/dsclaw.wav",
-	reload			= "wav/dswpnup.wav",
-	pickup			= "wav/dsitemup.wav",
-	fire			= "wav/dsfirsht.wav",
-	explode			= "wav/dsfirxpl.wav",
-	powerup			= "wav/dsgetpow.wav",
+	melee			= "data/drllq/sound/dsclaw.wav",
+	reload			= "data/drllq/sound/dswpnup.wav",
+	pickup			= "data/drllq/sound/dsitemup.wav",
+	fire			= "data/drllq/sound/dsfirsht.wav",
+	explode			= "data/drllq/sound/dsfirxpl.wav",
+	powerup			= "data/drllq/sound/dsgetpow.wav",
 }
