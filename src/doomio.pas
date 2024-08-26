@@ -131,7 +131,6 @@ protected
   FLoading     : TUILoadingScreen;
   FMTarget     : TCoord2D;
   FKeyCode     : TIOKeyCode;
-  FOldASCII       : TASCIIImageMap;
   FNewASCII       : TASCIIImageMap;
   FLayers      : TInterfaceLayerStack;
   FUIMouseLast : TIOPoint;
@@ -146,7 +145,6 @@ public
   property KeyCode    : TIOKeyCode     read FKeyCode    write FKeyCode;
   property Audio      : TDoomAudio     read FAudio;
   property MTarget    : TCoord2D       read FMTarget    write FMTarget;
-  property OldASCII      : TASCIIImageMap read FOldASCII;
   property NewASCII      : TASCIIImageMap read FNewASCII;
 end;
 
@@ -311,7 +309,6 @@ begin
   FTime := 0;
   FAudio    := TDoomAudio.Create;
   FMessages := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
-  FOldASCII    := TASCIIImageMap.Create( True );
   FNewASCII    := TASCIIImageMap.Create( True );
   FLayers   := TInterfaceLayerStack.Create;
 
@@ -542,7 +539,6 @@ var iLayer : TInterfaceLayer;
 begin
   FreeAndNil( FAudio );
   FreeAndNil( FMessages );
-  FreeAndNil( FOldASCII );
   FreeAndNil( FNewASCII );
 
   if FLayers <> nil then
@@ -811,15 +807,12 @@ begin
   iIdent  := LowerCase(LeftStr(aName,Length(aName)-4));
   Log('Registering ascii file '+aName+' as '+iIdent+'...');
   iAmount := aStream.ReadDWord;
-  iOldImage  := TUIStringArray.Create;
   iNewImage  := TUIStringArray.Create;
   for iCounter := 1 to Min(iAmount,25) do
   begin
     iString := aStream.ReadAnsiString;
-    iOldImage.Push( iString );
     iNewImage.Push( ConvertOldStyleToNewStyle( iString ) );
   end;
-  FOldASCII.Items[iIdent] := iOldImage;
   FNewASCII.Items[iIdent] := iNewImage;
 end;
 
