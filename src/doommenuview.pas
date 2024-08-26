@@ -449,8 +449,8 @@ begin
   begin
     iCount := 0;
     if FLogo then
-      if IO.NewAscii.Exists('logo') then
-        for iString in IO.NewAscii['logo'] do
+      if IO.Ascii.Exists('logo') then
+        for iString in IO.Ascii['logo'] do
         begin
           VTIG_FreeLabel( iString, Point( 17, iCount ) );
           Inc( iCount );

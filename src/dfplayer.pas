@@ -900,7 +900,7 @@ end;
 
 function TPlayer.ASCIIMoreCode : AnsiString;
 begin
-  if (Inv.Slot[efTorso] <> nil) and (IO.NewASCII.Exists(Inv.Slot[efTorso].ID)) then
+  if (Inv.Slot[efTorso] <> nil) and (IO.ASCII.Exists(Inv.Slot[efTorso].ID)) then
     exit(Inv.Slot[efTorso].ID);
   Exit('player');
 end;

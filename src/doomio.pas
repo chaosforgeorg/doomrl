@@ -131,7 +131,7 @@ protected
   FLoading     : TUILoadingScreen;
   FMTarget     : TCoord2D;
   FKeyCode     : TIOKeyCode;
-  FNewASCII       : TASCIIImageMap;
+  FASCII       : TASCIIImageMap;
   FLayers      : TInterfaceLayerStack;
   FUIMouseLast : TIOPoint;
   FUIMouse     : TIOPoint;
@@ -145,7 +145,7 @@ public
   property KeyCode    : TIOKeyCode     read FKeyCode    write FKeyCode;
   property Audio      : TDoomAudio     read FAudio;
   property MTarget    : TCoord2D       read FMTarget    write FMTarget;
-  property NewASCII      : TASCIIImageMap read FNewASCII;
+  property ASCII      : TASCIIImageMap read FASCII;
 end;
 
 var IO : TDoomIO;
@@ -309,7 +309,7 @@ begin
   FTime := 0;
   FAudio    := TDoomAudio.Create;
   FMessages := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
-  FNewASCII    := TASCIIImageMap.Create( True );
+  FASCII    := TASCIIImageMap.Create( True );
   FLayers   := TInterfaceLayerStack.Create;
 
   FWaiting    := False;
@@ -539,7 +539,7 @@ var iLayer : TInterfaceLayer;
 begin
   FreeAndNil( FAudio );
   FreeAndNil( FMessages );
-  FreeAndNil( FNewASCII );
+  FreeAndNil( FASCII );
 
   if FLayers <> nil then
     for iLayer in FLayers do
@@ -758,48 +758,8 @@ begin
   Exit( iCon.LinifyChunkList( iChunkList ) );
 end;
 
-function ConvertOldStyleToNewStyle( aInput : AnsiString ) : Ansistring;
-var
-  i                  : Integer;
-  iColor, iNextColor : Char;
-begin
-  Result     := '';
-  iColor     := #0;
-  iNextColor := #0;
-
-  i := 1;
-  while i <= Length( aInput ) do
-  begin
-    if aInput[i] = '@' then
-    begin
-      if i < Length(aInput) then
-      begin
-        iNextColor := aInput[i + 1];
-        i += 2; // Move past the color marker
-        if iColor <> #0 then
-          Result += '}'; // Close previous color
-        Result += '{' + iNextColor;
-        iColor := iNextColor;
-      end
-      else
-        Inc(i); // Skip the '@' if it's the last character
-    end
-    else
-    begin
-      Result += aInput[i];
-      Inc(i);
-    end;
-  end;
-
-  if iColor <> #0 then
-    Result += '}';
-end;
-
-
 procedure TDoomIO.ASCIILoader ( aStream : TStream; aName : Ansistring; aSize : DWord ) ;
-var iOldImage   : TUIStringArray;
-    iNewImage   : TUIStringArray;
-    iString     : Ansistring;
+var iNewImage   : TUIStringArray;
     iCounter    : DWord;
     iAmount     : DWord;
     iIdent      : Ansistring;
@@ -809,11 +769,8 @@ begin
   iAmount := aStream.ReadDWord;
   iNewImage  := TUIStringArray.Create;
   for iCounter := 1 to Min(iAmount,25) do
-  begin
-    iString := aStream.ReadAnsiString;
-    iNewImage.Push( ConvertOldStyleToNewStyle( iString ) );
-  end;
-  FNewASCII.Items[iIdent] := iNewImage;
+    iNewImage.Push( aStream.ReadAnsiString );
+  FASCII.Items[iIdent] := iNewImage;
 end;
 
 function TDoomIO.EventWaitForMore : Boolean;

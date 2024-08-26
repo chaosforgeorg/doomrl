@@ -42,8 +42,8 @@ begin
   VTIG_BeginWindow(FName, 'more_view', FSize );
   VTIG_ClipHack := False;
   iCount := 0;
-  if IO.NewAscii.Exists(FASCII) then
-    for iString in IO.NewAscii[FASCII] do
+  if IO.Ascii.Exists(FASCII) then
+    for iString in IO.Ascii[FASCII] do
     begin
       VTIG_FreeLabel( iString, Point( 2, iCount ) );
       Inc( iCount );
