@@ -98,7 +98,6 @@ const
   TextContinueGame  = '@b--@> Continue game @b---@>';
   TextNewGame       = '@b-----@> New game @b-----@>';
   TextChallengeGame = '@b--@> Challenge game @b--@>';
-  TextCustomGame    = '@b---@> Custom game @b----@>';
 //  TextReplay        = '@b-@> Replay last game @b-@>';
   TextJHC           = '@B==@> Wishlist JHC! @B===@>';
   TextShowHighscore = '@b-@> Show highscores @b--@>';
@@ -216,13 +215,12 @@ begin
 
   TConUILabel.Create( Self, Point(2,24), '@BSupport the game by @Lwishlisting@B the DRL expansion at @Ljupiterhellclassic.com@B!' );
 
-  iMenu := TMainMenuConMenu.Create( Self, Rectangle( 30,13,24,9 ) );
+  iMenu := TMainMenuConMenu.Create( Self, Rectangle( 30,14,24,8 ) );
   if iSaveExists then
     iMenu.Add(TextContinueGame)
   else
     iMenu.Add(TextNewGame);
   iMenu.Add(TextChallengeGame,(not iSaveExists) );
-  iMenu.Add(TextCustomGame, (not iSaveExists) );
   iMenu.Add(TextShowHighscore);
   iMenu.Add(TextShowPlayer);
   iMenu.Add(TextHelp);
@@ -405,7 +403,7 @@ begin
         end;
         MenuModeMain  :
         begin
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,13) );
+          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,14) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,24) );
           iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
 
@@ -491,9 +489,9 @@ function TMainMenuViewer.OnMainCancel ( aSender : TUIElement ) : Boolean;
 var iMenu : TUICustomMenu;
 begin
   iMenu := aSender as TUICustomMenu;
-  if iMenu.Selected = 9
+  if iMenu.Selected = 8
     then begin FResult.Quit := True; Free; end
-    else iMenu.SetSelected( 9 );
+    else iMenu.SetSelected( 8 );
   Exit( True );
 end;
 
@@ -512,7 +510,7 @@ var iMenu       : TConUIMenu;
     iFull       : TUIFullWindow;
 begin
   iMenu := aSender as TConUIMenu;
-  if iMenu.Selected = 8 then
+  if iMenu.Selected = 7 then
   begin
     {$IFDEF UNIX}
     fpSystem('xdg-open ' + JHCURL); // Unix-based systems
@@ -546,11 +544,11 @@ begin
           InitChallenge;
           Exit( True );
         end;
-    4 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
-    5 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
-    6 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
-    7 : begin FLogo := False; IO.PushLayer( TSettingsView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
-    9 : FResult.Quit := True;
+    3 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
+    4 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
+    5 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
+    6 : begin FLogo := False; IO.PushLayer( TSettingsView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
+    8 : FResult.Quit := True;
   end;
   if iFull <> nil then
   begin
