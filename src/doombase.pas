@@ -93,7 +93,7 @@ end;
 
 procedure TDoom.CallHook( Hook : Byte; const Params : array of const ) ;
 begin
-  if (Hook in GlobalHooks) then LuaSystem.ProtectedCall([ModuleID,HookNames[Hook]],Params);
+  if (Hook in FModuleHooks) then LuaSystem.ProtectedCall([ModuleID,HookNames[Hook]],Params);
   if (Challenge <> '')  and (Hook in FChallengeHooks) then LuaSystem.ProtectedCall(['chal',Challenge,HookNames[Hook]],Params);
   if (SChallenge <> '') and (Hook in FSChallengeHooks) then LuaSystem.ProtectedCall(['chal',SChallenge,HookNames[Hook]],Params);
   if (Hook in FCoreHooks) then LuaSystem.ProtectedCall(['core',HookNames[Hook]],Params);
@@ -104,7 +104,7 @@ begin
   if (Hook in FCoreHooks) then if not LuaSystem.ProtectedCall(['core',HookNames[Hook]],Params) then Exit( False );
   if (Challenge <> '') and (Hook in FChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',Challenge,HookNames[Hook]],Params) then Exit( False );
   if (SChallenge <> '') and (Hook in FSChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',SChallenge,HookNames[Hook]],Params) then Exit( False );
-  if Hook in GlobalHooks then if not LuaSystem.ProtectedCall([ModuleID,HookNames[Hook]],Params) then Exit( False );
+  if Hook in FModuleHooks then if not LuaSystem.ProtectedCall([ModuleID,HookNames[Hook]],Params) then Exit( False );
   Exit( True );
 end;
 
