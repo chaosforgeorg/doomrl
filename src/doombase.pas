@@ -4,7 +4,7 @@ interface
 
 uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
      dflevel, dfdata, dfhof, dfitem,
-     doomhooks, doomlua, doommodule, doommenuview, doomcommand, doomkeybindings;
+     doomhooks, doomlua, doommenuview, doomcommand, doomkeybindings;
 
 type TDoomState = ( DSStart,      DSMenu,    DSLoading,   DSCrashLoading,
                     DSPlaying,    DSSaving,  DSNextLevel,
@@ -22,8 +22,6 @@ TDoom = class(TSystem)
        DataLoaded    : Boolean;
        GameWon       : Boolean;
        CrashSave     : Boolean;
-       GameType      : TDoomGameType;
-       Module        : TDoomModule;
        NVersion      : TVersion;
        ModuleID      : AnsiString;
        constructor Create; override;
@@ -54,10 +52,8 @@ TDoom = class(TSystem)
        function HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
        function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
        procedure PreAction;
-       function ModuleHookTable( Hook : Byte ) : AnsiString;
        procedure LoadModule( Base : Boolean );
        procedure DoomFirst;
-       procedure RunSingle;
        procedure CreatePlayer( aResult : TMenuResult );
      private
        FState           : TDoomState;
@@ -97,7 +93,7 @@ end;
 
 procedure TDoom.CallHook( Hook : Byte; const Params : array of const ) ;
 begin
-  if (Hook in FModuleHooks) then LuaSystem.ProtectedCall([ModuleHookTable(Hook),HookNames[Hook]],Params);
+  if (Hook in GlobalHooks) then LuaSystem.ProtectedCall([ModuleID,HookNames[Hook]],Params);
   if (Challenge <> '')  and (Hook in FChallengeHooks) then LuaSystem.ProtectedCall(['chal',Challenge,HookNames[Hook]],Params);
   if (SChallenge <> '') and (Hook in FSChallengeHooks) then LuaSystem.ProtectedCall(['chal',SChallenge,HookNames[Hook]],Params);
   if (Hook in FCoreHooks) then LuaSystem.ProtectedCall(['core',HookNames[Hook]],Params);
@@ -108,7 +104,7 @@ begin
   if (Hook in FCoreHooks) then if not LuaSystem.ProtectedCall(['core',HookNames[Hook]],Params) then Exit( False );
   if (Challenge <> '') and (Hook in FChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',Challenge,HookNames[Hook]],Params) then Exit( False );
   if (SChallenge <> '') and (Hook in FSChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',SChallenge,HookNames[Hook]],Params) then Exit( False );
-  if Hook in FModuleHooks then if not LuaSystem.ProtectedCall([ModuleHookTable(Hook),HookNames[Hook]],Params) then Exit( False );
+  if Hook in GlobalHooks then if not LuaSystem.ProtectedCall([ModuleID,HookNames[Hook]],Params) then Exit( False );
   Exit( True );
 end;
 
@@ -127,22 +123,10 @@ begin
   FState := NewState;
 end;
 
-function TDoom.ModuleHookTable ( Hook : Byte ) : AnsiString;
-begin
-  if Hook in GameTypeHooks[ GameType ] then Exit( ModuleID ) else Exit( 'DoomRL' );
-end;
-
 procedure TDoom.LoadModule( Base : Boolean );
 begin
-  if ModuleID <> 'DoomRL' then Lua.LoadModule( Module );
+//  if ModuleID <> 'DoomRL' then Lua.LoadModule( Module );
   FModuleHooks := LoadHooks( ['DoomRL'] ) * GlobalHooks;
-  if GameType <> GameStandard then
-  begin
-    Exclude( FModuleHooks, Hook_OnLoad );
-    Exclude( FModuleHooks, Hook_OnLoaded );
-    Exclude( FModuleHooks, Hook_OnIntro );
-    FModuleHooks += ( LoadHooks( [ ModuleID ] ) * GameTypeHooks[ GameType ] );
-  end;
   if Base then CallHook( Hook_OnLoadBase, [] );
   CallHook( Hook_OnLoad, [] );
 end;
@@ -166,7 +150,7 @@ begin
   SetState( DSLoading );
   LuaSystem := Systems.Add(TDoomLua.Create()) as TLuaSystem;
   LuaSystem.CallDefaultResult := True;
-  Modules.RegisterAwards( LuaSystem.Raw );
+//  Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
   ModuleID := 'DoomRL';
 
@@ -208,7 +192,6 @@ constructor TDoom.Create;
 begin
   inherited Create;
   ModuleID   := 'DoomRL';
-  GameType   := GameStandard;
   GameWon    := False;
   DataLoaded := False;
   CrashSave  := False;
@@ -252,15 +235,16 @@ begin
   Challenge      := aResult.Challenge;
   ArchAngel      := aResult.ArchAngel;
   SChallenge     := aResult.SChallenge;
-  GameType       := aResult.GameType;
   ModuleID       := aResult.ModuleID;
 
+  {
   if aResult.Module <> nil then
   begin
     NoPlayerRecord := True;
     NoScoreRecord  := True;
     Module := aResult.Module;
   end;
+  }
 
   // Set Klass   Klass      : Byte;
   // Upgrade trait -- Trait : Byte;
@@ -847,7 +831,6 @@ repeat
   Challenge      := '';
   SChallenge     := '';
   GameWon        := False;
-  Module         := nil;
   NoPlayerRecord := False;
   NoScoreRecord  := False;
 
@@ -876,12 +859,10 @@ repeat
 
   LuaSystem.SetValue('level', Level );
 
-  if GameType = GameEpisode then LoadModule( False );
-
   if (not (State in [DSLoading, DSCrashLoading])) then
     CallHookCheck( Hook_OnIntro, [Setting_NoIntro] );
 
-  if (GameType <> GameSingle) and (not(State in [DSLoading, DSCrashLoading])) then
+  if (not(State in [DSLoading, DSCrashLoading])) then
   begin
     CallHook( Hook_OnCreateEpisode, [] );
   end;
@@ -905,43 +886,38 @@ repeat
         FStatistics.Update;
       end;
 
-      if GameType = GameSingle then
-         RunSingle
+      if Player.SpecExit = '' then
+        Inc(Player.CurrentLevel)
       else
-      begin
-        if Player.SpecExit = '' then
-          Inc(Player.CurrentLevel)
-        else
-          Player.IncStatistic('bonus_levels_visited');
+        Player.IncStatistic('bonus_levels_visited');
 
-        with LuaSystem.GetTable(['player','episode',Player.CurrentLevel]) do
-        try
-          FLevel.Init(getInteger('style',0),
-                     getInteger('number',0),
-                     getString('name',''),
-                     getString('special',''),
-                     Player.CurrentLevel,
-                     getInteger('danger',0));
-
-          if Player.SpecExit <> ''
-            then FLevel.Flags[ LF_BONUS ] := True
-            else Player.SpecExit := getString('script','');
-
-        finally
-          Free;
-        end;
+      with LuaSystem.GetTable(['player','episode',Player.CurrentLevel]) do
+      try
+        FLevel.Init(getInteger('style',0),
+                   getInteger('number',0),
+                   getString('name',''),
+                   getString('special',''),
+                   Player.CurrentLevel,
+                   getInteger('danger',0));
 
         if Player.SpecExit <> ''
-          then
-            FLevel.ScriptLevel(Player.SpecExit)
-          else
-          begin
-            if FLevel.Name_Number <> 0 then IO.Msg('You enter %s, level %d.',[ FLevel.Name, FLevel.Name_Number ]);
-            CallHookCheck(Hook_OnGenerate,[]);
-            FLevel.AfterGeneration( True );
-          end;
-        Player.SpecExit := '';
+          then FLevel.Flags[ LF_BONUS ] := True
+          else Player.SpecExit := getString('script','');
+
+      finally
+        Free;
       end;
+
+      if Player.SpecExit <> ''
+        then
+          FLevel.ScriptLevel(Player.SpecExit)
+        else
+        begin
+          if FLevel.Name_Number <> 0 then IO.Msg('You enter %s, level %d.',[ FLevel.Name, FLevel.Name_Number ]);
+          CallHookCheck(Hook_OnGenerate,[]);
+          FLevel.AfterGeneration( True );
+        end;
+      Player.SpecExit := '';
     end;
     iFullLoad := State = DSLoading;
 
@@ -1013,7 +989,7 @@ repeat
       FLevel.Clear;
     end;
     IO.SetHint('');
-  until (State <> DSNextLevel) or (GameType = GameSingle);
+  until (State <> DSNextLevel);
   except on e : Exception do
   begin
     EmitCrashInfo( e.Message, True );
@@ -1029,49 +1005,33 @@ repeat
   end;
   end;
 
-  if GameType <> GameSingle then
+  if State = DSSaving then
   begin
-    if State = DSSaving then
+    WriteSaveFile( False );
+    IO.MsgEnter('Game saved. Press <Enter> to exit.');
+  end;
+  if State = DSFinished then
+  begin
+    if GameWon then
     begin
-      WriteSaveFile( False );
-      IO.MsgEnter('Game saved. Press <Enter> to exit.');
-    end;
-    if State = DSFinished then
-    begin
-      if GameWon then
-      begin
-        IO.Audio.PlayMusic('victory');
-        CallHookCheck(Hook_OnWinGame,[]);
-      end
-      else IO.Audio.PlayMusic('bunny');
-    end;
+      IO.Audio.PlayMusic('victory');
+      CallHookCheck(Hook_OnWinGame,[]);
+    end
+    else IO.Audio.PlayMusic('bunny');
   end;
 
-  if GameType = GameStandard then
+  if State = DSFinished then
   begin
-    if State = DSFinished then
-    begin
-      if HOF.RankCheck( iRank ) then
-        IO.RunUILoop( TUIRankUpViewer.Create( IO.Root, iRank ) );
-      if Player.FScore >= -1000 then
-        IO.RunUILoop( TUIMortemViewer.Create( IO.Root ) );
-      IO.RunUILoop( TUIHOFViewer.Create( IO.Root, HOF.GetHOFReport ) );
-    end;
-    CallHook(Hook_OnUnLoad,[]);
-  end
-  else
-    if (State <> DSSaving) and (State <> DSQuit) then
-    begin
-      Player.WriteMemorial;
-      if Player.FScore >= -1000 then
-        IO.RunUILoop( TUIMortemViewer.Create( IO.Root ) );
-    end;
+    if HOF.RankCheck( iRank ) then
+      IO.RunUILoop( TUIRankUpViewer.Create( IO.Root, iRank ) );
+    if Player.FScore >= -1000 then
+      IO.RunUILoop( TUIMortemViewer.Create( IO.Root ) );
+    IO.RunUILoop( TUIHOFViewer.Create( IO.Root, HOF.GetHOFReport ) );
+  end;
+  CallHook(Hook_OnUnLoad,[]);
 
   IO.BloodSlideDown(20);
   FreeAndNil(Player);
-
-  if GameType <> GameStandard then
-    Doom.UnLoad;
 
 until not Option_MenuReturn;
   FreeAndNil( iResult );
@@ -1108,7 +1068,6 @@ begin
 
       ModuleID        := Stream.ReadAnsiString;
       UIDs            := TUIDStore.CreateFromStream( Stream );
-      GameType        := TDoomGameType( Stream.ReadByte );
       GameWon         := Stream.ReadByte <> 0;
       Difficulty      := Stream.ReadByte;
       Challenge       := Stream.ReadAnsiString;
@@ -1131,14 +1090,6 @@ begin
     end;
     DeleteFile( WritePath + 'save' );
 
-    if GameType <> GameStandard then
-    begin
-      Module := Modules.FindLocalRawMod( ModuleID );
-      if Module = nil then Module := Modules.FindLocalMod( ModuleID );
-      if Module = nil then raise TModuleException.Create( 'Module '+ModuleID+' used by the savefile not found!' );
-      NoPlayerRecord := True;
-      NoScoreRecord  := True;
-    end;
     IO.Msg('Game loaded.');
 
     if Player.Dead then
@@ -1168,7 +1119,6 @@ begin
 
   Stream.WriteAnsiString( ModuleID );
   UIDs.WriteToStream( Stream );
-  Stream.WriteByte( Byte(GameType) );
   if GameWon   then Stream.WriteByte( 1 ) else Stream.WriteByte( 0 );
   Stream.WriteByte( Difficulty );
   Stream.WriteAnsiString( Challenge );
@@ -1209,15 +1159,6 @@ begin
   Writeln(T,'DRL was already run.');
   Close(T);
   IO.RunUILoop( TMainMenuViewer.CreateFirst( IO.Root ) );
-end;
-
-procedure TDoom.RunSingle;
-begin
-  FLevel.Init(1,1,'','',1,1);
-  Player.SpecExit := '';
-  ModuleID := Module.Id;
-  LoadModule( False );
-  FLevel.SingleLevel(Module.Id);
 end;
 
 destructor TDoom.Destroy;

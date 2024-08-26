@@ -2,7 +2,7 @@
 unit doomlua;
 interface
 
-uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil, vcolor, vdf, vbitmapfont, dfitem, dfbeing, dfthing, dfdata, doommodule;
+uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil, vcolor, vdf, vbitmapfont, dfitem, dfbeing, dfthing, dfdata;
 
 var LuaPlayerX : Byte = 2;
     LuaPlayerY : Byte = 2;
@@ -17,7 +17,6 @@ TDoomLua = class(TLuaSystem)
        procedure OnError(const ErrorString : Ansistring); override;
        destructor Destroy; override;
        procedure RegisterPlayer(Thing: TThing);
-       procedure LoadModule(Module : TDoomModule);
        function LoadFont( const aFontName : AnsiString ) : TBitmapFont;
      private
        procedure ReadWad(WADName : string);
@@ -297,25 +296,6 @@ begin
   Result := 0;
 end;
 
-function lua_core_game_type(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  State.Push(Byte(Doom.GameType));
-  Result := 1;
-end;
-
-function lua_core_game_module(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  if Doom.Module = nil
-     then State.PushNil
-     else State.Push(Doom.Module.Id);
-  Result := 1;
-end;
-
-
 // ************************************************************************ //
 // ************************************************************************ //
 
@@ -394,67 +374,6 @@ begin
   if iNormal = nil then State.Error( 'Bad parameters passes to register_sprite_sheet!');
   State.Push( Integer( SpriteMap.Engine.Add( iNormal, iCosplay, iGlow, State.ToInteger(4) ) * 100000 ) );
   Result := 1;
-end;
-
-// -------------------------------------------------------------------------------
-
-procedure TDoomLua.LoadModule(Module: TDoomModule);
-var Path : AnsiString;
-    WAD  : TVDataFile;
-    procedure LoadMusic( Ext : Ansistring );
-    var Info : TSearchRec;
-    begin
-      if FindFirst( Path + 'music' + DirectorySeparator + '*'+Ext, faAnyFile, Info ) = 0 then
-      repeat with Info do
-          Sound.RegisterMusic( Path + 'music' + DirectorySeparator + Name, LeftStr( Name, Length( Name ) - 4 ) );
-      until FindNext(info) <> 0;
-      FindClose(Info);
-    end;
-    procedure LoadSound( Ext : Ansistring );
-    var Info : TSearchRec;
-    begin
-      if FindFirst( Path + 'sound' + DirectorySeparator + '*'+Ext, faAnyFile, Info ) = 0 then
-      repeat with Info do
-          Sound.RegisterSample( Path + 'sound' + DirectorySeparator + Name, LeftStr( Name, Length( Name ) - 4 ) );
-      until FindNext(info) <> 0;
-      FindClose(Info);
-    end;
-begin
-  if Module.Raw then
-  begin
-    Path := Modules.ModulePath + Module.ID + '.module' + DirectorySeparator;
-//    Lua.Register('require',@lua_core_require);
-    RegisterModule( Module.ID, Path );
-    LoadFile( Path + 'module.lua' );
-    LoadFile( Path + 'main.lua' );
-    if SoundVersion then
-    begin
-      LoadMusic('.mid');
-      LoadMusic('.mp3');
-      LoadMusic('.ogg');
-      LoadSound('.wav');
-    end;
-  end
-  else
-  begin
-    WAD := TVDataFile.Create( Modules.ModulePath + Module.ID + '.wad' );
-    RegisterModule(Module.ID, WAD);
-    LoadStream(WAD,'','module.lua');
-    LoadStream(WAD,'','main.lua');
-    WAD.RegisterLoader(FILETYPE_ASCII,@IO.ASCIILoader);
-    if SoundVersion then
-    begin
-      WAD.RegisterLoader(FILETYPE_MUSIC,@Sound.MusicStreamLoader);
-      WAD.RegisterLoader(FILETYPE_SOUND,@Sound.SampleStreamLoader);
-    end;
-    WAD.Load('ascii');
-    if SoundVersion then
-    begin
-      WAD.Load('sound');
-      WAD.Load('music');
-    end;
-    FreeAndNil(WAD);
-  end;
 end;
 
 function TDoomLua.LoadFont(const aFontName: AnsiString) : TBitmapFont;
@@ -573,11 +492,9 @@ const lua_player_data_lib : array[0..4] of luaL_Reg = (
 );
 
 
-const lua_core_lib : array[0..14] of luaL_Reg = (
+const lua_core_lib : array[0..12] of luaL_Reg = (
     ( name : 'add_to_cell_set';func : @lua_core_add_to_cell_set),
     ( name : 'game_time';func : @lua_core_game_time),
-    ( name : 'game_type';func : @lua_core_game_type),
-    ( name : 'game_module';func : @lua_core_game_module),
     ( name : 'is_playing';func : @lua_core_is_playing),
     ( name : 'register_cell';   func : @lua_core_register_cell),
     ( name : 'register_missile';func : @lua_core_register_missile),
@@ -640,7 +557,6 @@ begin
   State.RegisterEnumValues( TypeInfo(TExplosionFlag) );
   State.RegisterEnumValues( TypeInfo(TResistance) );
   State.RegisterEnumValues( TypeInfo(TMoveResult) );
-  State.RegisterEnumValues( TypeInfo(TDoomGameType) );
 
   TNode.RegisterLuaAPI( 'game_object' );
 

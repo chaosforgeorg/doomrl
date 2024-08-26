@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doommenuview;
 interface
-uses vuielements, vuielement, viotypes, vuitypes, vioevent, vconui, dfdata, vtextures, doommodule;
+uses vuielements, vuielement, viotypes, vuitypes, vioevent, vconui, dfdata, vtextures;
 
 type TChallengeDesc = record Name : AnsiString; Desc : AnsiString; end;
 const ChallengeType : array[1..4] of TChallengeDesc =
@@ -24,14 +24,11 @@ const ChallengeType : array[1..4] of TChallengeDesc =
 type TMenuResult = class
   Quit       : Boolean;
   Loaded     : Boolean;
-  GameType   : TDoomGameType;
   ArchAngel  : Boolean;
   Challenge  : AnsiString;
   SChallenge : AnsiString;
   Difficulty : Byte;
   ModuleID   : AnsiString;
-  Module     : TDoomModule;
-
   Klass      : Byte;
   Trait      : Byte;
   Name       : AnsiString;
@@ -79,7 +76,6 @@ type TMainMenuViewer = class( TUIElement )
     function OnPickKlass( aSender : TUIElement ) : Boolean;
     function OnPickTrait( aTrait : Byte ) : Boolean;
     function OnPickName( aSender : TUIElement ) : Boolean;
-    function OnPickMod( aSender : TUIElement ) : Boolean;
     function OnKlassMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
     function OnChalMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
     procedure OnRedraw; override;
@@ -319,7 +315,6 @@ begin
   iMenu.Add( ChallengeType[1].Name, (HOF.SkillRank > 0) or (GodMode) or (Setting_UnlockAll) );
   iMenu.Add( ChallengeType[2].Name, (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll) );
   iMenu.Add( ChallengeType[3].Name, (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll) );
-  iMenu.Add( ChallengeType[4].Name, Modules.ChallengeModules.Size > 0 );
   iMenu.OnConfirmEvent := @OnPickChallengeType;
   iMenu.OnCancelEvent  := @OnCancel;
   if GraphicsVersion then
@@ -551,7 +546,6 @@ begin
           InitChallenge;
           Exit( True );
         end;
-    3 : iFull := TUIModViewer.Create( Self, False, @OnPickMod );
     4 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
     5 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
     6 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
@@ -620,7 +614,6 @@ begin
       SetLength( iChallenges, iChoices );
       iFull := TUIChallengesViewer.Create( Self, 'Choose your Arch-challenge', HOF.SkillRank, iChallenges, @OnPickChallengeGame,True );
     end;
-    4 : iFull := TUICustomChallengesViewer.Create( Self, 'Choose your Custom Challenge', Modules.ChallengeModules, @OnPickMod );
   else Exit( True );
   end;
   FLogo := False;
@@ -746,30 +739,6 @@ begin
   Exit( True );
 end;
 
-function TMainMenuViewer.OnPickMod ( aSender : TUIElement ) : Boolean;
-var iModule : TDoomModule;
-begin
-  iModule := TDoomModule((aSender as TUICustomMenu).SelectedItem.Data);
-  FResult.GameType   := GameSingle;
-  FResult.Module     := iModule;
-  FResult.Difficulty := 1;
-  FResult.Klass      := iModule.Klass;
-
-  if iModule.MType = ModuleEpisode then
-  begin
-    FResult.GameType := GameEpisode;
-    FResult.ModuleID := iModule.Id;
-  end;
-
-  DestroyChildren;
-  if iModule.Diff
-    then InitDifficulty
-    else if FResult.Klass = 0
-      then InitKlass
-      else InitTrait;
-  Exit( True );
-end;
-
 function TMainMenuViewer.OnKlassMenuSelect ( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
 begin
   FLabel.Text := Padded( '- @<' + LuaSystem.Get(['klasses',aIndex,'name']) + ' @>', 49, '-');
@@ -810,9 +779,7 @@ begin
   ArchAngel  := False;
   Klass      := 0;
   Trait      := 0;
-  GameType   := GameStandard;
   ModuleID   := 'DoomRL';
-  Module     := nil;
   Name       := '';
 end;
 

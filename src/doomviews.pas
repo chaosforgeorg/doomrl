@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomviews;
 interface
-uses vuielement, vuielements, viotypes, vuitypes, vioevent, vconui, vconuiext, vconuirl, doommodule,
+uses vuielement, vuielements, viotypes, vuitypes, vioevent, vconui, vconuiext, vconuirl,
      dfdata, dfitem, doomtrait;
 
 type TUIChallengeList = array of Byte;
@@ -96,6 +96,7 @@ protected
   FOnConfirm  : TUINotifyEvent;
 end;
 
+{
 type
 
 { TUICustomChallengesViewer }
@@ -109,24 +110,7 @@ type
    FDesc       : TConUIText;
  end;
 
-type TUIModViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement; aDownloadAllowed : Boolean; aOnConfirm : TUINotifyEvent = nil );
-  procedure EmitError( const aError : TUIString );
-  procedure EmitWarning( const aError : TUIString; aContinue : TUINotifyEvent );
-  procedure ReloadMenu;
-  function OnMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
-  function OnMenuPick( aSender : TUIElement ) : Boolean;
-  function OnConfirm( aSender : TUIElement ) : Boolean;
-protected
-  FDownAllow : Boolean;
-  FGConfirmed: Boolean;
-  FMode      : ( ModeRemote, ModeLocal );
-  FBar       : TUIDowloadBar;
-  FMenu      : TConUIMenu;
-  FLabel     : TConUILabel;
-  FDesc      : TConUIText;
-  FOnConfirm : TUINotifyEvent;
-end;
+}
 
 type TUILoadingScreen = class( TUIElement )
   constructor Create( aParent : TUIElement; aMax : DWord );
@@ -527,7 +511,7 @@ begin
 end;
 
 { TUICustomChallengesViewer }
-
+{
 constructor TUICustomChallengesViewer.Create(aParent: TUIElement;
   const aTitle: AnsiString; const aChallenges: TModuleList;
   aOnConfirm: TUINotifyEvent);
@@ -588,186 +572,7 @@ begin
   end;
   FDesc.Text  := iDesc + iAwards;
 end;
-
-{ TUIModViewer }
-
-constructor TUIModViewer.Create ( aParent : TUIElement;
-  aDownloadAllowed : Boolean; aOnConfirm : TUINotifyEvent ) ;
-begin
-  inherited Create( aParent, '@yChoose Module to Play', MenuFooter);
-
-  FOnConfirm  := aOnConfirm;
-  FDownAllow  := aDownloadAllowed;
-  FMode       := ModeLocal;
-  FMenu       := TConUIMenu.Create( Self, Rectangle( 3,2,22,21 ) );
-  FLabel      := TConUILabel.Create( Self, Point( 27, 2 ), StringOfChar('-',57) );
-  FDesc       := TConUIText.Create( Self, Rectangle( 29,4,47,21 ),'' );
-  FBar        := TUIDowloadBar.Create( Self );
-  FBar.Visible:= False;
-
-  FLabel.ForeColor    := Red;
-  FMenu.ForeColor     := LightRed;
-  FMenu.SelectedColor := Yellow;
-  FMenu.OnSelectEvent := @OnMenuSelect;
-  FMenu.OnConfirmEvent:= @OnMenuPick;
-
-  ReloadMenu;
-end;
-
-procedure TUIModViewer.EmitError ( const aError : TUIString ) ;
-begin
-  TUINotifyBox.Create( Self, Rectangle( 9,5, 54, 11),
-  '@r  Error!'#10#10+
-  '@y  '+aError+#10#10+
-  '          @rPress <@yEnter@r>...');
-end;
-
-procedure TUIModViewer.EmitWarning ( const aError : TUIString;
-  aContinue : TUINotifyEvent ) ;
-begin
-  TUIYesNoBox.Create( Self, Rectangle( 9,5, 54, 11),
-  '@y  Warning!'#10#10+
-  '@y  '+aError+#10#10+
-  '          @rPress [@yy@r/@yn@r]...', aContinue );
-end;
-
-procedure TUIModViewer.ReloadMenu;
-var iList   : TModuleArray;
-    iModule : TDoomModule;
-begin
-  if FMode = ModeLocal then
-  begin
-    FTitle := '@yChoose Module to Play';
-    iList := Modules.LocalModules;
-  end
-  {
-  else
-  begin
-    (* TODO Separate network error (actually cannot download the file) from local error (file system cannot write the file because the directory is missing etc) *)
-    if not Modules.DownloadRemoteLists( nil ) then
-    begin
-      EmitError( 'Could not download module list from remote'#10+'repository!' );
-      Exit;
-    end;
-    FTitle := '@yChoose Module to Download';
-    iList := Modules.RemoteModules;
-  end};
-  FMenu.Clear;
-  for iModule in iList do
-    FMenu.Add( iModule.Name+IIf( iModule.Raw, ' (raw)'), True, iModule );
-  if (FMode = ModeLocal) and FDownAllow then FMenu.Add('Download mods');
-  FMenu.Add('Back');
-end;
-
-function TUIModViewer.OnMenuSelect ( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
-var iModule : TDoomModule;
-    iLocal  : TDoomModule;
-  function VersionInfo( Version : TVersion ) : AnsiString;
-  begin
-    if iLocal = nil then
-      Exit( VersionToString(Version) );
-    if iLocal.Version > Version then
-      Exit( VersionToString(Version)+' @R(older)' );
-    if Version > iLocal.Version then
-      Exit( VersionToString(Version)+' @W(newer)' );
-    Exit( VersionToString(Version)+' (same)' );
-  end;
-
-begin
-  FGConfirmed := False;
-  if ( not FMenu.IsValid( aIndex ) ) or ( aItem.Data = nil ) then
-  begin
-    FLabel.Text := '';
-    FDesc.Text  := '';
-    Exit( True );
-  end;
-  iModule := TDoomModule(aItem.Data);
-  if FMode = ModeLocal
-    then iLocal  := nil
-    else iLocal  := Modules.FindLocalMod( iModule.ID );
-
-  FLabel.Text := Padded( '- @<' + iModule.Name + ' @>', 53, '-');
-  FDesc.Text  :=
-  '@RVersion: @y'+VersionInfo(iModule.Version)+#10+
-  '@RAuthor : @y'+iModule.Author+#10+
-  '@RWebpage: @y'+iModule.Webpage+#10+
-  '@RReqVer : @y'+VersionToString(iModule.drlver)+#10+
-  IIf( GraphicsVersion,'@RGSupport: @y'+BoolToStr(iModule.GSupport)+#10)+
-  IIf( FMode = ModeRemote,'@RSize   : @y'+IntToStr(iModule.Size)+#10)+
-  #10+'@L'+iModule.Desc+IIf( iModule.Challenge, #10#10+'@yNote: @lThis module is also available via Challenge Game menu now.' );
-  Exit( True );
-end;
-
-function TUIModViewer.OnMenuPick ( aSender : TUIElement ) : Boolean;
-const OlderWarning = 'This module is designed for an older version'#10+
-                     '  of DRL, and as such might not work on your'#10+
-                     '  version. Do you want to try to load it anyway?';
-      NewerWarning = 'This module is designed for a newer version'#10+
-                     '  of DRL, and as such might not work on your'#10+
-                     '  version. Do you want to try to load it anyway?';
-      GVerWarning  = 'This module was not designed with graphics'#10+
-                     '  support in mind. It might crash and look'#10+
-                     '  corrupted in G-mode. Try to play it anyway?';
-var iModule : TDoomModule;
-begin
-  if FBar.Visible then Exit( True );
-  if FMenu.SelectedItem.Data = nil then
-  begin
-    if (FMode = ModeLocal) and (FMenu.Selected = FMenu.Count) then
-        Exit( OnCancel )
-    else
-    begin
-      if FMode = ModeLocal
-        then FMode := ModeRemote
-        else FMode := ModeLocal;
-      ReloadMenu;
-    end;
-    Exit( True );
-  end;
-
-  iModule := TDoomModule(FMenu.SelectedItem.Data);
-  if FMode = ModeLocal then
-  begin
-    if GraphicsVersion and (not iModule.GSupport) and (not FGConfirmed) then
-    begin
-      EmitWarning( GVerWarning, @Self.OnMenuPick );
-      FGConfirmed := True;
-      Exit( True );
-    end;
-
-    if iModule.DrlVer > Doom.NVersion then
-      EmitWarning( NewerWarning, @OnConfirm )
-    else if Doom.NVersion > iModule.DrlVer then
-      EmitWarning( OlderWarning, @OnConfirm )
-    else
-      OnConfirm( FMenu );
-  end{
-  else
-  begin
-    FBar.Visible := True;
-    FBar.Initialize( iModule.Size );
-    if not Modules.DownloadModule( iModule, @FBar.NetUpdate ) then
-    begin
-      EmitError('Could not download module from remote repository!');
-    end
-    else
-    begin
-      TUINotifyBox.Create( Self, Rectangle( 9,5, 51, 7),'@y  Module downloaded successfuly!'#10#10'          @rPress <@yEnter@r>...');
-      Modules.RefreshLocalModules;
-    end;
-    FBar.Visible := False;
-  end};
-  Exit( True );
-end;
-
-function TUIModViewer.OnConfirm ( aSender : TUIElement ) : Boolean;
-begin
-  if FMode = ModeLocal then
-  begin
-    if Assigned( FOnConfirm ) then FOnConfirm( FMenu ) else Free;
-  end;
-  Exit( True );
-end;
+}
 
 { TUIYesNoBox }
 
