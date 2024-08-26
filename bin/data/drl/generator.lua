@@ -1,4 +1,4 @@
-require( "doomrl:archi" )
+require( "drl:archi" )
 
 generator.fluid_to_perm = {
 	water  = "pwater",

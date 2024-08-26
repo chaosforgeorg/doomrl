@@ -95,7 +95,7 @@ type
 
 
 const
-{$include ../bin/core/constants.lua}
+{$include ../bin/data/core/constants.lua}
 {$include ../bin/dkey.inc}
 
 const
@@ -160,7 +160,7 @@ var
   // 0-25 range
 
 const
-{$include ../bin/core/commands.lua}
+{$include ../bin/data/core/commands.lua}
   INPUT_MOVE        = [INPUT_WALKUP,     INPUT_WALKDOWN,
                        INPUT_WALKRIGHT,  INPUT_WALKLEFT,
                        INPUT_WALKUPRIGHT,INPUT_WALKDOWNRIGHT,

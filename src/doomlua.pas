@@ -473,8 +473,7 @@ begin
 end;
 
 procedure TDoomLua.ReadWad(WADName : string);
-var T1,T2,T3  : TStream;
-    iProgBase : DWord;
+var iProgBase : DWord;
 begin
   FCoreData := TVDataFile.Create(DataPath+'core.wad');
   FMainData := TVDataFile.Create(DataPath+WADName);
@@ -485,19 +484,19 @@ begin
 
   if GodMode then
   begin
-    RegisterModule( 'core', 'core' + DirectorySeparator );
-    RegisterModule( 'doomrl', 'lua' + DirectorySeparator );
-    LoadFile( 'core' + DirectorySeparator + 'core.lua' );
+    RegisterModule( 'core', 'data' + DirectorySeparator + 'core' + DirectorySeparator );
+    RegisterModule( 'drl', 'data' + DirectorySeparator + 'drl' + DirectorySeparator );
+    LoadFile( 'data' + DirectorySeparator + 'core' + DirectorySeparator + 'core.lua' );
     IO.LoadProgress(iProgBase + 20);
-    LoadFile( 'lua' + DirectorySeparator + 'main.lua' );
+    LoadFile( 'data' + DirectorySeparator + 'drl' + DirectorySeparator + 'main.lua' );
     IO.LoadProgress(iProgBase + 30);
     if GraphicsVersion then
-      (IO as TDoomGFXIO).Textures.LoadTextureFolder('graphics');
+      (IO as TDoomGFXIO).Textures.LoadTextureFolder( 'data' + DirectorySeparator + 'drl' + DirectorySeparator + 'graphics' );
   end
   else
   begin
     RegisterModule('core',FCoreData);
-    RegisterModule('doomrl',FMainData);
+    RegisterModule('drl',FMainData);
     LoadStream(FCoreData,'','core.lua');
     IO.LoadProgress(iProgBase + 20);
     LoadStream(FMainData,'','main.lua');
@@ -514,20 +513,8 @@ begin
   IO.LoadProgress(iProgBase + 50);
 
   if (not GodMode) and GraphicsVersion then
-  begin
     FMainData.Load('graphics');
 
-    T1 := TMemoryStream.Create;
-    T3 := FMainData.GetFile('doom.png','graphics');
-    T1.CopyFrom( T3, FMainData.GetFileSize('doom.png','graphics') );
-    FreeAndNil(T3);
-    T1.Seek(0,soFromBeginning);
-
-    T2 := FMainData.GetFile('doom.ini');
-    //Textures.LoadFont( T1, CoreData.GetFileSize('doom.png','graphics'), T2 );
-    FreeAndNil(T1);
-    FreeAndNil(T2);
-  end;
   IO.LoadProgress(iProgBase + 100);
 end;
 
