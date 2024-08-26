@@ -91,7 +91,7 @@ type TMainMenuViewer = class( TUIElement )
 
 implementation
 
-uses {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}math, sysutils, vutil, vsound, vimage, vuiconsole, vluavalue, vluasystem, dfhof, vgltypes,
+uses {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}math, sysutils, vutil, vsound, vimage, vuiconsole, vtig, vluavalue, vluasystem, dfhof, vgltypes,
      doombase, doomio, doomgfxio, doomviews, doomplayerview, doomhelpview, doomsettingsview;
 
 const
@@ -188,10 +188,7 @@ end;
 
 procedure TMainMenuViewer.CreateLogo;
 begin
-  if GraphicsVersion then
-    FLogo   := True
-  else
-    TConUIStringList.Create( Self, Rectangle(17,0,46,20), IO.OldAscii['logo'], False );
+  FLogo   := True;
 end;
 
 procedure TMainMenuViewer.CreateSubLogo;
@@ -328,6 +325,8 @@ var iSizeX, iSizeY : Single;
     iP1,iP2        : TPoint;
     iRoot          : TConUIRoot;
     iIO            : TDoomGFXIO;
+    iCount         : Integer;
+    iString        : AnsiString;
 begin
   if GraphicsVersion then
   begin
@@ -445,7 +444,26 @@ begin
         end;
       end;
     end;
+  end
+  else
+  begin
+    iCount := 0;
+    if FLogo then
+      if IO.NewAscii.Exists('logo') then
+        for iString in IO.NewAscii['logo'] do
+        begin
+          VTIG_FreeLabel( iString, Point( 17, iCount ) );
+          Inc( iCount );
+        end;
+    if FMode = MenuModeLogo then
+    begin
+      VTIG_FreeLabel( '{rDRL version {R'+VERSION_STRING+'}}', Point( 28, 9 ) );
+      VTIG_FreeLabel( '{rby {RKornel Kisielewicz}}', Point( 28, 10 ) );
+      VTIG_FreeLabel( '{rgraphics by {RDerek Yu}}', Point( 28, 11 ) );
+      VTIG_FreeLabel( '{rand {RLukasz Sliwinski}}', Point( 28, 12 ) );
+    end;
   end;
+
   inherited OnRender;
 end;
 
