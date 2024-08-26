@@ -202,16 +202,15 @@ function DoomRL.print_mortem()
 		return result
 	end
 
-	local game_type      = core.game_type()
 	local game_module    = nil
 
 
 	player:mortem_print( "--------------------------------------------------------------" )
 	player:mortem_print( " DRL ("..VERSION_STRING..") roguelike post-mortem character dump")
-	if game_type ~= GAMESTANDARD then
-		player:mortem_print( " Module : "..module.name.." ("..version_string(module.version)..")")
-		game_module = _G[module.id]
-	end
+--	if game_type ~= GAMESTANDARD then
+--		player:mortem_print( " Module : "..module.name.." ("..version_string(module.version)..")")
+--		game_module = _G[module.id]
+--	end
 	player:mortem_print( "--------------------------------------------------------------" )
 	player:mortem_print()
 
@@ -220,7 +219,7 @@ function DoomRL.print_mortem()
 		return
 	end
 
-	if game_type == GAMESTANDARD then
+	if not game_module then
 		local player_description = "level "..player.explevel.." "
 			..exp_ranks[player.exprank + 1].name.." "..skill_ranks[player.skillrank + 1].name
 			.." "..klasses[player.klass].name..","
@@ -306,7 +305,7 @@ function DoomRL.print_mortem()
 	end
 	player:mortem_print()
 
-	if game_type == GAMESTANDARD then
+	if not game_module then
 		player:mortem_print("-- Special levels --------------------------------------------")
 		player:mortem_print()
 		player:mortem_print("  Levels generated : "..statistics.bonus_levels_count )
@@ -321,7 +320,7 @@ function DoomRL.print_mortem()
 	player:mortem_print("-- Awards ----------------------------------------------------")
 	player:mortem_print()
 
-	if game_type == GAMESTANDARD then
+	if not game_module then
 		for k,v in ipairs( medals ) do
 			if player:has_medal( v.id ) then
 				player:mortem_print( "  "..padded( v.name, 26 ).." "..ui.strip_encoding( v.desc ) )
@@ -489,7 +488,7 @@ function DoomRL.print_mortem()
 	for _,v in pairs( player.__props.history ) do
 		player:mortem_print( "  "..v )
 	end
-	if game_type == GAMESTANDARD then
+	if not game_module then
 		if kills.get("jc") > 0 then
 			player:mortem_print( "  Then finally in Hell itself, he killed the final EVIL." )
 		else
@@ -508,7 +507,7 @@ function DoomRL.print_mortem()
 
 	player:mortem_print()
 
-	if game_type == GAMESTANDARD then
+	if not game_module then
 		player:mortem_print( "-- General --------------------------------------------------- " )
 		player:mortem_print()
 

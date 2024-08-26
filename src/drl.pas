@@ -25,7 +25,7 @@ uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
      vdebug, doombase, vlog, vutil, vos, vparams,
-     dfdata, doommodule, doomio, doomconfig, doomconfiguration;
+     dfdata, doomio, doomconfig, doomconfiguration;
 
 {$IFDEF WINDOWS}
 var Handle : HWND;
@@ -45,7 +45,6 @@ var RootPath : AnsiString = '';
 begin
 try
   try
-    Modules       := nil;
     Configuration := TDoomConfiguration.Create;
 
 
@@ -128,8 +127,6 @@ try
 
     Doom := Systems.Add(TDoom.Create) as TDoom;
 
-    Modules     := TDoomModules.Create;
-
     Randomize;
     Doom.CreateIO;
     {$IFDEF WINDOWS}
@@ -151,7 +148,6 @@ try
     Doom.Run;
   finally
     FreeAndNil( Configuration );
-    FreeAndNil( Modules );
     FreeAndNil( Systems );
   end;
 except on e : Exception do

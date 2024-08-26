@@ -54,8 +54,6 @@ var   BeingHooks    : TFlags;
       ChainedHooks  : TFlags;
       LevelHooks    : TFlags;
       GlobalHooks   : TFlags;
-var   GameTypeHooks : array[ TDoomGameType ] of TFlags;
-
 
 const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnCreate', 'OnAction', 'OnAttacked', 'OnDie', 'OnDieCheck',
@@ -102,11 +100,6 @@ LevelHooks   := ChainedHooks + [ Hook_OnEnter, Hook_OnKill, Hook_OnExit, Hook_On
 GlobalHooks  := LevelHooks + [ Hook_OnEnter, Hook_OnKill, Hook_OnExit, Hook_OnTick, Hook_OnLoad, Hook_OnLoaded, Hook_OnUnLoad, Hook_OnCreatePlayer, Hook_OnLevelUp,
   Hook_OnPreLevelUp, Hook_OnWinGame, Hook_OnMortem, Hook_OnMortemPrint, Hook_OnCreateEpisode, Hook_OnLoadBase,
   Hook_OnIntro, Hook_OnGenerate ];
-
-GameTypeHooks[ GameStandard ] := GlobalHooks;
-GameTypeHooks[ GameTotal ]    := GlobalHooks;
-GameTypeHooks[ GameEpisode ]  := GlobalHooks - [Hook_OnLoadBase];
-GameTypeHooks[ GameSingle ]   := GlobalHooks - [Hook_OnCreateEpisode,Hook_OnLoadBase];
 
 end.
 

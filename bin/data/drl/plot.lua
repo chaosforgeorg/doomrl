@@ -1,7 +1,7 @@
 -- DoomRL plot lua script file --
 
 function DoomRL.OnIntro( skip )
-	if core.game_type() ~= GAMESTANDARD then return end
+--	if core.game_type() ~= GAMESTANDARD then return end
 	if skip then return end
 	ui.blood_slide()
 	ui.plot_screen([[
@@ -38,7 +38,7 @@ Silence.]])
 end
 
 function DoomRL.plot_outro_1()
-	if core.game_type() ~= GAMESTANDARD then return end
+--	if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
 Once you beat the big badasses and clean out the moon base you're supposed to win, aren't you? Aren't you? Where's your fat reward and ticket back home? What the hell is this? It's not supposed to end this way!
@@ -48,7 +48,7 @@ It stinks like rotten meat but it looks like the lost Deimos base. Looks like yo
 end
 
 function DoomRL.plot_outro_2()
-	if core.game_type() ~= GAMESTANDARD then return end
+--	if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
 You've done it! The hideous Cyberdemon lord that ruled the lost Deimos moon base has been slain and you are triumphant!  But ... where are you? You clamber to the edge of the moon and look down to see the awful truth.
@@ -59,7 +59,7 @@ Now, it's on to the final chapter of DRL -- Inferno!]])
 end
 
 function DoomRL.plot_outro_3()
-	if core.game_type() ~= GAMESTANDARD then return end
+-- if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
 The loathsome Spiderdemon that masterminded the invasion of the moon bases and caused so much death has had her ass kicked for all time.
@@ -72,7 +72,7 @@ Or could it...?]])
 end
 
 function DoomRL.plot_outro_partial()
-	if core.game_type() ~= GAMESTANDARD then return end
+--	if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
 The thermonuclear bomb shows the last second, and you know that your life is over. Still as you look at the Spider Mastermind, your eyes meet, and you smile. She is surprised, but after a split-second she understands.
@@ -83,7 +83,7 @@ The thermonuclear explosion erupts, and you laugh knowing that your sacrifice ha
 end
 
 function DoomRL.plot_outro_final()
-	if core.game_type() ~= GAMESTANDARD then return end
+--	if core.game_type() ~= GAMESTANDARD then return end
 	if player.hp <= 0 then
 		DoomRL.plot_outro_final_nuked()
 		return
@@ -105,7 +105,7 @@ DRL II : Hell on Earth!]])
 end
 
 function DoomRL.plot_outro_final_nuked()
-	if core.game_type() ~= GAMESTANDARD then return end
+--	if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
 The thermonuclear bomb shows the last second, and you know that your life is over. Still as you look at the greatest of evils, your eyes meet, and you smile. To your surprise he smiles back, appearing satisfied.
@@ -115,7 +115,7 @@ end
 
 
 function DoomRL.plot_outro_special()
-	if core.game_type() ~= GAMESTANDARD then return end
+--	if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
 The Apostle is dead.

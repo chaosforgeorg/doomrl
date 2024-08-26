@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doommenuview;
 interface
-uses vuielements, vuielement, viotypes, vuitypes, vioevent, vconui, dfdata, vtextures, doommodule;
+uses vuielements, vuielement, viotypes, vuitypes, vioevent, vconui, dfdata, vtextures;
 
 type TChallengeDesc = record Name : AnsiString; Desc : AnsiString; end;
 const ChallengeType : array[1..4] of TChallengeDesc =
@@ -24,14 +24,11 @@ const ChallengeType : array[1..4] of TChallengeDesc =
 type TMenuResult = class
   Quit       : Boolean;
   Loaded     : Boolean;
-  GameType   : TDoomGameType;
   ArchAngel  : Boolean;
   Challenge  : AnsiString;
   SChallenge : AnsiString;
   Difficulty : Byte;
   ModuleID   : AnsiString;
-  Module     : TDoomModule;
-
   Klass      : Byte;
   Trait      : Byte;
   Name       : AnsiString;
@@ -79,7 +76,6 @@ type TMainMenuViewer = class( TUIElement )
     function OnPickKlass( aSender : TUIElement ) : Boolean;
     function OnPickTrait( aTrait : Byte ) : Boolean;
     function OnPickName( aSender : TUIElement ) : Boolean;
-    function OnPickMod( aSender : TUIElement ) : Boolean;
     function OnKlassMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
     function OnChalMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
     procedure OnRedraw; override;
@@ -102,7 +98,6 @@ const
   TextContinueGame  = '@b--@> Continue game @b---@>';
   TextNewGame       = '@b-----@> New game @b-----@>';
   TextChallengeGame = '@b--@> Challenge game @b--@>';
-  TextCustomGame    = '@b---@> Custom game @b----@>';
 //  TextReplay        = '@b-@> Replay last game @b-@>';
   TextJHC           = '@B==@> Wishlist JHC! @B===@>';
   TextShowHighscore = '@b-@> Show highscores @b--@>';
@@ -220,13 +215,12 @@ begin
 
   TConUILabel.Create( Self, Point(2,24), '@BSupport the game by @Lwishlisting@B the DRL expansion at @Ljupiterhellclassic.com@B!' );
 
-  iMenu := TMainMenuConMenu.Create( Self, Rectangle( 30,13,24,9 ) );
+  iMenu := TMainMenuConMenu.Create( Self, Rectangle( 30,14,24,8 ) );
   if iSaveExists then
     iMenu.Add(TextContinueGame)
   else
     iMenu.Add(TextNewGame);
   iMenu.Add(TextChallengeGame,(not iSaveExists) );
-  iMenu.Add(TextCustomGame, (not iSaveExists) );
   iMenu.Add(TextShowHighscore);
   iMenu.Add(TextShowPlayer);
   iMenu.Add(TextHelp);
@@ -319,7 +313,6 @@ begin
   iMenu.Add( ChallengeType[1].Name, (HOF.SkillRank > 0) or (GodMode) or (Setting_UnlockAll) );
   iMenu.Add( ChallengeType[2].Name, (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll) );
   iMenu.Add( ChallengeType[3].Name, (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll) );
-  iMenu.Add( ChallengeType[4].Name, Modules.ChallengeModules.Size > 0 );
   iMenu.OnConfirmEvent := @OnPickChallengeType;
   iMenu.OnCancelEvent  := @OnCancel;
   if GraphicsVersion then
@@ -410,7 +403,7 @@ begin
         end;
         MenuModeMain  :
         begin
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,13) );
+          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,14) );
           iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(58,24) );
           iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
 
@@ -496,9 +489,9 @@ function TMainMenuViewer.OnMainCancel ( aSender : TUIElement ) : Boolean;
 var iMenu : TUICustomMenu;
 begin
   iMenu := aSender as TUICustomMenu;
-  if iMenu.Selected = 9
+  if iMenu.Selected = 8
     then begin FResult.Quit := True; Free; end
-    else iMenu.SetSelected( 9 );
+    else iMenu.SetSelected( 8 );
   Exit( True );
 end;
 
@@ -517,7 +510,7 @@ var iMenu       : TConUIMenu;
     iFull       : TUIFullWindow;
 begin
   iMenu := aSender as TConUIMenu;
-  if iMenu.Selected = 8 then
+  if iMenu.Selected = 7 then
   begin
     {$IFDEF UNIX}
     fpSystem('xdg-open ' + JHCURL); // Unix-based systems
@@ -551,12 +544,11 @@ begin
           InitChallenge;
           Exit( True );
         end;
-    3 : iFull := TUIModViewer.Create( Self, False, @OnPickMod );
-    4 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
-    5 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
-    6 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
-    7 : begin FLogo := False; IO.PushLayer( TSettingsView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
-    9 : FResult.Quit := True;
+    3 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
+    4 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
+    5 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
+    6 : begin FLogo := False; IO.PushLayer( TSettingsView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
+    8 : FResult.Quit := True;
   end;
   if iFull <> nil then
   begin
@@ -620,7 +612,6 @@ begin
       SetLength( iChallenges, iChoices );
       iFull := TUIChallengesViewer.Create( Self, 'Choose your Arch-challenge', HOF.SkillRank, iChallenges, @OnPickChallengeGame,True );
     end;
-    4 : iFull := TUICustomChallengesViewer.Create( Self, 'Choose your Custom Challenge', Modules.ChallengeModules, @OnPickMod );
   else Exit( True );
   end;
   FLogo := False;
@@ -746,30 +737,6 @@ begin
   Exit( True );
 end;
 
-function TMainMenuViewer.OnPickMod ( aSender : TUIElement ) : Boolean;
-var iModule : TDoomModule;
-begin
-  iModule := TDoomModule((aSender as TUICustomMenu).SelectedItem.Data);
-  FResult.GameType   := GameSingle;
-  FResult.Module     := iModule;
-  FResult.Difficulty := 1;
-  FResult.Klass      := iModule.Klass;
-
-  if iModule.MType = ModuleEpisode then
-  begin
-    FResult.GameType := GameEpisode;
-    FResult.ModuleID := iModule.Id;
-  end;
-
-  DestroyChildren;
-  if iModule.Diff
-    then InitDifficulty
-    else if FResult.Klass = 0
-      then InitKlass
-      else InitTrait;
-  Exit( True );
-end;
-
 function TMainMenuViewer.OnKlassMenuSelect ( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
 begin
   FLabel.Text := Padded( '- @<' + LuaSystem.Get(['klasses',aIndex,'name']) + ' @>', 49, '-');
@@ -810,9 +777,7 @@ begin
   ArchAngel  := False;
   Klass      := 0;
   Trait      := 0;
-  GameType   := GameStandard;
   ModuleID   := 'DoomRL';
-  Module     := nil;
   Name       := '';
 end;
 
