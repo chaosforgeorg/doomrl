@@ -510,7 +510,7 @@ begin
   VTIG_BeginWindow(FCTitle, 'character', FSize );
   FRect := VTIG_GetWindowRect;
   iCount := 0;
-  for iString in IO.NewAscii[Player.ASCIIMoreCode] do
+  for iString in IO.Ascii[Player.ASCIIMoreCode] do
   begin
     VTIG_FreeLabel( iString, Point( 47, iCount ) );
     Inc( iCount );
