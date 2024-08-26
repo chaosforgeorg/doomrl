@@ -196,7 +196,7 @@ end;
 
 procedure TMainMenuViewer.CreateSubLogo;
 begin
-  TConUIText.Create( Self, Rectangle(28,9,48,4),
+  TConUIText.Create( Self, Rectangle(28,9,21,4),
     '@rDRL version @R'+VERSION_STRING+#10+
     '@rby @RKornel Kisielewicz'#10+
     '@rgraphics by @RDerek Yu'#10+
