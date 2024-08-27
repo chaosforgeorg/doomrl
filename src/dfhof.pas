@@ -452,7 +452,7 @@ begin
   end;
 
   // ---------------------------------------------------------------------------
-  Page := Result.Add( 'Medals', '@r   Total medals received  : @y'+Padded(IntToStr(cn),7)+'@rTotal different medals  : @y'+IntToStr(cn2)+'@r/@y'+IntToStr(LuaSystem.Get(['medals','__counter'])));
+  Page := TStringGArray.Create;
 
   for cn := 1 to LuaSystem.Get(['medals','__counter']) do
   begin
@@ -486,8 +486,10 @@ begin
     cn2 := iElement.ChildNodes.Count;
   end;
 
+  Result.Add( Page, 'Medals', '@r   Total medals received  : @y'+Padded(IntToStr(cn),7)+'@rTotal different medals  : @y'+IntToStr(cn2)+'@r/@y'+IntToStr(LuaSystem.Get(['medals','__counter'])));
+
   // ---------------------------------------------------------------------------
-  Page := Result.Add( 'Items','@r   Total specials found  : @y'+Padded(IntToStr(cn),7)+'@rTotal different specials  : @y'+IntToStr(cn2)+'@r/@y'+IntToStr(c));
+  Page := TStringGArray.Create;
 
   c := 0;
   cn2 := 0;
@@ -542,9 +544,10 @@ begin
     cn  := StrToInt(iElement.GetAttribute('count'));
     cn2 := iElement.ChildNodes.Count;
   end;
+  Result.Add( Page, 'Items','@r   Total specials found  : @y'+Padded(IntToStr(cn),7)+'@rTotal different specials  : @y'+IntToStr(cn2)+'@r/@y'+IntToStr(c));
 
   // ---------------------------------------------------------------------------
-  Page := Result.Add( 'Assemblies','@r   Total assembled       : @y'+Padded(IntToStr(cn),7)+'@rTotal different assemblies: @y'+IntToStr(cn2)+'@r/@y'+IntToStr(c));
+  Page := TStringGArray.Create;
 
   c := 0;
   iString := '';
@@ -589,7 +592,7 @@ begin
     cn  := StrToInt(iElement.GetAttribute('count'));
     cn2 := iElement.ChildNodes.Count;
   end;
-
+  Result.Add( Page, 'Assemblies','@r   Total assembled       : @y'+Padded(IntToStr(cn),7)+'@rTotal different assemblies: @y'+IntToStr(cn2)+'@r/@y'+IntToStr(c));
   // ---------------------------------------------------------------------------
 
 
@@ -598,8 +601,7 @@ begin
   if (GetBadgeCount(6) >= 1) or (GetBadgeCount(5) >= 1) then iPages := 6;
   for cn2 := 1 to iPages do
   begin
-    Page := Result.Add('Badges - '+BadgeLevelName[cn2], Padded('@r   Total '+Trim(BadgeLevelName[cn2])+' badges received',36)+' : @y'+IntToStr(iFound)+'@r/@y'+IntToStr(iTotal));
-
+    Page := TStringGArray.Create;
     iTotal := 0;
     iFound := 0;
     for cn := 1 to iBadges do
@@ -620,6 +622,9 @@ begin
     finally
       Free;
     end;
+
+    Result.Add(Page, 'Badges - '+BadgeLevelName[cn2], Padded('@r   Total '+Trim(BadgeLevelName[cn2])+' badges received',36)+' : @y'+IntToStr(iFound)+'@r/@y'+IntToStr(iTotal));
+
   end;
 
   // ---------------------------------------------------------------------------

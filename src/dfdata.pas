@@ -39,6 +39,7 @@ type TPageArray = specialize TGObjectArray< TStringGArray >;
 type TPagedReport = class
   constructor Create( aTitle : Ansistring );
   function Add( aTitle : Ansistring; aHeader : Ansistring = '' ) : TStringGArray;
+  procedure Add( aPage : TStringGArray; aTitle : Ansistring; aHeader : Ansistring = '' );
   destructor Destroy; override;
 protected
   FPages   : TPageArray;
@@ -352,6 +353,13 @@ begin
   FTitles.Push( aTitle );
   FHeaders.Push( aHeader );
   FPages.Push( Result );
+end;
+
+procedure TPagedReport.Add( aPage : TStringGArray; aTitle : Ansistring; aHeader : Ansistring = '' );
+begin
+  FTitles.Push( aTitle );
+  FHeaders.Push( aHeader );
+  FPages.Push( aPage );
 end;
 
 destructor TPagedReport.Destroy;
