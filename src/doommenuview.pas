@@ -92,7 +92,7 @@ type TMainMenuViewer = class( TUIElement )
 implementation
 
 uses {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}math, sysutils, vutil, vsound, vimage, vuiconsole, vtig, vluavalue, vluasystem, dfhof, vgltypes,
-     doombase, doomio, doomgfxio, doomviews, doomplayerview, doomhelpview, doomsettingsview;
+     doombase, doomio, doomgfxio, doomviews, doomplayerview, doomhelpview, doomsettingsview, doompagedview;
 
 const
   TextContinueGame  = '@b--@> Continue game @b---@>';
@@ -563,7 +563,7 @@ begin
           Exit( True );
         end;
     3 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
-    4 : iFull := TUIPagedViewer.Create( Self, HOF.GetPagedReport );
+    4 : begin FLogo := False; IO.PushLayer( TPagedView.Create( HOF.GetPagedPlayerReport, @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
     5 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
     6 : begin FLogo := False; IO.PushLayer( TSettingsView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
     8 : FResult.Quit := True;

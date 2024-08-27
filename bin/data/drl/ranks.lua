@@ -11,9 +11,9 @@ function DoomRL.load_ranks()
 		end,
 		description = function( amount, param ) 
 			if param and param ~= "" then
-				return "kill @y"..amount.."@r "..core.being_plural( param, amount )
+				return "kill {!"..amount.."} "..core.being_plural( param, amount )
 			else
-				return "kill @y"..amount.."@r enemies"
+				return "kill {!"..amount.."} enemies"
 			end
 		end,
 	}
@@ -29,9 +29,9 @@ function DoomRL.load_ranks()
 		end,
 		description = function( amount, param ) 
 			if param and param ~= "" then
-				return "kill @y"..amount.."@r "..core.being_plural( param, amount ).." in melee"
+				return "kill {!"..amount.."} "..core.being_plural( param, amount ).." in melee"
 			else
-				return "kill @y"..amount.."@r enemies in melee"
+				return "kill {!"..amount.."} enemies in melee"
 			end
 		end,
 	}
@@ -47,9 +47,9 @@ function DoomRL.load_ranks()
 		end,
 		description = function( amount, param ) 
 			if param and param ~= "" then
-				return "kill @y"..amount.."@r "..core.being_plural( param, amount ).." with a pistol"
+				return "kill {!"..amount.."} "..core.being_plural( param, amount ).." with a pistol"
 			else
-				return "kill @y"..amount.."@r enemies with a pistol"
+				return "kill {!"..amount.."} enemies with a pistol"
 			end
 		end,
 	}
@@ -68,9 +68,9 @@ function DoomRL.load_ranks()
 		description = function( amount, param )
 			local names = { 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Angelic' }
 			if amount == 1 then
-				return "acquire @yone@r "..names[param].." badge"
+				return "acquire {!one} "..names[param].." badge"
 			else
-				return "acquire a total of @y"..amount.."@r "..names[param].." badges"
+				return "acquire a total of {!"..amount.."} "..names[param].." badges"
 			end
 		end,
 	}

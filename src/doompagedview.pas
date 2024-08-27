@@ -37,26 +37,37 @@ begin
 end;
 
 procedure TPagedView.Update( aDTime : Integer );
-var iString : Ansistring;
-    iStore  : Ansistring;
-    iTitle  : Ansistring;
+var iString     : Ansistring;
+    iTitle      : Ansistring;
+    iStoreFrame : Ansistring;
+    iStoreColor : DWord;
+    iStoreBold  : DWord;
 begin
-  iStore := VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ];
+  iStoreFrame := VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ];
+  iStoreColor := VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ];
+  iStoreBold  := VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ];
   iTitle := FContent.Title;
   if FContent.Titles[ FPage ] <> '' then
     iTitle += ' ({y'+FContent.Titles[ FPage ]+'})';
 
   VTIG_BeginWindow( iTitle, 'paged_view', FSize );
+    VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ] := VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ];
+    VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ] := VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ];
+
+
     if FContent.Headers[ FPage ] <> '' then
     begin
       VTIG_Text( FContent.Headers[ FPage ] );
       VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := '';
       VTIG_Begin( 'paged_view_inner', FSize - Point(0,4), Point(1,4) );
-      VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := iStore;
+      VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := iStoreFrame;
     end;
 
     for iString in FContent.Pages[ FPage ] do
       VTIG_Text( iString );
+
+    VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ] := iStoreColor;
+    VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ] := iStoreBold;
     VTIG_Scrollbar;
 
     if FContent.Headers[ FPage ] <> '' then
