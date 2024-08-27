@@ -34,6 +34,25 @@ type
   EDunGenException    = class(EException);
   EItemException      = class(EException);
 
+type TPageArray = specialize TGObjectArray< TStringGArray >;
+
+type TPagedReport = class
+  constructor Create( aTitle : Ansistring );
+  function Add( aTitle : Ansistring; aHeader : Ansistring = '' ) : TStringGArray;
+  destructor Destroy; override;
+protected
+  FPages   : TPageArray;
+  FTitles  : TStringGArray;
+  FHeaders : TStringGArray;
+  FTitle   : AnsiString;
+public
+  property Pages   : TPageArray    read FPages;
+  property Titles  : TStringGArray read FTitles;
+  property Headers : TStringGArray read FHeaders;
+  property Title   : AnsiString    read FTitle;
+end;
+
+
 type
   TUIHOFCallback = function ( aFilter : char; out aFilterName : AnsiString ) : TUIStringArray of object;
   TUIHOFReport   = record
@@ -41,14 +60,6 @@ type
     Footer   : TUIString;
     Filters  : TUIString;
     Callback : TUIHOFCallback;
-  end;
-
-  TUIPageArray   = specialize TGObjectArray< TUIStringArray >;
-  TUIPagedReport = record
-    Pages   : TUIPageArray;
-    Titles  : TUIStringArray;
-    Headers : TUIStringArray;
-    Title   : TUIString;
   end;
 
   THOFRank = record
@@ -326,6 +337,29 @@ function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; Prefer
 
 implementation
 uses typinfo, strutils, math, vdebug, dfitem;
+
+constructor TPagedReport.Create( aTitle : Ansistring );
+begin
+  FTitle := aTitle;
+  FPages   := TPageArray.Create;
+  FTitles  := TStringGArray.Create;
+  FHeaders := TStringGArray.Create;
+end;
+
+function TPagedReport.Add( aTitle : Ansistring; aHeader : Ansistring = '' ) : TStringGArray;
+begin
+  Result := TStringGArray.Create;
+  FTitles.Push( aTitle );
+  FHeaders.Push( aHeader );
+  FPages.Push( Result );
+end;
+
+destructor TPagedReport.Destroy;
+begin
+  FreeAndNil( FPages );
+  FreeAndNil( FTitles );
+  FreeAndNil( FHeaders );
+end;
 
 // change also in mortem lua!
 function SlotName(slot : TEqSlot) : string;

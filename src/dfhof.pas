@@ -25,7 +25,7 @@ type THOF = object
   procedure Init;
   procedure Add( const Name : AnsiString; aScore : LongInt; const aKillerID : AnsiString; Level, DLev : Word; nChal : AnsiString );
   function RankCheck( out aResult : THOFRank ) : Boolean;
-  function GetPagedReport : TUIPagedReport;
+  function GetPagedReport : TPagedReport;
   function GetHOFReport : TUIHOFReport;
   procedure Done;
 
@@ -319,7 +319,7 @@ begin
   Exit( GetCount( 'player/'+aRootID+'/'+aLeafID+'[@id="'+aElementID+'"]' ) );
 end;
 
-function THOF.GetPagedReport : TUIPagedReport;
+function THOF.GetPagedReport : TPagedReport;
   function IsNone(l : LongInt) : string;
   begin
     if l = 0 then Exit('@lnone')
@@ -327,7 +327,7 @@ function THOF.GetPagedReport : TUIPagedReport;
   end;
 const BadgeLevelName : array[1..6] of string = (' Bronze ',' Silver ','  Gold  ','Platinum','Diamond ','Angelic ');
 var
-   Page     : TUIStringArray;
+   Page     : TStringGArray;
 
    count    : DWord;
    iTotal   : DWord;
@@ -341,13 +341,6 @@ var
    iBadges  : LongInt;
    iString  : AnsiString;
    iDesc    : AnsiString;
-
-procedure AddPage( const aTitle : TUIString; aContent : TUIStringArray; const aHeader : TUIString = '' );
-begin
-  Result.Pages.Push( aContent );
-  Result.Titles.Push( aTitle );
-  Result.Headers.Push( aHeader );
-end;
 
 procedure PushRank( aContent : TUIStringArray; const aRankID : AnsiString; aCurrent : Byte );
 var iReq     : DWord;
@@ -370,16 +363,14 @@ begin
 end;
 
 begin
-  Result.Pages   := TUIPageArray.Create( True );
-  Result.Titles  := TUIStringArray.Create;
-  Result.Headers := TUIStringArray.Create;
-  Result.Title   := 'DRL Player Info';
+  Result := TPagedReport.Create( 'DRL Player Info' );
 
   iDiffCnt := LuaSystem.Get([ 'diff', '__counter' ]);
 
   // ---------------------------------------------------------------------------
 
-  Page := TUIStringArray.Create;
+
+  Page := Result.Add( '' );
 
   Page.Push('  @rExperience rank: @y'+LuaSystem.Get([ 'exp_ranks', ExpRank+1, 'name' ]) );
   Page.Push('  @rSkill rank     : @y'+LuaSystem.Get([ 'skill_ranks', SkillRank+1, 'name' ]) );
@@ -407,10 +398,11 @@ begin
                  '@r Kills: @y'+Padded(GetDiffKills(iDiffID),6));
   end;
 
-  AddPage('',Page);
 
   // ---------------------------------------------------------------------------
-  Page := TUIStringArray.Create;
+  Page := Result.Add( 'Kills','  @r'+Padded('Monster name',16)+Padded('TOTAL',7)
+            +Padded('Easy',6)+Padded('Med',6)+Padded('Hard',6)+Padded('VHard',6)+Padded('NMare',6)
+            +Padded('Melee',6)+Padded('Pist',6)+Padded('Shotg',6)+Padded('Chain',6) );
 
   for cn := 2 to LuaSystem.Get(['beings','__counter']) do
   begin
@@ -431,12 +423,9 @@ begin
     Page.Push( iString );
   end;
 
-  AddPage('Kills',Page, '  @r'+Padded('Monster name',16)+Padded('TOTAL',7)
-            +Padded('Easy',6)+Padded('Med',6)+Padded('Hard',6)+Padded('VHard',6)+Padded('NMare',6)
-            +Padded('Melee',6)+Padded('Pist',6)+Padded('Shotg',6)+Padded('Chain',6));
-
   // ---------------------------------------------------------------------------
-  Page := TUIStringArray.Create;
+  Page := Result.Add( 'Victories','   @r'+Padded('Difficulty',24)
+               +Padded('Medium',13)+Padded('Hard',13)+Padded('Very Hard',13)+Padded('Nightmare',13) );
 
   iChalCnt := LuaSystem.Get( ['chal','__counter'] );
   for cn := 1 to (iChalCnt+1)*4 do
@@ -461,11 +450,9 @@ begin
     end;
     Page.Push( iString );
   end;
-  AddPage('Victories',Page, '   @r'+Padded('Difficulty',24)
-               +Padded('Medium',13)+Padded('Hard',13)+Padded('Very Hard',13)+Padded('Nightmare',13));
 
   // ---------------------------------------------------------------------------
-  Page := TUIStringArray.Create;
+  Page := Result.Add( 'Medals', '@r   Total medals received  : @y'+Padded(IntToStr(cn),7)+'@rTotal different medals  : @y'+IntToStr(cn2)+'@r/@y'+IntToStr(LuaSystem.Get(['medals','__counter'])));
 
   for cn := 1 to LuaSystem.Get(['medals','__counter']) do
   begin
@@ -499,10 +486,8 @@ begin
     cn2 := iElement.ChildNodes.Count;
   end;
 
-  AddPage('Medals',Page,'@r   Total medals received  : @y'+Padded(IntToStr(cn),7)+'@rTotal different medals  : @y'+IntToStr(cn2)+'@r/@y'+IntToStr(LuaSystem.Get(['medals','__counter'])));
-
   // ---------------------------------------------------------------------------
-  Page := TUIStringArray.Create;
+  Page := Result.Add( 'Items','@r   Total specials found  : @y'+Padded(IntToStr(cn),7)+'@rTotal different specials  : @y'+IntToStr(cn2)+'@r/@y'+IntToStr(c));
 
   c := 0;
   cn2 := 0;
@@ -558,10 +543,8 @@ begin
     cn2 := iElement.ChildNodes.Count;
   end;
 
-  AddPage('Items',Page,'@r   Total specials found  : @y'+Padded(IntToStr(cn),7)+'@rTotal different specials  : @y'+IntToStr(cn2)+'@r/@y'+IntToStr(c));
-
   // ---------------------------------------------------------------------------
-  Page := TUIStringArray.Create;
+  Page := Result.Add( 'Assemblies','@r   Total assembled       : @y'+Padded(IntToStr(cn),7)+'@rTotal different assemblies: @y'+IntToStr(cn2)+'@r/@y'+IntToStr(c));
 
   c := 0;
   iString := '';
@@ -607,9 +590,6 @@ begin
     cn2 := iElement.ChildNodes.Count;
   end;
 
-  AddPage('Assemblies',Page,'@r   Total assembled       : @y'+Padded(IntToStr(cn),7)+'@rTotal different assemblies: @y'+IntToStr(cn2)+'@r/@y'+IntToStr(c));
-
-
   // ---------------------------------------------------------------------------
 
 
@@ -618,7 +598,7 @@ begin
   if (GetBadgeCount(6) >= 1) or (GetBadgeCount(5) >= 1) then iPages := 6;
   for cn2 := 1 to iPages do
   begin
-    Page := TUIStringArray.Create;
+    Page := Result.Add('Badges - '+BadgeLevelName[cn2], Padded('@r   Total '+Trim(BadgeLevelName[cn2])+' badges received',36)+' : @y'+IntToStr(iFound)+'@r/@y'+IntToStr(iTotal));
 
     iTotal := 0;
     iFound := 0;
@@ -640,15 +620,13 @@ begin
     finally
       Free;
     end;
-
-    AddPage('Badges - '+BadgeLevelName[cn2], Page, Padded('@r   Total '+Trim(BadgeLevelName[cn2])+' badges received',36)+' : @y'+IntToStr(iFound)+'@r/@y'+IntToStr(iTotal));
   end;
 
   // ---------------------------------------------------------------------------
   iBadges := LuaSystem.Get(['awards','__counter'],0);
   if iBadges > 0 then
   begin
-    Page := TUIStringArray.Create;
+    Page := Result.Add('Custom Awards');
     for cn := 1 to iBadges do
     begin
       if cn > 1 then Page.Push('');
@@ -672,7 +650,6 @@ begin
         then Page.Push('   @dMaximum award level reached. Award received for: @l'+LuaSystem.Get(['awards',cn,'levels',iTotal,'name'] ))
         else Page.Push('   @dTo achieve @L'+LuaSystem.Get(['awards',cn,'levels',iTotal+1,'name'])+'@d level you need to: @l'+LuaSystem.Get(['awards',cn,'levels',iTotal+1,'desc'] ));
     end;
-    AddPage('Custom Awards', Page);
   end;
 
 

@@ -38,17 +38,14 @@ end;
 
 type TUIPagedViewer = class( TUIFullWindow )
 public
-  constructor Create( aParent : TUIElement; const aReport : TUIPagedReport );
+  constructor Create( aParent : TUIElement; aReport : TPagedReport );
   procedure SetPage( aIndex : Integer );
   procedure OnRedraw; override;
   function OnKeyDown( const event : TIOKeyEvent ) : Boolean; override;
   destructor Destroy; override;
 protected
+  FReport     : TPagedReport;
   FPage       : DWord;
-  FPages      : TUIPageArray;
-  FMainTitle  : TUIString;
-  FTitles     : TUIStringArray;
-  FHeaders    : TUIStringArray;
   FContent    : TConUIStringList;
   FIcons      : TConUIScrollableIcons;
 end;
@@ -277,29 +274,26 @@ end;
 
 { TUIPagedViewer }
 
-constructor TUIPagedViewer.Create ( aParent : TUIElement; const aReport : TUIPagedReport ) ;
+constructor TUIPagedViewer.Create ( aParent : TUIElement; aReport : TPagedReport ) ;
 var iRect : TUIRect;
 begin
   inherited Create( aParent, aReport.Title, PagedFooter );
   FPage        := 0;
-  FPages       := aReport.Pages;
-  FTitles      := aReport.Titles;
-  FHeaders     := aReport.Headers;
+  FReport      := aReport;
   iRect        := aParent.GetDimRect.Shrinked(0,2);
   FContent     := TConUIStringList.Create( Self, iRect );
   FIcons       := TConUIScrollableIcons.Create( Self, FContent, iRect, Point( FAbsolute.X2 - 7, FAbsolute.Y ) );
   FContent.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
-  FMainTitle   := aReport.Title;
   SetPage(0);
 end;
 
 procedure TUIPagedViewer.SetPage ( aIndex : Integer ) ;
 var iRect : TUIRect;
 begin
-  if aIndex >= FTitles.Size then Exit;
+  if aIndex >= FReport.Titles.Size then Exit;
 
   iRect := GetDimRect.Shrinked(0,2);
-  if FHeaders[ aIndex ] <> ''
+  if FReport.Headers[ aIndex ] <> ''
     then
     begin
       iRect.Pos.y += 2;
@@ -308,7 +302,7 @@ begin
 
   FContent.SetArea( iRect );
   FIcons.SetArea( iRect );
-  FContent.SetContent( FPages[ aIndex ], False );
+  FContent.SetContent( FReport.Pages[ aIndex ], False );
   FPage  := aIndex;
   FDirty := True;
 end;
@@ -318,31 +312,28 @@ var iCon   : TUIConsole;
 begin
   inherited OnRedraw;
   iCon.Init( TConUIRoot(FRoot).Renderer );
-  FTitle := FMainTitle;
-  if FTitles[FPage] <> '' then
-    FTitle += ' (@y'+ FTitles[FPage] + '@>)';
-  if FPages.Size = 0 then Exit;
+  FTitle := FReport.Title;
+  if FReport.Titles[FPage] <> '' then
+    FTitle += ' (@y'+ FReport.Titles[FPage] + '@>)';
+  if FReport.Pages.Size = 0 then Exit;
 
-  if FHeaders[FPage] <> '' then
-    iCon.Print( Point( FAbsolute.x, FAbsolute.y+2 ), FForeColor, FBackColor, FHeaders[FPage], True );
+  if FReport.Headers[FPage] <> '' then
+    iCon.Print( Point( FAbsolute.x, FAbsolute.y+2 ), FForeColor, FBackColor, FReport.Headers[FPage], True );
 end;
 
 function TUIPagedViewer.OnKeyDown ( const event : TIOKeyEvent ) : Boolean;
 begin
-  if (event.ModState <> []) or (FTitles.Size = 0) then Exit( inherited OnKeyDown( event ) );
+  if (event.ModState <> []) or (FReport.Titles.Size = 0) then Exit( inherited OnKeyDown( event ) );
   case event.Code of
-    VKEY_LEFT   : SetPage( TrueModulo( FPage - 1, FTitles.Size ) );
-    VKEY_RIGHT  : SetPage( TrueModulo( FPage + 1, FTitles.Size ) );
+    VKEY_LEFT   : SetPage( TrueModulo( FPage - 1, FReport.Titles.Size ) );
+    VKEY_RIGHT  : SetPage( TrueModulo( FPage + 1, FReport.Titles.Size ) );
   else Exit( inherited OnKeyDown( event ) );
   end;
 end;
 
 destructor TUIPagedViewer.Destroy;
 begin
-  FreeAndNil( FPages );
-  FreeAndNil( FTitles );
-  FreeAndNil( FHeaders );
-
+  FreeAndNil( FReport );
   inherited Destroy;
 end;
 
