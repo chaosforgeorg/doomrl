@@ -731,7 +731,7 @@ begin
   if FCharacter = nil then FCharacter := TStringGArray.Create;
   FCharacter.Clear;
 
-  FCTitle := LuaSystem.Get([ 'diff', Doom.Difficulty, 'ccode' ]);
+  FCTitle := LuaSystem.Get([ 'diff', Doom.Difficulty, 'code' ]);
   if Doom.Challenge <> ''  then FCTitle += ' / ' + LuaSystem.Get(['chal',Doom.Challenge,'abbr']);
   if Doom.SChallenge <> '' then FCTitle += ' + ' + LuaSystem.Get(['chal',Doom.SChallenge,'abbr']);
   FCTitle := 'Character ( '+FCTitle+' )';

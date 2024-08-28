@@ -259,42 +259,42 @@ function DoomRL.loadmedals()
 	register_badge "buac1"
 	{
 		name  = "UAC Bronze Badge",
-		desc  = "Win @<standard@> game on any difficulty",
+		desc  = "Win {!standard} game on any difficulty",
 		level = 1,
 	}
 
 	register_badge "buac2"
 	{
 		name  = "UAC Silver Badge",
-		desc  = "Win @<standard@> game on Hurt Me Plenty",
+		desc  = "Win {!standard} game on Hurt Me Plenty",
 		level = 2,
 	}
 
 	register_badge "buac3"
 	{
 		name  = "UAC Gold Badge",
-		desc  = "Win @<standard@> game on Ultra-Violence",
+		desc  = "Win {!standard} game on Ultra-Violence",
 		level = 3,
 	}
 
 	register_badge "buac4"
 	{
 		name  = "UAC Platinum Badge",
-		desc  = "Win @<standard@> game on N!",
+		desc  = "Win {!standard} game on N!",
 		level = 4,
 	}
 
 	register_badge "buac5"
 	{
 		name  = "UAC Diamond Badge",
-		desc  = "Win @<standard@> N! game under 20 min",
+		desc  = "Win {!standard} N! game under 20 min",
 		level = 5,
 	}
 
 	register_badge "buac6"
 	{
 		name  = "UAC Angelic Badge",
-		desc  = "Win @<standard@> N! damageless",
+		desc  = "Win {!standard} N! damageless",
 		level = 6,
 	}
 
@@ -347,42 +347,42 @@ function DoomRL.loadmedals()
 	register_badge "strongman1"
 	{
 		name  = "Strongman Bronze Badge",
-		desc  = "Win @<standard@> game using basic melee weapons",
+		desc  = "Win {!standard} game using basic melee weapons",
 		level = 1,
 	}
 
 	register_badge "strongman2"
 	{
 		name  = "Strongman Silver Badge",
-		desc  = "Win @<standard@> game using knives/fists",
+		desc  = "Win {!standard} game using knives/fists",
 		level = 2,
 	}
 
 	register_badge "strongman3"
 	{
 		name  = "Strongman Gold Badge",
-		desc  = "Win @<standard@> game using knives/fists HMP",
+		desc  = "Win {!standard} game using knives/fists HMP",
 		level = 3,
 	}
 
 	register_badge "strongman4"
 	{
 		name  = "Strongman Platinum Badge",
-		desc  = "Win @<standard@> game using only fists HMP",
+		desc  = "Win {!standard} game using only fists HMP",
 		level = 4,
 	}
 
 	register_badge "strongman5"
 	{
 		name  = "Strongman Diamond Badge",
-		desc  = "Win @<standard@> game fist-only HMP/100% kills",
+		desc  = "Win {!standard} game fist-only HMP/100% kills",
 		level = 5,
 	}
 
 	register_badge "strongman6"
 	{
 		name  = "Strongman Angelic Badge",
-		desc  = "Win @<standard@> game fist-only N!/90% kills",
+		desc  = "Win {!standard} game fist-only N!/90% kills",
 		level = 6,
 	}
 
@@ -391,21 +391,21 @@ function DoomRL.loadmedals()
 	register_badge "speedrunner1"
 	{
 		name  = "Speedrunner Bronze Badge",
-		desc  = "Win @<standard@> game under 30 minutes",
+		desc  = "Win {!standard} game under 30 minutes",
 		level = 1,
 	}
 
 	register_badge "speedrunner2"
 	{
 		name  = "Speedrunner Silver Badge",
-		desc  = "Win @<standard@> HNTR game under 25 minutes",
+		desc  = "Win {!standard} HNTR game under 25 minutes",
 		level = 2,
 	}
 
 	register_badge "speedrunner3"
 	{
 		name  = "Speedrunner Gold Badge",
-		desc  = "Win @<standard@> HMP game under 20 minutes",
+		desc  = "Win {!standard} HMP game under 20 minutes",
 		level = 3,
 	}
 --[[
@@ -428,7 +428,7 @@ function DoomRL.loadmedals()
 	register_badge "speedrunner6"
 	{
 		name  = "Speedrunner Angelic Badge",
-		desc  = "Win @<standard@> N! game under 4 minutes",
+		desc  = "Win {!standard} N! game under 4 minutes",
 		level = 6,
 	}
 
@@ -437,21 +437,21 @@ function DoomRL.loadmedals()
 	register_badge "elite4"
 	{
 		name  = "Elite Platinum Badge",
-		desc  = "Win @<standard@> UV game as Conqueror",
+		desc  = "Win {!standard} UV game as Conqueror",
 		level = 4,
 	}
 
 	register_badge "elite5"
 	{
 		name  = "Elite Diamond Badge",
-		desc  = "Win @<standard@> N!/90% kills",
+		desc  = "Win {!standard} N!/90% kills",
 		level = 5,
 	}
 
 	register_badge "elite6"
 	{
 		name  = "Elite Angelic Badge",
-		desc  = "Win @<standard@> N!/100% as Conqueror",
+		desc  = "Win {!standard} N!/100% as Conqueror",
 		level = 6,
 	}
 
@@ -460,21 +460,21 @@ function DoomRL.loadmedals()
 	register_badge "demonic4"
 	{
 		name  = "Demonic Platinum Badge",
-		desc  = "Win @<standard@> N! as Explorer",
+		desc  = "Win {!standard} N! as Explorer",
 		level = 4,
 	}
 
 	register_badge "demonic5"
 	{
 		name  = "Demonic Diamond Badge",
-		desc  = "Win @<standard@> N! with Untouchable Medal",
+		desc  = "Win {!standard} N! with Untouchable Medal",
 		level = 5,
 	}
 
 	register_badge "demonic6"
 	{
 		name  = "Demonic Angelic Badge",
-		desc  = "Win @<standard@> N!/100% damageless",
+		desc  = "Win {!standard} N!/100% damageless",
 		level = 6,
 	}
 
@@ -758,21 +758,21 @@ end
 	register_badge "technician3"
 	{
 		name  = "Technician Gold Badge",
-		desc  = "Discover @<all@> basic assemblies",
+		desc  = "Discover {!all} basic assemblies",
 		level = 3,
 	}
 
 	register_badge "technician4"
 	{
 		name  = "Technician Platinum Badge",
-		desc  = "Discover @<all@> advanced assemblies",
+		desc  = "Discover {!all} advanced assemblies",
 		level = 4,
 	}
 
 	register_badge "technician5"
 	{
 		name  = "Technician Diamond Badge",
-		desc  = "Discover @<all@> assemblies",
+		desc  = "Discover {!all} assemblies",
 		level = 5,
 	}
 
@@ -793,21 +793,21 @@ end
 	register_badge "armorer3"
 	{
 		name  = "Armorer Gold Badge",
-		desc  = "Discover @<all@> exotics/uniques",
+		desc  = "Discover {!all} exotics/uniques",
 		level = 3,
 	}
 	
 	register_badge "armorer4"
 	{
 		name  = "Armorer Platinum Badge",
-		desc  = "Find @<1,000@> exotics/uniques",
+		desc  = "Find {!1,000} exotics/uniques",
 		level = 4,
 	}
 
 	register_badge "armorer5"
 	{
 		name  = "Armorer Diamond Badge",
-		desc  = "Find 3 of @<each@> exotic/unique",
+		desc  = "Find 3 of {!each} exotic/unique",
 		level = 5,
 	}
 
@@ -842,7 +842,7 @@ end
 	register_badge "heroic5"
 	{
 		name  = "Heroic Diamond Badge",
-		desc  = "Receive @<all@> medals",
+		desc  = "Receive {!all} medals",
 		level = 5,
 	}
 
