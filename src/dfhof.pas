@@ -26,7 +26,7 @@ type THOF = object
   procedure Add( const Name : AnsiString; aScore : LongInt; const aKillerID : AnsiString; Level, DLev : Word; nChal : AnsiString );
   function RankCheck( out aResult : THOFRank ) : Boolean;
   function GetPagedPlayerReport : TPagedReport;
-  function GetHOFReport : TUIHOFReport;
+  function GetPagedScoreReport : TPagedReport;
   procedure Done;
 
   function GetCount( aXPathQuery : string; aContext : TDOMNode = nil ) : DWord;
@@ -41,7 +41,6 @@ private
   procedure Save; overload;
   // TODO : remove
   function GetBadgeCount( aBadgeLevel : DWord ) : DWord;
-  function GetScores( aFilter : char; out aFilterName : AnsiString ) : TUIStringArray;
 
   function GetRankReqCount( const aRankArray : AnsiString; aRankLevel : DWord ) : DWord;
   function GetRankReqDescription( const aRankArray : AnsiString; aRankLevel : DWord; aRankReq :DWord ) : AnsiString;
@@ -65,10 +64,6 @@ private
 
   function GameResultBetter( const ResultOld, ResultNew : String ) : boolean;
   function GameResultAtLeast( const ResultAtLeast, ResultNew : String ) : boolean;
-
-private
-   ChallengeChars : set of Byte;
-   ChallengeStr   : string;
 end;
 
 var HOF : THOF;
@@ -95,79 +90,6 @@ begin
   end;
   Exit( iCount );
 end;
-
-function THOF.GetScores(aFilter: char; out aFilterName: AnsiString ): TUIStringArray;
-var iCount, iAmount       : DWord;
-    iDiff, iDiffFilter    : DWord;
-    iChal, iChalFilter    : string;
-    iString, iColor       : string;
-    iElement              : TScoreEntry;
-    iScore, iLevel, iDlev : DWord;
-    iName, iKill          : AnsiString;
-    iKlassChar            : Char;
-begin
-  iDiffFilter := 0;
-  iChalFilter := '';
-
-  case aFilter of
-   'e' : iDiffFilter := DIFF_EASY;
-   'm' : iDiffFilter := DIFF_MEDIUM;
-   'h' : iDiffFilter := DIFF_HARD;
-   'u' : iDiffFilter := DIFF_VERYHARD;
-   'n' : iDiffFilter := DIFF_NIGHTMARE;
-   '-' : iChalFilter := '----';
-  else
-    if Ord(aFilter) in ChallengeChars then
-      iChalFilter := AnsiString(LuaSystem.Get(['chal',Pos(aFilter,ChallengeStr),'abbr']));
-  end;
-
-
-  if iChalFilter = '----'
-    then aFilterName := 'unchallenged'
-    else aFilterName := iChalFilter;
-
-  if iDiffFilter > 0 then aFilterName := LuaSystem.Get(['diff',iDiffFilter,'code']);
-
-  iAmount := FScore.Entries;
-  Result := TUIStringArray.Create;
-
-  for iCount := 1 to iAmount do
-  begin
-    iElement := FScore[ iCount ];
-    iDiff    := StrToInt( iElement.GetAttribute('difficulty') );
-    iChal    := iElement.GetAttribute('challenge');
-
-    if (iDiffFilter > 0) and (iDiff <> iDiffFilter) then Continue;
-    if (iChalFilter <> '') and (iChalFilter <> '----') and ( iChalFilter <> iChal ) then Continue;
-    if (iChalFilter = '----') and (iChal <> '') then Continue;
-
-    iScore := math.Max( StrToInt( iElement.GetAttribute('score') ), 0 );
-    iLevel := StrToInt( iElement.GetAttribute('level') );
-    iDLev  := StrToInt( iElement.GetAttribute('depth') );
-    iName  := iElement.GetAttribute('name');
-    iKill  := iElement.GetAttribute('killed');
-
-    if iCount = FScore.LastEntry then
-      iColor := '@l'
-    else
-      iColor := '@y';
-
-    iString := LuaSystem.Get(['diff',iDiff,'code']) + ' ';
-    iString += iColor + Padded(IntToStr(iScore),8);
-    iString += Padded(iName,17) + ' ';
-
-    iKlassChar := 'C';
-    if iElement.hasAttribute('klass') then iKlassChar := LuaSystem.Get(['klasses',AnsiString(iElement.GetAttribute('klass')),'char']);
-
-    iString += iKlassChar + '@<'+Padded(IntToStr(iLevel),3);
-    iString += iColor + Padded(iKill,34);
-    iString += iColor + 'L@L'+Padded(IntToStr(iDLev),4);
-    if iChal <> '' then iString += '@y'+iChal;
-
-    Result.Push( '  '+iString );
-  end;
-end;
-
 
 function THOF.GetDiffScore( aDiff : AnsiString ) : string;
 var iMax     : string;
@@ -360,7 +282,7 @@ var
   end;
 
 begin
-  Result := TPagedReport.Create( 'DRL Player Info' );
+  Result := TPagedReport.Create( 'Player Info' );
 
   iDiffCnt := LuaSystem.Get([ 'diff', '__counter' ]);
 
@@ -656,13 +578,98 @@ begin
   end;
 end;
 
+function THOF.GetPagedScoreReport : TPagedReport;
+var iChals     : TIntHashMap;
+    iCCount    : DWord;
+    iPages     : array[0..99] of TStringGArray;
+    iCount     : DWord;
+    iAmount    : DWord;
+    iElement   : TScoreEntry;
+    iChal      : Ansistring;
+    iChalIdx   : DWord;
+    iDiff      : DWord;
 
-function THOF.GetHOFReport : TUIHOFReport;
+    iScore     : DWord;
+    iLevel     : DWord;
+    iDlev      : DWord;
+    iString    : AnsiString;
+    iName      : AnsiString;
+    iKill      : AnsiString;
+    iColor     : AnsiString;
+    iHeader    : AnsiString;
+    iKlassChar : Char;
+
+  procedure Push( aIndex : DWord; aString : AnsiString );
+  begin
+    if iPages[ aIndex ] = nil then iPages[ aIndex ] := TStringGArray.Create;
+    iPages[ aIndex ].Push( aString );
+  end;
+
 begin
-  Result.Title   := 'DRL Hall of Fame';
-  Result.Footer  := '@<a@>,@<emhun@>,@<'+ChallengeStr+'-@>,@<<Enter>@>';
-  Result.Filters := 'a-emhun'+ChallengeStr;
-  Result.Callback:= @(GetScores)
+  FillChar( iPages, Sizeof( iPages ), 0 );
+  iChals := TIntHashMap.Create;
+  iCCount := LuaSystem.Get(['chal','__counter']);
+  for iCount := 1 to iCCount do
+    iChals[ LuaSystem.Get(['chal',iCount,'abbr']) ] := iCount;
+
+  iAmount := FScore.Entries;
+  for iCount := 1 to iAmount do
+  begin
+    iElement := FScore[ iCount ];
+    iDiff    := StrToInt( iElement.GetAttribute('difficulty') );
+    iChal    := iElement.GetAttribute('challenge');
+    iChalIDX := 0;
+    if iChal <> '' then
+    begin
+      iChalIDX := iChals.Get( iChal, 0 );
+      if iChalIDX = 0 then Continue;
+    end;
+
+    iScore := math.Max( StrToInt( iElement.GetAttribute('score') ), 0 );
+    iLevel := StrToInt( iElement.GetAttribute('level') );
+    iDLev  := StrToInt( iElement.GetAttribute('depth') );
+    iName  := iElement.GetAttribute('name');
+    iKill  := iElement.GetAttribute('killed');
+
+    if iCount = FScore.LastEntry then
+      iColor := '{L'
+    else
+      iColor := '{!';
+
+    iString := LuaSystem.Get(['diff',iDiff,'code']) + ' ';
+    iString += iColor + Padded(IntToStr(iScore),8);
+    iString += Padded(iName,17) + ' ';
+
+    iKlassChar := 'C';
+    if iElement.hasAttribute('klass') then iKlassChar := LuaSystem.Get(['klasses',AnsiString(iElement.GetAttribute('klass')),'char']);
+
+    iString += iKlassChar + '{L'+Padded(IntToStr(iLevel),3)+'}';
+    iString += Padded(iKill,34);
+    iString += 'L{L'+Padded(IntToStr(iDLev),4)+'}';
+//    if iChal <> '' then iString += iChal;
+    iString += '}';
+
+    if iChalIDX = 0 then
+    begin
+      Push( 0, iString );
+      if iDiff <> 0 then
+        Push( iDiff, iString );
+    end
+    else Push( iChalIDX + 10, iString );
+  end;
+
+  iHeader := '';
+  Result := TPagedReport.Create( 'Hall of fame' );
+  if iPages[0] <> nil
+    then Result.Add( iPages[0], '', iHeader )
+    else Result.Add( '', iHeader );
+  for iCount := 1 to 9 do
+    if iPages[iCount] <> nil then
+      Result.Add( iPages[iCount], LuaSystem.Get(['diff',iCount,'code']), iHeader );
+  for iCount := 10 to 99 do
+    if iPages[iCount] <> nil then
+      Result.Add( iPages[iCount], LuaSystem.Get(['chal',iCount - 10,'abbr']), iHeader );
+  FreeAndNil( iChals );
 end;
 
 procedure THOF.Init;
@@ -691,15 +698,6 @@ begin
   ExpRank   := GetRank('exp');
 
   HOFOpen := True;
-
-  ChallengeChars := [];
-  ChallengeStr   := '';
-  for cn := 1 to LuaSystem.Get( ['chal','__counter'] ) do
-  begin
-    let := LuaSystem.Get(['chal',cn,'let']);
-    Include( ChallengeChars, Ord(let) );
-    ChallengeStr += let;
-  end;
 end;
 
 function THOF.GameResultBetter( const ResultOld, ResultNew : String ) : boolean;

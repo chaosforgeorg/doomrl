@@ -6,7 +6,7 @@ uses vutil, doomio, dfdata, vgenerics,
   ;
 
 type TPagedView = class( TInterfaceLayer )
-  constructor Create( aPages : TPagedReport; aDeleteMe : TUINotifyEvent = nil );
+  constructor Create( aPages : TPagedReport; aInitialPage : AnsiString = ''; aDeleteMe : TUINotifyEvent = nil );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
@@ -24,7 +24,8 @@ implementation
 
 uses sysutils, vmath, vtig, vtigio, vtigstyle;
 
-constructor TPagedView.Create( aPages : TPagedReport; aDeleteMe : TUINotifyEvent = nil );
+constructor TPagedView.Create( aPages : TPagedReport; aInitialPage : AnsiString = ''; aDeleteMe : TUINotifyEvent = nil );
+var i : DWord;
 begin
   FDeleteMe := aDeleteMe;
 
@@ -34,6 +35,10 @@ begin
   FSize      := Point( 80, 25 );
   FContent   := aPages;
   FPage      := 0;
+  if aInitialPage <> '' then
+    for i := 0 to aPages.Titles.Size-1 do
+      if aPages.Titles[i] = aInitialPage then
+        FPage := i;
 end;
 
 procedure TPagedView.Update( aDTime : Integer );

@@ -55,14 +55,6 @@ end;
 
 
 type
-  TUIHOFCallback = function ( aFilter : char; out aFilterName : AnsiString ) : TUIStringArray of object;
-  TUIHOFReport   = record
-    Title    : TUIString;
-    Footer   : TUIString;
-    Filters  : TUIString;
-    Callback : TUIHOFCallback;
-  end;
-
   THOFRank = record
     ExpRank   : DWord;
     SkillRank : DWord;

@@ -81,6 +81,7 @@ uses Classes, SysUtils,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
+     doompagedview,
      doomconfiguration, doomhelp, doomconfig, doomviews, dfplayer;
 
 
@@ -811,6 +812,7 @@ var iRank       : THOFRank;
     iEvent      : TIOEvent;
     iInput      : TInputKey;
     iFullLoad   : Boolean;
+    iChalAbbr   : Ansistring;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
@@ -1026,7 +1028,10 @@ repeat
       IO.RunUILoop( TUIRankUpViewer.Create( IO.Root, iRank ) );
     if Player.FScore >= -1000 then
       IO.RunUILoop( TUIMortemViewer.Create( IO.Root ) );
-    IO.RunUILoop( TUIHOFViewer.Create( IO.Root, HOF.GetHOFReport ) );
+    iChalAbbr := '';
+    if Challenge <> '' then iChalAbbr := LuaSystem.Get(['chal',Challenge,'abbr']);
+    IO.PushLayer( TPagedView.Create( HOF.GetPagedScoreReport, iChalAbbr ) );
+    IO.WaitForLayer;
   end;
   CallHook(Hook_OnUnLoad,[]);
 

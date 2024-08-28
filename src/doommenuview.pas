@@ -562,8 +562,8 @@ begin
           InitChallenge;
           Exit( True );
         end;
-    3 : iFull := TUIHOFViewer.Create( Self, HOF.GetHOFReport );
-    4 : begin FLogo := False; IO.PushLayer( TPagedView.Create( HOF.GetPagedPlayerReport, @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
+    3 : begin FLogo := False; IO.PushLayer( TPagedView.Create( HOF.GetPagedScoreReport, '', @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
+    4 : begin FLogo := False; IO.PushLayer( TPagedView.Create( HOF.GetPagedPlayerReport, '', @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
     5 : begin FLogo := False; IO.PushLayer( THelpView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
     6 : begin FLogo := False; IO.PushLayer( TSettingsView.Create( @OnCancel ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ; end;
     8 : FResult.Quit := True;
