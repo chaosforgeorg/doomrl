@@ -282,7 +282,7 @@ var
   end;
 
 begin
-  Result := TPagedReport.Create( 'Player Info' );
+  Result := TPagedReport.Create( 'Player Info', True );
 
   iDiffCnt := LuaSystem.Get([ 'diff', '__counter' ]);
 
@@ -659,7 +659,7 @@ begin
   end;
 
   iHeader := '';
-  Result := TPagedReport.Create( 'Hall of fame' );
+  Result := TPagedReport.Create( 'Hall of fame', True );
   if iPages[0] <> nil
     then Result.Add( iPages[0], '', iHeader )
     else Result.Add( '', iHeader );

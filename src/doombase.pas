@@ -76,7 +76,7 @@ var Lua : TDoomLua;
 implementation
 
 uses Classes, SysUtils,
-     vdebug, viotypes,
+     vdebug, viotypes, vuitypes,
      dfmap, dfbeing,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
@@ -813,6 +813,7 @@ var iRank       : THOFRank;
     iInput      : TInputKey;
     iFullLoad   : Boolean;
     iChalAbbr   : Ansistring;
+    iReport     : TPagedReport;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
@@ -1027,7 +1028,12 @@ repeat
     if HOF.RankCheck( iRank ) then
       IO.RunUILoop( TUIRankUpViewer.Create( IO.Root, iRank ) );
     if Player.FScore >= -1000 then
-      IO.RunUILoop( TUIMortemViewer.Create( IO.Root ) );
+    begin
+      iReport := TPagedReport.Create('Post mortem', False );
+      iReport.Add( TextFileToUIStringArray( WritePath + 'mortem.txt' ), 'mortem.txt' );
+      IO.PushLayer( TPagedView.Create( iReport ) );
+      IO.WaitForLayer;
+    end;
     iChalAbbr := '';
     if Challenge <> '' then iChalAbbr := LuaSystem.Get(['chal',Challenge,'abbr']);
     IO.PushLayer( TPagedView.Create( HOF.GetPagedScoreReport, iChalAbbr ) );

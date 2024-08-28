@@ -56,9 +56,11 @@ begin
     iTitle += ' ({y'+FContent.Titles[ FPage ]+'})';
 
   VTIG_BeginWindow( iTitle, 'paged_view', FSize );
-    VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ] := VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ];
-    VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ] := VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ];
-
+    if FContent.Styled then
+    begin
+      VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ] := VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ];
+      VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ] := VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ];
+    end;
 
     if FContent.Headers[ FPage ] <> '' then
     begin
@@ -71,8 +73,11 @@ begin
     for iString in FContent.Pages[ FPage ] do
       VTIG_Text( iString );
 
-    VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ] := iStoreColor;
-    VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ] := iStoreBold;
+    if FContent.Styled then
+    begin
+      VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ] := iStoreColor;
+      VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ] := iStoreBold;
+    end;
     VTIG_Scrollbar;
 
     if FContent.Headers[ FPage ] <> '' then

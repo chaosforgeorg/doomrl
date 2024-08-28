@@ -37,7 +37,7 @@ type
 type TPageArray = specialize TGObjectArray< TStringGArray >;
 
 type TPagedReport = class
-  constructor Create( aTitle : Ansistring );
+  constructor Create( aTitle : Ansistring; aStyled : Boolean );
   function Add( aTitle : Ansistring; aHeader : Ansistring = '' ) : TStringGArray;
   procedure Add( aPage : TStringGArray; aTitle : Ansistring; aHeader : Ansistring = '' );
   destructor Destroy; override;
@@ -46,11 +46,13 @@ protected
   FTitles  : TStringGArray;
   FHeaders : TStringGArray;
   FTitle   : AnsiString;
+  FStyled  : Boolean;
 public
   property Pages   : TPageArray    read FPages;
   property Titles  : TStringGArray read FTitles;
   property Headers : TStringGArray read FHeaders;
   property Title   : AnsiString    read FTitle;
+  property Styled  : Boolean       read FStyled;
 end;
 
 
@@ -331,12 +333,13 @@ function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; Prefer
 implementation
 uses typinfo, strutils, math, vdebug, dfitem;
 
-constructor TPagedReport.Create( aTitle : Ansistring );
+constructor TPagedReport.Create( aTitle : Ansistring; aStyled : Boolean );
 begin
   FTitle := aTitle;
   FPages   := TPageArray.Create;
   FTitles  := TStringGArray.Create;
   FHeaders := TStringGArray.Create;
+  FStyled  := aStyled;
 end;
 
 function TPagedReport.Add( aTitle : Ansistring; aHeader : Ansistring = '' ) : TStringGArray;

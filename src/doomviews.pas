@@ -28,10 +28,6 @@ type TUIFullWindow = class( TConUIBarFullWindow )
   procedure OnRender; override;
 end;
 
-type TUIMortemViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement );
-end;
-
 type TUIMessagesViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; aMessages : TUIChunkBuffer );
 end;
@@ -88,7 +84,6 @@ uses SysUtils,
      doombase, doomhelp, doomio, doomgfxio, dfplayer, dfhof;
 
 const HelpHeader       = 'DRL Help System';
-      PostMortemHeader = 'PostMortem (@<mortem.txt@>)';
       MessagesHeader   = 'Past messages viewer';
 
       HelpFooter       = '@<Choose the topic, Escape exits@>';
@@ -211,19 +206,6 @@ begin
   end;
 
   inherited OnRender;
-end;
-
-{ TUIMortemViewer }
-
-constructor TUIMortemViewer.Create ( aParent : TUIElement ) ;
-var iRect    : TUIRect;
-    iContent : TConUIStringList;
-begin
-  inherited Create( aParent, PostMortemHeader, ScrollFooterOn );
-  iRect := aParent.GetDimRect.Shrinked(1,2);
-  iContent := TConUIStringList.Create( Self, iRect, TextFileToUIStringArray( WritePath + 'mortem.txt' ), True );
-  iContent.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
-  TConUIScrollableIcons.Create( Self, iContent, iRect, Point( FAbsolute.x2 - 7, FAbsolute.y ) );
 end;
 
 
