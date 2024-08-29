@@ -4,8 +4,6 @@ interface
 uses vuielement, vuielements, viotypes, vuitypes, vioevent, vconui, vconuiext, vconuirl,
      dfdata;
 
-type TUIChallengeList = array of Byte;
-
 type TUIYesNoBox = class( TConUIWindow )
   constructor Create( aParent : TUIElement; aArea : TUIRect; const aText : AnsiString; aOnConfirm : TUINotifyEvent; aOnCancel : TUINotifyEvent = nil );
   function OnKeyDown( const event : TIOKeyEvent ) : Boolean; override;
@@ -30,22 +28,6 @@ end;
 
 type TUIMessagesViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; aMessages : TUIChunkBuffer );
-end;
-
-type TUIRankUpViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement; aRank : THOFRank );
-end;
-
-type TUIChallengesViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement; const aTitle : AnsiString; aRank : Byte; const aChallenges : TUIChallengeList; aOnConfirm : TUINotifyEvent = nil; aArch : Boolean = False );
-  function OnMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
-protected
-  FPrefix     : AnsiString;
-  FRank       : Byte;
-  FMenu       : TConUIMenu;
-  FLabel      : TConUILabel;
-  FDesc       : TConUIText;
-  FOnConfirm  : TUINotifyEvent;
 end;
 
 {
@@ -81,25 +63,11 @@ implementation
 
 uses SysUtils,
      vgltypes, variants, vutil, vmath, vuiconsole, vluasystem,
-     doombase, doomhelp, doomio, doomgfxio, dfplayer, dfhof;
+     doomio, doomgfxio, dfhof;
 
-const HelpHeader       = 'DRL Help System';
-      MessagesHeader   = 'Past messages viewer';
-
-      HelpFooter       = '@<Choose the topic, Escape exits@>';
-      EscapeFooter     = '@<<Enter>@>,@<<Escape>@>,@<<Space>@>';
+const MessagesHeader   = 'Past messages viewer';
       ScrollFooterOn   = '@<Use arrows, PgUp, PgDown to scroll, Escape or Enter to exit@>';
       ScrollFooterOff  = '@<Use Escape or Enter to exit@>';
-      PagedFooter      = '@<<Enter/Escape/Space>@>,@<<Up/Down>@>,@<<Left/Right>@>';
-      MenuFooter       = '@<Up,Down to select, Enter to confirm, Escape to exit@>';
-
-function CreateMenu( const aMenuClass : AnsiString; aParent : TUIElement; aArea : TUIRect ) : TConUIMenu;
-begin
-  if aMenuClass = 'CHOICE' then Exit( TConUIMenu.Create( aParent, aArea ) );
-  if aMenuClass = 'LETTER' then Exit( TConUITextMenu.Create( aParent, aArea ) );
-  {if aMenuClass = 'HYBRID' then }Exit( TConUIHybridMenu.Create( aParent, aArea ) );
-end;
-
 
 { TUILoadingScreen }
 
@@ -222,63 +190,6 @@ begin
   iContent.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
   if iContent.Count <= iContent.VisibleCount then Footer := ScrollFooterOff;
   TConUIScrollableIcons.Create( Self, iContent, iRect, Point( FAbsolute.x2 - 7, FAbsolute.Y ) );
-end;
-
-{ TUIRankUpViewer }
-
-constructor TUIRankUpViewer.Create ( aParent : TUIElement; aRank : THOFRank ) ;
-var iSRName, iERName, iText : AnsiString;
-begin
-  inherited Create( aParent, 'Congratulations!', EscapeFooter );
-
-  if aRank.SkillRank <> 0 then iSRName := LuaSystem.Get(['skill_ranks',aRank.SkillRank+1,'name'],'') else iSRName := '';
-  if aRank.ExpRank   <> 0 then iERName := LuaSystem.Get(['exp_ranks',aRank.ExpRank+1,'name'],'')     else iERName := '';
-
-  if (aRank.SkillRank <> 0) and (aRank.ExpRank <> 0) then
-    iText := '@rYou have shown both skill and determination and advanced'#10+
-             'to @y'+iSRName+'@r skill rank and @y'+iERName+'@r experience rank!'
-  else if (aRank.SkillRank <> 0)
-    then iText := '@rYou have amazing skill and advanced'#10'to @y'+iSRName+'@r rank!'
-    else iText := '@rYou have fierceful determination and advanced'#10'to @y'+iERName+'@r rank!';
-  iText += #10#10'Press <@yEnter@r>...';
-
-  TConUIText.Create( Self, GetAvailableDim.Shrinked(12,4), iText, False );
-end;
-
-{ TUIChallengesViewer }
-
-constructor TUIChallengesViewer.Create ( aParent : TUIElement; const aTitle : AnsiString; aRank : Byte; const aChallenges : TUIChallengeList; aOnConfirm : TUINotifyEvent; aArch : Boolean ) ;
-var iCount : DWord;
-begin
-  inherited Create( aParent, '@y'+aTitle, '@<Up,Down to select, Enter or Escape to exit@>');
-
-  FOnConfirm  := aOnConfirm;
-  FRank       := aRank;
-  FMenu       := TConUIMenu.Create( Self, Rectangle( 3,2,22,21 ) );
-  FLabel      := TConUILabel.Create( Self, Point( 27, 2 ), StringOfChar('-',57) );
-  FDesc       := TConUIText.Create( Self, Rectangle( 29,4,47,21 ),'' );
-  FLabel.ForeColor    := Red;
-  FMenu.ForeColor     := LightRed;
-  FMenu.SelectedColor := Yellow;
-  FMenu.OnSelectEvent := @OnMenuSelect;
-  FMenu.OnConfirmEvent:= FOnConfirm;
-
-  FPrefix := '';
-  if aArch then FPrefix := 'arch_';
-  for iCount := 0 to High( aChallenges ) do
-    FMenu.Add(LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'name']),(aRank >= LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'rank'],0)) or (GodMode) or (Setting_UnlockAll), Pointer(aChallenges[iCount]) );
-
-end;
-
-function TUIChallengesViewer.OnMenuSelect ( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
-var iChoice : Byte;
-begin
-  if not FMenu.IsValid( aIndex ) then Exit( True );
-  iChoice := Byte( FMenu.SelectedItem.Data );
-  FLabel.Text := Padded( '- @<' + LuaSystem.Get(['chal',iChoice,FPrefix+'name']) + ' @>', 53, '-');
-  FDesc.Text  := '@rRating: @y'+LuaSystem.Get(['chal',iChoice,FPrefix+'rating'],'UNRATED')+#10#10+
-                 '@l'+LuaSystem.Get(['chal',iChoice,FPrefix+'description']);
-  Exit( True )
 end;
 
 { TUICustomChallengesViewer }

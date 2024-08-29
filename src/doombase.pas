@@ -81,7 +81,7 @@ uses Classes, SysUtils,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
-     doompagedview,
+     doompagedview, doomrankupview,
      doomconfiguration, doomhelp, doomconfig, doomviews, dfplayer;
 
 
@@ -1026,7 +1026,10 @@ repeat
   if State = DSFinished then
   begin
     if HOF.RankCheck( iRank ) then
-      IO.RunUILoop( TUIRankUpViewer.Create( IO.Root, iRank ) );
+    begin
+      IO.PushLayer( TRankUpView.Create( iRank ) );
+      IO.WaitForLayer;
+    end;
     if Player.FScore >= -1000 then
     begin
       iReport := TPagedReport.Create('Post mortem', False );

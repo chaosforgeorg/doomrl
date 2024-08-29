@@ -92,7 +92,7 @@ type TMainMenuViewer = class( TUIElement )
 implementation
 
 uses {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}math, sysutils, vutil, vsound, vimage, vuiconsole, vtig, vluavalue, vluasystem, dfhof, vgltypes,
-     doombase, doomio, doomgfxio, doomviews, doomplayerview, doomhelpview, doomsettingsview, doompagedview;
+     doombase, doomio, doomgfxio, doomviews, doomplayerview, doomhelpview, doomsettingsview, doompagedview, doomchallengesview;
 
 const
   TextContinueGame  = '@b--@> Continue game @b---@>';
@@ -600,8 +600,7 @@ begin
       SetLength( iChallenges, iChalCount );
       for iCount := 1 to iChalCount do
         iChallenges[iCount-1] := iCount;
-
-      iFull := TUIChallengesViewer.Create( Self, 'Choose your Challenge', HOF.SkillRank, iChallenges, @OnPickChallengeGame );
+      FLogo := False; IO.PushLayer( TChallengesView.Create( 'Choose your Challenge', HOF.SkillRank, iChallenges, False, @OnPickChallengeGame ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ;
     end;
     2 :
     begin
@@ -614,7 +613,7 @@ begin
           Inc( iChoices );
         end;
       SetLength( iChallenges, iChoices );
-      iFull := TUIChallengesViewer.Create( Self, 'Choose your Primary Challenge', HOF.SkillRank, iChallenges, @OnPickFirstChallenge );
+      FLogo := False; IO.PushLayer( TChallengesView.Create( 'Choose your Primary Challenge', HOF.SkillRank, iChallenges, False, @OnPickFirstChallenge ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ;
     end;
     3 :
     begin
@@ -628,7 +627,7 @@ begin
           Inc( iChoices );
         end;
       SetLength( iChallenges, iChoices );
-      iFull := TUIChallengesViewer.Create( Self, 'Choose your Arch-challenge', HOF.SkillRank, iChallenges, @OnPickChallengeGame,True );
+      FLogo := False; IO.PushLayer( TChallengesView.Create( 'Choose your Arch-challenge', HOF.SkillRank, iChallenges, True, @OnPickChallengeGame ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ;
     end;
   else Exit( True );
   end;
@@ -640,7 +639,12 @@ end;
 function TMainMenuViewer.OnPickChallengeGame( aSender : TUIElement ) : Boolean;
 var iChallengeID : Byte;
 begin
-  iChallengeID := Byte((aSender as TUICustomMenu).SelectedItem.Data);
+  iChallengeID := TChallengesView.Result;
+  if iChallengeID = 0 then
+  begin
+    OnCancel( aSender );
+    Exit( True );
+  end;
   FResult.Challenge := '';
   if iChallengeID <> 0 then FResult.Challenge := LuaSystem.Get(['chal',iChallengeID,'id']);
   DestroyChildren;
@@ -656,7 +660,12 @@ var iFull        : TUIFullWindow;
     iChoices     : DWord;
     iValue       : TLuaValue;
 begin
-  iChallengeID := Byte((aSender as TUICustomMenu).SelectedItem.Data);
+  iChallengeID := TChallengesView.Result;
+  if iChallengeID = 0 then
+  begin
+    OnCancel( aSender );
+    Exit( True );
+  end;
   FResult.Challenge := '';
   if iChallengeID <> 0 then FResult.Challenge := LuaSystem.Get(['chal',iChallengeID,'id']);
   DestroyChildren;
@@ -677,9 +686,9 @@ begin
     Free;
   end;
   SetLength( iChallenges, iChoices );
-  iFull := TUIChallengesViewer.Create( Self, 'Choose your Secondary Challenge', HOF.SkillRank, iChallenges, @OnPickSecondChallenge );
-  FLogo := False;
-  iFull.OnCancelEvent := @OnCancel;
+  FLogo := False; IO.PushLayer( TChallengesView.Create( 'Choose your Secondary Challenge', HOF.SkillRank, iChallenges, False, @OnPickSecondChallenge ) ); iFull := TUIFullWindow.Create( Self, '', '' ) ;
+//  iFull := TUIChallengesViewer.Create( Self, 'Choose your Secondary Challenge', HOF.SkillRank, iChallenges, @OnPickSecondChallenge );
+//  iFull.OnCancelEvent := @OnCancel;
 
   Exit( True );
 end;
@@ -687,7 +696,12 @@ end;
 function TMainMenuViewer.OnPickSecondChallenge( aSender : TUIElement ) : Boolean;
 var iChallengeID : Byte;
 begin
-  iChallengeID := Byte((aSender as TUICustomMenu).SelectedItem.Data);
+  iChallengeID := TChallengesView.Result;
+  if iChallengeID = 0 then
+  begin
+    OnCancel( aSender );
+    Exit( True );
+  end;
   FResult.SChallenge := '';
   if iChallengeID <> 0 then FResult.SChallenge := LuaSystem.Get(['chal',iChallengeID,'id']);
   DestroyChildren;
