@@ -32,10 +32,6 @@ type TUIMessagesViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; aMessages : TUIChunkBuffer );
 end;
 
-type TUIRankUpViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement; aRank : THOFRank );
-end;
-
 type TUIChallengesViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; const aTitle : AnsiString; aRank : Byte; const aChallenges : TUIChallengeList; aOnConfirm : TUINotifyEvent = nil; aArch : Boolean = False );
   function OnMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
@@ -222,27 +218,6 @@ begin
   iContent.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
   if iContent.Count <= iContent.VisibleCount then Footer := ScrollFooterOff;
   TConUIScrollableIcons.Create( Self, iContent, iRect, Point( FAbsolute.x2 - 7, FAbsolute.Y ) );
-end;
-
-{ TUIRankUpViewer }
-
-constructor TUIRankUpViewer.Create ( aParent : TUIElement; aRank : THOFRank ) ;
-var iSRName, iERName, iText : AnsiString;
-begin
-  inherited Create( aParent, 'Congratulations!', EscapeFooter );
-
-  if aRank.SkillRank <> 0 then iSRName := LuaSystem.Get(['skill_ranks',aRank.SkillRank+1,'name'],'') else iSRName := '';
-  if aRank.ExpRank   <> 0 then iERName := LuaSystem.Get(['exp_ranks',aRank.ExpRank+1,'name'],'')     else iERName := '';
-
-  if (aRank.SkillRank <> 0) and (aRank.ExpRank <> 0) then
-    iText := '@rYou have shown both skill and determination and advanced'#10+
-             'to @y'+iSRName+'@r skill rank and @y'+iERName+'@r experience rank!'
-  else if (aRank.SkillRank <> 0)
-    then iText := '@rYou have amazing skill and advanced'#10'to @y'+iSRName+'@r rank!'
-    else iText := '@rYou have fierceful determination and advanced'#10'to @y'+iERName+'@r rank!';
-  iText += #10#10'Press <@yEnter@r>...';
-
-  TConUIText.Create( Self, GetAvailableDim.Shrinked(12,4), iText, False );
 end;
 
 { TUIChallengesViewer }
