@@ -55,6 +55,22 @@ public
   property Styled  : Boolean       read FStyled;
 end;
 
+type TMenuResult = class
+  Quit       : Boolean;
+  Loaded     : Boolean;
+  ArchAngel  : Boolean;
+  Challenge  : AnsiString;
+  SChallenge : AnsiString;
+  Difficulty : Byte;
+  ModuleID   : AnsiString;
+  Klass      : Byte;
+  Trait      : Byte;
+  Name       : AnsiString;
+
+  constructor Create;
+  procedure Reset;
+end;
+
 
 type
   THOFRank = record
@@ -365,6 +381,27 @@ begin
   FreeAndNil( FPages );
   FreeAndNil( FTitles );
   FreeAndNil( FHeaders );
+end;
+
+{ TMenuResult }
+
+constructor TMenuResult.Create;
+begin
+  Reset;
+end;
+
+procedure TMenuResult.Reset;
+begin
+  Quit       := False;
+  Loaded     := False;
+  Difficulty := 0;
+  Challenge  := '';
+  SChallenge := '';
+  ArchAngel  := False;
+  Klass      := 0;
+  Trait      := 0;
+  ModuleID   := 'DoomRL';
+  Name       := '';
 end;
 
 // change also in mortem lua!

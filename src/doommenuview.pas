@@ -19,24 +19,6 @@ const ChallengeType : array[1..4] of TChallengeDesc =
    Desc : 'Play one of many custom DRL challenge levels and episodes. Download new ones from the @yCustom game/Download Mods@> option in the main menu.';
 ));
 
-
-
-type TMenuResult = class
-  Quit       : Boolean;
-  Loaded     : Boolean;
-  ArchAngel  : Boolean;
-  Challenge  : AnsiString;
-  SChallenge : AnsiString;
-  Difficulty : Byte;
-  ModuleID   : AnsiString;
-  Klass      : Byte;
-  Trait      : Byte;
-  Name       : AnsiString;
-
-  constructor Create;
-  procedure Reset;
-end;
-
 type TMainMenuConMenu = class( TConUIMenu )
   constructor Create( aParent : TUIElement; aRect : TUIRect );
   function OnSelect : Boolean; override;
@@ -718,28 +700,6 @@ begin
   FBackColor := $10000000;
   iCon.ClearRect( FAbsolute, FBackColor );
 end;
-
-{ TMenuResult }
-
-constructor TMenuResult.Create;
-begin
-  Reset;
-end;
-
-procedure TMenuResult.Reset;
-begin
-  Quit       := False;
-  Loaded     := False;
-  Difficulty := 0;
-  Challenge  := '';
-  SChallenge := '';
-  ArchAngel  := False;
-  Klass      := 0;
-  Trait      := 0;
-  ModuleID   := 'DoomRL';
-  Name       := '';
-end;
-
 
 end.
 
