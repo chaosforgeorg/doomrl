@@ -15,6 +15,7 @@ type
     procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
     procedure Update( aMSec : DWord ); override;
     function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
+    procedure PushLayer(  aLayer : TInterfaceLayer ); override;
     function OnEvent( const event : TIOEvent ) : Boolean; override;
     procedure UpdateMinimap;
     destructor Destroy; override;
@@ -545,6 +546,17 @@ begin
     FMCursor.Active := True;
   end;
   Exit( inherited RunUILoop( aElement ) );
+end;
+
+procedure TDoomGFXIO.PushLayer(  aLayer : TInterfaceLayer );
+begin
+  if FMCursor <> nil then
+  begin
+    if FMCursor.Size = 0 then
+      FMCursor.SetTextureID( FTextures.TextureID['cursor'], 32 );
+    FMCursor.Active := True;
+  end;
+  inherited PushLayer( aLayer );
 end;
 
 procedure TDoomGFXIO.UpdateMinimap;
