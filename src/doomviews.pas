@@ -4,8 +4,6 @@ interface
 uses vuielement, vuielements, viotypes, vuitypes, vioevent, vconui, vconuiext, vconuirl,
      dfdata;
 
-type TUIChallengeList = array of Byte;
-
 type TUIYesNoBox = class( TConUIWindow )
   constructor Create( aParent : TUIElement; aArea : TUIRect; const aText : AnsiString; aOnConfirm : TUINotifyEvent; aOnCancel : TUINotifyEvent = nil );
   function OnKeyDown( const event : TIOKeyEvent ) : Boolean; override;
@@ -30,18 +28,6 @@ end;
 
 type TUIMessagesViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; aMessages : TUIChunkBuffer );
-end;
-
-type TUIChallengesViewer = class( TUIFullWindow )
-  constructor Create( aParent : TUIElement; const aTitle : AnsiString; aRank : Byte; const aChallenges : TUIChallengeList; aOnConfirm : TUINotifyEvent = nil; aArch : Boolean = False );
-  function OnMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
-protected
-  FPrefix     : AnsiString;
-  FRank       : Byte;
-  FMenu       : TConUIMenu;
-  FLabel      : TConUILabel;
-  FDesc       : TConUIText;
-  FOnConfirm  : TUINotifyEvent;
 end;
 
 {
@@ -204,42 +190,6 @@ begin
   iContent.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
   if iContent.Count <= iContent.VisibleCount then Footer := ScrollFooterOff;
   TConUIScrollableIcons.Create( Self, iContent, iRect, Point( FAbsolute.x2 - 7, FAbsolute.Y ) );
-end;
-
-{ TUIChallengesViewer }
-
-constructor TUIChallengesViewer.Create ( aParent : TUIElement; const aTitle : AnsiString; aRank : Byte; const aChallenges : TUIChallengeList; aOnConfirm : TUINotifyEvent; aArch : Boolean ) ;
-var iCount : DWord;
-begin
-  inherited Create( aParent, '@y'+aTitle, '@<Up,Down to select, Enter or Escape to exit@>');
-
-  FOnConfirm  := aOnConfirm;
-  FRank       := aRank;
-  FMenu       := TConUIMenu.Create( Self, Rectangle( 3,2,22,21 ) );
-  FLabel      := TConUILabel.Create( Self, Point( 27, 2 ), StringOfChar('-',57) );
-  FDesc       := TConUIText.Create( Self, Rectangle( 29,4,47,21 ),'' );
-  FLabel.ForeColor    := Red;
-  FMenu.ForeColor     := LightRed;
-  FMenu.SelectedColor := Yellow;
-  FMenu.OnSelectEvent := @OnMenuSelect;
-  FMenu.OnConfirmEvent:= FOnConfirm;
-
-  FPrefix := '';
-  if aArch then FPrefix := 'arch_';
-  for iCount := 0 to High( aChallenges ) do
-    FMenu.Add(LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'name']),(aRank >= LuaSystem.Get(['chal',aChallenges[iCount],FPrefix+'rank'],0)) or (GodMode) or (Setting_UnlockAll), Pointer(aChallenges[iCount]) );
-
-end;
-
-function TUIChallengesViewer.OnMenuSelect ( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
-var iChoice : Byte;
-begin
-  if not FMenu.IsValid( aIndex ) then Exit( True );
-  iChoice := Byte( FMenu.SelectedItem.Data );
-  FLabel.Text := Padded( '- @<' + LuaSystem.Get(['chal',iChoice,FPrefix+'name']) + ' @>', 53, '-');
-  FDesc.Text  := '@rRating: @y'+LuaSystem.Get(['chal',iChoice,FPrefix+'rating'],'UNRATED')+#10#10+
-                 '@l'+LuaSystem.Get(['chal',iChoice,FPrefix+'description']);
-  Exit( True )
 end;
 
 { TUICustomChallengesViewer }

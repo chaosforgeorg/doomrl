@@ -60,7 +60,7 @@ begin
   for i := 0 to High( FList ) do
   begin
     FNames[i] := LuaSystem.Get(['chal',FList[i],FPrefix+'name']);
-    FValid[i] := (aRank >= LuaSystem.Get(['chal',FList[i],FPrefix+'rank'],0));// or (GodMode) or (Setting_UnlockAll);
+    FValid[i] := (aRank >= LuaSystem.Get(['chal',FList[i],FPrefix+'rank'],0)) or (GodMode) or (Setting_UnlockAll);
   end;
   FClassResult := 0;
 end;
