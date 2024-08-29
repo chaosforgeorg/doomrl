@@ -73,15 +73,12 @@ begin
     iSelect := 0;
 
     VTIG_BeginGroup( 28 );
+      VTIG_PushStyle( @TIGStyleColored );
       for iCount := 0 to High( FList ) do
-        if FValid[ iCount ] then
-        begin
-          if VTIG_Selectable( FNames[iCount], True, VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ] ) then
-            FClassResult := FList[iCount];
-        end
-        else
-          VTIG_Selectable( FNames[iCount], False );
+        if VTIG_Selectable( FNames[iCount], FValid[iCount] ) then
+          FClassResult := FList[iCount];
       iSelect := VTIG_Selected;
+      VTIG_PopStyle;
 
       VTIG_EndGroup;
 

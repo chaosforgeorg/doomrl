@@ -43,7 +43,7 @@ uses sysutils,
      {$ELSE}
      vcursesio, vcursesconsole,
      {$ENDIF}
-     vioconsole, vtig, vtigstyle, vvision, vutil,
+     vioconsole, vtig, vvision, vutil,
      doombase, doomanimation,
      dflevel, dfplayer;
 
@@ -62,9 +62,6 @@ begin
   FConsole  := TCursesConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
   {$ENDIF}
   FTextMap       := TTextMap.Create( FConsole, Rectangle( 2,3,MAXX,MAXY ) );
-  VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := DarkGray;
-  VTIGDefaultStyle.Color[ VTIG_SELECTED_DISABLED_COLOR ]   := Black;
-
   inherited Create;
   FTargetEnabled := False;
   FTargetLast    := False;

@@ -8,7 +8,7 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 unit dfdata;
 interface
 uses Classes, SysUtils, idea,
-     vgenerics, vcolor, vutil, vrltools, vuitypes, vluatable,
+     vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable,
      doomconfig, doomkeybindings;
 
 const ConfigurationPath : AnsiString = 'config.lua';
@@ -330,8 +330,11 @@ var ColorOverrides : TIntHashMap;
 
 function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; PreferStrings: Boolean = True): Variant;
 
+var TIGStyleColored   : TTIGStyle;
+    TIGStyleFrameless : TTIGStyle;
+
 implementation
-uses typinfo, strutils, math, vdebug, dfitem;
+uses typinfo, strutils, math, vdebug;
 
 constructor TPagedReport.Create( aTitle : Ansistring; aStyled : Boolean );
 begin

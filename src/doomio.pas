@@ -357,6 +357,26 @@ begin
   VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ] := LIGHTRED;
   VTIGDefaultStyle.Color[ VTIG_SELECTED_TEXT_COLOR ] := YELLOW;
   VTIGDefaultStyle.Color[ VTIG_SCROLL_COLOR ] := YELLOW;
+  if GraphicsVersion then
+  begin
+    VTIGDefaultStyle.Color[ VTIG_BACKGROUND_COLOR ]          := $10000000;
+    VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := $442222FF;
+    VTIGDefaultStyle.Color[ VTIG_INPUT_TEXT_COLOR ]          := LightGray;
+    VTIGDefaultStyle.Color[ VTIG_INPUT_BACKGROUND_COLOR ]    := $442222FF;
+  end
+  else
+  begin
+    VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := DarkGray;
+    VTIGDefaultStyle.Color[ VTIG_SELECTED_DISABLED_COLOR ]   := Black;
+  end;
+
+  TIGStyleColored   := VTIGDefaultStyle;
+  TIGStyleColored.Color[ VTIG_TEXT_COLOR ] := VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ];
+  TIGStyleColored.Color[ VTIG_BOLD_COLOR ] := VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ];
+
+  TIGStyleFrameless := VTIGDefaultStyle;
+  TIGStyleFrameless.Frame[ VTIG_BORDER_FRAME ] := '';
+
   inherited Create( FIODriver, FConsole, iStyle );
   LoadStart;
   FUIMouseLast := Point(-1,-1);

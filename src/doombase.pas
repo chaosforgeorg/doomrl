@@ -813,7 +813,6 @@ var iRank       : THOFRank;
     iFullLoad   : Boolean;
     iChalAbbr   : Ansistring;
     iReport     : TPagedReport;
-    iText       : Text;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;

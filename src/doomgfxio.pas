@@ -85,7 +85,7 @@ implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
-     vdebug, vlog, vmath, vdf, vgl3library, vtigstyle,
+     vdebug, vlog, vmath, vdf, vgl3library,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfplayer,
      doombase, doomconfiguration;
@@ -235,11 +235,6 @@ begin
   FMCursor      := TDoomMouseCursor.Create;
   TSDLIODriver( FIODriver ).ShowMouse( False );
                                                     //RRGGBBAA
-  VTIGDefaultStyle.Color[ VTIG_BACKGROUND_COLOR ]          := $10000000;
-  VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := $442222FF;
-  VTIGDefaultStyle.Color[ VTIG_INPUT_TEXT_COLOR ]          := LightGray;
-  VTIGDefaultStyle.Color[ VTIG_INPUT_BACKGROUND_COLOR ]    := $442222FF;
-
   inherited Create;
 
   FQuadSheet := TGLQuadList.Create;
