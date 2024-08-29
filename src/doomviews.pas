@@ -77,25 +77,11 @@ implementation
 
 uses SysUtils,
      vgltypes, variants, vutil, vmath, vuiconsole, vluasystem,
-     doombase, doomhelp, doomio, doomgfxio, dfplayer, dfhof;
+     doomio, doomgfxio, dfhof;
 
-const HelpHeader       = 'DRL Help System';
-      MessagesHeader   = 'Past messages viewer';
-
-      HelpFooter       = '@<Choose the topic, Escape exits@>';
-      EscapeFooter     = '@<<Enter>@>,@<<Escape>@>,@<<Space>@>';
+const MessagesHeader   = 'Past messages viewer';
       ScrollFooterOn   = '@<Use arrows, PgUp, PgDown to scroll, Escape or Enter to exit@>';
       ScrollFooterOff  = '@<Use Escape or Enter to exit@>';
-      PagedFooter      = '@<<Enter/Escape/Space>@>,@<<Up/Down>@>,@<<Left/Right>@>';
-      MenuFooter       = '@<Up,Down to select, Enter to confirm, Escape to exit@>';
-
-function CreateMenu( const aMenuClass : AnsiString; aParent : TUIElement; aArea : TUIRect ) : TConUIMenu;
-begin
-  if aMenuClass = 'CHOICE' then Exit( TConUIMenu.Create( aParent, aArea ) );
-  if aMenuClass = 'LETTER' then Exit( TConUITextMenu.Create( aParent, aArea ) );
-  {if aMenuClass = 'HYBRID' then }Exit( TConUIHybridMenu.Create( aParent, aArea ) );
-end;
-
 
 { TUILoadingScreen }
 
