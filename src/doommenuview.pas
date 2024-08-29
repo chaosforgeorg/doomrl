@@ -49,12 +49,8 @@ end;
 
 
 type TMainMenuViewer = class( TUIElement )
-    constructor CreateFirst( aParent : TUIElement );
-    constructor CreateMain( aParent : TUIElement );
     constructor Create( aParent : TUIElement; aResult : TMenuResult );
-    procedure Init;
     procedure CreateLogo;
-    procedure CreateSubLogo;
     procedure InitMain;
     procedure InitDifficulty;
     procedure InitKlass;
@@ -63,7 +59,6 @@ type TMainMenuViewer = class( TUIElement )
     procedure InitChallenge;
     procedure OnRender; override;
     function OnSystem( const event : TIOSystemEvent ) : Boolean; override;
-    function OnMouseDown( const event : TIOMouseEvent ) : Boolean; override;
     function OnKeyDown( const event : TIOKeyEvent ) : Boolean; override;
     function OnMainCancel( aSender : TUIElement ) : Boolean;
     function OnCancel( aSender : TUIElement ) : Boolean;
@@ -80,7 +75,7 @@ type TMainMenuViewer = class( TUIElement )
     function OnChalMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
     procedure OnRedraw; override;
   private
-    FMode        : (MenuModeFirst, MenuModeLogo, MenuModeMain, MenuModeDiff, MenuModeChal, MenuModeKlass, MenuModeName);
+    FMode        : (MenuModeMain, MenuModeDiff, MenuModeChal, MenuModeKlass, MenuModeName);
     FLogo        : Boolean;
     FLabel       : TConUILabel;
     FText        : TConUIText;
@@ -143,35 +138,9 @@ end;
 
 { TMainMenuViewer }
 
-constructor TMainMenuViewer.CreateFirst ( aParent : TUIElement ) ;
-begin
-  inherited Create( aParent, aParent.GetDimRect );
-  Init;
-  FMode   := MenuModeFirst;
-
-  TConUIText.Create( Self, Rectangle(5,2,70,23),AnsiString( LuaSystem.ProtectedCall( ['DoomRL','first_text'], [] ) ) );
-end;
-
-constructor TMainMenuViewer.CreateMain ( aParent : TUIElement ) ;
-begin
-  inherited Create( aParent, aParent.GetDimRect );
-  Init;
-  CreateLogo;
-  CreateSubLogo;
-  FMode   := MenuModeLogo;
-  TConUIText.Create( Self, Rectangle(2,14,77,11), AnsiString( LuaSystem.ProtectedCall( ['DoomRL','logo_text'], [] ) ) );
-end;
-
 constructor TMainMenuViewer.Create ( aParent : TUIElement; aResult : TMenuResult ) ;
 begin
   inherited Create( aParent, aParent.GetDimRect );
-  Init;
-  FResult := aResult;
-  InitMain;
-end;
-
-procedure TMainMenuViewer.Init;
-begin
   if GraphicsVersion then
   begin
     FBGTexture   := (IO as TDoomGFXIO).Textures.TextureID['background'];
@@ -183,21 +152,14 @@ begin
   FResult := nil;
   FLabel  := nil;
   FText   := nil;
-  FMode   := MenuModeLogo;
+  FMode   := MenuModeMain;
+  FResult := aResult;
+  InitMain;
 end;
 
 procedure TMainMenuViewer.CreateLogo;
 begin
   FLogo   := True;
-end;
-
-procedure TMainMenuViewer.CreateSubLogo;
-begin
-  TConUIText.Create( Self, Rectangle(28,9,21,4),
-    '@rDRL version @R'+VERSION_STRING+#10+
-    '@rby @RKornel Kisielewicz'#10+
-    '@rgraphics by @RDerek Yu'#10+
-    '@rand @RLukasz Sliwinski').BackColor:=FBackColor;
 end;
 
 procedure TMainMenuViewer.InitMain;
@@ -362,24 +324,15 @@ begin
       iIO.Textures.Texture[ FBGTexture ].GLTexture
     );
 
-    if FMode = MenuModeFirst then
-    begin
-      iRoot := TConUIRoot(FRoot);
-      iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(5,2) );
-      iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(77,25) );
-      iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
-      FLogo := False;
-    end;
-
     if FLogo then
     begin
       iImage := iIO.Textures.Texture[ FLogoTexture ].Image;
       iSizeX := IO.Driver.GetSizeX;
       iSizeY := IO.Driver.GetSizeY;
       iMinY  := Floor(iSizeY / 25) * (-8);
-      if (FMode <> MenuModeLogo)
-        then begin iMaxY  := Floor(iSizeY / 25) * 24; iMinY := Floor(iSizeY / 25) * (-10); end
-        else iMaxY  := Floor(iSizeY / 25) * 18;
+
+      iMaxY  := Floor(iSizeY / 25) * 24; iMinY := Floor(iSizeY / 25) * (-10);
+
       iMinX  := (iSizeX - (iMaxY - iMinY)) / 2;
       iMaxX  := (iSizeX + (iMaxY - iMinY)) / 2;
 
@@ -391,15 +344,6 @@ begin
       );
       iRoot := TConUIRoot(FRoot);
       case FMode of
-        MenuModeLogo :
-        begin
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(26,10) );
-          iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(56,14) );
-          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
-          iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(2,15) );
-          iP2 := iRoot.ConsoleCoordToDeviceCoord( Point(80,26) );
-          iIO.QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.7 ) );
-        end;
         MenuModeMain  :
         begin
           iP1 := iRoot.ConsoleCoordToDeviceCoord( Point(24,14) );
@@ -455,13 +399,6 @@ begin
           VTIG_FreeLabel( iString, Point( 17, iCount ) );
           Inc( iCount );
         end;
-    if FMode = MenuModeLogo then
-    begin
-      VTIG_FreeLabel( '{rDRL version {R'+VERSION_STRING+'}}', Point( 28, 9 ) );
-      VTIG_FreeLabel( '{rby {RKornel Kisielewicz}}', Point( 28, 10 ) );
-      VTIG_FreeLabel( '{rgraphics by {RDerek Yu}}', Point( 28, 11 ) );
-      VTIG_FreeLabel( '{rand {RLukasz Sliwinski}}', Point( 28, 12 ) );
-    end;
   end;
 
   inherited OnRender;
@@ -478,16 +415,6 @@ begin
     Exit( True );
   end;
   Exit( False );
-end;
-
-function TMainMenuViewer.OnMouseDown ( const event : TIOMouseEvent ) : Boolean;
-begin
-  if (FMode = MenuModeLogo) and (event.Button in [ VMB_BUTTON_LEFT, VMB_BUTTON_RIGHT ]) then
-  begin
-    Free;
-    Exit( True );
-  end;
-  Result := inherited OnMouseDown ( event ) ;
 end;
 
 function TMainMenuViewer.OnKeyDown ( const event : TIOKeyEvent ) : Boolean;

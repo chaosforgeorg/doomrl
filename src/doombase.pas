@@ -53,7 +53,6 @@ TDoom = class(TSystem)
        function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
        procedure PreAction;
        procedure LoadModule( Base : Boolean );
-       procedure DoomFirst;
        procedure CreatePlayer( aResult : TMenuResult );
      private
        FState           : TDoomState;
@@ -81,7 +80,7 @@ uses Classes, SysUtils,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
-     doompagedview, doomrankupview,
+     doompagedview, doomrankupview, doommainmenuview,
      doomconfiguration, doomhelp, doomconfig, doomviews, dfplayer;
 
 
@@ -814,14 +813,13 @@ var iRank       : THOFRank;
     iFullLoad   : Boolean;
     iChalAbbr   : Ansistring;
     iReport     : TPagedReport;
+    iText       : Text;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
 
-  if not FileExists( WritePath + 'drl.prc' ) then
-    DoomFirst;
-
-  IO.RunUILoop( TMainMenuViewer.CreateMain( IO.Root ) );
+  IO.PushLayer( TMainMenuView.Create );
+  IO.WaitForLayer;
   if FState <> DSQuit then
 repeat
   if not DataLoaded then
@@ -1163,16 +1161,6 @@ begin
   LuaSystem.SetValue('CHALLENGE',  Challenge);
   LuaSystem.SetValue('SCHALLENGE', SChallenge);
   LuaSystem.SetValue('ARCHANGEL', ArchAngel);
-end;
-
-procedure TDoom.DoomFirst;
-var T : Text;
-begin
-  Assign(T, WritePath + 'drl.prc');
-  Rewrite(T);
-  Writeln(T,'DRL was already run.');
-  Close(T);
-  IO.RunUILoop( TMainMenuViewer.CreateFirst( IO.Root ) );
 end;
 
 destructor TDoom.Destroy;

@@ -30,7 +30,6 @@ begin
 end;
 
 procedure TRankUpView.Update( aDTime : Integer );
-var iString : Ansistring;
 begin
   VTIG_BeginWindow('Congratulations!', 'rank_up_view', FSize );
 
