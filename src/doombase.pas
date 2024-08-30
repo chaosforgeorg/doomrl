@@ -4,7 +4,7 @@ interface
 
 uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
      dflevel, dfdata, dfhof, dfitem,
-     doomhooks, doomlua, doommenuview, doomcommand, doomkeybindings;
+     doomhooks, doomlua, doomcommand, doomkeybindings;
 
 type TDoomState = ( DSStart,      DSMenu,    DSLoading,   DSCrashLoading,
                     DSPlaying,    DSSaving,  DSNextLevel,
