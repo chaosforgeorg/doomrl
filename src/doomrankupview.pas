@@ -17,7 +17,7 @@ end;
 
 implementation
 
-uses sysutils, vluasystem, vtig, dfhof;
+uses sysutils, vluasystem, vtig;
 
 constructor TRankUpView.Create( aRank : THOFRank );
 begin

@@ -1,12 +1,10 @@
 {$INCLUDE doomrl.inc}
 unit doompagedview;
 interface
-uses vutil, doomio, dfdata, vgenerics,
-  vuielement // deleteme
-  ;
+uses vutil, doomio, dfdata, vgenerics;
 
 type TPagedView = class( TInterfaceLayer )
-  constructor Create( aPages : TPagedReport; aInitialPage : AnsiString = ''; aDeleteMe : TUINotifyEvent = nil );
+  constructor Create( aPages : TPagedReport; aInitialPage : AnsiString = '' );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
@@ -16,19 +14,15 @@ protected
   FPage     : Integer;
   FSize     : TPoint;
   FContent  : TPagedReport;
-
-  FDeleteMe : TUINotifyEvent;
 end;
 
 implementation
 
 uses sysutils, vmath, vtig, vtigio;
 
-constructor TPagedView.Create( aPages : TPagedReport; aInitialPage : AnsiString = ''; aDeleteMe : TUINotifyEvent = nil );
+constructor TPagedView.Create( aPages : TPagedReport; aInitialPage : AnsiString = '' );
 var i : DWord;
 begin
-  FDeleteMe := aDeleteMe;
-
   VTIG_EventClear;
   VTIG_ResetScroll( 'paged_view' );
   VTIG_ResetScroll( 'paged_view_inner' );
@@ -96,7 +90,6 @@ destructor TPagedView.Destroy;
 begin
   FreeAndNil( FContent );
   inherited Destroy;
-  if Assigned( FDeleteMe ) then FDeleteMe( nil );
 end;
 
 

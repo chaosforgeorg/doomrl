@@ -38,11 +38,10 @@ type TTraitViewEntry = record
 end;
 
 type TTraitViewArray = specialize TGArray< TTraitViewEntry >;
-     TOnPickTrait    = function ( aTrait : Byte ) : Boolean of object;
 
 type TPlayerView = class( TInterfaceLayer )
   constructor Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
-  constructor CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0; aCallback : TOnPickTrait = nil );
+  constructor CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0 );
   constructor CreateCommand( aCommand : Byte; aScavenger : Boolean = False );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
@@ -79,7 +78,6 @@ protected
   FScavenger   : Boolean;
   FSSlot       : TEqSlot;
   FTraits      : TTraitViewArray;
-  FOnPick      : TOnPickTrait;
   FCommandMode : Byte;
   FRect        : TIORect;
 
@@ -110,13 +108,12 @@ begin
   FState := aInitialState;
 end;
 
-constructor TPlayerView.CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0; aCallback : TOnPickTrait = nil );
+constructor TPlayerView.CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0 );
 begin
   Initialize;
   FState     := PLAYERVIEW_TRAITS;
   FTraitMode := True;
   FTraitFirst:= aFirstTrait;
-  FOnPick    := aCallback;
 
   if FTraitFirst
     then ReadTraits( aKlass )
@@ -203,7 +200,6 @@ begin
         begin
           FState := PLAYERVIEW_DONE;
           FTraitPick := 255;
-          if Assigned( FOnPick ) then FOnPick(255);
         end;
   end;
 
@@ -570,7 +566,7 @@ begin
     begin
       FState := PLAYERVIEW_CLOSING;
       if FTraitFirst
-        then begin FTraitPick := FTraits[iSelected].Index; if Assigned( FOnPick ) then FOnPick( FTraits[iSelected].Index ); end
+        then FTraitPick := FTraits[iSelected].Index
         else Player.FTraits.Upgrade( FTraits[iSelected].Index );
       FState := PLAYERVIEW_DONE;
     end;
