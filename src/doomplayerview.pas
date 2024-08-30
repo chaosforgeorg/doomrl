@@ -82,6 +82,10 @@ protected
   FOnPick      : TOnPickTrait;
   FCommandMode : Byte;
   FRect        : TIORect;
+
+  class var FTraitPick : Byte;
+public
+  class property TraitPick : Byte read FTraitPick;
 end;
 
 type TUnloadConfirmView = class( TConfirmView )
@@ -153,6 +157,7 @@ begin
   FCommandMode := 0;
   FAction      := 'wear/use';
   FITitle      := 'Inventory';
+  FTraitPick   := 255;
 end;
 
 procedure TPlayerView.Update( aDTime : Integer );
@@ -197,7 +202,8 @@ begin
       else if FTraitFirst then
         begin
           FState := PLAYERVIEW_DONE;
-          FOnPick(255);
+          FTraitPick := 255;
+          if Assigned( FOnPick ) then FOnPick(255);
         end;
   end;
 
@@ -564,7 +570,7 @@ begin
     begin
       FState := PLAYERVIEW_CLOSING;
       if FTraitFirst
-        then FOnPick( FTraits[iSelected].Index )
+        then begin FTraitPick := FTraits[iSelected].Index; if Assigned( FOnPick ) then FOnPick( FTraits[iSelected].Index ); end
         else Player.FTraits.Upgrade( FTraits[iSelected].Index );
       FState := PLAYERVIEW_DONE;
     end;

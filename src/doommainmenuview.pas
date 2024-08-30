@@ -31,7 +31,9 @@ protected
   procedure UpdateMenu;
   procedure UpdateBadSave;
   procedure UpdateFair;
+  procedure UpdateName;
   procedure UpdateDifficulty;
+  procedure UpdateKlass;
   procedure OnCancel;
   procedure SetSoundCallback;
   procedure ResetSoundCallback;
@@ -49,6 +51,7 @@ protected
 
   FBGTexture   : TTextureID;
   FLogoTexture : TTextureID;
+  FName        : array[0..47] of Char;
 end;
 
 implementation
@@ -144,7 +147,29 @@ begin
     MAINMENU_MENU       : UpdateMenu;
     MAINMENU_BADSAVE    : UpdateBadSave;
     MAINMENU_DIFFICULTY : UpdateDifficulty;
+    MAINMENU_KLASS      : UpdateKlass;
     MAINMENU_FAIR       : UpdateFair;
+    MAINMENU_NAME       : UpdateName;
+    MAINMENU_TRAIT      :
+    begin
+      if TPlayerView.TraitPick = 255 then
+      begin
+        OnCancel;
+        FMode := MAINMENU_MENU;
+      end
+      else
+      begin
+        FResult.Trait := TPlayerView.TraitPick;
+        if (Option_AlwaysName <> '') or Setting_AlwaysRandomName
+          then FMode := MAINMENU_DONE
+          else begin
+            IO.Root.Console.ShowCursor;
+            FName[0] := #0;
+            IO.Driver.StartTextInput;
+            FMode := MAINMENU_NAME;
+          end;
+      end;
+    end;
   end;
 end;
 
@@ -197,6 +222,7 @@ const
 
 procedure TMainMenuView.UpdateMenu;
 begin
+  IO.Root.Console.HideCursor;
   VTIG_PushStyle( @TIGStyleFrameless );
   VTIG_Begin( 'mainmenu', Point( 24, 9 ), Point( 29, 14 ) );
   VTIG_PopStyle;
@@ -252,7 +278,7 @@ begin
   begin
     OnCancel;
     if VTIG_Selected( MAINMENU_ID ) = 7
-      then FMode := MAINMENU_DONE
+      then begin FMode := MAINMENU_DONE; FResult.Quit := True; end
       else VTIG_ResetSelect( MAINMENU_ID, 7 );
   end;
 end;
@@ -275,7 +301,7 @@ begin
   VTIG_Text('');
 
   if VTIG_Selectable( 'Bring it on!' ) then
-    FMode := MAINMENU_MENU;
+    FMode := MAINMENU_KLASS;
   if VTIG_Selectable( 'Cancel' ) then
     FMode := MAINMENU_DIFFICULTY;
   VTIG_PopStyle;
@@ -285,6 +311,33 @@ begin
   begin
     OnCancel;
     FMode := MAINMENU_DIFFICULTY;
+  end;
+end;
+
+procedure TMainMenuView.UpdateName;
+begin
+  VTIG_PushStyle( @TIGStyleFrameless );
+  VTIG_Begin( 'mainmenu_name', Point( 34, 4 ), Point(25,18) );
+  VTIG_PopStyle;
+  VTIG_PushStyle( @TIGStyleColored );
+  VTIG_Text('Type a name for your character');
+  if VTIG_Input(@FName[0],47) then
+  begin
+    FResult.Name := AnsiString(FName);
+    IO.Driver.StopTextInput;
+    IO.Root.Console.HideCursor;
+    FMode := MAINMENU_DONE;
+  end;
+  VTIG_PopStyle;
+  VTIG_End();
+  IO.RenderUIBackground( Point(22,17), Point(58,21), 0.7 );
+
+  if VTIG_EventCancel then
+  begin
+    IO.Driver.StopTextInput;
+    IO.Root.Console.HideCursor;
+    OnCancel;
+    FMode := MAINMENU_MENU;
   end;
 end;
 
@@ -301,7 +354,7 @@ begin
         FResult.Difficulty := FArrayDiff[i].NID;
         if FResult.Difficulty >= 5
           then FMode := MAINMENU_FAIR
-          else FMode := MAINMENU_MENU;
+          else FMode := MAINMENU_KLASS;
       end;
     VTIG_PopStyle;
   VTIG_End;
@@ -314,6 +367,43 @@ begin
   end;
 end;
 
+procedure TMainMenuView.UpdateKlass;
+var iSelected, i : Integer;
+begin
+  iSelected := VTIG_Selected('mainmenu_klass');
+  if iSelected < 0 then iSelected := 0;
+  VTIG_PushStyle( @TIGStyleFrameless );
+  VTIG_Begin( 'mainmenu_klass_desc', Point( 47, 8 ), Point( 30, 16 ) );
+  VTIG_PopStyle;
+    VTIG_PushStyle( @TIGStyleColored );
+    VTIG_Text( Padded( '- {!' + FArrayKlass[iSelected].Name + ' }', 48, '-' ) );
+    VTIG_PopStyle;
+    VTIG_Text( FArrayKlass[iSelected].Desc );
+  VTIG_End;
+
+  VTIG_PushStyle( @TIGStyleFrameless );
+  VTIG_Begin( 'mainmenu_klass', Point( 16, 5 ), Point( 10, 18 ) );
+  VTIG_PopStyle;
+    VTIG_PushStyle( @TIGStyleColored );
+    for i := 0 to FArrayKlass.Size - 1 do
+      if VTIG_Selectable( FArrayKlass[i].Name, FArrayKlass[i].Allow ) then
+      begin
+        FResult.Klass := FArrayKlass[i].NID;
+        FMode         := MAINMENU_TRAIT;
+        IO.PushLayer( TPlayerView.CreateTrait( True, FResult.Klass ) );
+      end;
+    iSelected := VTIG_Selected;
+    VTIG_PopStyle;
+  VTIG_End;
+
+  IO.RenderUIBackground(  Point(9,17), Point(25,22), 0.7 );
+  IO.RenderUIBackground( Point(28,15), Point(77,24), 0.7 );
+  if VTIG_EventCancel then
+  begin
+    FMode := MAINMENU_MENU;
+    OnCancel;
+  end;
+end;
 
 procedure TMainMenuView.OnCancel;
 begin
@@ -379,7 +469,8 @@ begin
   if FMode = MAINMENU_FIRST then
     IO.RenderUIBackground( Point(4,1), Point(76,24), 0.7 );
 
-  if ( FMode in [MAINMENU_INTRO,MAINMENU_MENU,MAINMENU_DIFFICULTY,MAINMENU_FAIR] ) and IO.IsTopLayer( Self ) then
+  if ( FMode in [MAINMENU_INTRO,MAINMENU_MENU,MAINMENU_DIFFICULTY,MAINMENU_KLASS,MAINMENU_FAIR, MAINMENU_NAME] )
+    and IO.IsTopLayer( Self ) then
   begin
     iImage := iIO.Textures.Texture[ FLogoTexture ].Image;
     iMin.Y  := Floor(iSize.Y / 25) * (-8);
@@ -466,6 +557,7 @@ begin
         iEntry.ID    := GetString('id');
         iEntry.NID   := GetInteger('nid');
         iEntry.Allow := True;
+        FArrayKlass.Push( iEntry );
       end;
     finally
       Free;

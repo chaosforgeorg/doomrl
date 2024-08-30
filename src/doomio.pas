@@ -427,7 +427,14 @@ end;
 function TDoomIO.OnEvent( const event : TIOEvent ) : Boolean;
 var i      : Integer;
     iEvent : TIOEvent;
+    iWide  : WideString;
 begin
+  if ( event.EType = VEVENT_TEXT ) then
+  begin
+    iWide := UTF8Decode( UTF8String( event.Text.Text ) );
+    VTIG_GetIOState.EventState.AppendText( PWideChar( iWide ) );
+  end;
+
   if ( event.EType = VEVENT_KEYDOWN ) then
     case event.Key.Code of
       VKEY_UP     : VTIG_GetIOState.EventState.SetState( VTIG_IE_UP, True );
