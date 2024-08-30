@@ -4,7 +4,7 @@ interface
 
 uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
      dflevel, dfdata, dfhof, dfitem,
-     doomhooks, doomlua, doommenuview, doomcommand, doomkeybindings;
+     doomhooks, doomlua, doomcommand, doomkeybindings;
 
 type TDoomState = ( DSStart,      DSMenu,    DSLoading,   DSCrashLoading,
                     DSPlaying,    DSSaving,  DSNextLevel,
@@ -53,7 +53,6 @@ TDoom = class(TSystem)
        function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
        procedure PreAction;
        procedure LoadModule( Base : Boolean );
-       procedure DoomFirst;
        procedure CreatePlayer( aResult : TMenuResult );
      private
        FState           : TDoomState;
@@ -81,7 +80,7 @@ uses Classes, SysUtils,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
-     doompagedview, doomrankupview,
+     doompagedview, doomrankupview, doommainmenuview,
      doomconfiguration, doomhelp, doomconfig, doomviews, dfplayer;
 
 
@@ -818,10 +817,8 @@ begin
   iResult    := TMenuResult.Create;
   Doom.Load;
 
-  if not FileExists( WritePath + 'drl.prc' ) then
-    DoomFirst;
-
-  IO.RunUILoop( TMainMenuViewer.CreateMain( IO.Root ) );
+  IO.PushLayer( TMainMenuView.Create );
+  IO.WaitForLayer;
   if FState <> DSQuit then
 repeat
   if not DataLoaded then
@@ -842,7 +839,9 @@ repeat
   IO.Audio.PlayMusicOnce('start');
   SetState( DSMenu );
   iResult.Reset; // TODO : could reuse for same game!
-  IO.RunUILoop( TMainMenuViewer.Create( IO.Root, iResult ) );
+
+  IO.PushLayer( TMainMenuView.Create( MAINMENU_MENU, iResult ) );
+  IO.WaitForLayer;
   Apply( iResult );
   if State = DSQuit then Break;
 
@@ -1163,16 +1162,6 @@ begin
   LuaSystem.SetValue('CHALLENGE',  Challenge);
   LuaSystem.SetValue('SCHALLENGE', SChallenge);
   LuaSystem.SetValue('ARCHANGEL', ArchAngel);
-end;
-
-procedure TDoom.DoomFirst;
-var T : Text;
-begin
-  Assign(T, WritePath + 'drl.prc');
-  Rewrite(T);
-  Writeln(T,'DRL was already run.');
-  Close(T);
-  IO.RunUILoop( TMainMenuViewer.CreateFirst( IO.Root ) );
 end;
 
 destructor TDoom.Destroy;

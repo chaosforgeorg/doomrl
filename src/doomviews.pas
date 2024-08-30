@@ -4,24 +4,6 @@ interface
 uses vuielement, vuielements, viotypes, vuitypes, vioevent, vconui, vconuiext, vconuirl,
      dfdata;
 
-type TUIYesNoBox = class( TConUIWindow )
-  constructor Create( aParent : TUIElement; aArea : TUIRect; const aText : AnsiString; aOnConfirm : TUINotifyEvent; aOnCancel : TUINotifyEvent = nil );
-  function OnKeyDown( const event : TIOKeyEvent ) : Boolean; override;
-  function OnCancel : Boolean;
-  function OnConfirm : Boolean;
-protected
-  FOnCancel    : TUINotifyEvent;
-  FOnConfirm   : TUINotifyEvent;
-public
-  property OnCancelEvent  : TUINotifyEvent write FOnCancel;
-  property OnConfirmEvent : TUINotifyEvent write FOnConfirm;
-end;
-
-type TUINotifyBox = class( TConUIWindow )
-  constructor Create( aParent : TUIElement; aArea : TUIRect; const aText : AnsiString );
-  function OnKeyDown( const event : TIOKeyEvent ) : Boolean; override;
-end;
-
 type TUIFullWindow = class( TConUIBarFullWindow )
   procedure OnRender; override;
 end;
@@ -29,22 +11,6 @@ end;
 type TUIMessagesViewer = class( TUIFullWindow )
   constructor Create( aParent : TUIElement; aMessages : TUIChunkBuffer );
 end;
-
-{
-type
-
-{ TUICustomChallengesViewer }
-
- TUICustomChallengesViewer = class( TUIFullWindow )
-   constructor Create( aParent : TUIElement; const aTitle : AnsiString; const aChallenges : TModuleList; aOnConfirm : TUINotifyEvent = nil );
-   function OnMenuSelect( aSender : TUIElement; aIndex : DWord; aItem : TUIMenuItem ) : Boolean;
- protected
-   FMenu       : TConUIMenu;
-   FLabel      : TConUILabel;
-   FDesc       : TConUIText;
- end;
-
-}
 
 type TUILoadingScreen = class( TUIElement )
   constructor Create( aParent : TUIElement; aMax : DWord );
@@ -62,7 +28,7 @@ end;
 implementation
 
 uses SysUtils,
-     vgltypes, variants, vutil, vmath, vuiconsole, vluasystem,
+     vgltypes, variants, vutil, vmath, vuiconsole,
      doomio, doomgfxio, dfhof;
 
 const MessagesHeader   = 'Past messages viewer';
@@ -138,27 +104,6 @@ begin
   FCurrent := aProgress;
 end;
 
-{ TUINotifyBox }
-
-constructor TUINotifyBox.Create ( aParent : TUIElement; aArea : TUIRect; const aText : AnsiString );
-begin
-  inherited Create( aParent, aArea, '' );
-  TConUIText.Create( Self, aText );
-  FEventFilter := [ VEVENT_KEYDOWN ];
-  FRoot.GrabInput(Self);
-end;
-
-function TUINotifyBox.OnKeyDown ( const event : TIOKeyEvent ) : Boolean;
-begin
-  if event.ModState <> [] then Exit( True );
-  case event.Code of
-    VKEY_SPACE,
-    VKEY_ESCAPE,
-    VKEY_ENTER  : Free;
-  end;
-  Exit( True );
-end;
-
 { TUIFullWindow }
 
 procedure TUIFullWindow.OnRender;
@@ -176,7 +121,6 @@ begin
   inherited OnRender;
 end;
 
-
 { TUIMessagesViewer }
 
 constructor TUIMessagesViewer.Create ( aParent : TUIElement; aMessages : TUIChunkBuffer ) ;
@@ -190,114 +134,6 @@ begin
   iContent.EventFilter := [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ];
   if iContent.Count <= iContent.VisibleCount then Footer := ScrollFooterOff;
   TConUIScrollableIcons.Create( Self, iContent, iRect, Point( FAbsolute.x2 - 7, FAbsolute.Y ) );
-end;
-
-{ TUICustomChallengesViewer }
-{
-constructor TUICustomChallengesViewer.Create(aParent: TUIElement;
-  const aTitle: AnsiString; const aChallenges: TModuleList;
-  aOnConfirm: TUINotifyEvent);
-var iCount : DWord;
-begin
-  inherited Create( aParent, '@y'+aTitle, '@<Up,Down to select, Enter or Escape to exit@>');
-
-  FMenu       := TConUIMenu.Create( Self, Rectangle( 3,2,22,21 ) );
-  FLabel      := TConUILabel.Create( Self, Point( 27, 2 ), StringOfChar('-',57) );
-  FDesc       := TConUIText.Create( Self, Rectangle( 29,4,47,21 ),'' );
-  FLabel.ForeColor    := Red;
-  FMenu.ForeColor     := LightRed;
-  FMenu.SelectedColor := Yellow;
-  FMenu.OnSelectEvent := @OnMenuSelect;
-  FMenu.OnConfirmEvent:= aOnConfirm;
-
-  for iCount := 0 to aChallenges.Size-1 do
-    FMenu.Add(aChallenges[iCount].Name, True, Pointer(aChallenges[iCount]) );
-end;
-
-function TUICustomChallengesViewer.OnMenuSelect(aSender: TUIElement;
-  aIndex: DWord; aItem: TUIMenuItem): Boolean;
-var iModule : TDoomModule;
-    iDesc   : AnsiString;
-    iAwards : AnsiString;
-    iMax    : LongInt;
-    iAmount : DWord;
-    iCount  : DWord;
-    iItems  : DWord;
-    iID     : AnsiString;
-begin
-  if not FMenu.IsValid( aIndex ) then Exit( True );
-  iModule := TDoomModule(FMenu.SelectedItem.Data);
-  FLabel.Text := Padded( '- @<' + iModule.Name + ' @>', 53, '-');
-  iDesc := '@l'+iModule.CDesc+#10+#10;
-  iAwards := '';
-  if iModule.AwardID <> '' then
-  begin
-    iID     := iModule.AwardID;
-    iItems  := LuaSystem.GetTableSize(['awards',iID,'levels']);
-    if iItems > 0 then
-    begin
-      iAwards := '';
-      iMax    := 0;
-      for iCount := 1 to iItems do
-      begin
-        iAmount := HOF.GetCounted( 'awards', 'award', iID + '_' + IntToStr(iCount) );
-        if iAmount > 0 then iAwards += '@y' else iAwards += '@d';
-        iAwards += '* '+LuaSystem.Get(['awards',iID,'levels',iCount,'name']);
-        if iAmount > 1 then iAwards += ' (@Lx'+IntToStr(iAmount)+'@y)';
-        iAwards += ' - '+LuaSystem.Get(['awards',iID,'levels',iCount,'desc'])+#10;
-        if iAmount > 0 then iMax := iCount;
-      end;
-      if iMax > 0
-        then iAwards := '@rAward : @y'+LuaSystem.Get(['awards',iID,'name'])+' (@L'+LuaSystem.Get(['awards',iID,'levels',iMax,'name'])+'@y)'+#10+#10 + iAwards
-        else iAwards := '@rAward : @d'+LuaSystem.Get(['awards',iID,'name'])+#10+#10 + iAwards;
-    end;
-  end;
-  FDesc.Text  := iDesc + iAwards;
-end;
-}
-
-{ TUIYesNoBox }
-
-constructor TUIYesNoBox.Create ( aParent : TUIElement; aArea : TUIRect;
-  const aText : AnsiString; aOnConfirm : TUINotifyEvent; aOnCancel : TUINotifyEvent ) ;
-begin
-  inherited Create( aParent, aArea, '' );
-  TConUIText.Create( Self, aText );
-  FEventFilter := [ VEVENT_KEYDOWN ];
-  FOnConfirm := aOnConfirm;
-  FOnCancel  := aOnCancel;
-  FRoot.GrabInput(Self);
-end;
-
-function TUIYesNoBox.OnKeyDown ( const event : TIOKeyEvent ) : Boolean;
-begin
-  if (event.ModState <> []) then Exit( True );
-  if (event.ASCII in ['y','Y']) then Exit( OnConfirm );
-  if (event.ASCII in ['n','N']) or
-     (event.Code = VKEY_ESCAPE) then Exit( OnCancel );
-  Exit( True )
-end;
-
-function TUIYesNoBox.OnCancel : Boolean;
-begin
-  if Assigned( FOnCancel ) then
-  begin
-    Free;
-    Exit( FOnCancel( nil ) );
-  end;
-  Free;
-  Exit( True );
-end;
-
-function TUIYesNoBox.OnConfirm : Boolean;
-begin
-  if Assigned( FOnConfirm ) then
-  begin
-    Free;
-    Exit( FOnConfirm( nil ) );
-  end;
-  Free;
-  Exit( True );
 end;
 
 end.

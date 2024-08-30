@@ -8,7 +8,7 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 unit dfdata;
 interface
 uses Classes, SysUtils, idea,
-     vgenerics, vcolor, vutil, vrltools, vuitypes, vluatable,
+     vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable,
      doomconfig, doomkeybindings;
 
 const ConfigurationPath : AnsiString = 'config.lua';
@@ -53,6 +53,22 @@ public
   property Headers : TStringGArray read FHeaders;
   property Title   : AnsiString    read FTitle;
   property Styled  : Boolean       read FStyled;
+end;
+
+type TMenuResult = class
+  Quit       : Boolean;
+  Loaded     : Boolean;
+  ArchAngel  : Boolean;
+  Challenge  : AnsiString;
+  SChallenge : AnsiString;
+  Difficulty : Byte;
+  ModuleID   : AnsiString;
+  Klass      : Byte;
+  Trait      : Byte;
+  Name       : AnsiString;
+
+  constructor Create;
+  procedure Reset;
 end;
 
 
@@ -330,8 +346,11 @@ var ColorOverrides : TIntHashMap;
 
 function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; PreferStrings: Boolean = True): Variant;
 
+var TIGStyleColored   : TTIGStyle;
+    TIGStyleFrameless : TTIGStyle;
+
 implementation
-uses typinfo, strutils, math, vdebug, dfitem;
+uses typinfo, strutils, math, vdebug;
 
 constructor TPagedReport.Create( aTitle : Ansistring; aStyled : Boolean );
 begin
@@ -362,6 +381,27 @@ begin
   FreeAndNil( FPages );
   FreeAndNil( FTitles );
   FreeAndNil( FHeaders );
+end;
+
+{ TMenuResult }
+
+constructor TMenuResult.Create;
+begin
+  Reset;
+end;
+
+procedure TMenuResult.Reset;
+begin
+  Quit       := False;
+  Loaded     := False;
+  Difficulty := 0;
+  Challenge  := '';
+  SChallenge := '';
+  ArchAngel  := False;
+  Klass      := 0;
+  Trait      := 0;
+  ModuleID   := 'DoomRL';
+  Name       := '';
 end;
 
 // change also in mortem lua!

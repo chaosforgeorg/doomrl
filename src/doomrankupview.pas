@@ -17,7 +17,7 @@ end;
 
 implementation
 
-uses sysutils, vluasystem, vtig, dfhof;
+uses sysutils, vluasystem, vtig;
 
 constructor TRankUpView.Create( aRank : THOFRank );
 begin
@@ -30,7 +30,6 @@ begin
 end;
 
 procedure TRankUpView.Update( aDTime : Integer );
-var iString : Ansistring;
 begin
   VTIG_BeginWindow('Congratulations!', 'rank_up_view', FSize );
 

@@ -1,12 +1,10 @@
 {$INCLUDE doomrl.inc}
 unit doompagedview;
 interface
-uses vutil, doomio, dfdata, vgenerics,
-  vuielement // deleteme
-  ;
+uses vutil, doomio, dfdata, vgenerics;
 
 type TPagedView = class( TInterfaceLayer )
-  constructor Create( aPages : TPagedReport; aInitialPage : AnsiString = ''; aDeleteMe : TUINotifyEvent = nil );
+  constructor Create( aPages : TPagedReport; aInitialPage : AnsiString = '' );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
@@ -16,19 +14,15 @@ protected
   FPage     : Integer;
   FSize     : TPoint;
   FContent  : TPagedReport;
-
-  FDeleteMe : TUINotifyEvent;
 end;
 
 implementation
 
-uses sysutils, vmath, vtig, vtigio, vtigstyle;
+uses sysutils, vmath, vtig, vtigio;
 
-constructor TPagedView.Create( aPages : TPagedReport; aInitialPage : AnsiString = ''; aDeleteMe : TUINotifyEvent = nil );
+constructor TPagedView.Create( aPages : TPagedReport; aInitialPage : AnsiString = '' );
 var i : DWord;
 begin
-  FDeleteMe := aDeleteMe;
-
   VTIG_EventClear;
   VTIG_ResetScroll( 'paged_view' );
   VTIG_ResetScroll( 'paged_view_inner' );
@@ -44,40 +38,26 @@ end;
 procedure TPagedView.Update( aDTime : Integer );
 var iString     : Ansistring;
     iTitle      : Ansistring;
-    iStoreFrame : Ansistring;
-    iStoreColor : DWord;
-    iStoreBold  : DWord;
 begin
-  iStoreFrame := VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ];
-  iStoreColor := VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ];
-  iStoreBold  := VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ];
   iTitle := FContent.Title;
   if FContent.Titles[ FPage ] <> '' then
     iTitle += ' ({y'+FContent.Titles[ FPage ]+'})';
 
   VTIG_BeginWindow( iTitle, 'paged_view', FSize );
-    if FContent.Styled then
-    begin
-      VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ] := VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ];
-      VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ] := VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ];
-    end;
+    if FContent.Styled then VTIG_PushStyle( @TIGStyleColored );
 
     if FContent.Headers[ FPage ] <> '' then
     begin
       VTIG_Text( FContent.Headers[ FPage ] );
-      VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := '';
+      VTIG_PushStyle( @TIGStyleFrameless );
       VTIG_Begin( 'paged_view_inner', FSize - Point(0,4), Point(1,4) );
-      VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := iStoreFrame;
+      VTIG_PopStyle;
     end;
 
     for iString in FContent.Pages[ FPage ] do
       VTIG_Text( iString );
 
-    if FContent.Styled then
-    begin
-      VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ] := iStoreColor;
-      VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ] := iStoreBold;
-    end;
+    if FContent.Styled then VTIG_PopStyle;
     VTIG_Scrollbar;
 
     if FContent.Headers[ FPage ] <> '' then
@@ -110,7 +90,6 @@ destructor TPagedView.Destroy;
 begin
   FreeAndNil( FContent );
   inherited Destroy;
-  if Assigned( FDeleteMe ) then FDeleteMe( nil );
 end;
 
 

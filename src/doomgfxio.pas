@@ -15,6 +15,7 @@ type
     procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
     procedure Update( aMSec : DWord ); override;
     function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
+    procedure PushLayer(  aLayer : TInterfaceLayer ); override;
     function OnEvent( const event : TIOEvent ) : Boolean; override;
     procedure UpdateMinimap;
     destructor Destroy; override;
@@ -34,7 +35,7 @@ type
     procedure DeviceChanged;
     function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; override;
     function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; override;
-    procedure RenderUIBackground( aUL, aBR : TIOPoint ); override;
+    procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); override;
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
@@ -85,7 +86,7 @@ implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
-     vdebug, vlog, vmath, vdf, vgl3library, vtigstyle,
+     vdebug, vlog, vmath, vdf, vgl3library,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfplayer,
      doombase, doomconfiguration;
@@ -235,11 +236,6 @@ begin
   FMCursor      := TDoomMouseCursor.Create;
   TSDLIODriver( FIODriver ).ShowMouse( False );
                                                     //RRGGBBAA
-  VTIGDefaultStyle.Color[ VTIG_BACKGROUND_COLOR ]          := $10000000;
-  VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := $442222FF;
-  VTIGDefaultStyle.Color[ VTIG_INPUT_TEXT_COLOR ]          := LightGray;
-  VTIGDefaultStyle.Color[ VTIG_INPUT_BACKGROUND_COLOR ]    := $442222FF;
-
   inherited Create;
 
   FQuadSheet := TGLQuadList.Create;
@@ -552,6 +548,17 @@ begin
   Exit( inherited RunUILoop( aElement ) );
 end;
 
+procedure TDoomGFXIO.PushLayer(  aLayer : TInterfaceLayer );
+begin
+  if FMCursor <> nil then
+  begin
+    if FMCursor.Size = 0 then
+      FMCursor.SetTextureID( FTextures.TextureID['cursor'], 32 );
+    FMCursor.Active := True;
+  end;
+  inherited PushLayer( aLayer );
+end;
+
 procedure TDoomGFXIO.UpdateMinimap;
 var x, y : DWord;
 begin
@@ -596,12 +603,12 @@ begin
   Exit( FConsole.GetDeviceArea.Pos + aCoord );
 end;
 
-procedure TDoomGFXIO.RenderUIBackground( aUL, aBR : TIOPoint );
+procedure TDoomGFXIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 );
 var iP1,iP2 : TIOPoint;
 begin
   iP1 := ConsoleCoordToDeviceCoord( aUL + PointUnit );
   iP2 := ConsoleCoordToDeviceCoord( aBR + PointUnit );
-  QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.85 ) );
+  QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,aOpacity ) );
 end;
 
 

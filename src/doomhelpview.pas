@@ -1,16 +1,13 @@
 {$INCLUDE doomrl.inc}
 unit doomhelpview;
 interface
-uses vutil, doomio,
-    vuielement // deleteme
-  ;
+uses vutil, doomio;
 
 type THelpView = class( TInterfaceLayer )
-  constructor Create( aDeleteMe : TUINotifyEvent = nil );
+  constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
-  destructor Destroy; override;
 protected
   procedure UpdateRead;
   procedure UpdateMenu;
@@ -18,25 +15,14 @@ protected
   FMode    : ( HELPVIEW_MENU, HELPVIEW_READ, HELPVIEW_DONE );
   FCurrent : Byte;
   FSize    : TPoint;
-
-  FDeleteMe : TUINotifyEvent;
 end;
 
 implementation
 
 uses vtig, doomhelp;
 
-// deleteme
-destructor THelpView.Destroy;
+constructor THelpView.Create;
 begin
-  inherited Destroy;
-  if Assigned( FDeleteMe ) then FDeleteMe( nil );
-end;
-
-constructor THelpView.Create( aDeleteMe : TUINotifyEvent = nil );
-begin
-  FDeleteMe := aDeleteMe;
-
   VTIG_EventClear;
   VTIG_ResetSelect( 'help_view' );
 

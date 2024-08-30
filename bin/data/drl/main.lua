@@ -745,17 +745,17 @@ end
 
 function DoomRL.logo_text()
 	return
-[[@rAdd. coding : @ytehtmi@r, @yGame Hunter@r, @yshark20061@r and @yadd
-@rMusic tracks: @ySonic Clang@r (remixes), @ySimon Volpert@r (special levels)
-@rHQ SFX      : @yPer Kristian Risvik
+[[{rAdd. coding : {ytehtmi}, {yGame Hunter}, {yshark20061} and {yadd}
+Music tracks: {ySonic Clang} (remixes), {ySimon Volpert} (special levels)
+HQ SFX      : {yPer Kristian Risvik}
 
-@rMajor changes since last version (see @yversion.txt@r for full list)
-@R  * start of UX overhaul, save/load at any point, settings menu!
-@R  * new sprites, new tilesets, basic animation!
-@R  * tons of minor features, bugfixes and balance changes
+Major changes since last version (see {yversion.txt} for full list)
+{R  * start of UX overhaul, save/load at any point, settings menu!
+  * new sprites, new tilesets, basic animation!
+  * tons of minor features, bugfixes and balance changes}
 
-@B facebook.com/ChaosForge  x.com/chaosforge_org  discord.gg/jupiterhell
-@r                                          Press <@yEnter@r> to continue...
+{B facebook.com/ChaosForge  x.com/chaosforge_org  discord.gg/jupiterhell}
+                                          Press <{yEnter}> to continue...}
 ]]
 end
 
@@ -787,22 +787,22 @@ end
 
 function DoomRL.first_text()
 	return
-[[@yWelcome to @RD**m the Roguelike@y!
+[[{yWelcome to {RD**m the Roguelike}!
 
 You are running DRL for the first time. I hope you will find this roguelike game as enjoyable as it was for me to write it.
 
 This game is in active development (again?), and as such please be always sure that you have the most recent version, for bugs are fixed, new features appear, and the game becomes better at every iteration. You can find the lastest version on DRL website:
 
-@Bhttps://drl.chaosforge.org/@y
+{Bhttps://drl.chaosforge.org/}
 
 Also, if you enjoy this game, join the Discord and/or the forums:
 
-@Bhttp://discord.gg/jupiterhell@y
-@Bhttp://forum.chaosforge.org/@y
+{Bhttp://discord.gg/jupiterhell}
+{Bhttp://forum.chaosforge.org/}
 
-You can also follow me on X (@B@@chaosforge_org@y/@B@@epyoncf@y).
+You can also follow me on X ({B@chaosforge_org}/{B@epyoncf}).
 
-Press @<Enter@y to continue...
+Press {LEnter} to continue...}
 ]]
 end
 
