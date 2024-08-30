@@ -839,7 +839,9 @@ repeat
   IO.Audio.PlayMusicOnce('start');
   SetState( DSMenu );
   iResult.Reset; // TODO : could reuse for same game!
-  IO.RunUILoop( TMainMenuViewer.Create( IO.Root, iResult ) );
+
+  IO.PushLayer( TMainMenuView.Create( MAINMENU_MENU, iResult ) );
+  IO.WaitForLayer;
   Apply( iResult );
   if State = DSQuit then Break;
 

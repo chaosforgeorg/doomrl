@@ -1,17 +1,19 @@
 {$INCLUDE doomrl.inc}
 unit doommainmenuview;
 interface
-uses vgenerics, vtextures, dfdata, doomio;
+uses viotypes, vgenerics, vtextures, dfdata, doomio;
 
 type TMainMenuViewMode = (
   MAINMENU_FIRST, MAINMENU_INTRO, MAINMENU_MENU,
-  MAINMENU_DIFFICULTY, MAINMENU_FAIR, MAINMENU_KLASS, MAINMENU_TRAIT, MAINMENU_NAME,
+  MAINMENU_DIFFICULTY, MAINMENU_FAIR, MAINMENU_KLASS, MAINMENU_TRAIT, MAINMENU_CTYPE, MAINMENU_NAME,
+  MAINMENU_CPICK, MAINMENU_CFIRST, MAINMENU_CSECOND,
   MAINMENU_BADSAVE, MAINMENU_DONE );
 
 type TMainMenuEntry = record
   Name  : Ansistring;
   Desc  : Ansistring;
   Allow : Boolean;
+  Extra : Ansistring;
   ID    : Ansistring;
   NID   : Byte;
 end;
@@ -34,11 +36,15 @@ protected
   procedure UpdateName;
   procedure UpdateDifficulty;
   procedure UpdateKlass;
+  procedure UpdateChallengeType;
+  procedure UpdateChallenge;
   procedure OnCancel;
   procedure SetSoundCallback;
   procedure ResetSoundCallback;
   procedure ReloadArrays;
+  procedure ReloadChallenge( aType : Byte );
 protected
+  FSize        : TIOPoint;
   FMode        : TMainMenuViewMode;
   FFirst       : Ansistring;
   FIntro       : Ansistring;
@@ -48,6 +54,8 @@ protected
   FArrayCType  : TMainMEnuEntryArray;
   FArrayDiff   : TMainMEnuEntryArray;
   FArrayKlass  : TMainMEnuEntryArray;
+  FArrayChal   : TMainMEnuEntryArray;
+  FTitleChal   : Ansistring;
 
   FBGTexture   : TTextureID;
   FLogoTexture : TTextureID;
@@ -58,9 +66,9 @@ implementation
 
 uses {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
      math, sysutils,
-     vutil, vtig, vtigio, vimage, vgltypes, vluasystem, vsound,
+     vutil, vtig, vtigstyle, vtigio, vimage, vgltypes, vluasystem, vluavalue, vsound,
      dfhof,
-     doombase, doomgfxio, doomplayerview, doomhelpview, doomsettingsview, doompagedview, doomchallengesview;
+     doombase, doomgfxio, doomplayerview, doomhelpview, doomsettingsview, doompagedview;
 
 const MAINMENU_ID = 'mainmenu';
 
@@ -68,20 +76,27 @@ var ChallengeType : array[1..4] of TMainMenuEntry =
 ((
    Name : 'Angel Game';
    Desc : 'Play one of the DRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach @yPrivate FC@> rank to unlock!';
-   Allow : True; ID : ''; NID : 0;
+   Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Dual-angel Game';
    Desc : 'Mix two DRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach @ySergeant@> rank to unlock!';
-   Allow : True; ID : ''; NID : 0;
+   Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Archangel Game';
    Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach @ySergeant@> rank to unlock!';
-   Allow : True; ID : ''; NID : 0;
+   Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Custom Challenge';
    Desc : 'Play one of many custom DRL challenge levels and episodes. Download new ones from the @yCustom game/Download Mods@> option in the main menu.';
-   Allow : True; ID : ''; NID : 0;
+   Allow : True; Extra : ''; ID : ''; NID : 0;
 ));
+
+const CTYPE_ANGEL  = 1;
+      CTYPE_DANGEL = 2;
+      CTYPE_AANGEL = 3;
+      CTYPE_CUSTOM = 4;
+
+      CTYPE_SECOND = 10;
 
 
 constructor TMainMenuView.Create( aInitial : TMainMenuViewMode = MAINMENU_FIRST; aResult : TMenuResult = nil );
@@ -96,6 +111,10 @@ begin
   FArrayCType := nil;
   FArrayDiff  := nil;
   FArrayKlass := nil;
+  FArrayChal  := nil;
+  FTitleChal  := '';
+  FSize       := Point( 80, 25 );
+
 
   if not ( FMode in [MAINMENU_FIRST,MAINMENU_INTRO] ) then
     Assert( aResult <> nil, 'nil result passed!' );
@@ -149,7 +168,11 @@ begin
     MAINMENU_DIFFICULTY : UpdateDifficulty;
     MAINMENU_KLASS      : UpdateKlass;
     MAINMENU_FAIR       : UpdateFair;
+    MAINMENU_CTYPE      : UpdateChallengeType;
     MAINMENU_NAME       : UpdateName;
+    MAINMENU_CPICK      : UpdateChallenge;
+    MAINMENU_CFIRST     : UpdateChallenge;
+    MAINMENU_CSECOND    : UpdateChallenge;
     MAINMENU_TRAIT      :
     begin
       if TPlayerView.TraitPick = 255 then
@@ -241,14 +264,15 @@ begin
     if not FSaveExists then
       if VTIG_Selectable( TextNewGame ) then
       begin
+        FResult.Reset;
         ReloadArrays;
-        FResult.Challenge := '';
         FMode := MAINMENU_DIFFICULTY;
       end;
     if VTIG_Selectable( TextChallengeGame, (not FSaveExists) ) then
     begin
+      FResult.Reset;
       ReloadArrays;
-      FMode := MAINMENU_DONE;
+      FMode := MAINMENU_CTYPE;
     end;
     if VTIG_Selectable( TextShowHighscore ) then IO.PushLayer( TPagedView.Create( HOF.GetPagedScoreReport ) );
     if VTIG_Selectable( TextShowPlayer )    then IO.PushLayer( TPagedView.Create( HOF.GetPagedPlayerReport ) );
@@ -405,6 +429,94 @@ begin
   end;
 end;
 
+procedure TMainMenuView.UpdateChallengeType;
+var iSelected, i : Integer;
+begin
+  iSelected := VTIG_Selected('mainmenu_ctype');
+  if iSelected < 0 then iSelected := 0;
+  VTIG_PushStyle( @TIGStyleFrameless );
+  VTIG_Begin( 'mainmenu_ctype_desc', Point( 47, 8 ), Point( 30, 16 ) );
+  VTIG_PopStyle;
+    VTIG_PushStyle( @TIGStyleColored );
+    VTIG_Text( Padded( '- {!' + FArrayCType[iSelected].Name + ' }', 48, '-' ) );
+    VTIG_PopStyle;
+    VTIG_Text( FArrayCType[iSelected].Desc );
+  VTIG_End;
+
+  VTIG_PushStyle( @TIGStyleFrameless );
+  VTIG_Begin( 'mainmenu_ctype', Point( 19, 5 ), Point( 9, 18 ) );
+  VTIG_PopStyle;
+    VTIG_PushStyle( @TIGStyleColored );
+    for i := 0 to FArrayCType.Size - 1 do
+      if VTIG_Selectable( FArrayCType[i].Name, FArrayCType[i].Allow ) then
+      begin
+        ReloadChallenge( i+1 );
+        if i = 1
+          then FMode := MAINMENU_CFIRST
+          else FMode := MAINMENU_CPICK;
+      end;
+    iSelected := VTIG_Selected;
+    VTIG_PopStyle;
+  VTIG_End;
+
+  IO.RenderUIBackground(  Point(7,17), Point(26,23), 0.7 );
+  IO.RenderUIBackground( Point(28,15), Point(77,24), 0.7 );
+  if VTIG_EventCancel then
+  begin
+    FMode := MAINMENU_MENU;
+    OnCancel;
+  end;
+end;
+
+procedure TMainMenuView.UpdateChallenge;
+var iSelect : Integer;
+    iCount  : Byte;
+    iPick   : Integer;
+begin
+  VTIG_BeginWindow( FTitleChal, 'challenges_view', FSize );
+    iSelect := -1;
+    iPick   := -1;
+
+    VTIG_BeginGroup( 28 );
+      VTIG_PushStyle( @TIGStyleColored );
+      for iCount := 0 to FArrayChal.Size-1 do
+        if VTIG_Selectable( FArrayChal[iCount].Name, FArrayChal[iCount].Allow ) then
+          iPick := iCount;
+      iSelect := VTIG_Selected;
+      VTIG_PopStyle;
+
+      VTIG_EndGroup;
+
+      VTIG_BeginGroup;
+      if iSelect >= 0 then
+      begin
+          VTIG_Text( FArrayChal[iSelect].Name, VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ] );
+          VTIG_Ruler;
+          VTIG_Text( 'Rating: {!'+FArrayChal[iSelect].Extra+'}'#10#10+FArrayChal[iSelect].Desc );
+      end;
+      VTIG_EndGroup;
+
+  VTIG_End('{l<{!Up},{!Down}> select, <{!Enter}> select, <{!Escape}> cancel}');
+
+  if VTIG_EventCancel then
+  begin
+    OnCancel;
+    FMode := MAINMENU_MENU;
+
+  end
+  else if iPick >= 0 then
+  begin
+    case FMode of
+      MAINMENU_CPICK   : begin FResult.Challenge := FArrayChal[iPick].ID;  FMode := MAINMENU_DIFFICULTY; end;
+      MAINMENU_CFIRST  : begin FResult.Challenge := FArrayChal[iPick].ID;  FMode := MAINMENU_CSECOND; ReloadChallenge( CTYPE_SECOND ); end;
+      MAINMENU_CSECOND : begin FResult.SChallenge := FArrayChal[iPick].ID; FMode := MAINMENU_DIFFICULTY; end;
+    end;
+    ReloadArrays;
+  end;
+
+  IO.RenderUIBackground( PointZero, FSize );
+end;
+
 procedure TMainMenuView.OnCancel;
 begin
   if (not Option_Sound) or (Sound = nil) or ( not Setting_MenuSound ) then Exit;
@@ -469,7 +581,7 @@ begin
   if FMode = MAINMENU_FIRST then
     IO.RenderUIBackground( Point(4,1), Point(76,24), 0.7 );
 
-  if ( FMode in [MAINMENU_INTRO,MAINMENU_MENU,MAINMENU_DIFFICULTY,MAINMENU_KLASS,MAINMENU_FAIR, MAINMENU_NAME] )
+  if ( FMode in [MAINMENU_INTRO,MAINMENU_MENU,MAINMENU_DIFFICULTY,MAINMENU_KLASS,MAINMENU_FAIR,MAINMENU_NAME,MAINMENU_CTYPE] )
     and IO.IsTopLayer( Self ) then
   begin
     iImage := iIO.Textures.Texture[ FLogoTexture ].Image;
@@ -518,9 +630,9 @@ var iEntry : TMainMenuEntry;
     iTable : TLuaTable;
     iCount : Word;
 begin
-  if FArrayCType = nil then FArrayCType := TMainMEnuEntryArray.Create;
-  if FArrayDiff  = nil then FArrayDiff  := TMainMEnuEntryArray.Create;
-  if FArrayKlass = nil then FArrayKlass := TMainMEnuEntryArray.Create;
+  if FArrayCType = nil then FArrayCType := TMainMenuEntryArray.Create;
+  if FArrayDiff  = nil then FArrayDiff  := TMainMenuEntryArray.Create;
+  if FArrayKlass = nil then FArrayKlass := TMainMenuEntryArray.Create;
   FArrayCType.Clear;
   FArrayDiff.Clear;
   FArrayKlass.Clear;
@@ -537,11 +649,12 @@ begin
   begin
     FillChar( iEntry, Sizeof(iEntry), 0 );
     iEntry.Allow := True;
-    if (FResult.Challenge <> '') and (not GetBoolean( 'challenge' )) then iEntry.Allow := False;
+    if (FResult.Challenge <> '') and (not GetBoolean( 'challenge' )) then Continue;
     if GetInteger('req_skill',0) > HOF.SkillRank then iEntry.Allow := Setting_UnlockAll;
     if GetInteger('req_exp',0)   > HOF.ExpRank   then iEntry.Allow := Setting_UnlockAll;
     iEntry.Name := GetString('name');
     iEntry.Desc := '';
+    iEntry.Extra:= '';
     iEntry.ID   := GetString('id');
     iEntry.NID  := GetInteger('nid');
     FArrayDiff.Push( iEntry );
@@ -555,6 +668,7 @@ begin
         iEntry.Name  := GetString('name');
         iEntry.Desc  := GetString('desc');
         iEntry.ID    := GetString('id');
+        iEntry.Extra := '';
         iEntry.NID   := GetInteger('nid');
         iEntry.Allow := True;
         FArrayKlass.Push( iEntry );
@@ -562,7 +676,87 @@ begin
     finally
       Free;
     end;
+end;
 
+procedure TMainMenuView.ReloadChallenge( aType : Byte );
+var iChalCount  : DWord;
+    iChoices    : DWord;
+    iCount      : Integer;
+    iPrefix     : Ansistring;
+    iChallenges : array of Byte;
+    iEntry      : TMainMenuEntry;
+    iValue      : TLuaValue;
+begin
+  VTIG_EventClear;
+  VTIG_ResetSelect( 'challenges_view' );
+
+  if FArrayChal = nil then FArrayChal := TMainMenuEntryArray.Create;
+  FArrayChal.Clear;
+  iChalCount  := LuaSystem.Get(['chal','__counter']);
+  iChallenges := nil;
+  iChoices    := 0;
+  iPrefix     := '';
+
+  SetLength( iChallenges, iChalCount );
+
+  case aType of
+    CTYPE_ANGEL  : begin
+      FTitleChal := 'Choose your Challenge';
+      for iCount := 1 to iChalCount do
+        iChallenges[iCount-1] := iCount;
+      iChoices := iChalCount;
+    end;
+    CTYPE_DANGEL : begin
+      FTitleChal := 'Choose your Primary Challenge';
+      for iCount := 1 to iChalCount do
+        if LuaSystem.Defined([ 'chal', iCount, 'secondary' ]) then
+        begin
+          iChallenges[iChoices] := iCount;
+          Inc( iChoices );
+        end;
+    end;
+    CTYPE_AANGEL : begin
+      FTitleChal := 'Choose your Arch-Challenge';
+      FResult.ArchAngel := True;
+      iPrefix := 'arch_';
+      for iCount := 1 to iChalCount do
+        if LuaSystem.Defined([ 'chal', iCount, 'arch_name' ]) then
+        begin
+          iChallenges[iChoices] := iCount;
+          Inc( iChoices );
+        end;
+    end;
+//        CTYPE_CUSTOM = 4;
+    CTYPE_SECOND : begin
+      FTitleChal := 'Choose your Secondary Challenge';
+      with LuaSystem.GetTable([ 'chal', FResult.Challenge, 'secondary' ]) do
+      try
+        for iValue in Values do
+        begin
+          iChallenges[iChoices] := LuaSystem.Get( ['chal','challenge_'+LowerCase(iValue.ToString),'nid'] );
+          Inc( iChoices );
+        end;
+      finally
+        Free;
+      end;
+    end;
+  end;
+  SetLength( iChallenges, iChoices );
+
+  for iCount := 0 to High( iChallenges ) do
+    with LuaSystem.GetTable([ 'chal', iChallenges[iCount] ]) do
+    try
+      iEntry.Name  := GetString(iPrefix+'name');
+      iEntry.Desc  := GetString(iPrefix+'description');
+      iEntry.Extra := GetString(iPrefix+'rating');
+      if iEntry.Extra = '' then iEntry.Extra := 'UNRATED';
+      iEntry.ID    := GetString('id');
+      iEntry.NID   := iChallenges[iCount];
+      iEntry.Allow := (HOF.SkillRank >= GetInteger(iPrefix+'rank',0)) or (GodMode) or (Setting_UnlockAll);
+      FArrayChal.Push( iEntry );
+    finally
+      Free;
+    end;
 end;
 
 destructor TMainMenuView.Destroy;
@@ -570,6 +764,7 @@ begin
   FreeAndNil( FArrayCType );
   FreeAndNil( FArrayDiff );
   FreeAndNil( FArrayKlass );
+  FreeAndNil( FArrayChal );
   ResetSoundCallback;
   inherited Destroy;
 end;
