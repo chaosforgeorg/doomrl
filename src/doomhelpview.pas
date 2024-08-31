@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomhelpview;
 interface
-uses vutil, doomio;
+uses vutil, doomio, dfdata;
 
 type THelpView = class( TInterfaceLayer )
   constructor Create;

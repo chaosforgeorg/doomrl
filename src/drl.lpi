@@ -52,7 +52,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="39">
+    <Units Count="40">
       <Unit0>
         <Filename Value="drl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -209,6 +209,10 @@
         <Filename Value="doommainmenuview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit38>
+      <Unit39>
+        <Filename Value="doomloadingview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit39>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

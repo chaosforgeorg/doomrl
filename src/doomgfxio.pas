@@ -15,7 +15,7 @@ type
     procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
     procedure Update( aMSec : DWord ); override;
     function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
-    procedure PushLayer(  aLayer : TInterfaceLayer ); override;
+    function PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer; override;
     function OnEvent( const event : TIOEvent ) : Boolean; override;
     procedure UpdateMinimap;
     destructor Destroy; override;
@@ -233,10 +233,10 @@ begin
     FFontMult
   );
   SpriteMap  := TDoomSpriteMap.Create;
-  FMCursor      := TDoomMouseCursor.Create;
   TSDLIODriver( FIODriver ).ShowMouse( False );
                                                     //RRGGBBAA
   inherited Create;
+  FMCursor      := TDoomMouseCursor.Create;
 
   FQuadSheet := TGLQuadList.Create;
   FTextSheet := TGLQuadList.Create;
@@ -548,7 +548,7 @@ begin
   Exit( inherited RunUILoop( aElement ) );
 end;
 
-procedure TDoomGFXIO.PushLayer(  aLayer : TInterfaceLayer );
+function TDoomGFXIO.PushLayer(  aLayer : TInterfaceLayer ) : TInterfaceLayer;
 begin
   if FMCursor <> nil then
   begin
@@ -556,7 +556,7 @@ begin
       FMCursor.SetTextureID( FTextures.TextureID['cursor'], 32 );
     FMCursor.Active := True;
   end;
-  inherited PushLayer( aLayer );
+  Result := inherited PushLayer( aLayer );
 end;
 
 procedure TDoomGFXIO.UpdateMinimap;

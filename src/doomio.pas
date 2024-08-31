@@ -4,7 +4,7 @@ interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vrlmsg, vuitypes, vluastate,
      viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
-     dfdata, doomspritemap, doomviews, doomaudio, doomkeybindings;
+     dfdata, doomspritemap, doomviews, doomaudio, doomkeybindings, doomloadingview;
 
 const TIG_EV_NONE      = 0;
       TIG_EV_DROP      = 1;
@@ -96,7 +96,7 @@ type TDoomIO = class( TIO )
 
   class procedure RegisterLuaAPI( State : TLuaState );
 
-  procedure PushLayer( aLayer : TInterfaceLayer ); virtual;
+  function PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer; virtual;
   function IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
   function IsModal : Boolean;
   procedure Tick( aDTick : Integer );
@@ -119,7 +119,7 @@ protected
   FAudio       : TDoomAudio;
   FMessages    : TRLMessages;
   FTime        : QWord;
-  FLoading     : TUILoadingScreen;
+  FLoading     : TLoadingView;
   FMTarget     : TCoord2D;
   FKeyCode     : TIOKeyCode;
   FASCII       : TASCIIImageMap;
@@ -150,20 +150,6 @@ uses math, video, dateutils, variants,
      vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
      dflevel, dfplayer, dfitem,
      doomconfiguration, doombase, doommoreview, doomlua;
-
-procedure TInterfaceLayer.Tick( aDTick : Integer );
-begin
-end;
-
-function TInterfaceLayer.IsModal : Boolean;
-begin
-  Exit( False );
-end;
-
-function TInterfaceLayer.HandleEvent( const aEvent : TIOEvent ) : Boolean;
-begin
-  Exit( IsModal );
-end;
 
 {
 procedure OutPutRestore;
@@ -381,10 +367,11 @@ begin
   FullUpdate;
 end;
 
-procedure TDoomIO.PushLayer( aLayer : TInterfaceLayer );
+function TDoomIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
 begin
   FConsole.HideCursor;
   FLayers.Push( aLayer );
+  Result := aLayer;
 end;
 
 function TDoomIO.IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
@@ -806,7 +793,7 @@ end;
 procedure TDoomIO.LoadStart( aAdd : DWord = 0 );
 begin
   if FLoading = nil then
-    FLoading := TUILoadingScreen.Create(FUIRoot,100);
+    FLoading := PushLayer( TLoadingView.Create( 100 ) ) as TLoadingView;
   FLoading.Max := FLoading.Max + aAdd;
 end;
 
@@ -818,13 +805,17 @@ end;
 
 procedure TDoomIO.LoadProgress ( aProgress : DWord ) ;
 begin
-  if Assigned( FLoading ) then FLoading.OnProgress( aProgress );
+  if Assigned( FLoading ) then FLoading.Current := aProgress;
   FullUpdate;
 end;
 
 procedure TDoomIO.LoadStop;
 begin
-  FreeAndNil( FLoading );
+  if Assigned( FLoading ) then
+  begin
+    FLoading.Finished := True;
+    FLoading := nil;
+  end;
 end;
 
 procedure TDoomIO.Update( aMSec : DWord );
