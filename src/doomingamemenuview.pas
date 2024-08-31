@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomingamemenuview;
 interface
-uses doomio, doomconfirmview;
+uses doomio, doomconfirmview, dfdata;
 
 type TInGameMenuView = class( TInterfaceLayer )
   constructor Create;

@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomsettingsview;
 interface
-uses viotypes, vioevent, vconfiguration, doomio;
+uses viotypes, vioevent, vconfiguration, doomio, dfdata;
 
 type TSettingsViewState = (
   SETTINGSVIEW_GENERAL,
@@ -47,7 +47,7 @@ end;
 implementation
 
 uses math, sysutils, vutil, vdebug, vtig, vtigio, vsound,
-     dfdata, doomconfiguration, doombase;
+     doomconfiguration, doombase;
 
 const CStates : array[ TSettingsViewState ] of record Title, ID : Ansistring; end = (
    ( Title : 'Settings'; ID : 'general' ),

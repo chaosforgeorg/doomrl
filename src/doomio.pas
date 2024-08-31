@@ -23,15 +23,6 @@ const TIG_EV_NONE      = 0;
       TIG_EV_QUICK_8   = 18;
       TIG_EV_QUICK_9   = 19;
 
-type TInterfaceLayer = class
-  procedure Update( aDTime : Integer ); virtual; abstract;
-  procedure Tick( aDTick : Integer ); virtual;
-  function IsFinished : Boolean; virtual; abstract;
-  function IsModal : Boolean; virtual;
-  function HandleEvent( const aEvent : TIOEvent ) : Boolean; virtual;
-end;
-
-
 type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
 

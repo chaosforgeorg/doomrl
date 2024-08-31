@@ -8,7 +8,7 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 unit dfdata;
 interface
 uses Classes, SysUtils, idea,
-     vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable,
+     vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable, vioevent,
      doomconfig, doomkeybindings;
 
 const ConfigurationPath : AnsiString = 'config.lua';
@@ -71,6 +71,13 @@ type TMenuResult = class
   procedure Reset;
 end;
 
+type TInterfaceLayer = class
+  procedure Update( aDTime : Integer ); virtual; abstract;
+  procedure Tick( aDTick : Integer ); virtual;
+  function IsFinished : Boolean; virtual; abstract;
+  function IsModal : Boolean; virtual;
+  function HandleEvent( const aEvent : TIOEvent ) : Boolean; virtual;
+end;
 
 type
   THOFRank = record
@@ -351,6 +358,20 @@ var TIGStyleColored   : TTIGStyle;
 
 implementation
 uses typinfo, strutils, math, vdebug;
+
+procedure TInterfaceLayer.Tick( aDTick : Integer );
+begin
+end;
+
+function TInterfaceLayer.IsModal : Boolean;
+begin
+  Exit( False );
+end;
+
+function TInterfaceLayer.HandleEvent( const aEvent : TIOEvent ) : Boolean;
+begin
+  Exit( IsModal );
+end;
 
 constructor TPagedReport.Create( aTitle : Ansistring; aStyled : Boolean );
 begin

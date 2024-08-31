@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomconfirmview;
 interface
-uses vutil, doomio;
+uses vutil, dfdata;
 
 type TOnConfirmObjectCallback = procedure of object;
      TOnConfirmRawCallback    = procedure;
@@ -29,7 +29,7 @@ end;
 
 implementation
 
-uses vtig, doombase;
+uses vtig, doombase, doomio;
  
 constructor TConfirmView.Create;
 begin
