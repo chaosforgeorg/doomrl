@@ -43,6 +43,7 @@ protected
   procedure ResetSoundCallback;
   procedure ReloadArrays;
   procedure ReloadChallenge( aType : Byte );
+  procedure RenderASCIILogo;
 protected
   FSize        : TIOPoint;
   FMode        : TMainMenuViewMode;
@@ -160,6 +161,10 @@ begin
   end;
   SetSoundCallback;
 
+  if not GraphicsVersion then
+    if FMode in [MAINMENU_INTRO,MAINMENU_MENU,MAINMENU_DIFFICULTY,MAINMENU_KLASS,MAINMENU_FAIR,MAINMENU_CTYPE,MAINMENU_NAME] then
+      RenderASCIILogo;
+
   case FMode of
     MAINMENU_FIRST      : UpdateFirst;
     MAINMENU_INTRO      : UpdateIntro;
@@ -204,20 +209,7 @@ begin
 end;
 
 procedure TMainMenuView.UpdateIntro;
-var iCount  : Integer;
-    iString : AnsiString;
 begin
-  if not GraphicsVersion then
-    if IO.Ascii.Exists('logo') then
-    begin
-      iCount := 0;
-      for iString in IO.Ascii['logo'] do
-      begin
-        VTIG_FreeLabel( iString, Point( 17, iCount ) );
-        Inc( iCount );
-      end;
-    end;
-
   VTIG_FreeLabel( '{rDRL version {R'+VERSION_STRING+'}}', Point( 28, 9 ) );
   VTIG_FreeLabel( '{rby {RKornel Kisielewicz}}', Point( 28, 10 ) );
   VTIG_FreeLabel( '{rgraphics by {RDerek Yu}}', Point( 28, 11 ) );
@@ -757,6 +749,23 @@ begin
     finally
       Free;
     end;
+end;
+
+procedure TMainMenuView.RenderASCIILogo;
+var iCount  : Integer;
+    iString : AnsiString;
+begin
+  if GraphicsVersion then Exit;
+
+  if IO.Ascii.Exists('logo') then
+  begin
+    iCount := 0;
+    for iString in IO.Ascii['logo'] do
+    begin
+      VTIG_FreeLabel( iString, Point( 17, iCount ) );
+      Inc( iCount );
+    end;
+  end;
 end;
 
 destructor TMainMenuView.Destroy;
