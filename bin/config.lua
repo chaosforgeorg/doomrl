@@ -9,8 +9,9 @@ dofile "colors.lua"
 dofile "music.lua" 
 dofile "sound.lua"
 
--- Graphics mode. Can be CONSOLE for raw console, or TILES for graphical 
--- tiles. Overriden by -graphics and -console command line parameters.
+-- Graphics mode. Can be CONSOLE for raw console, SDLCONSOLE for
+-- SDL-rendered pseudo-console, or TILES for graphical tiles.
+-- Overriden by -graphics, -console and -sdlconsole command line parameters.
 Graphics = "TILES"
 
 -- Sound engine, by default is FMOD on Windows, SDL on *nix. To use SDL on 
@@ -21,7 +22,7 @@ SoundEngine = "DEFAULT"
 
 -- Whether to allow high-ASCII signs. Set to false if you see weird signs 
 -- on the screen. Not setting it at all will use the default which
--- is true on Windows and false on OS X and Linux
+-- is true on Windows and false on OS X and Linux in raw console mode.
 -- AllowHighAscii   = true
 
 -- Specifies wether items in inventory and equipment should be colored

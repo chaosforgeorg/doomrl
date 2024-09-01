@@ -34,7 +34,8 @@ begin
   Option_SaveOnCrash      := Configure('SaveOnCrash',Option_SaveOnCrash);
   Option_SoundEngine      := Configure('SoundEngine',Option_SoundEngine);
 
-  Option_HighASCII        := Configure('AllowHighAscii',Option_HighASCII);
+  Option_HighASCII        := Configure(
+    'AllowHighAscii', Option_HighASCII or ForceSDLConsole or (Option_Graphics = 'SDLCONSOLE'));
   Option_AlwaysName       := Configure('AlwaysName',Option_AlwaysName);
   Option_Music            := Configure('GameMusic',Option_Music);
   Option_Sound            := Configure('GameSound',Option_Sound);
@@ -85,21 +86,17 @@ begin
     SoundVersion     := True;
 
   // synchro
-  if ForceConsole or ForceGraphics then
-  begin
-    if ForceConsole
-      then Option_Graphics := 'CONSOLE'
-      else Option_Graphics := 'TILES';
-    GraphicsVersion := not ForceConsole;
-  end
+  if ForceConsole then Option_Graphics := 'CONSOLE'
+  else if ForceSDLConsole then Option_Graphics := 'SDLCONSOLE'
+  else if ForceGraphics then Option_Graphics := 'TILES'
   else
   begin
-    if (Option_Graphics <> 'TILES') and (Option_Graphics <> 'CONSOLE') then
-      Option_Graphics := 'TILES';
-    if Option_Graphics = 'TILES'
-      then GraphicsVersion := True
-      else GraphicsVersion := False;
+    case Option_Graphics of
+      'TILES', 'CONSOLE', 'SDLCONSOLE': ;
+      else Option_Graphics := 'TILES';
+    end;
   end;
+  GraphicsVersion := Option_Graphics = 'TILES';
 
   TDoomIO.RegisterLuaAPI( State );
 end;

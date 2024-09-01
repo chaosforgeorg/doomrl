@@ -38,9 +38,8 @@ implementation
 
 uses sysutils,
      viotypes,
-     {$IFDEF WINDOWS}
      vtextio, vtextconsole,
-     {$ELSE}
+     {$IFNDEF WINDOWS}
      vcursesio, vcursesconsole,
      {$ENDIF}
      vioconsole, vtig, vtigstyle, vvision, vutil,
@@ -49,18 +48,19 @@ uses sysutils,
 
 constructor TDoomTextIO.Create;
 begin
-  {$IFDEF WINDOWS}
-  FIODriver := TTextIODriver.Create( 80, 25 );
-  {$ELSE}
-  FIODriver := TCursesIODriver.Create( 80, 25 );
-  {$ENDIF}
+  if {$IFDEF WINDOWS}True{$ELSE}Option_Graphics = 'SDLCONSOLE'{$ENDIF} then
+    FIODriver := TTextIODriver.Create( 80, 25, False, Option_Graphics = 'SDLCONSOLE' )
+  else
+    FIODriver := TCursesIODriver.Create( 80, 25 );
+
   if (FIODriver.GetSizeX < 80) or (FIODriver.GetSizeY < 25) then
     raise EIOException.Create('Too small console available, resize your console to 80x25!');
-  {$IFDEF WINDOWS}
-  FConsole  := TTextConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
-  {$ELSE}
-  FConsole  := TCursesConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
-  {$ENDIF}
+
+  if {$IFDEF WINDOWS}True{$ELSE}Option_Graphics = 'SDLCONSOLE'{$ENDIF} then
+    FConsole  := TTextConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] )
+  else
+    FConsole  := TCursesConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
+
   FTextMap       := TTextMap.Create( FConsole, Rectangle( 2,3,MAXX,MAXY ) );
   VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := DarkGray;
   VTIGDefaultStyle.Color[ VTIG_SELECTED_DISABLED_COLOR ]   := Black;

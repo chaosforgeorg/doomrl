@@ -96,6 +96,11 @@ try
         GraphicsVersion := False;
         ForceConsole := True;
       end;
+      if isSet('sdlconsole') then
+      begin
+        GraphicsVersion := False;
+        ForceSDLConsole := True;
+      end;
 
       if FileExists( SettingsPath )
         then Configuration.Read( SettingsPath )

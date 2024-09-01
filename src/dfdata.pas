@@ -65,6 +65,7 @@ const
   SoundVersion    : Boolean = True;
   ForceNoAudio    : Boolean = False;
   ForceConsole    : Boolean = False;
+  ForceSDLConsole : Boolean = False;
   ForceGraphics   : Boolean = False;
   VisionBaseValue : Byte = 8;
 
