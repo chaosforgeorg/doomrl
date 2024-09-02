@@ -487,6 +487,8 @@ core.register_blueprint "item"
 	OnFired       = { false, core.TFUNC },
 	OnFire        = { false, core.TFUNC },
 
+	OnModDescribe = { false, core.TFUNC },
+
 }
 
 core.register_blueprint "itemset"

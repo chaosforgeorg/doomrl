@@ -68,9 +68,9 @@ function item:can_overcharge( msg )
 	return true
 end
 
-function item:check_mod_array( nextmod, techbonus )
-	if self.flags[ IF_ASSEMBLED ] then return false end
-	if not self.flags[ IF_MODIFIED ] then return false end
+function item:find_mod_array( nextmod, techbonus )
+	if self.flags[ IF_ASSEMBLED ] then return nil end
+	if not self.flags[ IF_MODIFIED ] then return nil end
 
 	local function match( sig,mod_array_proto )
 		if sig ~= mod_array_proto.sig then return false end
@@ -99,21 +99,27 @@ function item:check_mod_array( nextmod, techbonus )
 		end
 	end
 
-	if not found_mod_array then
-		return false
-	end
+	return found_mod_array
+end
+
+function item:apply_mod_array( ma )
+	if not ma then return end
+	ma.OnApply(self)
+	self.flags[ IF_MODIFIED ] = false
+	self.flags[ IF_ASSEMBLED ] = true
+	self:clear_mods()
+	player:add_assembly( ma.id )
+	player:add_history("On level @1 he assembled a "..ma.name.."!")
+end
+
+function item:check_mod_array( nextmod, techbonus )
+	local found_mod_array = self:find_mod_array( nextmod, techbonus )
+	if not found_mod_array then return false end
 
 	-- Consider making this string shorter? (e.g. "Special assembly possible! Assemble the "..found_mod_array.name.."?")
 	if not ui.msg_confirm("Special assembly possible! Do you want to assemble the "..found_mod_array.name.."?") then return false end
 	ui.msg("You assemble the "..found_mod_array.name..".")
-	found_mod_array.OnApply(self)
-	self.color = LIGHTCYAN
-	self.flags[ IF_MODIFIED ] = false
-	self.flags[ IF_ASSEMBLED ] = true
-	self:clear_mods()
-	player:add_assembly( found_mod_array.id )
-	-- Maybe we should add something that handles the correct article
-	player:add_history("On level @1 he assembled a "..found_mod_array.name.."!")
+	self:apply_mod_array( found_mod_array )
 	return true
 end
 

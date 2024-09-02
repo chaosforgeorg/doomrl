@@ -954,10 +954,32 @@ function DoomRL.loaditems()
 		mod_letter = "P",
 
 		OnUseCheck = function(self,being)
-			local item, result = being:pick_mod_item('P',being.techbonus)
+			local item, result = being:pick_item_to_mod( self )
 			if not result then return false end
 			if item ~= nil then self:add_property("chosen_item", item) end
 			return true
+		end,
+
+		OnModDescribe = function( self, item )
+			local function dmgsmtr( bd,bs )
+				local bd = item.damage_dice + (bd or 0)
+				local bs = item.damage_sides + (bs or 0)
+				return "{!"..bd.."d"..bs.."}"
+			end			   
+			if item.itype == ITEMTYPE_MELEE then
+				return "damage "..dmgsmtr().." -> "..dmgsmtr(nil,1)
+			elseif item.itype == ITEMTYPE_RANGED then
+				if item.damage_sides >= item.damage_dice then
+					return "damage "..dmgsmtr().." -> "..dmgsmtr(nil,1)
+				else
+					return "damage "..dmgsmtr().." -> "..dmgsmtr(1)
+				end
+			elseif item.itype == ITEMTYPE_ARMOR then
+				return "armor value {!"..item.armor.."} -> {!"..(item.armor+2).."}"
+			elseif item.itype == ITEMTYPE_BOOTS then
+				return "armor value {!"..item.armor.."} -> {!"..(item.armor*2).."}"
+			end
+			return "unknown"
 		end,
 
 		OnUse = function(self,being)
@@ -997,10 +1019,25 @@ function DoomRL.loaditems()
 		mod_letter = "T",
 
 		OnUseCheck = function(self,being)
-			local item, result = being:pick_mod_item('T',being.techbonus)
+			local item, result = being:pick_item_to_mod( self )
 			if not result then return false end
 			if item ~= nil then self:add_property("chosen_item", item) end
 			return true
+		end,
+
+		OnModDescribe = function( self, item )
+			if (item.itype == ITEMTYPE_RANGED) or (item.itype == ITEMTYPE_MELEE) then
+				return "use/fire time {!"..(item.usetime/10).."s} -> {!"..(math.floor(item.usetime * 0.85 + 0.49)/10).."s}"
+			elseif item.itype == ITEMTYPE_ARMOR or item.itype == ITEMTYPE_BOOTS then
+				return 
+					"bullet resistance   {!"..(item.resist.bullet or 0).."%} -> {!"..((item.resist.bullet or 0)+ 20).."%}\n"..
+					"         melee resistance    {!"..(item.resist.melee or 0).."%} -> {!"..((item.resist.melee or 0)+ 20).."%}\n"..
+					"         shrapnel resistance {!"..(item.resist.shrapnel or 0).."%} -> {!"..((item.resist.shrapnel or 0)+ 20).."%}\n"..
+					"         acid resistance     {!"..(item.resist.acid or 0).."%} -> {!"..((item.resist.acid or 0)+ 10).."%}\n"..
+					"         fire resistance     {!"..(item.resist.fire or 0).."%} -> {!"..((item.resist.fire or 0)+ 10).."%}\n"..
+					"         plasma resistance   {!"..(item.resist.plasma or 0).."%} -> {!"..((item.resist.plasma or 0)+ 10).."%}"
+			end
+			return "unknown"
 		end,
 
 		OnUse = function(self,being)
@@ -1037,10 +1074,32 @@ function DoomRL.loaditems()
 		mod_letter = "A",
 
 		OnUseCheck = function(self,being)
-			local item, result = being:pick_mod_item('A',being.techbonus)
+			local item, result = being:pick_item_to_mod( self )
 			if not result then return false end
 			if item ~= nil then self:add_property("chosen_item", item) end
 			return true
+		end,
+
+		OnModDescribe = function( self, item )
+			local function accstr( bd )
+				local bd = item.acc + (bd or 0)
+				if bd < 0 then return "{!"..bd.."}" end
+				return "{!+"..bd.."}"
+			end
+			local function movstr( bd )
+				local bd = item.movemod + (bd or 0)
+				if bd < 0 then return "{!"..bd.."%}" end
+				return "{!+"..bd.."%}"
+			end
+
+			if item.itype == ITEMTYPE_MELEE or item.itype == ITEMTYPE_RANGED then
+				return "accuracy "..accstr().." -> "..accstr(1)
+			elseif item.itype == ITEMTYPE_ARMOR then
+				return "move speed "..movstr().." -> "..movstr(15)
+			elseif item.itype == ITEMTYPE_BOOTS then
+				return "move speed "..movstr().." -> "..movstr(10)
+			end
+			return "unknown"
 		end,
 
 		OnUse = function(self,being)
@@ -1078,10 +1137,35 @@ function DoomRL.loaditems()
 		mod_letter = "B",
 
 		OnUseCheck = function(self,being)
-			local item, result = being:pick_mod_item('B',being.techbonus)
+			local item, result = being:pick_item_to_mod( self )
 			if not result then return false end
 			if item ~= nil then self:add_property("chosen_item", item) end
 			return true
+		end,
+
+		OnModDescribe = function( self, item )
+			local function dmgsmtr( bd,bs )
+				local bd = item.damage_dice + (bd or 0)
+				local bs = item.damage_sides + (bs or 0)
+				return "{!"..bd.."d"..bs.."}"
+			end	
+			local function movstr( bd )
+				local bd = item.movemod + (bd or 0)
+				if bd < 0 then return "{!"..bd.."%}" end
+				return "{!+"..bd.."%}"
+			end
+
+			if item.itype == ITEMTYPE_MELEE then
+				return "damage "..dmgsmtr().." -> "..dmgsmtr(1)
+			elseif item.itype == ITEMTYPE_RANGED and item.ammomax < 3 then
+				return "reload time {!"..(item.reloadtime/10).."s} -> {!"..(math.floor(item.reloadtime * 0.75 + 0.5)/10).."s}"
+			elseif item.itype == ITEMTYPE_RANGED then
+				return "magazine {!"..item.ammomax.."} -> {!"..math.floor(item.ammomax * 1.3 + 0.5).."}"
+			elseif item.itype == ITEMTYPE_ARMOR or item.itype == ITEMTYPE_BOOTS then
+				return "durability {!"..item.maxdurability.."} -> {!"..(item.maxdurability + 100).."}\n"..
+				       "         move speed "..movstr().." -> "..movstr(10)
+			end
+			return "unknown"
 		end,
 
 		OnUse = function(self,being)
