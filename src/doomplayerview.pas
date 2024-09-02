@@ -393,7 +393,7 @@ begin
   if FEq = nil then ReadEq;
   VTIG_BeginWindow('Equipment', 'equipment', FSize );
     FRect := VTIG_GetWindowRect;
-    VTIG_BeginGroup( 9, True );
+    VTIG_BeginGroup( 10, True );
 
       VTIG_BeginGroup( 50 );
         for iEntry in FEq do
@@ -411,7 +411,7 @@ begin
 
     VTIG_EndGroup( True );
 
-    iY := 9;
+    iY := 10;
     iB := 0;
     iA := 0;
     VTIG_FreeLabel( 'Basic traits',    Point(0, iY) );
