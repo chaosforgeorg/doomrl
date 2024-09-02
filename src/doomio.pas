@@ -149,7 +149,7 @@ uses math, video, dateutils, variants,
      vsound, vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
      dflevel, dfplayer, dfitem,
-     doomconfiguration, doombase, doommoreview, doomlua;
+     doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua;
 
 {
 procedure OutPutRestore;
@@ -834,6 +834,9 @@ begin
     VTIG_GetIOState.MouseState.HandleEvent( iMEvent );
   end;
 
+  for iLayer in FLayers do
+    iLayer.Update( Integer( aMSec ) );
+
   i := 0;
   while i < FLayers.Size do
     if FLayers[i].IsFinished then
@@ -847,8 +850,6 @@ begin
     else
       Inc( i );
 
-  for iLayer in FLayers do
-    iLayer.Update( Integer( aMSec ) );
   FTime += aMSec;
   FAudio.Update( aMSec );
   FUIRoot.OnUpdate( aMSec );
@@ -1363,13 +1364,56 @@ begin
   Result := 1;
 end;
 
-const lua_ui_lib : array[0..11] of luaL_Reg = (
+function lua_ui_choice(L: Plua_State): Integer; cdecl;
+var State     : TDoomLuaState;
+    iView     : TChoiceView;
+    i, iCount : Integer;
+    iEntry    : TChoiceViewChoice;
+begin
+  State.Init(L);
+  if State.StackSize < 1 then Exit(0);
+  if not State.IsTable( 1 ) then State.Error('Table expected as parameter 1!');
+
+  with TLuaTable.Create( L, 1 ) do
+    try
+      iView := TChoiceView.Create;
+      if IsString('title')      then iView.Title  := GetString( 'title' );
+      if IsString('header')     then iView.Header := GetString( 'header' );
+      if not IsNil('cancel')    then iView.Cancel := GetValue( 'cancel' );
+      if not IsTable('entries') then State.Error('Choice call without entries!');
+      iCount := GetTableSize('entries');
+      for i := 1 to iCount do
+        with GetTable(['entries',i]) do
+        try
+          iEntry.Name    := GetString( 'name', 'ERROR' );
+          iEntry.Desc    := GetString( 'desc', '' );
+          iEntry.Enabled := GetBoolean( 'enabled', True );
+          iEntry.Value   := i;
+          if not IsNil('value') then iEntry.Value := GetValue( 'value' );
+          iView.Add( iEntry );
+        finally
+          Free;
+        end;
+    finally
+      Free;
+    end;
+  IO.PushLayer( iView );
+  repeat
+    IO.FullUpdate;
+    IO.HandleEvents;
+  until not IO.IsTopLayer( iView );
+  State.PushVariant(TChoiceView.Result);
+  Result := 1;
+end;
+
+const lua_ui_lib : array[0..12] of luaL_Reg = (
       ( name : 'msg';           func : @lua_ui_msg ),
       ( name : 'msg_clear';     func : @lua_ui_msg_clear ),
       ( name : 'msg_enter';     func : @lua_ui_msg_enter ),
       ( name : 'msg_choice';    func : @lua_ui_msg_choice ),
       ( name : 'msg_confirm';   func : @lua_ui_msg_confirm ),
       ( name : 'msg_history';   func : @lua_ui_msg_history ),
+      ( name : 'choice';        func : @lua_ui_choice ),
       ( name : 'blood_slide';   func : @lua_ui_blood_slide),
       ( name : 'blink';         func : @lua_ui_blink),
       ( name : 'plot_screen';   func : @lua_ui_plot_screen),
