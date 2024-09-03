@@ -145,15 +145,6 @@ function being:msg( msg_player, msg_being )
 	end
 end
 
-function being:select_slot_by_letter( letter )
-	local result = nil
-	if letter == "a" then result = self.eq.armor end
-	if letter == "b" then result = self.eq.boots end
-	if letter == "w" then result = self.eq.weapon end
-	if letter == "p" then result = self.eq.prepared end
-	return result
-end
-
 function being:phase( cell )
 	local target = generator.random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
 	if cell then
@@ -220,25 +211,6 @@ function being:nuke( time )
 	if not cells[ level.map[ self.position ] ].flags[ CF_CRITICAL ] then
 		level.map[ self.position ] = 'nukecell'
 	end
-end
-
-function being:pick_mod_item( modletter, techbonus )
-	if not self:is_player() then return nil end
-	local slot = ui.msg_choice( "Modify @<w@>eapon, @<a@>rmor or @<b@>oots? (Escape to cancel)", "wab\001" )
-	if slot == "\001" then return nil, false end
-	local item = self:select_slot_by_letter( slot )
-	if not item then
-		ui.msg( "Nothing to modify!" )
-		return nil, false
-	end
-	if item:check_mod_array( modletter, techbonus ) then
-		return nil, true
-	end
-	if not item:can_mod( modletter ) then
-		ui.msg( "This item can't be modified anymore with this mod!" )
-		return nil, false
-	end
-	return item, true
 end
 
 function being:pick_item_to_mod( mod, filter )

@@ -69,7 +69,6 @@ type TDoomIO = class( TIO )
   procedure MsgEnter( const aText : AnsiString );
   procedure MsgEnter( const aText : AnsiString; const aParams : array of const );
   function  MsgConfirm( const aText : AnsiString; aStrong : Boolean = False ) : Boolean;
-  function  MsgChoice( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
   function  MsgCommandChoice( const aText : AnsiString; const aChoices : TInputKeySet ) : TInputKey;
   function  MsgGetRecent : TUIChunkBuffer;
   procedure MsgReset;
@@ -1196,19 +1195,6 @@ begin
   MsgUpDate;
 end;
 
-function TDoomIO.MsgChoice ( const aText : AnsiString; const aChoices : TKeySet ) : Byte;
-var ChoiceStr : string;
-    Count     : Byte;
-begin
-  ChoiceStr := '';
-  for Count := 0 to 255 do
-    if Count in aChoices then
-      if Count in [31..126] then ChoiceStr += Chr(Count);
-
-  Msg(aText + ' ['+ChoiceStr+']');
-  MsgChoice := WaitForKey( aChoices );
-end;
-
 function TDoomIO.MsgCommandChoice ( const aText : AnsiString; const aChoices : TInputKeySet ) : TInputKey;
 begin
   Msg(aText);
@@ -1314,26 +1300,6 @@ begin
   Result := 1;
 end;
 
-function lua_ui_msg_choice(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Choices : TKeySet;
-    ChStr   : AnsiString;
-    Choice  : Byte;
-begin
-  State.Init(L);
-  if State.StackSize < 2 then Exit(0);
-  ChStr := State.ToString(2);
-  if Length(ChStr) < 2 then Exit(0);
-
-  Choices := [];
-  for Choice := 1 to Length(ChStr) do
-    Include(Choices,Ord(ChStr[Choice]));
-
-  ChStr := Chr( IO.MsgChoice( State.ToString(1), Choices ) );
-  State.Push(ChStr);
-  Result := 1;
-end;
-
 function lua_ui_msg_history(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
     Idx   : Integer;
@@ -1406,11 +1372,10 @@ begin
   Result := 1;
 end;
 
-const lua_ui_lib : array[0..12] of luaL_Reg = (
+const lua_ui_lib : array[0..11] of luaL_Reg = (
       ( name : 'msg';           func : @lua_ui_msg ),
       ( name : 'msg_clear';     func : @lua_ui_msg_clear ),
       ( name : 'msg_enter';     func : @lua_ui_msg_enter ),
-      ( name : 'msg_choice';    func : @lua_ui_msg_choice ),
       ( name : 'msg_confirm';   func : @lua_ui_msg_confirm ),
       ( name : 'msg_history';   func : @lua_ui_msg_history ),
       ( name : 'choice';        func : @lua_ui_choice ),

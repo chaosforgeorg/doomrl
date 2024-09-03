@@ -112,15 +112,4 @@ function item:apply_mod_array( ma )
 	player:add_history("On level @1 he assembled a "..ma.name.."!")
 end
 
-function item:check_mod_array( nextmod, techbonus )
-	local found_mod_array = self:find_mod_array( nextmod, techbonus )
-	if not found_mod_array then return false end
-
-	-- Consider making this string shorter? (e.g. "Special assembly possible! Assemble the "..found_mod_array.name.."?")
-	if not ui.msg_confirm("Special assembly possible! Do you want to assemble the "..found_mod_array.name.."?") then return false end
-	ui.msg("You assemble the "..found_mod_array.name..".")
-	self:apply_mod_array( found_mod_array )
-	return true
-end
-
 setmetatable(item,getmetatable(thing))
