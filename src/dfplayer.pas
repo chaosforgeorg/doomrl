@@ -106,6 +106,7 @@ TPlayer = class(TBeing)
   function RunPath( const aCoord : TCoord2D ) : Boolean;
   procedure ExamineNPC;
   procedure ExamineItem;
+  procedure UpdateTargeting( aTargetPos : TCoord2D );
   private
   function OnTraitConfirm( aSender : TUIElement ) : Boolean;
   private
@@ -707,6 +708,19 @@ begin
         IO.Msg('You see '+ GetName(false) + ' ' + BlindCoord(iWhere-Self.FPosition)+'.');
       end;
   if iCount = 0 then IO.Msg('There are no items in sight.');
+end;
+
+procedure TPlayer.UpdateTargeting( aTargetPos : TCoord2D );
+begin
+  if FLastTargetPos.X*FLastTargetPos.Y <> 0
+    then FPrevTargetPos := FLastTargetPos
+    else FPrevTargetPos := aTargetPos;
+
+  FLastTargetUID := 0;
+  if TLevel(Parent).Being[ aTargetPos ] <> nil then
+    FLastTargetUID := TLevel(Parent).Being[ aTargetPos ].UID;
+  FLastTargetPos := aTargetPos;
+  FTargetPos := aTargetPos;
 end;
 
 // pieczarki oliwki szynka kielbasa peperoni motzarella //

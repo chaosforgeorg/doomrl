@@ -454,7 +454,7 @@ var iDir        : TDirection;
     iLimitRange : Boolean;
     iRange      : Byte;
     iTargets    : TAutoTarget;
-
+    iCommand    : Byte;
 begin
   iLimitRange := False;
   iFireTitle  := '';
@@ -501,7 +501,7 @@ begin
       begin
         iRange      := Missiles[ iItem.Missile ].Range;
         iLimitRange := MF_EXACT in Missiles[ iItem.Missile ].Flags;
-        iFireTitle  := 'Throw -- Choose target...';
+        iFireTitle  := 'Choose throw target:';
       end
       else
         iTarget  := IO.MTarget;
@@ -530,18 +530,18 @@ begin
     begin
       iAltFire    := ALT_NONE;
       if aAlt then iAltFire := iItem.AltFire;
-      iFireTitle := 'Fire -- Choose target...';
+      iFireTitle := 'Choose fire target:';
       case iAltFire of
-        ALT_SCRIPT  : iFireTitle := 'Fire (@Y'+LuaSystem.Get([ 'items', iItem.ID, 'altname' ],'')+'@>) -- Choose target...';
-        ALT_AIMED   : iFireTitle := 'Fire (@Yaimed@>) -- Choose target...';
-        ALT_SINGLE  : iFireTitle := 'Fire (@Ysingle@>) -- Choose target...';
+        ALT_SCRIPT  : iFireTitle := 'Fire target ({L'+LuaSystem.Get([ 'items', iItem.ID, 'altname' ],'')+'}):';
+        ALT_AIMED   : iFireTitle := 'Fire target ({Laimed}):';
+        ALT_SINGLE  : iFireTitle := 'Fire target ({Lsingle}):';
       end;
       if iAltFire = ALT_CHAIN then
       begin
         case iChainFire of
-          0 : iFireTitle := 'Chain fire (@Ginitial@>) -- Choose target or abort...';
-          1 : iFireTitle := 'Chain fire (@Ywarming@>) -- Choose target or abort...';
-          2 : iFireTitle := 'Chain fire (@Rfull@>) -- Choose target or abort...';
+          0 : iFireTitle := 'Chain fire ({Ginitial}):';
+          1 : iFireTitle := 'Chain fire ({Ywarming}):';
+          2 : iFireTitle := 'Chain fire ({Rfull}):';
         end;
       end
     end
@@ -555,36 +555,18 @@ begin
     end;
   end;
 
+  iCommand := COMMAND_FIRE;
+  if aAlt then iCommand := COMMAND_ALTFIRE;
+
   if iFireTitle <> '' then
   begin
     if iRange = 0 then iRange := Player.Vision;
     iTargets := Player.CreateAutoTarget( iRange, True );
-
-    Player.TargetPos := IO.ChooseTarget(iFireTitle, iRange+1, iLimitRange, iTargets, iChainFire > 0 );
-    if Player.FLastTargetPos.X*Player.FLastTargetPos.Y <> 0
-       then Player.PrevTargetPos := Player.FLastTargetPos
-       else Player.PrevTargetPos := Player.TargetPos;
-    FreeAndNil(iTargets);
-    if Player.TargetPos.X = 0 then
-      Exit( Player.Fail( 'Targeting canceled.', [] ) );
-
-    if Player.TargetPos = Player.Position then
-    begin
-      IO.Msg( 'Find a more constructive way to commit suicide.' );
-      Exit( False );
-    end;
-
-    Player.FLastTargetUID := 0;
-    if Doom.Level.Being[ Player.TargetPos ] <> nil then
-      Player.FLastTargetUID := Doom.Level.Being[ Player.TargetPos ].UID;
-    Player.FLastTargetPos := Player.TargetPos;
-    Player.ChainFire := iChainFire;
-    iTarget := Player.TargetPos;
+    IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, iTargets, iChainFire ) );
+    Exit( False );
   end;
 
-  if aAlt
-    then Exit( HandleCommand( TCommand.Create( COMMAND_ALTFIRE, iTarget, iItem ) ) )
-    else Exit( HandleCommand( TCommand.Create( COMMAND_FIRE, iTarget, iItem ) ) );
+  Exit( HandleCommand( TCommand.Create( iCommand, iTarget, iItem ) ) )
 end;
 
 
@@ -955,21 +937,21 @@ repeat
 
     while ( State = DSPlaying ) do
     begin
-      if Player.ChainFire > 0 then
-      begin
-        Action( INPUT_ALTFIRE );
-        Continue;
-      end;
-
-      if ( Player.FRun.Active ) then
-      begin
-        iInput := Player.GetRunInput;
-        if iInput <> INPUT_NONE then
-          Action( iInput );
-        Continue;
-      end;
-
       repeat
+        if Player.ChainFire > 0 then
+        begin
+          Action( INPUT_ALTFIRE );
+          Continue;
+        end;
+
+        if ( Player.FRun.Active ) then
+        begin
+          iInput := Player.GetRunInput;
+          if iInput <> INPUT_NONE then
+            Action( iInput );
+          Continue;
+        end;
+
         while ( not IO.Driver.EventPending ) and ( State = DSPlaying ) do
         begin
           IO.FullUpdate;

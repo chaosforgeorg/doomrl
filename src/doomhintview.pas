@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomhintview;
 interface
-uses vutil, vcolor, vrltools, dfdata, doomkeybindings;
+uses vutil, vcolor, vrltools, dfdata, dfitem, doomkeybindings;
 
 type TLookModeView = class( TInterfaceLayer )
   constructor Create;
@@ -17,9 +17,35 @@ protected
   FTarget   : TCoord2D;
 end;
 
+type TTargetModeView = class( TInterfaceLayer )
+  constructor Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );
+  procedure Update( aDTime : Integer ); override;
+  function IsFinished : Boolean; override;
+  function IsModal : Boolean; override;
+  function HandleInput( aInput : TInputKey ) : Boolean; override;
+protected
+  procedure Finalize;
+  procedure UpdateTarget;
+protected
+  FFirst      : Boolean;
+  FFinished   : Boolean;
+  FLimitRange : Boolean;
+  FTarget     : TCoord2D;
+  FPosition   : TCoord2D;
+  FColor      : Byte;
+  FRange      : Byte;
+  FChainFire  : Byte;
+  FActionName : AnsiString;
+  FNameLen    : Byte;
+  FTargets    : TAutoTarget;
+  FItem       : TItem;
+  FCommand    : Byte;
+end;
+
+
 implementation
 
-uses vtig, dfplayer, dflevel, doombase, doomio, doomspritemap;
+uses sysutils, vtig, vvision, dfplayer, dflevel, doombase, doomio, doomcommand, doomspritemap;
 
 constructor TLookModeView.Create;
 begin
@@ -86,6 +112,150 @@ begin
   IO.Focus( FTarget );
   IO.LookDescription( FTarget );
   if SpriteMap <> nil then SpriteMap.SetTarget( FTarget, NewColor( White ), False );
+end;
+
+constructor TTargetModeView.Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString;
+  aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );
+begin
+  FFirst        := True;
+  FTargets      := aTargets;
+  FTarget       := aTargets.Current;
+  FActionName   := aActionName;
+  FNameLen      := VTIG_Length( aActionName );
+  FLimitRange   := aLimitRange;
+  FRange        := aRange;
+  FPosition     := Player.Position;
+  FColor        := Green;
+  FItem         := aItem;
+  FCommand      := aCommand;
+  FChainFire    := aChainFire;
+  IO.TargetLast := FChainFire > 0;
+  IO.Targeting  := True;
+end;
+
+procedure TTargetModeView.Update( aDTime : Integer );
+begin
+  if FFirst then UpdateTarget;
+  VTIG_FreeLabel( FActionName, Point( 0, 2 ), Yellow )
+end;
+
+function TTargetModeView.IsFinished : Boolean;
+begin
+  Exit( FFinished );
+end;
+
+function TTargetModeView.IsModal : Boolean;
+begin
+  Exit( True );
+end;
+
+function TTargetModeView.HandleInput( aInput : TInputKey ) : Boolean;
+var iDir        : TDirection;
+    iDist       : Byte;
+    iTargetLine : TVisionRay;
+begin
+  if aInput in [ INPUT_ESCAPE, INPUT_MRIGHT, INPUT_QUIT, INPUT_HARDQUIT ] then
+  begin
+    Finalize;
+    Exit( True );
+  end;
+
+  if (aInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
+  if aInput = INPUT_TACTIC then
+  begin
+    FTarget := FTargets.Next;
+    UpdateTarget;
+  end;
+
+  if aInput in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then
+  begin
+    FTarget := IO.MTarget;
+    iDist   := Distance( FTarget, FPosition );
+    if FLimitRange and ( iDist > FRange - 1 ) then
+    begin
+      iDist := 0;
+      iTargetLine.Init( Doom.Level, FPosition, FTarget);
+      while iDist < (FRange - 1) do
+      begin
+        iTargetLine.Next;
+        iDist := Distance( iTargetLine.GetSource, iTargetLine.GetC );
+      end;
+      if Distance(iTargetLine.GetSource, iTargetLine.GetC ) > FRange-1
+        then FTarget := iTargetLine.prev
+        else FTarget := iTargetLine.GetC;
+    end;
+    UpdateTarget;
+  end;
+  if aInput in INPUT_MOVE then
+  begin
+    iDir := InputDirection( aInput );
+    if Doom.Level.isProperCoord( FTarget + iDir )
+      and ((not FLimitRange) or (Distance((FTarget + iDir), FPosition) <= FRange-1)) then
+    begin
+      FTarget += iDir;
+      UpdateTarget;
+    end;
+  end;
+
+  if aInput = INPUT_MORE then
+  begin
+    with Doom.Level do
+     if Being[FTarget] <> nil then
+       IO.FullLook( Being[FTarget].ID );
+    UpdateTarget;
+  end;
+
+  if aInput in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT ] then
+  begin
+    Finalize;
+    if FTarget = FPosition then
+      IO.Msg( 'Find a more constructive way to commit suicide.' )
+    else
+    begin
+      Player.UpdateTargeting( FTarget );
+      Player.ChainFire := FChainFire;
+      Doom.HandleCommand( TCommand.Create( FCommand, FTarget, FItem ) );
+    end;
+    Exit( True );
+  end;
+
+  Exit( True );
+end;
+
+procedure TTargetModeView.Finalize;
+begin
+  FreeAndNil( FTargets );
+  IO.MsgUpDate;
+  IO.Console.HideCursor;
+  IO.Targeting := False;
+  if SpriteMap <> nil then SpriteMap.ClearTarget;
+  IO.TargetEnabled := False;
+  FFinished := true;
+end;
+
+
+procedure TTargetModeView.UpdateTarget;
+var iBlock      : Boolean;
+    iTargetLine : TVisionRay;
+    iLevel      : TLevel;
+begin
+  iLevel := Doom.Level;
+  if FTarget <> FPosition then
+  begin
+    iTargetLine.Init(iLevel, FPosition, FTarget);
+    iBlock := false;
+    repeat
+      iTargetLine.Next;
+      if iLevel.cellFlagSet( iTargetLine.GetC, CF_BLOCKMOVE ) then iBlock := true;
+    until iTargetLine.Done;
+  end
+  else iBlock := False;
+  if iBlock then FColor := Red else FColor := Green;
+
+  FFirst := False;
+  IO.Focus( FTarget );
+  IO.LookDescription( FTarget );
+  IO.SetTarget( FTarget, FColor, FRange );
 end;
 
 end.
