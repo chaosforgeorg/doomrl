@@ -36,6 +36,7 @@ TDoom = class(TSystem)
        procedure SetupLuaConstants;
        function Action( aInput : TInputKey ) : Boolean;
        function HandleActionCommand( aInput : TInputKey ) : Boolean;
+       function HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
        function HandleMoveCommand( aInput : TInputKey ) : Boolean;
        function HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
        function HandleUnloadCommand( aItem : TItem ) : Boolean;
@@ -372,28 +373,30 @@ begin
   if iCount > 1 then
   begin
     if iID = ''
-      then iDir := IO.ChooseDirection('action')
-      else iDir := IO.ChooseDirection(Capitalized(iID)+' door');
-    if iDir.code = DIR_CENTER then Exit( False );
-    iTarget := Player.Position + iDir;
+      then IO.PushLayer( TActionDirView.Create( 'Action', iFlag ) )
+      else IO.PushLayer( TActionDirView.Create( Capitalized(iID)+' door', iFlag ) );
+    Exit( False );
   end;
 
-  if Level.isProperCoord( iTarget ) then
+  Exit( HandleActionCommand( iTarget, iFlag ) );
+end;
+
+function TDoom.HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
+begin
+  if Level.isProperCoord( aTarget ) then
   begin
-    if ( (iFlag <> 0) and Level.cellFlagSet( iTarget, iFlag ) ) or
-        ( (iFlag = 0) and ( Level.cellFlagSet( iTarget, CF_CLOSABLE ) or Level.cellFlagSet( iTarget, CF_OPENABLE ) ) ) then
+    if ( (aFlag <> 0) and Level.cellFlagSet( aTarget, aFlag ) ) or
+        ( (aFlag = 0) and ( Level.cellFlagSet( aTarget, CF_CLOSABLE ) or Level.cellFlagSet( aTarget, CF_OPENABLE ) ) ) then
     begin
-      if not Level.isEmpty( iTarget ,[EF_NOITEMS,EF_NOBEINGS] ) then
+      if not Level.isEmpty( aTarget ,[EF_NOITEMS,EF_NOBEINGS] ) then
       begin
         IO.Msg( 'There''s something in the way!' );
         Exit( False );
       end;
       // SUCCESS
-      Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
+      Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, aTarget ) ) );
     end;
-    if iID = ''
-      then IO.Msg( 'You can''t do that!' )
-      else IO.Msg( 'You can''t %s that.', [ iID ] );
+    IO.Msg( 'You can''t do that!' );
   end;
   Exit( False );
 end;
@@ -471,10 +474,8 @@ begin
   begin
     if (not aMouse) and iItem.isMelee then
     begin
-      iDir := IO.ChooseDirection('Melee attack');
-      if (iDir.code = DIR_CENTER) then Exit( False );
-      iTarget := Player.Position + iDir;
-      Exit( HandleCommand( TCommand.Create( COMMAND_MELEE, iTarget ) ) );
+      IO.PushLayer( TMeleeDirView.Create );
+      Exit( False );
     end;
 
     if (not iItem.isRanged) then

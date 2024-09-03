@@ -17,15 +17,37 @@ protected
   FTarget   : TCoord2D;
 end;
 
-
-type TRunModeView = class( TInterfaceLayer )
+type TDirectionQueryLayer = class( TInterfaceLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   function HandleInput( aInput : TInputKey ) : Boolean; override;
 protected
+  procedure Finalize( aDir : TDirection ); virtual; abstract;
+protected
+  FPrompt   : AnsiString;
   FFinished : Boolean;
+end;
+
+type TRunModeView = class( TDirectionQueryLayer )
+  constructor Create;
+protected
+  procedure Finalize( aDir : TDirection ); override;
+end;
+
+type TMeleeDirView = class( TDirectionQueryLayer )
+  constructor Create;
+protected
+  procedure Finalize( aDir : TDirection ); override;
+end;
+
+type TActionDirView = class( TDirectionQueryLayer )
+  constructor Create( aAction : Ansistring; aFlag : Byte );
+protected
+  procedure Finalize( aDir : TDirection ); override;
+protected
+  FFlag : Byte;
 end;
 
 type TTargetModeView = class( TInterfaceLayer )
@@ -124,26 +146,27 @@ begin
   if SpriteMap <> nil then SpriteMap.SetTarget( FTarget, NewColor( White ), False );
 end;
 
-constructor TRunModeView.Create;
+constructor TDirectionQueryLayer.Create;
 begin
+  FPrompt := '';
 end;
 
-procedure TRunModeView.Update( aDTime : Integer );
+procedure TDirectionQueryLayer.Update( aDTime : Integer );
 begin
-  VTIG_FreeLabel( 'Run mode, choose direction...', Point( 0, 2 ), Yellow )
+  VTIG_FreeLabel( FPrompt + ', choose direction...', Point( 0, 2 ), Yellow )
 end;
 
-function TRunModeView.IsFinished : Boolean;
+function TDirectionQueryLayer.IsFinished : Boolean;
 begin
   Exit( FFinished );
 end;
 
-function TRunModeView.IsModal : Boolean;
+function TDirectionQueryLayer.IsModal : Boolean;
 begin
   Exit( True );
 end;
 
-function TRunModeView.HandleInput( aInput : TInputKey ) : Boolean;
+function TDirectionQueryLayer.HandleInput( aInput : TInputKey ) : Boolean;
 begin
   if aInput in [ INPUT_ESCAPE, INPUT_MRIGHT, INPUT_QUIT, INPUT_HARDQUIT ] then
   begin
@@ -153,12 +176,47 @@ begin
   if aInput in INPUT_MOVE+[INPUT_WAIT] then
   begin
     FFinished := True;
-    Player.FRun.Start(InputDirection( aInput ));
+    Finalize( InputDirection( aInput ) );
     Exit( True );
   end;
   Exit( True );
 end;
 
+constructor TRunModeView.Create;
+begin
+  inherited Create;
+  FPrompt := 'Run mode';
+end;
+
+procedure TRunModeView.Finalize( aDir : TDirection );
+begin
+  Player.FRun.Start( aDir );
+end;
+
+constructor TMeleeDirView.Create;
+begin
+  inherited Create;
+  FPrompt := 'Melee attack';
+end;
+
+procedure TMeleeDirView.Finalize( aDir : TDirection );
+begin
+  if aDir.code <> DIR_CENTER then
+    Doom.HandleCommand( TCommand.Create( COMMAND_MELEE, Player.Position + aDir ) );
+end;
+
+constructor TActionDirView.Create( aAction : Ansistring; aFlag : Byte );
+begin
+  inherited Create;
+  FPrompt := aAction;
+  FFlag   := aFlag;
+end;
+
+procedure TActionDirView.Finalize( aDir : TDirection );
+begin
+  if aDir.code = DIR_CENTER then Exit;
+  Doom.HandleActionCommand( Player.Position + aDir, FFlag );
+end;
 
 constructor TTargetModeView.Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString;
   aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );
