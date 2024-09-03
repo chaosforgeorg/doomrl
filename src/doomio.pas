@@ -51,7 +51,6 @@ type TDoomIO = class( TIO )
   function EventToInput( const aEvent : TIOEvent ) : TInputKey;
   procedure WaitForEnter;
   function WaitForInput( const aSet : TInputKeySet ) : TInputKey;
-  function WaitForKey( const aSet : TKeySet ) : Byte;
   procedure WaitForKeyEvent( out aEvent : TIOEvent; aMouseClick : Boolean = False; aMouseMove : Boolean = False );
   function CommandEventPending : Boolean;
 
@@ -66,7 +65,6 @@ type TDoomIO = class( TIO )
   procedure Msg( const aText : AnsiString; const aParams : array of const );
   procedure MsgEnter( const aText : AnsiString );
   procedure MsgEnter( const aText : AnsiString; const aParams : array of const );
-  function  MsgConfirm( const aText : AnsiString; aStrong : Boolean = False ) : Boolean;
   function  MsgGetRecent : TUIChunkBuffer;
   procedure MsgReset;
   // TODO: Could this be removed as well?
@@ -929,20 +927,6 @@ begin
   Exit( iInput )
 end;
 
-function TDoomIO.WaitForKey ( const aSet : TKeySet ) : Byte;
-var iKey   : Byte;
-    iEvent : TIOEvent;
-begin
-  repeat
-    WaitForKeyEvent( iEvent );
-    if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then Exit( 1 );
-    iKey := Ord( iEvent.Key.ASCII );
-    if iEvent.Key.Code = vioevent.VKEY_ESCAPE then iKey := 1; // TODO: temp! remove!
-    if aSet = [] then Exit( iKey );
-  until iKey in aSet;
-  Exit( iKey );
-end;
-
 procedure TDoomIO.WaitForKeyEvent ( out aEvent : TIOEvent;
   aMouseClick : Boolean; aMouseMove : Boolean );
 var iEndLoop : TIOEventTypeSet;
@@ -1059,17 +1043,6 @@ begin
   MsgUpDate;
 end;
 
-function TDoomIO.MsgConfirm( const aText: AnsiString; aStrong : Boolean = False): Boolean;
-var Key : byte;
-begin
-  if aStrong then Msg(aText+' [Y/n]')
-             else Msg(aText+' [y/n]');
-  if aStrong then Key := IO.WaitForKey([Ord('Y'),Ord('N'),Ord('n')])
-             else Key := IO.WaitForKey([Ord('Y'),Ord('y'),Ord('N'),Ord('n')]);
-  MsgConfirm := Key in [Ord('Y'),Ord('y')];
-  MsgUpDate;
-end;
-
 function TDoomIO.MsgGetRecent : TUIChunkBuffer;
 begin
   Exit( FMessages.Content );
@@ -1158,15 +1131,6 @@ begin
   Result := 0;
 end;
 
-function lua_ui_msg_confirm(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  if State.StackSize = 0 then Exit(0);
-  State.Push( IO.MsgConfirm(State.ToString(1), State.ToBoolean(2) ) );
-  Result := 1;
-end;
-
 function lua_ui_msg_history(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
     Idx   : Integer;
@@ -1240,11 +1204,10 @@ begin
   Result := 1;
 end;
 
-const lua_ui_lib : array[0..11] of luaL_Reg = (
+const lua_ui_lib : array[0..10] of luaL_Reg = (
       ( name : 'msg';           func : @lua_ui_msg ),
       ( name : 'msg_clear';     func : @lua_ui_msg_clear ),
       ( name : 'msg_enter';     func : @lua_ui_msg_enter ),
-      ( name : 'msg_confirm';   func : @lua_ui_msg_confirm ),
       ( name : 'msg_history';   func : @lua_ui_msg_history ),
       ( name : 'choice';        func : @lua_ui_choice ),
       ( name : 'blood_slide';   func : @lua_ui_blood_slide),
