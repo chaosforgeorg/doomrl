@@ -141,8 +141,8 @@ implementation
 uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
      dfmap, dflevel,
-     doomhooks, doomio, doomspritemap, doomviews, doombase,
-     doomlua, doominventory, doomcommand, doomhelp, doomplayerview, doomhudviews;
+     doomhooks, doomio, doomspritemap, doombase,
+     doomlua, doominventory, doomplayerview;
 
 var MortemText    : Text;
     WritingMortem : Boolean = False;
