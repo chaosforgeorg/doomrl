@@ -927,7 +927,7 @@ function DoomRL.loaditems()
 				ui.msg('This thing is huge, better not block the stairs with it...');
 				return false
 			end
-			if not ui.msg_confirm('Are you sure you want activate the thermonuclear bomb?', true) then
+			if not ui.confirm('Are you sure you want activate the thermonuclear bomb?') then
 				ui.msg('Ufff... I knew you were a reasonable person.');
 				return false
 			end

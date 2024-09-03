@@ -57,7 +57,7 @@ function item:can_overcharge( msg )
 		ui.msg("You need a full magazine to overcharge the "..self.name.."!")
 		return false
 	end
-	if not ui.msg_confirm("Are you sure you want to overcharge the "..self.name.."? "..msg, true) then
+	if not ui.confirm("Are you sure you want to overcharge the "..self.name.."? "..msg) then
 		ui.msg("Chicken.")
 		return false
 	end

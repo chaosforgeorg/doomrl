@@ -27,10 +27,12 @@ protected
   FChoices  : TChoiceArray;
   FCancel   : Variant;
   FFirst    : Boolean;
+  FEscape   : Boolean;
 public
   property Title  : AnsiString read FTitle  write FTitle;
   property Header : AnsiString read FHeader write FHeader;
   property Cancel : Variant    read FCancel write FCancel;
+  property Escape : Boolean    read FEscape write FEscape;
 protected
   class var FResult : Variant;
 public
@@ -44,12 +46,14 @@ uses sysutils, vdebug, vtig, doombase, doomio;
 constructor TChoiceView.Create;
 begin
   VTIG_EventClear;
+  VTIG_Reset( 'choice_menu' );
   VTIG_ResetSelect( 'choice_menu' );
   FSize     := Point( 50, -1 );
   FFinished := False;
   FTitle    := '';
   FHeader   := '';
   FCancel   := 0;
+  FEscape   := True;
   FChoices  := TChoiceArray.Create;
 end;
 
@@ -83,7 +87,7 @@ begin
 
   IO.RenderUIBackground( iRect.TopLeft, iRect.BottomRight - PointUnit );
 
-  if VTIG_EventCancel then
+  if FEscape and VTIG_EventCancel then
   begin
     FFinished := True;
     FResult   := FCancel;

@@ -194,12 +194,9 @@ register_level "hells_arena"
 
 	OnEnter = function ()
 		level.status = 1
-		ui.msg_feel("A devilish voice announces:")
-		ui.msg_feel("\"Welcome to Hell's Arena, mortal!\"")
-		ui.msg_feel("\"You are either very foolish, or very brave. Either way I like it!\"")
-		ui.msg_feel("\"And so do the crowds!\"")
-		ui.msg_feel("Suddenly you hear screams everywhere! \"Blood! Blood! BLOOD!\"")
-		ui.msg_feel("The voice booms again, \"Kill all enemies and I shall reward thee!\"")
+		ui.continue("A devilish voice announces:\n{R\"Welcome to Hell's Arena, mortal! You are either very foolish, or very brave. Either way I like it!\"}")
+		ui.continue("{R\"And so do the crowds!\"}\nSuddenly you hear screams everywhere!\n{R\"Blood! Blood! BLOOD!\"}")
+		ui.continue("The voice booms again:\n{R\"Kill all enemies and I shall reward thee!\"}")
 
 		level:summon("demon",3)
 		level:summon("lostsoul",2)
@@ -218,40 +215,26 @@ register_level "hells_arena"
 
 	OnKillAll = function ()
 		if level.status == 1 then
-			ui.clear_feel()
-			ui.msg("The voice booms, \"Not bad mortal! For the weakling that you ")
-			ui.msg("are, you show some determination.\"");
-			ui.msg("You hear screams everywhere! \"More Blood! More BLOOD!\"")
-			ui.msg("The voice continues, \"I can now let you go free, or")
-			ui.msg("you may try to complete the challenge!\"");
-
-			local choice = ui.msg_confirm("\"Do you want to continue the fight?\"")
-
+			ui.continue("The voice booms:\n{R\"Not bad mortal! For the weakling that you are, you show some determination.\"}\nYou hear screams everywhere!\n{R\"More Blood! More BLOOD!\"}")
+			local choice = ui.query("The voice continues:\n{R\"I can now let you go free, or you may try to complete the challenge!\nDo you want to continue the fight?\"}" )
 			if choice then
-				ui.msg_feel("The voice booms, \"I like it! Let the show go on!\"")
-				ui.msg_feel("You hear screams everywhere! \"More Blood! More BLOOD!\"")
+				ui.msg("The voice booms, \"I like it! Let the show go on!\"")
+				ui.msg("You hear screams everywhere! \"More Blood! More BLOOD!\"")
 				level:drop("chaingun")
 				level:summon("demon",3)
 				level:summon("cacodemon",DIFFICULTY)
 				level.status = 2
 			else
-				ui.msg_feel("The voice booms, \"Coward!\" ")
-				ui.msg_feel("You hear screams everywhere! \"Coward! Coward! COWARD!\"")
+				ui.msg("The voice booms, \"Coward!\" ")
+				ui.msg("You hear screams everywhere! \"Coward! Coward! COWARD!\"")
 				level.flags[ LF_NORESPAWN ] = true
 			end
 			return
 		end
 
 		if level.status == 2 then
-			ui.clear_feel()
-			ui.msg("The voice booms, \"Impressive mortal! Your determination")
-			ui.msg("to survive makes me excited!\"")
-			ui.msg("You hear screams everywhere! \"More Blood! More BLOOD!\"")
-			ui.msg("\"I can let you go now, and give you a small reward, or")
-			ui.msg("you can choose to fight the final challenge!\"")
-
-			local choice = ui.msg_confirm("\"Do you want to continue the fight?\"")
-
+			ui.continue("The voice booms:\n{R\"Impressive mortal! Your determination to survive makes me excited!\"}\nYou hear screams everywhere!\n{R\"More Blood! More BLOOD!\"}")
+			local choice = ui.query("The voice continues:\n{R\"I can let you go now, and give you a small reward, or you can choose to fight the final challenge!\nDo you want to continue the fight?\"}")
 			if choice then
 				ui.msg_feel("The voice booms, \"Excellent! May the fight begin!!!\"")
 				ui.msg_feel("You hear screams everywhere! \"Kill, Kill, KILL!\"")
@@ -281,11 +264,7 @@ register_level "hells_arena"
 		end
 
 		if level.status == 3 then
-			ui.clear_feel()
-			ui.msg_feel("The voice booms, \"Congratulations mortal! A pity you came to")
-			ui.msg_feel("destroy us, for you would make a formidable Hell warrior!\"")
-			ui.msg_feel("\"I grant you the title of Hell's Arena Champion!\"")
-			ui.msg_feel("\"And a promise is a promise... search the arena again...\"")
+			ui.continue( "The voice booms:\n{R\"Congratulations mortal! A pity you came to destroy us, for you would make a formidable Hell warrior!\"}\nYou hear screams everywhere!\n{R\"Champion! Blood! Champion! More BLOOD!\"}\nThe voice continues:\n{R\"I grant you the title of Hell's Arena Champion!\nAnd a promise is a promise... Search the arena again!\"}")
 
 			for iid, amount in pairs(level.data.final_reward) do
 				if amount > 0 then

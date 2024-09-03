@@ -241,7 +241,7 @@ function DoomRL.loaduniqueitems()
 
 		OnAltReload = function(self,being)
 			if being:is_player() and being.hpmax > 10 then
-				if ui.msg_confirm("Do you want to use the dangerous Angel Arm??") then
+				if ui.confirm( "Do you want to use the dangerous Angel Arm?") then
 					ui.msg("You activate the Angel Arm! Your life is drained!")
 					player:add_history("He activated the Angel Arm on level @1!")
 					being.hpmax = math.max( being.hpmax - 5, 10 )

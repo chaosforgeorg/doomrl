@@ -97,8 +97,7 @@ register_level "house_of_pain"
 			elseif res == 2 then
 				level.status = 3
 			elseif res == 4 then
-				ui.msg("The voice wails: \"I'm impressed! Why don't you come back to ")
-				ui.msg("the first room and we'll see if I can't give you a just reward.")
+				ui.continue("The voice wails:\n{R\"I'm impressed! Why don't you come back to the first room and we'll see if I can't give you a just reward.\"}")
 				generator.transmute( { "iwall", "gwall" }, "rwall")
 				level.status = 5
 			end
@@ -144,10 +143,7 @@ register_level "house_of_pain"
 
 	OnEnter = function ()
 		level.status = 0
-		ui.msg("A deathly high-pitched voice cackles! \"Well, who do we have here?\"")
-		ui.msg(" it begins. \"It seems that you've stumbled into my luxurious home.")
-		local choice = ui.msg_confirm("Would you care to have access?")
-
+		local choice = ui.query("A deathly high-pitched voice cackles!\n{R\"Well, who do we have here?\"} it begins. {R\"It seems that you've stumbled into my luxurious home. Would you care to have access?\"}")
 		if choice then
 			ui.msg("Well then, enjoy yourself. Just be wary of my other guests!")
 			generator.transmute( "iwall", "floor", area.new(13,9,15,12) )
