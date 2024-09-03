@@ -17,6 +17,17 @@ protected
   FTarget   : TCoord2D;
 end;
 
+
+type TRunModeView = class( TInterfaceLayer )
+  constructor Create;
+  procedure Update( aDTime : Integer ); override;
+  function IsFinished : Boolean; override;
+  function IsModal : Boolean; override;
+  function HandleInput( aInput : TInputKey ) : Boolean; override;
+protected
+  FFinished : Boolean;
+end;
+
 type TTargetModeView = class( TInterfaceLayer )
   constructor Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );
   procedure Update( aDTime : Integer ); override;
@@ -41,7 +52,6 @@ protected
   FItem       : TItem;
   FCommand    : Byte;
 end;
-
 
 implementation
 
@@ -113,6 +123,42 @@ begin
   IO.LookDescription( FTarget );
   if SpriteMap <> nil then SpriteMap.SetTarget( FTarget, NewColor( White ), False );
 end;
+
+constructor TRunModeView.Create;
+begin
+end;
+
+procedure TRunModeView.Update( aDTime : Integer );
+begin
+  VTIG_FreeLabel( 'Run mode, choose direction...', Point( 0, 2 ), Yellow )
+end;
+
+function TRunModeView.IsFinished : Boolean;
+begin
+  Exit( FFinished );
+end;
+
+function TRunModeView.IsModal : Boolean;
+begin
+  Exit( True );
+end;
+
+function TRunModeView.HandleInput( aInput : TInputKey ) : Boolean;
+begin
+  if aInput in [ INPUT_ESCAPE, INPUT_MRIGHT, INPUT_QUIT, INPUT_HARDQUIT ] then
+  begin
+    FFinished := True;
+    Exit( True );
+  end;
+  if aInput in INPUT_MOVE+[INPUT_WAIT] then
+  begin
+    FFinished := True;
+    Player.FRun.Start(InputDirection( aInput ));
+    Exit( True );
+  end;
+  Exit( True );
+end;
+
 
 constructor TTargetModeView.Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString;
   aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );

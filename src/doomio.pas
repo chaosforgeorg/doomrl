@@ -59,10 +59,8 @@ type TDoomIO = class( TIO )
 
   procedure Focus( aCoord: TCoord2D );
 
-  function ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D; virtual;
   function ChooseDirection( aActionName : string ) : TDirection;
   procedure LookDescription( aWhere : TCoord2D );
-  procedure LookDescriptionOld( aWhere : TCoord2D );
 
   procedure Msg( const aText : AnsiString );
   procedure Msg( const aText : AnsiString; const aParams : array of const );
@@ -995,92 +993,6 @@ begin
   FConsole.MoveCursor(aCoord.x+1,aCoord.y+2);
 end;
 
-function TDoomIO.ChooseTarget( aActionName : string; aRange: byte;
-  aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D;
-var iInput : TInputKey;
-    iDir   : TDirection;
-    Position : TCoord2D;
-    iTarget : TCoord2D;
-    iTargetColor : Byte;
-    iTargetRange : Byte;
-    iTargetLine  : TVisionRay;
-    iLevel : TLevel;
-    iDist : Byte;
-    iBlock : Boolean;
-begin
-  iLevel      := Doom.Level;
-  Position    := Player.Position;
-  iTarget     := aTargets.Current;
-  iTargetRange:= aRange;
-  iTargetColor := Green;
-
-  FTargetLast    := aShowLast;
-
-  Msg( aActionName );
-  MsgUpDate;
-  Msg('You see : ');
-
-  LookDescriptionOld( iTarget );
-  FTargeting := True;
-  repeat
-    if iTarget <> Position then
-      begin
-        iTargetLine.Init(iLevel, Position, iTarget);
-        iBlock := false;
-        repeat
-          iTargetLine.Next;
-          if iLevel.cellFlagSet(iTargetLine.GetC, CF_BLOCKMOVE) then iBlock := true;
-        until iTargetLine.Done;
-      end
-    else iBlock := False;
-    if iBlock then iTargetColor := Red else iTargetColor := Green;
-
-    SetTarget( iTarget, iTargetColor, iTargetRange );
-    iInput := IO.WaitForInput(INPUT_MOVE+[INPUT_TOGGLEGRID, INPUT_ESCAPE,INPUT_MORE,INPUT_FIRE,INPUT_ALTFIRE,INPUT_TACTIC, INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
-    if (iInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if iInput in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then
-       begin
-         iTarget := IO.MTarget;
-         iDist := Distance(iTarget.x, iTarget.y, Position.x, Position.y);
-         if aLimitRange and (iDist > aRange - 1) then
-           begin
-             iDist := 0;
-             iTargetLine.Init(iLevel, Position, iTarget);
-             while iDist < (aRange - 1) do
-               begin
-                    iTargetLine.Next;
-                    iDist := Distance(iTargetLine.GetSource.x, iTargetLine.GetSource.y,  iTargetLine.GetC.x, iTargetLine.GetC.y);
-               end;
-             if Distance(iTargetLine.GetSource.x, iTargetLine.GetSource.y, iTargetLine.GetC.x, iTargetLine.GetC.y) > aRange-1
-             then iTarget := iTargetLine.prev
-             else iTarget := iTargetLine.GetC;
-           end;
-       end;
-    if iInput in [ INPUT_ESCAPE, INPUT_MRIGHT ] then begin iTarget.x := 0; Break; end;
-    if iInput = INPUT_TACTIC then iTarget := aTargets.Next;
-    if (iInput in INPUT_MOVE) then
-    begin
-      iDir := InputDirection( iInput );
-      if (iLevel.isProperCoord( iTarget + iDir ))
-        and ((not aLimitRange) or (Distance((iTarget + iDir).x, (iTarget + iDir).y, Position.x, Position.y) <= aRange-1)) then
-        iTarget += iDir;
-    end;
-    if (iInput = INPUT_MORE) then
-    begin
-      with iLevel do
-      if Being[ iTarget ] <> nil then
-         FullLook( Being[ iTarget ].ID );
-    end;
-    LookDescriptionOld( iTarget );
-  until iInput in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
-  MsgUpDate;
-  FConsole.HideCursor;
-  FTargeting := False;
-  ChooseTarget := iTarget;
-  if SpriteMap <> nil then SpriteMap.ClearTarget;
-  FTargetEnabled := False;
-end;
-
 function TDoomIO.ChooseDirection(aActionName : string): TDirection;
 var iInput : TInputKey;
     Position : TCoord2D;
@@ -1113,16 +1025,6 @@ begin
       iDone := True;
     end;
   until iDone;
-end;
-
-procedure TDoomIO.LookDescriptionOld(aWhere: TCoord2D);
-var LookDesc : string;
-begin
-  LookDesc := Doom.Level.GetLookDescription( aWhere );
-  if Option_BlindMode then LookDesc += ' | '+BlindCoord( aWhere - Player.Position );
-  if Doom.Level.isVisible(aWhere) and (Doom.Level.Being[aWhere] <> nil) then LookDesc += ' | [@<m@>]ore';
-  FMessages.Pop;
-  Msg('You see : '+LookDesc );
 end;
 
 procedure TDoomIO.LookDescription(aWhere: TCoord2D);

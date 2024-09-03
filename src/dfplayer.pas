@@ -145,7 +145,7 @@ uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
      dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doomviews, doombase,
-     doomlua, doominventory, doomcommand, doomhelp, doomplayerview;
+     doomlua, doominventory, doomcommand, doomhelp, doomplayerview, doomhintview;
 
 var MortemText    : Text;
     WritingMortem : Boolean = False;
@@ -407,9 +407,7 @@ begin
     Fail( 'Can''t run, there are enemies present.',[] );
     Exit;
   end;
-  iInput := IO.MsgCommandChoice('Run - direction...',INPUT_MOVE+[INPUT_ESCAPE,INPUT_WAIT]);
-  if iInput = INPUT_ESCAPE then Exit;
-  FRun.Start( InputDirection(iInput) );
+  IO.PushLayer( TRunModeView.create );
 end;
 
 procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem ) ;
