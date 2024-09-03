@@ -131,6 +131,11 @@ protected
   FTargeting   : Boolean;
   FHint        : AnsiString;
   FHintOverlay : AnsiString;
+
+  // Textmode only
+  FTargetLast     : Boolean;
+  FTargetEnabled  : Boolean;
+
 public
   property KeyCode     : TIOKeyCode     read FKeyCode    write FKeyCode;
   property Audio       : TDoomAudio     read FAudio;
@@ -365,6 +370,9 @@ begin
   FConsoleWindow := nil;
   FUIRoot.UpdateOnRender := False;
   FullUpdate;
+
+  FTargetEnabled := False;
+  FTargetLast    := False;
 end;
 
 function TDoomIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
@@ -1002,6 +1010,8 @@ begin
   iTargetRange:= aRange;
   iTargetColor := Green;
 
+  FTargetLast    := aShowLast;
+
   Msg( aActionName );
   MsgUpDate;
   Msg('You see : ');
@@ -1063,6 +1073,8 @@ begin
   FConsole.HideCursor;
   FTargeting := False;
   ChooseTarget := iTarget;
+  if SpriteMap <> nil then SpriteMap.ClearTarget;
+  FTargetEnabled := False;
 end;
 
 function TDoomIO.ChooseDirection(aActionName : string): TDirection;

@@ -19,7 +19,6 @@ type
     function OnEvent( const event : TIOEvent ) : Boolean; override;
     procedure UpdateMinimap;
     destructor Destroy; override;
-    function ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D; override;
 
     procedure WaitForAnimation; override;
     function AnimationsRunning : Boolean; override;
@@ -287,12 +286,6 @@ begin
   FreeAndNil( FTextures );
 
   inherited Destroy;
-end;
-
-function TDoomGFXIO.ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean ): TCoord2D;
-begin
-  ChooseTarget := inherited ChooseTarget( aActionName, aRange, aLimitRange, aTargets, aShowLast );
-  SpriteMap.ClearTarget;
 end;
 
 procedure TDoomGFXIO.WaitForAnimation;
