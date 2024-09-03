@@ -448,13 +448,17 @@ function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
 var iDir        : TDirection;
     iTarget     : TCoord2D;
     iItem       : TItem;
-    iFireDesc   : AnsiString;
+    iFireTitle  : AnsiString;
     iChainFire  : Byte;
     iAltFire    : TAltFire;
     iLimitRange : Boolean;
     iRange      : Byte;
+    iTargets    : TAutoTarget;
+
 begin
-  iChainFire := Player.ChainFire;
+  iLimitRange := False;
+  iFireTitle  := '';
+  iChainFire  := Player.ChainFire;
   Player.ChainFire := 0;
 
   iItem := Player.Inv.Slot[ efWeapon ];
@@ -497,12 +501,7 @@ begin
       begin
         iRange      := Missiles[ iItem.Missile ].Range;
         iLimitRange := MF_EXACT in Missiles[ iItem.Missile ].Flags;
-        if not Player.doChooseTarget( 'Throw -- Choose target...', iRange, iLimitRange ) then
-        begin
-          IO.Msg( 'Throwing canceled.' );
-          Exit( False );
-        end;
-        iTarget := Player.TargetPos;
+        iFireTitle  := 'Throw -- Choose target...';
       end
       else
         iTarget  := IO.MTarget;
@@ -531,39 +530,58 @@ begin
     begin
       iAltFire    := ALT_NONE;
       if aAlt then iAltFire := iItem.AltFire;
-      iFireDesc := '';
+      iFireTitle := 'Fire -- Choose target...';
       case iAltFire of
-        ALT_SCRIPT  : iFireDesc := LuaSystem.Get([ 'items', iItem.ID, 'altname' ],'');
-        ALT_AIMED   : iFireDesc := 'aimed';
-        ALT_SINGLE  : iFireDesc := 'single';
+        ALT_SCRIPT  : iFireTitle := 'Fire (@Y'+LuaSystem.Get([ 'items', iItem.ID, 'altname' ],'')+'@>) -- Choose target...';
+        ALT_AIMED   : iFireTitle := 'Fire (@Yaimed@>) -- Choose target...';
+        ALT_SINGLE  : iFireTitle := 'Fire (@Ysingle@>) -- Choose target...';
       end;
-      if iFireDesc <> '' then iFireDesc := ' (@Y'+iFireDesc+'@>)';
-
       if iAltFire = ALT_CHAIN then
       begin
         case iChainFire of
-          0 : iFireDesc := ' (@Ginitial@>)';
-          1 : iFireDesc := ' (@Ywarming@>)';
-          2 : iFireDesc := ' (@Rfull@>)';
+          0 : iFireTitle := 'Chain fire (@Ginitial@>) -- Choose target or abort...';
+          1 : iFireTitle := 'Chain fire (@Ywarming@>) -- Choose target or abort...';
+          2 : iFireTitle := 'Chain fire (@Rfull@>) -- Choose target or abort...';
         end;
-        if not Player.doChooseTarget( Format('Chain fire%s -- Choose target or abort...', [ iFireDesc ]), iRange, iLimitRange ) then
-          Exit( Player.Fail( 'Targeting canceled.', [] ) );
       end
-      else
-        if not Player.doChooseTarget( Format('Fire%s -- Choose target...',[ iFireDesc ]), iRange, iLimitRange ) then
-          Exit( Player.Fail( 'Targeting canceled.', [] ) );
-      iTarget := Player.TargetPos;
     end
     else
     begin
       iTarget := IO.MTarget;
+
+      if iLimitRange then
+        if Distance( Player.Position, iTarget ) > iRange then
+          Exit( Player.Fail( 'Out of range!', [] ) );
     end;
-    if iLimitRange then
-      if Distance( Player.Position, iTarget ) > iRange then
-        Exit( Player.Fail( 'Out of range!', [] ) );
   end;
 
-  Player.ChainFire := iChainFire;
+  if iFireTitle <> '' then
+  begin
+    if iRange = 0 then iRange := Player.Vision;
+    iTargets := Player.CreateAutoTarget( iRange, True );
+
+    Player.TargetPos := IO.ChooseTarget(iFireTitle, iRange+1, iLimitRange, iTargets, iChainFire > 0 );
+    if Player.FLastTargetPos.X*Player.FLastTargetPos.Y <> 0
+       then Player.PrevTargetPos := Player.FLastTargetPos
+       else Player.PrevTargetPos := Player.TargetPos;
+    FreeAndNil(iTargets);
+    if Player.TargetPos.X = 0 then
+      Exit( Player.Fail( 'Targeting canceled.', [] ) );
+
+    if Player.TargetPos = Player.Position then
+    begin
+      IO.Msg( 'Find a more constructive way to commit suicide.' );
+      Exit( False );
+    end;
+
+    Player.FLastTargetUID := 0;
+    if Doom.Level.Being[ Player.TargetPos ] <> nil then
+      Player.FLastTargetUID := Doom.Level.Being[ Player.TargetPos ].UID;
+    Player.FLastTargetPos := Player.TargetPos;
+    Player.ChainFire := iChainFire;
+    iTarget := Player.TargetPos;
+  end;
+
   if aAlt
     then Exit( HandleCommand( TCommand.Create( COMMAND_ALTFIRE, iTarget, iItem ) ) )
     else Exit( HandleCommand( TCommand.Create( COMMAND_FIRE, iTarget, iItem ) ) );

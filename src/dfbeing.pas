@@ -184,6 +184,7 @@ TBeing = class(TThing,IPathQuery)
     public
     property Inv       : TInventory  read FInv       write FInv;
     property TargetPos : TCoord2D    read FTargetPos write FTargetPos;
+    property PrevTargetPos : TCoord2D    read FPrevTargetPos write FPrevTargetPos;
     property LastPos   : TCoord2D    read FLastPos   write FLastPos;
     property LastMove  : TCoord2D    read FMovePos   write FMovePos;
 

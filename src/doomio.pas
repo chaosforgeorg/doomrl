@@ -106,10 +106,10 @@ type TDoomIO = class( TIO )
   function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
   procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); virtual;
   procedure FullLook( aID : Ansistring );
+  procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
 protected
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
-  procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
   procedure ColorQuery(nkey,nvalue : Variant);
   function ScreenShotCallback( aEvent : TIOEvent ) : Boolean;
   function BBScreenShotCallback( aEvent : TIOEvent ) : Boolean;
@@ -143,6 +143,10 @@ public
   property ASCII       : TASCIIImageMap read FASCII;
   property HintOverlay : AnsiString     read FHintOverlay write FHintOverlay;
   property Targeting   : Boolean        read FTargeting   write FTargeting;
+
+  // Textmode only
+  property TargetEnabled : Boolean        read FTargetEnabled write FTargetEnabled;
+  property TargetLast    : Boolean        read FTargetLast    write FTargetLast;
 end;
 
 var IO : TDoomIO;

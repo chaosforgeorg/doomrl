@@ -73,6 +73,8 @@ TPlayer = class(TBeing)
   FQuickSlots     : array[1..9] of TQuickSlotInfo;
 
   FLastTargetPos  : TCoord2D;
+  FLastTargetUID  : TUID;
+
 
   constructor Create; reintroduce;
   procedure Initialize; reintroduce;
@@ -100,15 +102,13 @@ TPlayer = class(TBeing)
   class procedure RegisterLuaAPI();
   procedure UpdateVisual;
   function ASCIIMoreCode : AnsiString; override;
-  function CreateAutoTarget( aRange : Integer ): TAutoTarget;
-  function doChooseTarget( aActionName : string; aRadius : Byte; aLimitRange : Boolean ) : Boolean;
+  function CreateAutoTarget( aRange : Integer; aAssignPriority : Boolean = False ): TAutoTarget;
   function RunPath( const aCoord : TCoord2D ) : Boolean;
   procedure ExamineNPC;
   procedure ExamineItem;
   private
   function OnTraitConfirm( aSender : TUIElement ) : Boolean;
   private
-  FLastTargetUID  : TUID;
   FExp            : LongInt;
   FExpLevel       : Byte;
   private
@@ -424,9 +424,10 @@ begin
   FKills.Add( aKilledID, iKillClass );
 end;
 
-function TPlayer.CreateAutoTarget( aRange : Integer ): TAutoTarget;
-var iLevel : TLevel;
-    iCoord : TCoord2D;
+function TPlayer.CreateAutoTarget( aRange : Integer; aAssignPriority : Boolean = False ): TAutoTarget;
+var iLevel  : TLevel;
+    iCoord  : TCoord2D;
+    iTarget : TBeing;
 begin
   iLevel := TLevel(Parent);
   Result := TAutoTarget.Create( FPosition );
@@ -435,52 +436,26 @@ begin
     with iLevel.Being[ iCoord ] do
       if (not isPlayer) and isVisible then
         Result.AddTarget( iCoord );
-end;
 
-function TPlayer.doChooseTarget( aActionName : string; aRadius : Byte; aLimitRange : Boolean ) : boolean;
-var iTargets : TAutoTarget;
-    iTarget  : TBeing;
-    iLevel   : TLevel;
-begin
-  if aRadius = 0 then aRadius := FVisionRadius;
 
-  iLevel   := TLevel(Parent);
-  iTargets := CreateAutoTarget( aRadius );
-
-  iTarget := nil;
-  if (FLastTargetUID <> 0) and iLevel.isAlive( FLastTargetUID ) then
+  if aAssignPriority then
   begin
-    iTarget := iLevel.FindChild( FLastTargetUID ) as TBeing;
-    if iTarget <> nil then
-      if iTarget.isVisible then
-        if Distance( iTarget.Position, FPosition ) <= aRadius then
-          iTargets.PriorityTarget( iTarget.Position );
+    if (FLastTargetUID <> 0) and iLevel.isAlive( FLastTargetUID ) then
+    begin
+      iTarget := iLevel.FindChild( FLastTargetUID ) as TBeing;
+      if iTarget <> nil then
+        if iTarget.isVisible then
+          if Distance( iTarget.Position, FPosition ) <= aRange then
+            Result.PriorityTarget( iTarget.Position );
+    end;
+
+    if FLastTargetPos.X*FLastTargetPos.Y <> 0 then
+      if FLastTargetUID = 0 then
+        if iLevel.isVisible( FLastTargetPos ) then
+          if Distance( FLastTargetPos, FPosition ) <= aRange then
+            Result.PriorityTarget( FLastTargetPos );
   end;
 
-  if FLastTargetPos.X*FLastTargetPos.Y <> 0 then
-    if FLastTargetUID = 0 then
-      if iLevel.isVisible( FLastTargetPos ) then
-        if Distance( FLastTargetPos, FPosition ) <= aRadius then
-          iTargets.PriorityTarget( FLastTargetPos );
-
-  FTargetPos := IO.ChooseTarget(aActionName, aRadius+1, aLimitRange, iTargets, FChainFire > 0 );
-  if FLastTargetPos.X*FLastTargetPos.Y <> 0
-     then FPrevTargetPos := FLastTargetPos
-     else FPrevTargetPos := FTargetPos;
-  FreeAndNil(iTargets);
-  if FTargetPos.X = 0 then Exit( False );
-
-  if FTargetPos = FPosition then
-  begin
-    IO.Msg( 'Find a more constructive way to commit suicide.' );
-    Exit( False );
-  end;
-
-  FLastTargetUID := 0;
-  if iLevel.Being[ FTargetPos ] <> nil then
-    FLastTargetUID := iLevel.Being[ FTargetPos ].UID;
-  FLastTargetPos := FTargetPos;
-  Exit( True );
 end;
 
 function TPlayer.RunPath( const aCoord : TCoord2D ) : boolean;

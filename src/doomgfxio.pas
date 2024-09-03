@@ -35,9 +35,9 @@ type
     function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; override;
     function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; override;
     procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); override;
+    procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
-    procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
     procedure ResetVideoMode;
     procedure RecalculateScaling( aInitialize : Boolean );

@@ -19,10 +19,10 @@ type TDoomTextIO = class( TDoomIO )
     procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word; aFlags : TExplosionFlags = [] ); override;
 
     procedure SetTextMap( aMap : ITextMap );
+    procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     procedure DrawHud; override;
-    procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
   protected
     FTextMap        : TTextMap;
     FExpl           : TTextExplosionArray;
