@@ -48,6 +48,7 @@ type TDoomIO = class( TIO )
   procedure LoadStop;
   procedure Update( aMSec : DWord ); override;
 
+  function EventToInput( const aEvent : TIOEvent ) : TInputKey;
   procedure WaitForEnter;
   function WaitForInput( const aSet : TInputKeySet ) : TInputKey;
   function WaitForKey( const aSet : TKeySet ) : Byte;
@@ -58,10 +59,10 @@ type TDoomIO = class( TIO )
 
   procedure Focus( aCoord: TCoord2D );
 
-  procedure LookMode;
   function ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D; virtual;
   function ChooseDirection( aActionName : string ) : TDirection;
   procedure LookDescription( aWhere : TCoord2D );
+  procedure LookDescriptionOld( aWhere : TCoord2D );
 
   procedure Msg( const aText : AnsiString );
   procedure Msg( const aText : AnsiString; const aParams : array of const );
@@ -136,6 +137,7 @@ public
   property MTarget     : TCoord2D       read FMTarget    write FMTarget;
   property ASCII       : TASCIIImageMap read FASCII;
   property HintOverlay : AnsiString     read FHintOverlay write FHintOverlay;
+  property Targeting   : Boolean        read FTargeting   write FTargeting;
 end;
 
 var IO : TDoomIO;
@@ -148,7 +150,7 @@ uses math, video, dateutils, variants,
      vsound, vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
      dflevel, dfplayer, dfitem,
-     doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua;
+     doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua, doomhintview;
 
 {
 procedure OutPutRestore;
@@ -405,6 +407,7 @@ function TDoomIO.OnEvent( const event : TIOEvent ) : Boolean;
 var i      : Integer;
     iEvent : TIOEvent;
     iWide  : WideString;
+    iInput : TInputKey;
 begin
   if ( event.EType = VEVENT_TEXT ) then
   begin
@@ -451,10 +454,18 @@ begin
   if ( event.EType in [ VEVENT_MOUSEMOVE ] ) then
     FUIMouse := DeviceCoordToConsoleCoord( event.MouseMove.Pos );
 
+  iInput := EventToInput( event );
+  if iInput <> INPUT_NONE then
+    if not FLayers.IsEmpty then
+      for i := FLayers.Size - 1 downto 0 do
+        if FLayers[i].HandleInput( iInput ) then
+          Exit( True );
+
   if not FLayers.IsEmpty then
     for i := FLayers.Size - 1 downto 0 do
       if FLayers[i].HandleEvent( event ) then
         Exit( True );
+
   Exit( False );
 end;
 
@@ -853,6 +864,44 @@ begin
   VTIG_EventClear;
 end;
 
+function TDoomIO.EventToInput( const aEvent : TIOEvent ) : TInputKey;
+var iPoint : TPoint;
+begin
+  if (aEvent.EType = VEVENT_SYSTEM) then
+    if Option_LockClose
+       then Exit( INPUT_QUIT )
+       else Exit( INPUT_HARDQUIT );
+  if (aEvent.EType = VEVENT_MOUSEMOVE) then
+  begin
+    iPoint := SpriteMap.DevicePointToCoord( aEvent.MouseMove.Pos );
+    FMTarget.Create( iPoint.X, iPoint.Y );
+    if Doom.Level.isProperCoord( FMTarget ) then
+      Exit( INPUT_MMOVE );
+  end;
+  if aEvent.EType = VEVENT_MOUSEDOWN then
+  begin
+    iPoint := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
+    FMTarget.Create( iPoint.X, iPoint.Y );
+    if Doom.Level.isProperCoord( FMTarget ) then
+    begin
+      case aEvent.Mouse.Button of
+        VMB_BUTTON_LEFT     : Exit( INPUT_MLEFT );
+        VMB_BUTTON_MIDDLE   : Exit( INPUT_MMIDDLE );
+        VMB_BUTTON_RIGHT    : Exit( INPUT_MRIGHT );
+        VMB_WHEEL_UP        : Exit( INPUT_MSCRUP );
+        VMB_WHEEL_DOWN      : Exit( INPUT_MSCRDOWN );
+      end;
+    end;
+  end;
+  if aEvent.EType = VEVENT_KEYDOWN then
+  begin
+    FKeyCode := IOKeyEventToIOKeyCode( aEvent.Key );
+    if (FKeyCode mod 256) <> 0
+      then Exit( TInputKey( Config.Commands[ FKeyCode ] ) );
+  end;
+  Exit( INPUT_NONE );
+end;
+
 procedure TDoomIO.WaitForEnter;
 begin
   WaitForInput([INPUT_OK,INPUT_MLEFT]);
@@ -861,45 +910,12 @@ end;
 function TDoomIO.WaitForInput ( const aSet : TInputKeySet ) : TInputKey;
 var iInput : TInputKey;
     iEvent : TIOEvent;
-    iPoint : TIOPoint;
 begin
   repeat
     iInput := INPUT_NONE;
     WaitForKeyEvent( iEvent, GraphicsVersion, GraphicsVersion and (INPUT_MMOVE in aSet) );
-    if (iEvent.EType = VEVENT_SYSTEM) then
-      if Option_LockClose
-         then Exit( INPUT_QUIT )
-         else Exit( INPUT_HARDQUIT );
-
-    if (iEvent.EType = VEVENT_MOUSEMOVE) then
-    begin
-      iPoint := SpriteMap.DevicePointToCoord( iEvent.MouseMove.Pos );
-      FMTarget.Create( iPoint.X, iPoint.Y );
-      if Doom.Level.isProperCoord( FMTarget ) then
-        Exit( INPUT_MMOVE );
-    end;
-    if iEvent.EType = VEVENT_MOUSEDOWN then
-    begin
-      iPoint := SpriteMap.DevicePointToCoord( iEvent.Mouse.Pos );
-      FMTarget.Create( iPoint.X, iPoint.Y );
-      if Doom.Level.isProperCoord( FMTarget ) then
-      begin
-        case iEvent.Mouse.Button of
-          VMB_BUTTON_LEFT     : Exit( INPUT_MLEFT );
-          VMB_BUTTON_MIDDLE   : Exit( INPUT_MMIDDLE );
-          VMB_BUTTON_RIGHT    : Exit( INPUT_MRIGHT );
-          VMB_WHEEL_UP        : Exit( INPUT_MSCRUP );
-          VMB_WHEEL_DOWN      : Exit( INPUT_MSCRDOWN );
-        end;
-        if (aSet = []) then Exit(iInput);
-      end;
-    end
-    else
-    begin
-      FKeyCode := IOKeyEventToIOKeyCode( iEvent.Key );
-      iInput   := TInputKey( Config.Commands[ FKeyCode ] );
-      if (aSet = []) and ((FKeyCode mod 256) <> 0) then Exit( iInput );
-    end;
+    iInput := EventToInput( iEvent );
+    if (aSet = []) then Exit(iInput);
   until (iInput in aSet);
   Exit( iInput )
 end;
@@ -990,7 +1006,7 @@ begin
   MsgUpDate;
   Msg('You see : ');
 
-  LookDescription( iTarget );
+  LookDescriptionOld( iTarget );
   FTargeting := True;
   repeat
     if iTarget <> Position then
@@ -1041,73 +1057,12 @@ begin
       if Being[ iTarget ] <> nil then
          FullLook( Being[ iTarget ].ID );
     end;
-    LookDescription( iTarget );
+    LookDescriptionOld( iTarget );
   until iInput in [INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT];
   MsgUpDate;
   FConsole.HideCursor;
   FTargeting := False;
   ChooseTarget := iTarget;
-end;
-
-procedure TDoomIO.LookMode;
-var iInput : TInputKey;
-    Dir    : TDirection;
-    lc     : TCoord2D;
-    TargetColor : TColor;
-    Target  : TCoord2D;
-    iLevel  : TLevel;
-begin
-  iLevel := Doom.Level;
-  Target := Player.Position;
-  TargetColor := NewColor( White );
-  LookDescription( Target );
-  FTargeting := True;
-  repeat
-    if SpriteMap <> nil then SpriteMap.SetTarget( Target, TargetColor, False );
-    TargetColor := NewColor( White );
-    iInput := IO.WaitForInput(INPUT_MOVE+[INPUT_TOGGLEGRID,INPUT_ESCAPE,INPUT_MORE,INPUT_MMOVE,INPUT_MRIGHT, INPUT_MLEFT]);
-    if (iInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if iInput in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then Target := IO.MTarget;
-    if iInput in [ INPUT_ESCAPE, INPUT_MRIGHT ] then Break;
-    if iInput <> INPUT_MORE then
-    begin
-      lc := Target;
-      Dir := InputDirection( iInput );
-      if iLevel.isProperCoord(lc + Dir) then
-      begin
-        Target := lc + Dir;
-        LookDescription( Target );
-        Focus( Target );
-      end
-      else
-      if Option_BlindMode then
-      begin
-        TargetColor := NewColor( Red );
-        FMessages.Pop;
-        Msg('Out of range!');
-        Continue;
-      end;
-      if Option_BlindMode then
-      if lc = Target then
-      begin
-        TargetColor := NewColor( Red );
-        FMessages.Pop;
-        Msg('Out of range!');
-      end;
-     end;
-     if (iInput in [ INPUT_MORE, INPUT_MLEFT ]) and iLevel.isVisible( Target ) then
-     begin
-       with iLevel do
-       if Being[Target] <> nil then
-          FullLook( Being[Target].ID );
-       Focus( Target );
-       LookDescription( Target );
-     end;
-  until False;
-  MsgUpDate;
-  FConsole.HideCursor;
-  FTargeting := False;
-  if SpriteMap <> nil then SpriteMap.ClearTarget;
 end;
 
 function TDoomIO.ChooseDirection(aActionName : string): TDirection;
@@ -1144,7 +1099,7 @@ begin
   until iDone;
 end;
 
-procedure TDoomIO.LookDescription(aWhere: TCoord2D);
+procedure TDoomIO.LookDescriptionOld(aWhere: TCoord2D);
 var LookDesc : string;
 begin
   LookDesc := Doom.Level.GetLookDescription( aWhere );
@@ -1152,6 +1107,15 @@ begin
   if Doom.Level.isVisible(aWhere) and (Doom.Level.Being[aWhere] <> nil) then LookDesc += ' | [@<m@>]ore';
   FMessages.Pop;
   Msg('You see : '+LookDesc );
+end;
+
+procedure TDoomIO.LookDescription(aWhere: TCoord2D);
+var LookDesc : string;
+begin
+  LookDesc := Doom.Level.GetLookDescription( aWhere );
+  if Option_BlindMode then LookDesc += ' | '+BlindCoord( aWhere - Player.Position );
+  if Doom.Level.isVisible(aWhere) and (Doom.Level.Being[aWhere] <> nil) then LookDesc += ' | [{Lm}]ore';
+  FHintOverlay := LookDesc;
 end;
 
 procedure TDoomIO.Msg( const aText : AnsiString );
