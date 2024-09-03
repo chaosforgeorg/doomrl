@@ -54,7 +54,6 @@ type TDoomIO = class( TIO )
   procedure WaitForKeyEvent( out aEvent : TIOEvent; aMouseClick : Boolean = False; aMouseMove : Boolean = False );
   function CommandEventPending : Boolean;
 
-  procedure SetTempHint( const aText : AnsiString );
   procedure SetHint( const aText : AnsiString );
 
   procedure Focus( aCoord: TCoord2D );
@@ -129,13 +128,14 @@ protected
   FHudEnabled  : Boolean;
   FWaiting     : Boolean;
   FTargeting   : Boolean;
-  FStoredHint  : AnsiString;
   FHint        : AnsiString;
+  FHintOverlay : AnsiString;
 public
-  property KeyCode    : TIOKeyCode     read FKeyCode    write FKeyCode;
-  property Audio      : TDoomAudio     read FAudio;
-  property MTarget    : TCoord2D       read FMTarget    write FMTarget;
-  property ASCII      : TASCIIImageMap read FASCII;
+  property KeyCode     : TIOKeyCode     read FKeyCode    write FKeyCode;
+  property Audio       : TDoomAudio     read FAudio;
+  property MTarget     : TCoord2D       read FMTarget    write FMTarget;
+  property ASCII       : TASCIIImageMap read FASCII;
+  property HintOverlay : AnsiString     read FHintOverlay write FHintOverlay;
 end;
 
 var IO : TDoomIO;
@@ -291,7 +291,6 @@ begin
   FWaiting    := False;
   FHudEnabled := False;
   FTargeting  := False;
-  FStoredHint := '';
   FHint       := '';
 
   FIODriver.SetTitle('DRL','DRL');
@@ -368,6 +367,7 @@ end;
 
 function TDoomIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
 begin
+  FHintOverlay := '';
   FConsole.HideCursor;
   FLayers.Push( aLayer );
   Result := aLayer;
@@ -689,8 +689,10 @@ begin
   end;
 
 
-  if FHint <> '' then
-    VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 3 ), Yellow );
+  if FHintOverlay <> ''
+    then VTIG_FreeLabel( ' '+FHintOverlay+' ', Point( -1-Length( FHintOverlay ), 2 ), Yellow )
+    else if FHint <> ''
+      then VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 2 ), Yellow );
 
   iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
   if FMessages.Content.Size > 0 then
@@ -720,15 +722,7 @@ end;
 
 procedure TDoomIO.SetHint ( const aText : AnsiString ) ;
 begin
-  FStoredHint := aText;
   FHint       := aText;
-end;
-
-procedure TDoomIO.SetTempHint ( const aText : AnsiString ) ;
-begin
-  if aText = ''
-    then FHint := FStoredHint
-    else FHint := aText;
 end;
 
 procedure TDoomIO.ColorQuery(nkey,nvalue : Variant);
@@ -1217,7 +1211,7 @@ end;
 procedure TDoomIO.MsgUpDate;
 begin
   FMessages.Update;
-  SetTempHint('');
+  FHintOverlay := '';
 end;
 
 procedure TDoomIO.ErrorReport(const aText: AnsiString);

@@ -401,7 +401,8 @@ begin
   if FTime - FLastMouseTime > 3000 then
   begin
     FMCursor.Active := False;
-    SetTempHint('');
+    if not isModal then
+      FHintOverlay := '';
   end;
 
   if (FMCursor.Active) and FIODriver.GetMousePos( iPoint ) and (not FMouseLock) and (not isModal) then
