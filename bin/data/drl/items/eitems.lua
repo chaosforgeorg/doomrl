@@ -741,37 +741,38 @@ function DoomRL.loadexoticitems()
 		mod_letter = "F",
 
 		OnUseCheck = function(self,being)
-			if not being:is_player() then return false end
-			local item = being.eq.weapon
-			if not item then
-				ui.msg( "Nothing to modify!" )
-				return false
+			local function filter( item )
+				if item.itype ~= ITEMTYPE_RANGED then return false end
+				if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
+					return true
+				elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
+					return true
+				else
+					return false
+				end
 			end
-			if item:check_mod_array( 'F', being.techbonus ) then
-				self:add_property( "assembled" )
-				return true
-			end
-			if not item:can_mod( 'F' ) then
-				ui.msg( "This weapon can't be modded any more!" )
-				return false
-			end
-			if item.itype ~= ITEMTYPE_RANGED then
-				ui.msg( "This weapon can't be modified!" )
-				return false
-			end
+			local item, result = being:pick_item_to_mod( self, filter )
+			if not result then return false end
+			if item ~= nil then self:add_property("chosen_item", item) end
 			return true
 		end,
 
+		OnModDescribe = function( self, item )
+			if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
+				return "shots {!"..item.shots.."} -> {!"..(item.shots+2).."}"
+			elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
+				return "blast radius {!"..item.blastradius.."} -> {!"..(item.blastradius+2).."}"
+			end
+			return "unknown"
+		end,
+
 		OnUse = function(self,being)
-			if self:has_property( "assembled" ) then return true end
-			local item = being.eq.weapon
+			if not self:has_property( "chosen_item" ) then return true end
+			local item = self.chosen_item
 			if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
 				item.shots = item.shots + 2
 			elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
 				item.blastradius = item.blastradius + 2
-			else
-				ui.msg( "Only a rapid-fire or explosive weapon can be modded!" )
-				return false
 			end
 			ui.msg( "You upgrade your weapon!" )
 			item:add_mod( 'F' )
@@ -796,42 +797,37 @@ function DoomRL.loadexoticitems()
 		mod_letter = "S",
 
 		OnUseCheck = function(self,being)
-			if not being:is_player() then return false end
-			local item = being.eq.weapon
-			if not item then
-				ui.msg( "Nothing to modify!" )
-				return false
+			local function filter( item )
+				return item.itype == ITEMTYPE_RANGED
 			end
-			if item:check_mod_array( 'S', being.techbonus ) then
-				self:add_property( "assembled" )
-				return true
-			end
-			--[[
-			if item.flags[ IF_SHOTGUN ] or item.itype ~= ITEMTYPE_RANGED then
-				ui.msg( "This weapon can't be modified!" )
-				return false
-			end
-			--]]
-			if not item:can_mod( 'S' ) then
-				ui.msg( "This weapon can't be modded any more!" )
-				return false
-			end
+			local item, result = being:pick_item_to_mod( self, filter )
+			if not result then return false end
+			if item ~= nil then self:add_property("chosen_item", item) end
 			return true
 		end,
 
-		OnUse = function(self,being)
-			if self:has_property( "assembled" ) then return true end
-			local item = being.eq.weapon
+		OnModDescribe = function( self, item )
 			if item.flags[IF_FARHIT] == true then
-				item.flags[IF_UNSEENHIT] = true
+				return "remove unseen enemy to-hit penalty"
 			else
-				item.flags[IF_FARHIT] = true
+				return "remove distance to-hit penalty"
 			end
+			return "unknown"
+		end,
+
+		OnUse = function(self,being)
+			if not self:has_property( "chosen_item" ) then return true end
+			local item = self.chosen_item
 			-- A little easter egg for applying S-mod on shotgun/melee
 			if item.flags[ IF_SHOTGUN ] or item.itype ~= ITEMTYPE_RANGED then
 				ui.msg( "You suddenly feel a little silly." )
 			else
 				ui.msg( "You upgrade your weapon!" )
+			end
+			if item.flags[IF_FARHIT] == true then
+				item.flags[IF_UNSEENHIT] = true
+			else
+				item.flags[IF_FARHIT] = true
 			end
 			item:add_mod( 'S' )
 			return true
@@ -855,18 +851,32 @@ function DoomRL.loadexoticitems()
 		mod_letter = "N",
 
 		OnUseCheck = function(self,being)
-			if not being:is_player() then return false end
-			local item, result = being:pick_mod_item('N', being.techbonus )
-			if not result then return false end
-			if item and item.itype == ITEMTYPE_MELEE then
-				ui.msg( "Nanotechnology doesn't work on melee weapons!" )
-				return false
-			elseif item and item.itype == ITEMTYPE_RANGED and (item.rechargedelay == 0 and item.rechargeamount >= item.ammomax) then
-				ui.msg( "This weapon can't be modified anymore with this mod!" )
-				return false
+			local function filter( item )
+				if item.itype == ITEMTYPE_MELEE then return false end
+				if item.itype == ITEMTYPE_RANGED and (item.rechargedelay == 0 and item.rechargeamount >= item.ammomax) then return false end
+				return true
 			end
-			if item ~= nil then self:add_property( "chosen_item", item ) end
+			local item, result = being:pick_item_to_mod( self, filter )
+			if not result then return false end
+			if item ~= nil then self:add_property("chosen_item", item) end
 			return true
+		end,
+
+		OnModDescribe = function( self, item )
+			if item.flags[ IF_RECHARGE ] then
+				if item.rechargedelay == 0 then
+					return "recharge amount {!"..item.rechargeamount.."} -> {!"..(item.rechargeamount+1).."}"
+				else
+					return "recharge delay {!"..item.rechargedelay.."} -> {!"..(item.rechargedelay-5).."}"
+				end
+			else
+				if item.itype == ITEMTYPE_RANGED then
+					return "recharge ammo"
+				elseif item.itype == ITEMTYPE_ARMOR or item.itype == ITEMTYPE_BOOTS then
+					return "recharge durability"
+				end	
+			end
+			return "unknown"
 		end,
 
 		OnUse = function(self,being)
@@ -910,15 +920,17 @@ function DoomRL.loadexoticitems()
 		mod_letter = "O",
 
 		OnUseCheck = function(self,being)
-			if not being:is_player() then return false end
-			local item, result = being:pick_mod_item('O', being.techbonus )
-			if not result then return false end
-			if item and not ( item.itype == ITEMTYPE_ARMOR or item.itype == ITEMTYPE_BOOTS ) then
-				ui.msg( "Only boots or armor can be modded with this mod!" )
-				return false
+			local function filter( item )
+				return ( item.itype == ITEMTYPE_ARMOR or item.itype == ITEMTYPE_BOOTS )
 			end
+			local item, result = being:pick_item_to_mod( self, filter )
+			if not result then return false end
 			if item ~= nil then self:add_property( "chosen_item", item ) end
 			return true
+		end,
+
+		OnModDescribe = function( self, item )
+			return "make indestructible"
 		end,
 
 		OnUse = function(self,being)

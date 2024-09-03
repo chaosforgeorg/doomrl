@@ -241,7 +241,7 @@ function being:pick_mod_item( modletter, techbonus )
 	return item, true
 end
 
-function being:pick_item_to_mod( mod )
+function being:pick_item_to_mod( mod, filter )
 	if not self:is_player() then return nil end
 
 	local proto     = mod.__proto
@@ -256,7 +256,7 @@ function being:pick_item_to_mod( mod )
 
 	for i = 0,MAX_EQ_SIZE-1 do
 		local it = player.eq[i]
-		if it and it.itype ~= ITEMTYPE_AMMOPACK then
+		if it and it.itype ~= ITEMTYPE_AMMOPACK and ( ( not filter ) or filter(it) ) then
 			local desc
 			local ma = it:find_mod_array( modletter, techbonus )
 			if (not ma) and ( not it:can_mod( modletter ) ) then
@@ -275,7 +275,7 @@ function being:pick_item_to_mod( mod )
 	end
 
 	if #choice.entries == 0 then
-		ui.msg( "You have no items to modify!" )
+		ui.msg( "You have no suitable items to modify!" )
 		return nil, false
 	end
 
