@@ -87,12 +87,9 @@ TPlayer = class(TBeing)
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
-  procedure doQuit( aNoConfirm : Boolean = False );
-  procedure doRun;
   procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); override;
   procedure LevelUp;
   procedure AddExp( aAmount : LongInt );
-  function doSave : Boolean;
   procedure WriteMemorial;
   destructor Destroy; override;
   procedure IncStatistic( const aStatisticID : AnsiString; aAmount : Integer = 1 );
@@ -398,18 +395,6 @@ begin
   inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource );
 end;
 
-procedure TPlayer.doRun;
-var iInput : TInputKey;
-begin
-  FPathRun := False;
-  if FEnemiesInVision > 1 then
-  begin
-    Fail( 'Can''t run, there are enemies present.',[] );
-    Exit;
-  end;
-  IO.PushLayer( TRunModeView.create );
-end;
-
 procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem ) ;
 var iKillClass : AnsiString;
 begin
@@ -475,29 +460,6 @@ begin
     FTraits.Upgrade( Word(SelectedItem.Data) );
   aSender.Parent.Free;
   Exit( True );
-end;
-
-function TPlayer.doSave : Boolean;
-begin
-  //if Doom.Difficulty >= DIFF_NIGHTMARE then Exit( Fail( 'There''s no escape from a NIGHTMARE! Stand and fight like a man!', [] ) );
-  //if not (CellHook_OnExit in Cells[ TLevel(Parent).Cell[ FPosition ] ].Hooks) then Exit( Fail( 'You can only save the game standing on the stairs to the next level.', [] ) );
-  Doom.SetState( DSSaving );
-  //TLevel(Parent).CallHook( Position, CellHook_OnExit );
-end;
-
-procedure TPlayer.doQuit( aNoConfirm : Boolean = False );
-begin
-  if not aNoConfirm then
-  begin
-    IO.Msg( LuaSystem.ProtectedCall(['DoomRL','quit_message'],[]) );
-    if not IO.MsgConfirm('Are you sure you want to commit suicide?', true) then
-    begin
-      IO.Msg('Ok, then. Stay and take what''s coming to ya...');
-      Exit;
-    end;
-  end;
-  Doom.SetState( DSQuit );
-  FScore      := -100000;
 end;
 
 function TPlayer.PlayerTick : Boolean;

@@ -67,7 +67,6 @@ type TDoomIO = class( TIO )
   procedure MsgEnter( const aText : AnsiString );
   procedure MsgEnter( const aText : AnsiString; const aParams : array of const );
   function  MsgConfirm( const aText : AnsiString; aStrong : Boolean = False ) : Boolean;
-  function  MsgCommandChoice( const aText : AnsiString; const aChoices : TInputKeySet ) : TInputKey;
   function  MsgGetRecent : TUIChunkBuffer;
   procedure MsgReset;
   // TODO: Could this be removed as well?
@@ -1069,14 +1068,6 @@ begin
              else Key := IO.WaitForKey([Ord('Y'),Ord('y'),Ord('N'),Ord('n')]);
   MsgConfirm := Key in [Ord('Y'),Ord('y')];
   MsgUpDate;
-end;
-
-function TDoomIO.MsgCommandChoice ( const aText : AnsiString; const aChoices : TInputKeySet ) : TInputKey;
-begin
-  Msg(aText);
-  repeat
-    Result := WaitForInput( aChoices );
-  until Result in aChoices;
 end;
 
 function TDoomIO.MsgGetRecent : TUIChunkBuffer;

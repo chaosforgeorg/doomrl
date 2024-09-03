@@ -759,7 +759,7 @@ begin
     case iInput of
 //      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
       INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
-      INPUT_QUIT       : begin Player.doQuit; Exit; end;
+      INPUT_QUIT       : begin IO.PushLayer( TAbandonView.Create ); Exit; end;
       INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
       INPUT_LOOKMODE   : begin IO.PushLayer( TLookModeView.Create ); Exit; end;
       INPUT_PLAYERINFO : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
@@ -774,13 +774,20 @@ begin
 
       INPUT_HARDQUIT   : begin
         Option_MenuReturn := False;
-        Player.doQuit(True);
+        Doom.SetState( DSQuit );
+        Player.Score := -100000;
         Exit;
       end;
 
-      INPUT_LEGACYSAVE: begin Player.doSave; Exit; end;
+      INPUT_LEGACYSAVE: begin Doom.SetState( DSSaving ); Exit; end;
       INPUT_TRAITS    : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
-      INPUT_RUN       : begin Player.doRun;Exit; end;
+      INPUT_RUN       : begin
+        Player.FPathRun := False;
+        if Player.BeingsInVision > 1
+          then IO.Msg( 'Can''t run, there are enemies present.',[] )
+          else IO.PushLayer( TRunModeView.create );
+        Exit;
+      end;
 
       INPUT_EXAMINENPC   : begin Player.ExamineNPC; Exit; end;
       INPUT_EXAMINEITEM  : begin Player.ExamineItem; Exit; end;
