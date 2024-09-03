@@ -1,5 +1,5 @@
 {$INCLUDE doomrl.inc}
-unit doomhintview;
+unit doomhudviews;
 interface
 uses vutil, vcolor, vrltools, dfdata, dfitem, doomkeybindings;
 

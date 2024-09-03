@@ -157,7 +157,7 @@ uses math, video, dateutils, variants,
      vsound, vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
      dflevel, dfplayer, dfitem,
-     doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua, doomhintview;
+     doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua, doomhudviews;
 
 {
 procedure OutPutRestore;

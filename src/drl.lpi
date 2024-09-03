@@ -218,7 +218,7 @@
         <IsPartOfProject Value="True"/>
       </Unit40>
       <Unit41>
-        <Filename Value="doomhintview.pas"/>
+        <Filename Value="doomhudviews.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit41>
     </Units>

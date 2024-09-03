@@ -80,7 +80,7 @@ uses Classes, SysUtils,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
-     doompagedview, doomrankupview, doommainmenuview, doomhintview,
+     doompagedview, doomrankupview, doommainmenuview, doomhudviews,
      doomconfiguration, doomhelp, doomconfig, doomviews, dfplayer;
 
 
