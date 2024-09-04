@@ -10,7 +10,6 @@ type TPlotView = class( TInterfaceLayer )
   function IsModal : Boolean; override;
 protected
   FMessage  : AnsiString;
-  FBuffer   : AnsiString;
   FFinished : Boolean;
   FBoost    : Boolean;
   FPosition : DWord;
@@ -33,7 +32,6 @@ begin
   FMessage   := aMessage;
   FColor     := aColor;
   FBoost     := False;
-  FBuffer    := '';
 end;
 
 procedure TPlotView.Update( aDTime : Integer );
