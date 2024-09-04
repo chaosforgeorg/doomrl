@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomhudviews;
 interface
-uses vutil, vcolor, vrltools, dfdata, dfitem, doomkeybindings;
+uses vutil, vgenerics, vcolor, vrltools, dfdata, dfitem, doomkeybindings;
 
 type TLookModeView = class( TInterfaceLayer )
   constructor Create;
@@ -85,6 +85,21 @@ protected
   FTargets    : TAutoTarget;
   FItem       : TItem;
   FCommand    : Byte;
+end;
+
+type TScrollItemArray = specialize TGArray< TItem >;
+
+type TScrollSwapLayer = class( TInterfaceLayer )
+  constructor Create;
+  procedure Update( aDTime : Integer ); override;
+  function IsFinished : Boolean; override;
+  function IsModal : Boolean; override;
+  function HandleInput( aInput : TInputKey ) : Boolean; override;
+  destructor Destroy; override;
+protected
+  FFinished : Boolean;
+  FIndex    : Integer;
+  FArray    : TScrollItemArray;
 end;
 
 implementation
@@ -403,6 +418,92 @@ begin
   IO.Focus( FTarget );
   IO.LookDescription( FTarget );
   IO.SetTarget( FTarget, FColor, FRange );
+end;
+
+constructor TScrollSwapLayer.Create;
+var iItem : TItem;
+
+begin
+  with Player.Inv do
+  begin
+    FArray := TScrollItemArray.Create;
+    if Slot[ efWeapon ]  <> nil then
+    begin
+      FArray.Push( Slot[ efWeapon ] );
+      if Slot[ efWeapon ].Flags[ IF_CURSED ] then
+      begin
+        IO.Msg('You can''t!');
+        FFinished := True;
+        Exit;
+      end;
+    end;
+    if (Slot[ efWeapon2 ] <> nil) and Slot[ efWeapon2 ].isWeapon then FArray.Push( Slot[ efWeapon2 ] );
+    for iItem in Player.Inv do
+      if not Equipped( iItem ) then
+        if iItem.isWeapon then
+          FArray.Push( iItem );
+
+    if FArray.Size <= 1 then
+    begin
+      IO.MsgUpDate;
+      if FArray.Size = 0
+        then IO.Msg('You have no weapons!')
+        else IO.Msg('You have no other weapons!');
+      FFinished := True;
+      Exit;
+    end;
+  end;
+  FIndex := 1;
+  if Player.Inv.Slot[ efWeapon ] = nil then FIndex := 0;
+end;
+
+procedure TScrollSwapLayer.Update( aDTime : Integer );
+begin
+  VTIG_FreeLabel( 'Scroll, <{!LMB}> wield, <{!RMB}> cancel:', Point( 0, 2 ), Yellow );
+  IO.HintOverlay := FArray[ FIndex ].Description;
+end;
+
+function TScrollSwapLayer.IsFinished : Boolean;
+begin
+  Exit( FFinished );
+end;
+
+function TScrollSwapLayer.IsModal : Boolean;
+begin
+  Exit( True );
+end;
+
+function TScrollSwapLayer.HandleInput( aInput : TInputKey ) : Boolean;
+begin
+  if aInput in [ INPUT_MRIGHT, INPUT_ESCAPE, INPUT_QUIT, INPUT_HARDQUIT ] then
+  begin
+    IO.HintOverlay := '';
+    FFinished := True;
+    Exit( True );
+  end;
+
+  if aInput = INPUT_MSCRUP   then if FIndex = 0 then FIndex := FArray.Size-1 else FIndex -= 1;
+  if aInput = INPUT_MSCRDOWN then FIndex := (FIndex + 1) mod FArray.Size;
+
+  if aInput in [INPUT_MLEFT, INPUT_OK ] then
+  begin
+    IO.HintOverlay := '';
+    FFinished      := True;
+    if FArray[ FIndex ] = Player.Inv.Slot[ efWeapon2 ] then
+      Doom.HandleCommand( TCommand.Create( COMMAND_SWAPWEAPON ) )
+    else
+      if FArray[ FIndex ] <> Player.Inv.Slot[ efWeapon ] then
+        Doom.HandleCommand( TCommand.Create( COMMAND_WEAR, FArray[FIndex] ) );
+    Exit( True );
+  end;
+
+  Exit( True );
+end;
+
+destructor TScrollSwapLayer.Destroy;
+begin
+  FreeAndNil( FArray );
+  inherited Destroy;
 end;
 
 end.

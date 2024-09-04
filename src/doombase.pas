@@ -746,7 +746,7 @@ begin
     end;
 
     if iButton in [ VMB_WHEEL_UP, VMB_WHEEL_DOWN ] then
-      Exit( HandleCommand( Player.Inv.DoScrollSwap ) );
+      IO.PushLayer( TScrollSwapLayer.Create );
   end;
   Exit( False );
 end;
