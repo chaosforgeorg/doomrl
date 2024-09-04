@@ -20,7 +20,6 @@ TInventory = class( TVObject )
        function  Size : byte;
        procedure Add( aItem : TItem );
        function  SeekAmmo( aAmmoID : DWord ) : TItem;
-       function  DoScrollSwap : TCommand;
        function  AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
        function  isFull : boolean;
        procedure RawSetSlot( aIndex : TEqSlot; aItem : TItem ); inline;
@@ -136,63 +135,6 @@ begin
          SeekAmmo   := iAmmo;
          iAmmoCount := iAmmo.Ammo;
        end;
-end;
-
-type TItemArray = specialize TGObjectArray< TItem >;
-
-function TInventory.DoScrollSwap : TCommand;
-var iArray   : TItemArray;
-    iItem    : TItem;
-    iIdx     : Integer;
-    iInput   : TInputKey;
-begin
-  DoScrollSwap.Command := COMMAND_NONE;
-  iArray := TItemArray.Create( False );
-  if Slot[ efWeapon ]  <> nil then
-  begin
-    iArray.Push( Slot[ efWeapon ] );
-    if Slot[ efWeapon ].Flags[ IF_CURSED ] then
-    begin
-      IO.Msg('You can''t!');
-      FreeAndNil( iArray );
-      Exit;
-    end;
-  end;
-  if (Slot[ efWeapon2 ] <> nil) and Slot[ efWeapon2 ].isWeapon then iArray.Push( Slot[ efWeapon2 ] );
-  for iItem in Self do
-    if not Equipped( iItem ) then
-      if iItem.isWeapon then
-        iArray.Push( iItem );
-
-  if iArray.Size = 0 then IO.Msg('You have no weapons!');
-  if iArray.Size = 1 then IO.Msg('You have no other weapons!');
-  if iArray.Size > 1 then
-  begin
-    IO.Msg('Use @<scroll@> to choose weapon, @<left@> button to wield, @<right@> to cancel...');
-    iIdx := 1;
-    if Slot[ efWeapon ] = nil then iIdx := 0;
-    repeat
-      IO.SetHint( iArray[iIdx].Description );
-      iInput := IO.WaitForInput( [INPUT_MSCRUP,INPUT_MSCRDOWN,INPUT_MLEFT,INPUT_MRIGHT,INPUT_ESCAPE,INPUT_OK] );
-      if iInput = INPUT_MSCRUP   then if iIdx = 0 then iIdx := iArray.Size-1 else iIdx -= 1;
-      if iInput = INPUT_MSCRDOWN then iIdx := (iIdx + 1) mod iArray.Size;
-    until iInput in [0,INPUT_ESCAPE,INPUT_OK,INPUT_MLEFT,INPUT_MRIGHT];
-    if iInput in [INPUT_OK,INPUT_MLEFT] then
-    begin
-      if iArray[ iIdx ] = Slot[ efWeapon2 ] then
-      begin
-        DoScrollSwap.Command := COMMAND_SWAPWEAPON
-      end
-      else
-      if iArray[ iIdx ] <> Slot[ efWeapon ] then
-      begin
-        DoScrollSwap.Command := COMMAND_WEAR;
-        DoScrollSwap.Item    := iArray[ iIdx ];
-      end;
-    end;
-  end;
-  IO.SetHint('');
-  FreeAndNil( iArray );
 end;
 
 function TInventory.AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;

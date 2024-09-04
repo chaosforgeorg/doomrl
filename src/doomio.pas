@@ -49,8 +49,6 @@ type TDoomIO = class( TIO )
   procedure Update( aMSec : DWord ); override;
 
   function EventToInput( const aEvent : TIOEvent ) : TInputKey;
-  function WaitForInput( const aSet : TInputKeySet ) : TInputKey;
-  procedure WaitForKeyEvent( out aEvent : TIOEvent; aMouseClick : Boolean = False; aMouseMove : Boolean = False );
   function CommandEventPending : Boolean;
 
   procedure SetHint( const aText : AnsiString );
@@ -912,49 +910,6 @@ begin
       then Exit( TInputKey( Config.Commands[ FKeyCode ] ) );
   end;
   Exit( INPUT_NONE );
-end;
-
-function TDoomIO.WaitForInput ( const aSet : TInputKeySet ) : TInputKey;
-var iInput : TInputKey;
-    iEvent : TIOEvent;
-begin
-  repeat
-    iInput := INPUT_NONE;
-    WaitForKeyEvent( iEvent, GraphicsVersion, GraphicsVersion and (INPUT_MMOVE in aSet) );
-    iInput := EventToInput( iEvent );
-    if (aSet = []) then Exit(iInput);
-  until (iInput in aSet);
-  Exit( iInput )
-end;
-
-procedure TDoomIO.WaitForKeyEvent ( out aEvent : TIOEvent;
-  aMouseClick : Boolean; aMouseMove : Boolean );
-var iEndLoop : TIOEventTypeSet;
-    iPeek    : TIOEvent;
-    iResult  : Boolean;
-begin
-  iEndLoop := [VEVENT_KEYDOWN];
-  if aMouseClick then Include( iEndLoop, VEVENT_MOUSEDOWN );
-  if aMouseMove  then Include( iEndLoop, VEVENT_MOUSEMOVE );
-  repeat
-    while not FIODriver.EventPending do
-    begin
-      FullUpdate;
-      FIODriver.Sleep(10);
-    end;
-    if not FIODriver.PollEvent( aEvent ) then continue;
-    if ( aEvent.EType = VEVENT_MOUSEMOVE ) and FIODriver.EventPending then
-    begin
-      repeat
-        iResult := FIODriver.PeekEvent( iPeek );
-        if ( not iResult ) or ( iPeek.EType <> VEVENT_MOUSEMOVE ) then break;
-        FIODriver.PollEvent( aEvent );
-      until (not FIODriver.EventPending);
-    end;
-    if OnEvent( aEvent ) or FUIRoot.OnEvent( aEvent ) then aEvent.EType := VEVENT_KEYUP;
-    if (aEvent.EType = VEVENT_SYSTEM) and (aEvent.System.Code = VIO_SYSEVENT_QUIT) then
-      Exit;
-  until aEvent.EType in iEndLoop;
 end;
 
 function TDoomIO.CommandEventPending : Boolean;

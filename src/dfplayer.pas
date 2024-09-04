@@ -613,7 +613,7 @@ begin
   begin
     if IO.CommandEventPending then
     begin
-      IO.Msg('Pending stop');
+      IO.Msg('Stop.');
       FPathRun := False;
       FRun.Stop;
       IO.ClearEventBuffer;
