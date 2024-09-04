@@ -1016,10 +1016,8 @@ repeat
   end;
 
   if State = DSSaving then
-  begin
     WriteSaveFile( False );
-    IO.MsgEnter('Game saved. Press <Enter> to exit.');
-  end;
+
   if State = DSFinished then
   begin
     if GameWon then
