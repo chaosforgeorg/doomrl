@@ -148,7 +148,8 @@ uses math, video, dateutils, variants,
      vsound, vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
      dflevel, dfplayer, dfitem,
-     doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua, doomhudviews;
+     doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua,
+     doomhudviews, doomplotview;
 
 {
 procedure OutPutRestore;
@@ -1013,7 +1014,8 @@ function lua_ui_plot_screen(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  IO.RunUILoop( TConUIPlotViewer.Create( IO.Root, State.ToString(1), Rectangle( Point(10,5), 62, 15 ) ) );
+  IO.PushLayer( TPlotView.Create( State.ToString(1), State.ToInteger(2) ) );
+  IO.WaitForLayer( True );
   Result := 0;
 end;
 

@@ -58,6 +58,6 @@ the hell is this? It's not supposed to end this way!
 It stinks like rotten meat but it looks like the
 lost Deimos base. Looks like you're stuck on
 The Shores of Hell. And the only way out is through...
-]])
+]],RED)
 end
 
