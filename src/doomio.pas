@@ -465,13 +465,15 @@ begin
   if iInput <> INPUT_NONE then
     if not FLayers.IsEmpty then
       for i := FLayers.Size - 1 downto 0 do
-        if FLayers[i].HandleInput( iInput ) then
-          Exit( True );
+        if not FLayers[i].isFinished then
+          if FLayers[i].HandleInput( iInput ) then
+            Exit( True );
 
   if not FLayers.IsEmpty then
     for i := FLayers.Size - 1 downto 0 do
-      if FLayers[i].HandleEvent( event ) then
-        Exit( True );
+      if not FLayers[i].isFinished then
+        if FLayers[i].HandleEvent( event ) then
+          Exit( True );
 
   Exit( False );
 end;
@@ -831,8 +833,25 @@ end;
 
 procedure TDoomIO.Update( aMSec : DWord );
 var iLayer  : TInterfaceLayer;
-    i,j     : Integer;
     iMEvent : TIOEvent;
+
+  procedure ClearFinished;
+  var i,j : Integer;
+  begin
+    i := 0;
+    while i < FLayers.Size do
+      if FLayers[i].IsFinished then
+      begin
+        FLayers[i].Free;
+        if i < FLayers.Size - 1 then
+          for j := i to FLayers.Size - 2 do
+            FLayers[j] := FLayers[j + 1];
+        FLayers.Pop;
+      end
+      else
+        Inc( i );
+  end;
+
 begin
   if Assigned( Sound ) then
     Sound.Update;
@@ -845,21 +864,10 @@ begin
     VTIG_GetIOState.MouseState.HandleEvent( iMEvent );
   end;
 
+  ClearFinished;
   for iLayer in FLayers do
     iLayer.Update( Integer( aMSec ) );
-
-  i := 0;
-  while i < FLayers.Size do
-    if FLayers[i].IsFinished then
-    begin
-      FLayers[i].Free;
-      if i < FLayers.Size - 1 then
-        for j := i to FLayers.Size - 2 do
-          FLayers[j] := FLayers[j + 1];
-      FLayers.Pop;
-    end
-    else
-      Inc( i );
+  ClearFinished;
 
   FTime += aMSec;
   FAudio.Update( aMSec );
