@@ -458,6 +458,7 @@ var iDir        : TDirection;
     iRange      : Byte;
     iTargets    : TAutoTarget;
     iCommand    : Byte;
+    iEmpty      : Boolean;
 begin
   iLimitRange := False;
   iFireTitle  := '';
@@ -511,13 +512,22 @@ begin
 
   if iItem.isRanged then
   begin
+    iEmpty := False;
     if not iItem.Flags[ IF_NOAMMO ] then
     begin
-      if iItem.Ammo = 0              then Exit( Player.FailConfirm( 'Your weapon is empty.', [] ) );
-      if iItem.Ammo < iItem.ShotCost then Exit( Player.FailConfirm( 'You don''t have enough ammo to fire the %s!', [iItem.Name]) );
+           if iItem.Ammo = 0              then begin IO.Msg( 'Your weapon is empty.' ); iEmpty := True; end
+      else if iItem.Ammo < iItem.ShotCost then begin IO.Msg( 'You don''t have enough ammo to fire the %s!', [iItem.Name] ); iEmpty := True; end;
     end;
 
-    if iItem.Flags[ IF_CHAMBEREMPTY ] then Exit( Player.FailConfirm( 'Shell chamber empty - move or reload.', [] ) );
+    if not iEmpty then
+      if iItem.Flags[ IF_CHAMBEREMPTY ] then
+      begin IO.Msg( 'Shell chamber empty - move or reload.' ); iEmpty := True; end;
+    if iEmpty then
+    begin
+      if Setting_EmptyConfirm then
+        IO.PushLayer( TMoreLayer.Create( False ) );
+      Exit( False );
+    end;
 
 
     if iItem.Flags[ IF_SHOTGUN ] then
@@ -826,7 +836,7 @@ begin
   Doom.Load;
 
   IO.PushLayer( TMainMenuView.Create );
-  IO.WaitForLayer;
+  IO.WaitForLayer( True );
   if FState <> DSQuit then
 repeat
   if not DataLoaded then
@@ -849,7 +859,7 @@ repeat
   iResult.Reset; // TODO : could reuse for same game!
 
   IO.PushLayer( TMainMenuView.Create( MAINMENU_MENU, iResult ) );
-  IO.WaitForLayer;
+  IO.WaitForLayer( True );
   Apply( iResult );
   if State = DSQuit then Break;
 
@@ -1033,19 +1043,19 @@ repeat
     if HOF.RankCheck( iRank ) then
     begin
       IO.PushLayer( TRankUpView.Create( iRank ) );
-      IO.WaitForLayer;
+      IO.WaitForLayer( True );
     end;
     if Player.FScore >= -1000 then
     begin
       iReport := TPagedReport.Create('Post mortem', False );
       iReport.Add( TextFileToUIStringArray( WritePath + 'mortem.txt' ), 'mortem.txt' );
       IO.PushLayer( TPagedView.Create( iReport ) );
-      IO.WaitForLayer;
+      IO.WaitForLayer( True );
     end;
     iChalAbbr := '';
     if Challenge <> '' then iChalAbbr := LuaSystem.Get(['chal',Challenge,'abbr']);
     IO.PushLayer( TPagedView.Create( HOF.GetPagedScoreReport, iChalAbbr ) );
-    IO.WaitForLayer;
+    IO.WaitForLayer( True );
   end;
   CallHook(Hook_OnUnLoad,[]);
 

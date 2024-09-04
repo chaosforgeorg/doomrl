@@ -35,7 +35,7 @@ type TDoomIO = class( TIO )
   procedure Reconfigure( aConfig : TLuaConfig ); virtual;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
   function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
-  procedure WaitForLayer;
+  procedure WaitForLayer( aHideHUD : Boolean );
   procedure FullUpdate; override;
   destructor Destroy; override;
   procedure Screenshot( aBB : Boolean );
@@ -58,13 +58,11 @@ type TDoomIO = class( TIO )
 
   procedure Focus( aCoord: TCoord2D );
 
-  function ChooseDirection( aActionName : string ) : TDirection;
   procedure LookDescription( aWhere : TCoord2D );
 
   procedure Msg( const aText : AnsiString );
   procedure Msg( const aText : AnsiString; const aParams : array of const );
   procedure MsgEnter( const aText : AnsiString );
-  procedure MsgEnter( const aText : AnsiString; const aParams : array of const );
   function  MsgGetRecent : TUIChunkBuffer;
   procedure MsgReset;
   // TODO: Could this be removed as well?
@@ -539,15 +537,17 @@ begin
   FHudEnabled := True;
 end;
 
-procedure TDoomIO.WaitForLayer;
+procedure TDoomIO.WaitForLayer( aHideHUD : Boolean );
 begin
-  FHudEnabled := False;
+  if aHideHUD then
+    FHudEnabled := False;
   repeat
     Sleep(10);
     FullUpdate;
     HandleEvents;
   until FLayers.IsEmpty;
-  FHudEnabled := True;
+  if aHideHUD then
+    FHudEnabled := True;
 end;
 
 procedure TDoomIO.FullUpdate;
@@ -795,9 +795,8 @@ function TDoomIO.EventWaitForMore : Boolean;
 begin
   if Option_MorePrompt then
   begin
-    SetHint('[more]');
-    WaitForInput([INPUT_OK,INPUT_MLEFT]);
-    SetHint('');
+    IO.PushLayer( TMoreLayer.Create( True ) );
+    IO.WaitForLayer( False );
   end;
   MsgUpdate;
   Exit( True );
@@ -984,40 +983,6 @@ begin
   FConsole.MoveCursor(aCoord.x+1,aCoord.y+2);
 end;
 
-function TDoomIO.ChooseDirection(aActionName : string): TDirection;
-var iInput : TInputKey;
-    Position : TCoord2D;
-    iTarget : TCoord2D;
-    iDone : Boolean;
-begin
-  Position := Player.Position;
-  Msg( aActionName + ' -- Choose direction...' );
-  iDone := False;
-  repeat
-    iInput := IO.WaitForInput(INPUT_MOVE+[INPUT_TOGGLEGRID,INPUT_ESCAPE,INPUT_MLEFT,INPUT_MRIGHT]);
-    if (iInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
-    if iInput in INPUT_MOVE then
-    begin
-      ChooseDirection := InputDirection(iInput);
-      iDone := True;
-    end;
-    if (iInput = INPUT_MLEFT) then
-    begin
-      iTarget := IO.MTarget;
-      if (Distance( iTarget, Position) = 1) then
-      begin
-        ChooseDirection.Create(Position, iTarget);
-        iDone := True;
-      end;
-    end;
-    if (iInput in [INPUT_MRIGHT,INPUT_ESCAPE]) then
-    begin
-      ChooseDirection.Create(DIR_CENTER);
-      iDone := True;
-    end;
-  until iDone;
-end;
-
 procedure TDoomIO.LookDescription(aWhere: TCoord2D);
 var LookDesc : string;
 begin
@@ -1044,13 +1009,6 @@ begin
   MsgUpDate;
 end;
 
-procedure TDoomIO.MsgEnter( const aText: AnsiString; const aParams: array of const);
-begin
-  Msg( aText+' Press <Enter>...', aParams );
-  WaitForEnter;
-  MsgUpDate;
-end;
-
 function TDoomIO.MsgGetRecent : TUIChunkBuffer;
 begin
   Exit( FMessages.Content );
@@ -1071,6 +1029,8 @@ end;
 procedure TDoomIO.ErrorReport(const aText: AnsiString);
 begin
   MsgEnter('@RError:@> '+aText);
+  PushLayer( TMoreLayer.Create( False ) );
+  WaitForLayer( False );
   Msg('@yError written to error.log, please report!@>');
 end;
 

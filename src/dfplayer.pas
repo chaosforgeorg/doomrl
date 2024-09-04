@@ -142,7 +142,7 @@ uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
      dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doombase,
-     doomlua, doominventory, doomplayerview;
+     doomlua, doominventory, doomplayerview, doomhudviews;
 
 var MortemText    : Text;
     WritingMortem : Boolean = False;
@@ -350,7 +350,11 @@ procedure TPlayer.LevelUp;
 begin
   Inc( FExpLevel );
   IO.Blink( LightBlue, 100 );
-  IO.MsgEnter( 'You advance to level %d!', [ FExpLevel ] );
+
+  IO.Msg( 'You advance to level %d!', [ FExpLevel ] );
+  IO.PushLayer( TMoreLayer.Create( False ) );
+  IO.WaitForLayer( False );
+
   if not Doom.CallHookCheck( Hook_OnPreLevelUp, [ FExpLevel ] ) then Exit;
   IO.BloodSlideDown( 20 );
   doUpgradeTrait();
@@ -724,7 +728,11 @@ begin
 
   IO.WaitForAnimation;
 
-  IO.MsgEnter('You die!...');
+  begin
+    IO.Msg('You die!...');
+    IO.PushLayer( TMoreLayer.Create( False ) );
+    IO.WaitForLayer( False );
+  end;
   Doom.SetState( DSFinished );
 
   if NukeActivated > 0 then
@@ -887,7 +895,7 @@ end;
 procedure TPlayer.doUpgradeTrait;
 begin
   IO.PushLayer( TPlayerView.CreateTrait( False ) );
-  IO.WaitForLayer;
+  IO.WaitForLayer( True );
 end;
 
 function lua_player_set_affect(L: Plua_State): Integer; cdecl;

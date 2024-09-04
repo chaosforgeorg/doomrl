@@ -50,6 +50,18 @@ protected
   FFlag : Byte;
 end;
 
+type TMoreLayer = class( TInterfaceLayer )
+  constructor Create( aMore : Boolean = True );
+  procedure Update( aDTime : Integer ); override;
+  function IsFinished : Boolean; override;
+  function IsModal : Boolean; override;
+  function HandleInput( aInput : TInputKey ) : Boolean; override;
+protected
+  FPrompt   : AnsiString;
+  FLength   : Byte;
+  FFinished : Boolean;
+end;
+
 type TTargetModeView = class( TInterfaceLayer )
   constructor Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );
   procedure Update( aDTime : Integer ); override;
@@ -217,6 +229,37 @@ begin
   if aDir.code = DIR_CENTER then Exit;
   Doom.HandleActionCommand( Player.Position + aDir, FFlag );
 end;
+
+constructor TMoreLayer.Create( aMore : Boolean = True );
+begin
+  if aMore
+    then FPrompt := '[more] press <{LEnter}>...'
+    else FPrompt := 'Press <{LEnter}>...';
+  FLength := VTIG_Length( FPrompt );
+end;
+
+procedure TMoreLayer.Update( aDTime : Integer );
+begin
+  VTIG_FreeLabel( FPrompt, Point( -FLength-1, 2 ), Yellow )
+end;
+
+function TMoreLayer.IsFinished : Boolean;
+begin
+  Exit( FFinished );
+end;
+
+function TMoreLayer.IsModal : Boolean;
+begin
+  Exit( True );
+end;
+
+function TMoreLayer.HandleInput( aInput : TInputKey ) : Boolean;
+begin
+  if aInput in [ INPUT_OK, INPUT_MLEFT, INPUT_QUIT, INPUT_HARDQUIT ] then
+    FFinished := True;
+  Exit( True );
+end;
+
 
 constructor TTargetModeView.Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString;
   aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );
