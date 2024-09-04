@@ -49,7 +49,6 @@ type TDoomIO = class( TIO )
   procedure Update( aMSec : DWord ); override;
 
   function EventToInput( const aEvent : TIOEvent ) : TInputKey;
-  procedure WaitForEnter;
   function WaitForInput( const aSet : TInputKeySet ) : TInputKey;
   procedure WaitForKeyEvent( out aEvent : TIOEvent; aMouseClick : Boolean = False; aMouseMove : Boolean = False );
   function CommandEventPending : Boolean;
@@ -62,7 +61,6 @@ type TDoomIO = class( TIO )
 
   procedure Msg( const aText : AnsiString );
   procedure Msg( const aText : AnsiString; const aParams : array of const );
-  procedure MsgEnter( const aText : AnsiString );
   function  MsgGetRecent : TUIChunkBuffer;
   procedure MsgReset;
   // TODO: Could this be removed as well?
@@ -916,11 +914,6 @@ begin
   Exit( INPUT_NONE );
 end;
 
-procedure TDoomIO.WaitForEnter;
-begin
-  WaitForInput([INPUT_OK,INPUT_MLEFT]);
-end;
-
 function TDoomIO.WaitForInput ( const aSet : TInputKeySet ) : TInputKey;
 var iInput : TInputKey;
     iEvent : TIOEvent;
@@ -1002,13 +995,6 @@ begin
   Msg( Format( aText, aParams ) );
 end;
 
-procedure TDoomIO.MsgEnter( const aText: AnsiString);
-begin
-  Msg(aText+' Press <Enter>...');
-  WaitForEnter;
-  MsgUpDate;
-end;
-
 function TDoomIO.MsgGetRecent : TUIChunkBuffer;
 begin
   Exit( FMessages.Content );
@@ -1028,7 +1014,7 @@ end;
 
 procedure TDoomIO.ErrorReport(const aText: AnsiString);
 begin
-  MsgEnter('@RError:@> '+aText);
+  Msg('@RError:@> '+aText);
   PushLayer( TMoreLayer.Create( False ) );
   WaitForLayer( False );
   Msg('@yError written to error.log, please report!@>');
@@ -1095,7 +1081,10 @@ var State : TDoomLuaState;
 begin
   State.Init(L);
   if State.StackSize = 0 then Exit(0);
-  IO.MsgEnter(State.ToString(1));
+  IO.Msg(State.ToString(1));
+  IO.PushLayer( TMoreLayer.Create( False ) );
+  IO.WaitForLayer( False );
+  IO.MsgUpDate;
   Result := 0;
 end;
 
