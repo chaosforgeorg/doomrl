@@ -1066,12 +1066,12 @@ begin
   Result := 1;
 end;
 
-function lua_ui_strip_enc(L: Plua_State): Integer; cdecl;
+function lua_ui_strip_encoding(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
   if State.StackSize = 0 then Exit(0);
-  State.Push( StripEncoding(State.ToString(1) ) );
+  State.Push( VTIG_StripTags( State.ToString(1) ) );
   Result := 1;
 end;
 
@@ -1128,7 +1128,7 @@ const lua_ui_lib : array[0..10] of luaL_Reg = (
       ( name : 'blink';         func : @lua_ui_blink),
       ( name : 'plot_screen';   func : @lua_ui_plot_screen),
       ( name : 'set_hint';      func : @lua_ui_set_hint ),
-      ( name : 'strip_encoding';func : @lua_ui_strip_enc ),
+      ( name : 'strip_encoding';func : @lua_ui_strip_encoding ),
       ( name : nil;          func : nil; )
 );
 
