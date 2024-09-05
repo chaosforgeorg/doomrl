@@ -1106,7 +1106,8 @@ function TBeing.ActionMove( aTarget : TCoord2D ) : Boolean;
 begin
   if GraphicsVersion then
   begin
-    IO.addScreenMoveAnimation(100,0,aTarget);
+    if isPlayer then
+      IO.addScreenMoveAnimation(100,0,aTarget);
     IO.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
   end;
   Displace( aTarget );
@@ -2749,9 +2750,8 @@ begin
   Target := State.ToCoord(2);
   if GraphicsVersion then
     if Thing is TBeing then
-    begin
-      if Thing is TPlayer then IO.addScreenMoveAnimation(Distance(Thing.Position,Target)*10,0,Target);
-    end;
+      if Thing is TPlayer then
+        IO.addScreenMoveAnimation(Distance(Thing.Position,Target)*10,0,Target);
   Thing.Displace(Target);
   Result := 0;
 end;
