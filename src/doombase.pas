@@ -954,37 +954,31 @@ repeat
 
     while ( State = DSPlaying ) do
     begin
-      repeat
-        iEvent.EType :=  VEVENT_KEYUP;
-        if Player.ChainFire > 0 then
-        begin
-          Action( INPUT_ALTFIRE );
-          Continue;
-        end;
+      if Player.ChainFire > 0 then
+      begin
+        Action( INPUT_ALTFIRE );
+        Continue;
+      end;
 
-        if ( Player.FRun.Active ) then
-        begin
-          iInput := Player.GetRunInput;
-          if iInput <> INPUT_NONE then
-            Action( iInput );
-          Continue;
-        end;
+      if ( Player.FRun.Active ) then
+      begin
+        iInput := Player.GetRunInput;
+        if iInput <> INPUT_NONE then
+          Action( iInput );
+        Continue;
+      end;
 
-        while ( not IO.Driver.EventPending ) and ( State = DSPlaying ) do
-        begin
-          IO.FullUpdate;
-          IO.Driver.Sleep(10);
-        end;
-        if State <> DSPlaying then break;
-        if not IO.Driver.PollEvent( iEvent ) then continue;
-        if IO.OnEvent( iEvent ) or IO.Root.OnEvent( iEvent ) then iEvent.EType := VEVENT_KEYUP;
-        if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
-          break;
-      until ( State <> DSPlaying ) or ( iEvent.EType = VEVENT_KEYDOWN ) or ( GraphicsVersion and ( iEvent.EType = VEVENT_MOUSEDOWN ) );
+      while ( not IO.Driver.EventPending ) and ( State = DSPlaying ) do
+      begin
+        IO.FullUpdate;
+        IO.Driver.Sleep(10);
+      end;
+      if State <> DSPlaying then Break;
 
-      if ( State <> DSPlaying ) then Break;
+      if not IO.Driver.PollEvent( iEvent ) then continue;
+      if IO.OnEvent( iEvent ) or IO.Root.OnEvent( iEvent ) then Continue;
 
-      if (iEvent.EType = VEVENT_SYSTEM) then
+      if (iEvent.EType = VEVENT_SYSTEM) and (iEvent.System.Code = VIO_SYSEVENT_QUIT) then
       begin
         if Option_LockClose
            then Action( INPUT_QUIT )
@@ -992,11 +986,10 @@ repeat
         Continue;
       end;
 
-      if iEvent.EType = VEVENT_MOUSEDOWN then
-        HandleMouseEvent( iEvent );
+      if ( State <> DSPlaying ) then Break;
 
-      if iEvent.EType = VEVENT_KEYDOWN then
-        HandleKeyEvent( iEvent );
+      if iEvent.EType = VEVENT_MOUSEDOWN then HandleMouseEvent( iEvent );
+      if iEvent.EType = VEVENT_KEYDOWN   then HandleKeyEvent( iEvent );
     end;
 
     if State = DSNextLevel then
