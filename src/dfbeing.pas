@@ -230,7 +230,7 @@ implementation
 
 uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem,
      dfplayer, dflevel, dfmap, doomhooks,
-     doomlua, doombase, doomio, doomviews;
+     doomlua, doombase, doomio;
 
 function TBeing.getStrayChance( defender : TBeing; missile : byte ) : byte;
 var miss     : Integer;

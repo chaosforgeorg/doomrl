@@ -2,9 +2,9 @@
 unit doomio;
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
-     vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vrlmsg, vuitypes, vluastate,
-     viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
-     dfdata, doomspritemap, doomviews, doomaudio, doomkeybindings, doomloadingview;
+     vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vmessages,
+     vuitypes, vluastate,  viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
+     dfdata, doomspritemap, doomaudio, doomkeybindings, doomloadingview;
 
 const TIG_EV_NONE      = 0;
       TIG_EV_DROP      = 1;
@@ -40,7 +40,7 @@ type TDoomIO = class( TIO )
   destructor Destroy; override;
   procedure Screenshot( aBB : Boolean );
 
-  function EventWaitForMore : Boolean;
+  procedure EventMore;
 
   procedure LoadStart( aAdd : DWord = 0 );
   function LoadCurrent : DWord;
@@ -59,7 +59,7 @@ type TDoomIO = class( TIO )
 
   procedure Msg( const aText : AnsiString );
   procedure Msg( const aText : AnsiString; const aParams : array of const );
-  function  MsgGetRecent : TUIChunkBuffer;
+  function  MsgGetRecent : TMessageBuffer;
   procedure MsgReset;
   // TODO: Could this be removed as well?
   procedure MsgUpDate;
@@ -105,7 +105,7 @@ protected
   function Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
 protected
   FAudio       : TDoomAudio;
-  FMessages    : TRLMessages;
+  FMessages    : TMessages;
   FTime        : QWord;
   FLoading     : TLoadingView;
   FMTarget     : TCoord2D;
@@ -145,8 +145,8 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 implementation
 
 uses math, video, dateutils, variants,
-     vsound, vluasystem, vlog, vdebug, vuiconsole, vcolor, vmath, vtigstyle,
-     vsdlio, vglconsole, vtig, vvision, vconuirl, vtigio,
+     vsound, vluasystem, vlog, vdebug, vuiconsole, vmath, vtigstyle,
+     vsdlio, vglconsole, vtig, vtigio,
      dflevel, dfplayer, dfitem,
      doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua,
      doomhudviews, doomplotview;
@@ -285,7 +285,7 @@ begin
   IO := Self;
   FTime := 0;
   FAudio    := TDoomAudio.Create;
-  FMessages := TRLMessages.Create(2, @IO.EventWaitForMore, @Chunkify, Option_MessageBuffer );
+  FMessages := TMessages.Create( 2, 77, @IO.EventMore, Option_MessageBuffer );
   FASCII    := TASCIIImageMap.Create( True );
   FLayers   := TInterfaceLayerStack.Create;
 
@@ -711,30 +711,14 @@ begin
     else if FHint <> ''
       then VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 2 ), Yellow );
 
-  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
-  if FMessages.Content.Size > 0 then
-  for i := 1+FMessages.Scroll to iMax do
-  begin
-    iColor := iCNormal;
-    if i > iMax - FMessages.Active then iColor := iCBold;
-    iCon.Print( Point(1,i-FMessages.Scroll), FMessages.Content[ i-1 ], iColor, Black, Rectangle( 1,1, 78, 25 ) );
-  end;
 
-  {
-  VTIG_Begin( 'messages', Point(78,2), Point( 1,1 ) );
-  iMax := Min( LongInt( FMessages.Scroll+FMessages.VisibleCount ), FMessages.Content.Size );
-  if FMessages.Content.Size > 0 then
-  for i := 1+FMessages.Scroll to iMax do
+  for i := 1 to 2 do
   begin
-    iColor := FForeColor;
-    if i > iMax - FMessages.Active then iColor := iCon.BoldColor( FForeColor );
-    for iChunk in FMessages.Content[ i-1 ] do
-      VTIG_Text( iChunk.Content + ' ' );
-//      VTIG_FreeLabel( iChunk.Content, iChunk.Position + Point(1,i-FMessages.Scroll) , iColor );
+    if i > FMessages.Size then Continue;
+    VTIG_HighColor := i <= FMessages.Active;
+    VTIG_FreeLabel( FMessages.Content[ -i ], Point(1,2-i), iCNormal );
+    VTIG_HighColor := False;
   end;
-  VTIG_End;
-  }
-
 end;
 
 procedure TDoomIO.SetHint ( const aText : AnsiString ) ;
@@ -788,15 +772,13 @@ begin
   FASCII.Items[iIdent] := iNewImage;
 end;
 
-function TDoomIO.EventWaitForMore : Boolean;
+procedure TDoomIO.EventMore;
 begin
   if Option_MorePrompt then
   begin
     IO.PushLayer( TMoreLayer.Create( True ) );
     IO.WaitForLayer( False );
   end;
-  MsgUpdate;
-  Exit( True );
 end;
 
 procedure TDoomIO.LoadStart( aAdd : DWord = 0 );
@@ -951,7 +933,7 @@ begin
   Msg( Format( aText, aParams ) );
 end;
 
-function TDoomIO.MsgGetRecent : TUIChunkBuffer;
+function TDoomIO.MsgGetRecent : TMessageBuffer;
 begin
   Exit( FMessages.Content );
 end;
@@ -1057,7 +1039,7 @@ begin
     State.PushNil
   else
   begin
-    Msg := ChunkListToString( IO.MsgGetRecent[-Idx] );
+    Msg := IO.MsgGetRecent[-Idx];
     if Msg <> '' then
       State.Push( Msg )
     else

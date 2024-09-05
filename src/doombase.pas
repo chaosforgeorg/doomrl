@@ -81,8 +81,8 @@ uses Classes, SysUtils,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
-     doompagedview, doomrankupview, doommainmenuview, doomhudviews,
-     doomconfiguration, doomhelp, doomconfig, doomviews, dfplayer;
+     doompagedview, doomrankupview, doommainmenuview, doomhudviews, doommessagesview,
+     doomconfiguration, doomhelp, doomconfig, dfplayer;
 
 
 procedure TDoom.ModuleMainHook(Hook: AnsiString; const Params: array of const);
@@ -305,7 +305,7 @@ begin
     INPUT_NONE        : Exit;
   end;
   IO.MsgUpDate;
-  IO.Msg('Unknown command. Press "h" for help.' );
+  IO.Msg('Unknown command. Press {^"h"} for help.' );
   Exit( False );
 end;
 
@@ -316,7 +316,6 @@ var iItem   : TItem;
     iCount  : Byte;
     iScan   : TCoord2D;
     iTarget : TCoord2D;
-    iDir    : TDirection;
 begin
   iFlag := 0;
 
@@ -781,7 +780,7 @@ begin
       INPUT_LEGACYDROP : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
       INPUT_UNLOAD     : begin HandleUnloadCommand( nil ); Exit; end;
 
-      INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, IO.MsgGetRecent ) ); Exit; end;
+      INPUT_MESSAGES   : begin IO.PushLayer( TMessagesView.Create( IO.MsgGetRecent ) ); Exit; end;
 
       INPUT_HARDQUIT   : begin
         Option_MenuReturn := False;
@@ -816,7 +815,7 @@ begin
     else
     begin
       IO.MsgUpDate;
-      IO.Msg('Unknown command. Press "h" for help.' );
+      IO.Msg('Unknown command. Press {^"h"} for help.' );
     end;
 
   Exit( False );
