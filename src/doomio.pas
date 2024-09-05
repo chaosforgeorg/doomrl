@@ -34,7 +34,6 @@ type TDoomIO = class( TIO )
   constructor Create; reintroduce;
   procedure Reconfigure( aConfig : TLuaConfig ); virtual;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
-  function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
   procedure WaitForLayer( aHideHUD : Boolean );
   procedure FullUpdate; override;
   destructor Destroy; override;
@@ -492,7 +491,6 @@ procedure TDoomIO.FullLook( aID : Ansistring );
 begin
   FConsole.HideCursor;
   PushLayer( TMoreView.Create( aID ) );
-  //IO.RunUILoop( TUIMoreViewer.Create( IO.Root, ID ) );
 end;
 
 procedure TDoomIO.Reconfigure( aConfig : TLuaConfig );
@@ -524,14 +522,6 @@ begin
     aConfig.EntryFeed('Colors', @ColorQuery );
   if Option_MessageColoring then
     aConfig.EntryFeed( 'Messages', @FMessages.AddHighlightCallback );
-end;
-
-function TDoomIO.RunUILoop( aElement : TUIElement = nil ) : DWord;
-begin
-  FHudEnabled := False;
-  FConsole.HideCursor;
-  Result := inherited RunUILoop( aElement );
-  FHudEnabled := True;
 end;
 
 procedure TDoomIO.WaitForLayer( aHideHUD : Boolean );
