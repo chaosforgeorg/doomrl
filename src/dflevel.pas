@@ -176,7 +176,8 @@ TLevel = class(TLuaMapNode, ITextMap)
 implementation
 
 uses typinfo, vluadungen, vluatools, vluasystem,
-     vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomgfxio, doomspritemap;
+     vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomgfxio,
+     doomspritemap, doomhudviews;
 
 procedure TLevel.ScriptLevel(script : string);
 begin
@@ -1203,7 +1204,9 @@ begin
       Player.IncStatistic('levels_nuked');
       if Doom.State in [DSNextLevel,DSSaving] then
       begin
-        IO.MsgEnter('Right in the nick of time!');
+        IO.Msg('Right in the nick of time!');
+        IO.PushLayer( TMoreLayer.Create( False ) );
+        IO.WaitForLayer( False );
         Exit;
       end;
       for cn := 1 to 10 do

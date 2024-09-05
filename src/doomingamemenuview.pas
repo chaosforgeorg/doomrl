@@ -60,7 +60,7 @@ begin
   if VTIG_Selectable( 'Save & Quit' ) then
   begin
     FFinished := True;
-    Player.doSave;
+    Doom.SetState( DSSaving );
   end;
   VTIG_End;
 
@@ -91,7 +91,8 @@ end;
 
 procedure TAbandonView.OnConfirm;
 begin
-  Player.doQuit( True );
+  Doom.SetState( DSQuit );
+  Player.Score := -100000;
 end;
 
 procedure TAbandonView.OnCancel;

@@ -36,6 +36,7 @@ TDoom = class(TSystem)
        procedure SetupLuaConstants;
        function Action( aInput : TInputKey ) : Boolean;
        function HandleActionCommand( aInput : TInputKey ) : Boolean;
+       function HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
        function HandleMoveCommand( aInput : TInputKey ) : Boolean;
        function HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
        function HandleUnloadCommand( aItem : TItem ) : Boolean;
@@ -80,8 +81,8 @@ uses Classes, SysUtils,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
-     doompagedview, doomrankupview, doommainmenuview,
-     doomconfiguration, doomhelp, doomconfig, doomviews, dfplayer;
+     doompagedview, doomrankupview, doommainmenuview, doomhudviews, doommessagesview,
+     doomconfiguration, doomhelp, doomconfig, dfplayer;
 
 
 procedure TDoom.ModuleMainHook(Hook: AnsiString; const Params: array of const);
@@ -304,7 +305,7 @@ begin
     INPUT_NONE        : Exit;
   end;
   IO.MsgUpDate;
-  IO.Msg('Unknown command. Press "h" for help.' );
+  IO.Msg('Unknown command. Press {^"h"} for help.' );
   Exit( False );
 end;
 
@@ -315,7 +316,6 @@ var iItem   : TItem;
     iCount  : Byte;
     iScan   : TCoord2D;
     iTarget : TCoord2D;
-    iDir    : TDirection;
 begin
   iFlag := 0;
 
@@ -372,28 +372,30 @@ begin
   if iCount > 1 then
   begin
     if iID = ''
-      then iDir := IO.ChooseDirection('action')
-      else iDir := IO.ChooseDirection(Capitalized(iID)+' door');
-    if iDir.code = DIR_CENTER then Exit( False );
-    iTarget := Player.Position + iDir;
+      then IO.PushLayer( TActionDirView.Create( 'Action', iFlag ) )
+      else IO.PushLayer( TActionDirView.Create( Capitalized(iID)+' door', iFlag ) );
+    Exit( False );
   end;
 
-  if Level.isProperCoord( iTarget ) then
+  Exit( HandleActionCommand( iTarget, iFlag ) );
+end;
+
+function TDoom.HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
+begin
+  if Level.isProperCoord( aTarget ) then
   begin
-    if ( (iFlag <> 0) and Level.cellFlagSet( iTarget, iFlag ) ) or
-        ( (iFlag = 0) and ( Level.cellFlagSet( iTarget, CF_CLOSABLE ) or Level.cellFlagSet( iTarget, CF_OPENABLE ) ) ) then
+    if ( (aFlag <> 0) and Level.cellFlagSet( aTarget, aFlag ) ) or
+        ( (aFlag = 0) and ( Level.cellFlagSet( aTarget, CF_CLOSABLE ) or Level.cellFlagSet( aTarget, CF_OPENABLE ) ) ) then
     begin
-      if not Level.isEmpty( iTarget ,[EF_NOITEMS,EF_NOBEINGS] ) then
+      if not Level.isEmpty( aTarget ,[EF_NOITEMS,EF_NOBEINGS] ) then
       begin
         IO.Msg( 'There''s something in the way!' );
         Exit( False );
       end;
       // SUCCESS
-      Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
+      Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, aTarget ) ) );
     end;
-    if iID = ''
-      then IO.Msg( 'You can''t do that!' )
-      else IO.Msg( 'You can''t %s that.', [ iID ] );
+    IO.Msg( 'You can''t do that!' );
   end;
   Exit( False );
 end;
@@ -448,13 +450,18 @@ function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
 var iDir        : TDirection;
     iTarget     : TCoord2D;
     iItem       : TItem;
-    iFireDesc   : AnsiString;
+    iFireTitle  : AnsiString;
     iChainFire  : Byte;
     iAltFire    : TAltFire;
     iLimitRange : Boolean;
     iRange      : Byte;
+    iTargets    : TAutoTarget;
+    iCommand    : Byte;
+    iEmpty      : Boolean;
 begin
-  iChainFire := Player.ChainFire;
+  iLimitRange := False;
+  iFireTitle  := '';
+  iChainFire  := Player.ChainFire;
   Player.ChainFire := 0;
 
   iItem := Player.Inv.Slot[ efWeapon ];
@@ -467,10 +474,8 @@ begin
   begin
     if (not aMouse) and iItem.isMelee then
     begin
-      iDir := IO.ChooseDirection('Melee attack');
-      if (iDir.code = DIR_CENTER) then Exit( False );
-      iTarget := Player.Position + iDir;
-      Exit( HandleCommand( TCommand.Create( COMMAND_MELEE, iTarget ) ) );
+      IO.PushLayer( TMeleeDirView.Create );
+      Exit( False );
     end;
 
     if (not iItem.isRanged) then
@@ -497,12 +502,7 @@ begin
       begin
         iRange      := Missiles[ iItem.Missile ].Range;
         iLimitRange := MF_EXACT in Missiles[ iItem.Missile ].Flags;
-        if not Player.doChooseTarget( 'Throw -- Choose target...', iRange, iLimitRange ) then
-        begin
-          IO.Msg( 'Throwing canceled.' );
-          Exit( False );
-        end;
-        iTarget := Player.TargetPos;
+        iFireTitle  := 'Choose throw target:';
       end
       else
         iTarget  := IO.MTarget;
@@ -511,13 +511,22 @@ begin
 
   if iItem.isRanged then
   begin
+    iEmpty := False;
     if not iItem.Flags[ IF_NOAMMO ] then
     begin
-      if iItem.Ammo = 0              then Exit( Player.FailConfirm( 'Your weapon is empty.', [] ) );
-      if iItem.Ammo < iItem.ShotCost then Exit( Player.FailConfirm( 'You don''t have enough ammo to fire the %s!', [iItem.Name]) );
+           if iItem.Ammo = 0              then begin IO.Msg( 'Your weapon is empty.' ); iEmpty := True; end
+      else if iItem.Ammo < iItem.ShotCost then begin IO.Msg( 'You don''t have enough ammo to fire the %s!', [iItem.Name] ); iEmpty := True; end;
     end;
 
-    if iItem.Flags[ IF_CHAMBEREMPTY ] then Exit( Player.FailConfirm( 'Shell chamber empty - move or reload.', [] ) );
+    if not iEmpty then
+      if iItem.Flags[ IF_CHAMBEREMPTY ] then
+      begin IO.Msg( 'Shell chamber empty - move or reload.' ); iEmpty := True; end;
+    if iEmpty then
+    begin
+      if Setting_EmptyConfirm then
+        IO.PushLayer( TMoreLayer.Create( False ) );
+      Exit( False );
+    end;
 
 
     if iItem.Flags[ IF_SHOTGUN ] then
@@ -531,42 +540,43 @@ begin
     begin
       iAltFire    := ALT_NONE;
       if aAlt then iAltFire := iItem.AltFire;
-      iFireDesc := '';
+      iFireTitle := 'Choose fire target:';
       case iAltFire of
-        ALT_SCRIPT  : iFireDesc := LuaSystem.Get([ 'items', iItem.ID, 'altname' ],'');
-        ALT_AIMED   : iFireDesc := 'aimed';
-        ALT_SINGLE  : iFireDesc := 'single';
+        ALT_SCRIPT  : iFireTitle := 'Fire target ({L'+LuaSystem.Get([ 'items', iItem.ID, 'altname' ],'')+'}):';
+        ALT_AIMED   : iFireTitle := 'Fire target ({Laimed}):';
+        ALT_SINGLE  : iFireTitle := 'Fire target ({Lsingle}):';
       end;
-      if iFireDesc <> '' then iFireDesc := ' (@Y'+iFireDesc+'@>)';
-
       if iAltFire = ALT_CHAIN then
       begin
         case iChainFire of
-          0 : iFireDesc := ' (@Ginitial@>)';
-          1 : iFireDesc := ' (@Ywarming@>)';
-          2 : iFireDesc := ' (@Rfull@>)';
+          0 : iFireTitle := 'Chain fire ({Ginitial}):';
+          1 : iFireTitle := 'Chain fire ({Ywarming}):';
+          2 : iFireTitle := 'Chain fire ({Rfull}):';
         end;
-        if not Player.doChooseTarget( Format('Chain fire%s -- Choose target or abort...', [ iFireDesc ]), iRange, iLimitRange ) then
-          Exit( Player.Fail( 'Targeting canceled.', [] ) );
       end
-      else
-        if not Player.doChooseTarget( Format('Fire%s -- Choose target...',[ iFireDesc ]), iRange, iLimitRange ) then
-          Exit( Player.Fail( 'Targeting canceled.', [] ) );
-      iTarget := Player.TargetPos;
     end
     else
     begin
       iTarget := IO.MTarget;
+
+      if iLimitRange then
+        if Distance( Player.Position, iTarget ) > iRange then
+          Exit( Player.Fail( 'Out of range!', [] ) );
     end;
-    if iLimitRange then
-      if Distance( Player.Position, iTarget ) > iRange then
-        Exit( Player.Fail( 'Out of range!', [] ) );
   end;
 
-  Player.ChainFire := iChainFire;
-  if aAlt
-    then Exit( HandleCommand( TCommand.Create( COMMAND_ALTFIRE, iTarget, iItem ) ) )
-    else Exit( HandleCommand( TCommand.Create( COMMAND_FIRE, iTarget, iItem ) ) );
+  iCommand := COMMAND_FIRE;
+  if aAlt then iCommand := COMMAND_ALTFIRE;
+
+  if iFireTitle <> '' then
+  begin
+    if iRange = 0 then iRange := Player.Vision;
+    iTargets := Player.CreateAutoTarget( iRange, True );
+    IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, iTargets, iChainFire ) );
+    Exit( False );
+  end;
+
+  Exit( HandleCommand( TCommand.Create( iCommand, iTarget, iItem ) ) )
 end;
 
 
@@ -735,7 +745,7 @@ begin
     end;
 
     if iButton in [ VMB_WHEEL_UP, VMB_WHEEL_DOWN ] then
-      Exit( HandleCommand( Player.Inv.DoScrollSwap ) );
+      IO.PushLayer( TScrollSwapLayer.Create );
   end;
   Exit( False );
 end;
@@ -759,9 +769,9 @@ begin
     case iInput of
 //      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
       INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
-      INPUT_QUIT       : begin Player.doQuit; Exit; end;
+      INPUT_QUIT       : begin IO.PushLayer( TAbandonView.Create ); Exit; end;
       INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
-      INPUT_LOOKMODE   : begin IO.Msg( '-' ); IO.LookMode; Exit; end;
+      INPUT_LOOKMODE   : begin IO.PushLayer( TLookModeView.Create ); Exit; end;
       INPUT_PLAYERINFO : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
       INPUT_INVENTORY  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;
       INPUT_EQUIPMENT  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) ); Exit; end;
@@ -770,17 +780,24 @@ begin
       INPUT_LEGACYDROP : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
       INPUT_UNLOAD     : begin HandleUnloadCommand( nil ); Exit; end;
 
-      INPUT_MESSAGES   : begin IO.RunUILoop( TUIMessagesViewer.Create( IO.Root, IO.MsgGetRecent ) ); Exit; end;
+      INPUT_MESSAGES   : begin IO.PushLayer( TMessagesView.Create( IO.MsgGetRecent ) ); Exit; end;
 
       INPUT_HARDQUIT   : begin
         Option_MenuReturn := False;
-        Player.doQuit(True);
+        Doom.SetState( DSQuit );
+        Player.Score := -100000;
         Exit;
       end;
 
-      INPUT_LEGACYSAVE: begin Player.doSave; Exit; end;
+      INPUT_LEGACYSAVE: begin Doom.SetState( DSSaving ); Exit; end;
       INPUT_TRAITS    : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
-      INPUT_RUN       : begin Player.doRun;Exit; end;
+      INPUT_RUN       : begin
+        Player.FPathRun := False;
+        if Player.BeingsInVision > 1
+          then IO.Msg( 'Can''t run, there are enemies present.',[] )
+          else IO.PushLayer( TRunModeView.create );
+        Exit;
+      end;
 
       INPUT_EXAMINENPC   : begin Player.ExamineNPC; Exit; end;
       INPUT_EXAMINEITEM  : begin Player.ExamineItem; Exit; end;
@@ -798,7 +815,7 @@ begin
     else
     begin
       IO.MsgUpDate;
-      IO.Msg('Unknown command. Press "h" for help.' );
+      IO.Msg('Unknown command. Press {^"h"} for help.' );
     end;
 
   Exit( False );
@@ -818,7 +835,7 @@ begin
   Doom.Load;
 
   IO.PushLayer( TMainMenuView.Create );
-  IO.WaitForLayer;
+  IO.WaitForLayer( True );
   if FState <> DSQuit then
 repeat
   if not DataLoaded then
@@ -841,7 +858,7 @@ repeat
   iResult.Reset; // TODO : could reuse for same game!
 
   IO.PushLayer( TMainMenuView.Create( MAINMENU_MENU, iResult ) );
-  IO.WaitForLayer;
+  IO.WaitForLayer( True );
   Apply( iResult );
   if State = DSQuit then Break;
 
@@ -937,21 +954,21 @@ repeat
 
     while ( State = DSPlaying ) do
     begin
-      if Player.ChainFire > 0 then
-      begin
-        Action( INPUT_ALTFIRE );
-        Continue;
-      end;
-
-      if ( Player.FRun.Active ) then
-      begin
-        iInput := Player.GetRunInput;
-        if iInput <> INPUT_NONE then
-          Action( iInput );
-        Continue;
-      end;
-
       repeat
+        if Player.ChainFire > 0 then
+        begin
+          Action( INPUT_ALTFIRE );
+          Continue;
+        end;
+
+        if ( Player.FRun.Active ) then
+        begin
+          iInput := Player.GetRunInput;
+          if iInput <> INPUT_NONE then
+            Action( iInput );
+          Continue;
+        end;
+
         while ( not IO.Driver.EventPending ) and ( State = DSPlaying ) do
         begin
           IO.FullUpdate;
@@ -1008,10 +1025,8 @@ repeat
   end;
 
   if State = DSSaving then
-  begin
     WriteSaveFile( False );
-    IO.MsgEnter('Game saved. Press <Enter> to exit.');
-  end;
+
   if State = DSFinished then
   begin
     if GameWon then
@@ -1027,19 +1042,19 @@ repeat
     if HOF.RankCheck( iRank ) then
     begin
       IO.PushLayer( TRankUpView.Create( iRank ) );
-      IO.WaitForLayer;
+      IO.WaitForLayer( True );
     end;
     if Player.FScore >= -1000 then
     begin
       iReport := TPagedReport.Create('Post mortem', False );
       iReport.Add( TextFileToUIStringArray( WritePath + 'mortem.txt' ), 'mortem.txt' );
       IO.PushLayer( TPagedView.Create( iReport ) );
-      IO.WaitForLayer;
+      IO.WaitForLayer( True );
     end;
     iChalAbbr := '';
     if Challenge <> '' then iChalAbbr := LuaSystem.Get(['chal',Challenge,'abbr']);
     IO.PushLayer( TPagedView.Create( HOF.GetPagedScoreReport, iChalAbbr ) );
-    IO.WaitForLayer;
+    IO.WaitForLayer( True );
   end;
   CallHook(Hook_OnUnLoad,[]);
 

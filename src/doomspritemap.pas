@@ -273,7 +273,8 @@ begin
     begin
       if (FLastCoord <> iCoord) and (not IO.AnimationsRunning) then
       begin
-        IO.SetTempHint(Doom.Level.GetLookDescription(iCoord));
+        if not IO.IsModal then
+          IO.HintOverlay := Doom.Level.GetLookDescription(iCoord);
         FLastCoord := iCoord;
       end;
 

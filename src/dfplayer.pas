@@ -73,6 +73,8 @@ TPlayer = class(TBeing)
   FQuickSlots     : array[1..9] of TQuickSlotInfo;
 
   FLastTargetPos  : TCoord2D;
+  FLastTargetUID  : TUID;
+
 
   constructor Create; reintroduce;
   procedure Initialize; reintroduce;
@@ -85,12 +87,9 @@ TPlayer = class(TBeing)
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
-  procedure doQuit( aNoConfirm : Boolean = False );
-  procedure doRun;
   procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); override;
   procedure LevelUp;
   procedure AddExp( aAmount : LongInt );
-  function doSave : Boolean;
   procedure WriteMemorial;
   destructor Destroy; override;
   procedure IncStatistic( const aStatisticID : AnsiString; aAmount : Integer = 1 );
@@ -100,15 +99,14 @@ TPlayer = class(TBeing)
   class procedure RegisterLuaAPI();
   procedure UpdateVisual;
   function ASCIIMoreCode : AnsiString; override;
-  function CreateAutoTarget( aRange : Integer ): TAutoTarget;
-  function doChooseTarget( aActionName : string; aRadius : Byte; aLimitRange : Boolean ) : Boolean;
+  function CreateAutoTarget( aRange : Integer; aAssignPriority : Boolean = False ): TAutoTarget;
   function RunPath( const aCoord : TCoord2D ) : Boolean;
   procedure ExamineNPC;
   procedure ExamineItem;
+  procedure UpdateTargeting( aTargetPos : TCoord2D );
   private
   function OnTraitConfirm( aSender : TUIElement ) : Boolean;
   private
-  FLastTargetUID  : TUID;
   FExp            : LongInt;
   FExpLevel       : Byte;
   private
@@ -143,8 +141,8 @@ implementation
 uses math, vuid, vpath, variants, vioevent, vgenerics,
      vnode, vcolor, vuielements, vdebug, vluasystem,
      dfmap, dflevel,
-     doomhooks, doomio, doomspritemap, doomviews, doombase,
-     doomlua, doominventory, doomcommand, doomhelp, doomplayerview;
+     doomhooks, doomio, doomspritemap, doombase,
+     doomlua, doominventory, doomplayerview, doomhudviews;
 
 var MortemText    : Text;
     WritingMortem : Boolean = False;
@@ -352,7 +350,11 @@ procedure TPlayer.LevelUp;
 begin
   Inc( FExpLevel );
   IO.Blink( LightBlue, 100 );
-  IO.MsgEnter( 'You advance to level %d!', [ FExpLevel ] );
+
+  IO.Msg( 'You advance to level %d!', [ FExpLevel ] );
+  IO.PushLayer( TMoreLayer.Create( False ) );
+  IO.WaitForLayer( False );
+
   if not Doom.CallHookCheck( Hook_OnPreLevelUp, [ FExpLevel ] ) then Exit;
   IO.BloodSlideDown( 20 );
   doUpgradeTrait();
@@ -397,20 +399,6 @@ begin
   inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource );
 end;
 
-procedure TPlayer.doRun;
-var iInput : TInputKey;
-begin
-  FPathRun := False;
-  if FEnemiesInVision > 1 then
-  begin
-    Fail( 'Can''t run, there are enemies present.',[] );
-    Exit;
-  end;
-  iInput := IO.MsgCommandChoice('Run - direction...',INPUT_MOVE+[INPUT_ESCAPE,INPUT_WAIT]);
-  if iInput = INPUT_ESCAPE then Exit;
-  FRun.Start( InputDirection(iInput) );
-end;
-
 procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem ) ;
 var iKillClass : AnsiString;
 begin
@@ -424,9 +412,10 @@ begin
   FKills.Add( aKilledID, iKillClass );
 end;
 
-function TPlayer.CreateAutoTarget( aRange : Integer ): TAutoTarget;
-var iLevel : TLevel;
-    iCoord : TCoord2D;
+function TPlayer.CreateAutoTarget( aRange : Integer; aAssignPriority : Boolean = False ): TAutoTarget;
+var iLevel  : TLevel;
+    iCoord  : TCoord2D;
+    iTarget : TBeing;
 begin
   iLevel := TLevel(Parent);
   Result := TAutoTarget.Create( FPosition );
@@ -435,52 +424,26 @@ begin
     with iLevel.Being[ iCoord ] do
       if (not isPlayer) and isVisible then
         Result.AddTarget( iCoord );
-end;
 
-function TPlayer.doChooseTarget( aActionName : string; aRadius : Byte; aLimitRange : Boolean ) : boolean;
-var iTargets : TAutoTarget;
-    iTarget  : TBeing;
-    iLevel   : TLevel;
-begin
-  if aRadius = 0 then aRadius := FVisionRadius;
 
-  iLevel   := TLevel(Parent);
-  iTargets := CreateAutoTarget( aRadius );
-
-  iTarget := nil;
-  if (FLastTargetUID <> 0) and iLevel.isAlive( FLastTargetUID ) then
+  if aAssignPriority then
   begin
-    iTarget := iLevel.FindChild( FLastTargetUID ) as TBeing;
-    if iTarget <> nil then
-      if iTarget.isVisible then
-        if Distance( iTarget.Position, FPosition ) <= aRadius then
-          iTargets.PriorityTarget( iTarget.Position );
+    if (FLastTargetUID <> 0) and iLevel.isAlive( FLastTargetUID ) then
+    begin
+      iTarget := iLevel.FindChild( FLastTargetUID ) as TBeing;
+      if iTarget <> nil then
+        if iTarget.isVisible then
+          if Distance( iTarget.Position, FPosition ) <= aRange then
+            Result.PriorityTarget( iTarget.Position );
+    end;
+
+    if FLastTargetPos.X*FLastTargetPos.Y <> 0 then
+      if FLastTargetUID = 0 then
+        if iLevel.isVisible( FLastTargetPos ) then
+          if Distance( FLastTargetPos, FPosition ) <= aRange then
+            Result.PriorityTarget( FLastTargetPos );
   end;
 
-  if FLastTargetPos.X*FLastTargetPos.Y <> 0 then
-    if FLastTargetUID = 0 then
-      if iLevel.isVisible( FLastTargetPos ) then
-        if Distance( FLastTargetPos, FPosition ) <= aRadius then
-          iTargets.PriorityTarget( FLastTargetPos );
-
-  FTargetPos := IO.ChooseTarget(aActionName, aRadius+1, aLimitRange, iTargets, FChainFire > 0 );
-  if FLastTargetPos.X*FLastTargetPos.Y <> 0
-     then FPrevTargetPos := FLastTargetPos
-     else FPrevTargetPos := FTargetPos;
-  FreeAndNil(iTargets);
-  if FTargetPos.X = 0 then Exit( False );
-
-  if FTargetPos = FPosition then
-  begin
-    IO.Msg( 'Find a more constructive way to commit suicide.' );
-    Exit( False );
-  end;
-
-  FLastTargetUID := 0;
-  if iLevel.Being[ FTargetPos ] <> nil then
-    FLastTargetUID := iLevel.Being[ FTargetPos ].UID;
-  FLastTargetPos := FTargetPos;
-  Exit( True );
 end;
 
 function TPlayer.RunPath( const aCoord : TCoord2D ) : boolean;
@@ -501,29 +464,6 @@ begin
     FTraits.Upgrade( Word(SelectedItem.Data) );
   aSender.Parent.Free;
   Exit( True );
-end;
-
-function TPlayer.doSave : Boolean;
-begin
-  //if Doom.Difficulty >= DIFF_NIGHTMARE then Exit( Fail( 'There''s no escape from a NIGHTMARE! Stand and fight like a man!', [] ) );
-  //if not (CellHook_OnExit in Cells[ TLevel(Parent).Cell[ FPosition ] ].Hooks) then Exit( Fail( 'You can only save the game standing on the stairs to the next level.', [] ) );
-  Doom.SetState( DSSaving );
-  //TLevel(Parent).CallHook( Position, CellHook_OnExit );
-end;
-
-procedure TPlayer.doQuit( aNoConfirm : Boolean = False );
-begin
-  if not aNoConfirm then
-  begin
-    IO.Msg( LuaSystem.ProtectedCall(['DoomRL','quit_message'],[]) );
-    if not IO.MsgConfirm('Are you sure you want to commit suicide?', true) then
-    begin
-      IO.Msg('Ok, then. Stay and take what''s coming to ya...');
-      Exit;
-    end;
-  end;
-  Doom.SetState( DSQuit );
-  FScore      := -100000;
 end;
 
 function TPlayer.PlayerTick : Boolean;
@@ -673,7 +613,7 @@ begin
   begin
     if IO.CommandEventPending then
     begin
-      IO.Msg('Pending stop');
+      IO.Msg('Stop.');
       FPathRun := False;
       FRun.Stop;
       IO.ClearEventBuffer;
@@ -734,6 +674,19 @@ begin
   if iCount = 0 then IO.Msg('There are no items in sight.');
 end;
 
+procedure TPlayer.UpdateTargeting( aTargetPos : TCoord2D );
+begin
+  if FLastTargetPos.X*FLastTargetPos.Y <> 0
+    then FPrevTargetPos := FLastTargetPos
+    else FPrevTargetPos := aTargetPos;
+
+  FLastTargetUID := 0;
+  if TLevel(Parent).Being[ aTargetPos ] <> nil then
+    FLastTargetUID := TLevel(Parent).Being[ aTargetPos ].UID;
+  FLastTargetPos := aTargetPos;
+  FTargetPos := aTargetPos;
+end;
+
 // pieczarki oliwki szynka kielbasa peperoni motzarella //
 
 destructor TPlayer.Destroy;
@@ -775,7 +728,11 @@ begin
 
   IO.WaitForAnimation;
 
-  IO.MsgEnter('You die!...');
+  begin
+    IO.Msg('You die!...');
+    IO.PushLayer( TMoreLayer.Create( False ) );
+    IO.WaitForLayer( False );
+  end;
   Doom.SetState( DSFinished );
 
   if NukeActivated > 0 then
@@ -938,7 +895,7 @@ end;
 procedure TPlayer.doUpgradeTrait;
 begin
   IO.PushLayer( TPlayerView.CreateTrait( False ) );
-  IO.WaitForLayer;
+  IO.WaitForLayer( True );
 end;
 
 function lua_player_set_affect(L: Plua_State): Integer; cdecl;

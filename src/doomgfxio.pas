@@ -14,12 +14,10 @@ type
     procedure Reconfigure( aConfig : TLuaConfig ); override;
     procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
     procedure Update( aMSec : DWord ); override;
-    function RunUILoop( aElement : TUIElement = nil ) : DWord; override;
     function PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer; override;
     function OnEvent( const event : TIOEvent ) : Boolean; override;
     procedure UpdateMinimap;
     destructor Destroy; override;
-    function ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean): TCoord2D; override;
 
     procedure WaitForAnimation; override;
     function AnimationsRunning : Boolean; override;
@@ -36,9 +34,9 @@ type
     function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; override;
     function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; override;
     procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); override;
+    procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
-    procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
     procedure ResetVideoMode;
     procedure RecalculateScaling( aInitialize : Boolean );
@@ -289,12 +287,6 @@ begin
   inherited Destroy;
 end;
 
-function TDoomGFXIO.ChooseTarget( aActionName : string; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aShowLast: Boolean ): TCoord2D;
-begin
-  ChooseTarget := inherited ChooseTarget( aActionName, aRange, aLimitRange, aTargets, aShowLast );
-  SpriteMap.ClearTarget;
-end;
-
 procedure TDoomGFXIO.WaitForAnimation;
 begin
   inherited WaitForAnimation;
@@ -401,7 +393,8 @@ begin
   if FTime - FLastMouseTime > 3000 then
   begin
     FMCursor.Active := False;
-    SetTempHint('');
+    if not isModal then
+      FHintOverlay := '';
   end;
 
   if (FMCursor.Active) and FIODriver.GetMousePos( iPoint ) and (not FMouseLock) and (not isModal) then
@@ -535,17 +528,6 @@ begin
     FMouseLock     := False;
   end;
   Exit( inherited OnEvent( event ) )
-end;
-
-function TDoomGFXIO.RunUILoop( aElement : TUIElement = nil ) : DWord;
-begin
-  if FMCursor <> nil then
-  begin
-    if FMCursor.Size = 0 then
-      FMCursor.SetTextureID( FTextures.TextureID['cursor'], 32 );
-    FMCursor.Active := True;
-  end;
-  Exit( inherited RunUILoop( aElement ) );
 end;
 
 function TDoomGFXIO.PushLayer(  aLayer : TInterfaceLayer ) : TInterfaceLayer;

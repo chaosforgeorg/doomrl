@@ -1203,7 +1203,7 @@ function DoomRL.loadchallenges()
 You've completed @1 levels of Doom!
 
 You can rest easy knowing that you're Boss. Yet at the last level you sensed something missing... was there something you've not accomplished? The secret of the Dragonslayer and the Berserk Armor is left unsolved...]],
-				"@1", tostring(level_count)))
+				"@1", tostring(level_count)),RED)
 			return false
 		end,
 

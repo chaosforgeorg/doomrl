@@ -84,6 +84,8 @@ begin
       GenerateGlow.Data[ P+2 ] := Value;
       GenerateGlow.Data[ P+3 ] := Value;
     end;
+  GenerateGlow.RawX := Shadow.RawX;
+  GenerateGlow.RawY := Shadow.RawY;
   FreeAndNil( Glow );
 end;
 
@@ -358,6 +360,7 @@ var State    : TDoomLuaState;
     if LoadTexture = nil then State.Error( 'register_sprite_sheet - texture not found : "'+State.ToString( iIndex )+'"!');
     if LoadTexture.GLTexture = 0 then
       LoadTexture.Upload;
+    if LoadTexture.Size.X * LoadTexture.Size.Y = 0 then State.Error( 'register_sprite_sheet - texture malformed : "'+State.ToString( iIndex )+'"!');
   end;
 
 begin

@@ -145,15 +145,6 @@ function being:msg( msg_player, msg_being )
 	end
 end
 
-function being:select_slot_by_letter( letter )
-	local result = nil
-	if letter == "a" then result = self.eq.armor end
-	if letter == "b" then result = self.eq.boots end
-	if letter == "w" then result = self.eq.weapon end
-	if letter == "p" then result = self.eq.prepared end
-	return result
-end
-
 function being:phase( cell )
 	local target = generator.random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
 	if cell then
@@ -222,17 +213,66 @@ function being:nuke( time )
 	end
 end
 
-function being:pick_mod_item( modletter, techbonus )
+function being:pick_item_to_mod( mod, filter )
 	if not self:is_player() then return nil end
-	local slot = ui.msg_choice( "Modify @<w@>eapon, @<a@>rmor or @<b@>oots? (Escape to cancel)", "wab\001" )
-	if slot == "\001" then return nil, false end
-	local item = self:select_slot_by_letter( slot )
-	if not item then
-		ui.msg( "Nothing to modify!" )
+
+	local proto     = mod.__proto
+	local modletter = proto.mod_letter
+	local techbonus = self.techbonus
+
+	local choice = {
+		title = "Choose an item to mod",
+		entries = {},
+		cancel = -1,
+	}
+
+	for i = 0,MAX_EQ_SIZE-1 do
+		local it = player.eq[i]
+		if it and it.itype ~= ITEMTYPE_AMMOPACK and ( ( not filter ) or filter(it) ) then
+			local desc
+			local ma = it:find_mod_array( modletter, techbonus )
+			if (not ma) and ( not it:can_mod( modletter ) ) then
+				desc = "Max level of this mod reached!"
+			else
+				if proto.OnModDescribe then
+					desc = "Effect : "..proto.OnModDescribe( mod, it )
+				end
+				if it:find_mod_array( modletter, techbonus ) then
+					desc = desc or ""
+					desc = desc.."\nAssembly possible : {!"..ma.name.."}"
+				end
+			end
+			table.insert( choice.entries, { name = it.desc, value = i, desc = desc } )
+		end
+	end
+
+	if #choice.entries == 0 then
+		ui.msg( "You have no suitable items to modify!" )
 		return nil, false
 	end
-	if item:check_mod_array( modletter, techbonus ) then
-		return nil, true
+
+	local slot = ui.choice( choice )
+	if slot == -1 then return nil, false end
+	local item = player.eq[slot]
+	local ma   = item:find_mod_array( modletter, techbonus )
+	if ma then
+		local ma_choice = {
+			title = "Special assembly possible!",
+			header = "Do you want to assemble the {!"..ma.name.."}?",
+			entries = {
+				{ name = "Assemble "..ma.name, value = 2 },
+				{ name = "Apply mod normally", value = 1 },
+				{ name = "Cancel", value = -1 },
+			},
+			cancel = -1,
+		}
+		local result = ui.choice( ma_choice )
+		if result == -1 then return nil, false end
+		if result == 2 then
+			ui.msg("You assemble the "..ma.name..".")
+			item:apply_mod_array( ma )
+			return nil, true
+		end
 	end
 	if not item:can_mod( modletter ) then
 		ui.msg( "This item can't be modified anymore with this mod!" )
@@ -240,5 +280,6 @@ function being:pick_mod_item( modletter, techbonus )
 	end
 	return item, true
 end
+
 
 setmetatable(being,getmetatable(thing))

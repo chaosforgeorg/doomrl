@@ -121,12 +121,6 @@ TBeing = class(TThing,IPathQuery)
     // aText (VFormatted with aParams is emoted if Being is player.
     function Fail( const aText : AnsiString; const aParams : array of Const ) : Boolean;
 
-    // Always returns False.
-    //
-    // aText (VFormatted with aParams is emoted if Being is player,
-    // also confirm is needed is Option_ConfirmEmpty is set.
-    function FailConfirm( const aText : AnsiString; const aParams : array of Const ) : Boolean;
-
     // Always returns True.
     //
     // aText (VFormatted with aParams is emoted if Being is player.
@@ -184,6 +178,7 @@ TBeing = class(TThing,IPathQuery)
     public
     property Inv       : TInventory  read FInv       write FInv;
     property TargetPos : TCoord2D    read FTargetPos write FTargetPos;
+    property PrevTargetPos : TCoord2D    read FPrevTargetPos write FPrevTargetPos;
     property LastPos   : TCoord2D    read FLastPos   write FLastPos;
     property LastMove  : TCoord2D    read FMovePos   write FMovePos;
 
@@ -235,7 +230,7 @@ implementation
 
 uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem,
      dfplayer, dflevel, dfmap, doomhooks,
-     doomlua, doombase, doomio, doomviews;
+     doomlua, doombase, doomio;
 
 function TBeing.getStrayChance( defender : TBeing; missile : byte ) : byte;
 var miss     : Integer;
@@ -1136,15 +1131,6 @@ function TBeing.Fail ( const aText: AnsiString; const aParams: array of const ):
 begin
   if FSilentAction then Exit( False );
   if IsPlayer then IO.Msg( aText, aParams );
-  Exit( False );
-end;
-
-function TBeing.FailConfirm ( const aText : AnsiString; const aParams : array of const ) : Boolean;
-begin
-  if FSilentAction then Exit( False );
-  if IsPlayer then
-    if Setting_EmptyConfirm then IO.MsgEnter( aText, aParams )
-                            else IO.Msg( aText, aParams );
   Exit( False );
 end;
 

@@ -95,6 +95,14 @@ protected
   FID   : Ansistring;
 end;
 
+type TNoRoomConfirmView = class( TConfirmView )
+  constructor Create( aItem : TItem; aID : Ansistring = '' );
+protected
+  procedure OnConfirm; override;
+protected
+  FItem : TItem;
+end;
+
 implementation
 
 uses sysutils, variants,
@@ -393,7 +401,7 @@ begin
   if FEq = nil then ReadEq;
   VTIG_BeginWindow('Equipment', 'equipment', FSize );
     FRect := VTIG_GetWindowRect;
-    VTIG_BeginGroup( 9, True );
+    VTIG_BeginGroup( 10, True );
 
       VTIG_BeginGroup( 50 );
         for iEntry in FEq do
@@ -411,7 +419,7 @@ begin
 
     VTIG_EndGroup( True );
 
-    iY := 9;
+    iY := 10;
     iB := 0;
     iA := 0;
     VTIG_FreeLabel( 'Basic traits',    Point(0, iY) );
@@ -458,11 +466,9 @@ begin
           FState := PLAYERVIEW_CLOSING;
           if not Option_InvFullDrop then
           begin
-            if not IO.MsgConfirm('No room in inventory! Should it be dropped?') then
-            begin
-              FState := PLAYERVIEW_DONE;
-              Exit;
-            end;
+            IO.PushLayer( TNoRoomConfirmView.Create( FEq[iSelected].Item ) );
+            FState := PLAYERVIEW_DONE;
+            Exit;
           end;
           if Cursed then Exit;
           FState := PLAYERVIEW_CLOSING;
@@ -878,6 +884,24 @@ procedure TUnloadConfirmView.OnConfirm;
 begin
   Doom.HandleCommand( TCommand.Create( COMMAND_UNLOAD, FItem, FID ) );
 end;
+
+constructor TNoRoomConfirmView.Create( aItem : TItem; aID : Ansistring = '' );
+begin
+  inherited Create;
+  FItem := aItem;
+  FConfirm := 'Drop item';
+  FCancel  := 'Cancel';
+  FMessage := 'No room in inventory to take off '+FItem.Name+', should it be dropped?';
+  FSize := Point( 50, 9 );
+end;
+
+procedure TNoRoomConfirmView.OnConfirm;
+begin
+  if FItem.Flags[ IF_CURSED ]
+    then IO.Msg('You can''t, it''s cursed!')
+    else Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FItem ) );
+end;
+
 
 end.
 
