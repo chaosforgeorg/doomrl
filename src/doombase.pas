@@ -955,6 +955,7 @@ repeat
     while ( State = DSPlaying ) do
     begin
       repeat
+        iEvent.EType :=  VEVENT_KEYUP;
         if Player.ChainFire > 0 then
         begin
           Action( INPUT_ALTFIRE );
