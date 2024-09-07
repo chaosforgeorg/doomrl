@@ -2191,10 +2191,7 @@ begin
     if GraphicsVersion then
     begin
       if isPlayer then
-      begin
-        IO.WaitForAnimation;
         IO.addScreenMoveAnimation( 50, 0, knock );
-      end;
       if isVisible then
         IO.addMoveAnimation( 50,0,FUID,Position,knock,Sprite);
     end;
