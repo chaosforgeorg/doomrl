@@ -319,7 +319,8 @@ end;
 procedure TDoomGFXIO.addScreenMoveAnimation(aDuration: DWord; aTo: TCoord2D);
 begin
   if Doom.State <> DSPlaying then Exit;
-  FAnimations.addAnimation( TDoomScreenMove.Create( aDuration, aTo ) );
+  if not TDoomScreenMove.Update( aDuration, aTo ) then
+    FAnimations.addAnimation( TDoomScreenMove.Create( aDuration, aTo ) );
 end;
 
 procedure TDoomGFXIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );

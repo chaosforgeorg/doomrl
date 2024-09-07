@@ -95,7 +95,7 @@ public
   property MaxShift : TPoint read FMaxShift;
   property MinShift : TPoint read FMinShift;
   property Shift : TCoord2D read FShift;
-  property NewShift : TCoord2D write FNewShift;
+  property NewShift : TCoord2D read FNewShift write FNewShift;
 end;
 
 var SpriteMap : TDoomSpriteMap = nil;
