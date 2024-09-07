@@ -652,7 +652,8 @@ end;
   begin
     FLevel.CalculateVision( Player.Position );
     FLevel.Tick;
-    IO.WaitForAnimation;
+    if Player.FRun.Active then
+      IO.WaitForAnimation;
     if not Player.PlayerTick then Exit( True );
   end;
   PreAction;
