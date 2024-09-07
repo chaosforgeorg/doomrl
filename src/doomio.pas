@@ -74,7 +74,7 @@ type TDoomIO = class( TIO )
   procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); virtual; abstract;
   procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); virtual; abstract;
   procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite ); virtual;
-  procedure addScreenMoveAnimation( aDuration : DWord; aDelay : DWord; aTo : TCoord2D ); virtual;
+  procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); virtual;
   procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); virtual;
   procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); virtual; abstract;
   procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte; aPic : Char ); virtual; abstract;
@@ -202,7 +202,7 @@ begin
 
 end;
 
-procedure TDoomIO.addScreenMoveAnimation( aDuration : DWord; aDelay : DWord; aTo : TCoord2D );
+procedure TDoomIO.addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D );
 begin
 
 end;

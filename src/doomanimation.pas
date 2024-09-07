@@ -95,7 +95,7 @@ end;
 { TDoomScreenMove }
 
 TDoomScreenMove = class(TAnimation)
-  constructor Create( aDuration : DWord; aDelay : DWord; aTo : TCoord2D );
+  constructor Create( aDuration : DWord; aTo : TCoord2D );
   procedure OnUpdate( aTime : DWord ); override;
   procedure OnDraw; override;
   destructor Destroy; override;
@@ -320,9 +320,9 @@ end;
 
 { TDoomScreenMove }
 
-constructor TDoomScreenMove.Create( aDuration : DWord; aDelay : DWord; aTo: TCoord2D );
+constructor TDoomScreenMove.Create( aDuration : DWord; aTo: TCoord2D );
 begin
-  inherited Create( aDuration, aDelay, 0 );
+  inherited Create( aDuration, 0, 0 );
   FSource   := SpriteMap.Shift;
   FDest     := SpriteMap.ShiftValue(aTo);
   FDuration := Max( FDuration, Round( Sqrt( Distance( FSource, FDest ) ) ) );
