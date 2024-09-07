@@ -2191,9 +2191,9 @@ begin
     if GraphicsVersion then
     begin
       if isPlayer then
-        IO.addScreenMoveAnimation( 50, knock );
+        IO.addScreenMoveAnimation(100, knock );
       if isVisible then
-        IO.addMoveAnimation( 50,0,FUID,Position,knock,Sprite);
+        IO.addMoveAnimation(100,0,FUID,Position,knock,Sprite);
     end;
     Displace( knock );
     HandlePostDisplace;
