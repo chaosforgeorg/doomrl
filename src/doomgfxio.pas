@@ -23,8 +23,9 @@ type
     function AnimationsRunning : Boolean; override;
     procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); override;
     procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); override;
+    procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single ); override;
     procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite ); override;
-    procedure addScreenMoveAnimation( aDuration : DWord; aDelay : DWord; aTo : TCoord2D ); override;
+    procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); override;
     procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); override;
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
     procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte; aPic : Char ); override;
@@ -310,16 +311,25 @@ begin
     FAnimations.AddAnimation( TDoomBlink.Create(aDuration,aDelay,aColor) );
 end;
 
+procedure TDoomGFXIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single );
+begin
+  if Doom.State <> DSPlaying then Exit;
+  if Setting_ScreenShake then
+    if not TDoomScreenShake.Update( aDuration, aDelay, aStrength ) then
+      FAnimations.addAnimation( TDoomScreenShake.Create( aDuration, aDelay, aStrength ) );
+end;
+
 procedure TDoomGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite );
 begin
   if Doom.State <> DSPlaying then Exit;
   FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite));
 end;
 
-procedure TDoomGFXIO.addScreenMoveAnimation(aDuration: DWord; aDelay: DWord; aTo: TCoord2D);
+procedure TDoomGFXIO.addScreenMoveAnimation(aDuration: DWord; aTo: TCoord2D);
 begin
   if Doom.State <> DSPlaying then Exit;
-  FAnimations.addAnimation( TDoomScreenMove.Create( aDuration, aDelay, aTo ) );
+  if not TDoomScreenMove.Update( aDuration, aTo ) then
+    FAnimations.addAnimation( TDoomScreenMove.Create( aDuration, aTo ) );
 end;
 
 procedure TDoomGFXIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );

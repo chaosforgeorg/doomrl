@@ -439,8 +439,8 @@ begin
 
     if FLastTargetPos.X*FLastTargetPos.Y <> 0 then
       if FLastTargetUID = 0 then
-        if iLevel.isVisible( FLastTargetPos ) then
-          if Distance( FLastTargetPos, FPosition ) <= aRange then
+//        if iLevel.isVisible( FLastTargetPos ) then
+//          if Distance( FLastTargetPos, FPosition ) <= aRange then
             Result.PriorityTarget( FLastTargetPos );
   end;
 

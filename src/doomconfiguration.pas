@@ -17,10 +17,11 @@ constructor TDoomConfiguration.Create;
 var iGroup : TConfigurationGroup;
     iInput : TInputKey;
     iID    : Ansistring;
-const CInputGroups : array[1..5] of Ansistring = (
+const CInputGroups : array[1..6] of Ansistring = (
   'keybindings_movement',
   'keybindings_actions',
   'keybindings_ui',
+  'keybindings_running',
   'keybindings_helper',
   'keybindings_legacy'
 );
@@ -87,6 +88,10 @@ begin
     .SetRange(0,9)
     .SetName('Minimap size multiplier')
     .SetDescription('Control minimap size multiplier. Set to {!0} to pick one based on resolution.')
+    ;
+  iGroup.AddToggle( 'screen_shake', True )
+    .SetName('Screen shake effect')
+    .SetDescription('Setting to {!Disabled} will disable screen shake FX.')
     ;
 
   iGroup := AddGroup( 'audio' );

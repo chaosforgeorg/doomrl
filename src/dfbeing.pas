@@ -1107,7 +1107,7 @@ begin
   if GraphicsVersion then
   begin
     if isPlayer then
-      IO.addScreenMoveAnimation(100,0,aTarget);
+      IO.addScreenMoveAnimation( 100, aTarget );
     IO.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
   end;
   Displace( aTarget );
@@ -2191,12 +2191,9 @@ begin
     if GraphicsVersion then
     begin
       if isPlayer then
-      begin
-        IO.WaitForAnimation;
-        IO.addScreenMoveAnimation( 50, 0, knock );
-      end;
+        IO.addScreenMoveAnimation(100, knock );
       if isVisible then
-        IO.addMoveAnimation( 50,0,FUID,Position,knock,Sprite);
+        IO.addMoveAnimation(100,0,FUID,Position,knock,Sprite);
     end;
     Displace( knock );
     HandlePostDisplace;
@@ -2751,7 +2748,7 @@ begin
   if GraphicsVersion then
     if Thing is TBeing then
       if Thing is TPlayer then
-        IO.addScreenMoveAnimation(Distance(Thing.Position,Target)*10,0,Target);
+        IO.addScreenMoveAnimation(Distance(Thing.Position,Target)*10,Target);
   Thing.Displace(Target);
   Result := 0;
 end;

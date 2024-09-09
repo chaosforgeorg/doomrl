@@ -95,13 +95,16 @@ end;
 { TDoomScreenMove }
 
 TDoomScreenMove = class(TAnimation)
-  constructor Create( aDuration : DWord; aDelay : DWord; aTo : TCoord2D );
+  constructor Create( aDuration : DWord; aTo : TCoord2D );
+  class function Update( aDuration : DWord; aTo : TCoord2D ) : Boolean;
   procedure OnUpdate( aTime : DWord ); override;
   procedure OnDraw; override;
   destructor Destroy; override;
 private
   FSource : TCoord2D;
   FDest   : TCoord2D;
+protected
+  class var CCurrent : TDoomScreenMove;
 end;
 
 
@@ -114,6 +117,22 @@ private
   FSprite : TSprite;
   FCoord  : TCoord2D;
   FValue  : Integer;
+end;
+
+{ TDoomScreenShake }
+
+TDoomScreenShake = class(TAnimation)
+  constructor Create( aDuration : DWord; aDelay : DWord; aStrength : Single );
+  class function Update( aDuration : DWord; aDelay : DWord; aStrength : Single ) : Boolean;
+  procedure OnUpdate( aTime : DWord ); override;
+  procedure OnDraw; override;
+  destructor Destroy; override;
+private
+  FStrength   : Single;
+  FFrequencyX : Single;
+  FFrequencyY : Single;
+protected
+  class var CCurrent : TDoomScreenShake;
 end;
 
 
@@ -320,12 +339,24 @@ end;
 
 { TDoomScreenMove }
 
-constructor TDoomScreenMove.Create( aDuration : DWord; aDelay : DWord; aTo: TCoord2D );
+constructor TDoomScreenMove.Create( aDuration : DWord; aTo: TCoord2D );
 begin
-  inherited Create( aDuration, aDelay, 0 );
+  inherited Create( aDuration, 0, 0 );
   FSource   := SpriteMap.Shift;
   FDest     := SpriteMap.ShiftValue(aTo);
   FDuration := Max( FDuration, Round( Sqrt( Distance( FSource, FDest ) ) ) );
+  CCurrent  := Self;
+end;
+
+class function TDoomScreenMove.Update( aDuration : DWord; aTo : TCoord2D ) : Boolean;
+begin
+  if CCurrent = nil then Exit( False );
+  CCurrent.OnUpdate( 0 );
+  CCurrent.FSource   := SpriteMap.NewShift;
+  CCurrent.FDest     := SpriteMap.ShiftValue( aTo );
+  CCurrent.FTime     := 0;
+  CCurrent.FDuration := Max( aDuration, Round( Sqrt( Distance( CCurrent.FSource, CCurrent.FDest ) ) ) );;
+  Exit( True );
 end;
 
 procedure TDoomScreenMove.OnUpdate( aTime : DWord );
@@ -344,6 +375,7 @@ end;
 destructor TDoomScreenMove.Destroy;
 begin
   SpriteMap.NewShift := FDest;
+  CCurrent := nil;
   inherited Destroy;
 end;
 
@@ -377,6 +409,56 @@ begin
   Doom.Level.LightFlag[ FCoord, LFANIMATING ] := False;
   inherited Destroy;
 end;
+
+constructor TDoomScreenShake.Create( aDuration : DWord; aDelay : DWord; aStrength : Single );
+begin
+  inherited Create( aDuration, aDelay, 0 );
+  FStrength   := aStrength;
+  FFrequencyX := 0.05 + Random;
+  FFrequencyY := 0.05 + Random;
+end;
+
+class function TDoomScreenShake.Update( aDuration : DWord; aDelay : DWord; aStrength : Single ) : Boolean;
+begin
+  if CCurrent = nil then Exit( False );
+  CCurrent.FStrength := Maxf( CCurrent.FStrength, aStrength );
+  CCurrent.FDelay    := Min( CCurrent.FDelay, aDelay );
+  CCurrent.FDuration := Max( CCurrent.FDuration, aDuration );
+  Exit( True );
+end;
+
+procedure TDoomScreenShake.OnUpdate( aTime : DWord );
+var iFactor : Single;
+    iFade   : Single;
+    iOffset : TCoord2D;
+    iMaxX   : Single;
+    iMaxY   : Single;
+begin
+  inherited OnUpdate( aTime );
+  iOffset.Create(0,0);
+  if FTime < FDuration then
+  begin
+    iFactor := Minf( FTime / FDuration, 1.0 );
+    iFade   := 1.0 - iFactor * iFactor;
+    iMaxX   := FStrength * iFade * 2.0; // X-bias
+    iMaxY   := FStrength * iFade;
+
+    iOffset.X := Round(iMaxX * Sin( FTime * FFrequencyX * 2 * Pi ) );
+    iOffset.Y := Round(iMaxY * Cos( FTime * FFrequencyY * 1 * Pi ) );
+  end;
+  if Assigned( SpriteMap ) then SpriteMap.Offset := iOffset;
+end;
+
+procedure TDoomScreenShake.OnDraw;
+begin
+end;
+
+destructor TDoomScreenShake.Destroy;
+begin
+  if Assigned( SpriteMap ) then SpriteMap.Offset := NewCoord2D(0,0);
+  inherited Destroy;
+end;
+
 
 end.
 

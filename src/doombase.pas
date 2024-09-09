@@ -62,6 +62,7 @@ TDoom = class(TSystem)
        FChallengeHooks  : TFlags;
        FSChallengeHooks : TFlags;
        FModuleHooks     : TFlags;
+       FLastInputTime   : QWord;
      public
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
@@ -200,6 +201,7 @@ begin
   FModuleHooks := [];
   FChallengeHooks := [];
   NVersion := ArrayToVersion(VERSION_ARRAY);
+  FLastInputTime := 0;
   Log( VersionToString( NVersion ) );
   Reconfigure;
 end;
@@ -211,6 +213,7 @@ begin
   Setting_AlwaysRandomName := Configuration.GetBoolean( 'always_random_name' );
   Setting_NoIntro          := Configuration.GetBoolean( 'skip_intro' );
   Setting_NoFlash          := Configuration.GetBoolean( 'no_flashing' );
+  Setting_ScreenShake      := Configuration.GetBoolean( 'screen_shake' );
   Setting_RunOverItems     := Configuration.GetBoolean( 'run_over_items' );
   Setting_HideHints        := Configuration.GetBoolean( 'hide_hints' );
   Setting_EmptyConfirm     := Configuration.GetBoolean( 'empty_confirm' );
@@ -405,7 +408,6 @@ var iDir        : TDirection;
     iTarget     : TCoord2D;
     iMoveResult : TMoveResult;
 begin
-  Player.FLastTargetPos.Create(0,0);
   if Player.Flags[ BF_SESSILE ] then
   begin
     IO.Msg( 'You can''t!' );
@@ -447,8 +449,7 @@ begin
 end;
 
 function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
-var iDir        : TDirection;
-    iTarget     : TCoord2D;
+var iTarget     : TCoord2D;
     iItem       : TItem;
     iFireTitle  : AnsiString;
     iChainFire  : Byte;
@@ -628,6 +629,9 @@ end;
 
 function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
 begin
+  if not ( aCommand.Command in [ COMMAND_FIRE, COMMAND_ALTFIRE, COMMAND_RELOAD ] ) then
+    Player.FLastTargetPos.Create(0,0);
+
   if aCommand.Command = COMMAND_NONE then
     Exit( False );
   IO.MsgUpDate;
@@ -652,7 +656,8 @@ end;
   begin
     FLevel.CalculateVision( Player.Position );
     FLevel.Tick;
-    IO.WaitForAnimation;
+    if Player.FRun.Active then
+      IO.WaitForAnimation;
     if not Player.PlayerTick then Exit( True );
   end;
   PreAction;
@@ -753,9 +758,16 @@ end;
 function TDoom.HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
 var iInput : TInputKey;
 begin
-  if aEvent.Key.Code = 0 then Exit;
+  if aEvent.Key.Code = 0 then Exit( False );
   IO.KeyCode := IOKeyEventToIOKeyCode( aEvent.Key );
   iInput     := TInputKey( Config.Commands[ IO.KeyCode ] );
+
+  // Handle key-repeat
+  if aEvent.Key.Repeated then
+    if ( not ( iInput in [ INPUT_WAIT ] + INPUT_MOVE ) ) or ( IO.Time - FLastInputTime < 99 ) or (Player.BeingsInVision > 1) then
+      Exit( False );
+  FLastInputTime := IO.Time;
+
   if ( Byte(iInput) = 255 ) then // GodMode Keys
   begin
     Config.RunKey( IO.KeyCode );
@@ -766,6 +778,15 @@ begin
   begin
     // Handle commands that should be handled by the UI
     // TODO: Fix
+    if iInput in [INPUT_RUNWAIT]+INPUT_MULTIMOVE then
+    begin
+      Player.FPathRun := False;
+      if Player.BeingsInVision > 1
+        then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
+        else Player.FRun.Start( InputDirection( iInput ) );
+      Exit;
+    end;
+
     case iInput of
 //      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
       INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
@@ -794,7 +815,7 @@ begin
       INPUT_RUN       : begin
         Player.FPathRun := False;
         if Player.BeingsInVision > 1
-          then IO.Msg( 'Can''t run, there are enemies present.',[] )
+          then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
           else IO.PushLayer( TRunModeView.create );
         Exit;
       end;
