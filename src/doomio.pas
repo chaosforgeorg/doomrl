@@ -229,6 +229,9 @@ begin
   iLevel := Doom.Level;
   if not iLevel.isProperCoord( aWhere ) then Exit;
 
+  if aRange > 0 then
+    addScreenShakeAnimation( Clamp( 100 * aRange, 300, 500 ), aSequence, Clampf( 2.0 * aRange, 2.0, 5.0 ) );
+
   if aExplSound <> 0 then
     addSoundAnimation( aSequence, aWhere, aExplSound );
 

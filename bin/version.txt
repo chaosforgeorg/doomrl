@@ -1,5 +1,7 @@
 0.9.9.9 BETA 1
 [new] -- GH#150: holding direction/wait will repeat nicely and break on enemy visible
+[new] -- GH#152: explosions trigger screenshake (can be turned off in options)
+[new] -- GH#150: holding direction/wait will repeat nicely and break on enemy visible
 [new] -- GH#056: SHIFT-direction will perform a run
 [new] -- GH#056: smoother keyboard response and non-blocking animations
 [new] -- GH#142: nicer item modding interface
