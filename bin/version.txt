@@ -1,10 +1,11 @@
-0.9.9.9
+0.9.9.9 BETA 1
 [new] -- GH#150: holding direction/wait will repeat nicely and break on enemy visible
 [new] -- GH#056: SHIFT-direction will perform a run
 [new] -- GH#056: smoother keyboard response and non-blocking animations
 [new] -- GH#142: nicer item modding interface
-[fix] -- GH#153: mouse will be properly updated during animations
+[mod] -- GH#154: fire will retarget last out of vision tile if repeatedly firing
 [mod] -- GH#142: modding interface informs of potential assemblies
+[fix] -- GH#153: mouse will be properly updated during animations
 
 0.9.9.8a
 [fix] -- GH#---: fixed music volume adjustment issues

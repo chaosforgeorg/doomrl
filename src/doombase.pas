@@ -407,7 +407,6 @@ var iDir        : TDirection;
     iTarget     : TCoord2D;
     iMoveResult : TMoveResult;
 begin
-  Player.FLastTargetPos.Create(0,0);
   if Player.Flags[ BF_SESSILE ] then
   begin
     IO.Msg( 'You can''t!' );
@@ -449,8 +448,7 @@ begin
 end;
 
 function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
-var iDir        : TDirection;
-    iTarget     : TCoord2D;
+var iTarget     : TCoord2D;
     iItem       : TItem;
     iFireTitle  : AnsiString;
     iChainFire  : Byte;
@@ -630,6 +628,9 @@ end;
 
 function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
 begin
+  if not ( aCommand.Command in [ COMMAND_FIRE, COMMAND_ALTFIRE, COMMAND_RELOAD ] ) then
+    Player.FLastTargetPos.Create(0,0);
+
   if aCommand.Command = COMMAND_NONE then
     Exit( False );
   IO.MsgUpDate;
