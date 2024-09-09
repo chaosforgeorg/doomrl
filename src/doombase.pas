@@ -213,6 +213,7 @@ begin
   Setting_AlwaysRandomName := Configuration.GetBoolean( 'always_random_name' );
   Setting_NoIntro          := Configuration.GetBoolean( 'skip_intro' );
   Setting_NoFlash          := Configuration.GetBoolean( 'no_flashing' );
+  Setting_ScreenShake      := Configuration.GetBoolean( 'screen_shake' );
   Setting_RunOverItems     := Configuration.GetBoolean( 'run_over_items' );
   Setting_HideHints        := Configuration.GetBoolean( 'hide_hints' );
   Setting_EmptyConfirm     := Configuration.GetBoolean( 'empty_confirm' );

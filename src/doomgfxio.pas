@@ -314,7 +314,7 @@ end;
 procedure TDoomGFXIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single );
 begin
   if Doom.State <> DSPlaying then Exit;
-  if not Setting_NoScreenShake then
+  if Setting_ScreenShake then
     if not TDoomScreenShake.Update( aDuration, aDelay, aStrength ) then
       FAnimations.addAnimation( TDoomScreenShake.Create( aDuration, aDelay, aStrength ) );
 end;

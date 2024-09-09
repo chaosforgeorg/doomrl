@@ -89,6 +89,10 @@ begin
     .SetName('Minimap size multiplier')
     .SetDescription('Control minimap size multiplier. Set to {!0} to pick one based on resolution.')
     ;
+  iGroup.AddToggle( 'screen_shake', True )
+    .SetName('Screen shake effect')
+    .SetDescription('Setting to {!Disabled} will disable screen shake FX.')
+    ;
 
   iGroup := AddGroup( 'audio' );
   iGroup.AddInteger( 'sound_volume', 25 )
