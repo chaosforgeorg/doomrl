@@ -23,6 +23,7 @@ type
     function AnimationsRunning : Boolean; override;
     procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); override;
     procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); override;
+    procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single ); override;
     procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite ); override;
     procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); override;
     procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); override;
@@ -308,6 +309,14 @@ procedure TDoomGFXIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWor
 begin
   if not Setting_NoFlash then
     FAnimations.AddAnimation( TDoomBlink.Create(aDuration,aDelay,aColor) );
+end;
+
+procedure TDoomGFXIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single );
+begin
+  if Doom.State <> DSPlaying then Exit;
+  if not Setting_NoScreenShake then
+    if not TDoomScreenShake.Update( aDuration, aDelay, aStrength ) then
+      FAnimations.addAnimation( TDoomScreenShake.Create( aDuration, aDelay, aStrength ) );
 end;
 
 procedure TDoomGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite );

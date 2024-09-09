@@ -72,6 +72,7 @@ private
   FTargetColor    : TColor;
   FNewShift       : TCoord2D;
   FShift          : TCoord2D;
+  FOffset         : TCoord2D;
   FLastCoord      : TCoord2D;
   FSpriteEngine   : TSpriteEngine;
   FLightMap       : array[0..MAXX] of array[0..MAXY] of Byte;
@@ -96,6 +97,7 @@ public
   property MinShift : TPoint read FMinShift;
   property Shift : TCoord2D read FShift;
   property NewShift : TCoord2D read FNewShift write FNewShift;
+  property Offset : TCoord2D read FOffset write FOffset;
 end;
 
 var SpriteMap : TDoomSpriteMap = nil;
@@ -263,7 +265,7 @@ const TargetSprite : TSprite = (
 begin
   TargetSprite.SpriteID := HARDSPRITE_SELECT;
   iIO := IO as TDoomGFXIO;
-  FSpriteEngine.Position := GLVec2i( FShift.X, FShift.Y );
+  FSpriteEngine.Position := GLVec2i( FShift.X + FOffset.X, FShift.Y  + FOffset.Y );
 
   if iIO.MCursor.Active and iIO.Driver.GetMousePos( iPoint ) then
   begin

@@ -73,6 +73,7 @@ type TDoomIO = class( TIO )
   function AnimationsRunning : Boolean; virtual; abstract;
   procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); virtual; abstract;
   procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); virtual; abstract;
+  procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single ); virtual;
   procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite ); virtual;
   procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); virtual;
   procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); virtual;
@@ -196,6 +197,11 @@ begin
   end;
   FWaiting := False;
   Doom.Level.RevealBeings;
+end;
+
+procedure TDoomIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single );
+begin
+
 end;
 
 procedure TDoomIO.addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite );
