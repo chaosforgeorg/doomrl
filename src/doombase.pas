@@ -767,6 +767,15 @@ begin
   begin
     // Handle commands that should be handled by the UI
     // TODO: Fix
+    if iInput in [INPUT_RUNWAIT]+INPUT_MULTIMOVE then
+    begin
+      Player.FPathRun := False;
+      if Player.BeingsInVision > 1
+        then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
+        else Player.FRun.Start( InputDirection( iInput ) );
+      Exit;
+    end;
+
     case iInput of
 //      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
       INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
@@ -795,7 +804,7 @@ begin
       INPUT_RUN       : begin
         Player.FPathRun := False;
         if Player.BeingsInVision > 1
-          then IO.Msg( 'Can''t run, there are enemies present.',[] )
+          then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
           else IO.PushLayer( TRunModeView.create );
         Exit;
       end;

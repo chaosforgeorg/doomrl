@@ -23,6 +23,17 @@ type TInputKey = (
   INPUT_WAIT,
   INPUT_RUN,
 
+  // Run keybindings
+  INPUT_RUNLEFT,
+  INPUT_RUNRIGHT,
+  INPUT_RUNUP,
+  INPUT_RUNDOWN,
+  INPUT_RUNUPLEFT,
+  INPUT_RUNUPRIGHT,
+  INPUT_RUNDOWNLEFT,
+  INPUT_RUNDOWNRIGHT,
+  INPUT_RUNWAIT,
+
   // Action keybindings
   INPUT_ACTION,
   INPUT_FIRE,
@@ -111,6 +122,17 @@ const KeyInfo : array[TInputKey] of TKeyInfoEntry = (
     (ID: 'input_walkdownright';  Group: 'keybindings_movement';     Default: VKEY_PGDOWN;           Name: 'Walk down-right';  Description: 'Keybind to walk down and right.'),
     (ID: 'input_wait';           Group: 'keybindings_movement';     Default: VKEY_PERIOD;           Name: 'Wait a turn';      Description: 'Keybind to wait in place.'),
     (ID: 'input_run';            Group: 'keybindings_movement';     Default: VKEY_COMMA;            Name: 'Repeat move mode'; Description: 'Enter repeat move mode (move until enemy appears or stopped).'),
+
+    // Run keybindings
+    (ID: 'input_runleft';       Group: 'keybindings_running';       Default: VKEY_LEFT + IOKeyCodeShiftMask;             Name: 'Multi-move left';        Description: 'Keybind to move left until blocked or enemy spotted.'),
+    (ID: 'input_runright';      Group: 'keybindings_running';       Default: VKEY_RIGHT + IOKeyCodeShiftMask;            Name: 'Multi-move right';       Description: 'Keybind to move right until blocked or enemy spotted.'),
+    (ID: 'input_runup';         Group: 'keybindings_running';       Default: VKEY_UP + IOKeyCodeShiftMask;               Name: 'Multi-move up';          Description: 'Keybind to move up until blocked or enemy spotted.'),
+    (ID: 'input_rundown';       Group: 'keybindings_running';       Default: VKEY_DOWN + IOKeyCodeShiftMask;             Name: 'Multi-move down';        Description: 'Keybind to move down until blocked or enemy spotted.'),
+    (ID: 'input_runupleft';     Group: 'keybindings_running';       Default: VKEY_HOME + IOKeyCodeShiftMask;             Name: 'Multi-move up-left';     Description: 'Keybind to move up and left until blocked or enemy spotted.'),
+    (ID: 'input_runupright';    Group: 'keybindings_running';       Default: VKEY_PGUP + IOKeyCodeShiftMask;             Name: 'Multi-move up-right';    Description: 'Keybind to move up and right until blocked or enemy spotted.'),
+    (ID: 'input_rundownleft';   Group: 'keybindings_running';       Default: VKEY_END + IOKeyCodeShiftMask;              Name: 'Multi-move down-left';   Description: 'Keybind to move down and left until blocked or enemy spotted.'),
+    (ID: 'input_rundownright';  Group: 'keybindings_running';       Default: VKEY_PGDOWN + IOKeyCodeShiftMask;           Name: 'Multi-move down-right';  Description: 'Keybind to move down and right until blocked or enemy spotted.'),
+    (ID: 'input_runwait';       Group: 'keybindings_running';       Default: VKEY_PERIOD + IOKeyCodeShiftMask;           Name: 'Multi-wait';             Description: 'Keybind to wait several turns or until enemy spotted.'),
 
     // Action keybindings
     (ID: 'input_action';         Group: 'keybindings_actions';      Default: VKEY_SPACE;            Name: 'Action';           Description: 'Perform action (open/close door, descend stairs, press button).'),

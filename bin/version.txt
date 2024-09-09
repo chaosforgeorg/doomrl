@@ -1,4 +1,5 @@
 0.9.9.9
+[new] -- GH#056: SHIFT-direction will perform a run
 [new] -- GH#056: smoother keyboard response and non-blocking animations
 [new] -- GH#142: nicer item modding interface
 [mod] -- GH#142: modding interface informs of potential assemblies

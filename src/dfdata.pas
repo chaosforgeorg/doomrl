@@ -194,6 +194,10 @@ const
                        INPUT_WALKRIGHT,  INPUT_WALKLEFT,
                        INPUT_WALKUPRIGHT,INPUT_WALKDOWNRIGHT,
                        INPUT_WALKUPLEFT, INPUT_WALKDOWNLEFT];
+  INPUT_MULTIMOVE   = [INPUT_RUNUP,     INPUT_RUNDOWN,
+                       INPUT_RUNRIGHT,  INPUT_RUNLEFT,
+                       INPUT_RUNUPRIGHT,INPUT_RUNDOWNRIGHT,
+                       INPUT_RUNUPLEFT, INPUT_RUNDOWNLEFT];
 
 type TCellSet = set of Byte;
      TExplosionFlags = set of TExplosionFlag;
@@ -573,6 +577,15 @@ begin
     INPUT_WALKDOWNLEFT  : InputDirection.Create(1);
     INPUT_WALKDOWNRIGHT : InputDirection.Create(3);
     INPUT_WAIT          : InputDirection.Create(5);
+    INPUT_RUNLEFT       : InputDirection.Create(4);
+    INPUT_RUNRIGHT      : InputDirection.Create(6);
+    INPUT_RUNUP         : InputDirection.Create(8);
+    INPUT_RUNDOWN       : InputDirection.Create(2);
+    INPUT_RUNUPLEFT     : InputDirection.Create(7);
+    INPUT_RUNUPRIGHT    : InputDirection.Create(9);
+    INPUT_RUNDOWNLEFT   : InputDirection.Create(1);
+    INPUT_RUNDOWNRIGHT  : InputDirection.Create(3);
+    INPUT_RUNWAIT       : InputDirection.Create(5);
     else InputDirection.Create(0);
   end;
 end;
