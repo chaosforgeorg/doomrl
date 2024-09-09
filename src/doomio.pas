@@ -131,6 +131,7 @@ public
   property ASCII       : TASCIIImageMap read FASCII;
   property HintOverlay : AnsiString     read FHintOverlay write FHintOverlay;
   property Targeting   : Boolean        read FTargeting   write FTargeting;
+  property Time        : QWord          read FTime;
 
   // Textmode only
   property TargetEnabled : Boolean        read FTargetEnabled write FTargetEnabled;

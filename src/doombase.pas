@@ -62,6 +62,7 @@ TDoom = class(TSystem)
        FChallengeHooks  : TFlags;
        FSChallengeHooks : TFlags;
        FModuleHooks     : TFlags;
+       FLastInputTime   : QWord;
      public
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
@@ -200,6 +201,7 @@ begin
   FModuleHooks := [];
   FChallengeHooks := [];
   NVersion := ArrayToVersion(VERSION_ARRAY);
+  FLastInputTime := 0;
   Log( VersionToString( NVersion ) );
   Reconfigure;
 end;
@@ -754,9 +756,16 @@ end;
 function TDoom.HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
 var iInput : TInputKey;
 begin
-  if aEvent.Key.Code = 0 then Exit;
+  if aEvent.Key.Code = 0 then Exit( False );
   IO.KeyCode := IOKeyEventToIOKeyCode( aEvent.Key );
   iInput     := TInputKey( Config.Commands[ IO.KeyCode ] );
+
+  // Handle key-repeat
+  if aEvent.Key.Repeated then
+    if ( not ( iInput in [ INPUT_WAIT ] + INPUT_MOVE ) ) or ( IO.Time - FLastInputTime < 99 ) or (Player.BeingsInVision > 1) then
+      Exit( False );
+  FLastInputTime := IO.Time;
+
   if ( Byte(iInput) = 255 ) then // GodMode Keys
   begin
     Config.RunKey( IO.KeyCode );
