@@ -166,7 +166,6 @@ TBeing = class(TThing,IPathQuery)
     FMeleeAttack   : Boolean;
     FSilentAction  : Boolean;
     FTargetPos     : TCoord2D;
-    FPrevTargetPos : TCoord2D;
     FInv           : TInventory;
     FMovePos       : TCoord2D;
     FLastPos       : TCoord2D;
@@ -178,7 +177,6 @@ TBeing = class(TThing,IPathQuery)
     public
     property Inv       : TInventory  read FInv       write FInv;
     property TargetPos : TCoord2D    read FTargetPos write FTargetPos;
-    property PrevTargetPos : TCoord2D    read FPrevTargetPos write FPrevTargetPos;
     property LastPos   : TCoord2D    read FLastPos   write FLastPos;
     property LastMove  : TCoord2D    read FMovePos   write FMovePos;
 
@@ -833,7 +831,6 @@ end;
 
 function TBeing.ActionFire ( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean ) : Boolean;
 var iChainFire : Byte;
-    iChainOld  : TCoord2D;
     iEnemy     : TBeing;
     iEnemyUID  : TUID;
     iGunKata   : Boolean;
@@ -843,7 +840,6 @@ var iChainFire : Byte;
     iDist      : Byte;
     iAltFire   : TAltFire;
 begin
-  iChainOld   := FPrevTargetPos;
   iChainFire  := FChainFire;
   iAltFire    := ALT_NONE;
   FChainFire  := 0;
@@ -896,7 +892,8 @@ begin
     if iDist > iRange then Exit( False );
   end;
 
-  if (iAltFire = ALT_CHAIN) and ( iChainFire > 0 ) then FTargetPos := iChainOld;
+  if (iAltFire = ALT_CHAIN) and ( iChainFire > 0 ) then
+    FTargetPos := Doom.Targeting.PrevPos;
   FChainFire := iChainFire;
 
   iEnemy    := TLevel(Parent).Being[ aTarget ];

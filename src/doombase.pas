@@ -6,6 +6,21 @@ uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
      dflevel, dfdata, dfhof, dfitem,
      doomhooks, doomlua, doomcommand, doomkeybindings;
 
+type TTargeting = class
+  constructor Create;
+  procedure Clear;
+  procedure ClearPosition;
+  procedure Update( aTarget : TCoord2D );
+  destructor Destroy; override;
+public
+  FList    : TAutoTarget;
+  FLastUID : TUID;
+  FLastPos : TCoord2D;
+  FPrevPos : TCoord2D;
+public
+  property PrevPos : TCoord2D read FPrevPos;
+end;
+
 type TDoomState = ( DSStart,      DSMenu,    DSLoading,   DSCrashLoading,
                     DSPlaying,    DSSaving,  DSNextLevel,
                     DSQuit,       DSFinished );
@@ -24,6 +39,7 @@ TDoom = class(TSystem)
        CrashSave     : Boolean;
        NVersion      : TVersion;
        ModuleID      : AnsiString;
+
        constructor Create; override;
        procedure Reconfigure;
        procedure CreateIO;
@@ -63,11 +79,13 @@ TDoom = class(TSystem)
        FSChallengeHooks : TFlags;
        FModuleHooks     : TFlags;
        FLastInputTime   : QWord;
+       FTargeting       : TTargeting;
      public
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
        property ModuleHooks : TFlags read FModuleHooks;
        property State : TDoomState read FState;
+       property Targeting : TTargeting read FTargeting;
      end;
 
 var Doom : TDoom;
@@ -85,6 +103,38 @@ uses Classes, SysUtils,
      doompagedview, doomrankupview, doommainmenuview, doomhudviews, doommessagesview,
      doomconfiguration, doomhelp, doomconfig, dfplayer;
 
+constructor TTargeting.Create;
+begin
+  FList    := nil;
+end;
+
+procedure TTargeting.Clear;
+begin
+  FLastPos.Create(0,0);
+  FLastUID := 0;
+end;
+
+procedure TTargeting.ClearPosition;
+begin
+  FLastPos.Create(0,0);
+end;
+
+procedure TTargeting.Update( aTarget : TCoord2D );
+begin
+  if FLastPos.X*FLastPos.Y <> 0
+    then FPrevPos := FLastPos
+    else FPrevPos := aTarget;
+  FLastUID := 0;
+  if Doom.Level.Being[ aTarget ] <> nil then
+  FLastUID := Doom.Level.Being[ aTarget ].UID;
+  FLastPos := aTarget;
+end;
+
+destructor TTargeting.Destroy;
+begin
+  FreeAndNil( FList );
+  inherited Destroy;
+end;
 
 procedure TDoom.ModuleMainHook(Hook: AnsiString; const Params: array of const);
 begin
@@ -197,6 +247,7 @@ begin
   GameWon    := False;
   DataLoaded := False;
   CrashSave  := False;
+  FTargeting := TTargeting.Create;
   SetState( DSStart );
   FModuleHooks := [];
   FChallengeHooks := [];
@@ -459,6 +510,7 @@ var iTarget     : TCoord2D;
     iLimitRange : Boolean;
     iRange      : Byte;
     iTargets    : TAutoTarget;
+    iBeing      : TBeing;
     iCommand    : Byte;
     iEmpty      : Boolean;
 begin
@@ -574,7 +626,25 @@ begin
   if iFireTitle <> '' then
   begin
     if iRange = 0 then iRange := Player.Vision;
-    iTargets := Player.CreateAutoTarget( iRange, True );
+    iTargets := Player.CreateAutoTarget( iRange );
+    begin
+      if (FTargeting.FLastUID <> 0) and Level.isAlive( FTargeting.FLastUID ) then
+      begin
+        iBeing := Level.FindChild( FTargeting.FLastUID ) as TBeing;
+        if iBeing <> nil then
+          if iBeing.isVisible then
+            if Distance( iBeing.Position, Player.Position ) <= iRange then
+              iTargets.PriorityTarget( iBeing.Position );
+      end;
+
+      if FTargeting.FLastPos.X*FTargeting.FLastPos.Y <> 0 then
+        if FTargeting.FLastUID = 0 then
+  //        if iLevel.isVisible( FLastTargetPos ) then
+  //          if Distance( FLastTargetPos, FPosition ) <= aRange then
+              iTargets.PriorityTarget( FTargeting.FLastPos );
+    end;
+
+
     IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, iTargets, iChainFire ) );
     Exit( False );
   end;
@@ -632,7 +702,7 @@ end;
 function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
 begin
   if not ( aCommand.Command in [ COMMAND_FIRE, COMMAND_ALTFIRE, COMMAND_RELOAD ] ) then
-    Player.FLastTargetPos.Create(0,0);
+    FTargeting.ClearPosition;
 
   if aCommand.Command = COMMAND_NONE then
     Exit( False );
@@ -974,6 +1044,7 @@ repeat
       FLevel.Tick;
     end;
     PreAction;
+    FTargeting.Clear;
 
     while ( State = DSPlaying ) do
     begin
@@ -1016,7 +1087,9 @@ repeat
     end;
 
     if State = DSNextLevel then
+    begin
       FLevel.Leave;
+    end;
 
     if State <> DSSaving then
     begin
@@ -1200,6 +1273,7 @@ destructor TDoom.Destroy;
 begin
   UnLoad;
   Log('Doom destroyed.');
+  FreeAndNil( FTargeting );
   FreeAndNil( IO );
   inherited Destroy;
 end;

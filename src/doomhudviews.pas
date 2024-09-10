@@ -374,7 +374,8 @@ begin
       IO.Msg( 'Find a more constructive way to commit suicide.' )
     else
     begin
-      Player.UpdateTargeting( FTarget );
+      Doom.Targeting.Update( FTarget );
+      Player.TargetPos := FTarget;
       Player.ChainFire := FChainFire;
       Doom.HandleCommand( TCommand.Create( FCommand, FTarget, FItem ) );
     end;
