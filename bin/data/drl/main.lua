@@ -243,7 +243,7 @@ function drl.register_base_data()
 
 end
 
-function DoomRL.OnDisassemble( it )
+function drl.GetDisassembleId( it )
 	local modlist = {"mod_agility","mod_bulk","mod_tech","mod_power"}
 	if it.__proto.scavenge then
 		modlist = it.__proto.scavenge
@@ -260,7 +260,7 @@ function DoomRL.OnDisassemble( it )
 	return table.random_pick( modlist )
 end
 
-function DoomRL.get_result_id()
+function drl.GetResultId()
 	local result    = "unknown"
 	local dead      = player.hp <= 0
 	local won       = player:has_won()
@@ -287,12 +287,12 @@ function DoomRL.get_result_id()
 	return result
 end
 
-function DoomRL.get_short_result_id( result, depth )
+function drl.GetShortResultId( result, depth )
 	if result == "win" or result == "final" or result == "sacrifice" then return result end
 	return "level:"..depth
 end
 
-function DoomRL.get_result_description( result, highscore )
+function drl.GetResultDescription( result, highscore )
 	local killed_by = "was killed by something"
 
 	    if result == "win"   then killed_by = "defeated the Mastermind"
