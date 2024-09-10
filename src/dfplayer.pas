@@ -732,7 +732,7 @@ begin
 
   HOF.Add(Name,FScore,FKilledBy,FExpLevel,CurrentLevel,Doom.Challenge);
 
-  Assign(MortemText, WritePath + 'mortem.txt' );
+  Assign(MortemText, ModuleUserPath + 'mortem.txt' );
   Rewrite(MortemText);
   WritingMortem := True;
   LuaSystem.ProtectedCall(['DoomRL','print_mortem'],[]);
@@ -743,11 +743,11 @@ begin
 
   if Option_MortemArchive then
   begin
-    iString :=  WritePath + 'mortem'+PathDelim+ToProperFilename('['+FormatDateTime(Option_TimeStamp,Now)+'] '+Name)+'.txt';
+    iString :=  ModuleUserPath + 'mortem'+PathDelim+ToProperFilename('['+FormatDateTime(Option_TimeStamp,Now)+'] '+Name)+'.txt';
     Assign(iCopyText,iString);
     Log('Writing mortem...: '+iString);
     Rewrite(iCopyText);
-    Assign(MortemText, WritePath + 'mortem.txt');
+    Assign(MortemText, ModuleUserPath + 'mortem.txt');
     Reset(MortemText);
     
     while not EOF(MortemText) do

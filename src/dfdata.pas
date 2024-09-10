@@ -11,7 +11,9 @@ uses Classes, SysUtils, idea,
      vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable, vioevent,
      doomconfig, doomkeybindings;
 
-const ConfigurationPath : AnsiString = 'config.lua';
+const CoreModuleID      : AnsiString = 'drl';
+      ConfigurationPath : AnsiString = 'config.lua';
+      ModuleUserPath    : AnsiString = '';
       DataPath          : AnsiString = '';
       WritePath         : AnsiString = '';
       ScorePath         : AnsiString = '';

@@ -113,16 +113,26 @@ try
       Free;
     end;
 
+    if ScorePath = '' then ScorePath := WritePath;
+
+    begin // Make and assign directories
+      if not DirectoryExists( WritePath + 'user' ) then CreateDir( WritePath + 'user' );
+      if not DirectoryExists( WritePath + 'user' + PathDelim + CoreModuleID ) then CreateDir( WritePath + 'user' + PathDelim + CoreModuleID );
+      ModuleUserPath := WritePath + 'user' + PathDelim + CoreModuleID + PathDelim;
+      if not DirectoryExists( ModuleUserPath + 'screenshot' ) then CreateDir( ModuleUserPath + 'screenshot' );
+      if not DirectoryExists( ModuleUserPath + 'mortem' ) then CreateDir( ModuleUserPath + 'mortem' );
+      if not DirectoryExists( ModuleUserPath + 'backup' ) then CreateDir( ModuleUserPath + 'backup' );
+      if ScorePath = WritePath then ScorePath := ModuleUserPath;
+    end;
 
     {$IFDEF HEAPTRACE}
     SetHeapTraceOutput( WritePath + 'heap.txt');
     {$ENDIF}
 
-    Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, WritePath + 'log.txt', False ) );
+    Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, WritePath + 'runtime.log', False ) );
     LogSystemInfo();
     Logger.Log( LOGINFO, 'Log path set to - ' + WritePath );
 
-    if ScorePath = '' then ScorePath := WritePath;
     ErrorLogFileName := WritePath + 'error.log';
 
     Doom := Systems.Add(TDoom.Create) as TDoom;

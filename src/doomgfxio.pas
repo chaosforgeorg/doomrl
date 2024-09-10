@@ -205,10 +205,10 @@ begin
   FFontSizeX := 10;
   FFontSizeY := 18;
   if GodMode then
-    iImage := LoadImage( 'data' + DirectorySeparator + 'drl' + DirectorySeparator + 'fonts' + DirectorySeparator + iFontName )
+    iImage := LoadImage( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + iFontName )
   else
   begin
-    iCoreData := TVDataFile.Create(DataPath+'drl.wad');
+    iCoreData := TVDataFile.Create( DataPath + CoreModuleID + '.wad');
     iCoreData.DKKey := LoveLace;
     iStream := iCoreData.GetFile( iFontName, 'fonts' );
     iImage := LoadImage( iStream, iStream.Size );

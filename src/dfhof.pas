@@ -673,8 +673,6 @@ begin
 end;
 
 procedure THOF.Init;
-var cn  : DWord;
-    let : Char;
 begin
   SkillRank := 0;
   ExpRank   := 0;
@@ -689,9 +687,9 @@ begin
     FScore.Unlock;
   end;
 
-  FPlayerInfo := TVXMLDataFile.Create( WritePath + PlayerFile, 'player' );
+  FPlayerInfo := TVXMLDataFile.Create( ModuleUserPath + PlayerFile, 'player' );
   FPlayerInfo.SetCRC( '344ef'+{ModuleID+}'3321', '738af'+{ModuleID+}'92-5' );
-  FPlayerInfo.SetBackup(  WritePath + 'backup'+PathDelim, Option_PlayerBackups );
+  FPlayerInfo.SetBackup(  ModuleUserPath + 'backup'+PathDelim, Option_PlayerBackups );
   FPlayerInfo.Load;
 
   SkillRank := GetRank('skill');
