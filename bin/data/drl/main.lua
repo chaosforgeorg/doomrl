@@ -332,8 +332,8 @@ function drl.GetResultDescription( result, highscore )
 end
 
 function DoomRL.print_mortem()
-	local result_id    = DoomRL.get_result_id()
-	local death_reason = DoomRL.get_result_description( result_id, false )
+	local result_id    = drl.GetResultId()
+	local death_reason = drl.GetResultDescription( result_id, false )
 
 	local function version_string( v )
 		local result = v[1].."."..v[2].."."..v[3]
