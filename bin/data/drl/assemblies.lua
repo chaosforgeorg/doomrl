@@ -1,4 +1,4 @@
-function DoomRL.load_mod_arrays()
+function drl.register_assemblies()
 
 -- Basic assemblies --
 

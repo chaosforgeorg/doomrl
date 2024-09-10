@@ -1,4 +1,4 @@
-function DoomRL.loadaffects()
+function drl.register_affects()
 	
 	register_affect "berserk"
 	{

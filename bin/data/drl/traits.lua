@@ -1,4 +1,4 @@
-function DoomRL.load_traits()
+function drl.register_traits()
 
 	register_trait "ironman"
 	{

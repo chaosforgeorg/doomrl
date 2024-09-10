@@ -1,5 +1,5 @@
 -- XXX Maximum length for desc is 44 characters (maybe 43)
-function DoomRL.loadmedals()
+function drl.register_medals()
 
 	register_medal "killall"
 	{
@@ -23,7 +23,7 @@ function DoomRL.loadmedals()
 		desc  = "Won & killed only with shotguns/fists",
 		hidden  = true,
 		winonly = true,
-		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + DoomRL.count_group_kills( "weapon-shotgun" ) == statistics.kills end,
+		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + drl.count_group_kills( "weapon-shotgun" ) == statistics.kills end,
 	}
 
 	register_medal "pistols"
@@ -32,7 +32,7 @@ function DoomRL.loadmedals()
 		desc  = "Won & killed only with pistols/fists",
 		hidden  = true,
 		winonly = true,
-		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + DoomRL.count_group_kills( "weapon-pistol" ) == statistics.kills end,
+		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + drl.count_group_kills( "weapon-pistol" ) == statistics.kills end,
 	}
 
 	register_medal "knives"
@@ -596,7 +596,7 @@ function DoomRL.loadmedals()
 
 end
 
-function DoomRL.check_badges()
+function drl.check_badges()
 	-- UAC, veteran, strongman and elite badges
 	if player:has_won() then
 		local is_conqueror = (statistics.bonus_levels_completed == statistics.bonus_levels_count)
@@ -694,7 +694,7 @@ function DoomRL.check_badges()
 
 end
 
-function DoomRL.count_group_kills( weapon_group )
+function drl.count_group_kills( weapon_group )
 	local total = 0
 	for _,item in ipairs( items ) do
 		if item.group == weapon_group then
@@ -704,9 +704,9 @@ function DoomRL.count_group_kills( weapon_group )
 	return total
 end
 
-function DoomRL.award_medals()
+function drl.RunAwardMedals()
 	-- check badges
-	DoomRL.check_badges()
+	drl.check_badges()
 
 	-- Prefetch win condition
 	local win = player:has_won()
@@ -740,6 +740,7 @@ function DoomRL.award_medals()
 	end
 end
 
+function drl.register_global_badges()
 
 	register_badge "technician1"
 	{
@@ -845,8 +846,9 @@ end
 		desc  = "Receive {!all} medals",
 		level = 5,
 	}
+end
 
-function DoomRL.award_global_badges()
+function drl.award_global_badges()
 	local medals_max = medals.__counter
 	local medals     = player_data.child_count('player/medals')
 
@@ -893,7 +895,7 @@ function DoomRL.award_global_badges()
 	if amb_total >= amb_total_max    then player:add_badge("technician5") end
 end
 
-function DoomRL.register_awards( no_record )
+function drl.RunRegisterAwards( no_record )
 
 	for k,v in ipairs( awards ) do
 		if player:has_award( v.id ) then
@@ -921,7 +923,7 @@ function DoomRL.register_awards( no_record )
 		end
 	end
 
-	DoomRL.award_global_badges()
+	drl.award_global_badges()
 
 	for k,v in ipairs( badges ) do
 		if player:has_badge( v.id ) then

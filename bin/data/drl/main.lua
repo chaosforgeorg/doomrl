@@ -1,4 +1,4 @@
-core.declare( "DoomRL", {} )
+core.declare( "drl", {} )
 
 require( "drl:generator" )
 require( "drl:generators" )
@@ -16,7 +16,7 @@ require( "drl:beings" )
 require( "drl:ranks" )
 require( "drl:plot" )
 require( "drl:challenge" )
-require( "drl:mod_arrays" )
+require( "drl:assemblies" )
 require( "drl:klass" )
 
 require( "drl:items/items" )
@@ -47,33 +47,34 @@ require( "drl:levels/asmosden" )
 require( "drl:levels/containment" )
 require( "drl:levels/house" )
 
--- main DoomRL lua script file --
+-- main DRL lua script file --
 
-function DoomRL.OnLoaded()
-	ui.msg('Welcome to the @RDRL@>...')
+function drl.OnLoaded()
+	ui.msg('Welcome to {RDRL}...')
 end
 
-function DoomRL.OnLoadBase()
-	DoomRL.load_sprites()
-	DoomRL.load_difficulty()
-	DoomRL.loadbasedata()
-	DoomRL.loadaffects()
-	DoomRL.loadmissiles()
-	DoomRL.loadcells()
-	DoomRL.loaditems()
-	DoomRL.loadexoticitems()
-	DoomRL.loaduniqueitems()
-	DoomRL.loadnpcs()
-	DoomRL.load_ranks()
-	DoomRL.load_traits()
-	DoomRL.loadmedals()
-	DoomRL.load_mod_arrays()
-	DoomRL.loadchallenges()
-	DoomRL.load_klasses()
+function drl.OnLoad()
+	drl.register_sprites()
+	drl.register_difficulties()
+	drl.register_base_data()
+	drl.register_affects()
+	drl.register_missiles()
+	drl.register_cells()
+	drl.register_regular_items()
+	drl.register_exotic_items()
+	drl.register_unique_items()
+	drl.register_beings()
+	drl.register_ranks()
+	drl.register_traits()
+	drl.register_global_badges()
+	drl.register_medals()
+	drl.register_assemblies()
+	drl.register_challenges()
+	drl.register_klasses()
 
-	DoomRL.load_generators()
-	DoomRL.load_events()
-	DoomRL.load_rooms()
+	drl.register_generators()
+	drl.register_events()
+	drl.register_rooms()
 
 	generator.styles = {
 		{ floor = "floor", wall = "wall",  door="door",  odoor = "odoor",  style = 0,  },
@@ -96,15 +97,153 @@ function DoomRL.OnLoadBase()
 		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 1,  },
 		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 2,  },
 	}
+
+	for _,level_proto in ipairs(levels) do
+		if level_proto.OnRegister then level_proto.OnRegister() end
+	end
 end
 
-function DoomRL.OnLoad()
-	DoomRL.registerlevels()
-	DoomRL.load_doom_unique_items()
-	DoomRL.load_doom_npcs()
+function drl.register_base_data()
+
+	register_cell "bloodpool"
+	{
+		name = "pool of blood";
+		ascii = "";
+		asciilow = '.';
+		color = RED;
+		set = CELLSET_FLOORS;
+		sprite = SPRITE_BLOODPOOL;
+		flags = {CF_OVERLAY, CF_VBLOODY};
+	}
+
+	register_cell "corpse"
+	{
+		name = "bloody corpse";
+		ascii = "%";
+		color = RED;
+		set = CELLSET_FLOORS;
+		flags = {CF_OVERLAY, CF_NOCHANGE, CF_VBLOODY};
+		destroyto = "bloodpool",
+		sprite = SPRITE_CORPSE,
+	}
+
+	register_item "stubitem"
+	{
+		name     = "stubitem",
+		color    = RED,
+		sprite   = SPRITE_TELEPORT,
+		weight   = 0,
+
+		type = ITEMTYPE_TELE,
+
+		OnEnter = function() end,
+	}
+
+	register_item "teleport"
+	{
+		name     = "teleport",
+		color    = LIGHTCYAN,
+		sprite   = SPRITE_TELEPORT,
+		sframes  = 2,
+		weight   = 0,
+		flags    = { IF_NODESTROY, IF_NUKERESIST },
+
+		type = ITEMTYPE_TELE,
+
+		OnCreate = function( self )
+			self:add_property( "target", false )
+		end,
+
+		OnEnter = function( self, being )
+			if not self.target then
+				self.target = generator.random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
+			end
+			-- Explosions can have sounds, but by the time the sound plays, the player has already moved
+			level:play_sound( core.resolve_sound_id( "teleport.use", "use" ), being.position )
+			level:explosion( being.position, 4, 50, 0, 0, GREEN, 0 )
+			being:msg( "You feel yanked away!", being:get_name(true,true).." suddenly disappears!" )
+			local target = self.target
+			local empty = { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
+			if cells[ level.map[ target ] ].flags[ CF_BLOCKMOVE ] then
+				being:msg("You feel out of place!")
+				being:apply_damage(15, TARGET_INTERNAL, DAMAGE_FIRE )
+				target = generator.random_empty_coord( empty )
+			end
+			if level:get_being( target ) then
+				local tgt = level:get_being( target )
+				being:msg("Suddenly you feel weird!")
+				tgt:msg("Argh! You feel like someone is trying to implode you!")
+				tgt:apply_damage(15, TARGET_INTERNAL, DAMAGE_FIRE )
+				target = generator.random_empty_coord( empty )
+			end
+			if being.__ptr then
+				being:relocate( target )
+				being:msg(nil,"Suddenly "..being:get_name(false,false).." appears out of nowhere!")
+				being.scount = being.scount - 1000
+			end
+		end,
+	}
+
+	register_being "soldier"
+	{
+		name         = "soldier",
+		ascii        = "@" ,
+		color        = LIGHTGRAY,
+		sprite       = SPRITE_PLAYER,
+		sframes      = 2,
+		sftime       = 500,
+		min_lev      = 200,
+		corpse       = "corpse",
+		danger       = 0,
+		weight       = 0,
+		xp           = 0,
+		flags        = { BF_OPENDOORS, BF_UNIQUENAME },
+		desc         = "You're a soldier. One of the best that the world could set against the demonic invasion.",
+		ai_type      = "",
+
+		OnCreate = function(self)
+			self:add_property( "medals", {} )
+			self:add_property( "badges", {} )
+			self:add_property( "awards", {} )
+			self:add_property( "assemblies", {} )
+			self:add_property( "items_found", {} )
+			self:add_property( "history", {} )
+			self:add_property( "episode", {} )
+			self:add_property( "level_data", {} )
+
+			if rawget(_G,"DIFFICULTY") then
+				self.hp    = 50
+				self.hpmax = self.hp
+				self.hpnom = self.hp
+				self.scount = 4000 --Removes player's start delay on level 1
+				self.expfactor = diff[DIFFICULTY].expfactor
+			end
+		end,
+
+		--These stubs exist so that modders can hijack them properly
+		OnAction   = function(self) return end,
+		OnAttacked = function(self) return end,
+		OnDie      = function(self, overkill) return end,
+		OnDieCheck = function(self, overkill) return true end,
+
+		OnPickupItem = function(self,i)
+			if not self:has_found_item( i.id ) then
+				if i.flags[ IF_UNIQUE ] then
+					statistics.uniques_found = statistics.uniques_found + 1
+					self:add_history( 'On level @1 he found the '..i.name..'!' )
+					ui.blink( LIGHTGREEN, 20 )
+				end
+				if items[ i.id ].OnFirstPickup then
+					items[ i.id ].OnFirstPickup( i, self )
+				end
+				self:add_found_item( i.id )
+			end
+		end,
+	}
+
 end
 
-function DoomRL.OnDisassemble( it )
+function drl.GetDisassembleId( it )
 	local modlist = {"mod_agility","mod_bulk","mod_tech","mod_power"}
 	if it.__proto.scavenge then
 		modlist = it.__proto.scavenge
@@ -121,7 +260,7 @@ function DoomRL.OnDisassemble( it )
 	return table.random_pick( modlist )
 end
 
-function DoomRL.get_result_id()
+function drl.GetResultId()
 	local result    = "unknown"
 	local dead      = player.hp <= 0
 	local won       = player:has_won()
@@ -148,12 +287,12 @@ function DoomRL.get_result_id()
 	return result
 end
 
-function DoomRL.get_short_result_id( result, depth )
+function drl.GetShortResultId( result, depth )
 	if result == "win" or result == "final" or result == "sacrifice" then return result end
 	return "level:"..depth
 end
 
-function DoomRL.get_result_description( result, highscore )
+function drl.GetResultDescription( result, highscore )
 	local killed_by = "was killed by something"
 
 	    if result == "win"   then killed_by = "defeated the Mastermind"
@@ -192,9 +331,9 @@ function DoomRL.get_result_description( result, highscore )
 	return killed_by
 end
 
-function DoomRL.print_mortem()
-	local result_id    = DoomRL.get_result_id()
-	local death_reason = DoomRL.get_result_description( result_id, false )
+function drl.RunPrintMortem()
+	local result_id    = drl.GetResultId()
+	local death_reason = drl.GetResultDescription( result_id, false )
 
 	local function version_string( v )
 		local result = v[1].."."..v[2].."."..v[3]
@@ -214,8 +353,8 @@ function DoomRL.print_mortem()
 	player:mortem_print( "--------------------------------------------------------------" )
 	player:mortem_print()
 
-	if game_module and game_module.print_mortem then
-		game_module.print_mortem()
+	if game_module and game_module.RunPrintMortem then
+		game_module.RunPrintMortem()
 		return
 	end
 
@@ -549,153 +688,7 @@ function DoomRL.print_mortem()
 	player:mortem_print( "-------------------------------------------------------------- " )
 end
 
-function DoomRL.registerlevels()
-	for _,level_proto in ipairs(levels) do
-		if level_proto.OnRegister then level_proto.OnRegister() end
-	end
-end
-
-function DoomRL.loadbasedata()
-
-	register_cell "bloodpool"
-	{
-		name = "pool of blood";
-		ascii = "";
-		asciilow = '.';
-		color = RED;
-		set = CELLSET_FLOORS;
-		sprite = SPRITE_BLOODPOOL;
-		flags = {CF_OVERLAY, CF_VBLOODY};
-	}
-
-	register_cell "corpse"
-	{
-		name = "bloody corpse";
-		ascii = "%";
-		color = RED;
-		set = CELLSET_FLOORS;
-		flags = {CF_OVERLAY, CF_NOCHANGE, CF_VBLOODY};
-		destroyto = "bloodpool",
-		sprite = SPRITE_CORPSE,
-	}
-
-	register_item "stubitem"
-	{
-		name     = "stubitem",
-		color    = RED,
-		sprite   = SPRITE_TELEPORT,
-		weight   = 0,
-
-		type = ITEMTYPE_TELE,
-
-		OnEnter = function() end,
-	}
-
-	register_item "teleport"
-	{
-		name     = "teleport",
-		color    = LIGHTCYAN,
-		sprite   = SPRITE_TELEPORT,
-		sframes  = 2,
-		weight   = 0,
-		flags    = { IF_NODESTROY, IF_NUKERESIST },
-
-		type = ITEMTYPE_TELE,
-
-		OnCreate = function( self )
-			self:add_property( "target", false )
-		end,
-
-		OnEnter = function( self, being )
-			if not self.target then
-				self.target = generator.random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
-			end
-			-- Explosions can have sounds, but by the time the sound plays, the player has already moved
-			level:play_sound( core.resolve_sound_id( "teleport.use", "use" ), being.position )
-			level:explosion( being.position, 4, 50, 0, 0, GREEN, 0 )
-			being:msg( "You feel yanked away!", being:get_name(true,true).." suddenly disappears!" )
-			local target = self.target
-			local empty = { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
-			if cells[ level.map[ target ] ].flags[ CF_BLOCKMOVE ] then
-				being:msg("You feel out of place!")
-				being:apply_damage(15, TARGET_INTERNAL, DAMAGE_FIRE )
-				target = generator.random_empty_coord( empty )
-			end
-			if level:get_being( target ) then
-				local tgt = level:get_being( target )
-				being:msg("Suddenly you feel weird!")
-				tgt:msg("Argh! You feel like someone is trying to implode you!")
-				tgt:apply_damage(15, TARGET_INTERNAL, DAMAGE_FIRE )
-				target = generator.random_empty_coord( empty )
-			end
-			if being.__ptr then
-				being:relocate( target )
-				being:msg(nil,"Suddenly "..being:get_name(false,false).." appears out of nowhere!")
-				being.scount = being.scount - 1000
-			end
-		end,
-	}
-
-	register_being "soldier"
-	{
-		name         = "soldier",
-		ascii        = "@" ,
-		color        = LIGHTGRAY,
-		sprite       = SPRITE_PLAYER,
-		sframes      = 2,
-		sftime       = 500,
-		min_lev      = 200,
-		corpse       = "corpse",
-		danger       = 0,
-		weight       = 0,
-		xp           = 0,
-		flags        = { BF_OPENDOORS, BF_UNIQUENAME },
-		desc         = "You're a soldier. One of the best that the world could set against the demonic invasion.",
-		ai_type      = "",
-
-		OnCreate = function(self)
-			self:add_property( "medals", {} )
-			self:add_property( "badges", {} )
-			self:add_property( "awards", {} )
-			self:add_property( "assemblies", {} )
-			self:add_property( "items_found", {} )
-			self:add_property( "history", {} )
-			self:add_property( "episode", {} )
-			self:add_property( "level_data", {} )
-
-			if rawget(_G,"DIFFICULTY") then
-				self.hp    = 50
-				self.hpmax = self.hp
-				self.hpnom = self.hp
-				self.scount = 4000 --Removes player's start delay on level 1
-				self.expfactor = diff[DIFFICULTY].expfactor
-			end
-		end,
-
-		--These stubs exist so that modders can hijack them properly
-		OnAction   = function(self) return end,
-		OnAttacked = function(self) return end,
-		OnDie      = function(self, overkill) return end,
-		OnDieCheck = function(self, overkill) return true end,
-
-		OnPickupItem = function(self,i)
-			if not self:has_found_item( i.id ) then
-				if i.flags[ IF_UNIQUE ] then
-					statistics.uniques_found = statistics.uniques_found + 1
-					self:add_history( 'On level @1 he found the '..i.name..'!' )
-					ui.blink( LIGHTGREEN, 20 )
-				end
-				if items[ i.id ].OnFirstPickup then
-					items[ i.id ].OnFirstPickup( i, self )
-				end
-				self:add_found_item( i.id )
-			end
-		end,
-	}
-
-end
-
-function DoomRL.OnCreateEpisode()
+function drl.OnCreateEpisode()
 	local BOSS_LEVEL = 24
 	player.episode = {}
 	local paired = {
@@ -743,7 +736,7 @@ function DoomRL.OnCreateEpisode()
 	statistics.bonus_levels_count = SpecLevCount
 end
 
-function DoomRL.logo_text()
+function drl.GetLogoText()
 	return
 [[{rAdd. coding : {ytehtmi}, {yGame Hunter}, {yshark20061} and {yadd}
 Music tracks: {ySonic Clang} (remixes), {ySimon Volpert} (special levels)
@@ -759,14 +752,14 @@ Major changes since last version (see {yversion.txt} for full list)
 ]]
 end
 
-function DoomRL.OnWinGame()
+function drl.OnWinGame()
 	if kills.get("jc") > 0 then
-		DoomRL.plot_outro_final()
+		drl.plot_outro_final()
 	elseif player.depth >= 24 then
 		if player.hp > 0 or player.depth > 24 then
-			DoomRL.plot_outro_3()
+			drl.plot_outro_3()
 		else
-			DoomRL.plot_outro_partial()
+			drl.plot_outro_partial()
 		end
 	else
 		return false
@@ -785,7 +778,7 @@ function DoomRL.OnWinGame()
 	return true
 end
 
-function DoomRL.first_text()
+function drl.GetFirstText()
 	return
 [[{yWelcome to {RD**m the Roguelike}!
 
@@ -806,7 +799,7 @@ Press {LEnter} to continue...}
 ]]
 end
 
-function DoomRL.random_name()
+function drl.GetRandomName()
 	-- TODO Add more names
 	local names =
 	{
@@ -842,7 +835,7 @@ function DoomRL.random_name()
 	return names[math.random(#(names))]
 end
 
-function DoomRL.get_special_item( pname )
+function drl.get_special_item( pname )
 	if DIFFICULTY > 3 then return nil end
 	local name = string.gsub( string.lower( pname or "" ), " ", "_" )
 	local matches = 
@@ -884,7 +877,7 @@ function DoomRL.get_special_item( pname )
 	return matches[ name ]
 end
 
-function DoomRL.quit_message()
+function drl.GetQuitMessage()
 	-- TODO O/S specific messages (i.e. OSX, Linux etc)
 	local messages = {
 		"Don't leave -- there's a demon behind that corner!",
@@ -901,8 +894,8 @@ function DoomRL.quit_message()
 	return messages[math.random(#(messages))]
 end
 
-function DoomRL.OnGenerate()
-	core.log("DoomRL.OnGenerate()")
+function drl.OnGenerate()
+	core.log("drl.OnGenerate()")
 
 	local dlevel = level.danger_level
 	local choice = weight_table.new()

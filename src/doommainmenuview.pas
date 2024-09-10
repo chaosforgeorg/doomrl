@@ -101,7 +101,6 @@ const CTYPE_ANGEL  = 1;
 
 
 constructor TMainMenuView.Create( aInitial : TMainMenuViewMode = MAINMENU_FIRST; aResult : TMenuResult = nil );
-var iText : Text;
 begin
   VTIG_EventClear;
   VTIG_ResetSelect( MAINMENU_ID );
@@ -126,14 +125,14 @@ begin
     begin
       WriteFileString( WritePath + 'drl.prc', 'DRL was already run.' );
 
-      FFirst := AnsiString( LuaSystem.ProtectedCall( ['DoomRL','first_text'], [] ) );
+      FFirst := AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetFirstText'], [] ) );
     end
     else
       FMode := MAINMENU_INTRO;
   end;
 
   if FMode in [MAINMENU_FIRST,MAINMENU_INTRO] then
-    FIntro := AnsiString( LuaSystem.ProtectedCall( ['DoomRL','logo_text'], [] ) );
+    FIntro := AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetLogoText'], [] ) );
 
   if GraphicsVersion then
   begin

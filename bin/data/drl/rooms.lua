@@ -1,4 +1,4 @@
-function DoomRL.load_rooms()
+function drl.register_rooms()
 
 	register_room "lever_room"
 	{

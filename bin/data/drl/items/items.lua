@@ -1,4 +1,4 @@
-function DoomRL.loaditems()
+function drl.register_regular_items()
 
 	-- Melee Items --
 

@@ -1,5 +1,5 @@
 -- NOTE - the blueprint, storage and constructor are declared here, because core has no notion
--- or how DoomRL generates levels (barrels etc)
+-- or how DRL generates levels (barrels etc)
 
 core.declare( "register_generator", core.register_storage( "generators", "generator" ) )
 
@@ -22,7 +22,7 @@ core.register_blueprint "generator"
 	post_run     = { false,  core.TFUNC },
 }
 
-function DoomRL.load_generators()
+function drl.register_generators()
 
 	register_generator "gen_tiled"
 	{

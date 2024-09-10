@@ -1,4 +1,4 @@
-function DoomRL.loaduniqueitems()
+function drl.register_unique_items()
 
 	register_itemset "angelic"
 	{
@@ -842,9 +842,6 @@ function DoomRL.loaduniqueitems()
 			return true
 		end,
 	}
-end
-
-function DoomRL.load_doom_unique_items()
 
 	register_item "aarmor"
 	{

@@ -1,4 +1,4 @@
-function DoomRL.load_ranks()
+function drl.register_ranks()
 
 	register_requirement "kill_total"
 	{

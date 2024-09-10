@@ -790,7 +790,7 @@ var XMLElement : TDOMElement;
   end;
 
 begin
-  iGameResultID := LuaSystem.ProtectedCall(['DoomRL','get_result_id'],[]);
+  iGameResultID := LuaSystem.ProtectedCall([CoreModuleID,'GetResultId'],[]);
   if not NoPlayerRecord then
   begin
     iDiffID       := LuaSystem.Get([ 'diff', Doom.Difficulty, 'id' ]);
@@ -834,7 +834,7 @@ begin
     IncreaseXMLCount( XMLEntry, 'killtype', iChalAbbr, Player.FKills.Count );
 
     // GAMES
-    iGameResult := LuaSystem.ProtectedCall(['DoomRL','get_short_result_id'],[iGameResultID,DLev]);
+    iGameResult := LuaSystem.ProtectedCall([CoreModuleID,'GetShortResultId'],[iGameResultID,DLev]);
     XMLEntry := IncreaseXMLCount( FPlayerInfo.XML.DocumentElement, 'games', 1 );
     if Doom.GameWon then
     begin
@@ -872,7 +872,7 @@ begin
 
   if not NoScoreRecord then
   begin
-    VS := LuaSystem.ProtectedCall(['DoomRL','get_result_description'],[iGameResultID,true]);
+    VS := LuaSystem.ProtectedCall([CoreModuleID,'GetResultDescription'],[iGameResultID,true]);
 
     FScore.Lock;
     try

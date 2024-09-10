@@ -1,4 +1,4 @@
-function DoomRL.loadchallenges()
+function drl.register_challenges()
 
 -- <action> [on <difficulty>][<special conditions>] (for badges)
 
@@ -1141,7 +1141,7 @@ function DoomRL.loadchallenges()
 		end,
 
 		OnUnLoad = function ()
-			DoomRL.OnCreateEpisode()
+			drl.OnCreateEpisode()
 		end,
 
 		OnEnter = function (l)
@@ -1191,7 +1191,7 @@ function DoomRL.loadchallenges()
 
 		OnWinGame = function ()
 			if player.eq.armor and player.eq.armor.id == "uberarmor" then
-				DoomRL.plot_outro_special()
+				drl.plot_outro_special()
 				return false
 			end
 			ui.blood_slide()
@@ -1303,7 +1303,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 		end,
 
 		OnUnLoad = function ()
-			DoomRL.OnCreateEpisode()
+			drl.OnCreateEpisode()
 		end,
 
 		OnMortem = function ()
@@ -1569,7 +1569,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 		end,
 
 		OnUnLoad = function ()
-			DoomRL.OnCreateEpisode()
+			drl.OnCreateEpisode()
 		end,
 
 		OnMortem = function ()

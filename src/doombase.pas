@@ -200,9 +200,8 @@ end;
 
 procedure TDoom.LoadModule( Base : Boolean );
 begin
-//  if ModuleID <> 'DoomRL' then Lua.LoadModule( Module );
-  FModuleHooks := LoadHooks( ['DoomRL'] ) * GlobalHooks;
-  if Base then CallHook( Hook_OnLoadBase, [] );
+//  if ModuleID <> 'drl' then Lua.LoadModule( Module );
+  FModuleHooks := LoadHooks( [CoreModuleID] ) * GlobalHooks;
   CallHook( Hook_OnLoad, [] );
 end;
 
@@ -232,7 +231,7 @@ begin
   LuaSystem.CallDefaultResult := True;
 //  Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
-  ModuleID := 'DoomRL';
+  ModuleID := 'drl';
 
   LoadModule( True );
   if GraphicsVersion then
@@ -271,7 +270,7 @@ end;
 constructor TDoom.Create;
 begin
   inherited Create;
-  ModuleID   := 'DoomRL';
+  ModuleID   := 'drl';
   GameWon    := False;
   DataLoaded := False;
   CrashSave  := False;
@@ -704,7 +703,7 @@ begin
     ((not aItem.isRanged) or (aItem.Ammo = 0) or aItem.Flags[ IF_NOUNLOAD ] or aItem.Flags[ IF_RECHARGE ] or aItem.Flags[ IF_NOAMMO ]) and
     (aItem.Flags[ IF_EXOTIC ] or aItem.Flags[ IF_UNIQUE ] or aItem.Flags[ IF_ASSEMBLED ] or aItem.Flags[ IF_MODIFIED ]) then
   begin
-    iID := LuaSystem.ProtectedCall( ['DoomRL','OnDisassemble'], [ aItem ] );
+    iID := LuaSystem.ProtectedCall( [ CoreModuleID,'GetDisassembleId'], [ aItem ] );
     if iID <> '' then
     begin
       IO.PushLayer( TUnloadConfirmView.Create(aItem,iID) );
@@ -1194,7 +1193,7 @@ begin
     Player.Name := Option_AlwaysName
   else
     if (Setting_AlwaysRandomName) or (aResult.Name = '')
-      then Player.Name := LuaSystem.ProtectedCall(['DoomRL','random_name'],[])
+      then Player.Name := LuaSystem.ProtectedCall([CoreModuleID,'GetRandomName'],[])
       else Player.Name := aResult.Name;
 
   LuaSystem.ProtectedCall(['klasses',Player.Klass,'OnPick'], [ Player ] );

@@ -1,4 +1,4 @@
-function DoomRL.loadnpcs()
+function drl.register_beings()
 
 	register_being "former"
 	{
@@ -1512,10 +1512,6 @@ function DoomRL.loadnpcs()
 			{ being = "cacodemon", amount = {2,5} }
 		}
 	}
-
-end
-
-function DoomRL.load_doom_npcs()
 
 	register_medal "dragonslayer2"
 	{

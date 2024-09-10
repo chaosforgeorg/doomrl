@@ -724,8 +724,8 @@ begin
   FScore := Round( FScore * Double(LuaSystem.Get([ 'diff', Doom.Difficulty, 'scorefactor' ])) );
 
   Doom.CallHook(Hook_OnMortem,[ not NoPlayerRecord ]);
-  LuaSystem.ProtectedCall(['DoomRL','award_medals'],[]);
-  LuaSystem.ProtectedCall(['DoomRL','register_awards'],[NoPlayerRecord]);
+  LuaSystem.ProtectedCall([CoreModuleID,'RunAwardMedals'],[]);
+  LuaSystem.ProtectedCall([CoreModuleID,'RunRegisterAwards'],[NoPlayerRecord]);
 
   // FScore
   ScoreCRC(FScore);
@@ -735,7 +735,7 @@ begin
   Assign(MortemText, ModuleUserPath + 'mortem.txt' );
   Rewrite(MortemText);
   WritingMortem := True;
-  LuaSystem.ProtectedCall(['DoomRL','print_mortem'],[]);
+  LuaSystem.ProtectedCall([CoreModuleID,'RunPrintMortem'],[]);
   WritingMortem := False;
   Close(MortemText);
 

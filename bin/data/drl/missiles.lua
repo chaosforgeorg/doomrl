@@ -1,4 +1,4 @@
-function DoomRL.loadmissiles()
+function drl.register_missiles()
 
 	register_missile "mgun"
 	{

@@ -1,5 +1,5 @@
 dofile("lua/constants.lua")
-DoomRL = {}
+drl = {}
 items = {}
 
 csv,err = io.open("items.csv", "w")
@@ -9,13 +9,13 @@ function declare(v,i)
   _G[v] = i
 end
 
-function registeritem(ID,sID,name,level,weight,typ,flags)
+function register_item(ID,sID,name,level,weight,typ,flags)
   print(name)
   csv:write(ID..", "..name..", "..(level or 0)..", "..(weight or 0)..", "..typ.."\n");
 end
 
 dofile("lua/items.lua")
 
-DoomRL.loaditems()
+drl.register_items()
 
 io.close(csv)

@@ -62,7 +62,7 @@ register_level "deimos_lab"
 		level.data.vault2 = area.new(37,10,42,11)
 		level.data.bridge = area.new(47,10,51,11)
 
-		local special = DoomRL.get_special_item( player.name )
+		local special = drl.get_special_item( player.name )
 		if not special then 
 			special = level:roll_item{ level = 15, type = ITEMTYPE_RANGED, reqs = { is_special = true } }
 		end

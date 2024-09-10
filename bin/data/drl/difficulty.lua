@@ -1,4 +1,4 @@
-function DoomRL.load_difficulty()
+function drl.register_difficulties()
 
 	register_difficulty	"ITYTD" 
 	{
