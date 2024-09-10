@@ -95,7 +95,6 @@ TPlayer = class(TBeing)
   class procedure RegisterLuaAPI();
   procedure UpdateVisual;
   function ASCIIMoreCode : AnsiString; override;
-  function CreateAutoTarget( aRange : Integer ): TAutoTarget;
   function RunPath( const aCoord : TCoord2D ) : Boolean;
   procedure ExamineNPC;
   procedure ExamineItem;
@@ -405,19 +404,6 @@ begin
   FKills.Add( aKilledID, iKillClass );
 end;
 
-function TPlayer.CreateAutoTarget( aRange : Integer ): TAutoTarget;
-var iLevel  : TLevel;
-    iCoord  : TCoord2D;
-begin
-  iLevel := TLevel(Parent);
-  Result := TAutoTarget.Create( FPosition );
-  for iCoord in NewArea( FPosition, aRange ).Clamped( iLevel.Area ) do
-    if iLevel.Being[ iCoord ] <> nil then
-    with iLevel.Being[ iCoord ] do
-      if (not isPlayer) and isVisible then
-        Result.AddTarget( iCoord );
-end;
-
 function TPlayer.RunPath( const aCoord : TCoord2D ) : boolean;
 begin
   if FPath.Run( FPosition, aCoord, 200) then
@@ -456,8 +442,10 @@ begin
 end;
 
 procedure TPlayer.HandlePostMove;
-var iTempSC : LongInt;
-    iItem   : TItem;
+var iTempSC     : LongInt;
+    iItem       : TItem;
+    iAutoTarget : TAutoTarget;
+
   function RunStopNear : boolean;
   begin
     if TLevel( Parent ).isProperCoord( FPosition.ifIncX(+1) ) and TLevel( Parent ).cellFlagSet( FPosition.ifIncX(+1), CF_RUNSTOP ) then Exit( True );
@@ -492,17 +480,21 @@ begin
          IO.Msg( 'You pump a shell into the shotgun chamber.' );
        end;
      if (BF_GUNRUNNER in Self.FFlags) and canFire and (Shots < 3) and GetRunning then
-     with CreateAutoTarget( Player.Vision ) do
-     try
-       FTargetPos := Current;
-       if FTargetPos <> FPosition then
-       begin
-         // TODO: fix?
-         if Inv.Slot[ efWeapon ].CallHookCheck( Hook_OnFire, [Self,false] ) then
-           ActionFire( FTargetPos, Inv.Slot[ efWeapon ] );
+     begin
+       iAutoTarget := TAutoTarget.Create( FPosition );
+       TLevel(Parent).UpdateAutoTarget( iAutoTarget, Self, Player.Vision );
+       with iAutoTarget do
+       try
+         FTargetPos := Current;
+         if FTargetPos <> FPosition then
+         begin
+           // TODO: fix?
+           if Inv.Slot[ efWeapon ].CallHookCheck( Hook_OnFire, [Self,false] ) then
+             ActionFire( FTargetPos, Inv.Slot[ efWeapon ] );
+         end;
+       finally
+         Free;
        end;
-     finally
-       Free;
      end;
     end;
   FSpeedCount := iTempSC;

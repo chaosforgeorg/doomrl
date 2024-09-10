@@ -108,6 +108,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     function EnemiesLeft : DWord;
     function GetLookDescription( aWhere : TCoord2D ) : Ansistring;
+    procedure UpdateAutoTarget( aAutoTarget : TAutoTarget; aBeing : TBeing; aRange : Integer );
 
     class procedure RegisterLuaAPI();
 
@@ -1331,6 +1332,15 @@ begin
   if iCell.Sprite[ iStyle ].SpriteID <> 0 then;
     Exit( iCell.Sprite[ iStyle ] );
   Exit( iCell.Sprite[ iStyle ] );
+end;
+
+procedure TLevel.UpdateAutoTarget( aAutoTarget : TAutoTarget; aBeing : TBeing; aRange : Integer );
+var iCoord : TCoord2D;
+begin
+  aAutoTarget.Clear( aBeing.Position );
+  for iCoord in NewArea( aBeing.Position, aRange ).Clamped( Area ) do
+    if ( Being[ iCoord ] <> nil ) and ( Being[ iCoord ] <> aBeing ) and ( Being[ iCoord ].isVisible or (aBeing <> Player) ) then
+      aAutoTarget.AddTarget( iCoord );
 end;
 
 function TLevel.GetLookDescription ( aWhere : TCoord2D ) : AnsiString;

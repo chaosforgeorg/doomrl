@@ -10,14 +10,16 @@ type TTargeting = class
   constructor Create;
   procedure Clear;
   procedure ClearPosition;
-  procedure Update( aTarget : TCoord2D );
+  procedure Update( aRange : Integer );
+  procedure OnTarget( aTarget : TCoord2D );
   destructor Destroy; override;
-public
+private
   FList    : TAutoTarget;
   FLastUID : TUID;
   FLastPos : TCoord2D;
   FPrevPos : TCoord2D;
 public
+  property List : TAutoTarget read FList;
   property PrevPos : TCoord2D read FPrevPos;
 end;
 
@@ -105,11 +107,12 @@ uses Classes, SysUtils,
 
 constructor TTargeting.Create;
 begin
-  FList    := nil;
+  FList    := TAutoTarget.Create( NewCoord2D(0,0) );
 end;
 
 procedure TTargeting.Clear;
 begin
+  FList.Clear( NewCoord2D(0,0) );
   FLastPos.Create(0,0);
   FLastUID := 0;
 end;
@@ -119,7 +122,27 @@ begin
   FLastPos.Create(0,0);
 end;
 
-procedure TTargeting.Update( aTarget : TCoord2D );
+procedure TTargeting.Update( aRange : Integer );
+var iBeing : TBeing;
+begin
+  Doom.Level.UpdateAutoTarget( FList, Player, aRange );
+  if (FLastUID <> 0) and Doom.Level.isAlive( FLastUID ) then
+  begin
+    iBeing := Doom.Level.FindChild( FLastUID ) as TBeing;
+    if iBeing <> nil then
+      if iBeing.isVisible then
+        if Distance( iBeing.Position, Player.Position ) <= aRange then
+          FList.PriorityTarget( iBeing.Position );
+  end;
+
+  if FLastPos.X*FLastPos.Y <> 0 then
+    if FLastUID = 0 then
+//    if Doom.Level.isVisible( FLastPos ) then
+//      if Distance( FLastPos, Player.Position ) <= aRange then
+          FList.PriorityTarget( FLastPos );
+end;
+
+procedure TTargeting.OnTarget( aTarget : TCoord2D );
 begin
   if FLastPos.X*FLastPos.Y <> 0
     then FPrevPos := FLastPos
@@ -626,26 +649,8 @@ begin
   if iFireTitle <> '' then
   begin
     if iRange = 0 then iRange := Player.Vision;
-    iTargets := Player.CreateAutoTarget( iRange );
-    begin
-      if (FTargeting.FLastUID <> 0) and Level.isAlive( FTargeting.FLastUID ) then
-      begin
-        iBeing := Level.FindChild( FTargeting.FLastUID ) as TBeing;
-        if iBeing <> nil then
-          if iBeing.isVisible then
-            if Distance( iBeing.Position, Player.Position ) <= iRange then
-              iTargets.PriorityTarget( iBeing.Position );
-      end;
-
-      if FTargeting.FLastPos.X*FTargeting.FLastPos.Y <> 0 then
-        if FTargeting.FLastUID = 0 then
-  //        if iLevel.isVisible( FLastTargetPos ) then
-  //          if Distance( FLastTargetPos, FPosition ) <= aRange then
-              iTargets.PriorityTarget( FTargeting.FLastPos );
-    end;
-
-
-    IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, iTargets, iChainFire ) );
+    FTargeting.Update( iRange );
+    IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, FTargeting.List, iChainFire ) );
     Exit( False );
   end;
 
