@@ -1,4 +1,4 @@
-function DoomRL.load_sprites()
+function drl.register_sprites()
     core.texture_upload( "logo",        true )
     core.texture_upload( "background",  true )
     core.texture_upload( "lut_clear",   true, true )

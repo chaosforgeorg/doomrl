@@ -1,4 +1,4 @@
-function DoomRL.load_klasses()
+function drl.register_klasses()
 
 	register_klass "marine"
 	{

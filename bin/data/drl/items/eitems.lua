@@ -1,4 +1,4 @@
-function DoomRL.loadexoticitems()
+function drl.register_exotic_items()
 	
 	-- Item sets --
 	register_itemset "gothic"

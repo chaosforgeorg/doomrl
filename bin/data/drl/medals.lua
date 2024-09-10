@@ -1,5 +1,5 @@
 -- XXX Maximum length for desc is 44 characters (maybe 43)
-function DoomRL.loadmedals()
+function drl.register_medals()
 
 	register_medal "killall"
 	{

@@ -22,7 +22,7 @@ core.register_blueprint "generator"
 	post_run     = { false,  core.TFUNC },
 }
 
-function DoomRL.load_generators()
+function drl.register_generators()
 
 	register_generator "gen_tiled"
 	{

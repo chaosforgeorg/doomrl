@@ -1,4 +1,4 @@
-function DoomRL.loadchallenges()
+function drl.register_challenges()
 
 -- <action> [on <difficulty>][<special conditions>] (for badges)
 

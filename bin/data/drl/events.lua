@@ -1,4 +1,4 @@
-function DoomRL.load_events()
+function drl.register_events()
 
 	register_event "ice_event"
 	{

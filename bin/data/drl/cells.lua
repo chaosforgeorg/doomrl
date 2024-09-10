@@ -1,4 +1,4 @@
-function DoomRL.loadcells()
+function drl.register_cells()
 
 	register_cell "floor"
 	{
