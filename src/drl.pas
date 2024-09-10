@@ -47,7 +47,6 @@ try
   try
     Configuration := TDoomConfiguration.Create;
 
-
     {$IFDEF Darwin}
     {$IFDEF OSX_APP_BUNDLE}
     RootPath := GetResourcesPath();
@@ -67,10 +66,8 @@ try
     DataPath          := RootPath;
     ConfigurationPath := RootPath + 'config.lua';
     SettingsPath      := RootPath + 'settings.lua';
-    {$ENDIF}
 
-    {$IFDEF WINDOWS}
-    Title := 'DRL - D**m, the Roguelike';
+    Title := 'DRL';
     SetConsoleTitle(PChar(Title));
     Sleep(40);
     {$ENDIF}
@@ -109,8 +106,16 @@ try
       if isSet('writepath')  then WritePath         := get('writepath');
       if isSet('scorepath')  then ScorePath         := get('scorepath');
       if isSet('name')       then Option_AlwaysName := get('name');
+      if isSet('module')     then CoreModuleID      := get('module');
     finally
       Free;
+    end;
+
+    if CoreModuleID = '' then
+    begin
+      if FileExists( WritePath + 'module' )
+        then CoreModuleID := ReadFileString( WritePath + 'module' )
+        else CoreModuleID := VERSION_CORE;
     end;
 
     if ScorePath = '' then ScorePath := WritePath;

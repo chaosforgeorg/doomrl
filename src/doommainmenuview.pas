@@ -124,10 +124,7 @@ begin
   begin
     if not FileExists( WritePath + 'drl.prc' ) then
     begin
-      Assign(iText, WritePath + 'drl.prc');
-      Rewrite(iText);
-      Writeln(iText,'DRL{$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF} was already run.');
-      Close(iText);
+      WriteFileString( WritePath + 'drl.prc', 'DRL was already run.' );
 
       FFirst := AnsiString( LuaSystem.ProtectedCall( ['DoomRL','first_text'], [] ) );
     end
