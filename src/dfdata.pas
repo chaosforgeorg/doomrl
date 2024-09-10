@@ -142,6 +142,7 @@ const
   Setting_UnlockAll        : Boolean = False;
   Setting_MenuSound        : Boolean = False;
   Setting_ScreenShake      : Boolean = True;
+  Setting_AutoTarget       : Boolean = True;
   Setting_MusicVolume      : Byte = 25;
   Setting_SoundVolume      : Byte = 25;
 

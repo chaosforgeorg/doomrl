@@ -56,7 +56,7 @@ TDoom = class(TSystem)
        function HandleActionCommand( aInput : TInputKey ) : Boolean;
        function HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
        function HandleMoveCommand( aInput : TInputKey ) : Boolean;
-       function HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
+       function HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean ) : Boolean;
        function HandleUnloadCommand( aItem : TItem ) : Boolean;
        function HandleSwapWeaponCommand : Boolean;
        function HandleCommand( aCommand : TCommand ) : Boolean;
@@ -339,6 +339,7 @@ begin
     (IO as TDoomGFXIO).UpdateMinimap;
   Player.PreAction;
   FTargeting.Update( Player.Vision );
+  IO.SetAutoTarget( FTargeting.List.Current );
 end;
 
 function TDoom.Action( aInput : TInputKey ) : Boolean;
@@ -348,10 +349,10 @@ begin
     Exit( HandleMoveCommand( aInput ) );
 
   case aInput of
-//    INPUT_FIRE       : Exit( HandleFireCommand( False, False ) );
-//    INPUT_ALTFIRE    : Exit( HandleFireCommand( True, False ) );
-    INPUT_TARGET     : Exit( HandleFireCommand( False, False ) );
-    INPUT_ALTTARGET  : Exit( HandleFireCommand( True, False ) );
+    INPUT_FIRE       : Exit( HandleFireCommand( False, False, Setting_AutoTarget ) );
+    INPUT_ALTFIRE    : Exit( HandleFireCommand( True, False, Setting_AutoTarget ) );
+    INPUT_TARGET     : Exit( HandleFireCommand( False, False, False ) );
+    INPUT_ALTTARGET  : Exit( HandleFireCommand( True, False, False ) );
     INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
     INPUT_LEGACYOPEN : Exit( HandleActionCommand( INPUT_LEGACYOPEN ) );
     INPUT_LEGACYCLOSE: Exit( HandleActionCommand( INPUT_LEGACYCLOSE ) );
@@ -525,7 +526,7 @@ begin
   Exit( False );
 end;
 
-function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
+function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean ) : Boolean;
 var iTarget     : TCoord2D;
     iItem       : TItem;
     iFireTitle  : AnsiString;
@@ -549,7 +550,7 @@ begin
   end;
   if not aAlt then
   begin
-    if (not aMouse) and iItem.isMelee then
+    if (not aMouse) and (not aAuto) and iItem.isMelee then
     begin
       IO.PushLayer( TMeleeDirView.Create );
       Exit( False );
@@ -575,14 +576,16 @@ begin
   begin
     if iItem.isMelee and ( iItem.AltFire = ALT_THROW ) then
     begin
-      if not aMouse then
+      if aMouse then
+        iTarget  := IO.MTarget
+      else if aAuto then
+        iTarget := FTargeting.List.Current
+      else
       begin
         iRange      := Missiles[ iItem.Missile ].Range;
         iLimitRange := MF_EXACT in Missiles[ iItem.Missile ].Flags;
         iFireTitle  := 'Choose throw target:';
-      end
-      else
-        iTarget  := IO.MTarget;
+      end;
     end;
   end;
 
@@ -613,7 +616,17 @@ begin
     if iRange = 0 then iRange := Player.Vision;
 
     iLimitRange := (not iItem.Flags[ IF_SHOTGUN ]) and (MF_EXACT in Missiles[ iItem.Missile ].Flags);
-    if not aMouse then
+    if aMouse or aAuto then
+    begin
+      if aMouse
+        then iTarget := IO.MTarget
+        else iTarget := FTargeting.List.Current;
+
+      if iLimitRange then
+        if Distance( Player.Position, iTarget ) > iRange then
+          Exit( Player.Fail( 'Out of range!', [] ) );
+    end
+    else
     begin
       iAltFire    := ALT_NONE;
       if aAlt then iAltFire := iItem.AltFire;
@@ -632,14 +645,6 @@ begin
         end;
       end
     end
-    else
-    begin
-      iTarget := IO.MTarget;
-
-      if iLimitRange then
-        if Distance( Player.Position, iTarget ) > iRange then
-          Exit( Player.Fail( 'Out of range!', [] ) );
-    end;
   end;
 
   iCommand := COMMAND_FIRE;
@@ -653,6 +658,8 @@ begin
     IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, FTargeting.List, iChainFire ) );
     Exit( False );
   end;
+
+  if aAuto then FTargeting.OnTarget( iTarget );
 
   Exit( HandleCommand( TCommand.Create( iCommand, iTarget, iItem ) ) )
 end;
@@ -818,8 +825,8 @@ begin
       else if (Player.Inv.Slot[ efWeapon ] <> nil) and (Player.Inv.Slot[ efWeapon ].isRanged) then
       begin
         if iAlt
-          then Exit( HandleFireCommand( True, True ) )
-          else Exit( HandleFireCommand( False, True ) );
+          then Exit( HandleFireCommand( True, True, False ) )
+          else Exit( HandleFireCommand( False, True, False ) );
       end
       else Exit( HandleCommand( TCommand.Create( COMMAND_MELEE,
         Player.Position + NewDirectionSmooth( Player.Position, IO.MTarget )
@@ -866,6 +873,7 @@ begin
 
     case iInput of
 //      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+      INPUT_TARGETNEXT : begin IO.SetAutoTarget( FTargeting.List.Next ); Exit; end;
       INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
       INPUT_QUIT       : begin IO.PushLayer( TAbandonView.Create ); Exit; end;
       INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
@@ -1048,8 +1056,8 @@ repeat
       FLevel.PreEnter;
       FLevel.Tick;
     end;
-    PreAction;
     FTargeting.Clear;
+    PreAction;
 
     while ( State = DSPlaying ) do
     begin

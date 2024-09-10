@@ -53,6 +53,7 @@ type
   procedure PushSpriteTerrain( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aTSX : Single = 0; aTSY : Single = 0 );
   function ShiftValue( aFocus : TCoord2D ) : TCoord2D;
   procedure SetTarget( aTarget : TCoord2D; aColor : TColor; aDrawPath : Boolean );
+  procedure SetAutoTarget( aTarget : TCoord2D );
   procedure ClearTarget;
   procedure ToggleGrid;
   function GetGridSize : Word;
@@ -74,6 +75,7 @@ private
   FShift          : TCoord2D;
   FOffset         : TCoord2D;
   FLastCoord      : TCoord2D;
+  FAutoTarget     : TCoord2D;
   FSpriteEngine   : TSpriteEngine;
   FLightMap       : array[0..MAXX] of array[0..MAXY] of Byte;
   FFramebuffer    : TGLFramebuffer;
@@ -194,6 +196,7 @@ begin
   FSpriteEngine := TSpriteEngine.Create( GLVec2i( 32, 32 ) );
   FGridActive     := False;
   FLastCoord.Create(0,0);
+  FAutoTarget.Create(0,0);
 
   FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
   FPostProgram  := TGLProgram.Create(VCleanVertexShader, VPostFragmentShader);
@@ -704,6 +707,13 @@ begin
   FTargetList.Push( FTarget );
 end;
 
+procedure TDoomSpriteMap.SetAutoTarget( aTarget : TCoord2D );
+begin
+  if aTarget = Player.Position
+    then FAutoTarget.Create(0,0)
+    else FAutoTarget := aTarget;
+end;
+
 procedure TDoomSpriteMap.ClearTarget;
 begin
   FTargeting := False;
@@ -918,6 +928,12 @@ begin
       if FTargetList.Size > 0 then
         with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
           Cosplay.Push( HARDSPRITE_MARK mod 100000, TGLVec2i.Create( FTarget.X, FTarget.Y ), FTargetColor, DRL_Z_FX );
+    end
+  else
+    if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
+    begin
+      with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
+        Cosplay.Push( HARDSPRITE_SELECT mod 100000, TGLVec2i.Create( FAutoTarget.X, FAutoTarget.Y ), NewColor( Yellow ), DRL_Z_FX );
     end;
 
   if FGridActive then
