@@ -338,6 +338,7 @@ begin
   if GraphicsVersion then
     (IO as TDoomGFXIO).UpdateMinimap;
   Player.PreAction;
+  FTargeting.Update( Player.Vision );
 end;
 
 function TDoom.Action( aInput : TInputKey ) : Boolean;
@@ -532,8 +533,6 @@ var iTarget     : TCoord2D;
     iAltFire    : TAltFire;
     iLimitRange : Boolean;
     iRange      : Byte;
-    iTargets    : TAutoTarget;
-    iBeing      : TBeing;
     iCommand    : Byte;
     iEmpty      : Boolean;
 begin
@@ -649,7 +648,8 @@ begin
   if iFireTitle <> '' then
   begin
     if iRange = 0 then iRange := Player.Vision;
-    FTargeting.Update( iRange );
+    if iRange <> Player.Vision then
+      FTargeting.Update( iRange );
     IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, FTargeting.List, iChainFire ) );
     Exit( False );
   end;
