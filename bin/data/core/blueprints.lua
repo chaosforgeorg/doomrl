@@ -311,7 +311,6 @@ core.register_blueprint "challenge"
 	OnMortem         = { false, core.TFUNC },
 	OnMortemPrint    = { false, core.TFUNC },
 	OnCreateEpisode  = { false, core.TFUNC },
-	OnLoadBase       = { false, core.TFUNC },
 	OnIntro          = { false, core.TFUNC },
 	OnGenerate       = { false, core.TFUNC },
 }

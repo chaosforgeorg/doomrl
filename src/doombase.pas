@@ -202,7 +202,6 @@ procedure TDoom.LoadModule( Base : Boolean );
 begin
 //  if ModuleID <> 'DoomRL' then Lua.LoadModule( Module );
   FModuleHooks := LoadHooks( ['DoomRL'] ) * GlobalHooks;
-  if Base then CallHook( Hook_OnLoadBase, [] );
   CallHook( Hook_OnLoad, [] );
 end;
 

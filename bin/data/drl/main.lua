@@ -1,3 +1,4 @@
+core.declare( "drl", {} )
 core.declare( "DoomRL", {} )
 
 require( "drl:generator" )
@@ -50,10 +51,10 @@ require( "drl:levels/house" )
 -- main DoomRL lua script file --
 
 function DoomRL.OnLoaded()
-	ui.msg('Welcome to the @RDRL@>...')
+	ui.msg('Welcome to {RDRL}...')
 end
 
-function DoomRL.OnLoadBase()
+function DoomRL.OnLoad()
 	DoomRL.load_sprites()
 	DoomRL.load_difficulty()
 	DoomRL.loadbasedata()
@@ -96,10 +97,11 @@ function DoomRL.OnLoadBase()
 		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 1,  },
 		{ floor = "cfloor",  wall = "cwall", door="door",  odoor = "odoor", style = 2,  },
 	}
-end
 
-function DoomRL.OnLoad()
-	DoomRL.registerlevels()
+	for _,level_proto in ipairs(levels) do
+		if level_proto.OnRegister then level_proto.OnRegister() end
+	end
+
 	DoomRL.load_doom_unique_items()
 	DoomRL.load_doom_npcs()
 end
@@ -547,12 +549,6 @@ function DoomRL.print_mortem()
 		player:mortem_print()
 	end
 	player:mortem_print( "-------------------------------------------------------------- " )
-end
-
-function DoomRL.registerlevels()
-	for _,level_proto in ipairs(levels) do
-		if level_proto.OnRegister then level_proto.OnRegister() end
-	end
 end
 
 function DoomRL.loadbasedata()
