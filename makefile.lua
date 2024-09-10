@@ -39,10 +39,6 @@ makefile = {
 				MACOSX  = { "unix_notes.txt" },
 			},
 			subdirs = {
-				backup     = "!readme.txt",
-				mortem     = "!readme.txt",
-				screenshot = "!readme.txt",
-				modules    = "!readme.txt",
 				["data/drllq/sound"] = "*.wav",
 				["data/drllq/music"] = "*.mid",
 			},
@@ -57,12 +53,8 @@ makefile = {
 				MACOSX  = { "unix_notes.txt" },
 			},
 			subdirs = {
-				backup     = "!readme.txt",
-				mortem     = "!readme.txt",
-				screenshot = "!readme.txt",
-				modules    = "!readme.txt",
-				wavhq      = "*.wav",
-				mp3        = "*.mp3",
+				["data/drlhq/sound"] = "*.wav",
+				["data/drlhq/music"] = "*.mp3",
 			},
 			other = { "colors.lua", "soundhq.lua", "musichq.lua", "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
 		}
