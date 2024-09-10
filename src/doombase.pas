@@ -1193,7 +1193,7 @@ begin
     Player.Name := Option_AlwaysName
   else
     if (Setting_AlwaysRandomName) or (aResult.Name = '')
-      then Player.Name := LuaSystem.ProtectedCall(['DoomRL','random_name'],[])
+      then Player.Name := LuaSystem.ProtectedCall([CoreModuleID,'GetRandomName'],[])
       else Player.Name := aResult.Name;
 
   LuaSystem.ProtectedCall(['klasses',Player.Klass,'OnPick'], [ Player ] );

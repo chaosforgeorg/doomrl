@@ -84,7 +84,7 @@ begin
   inherited Create;
   FCancel  := 'Continue run';
   FConfirm := 'Abandon run';
-  FMessage := LuaSystem.ProtectedCall(['DoomRL','quit_message'],[]) + #10 +
+  FMessage := LuaSystem.ProtectedCall([CoreModuleID,'GetQuitMessage'],[]) + #10 +
     '{yAre you sure you want to abandon this run?}';
   FSize    := Point( 50, 10 );
 end;

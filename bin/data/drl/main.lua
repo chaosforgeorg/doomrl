@@ -736,7 +736,7 @@ function DoomRL.OnCreateEpisode()
 	statistics.bonus_levels_count = SpecLevCount
 end
 
-function DoomRL.logo_text()
+function drl.GetLogoText()
 	return
 [[{rAdd. coding : {ytehtmi}, {yGame Hunter}, {yshark20061} and {yadd}
 Music tracks: {ySonic Clang} (remixes), {ySimon Volpert} (special levels)
@@ -778,7 +778,7 @@ function DoomRL.OnWinGame()
 	return true
 end
 
-function DoomRL.first_text()
+function drl.GetFirstText()
 	return
 [[{yWelcome to {RD**m the Roguelike}!
 
@@ -799,7 +799,7 @@ Press {LEnter} to continue...}
 ]]
 end
 
-function DoomRL.random_name()
+function drl.GetRandomName()
 	-- TODO Add more names
 	local names =
 	{
@@ -877,7 +877,7 @@ function drl.get_special_item( pname )
 	return matches[ name ]
 end
 
-function DoomRL.quit_message()
+function drl.GetQuitMessage()
 	-- TODO O/S specific messages (i.e. OSX, Linux etc)
 	local messages = {
 		"Don't leave -- there's a demon behind that corner!",
