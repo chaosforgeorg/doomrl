@@ -96,6 +96,7 @@ type TDoomIO = class( TIO )
   procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); virtual;
   procedure FullLook( aID : Ansistring );
   procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
+  procedure SetAutoTarget( aTarget : TCoord2D ); virtual;
 protected
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
@@ -120,6 +121,7 @@ protected
   FTargeting   : Boolean;
   FHint        : AnsiString;
   FHintOverlay : AnsiString;
+  FHintTarget  : AnsiString;
 
   // Textmode only
   FTargetLast     : Boolean;
@@ -503,6 +505,13 @@ begin
   PushLayer( TMoreView.Create( aID ) );
 end;
 
+procedure TDoomIO.SetAutoTarget( aTarget : TCoord2D );
+begin
+  FHintTarget := '';
+  if (aTarget.X * aTarget.Y <> 0) and (aTarget <> Player.Position) and (Doom.Level.Being[aTarget] <> nil) then
+    FHintTarget := Doom.Level.GetLookDescription( aTarget, True );
+end;
+
 procedure TDoomIO.Reconfigure( aConfig : TLuaConfig );
 var iInput : TInputKey;
 begin
@@ -709,8 +718,9 @@ begin
   if FHintOverlay <> ''
     then VTIG_FreeLabel( ' '+FHintOverlay+' ', Point( -1-Length( FHintOverlay ), 2 ), Yellow )
     else if FHint <> ''
-      then VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 2 ), Yellow );
-
+      then VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 2 ), Yellow )
+      else if (FHintTarget <> '') and Setting_AutoTarget
+        then VTIG_FreeLabel( ' '+FHintTarget+' ', Point( -1-Length( FHintTarget ), 2 ), Brown );
 
   for i := 1 to 2 do
   begin

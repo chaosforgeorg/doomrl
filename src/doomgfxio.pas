@@ -36,6 +36,7 @@ type
     function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; override;
     procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); override;
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
+    procedure SetAutoTarget( aTarget : TCoord2D ); override;
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
@@ -369,6 +370,12 @@ end;
 procedure TDoomGFXIO.SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte );
 begin
   SpriteMap.SetTarget( aTarget, NewColor( aColor ), True )
+end;
+
+procedure TDoomGFXIO.SetAutoTarget( aTarget : TCoord2D );
+begin
+  inherited SetAutoTarget( aTarget );
+  SpriteMap.SetAutoTarget( aTarget )
 end;
 
 procedure TDoomGFXIO.Configure( aConfig : TLuaConfig; aReload : Boolean = False );

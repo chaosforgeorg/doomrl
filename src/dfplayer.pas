@@ -72,10 +72,6 @@ TPlayer = class(TBeing)
   FPathRun        : Boolean;
   FQuickSlots     : array[1..9] of TQuickSlotInfo;
 
-  FLastTargetPos  : TCoord2D;
-  FLastTargetUID  : TUID;
-
-
   constructor Create; reintroduce;
   procedure Initialize; reintroduce;
   constructor CreateFromStream( Stream: TStream ); override;
@@ -99,11 +95,9 @@ TPlayer = class(TBeing)
   class procedure RegisterLuaAPI();
   procedure UpdateVisual;
   function ASCIIMoreCode : AnsiString; override;
-  function CreateAutoTarget( aRange : Integer; aAssignPriority : Boolean = False ): TAutoTarget;
   function RunPath( const aCoord : TCoord2D ) : Boolean;
   procedure ExamineNPC;
   procedure ExamineItem;
-  procedure UpdateTargeting( aTargetPos : TCoord2D );
   private
   function OnTraitConfirm( aSender : TUIElement ) : Boolean;
   private
@@ -284,8 +278,6 @@ begin
   FKilledMelee    := False;
 
   FEnemiesInVision:= 1;
-  FLastTargetPos.Create(0,0);
-  FLastTargetUID := 0;
   FPathRun := False;
   FPath           := TPathFinder.Create(Self);
   MemorialWritten := False;
@@ -412,40 +404,6 @@ begin
   FKills.Add( aKilledID, iKillClass );
 end;
 
-function TPlayer.CreateAutoTarget( aRange : Integer; aAssignPriority : Boolean = False ): TAutoTarget;
-var iLevel  : TLevel;
-    iCoord  : TCoord2D;
-    iTarget : TBeing;
-begin
-  iLevel := TLevel(Parent);
-  Result := TAutoTarget.Create( FPosition );
-  for iCoord in NewArea( FPosition, aRange ).Clamped( iLevel.Area ) do
-    if iLevel.Being[ iCoord ] <> nil then
-    with iLevel.Being[ iCoord ] do
-      if (not isPlayer) and isVisible then
-        Result.AddTarget( iCoord );
-
-
-  if aAssignPriority then
-  begin
-    if (FLastTargetUID <> 0) and iLevel.isAlive( FLastTargetUID ) then
-    begin
-      iTarget := iLevel.FindChild( FLastTargetUID ) as TBeing;
-      if iTarget <> nil then
-        if iTarget.isVisible then
-          if Distance( iTarget.Position, FPosition ) <= aRange then
-            Result.PriorityTarget( iTarget.Position );
-    end;
-
-    if FLastTargetPos.X*FLastTargetPos.Y <> 0 then
-      if FLastTargetUID = 0 then
-//        if iLevel.isVisible( FLastTargetPos ) then
-//          if Distance( FLastTargetPos, FPosition ) <= aRange then
-            Result.PriorityTarget( FLastTargetPos );
-  end;
-
-end;
-
 function TPlayer.RunPath( const aCoord : TCoord2D ) : boolean;
 begin
   if FPath.Run( FPosition, aCoord, 200) then
@@ -484,8 +442,10 @@ begin
 end;
 
 procedure TPlayer.HandlePostMove;
-var iTempSC : LongInt;
-    iItem   : TItem;
+var iTempSC     : LongInt;
+    iItem       : TItem;
+    iAutoTarget : TAutoTarget;
+
   function RunStopNear : boolean;
   begin
     if TLevel( Parent ).isProperCoord( FPosition.ifIncX(+1) ) and TLevel( Parent ).cellFlagSet( FPosition.ifIncX(+1), CF_RUNSTOP ) then Exit( True );
@@ -520,17 +480,21 @@ begin
          IO.Msg( 'You pump a shell into the shotgun chamber.' );
        end;
      if (BF_GUNRUNNER in Self.FFlags) and canFire and (Shots < 3) and GetRunning then
-     with CreateAutoTarget( Player.Vision ) do
-     try
-       FTargetPos := Current;
-       if FTargetPos <> FPosition then
-       begin
-         // TODO: fix?
-         if Inv.Slot[ efWeapon ].CallHookCheck( Hook_OnFire, [Self,false] ) then
-           ActionFire( FTargetPos, Inv.Slot[ efWeapon ] );
+     begin
+       iAutoTarget := TAutoTarget.Create( FPosition );
+       TLevel(Parent).UpdateAutoTarget( iAutoTarget, Self, Player.Vision );
+       with iAutoTarget do
+       try
+         FTargetPos := Current;
+         if FTargetPos <> FPosition then
+         begin
+           // TODO: fix?
+           if Inv.Slot[ efWeapon ].CallHookCheck( Hook_OnFire, [Self,false] ) then
+             ActionFire( FTargetPos, Inv.Slot[ efWeapon ] );
+         end;
+       finally
+         Free;
        end;
-     finally
-       Free;
      end;
     end;
   FSpeedCount := iTempSC;
@@ -672,19 +636,6 @@ begin
         IO.Msg('You see '+ GetName(false) + ' ' + BlindCoord(iWhere-Self.FPosition)+'.');
       end;
   if iCount = 0 then IO.Msg('There are no items in sight.');
-end;
-
-procedure TPlayer.UpdateTargeting( aTargetPos : TCoord2D );
-begin
-  if FLastTargetPos.X*FLastTargetPos.Y <> 0
-    then FPrevTargetPos := FLastTargetPos
-    else FPrevTargetPos := aTargetPos;
-
-  FLastTargetUID := 0;
-  if TLevel(Parent).Being[ aTargetPos ] <> nil then
-    FLastTargetUID := TLevel(Parent).Being[ aTargetPos ].UID;
-  FLastTargetPos := aTargetPos;
-  FTargetPos := aTargetPos;
 end;
 
 // pieczarki oliwki szynka kielbasa peperoni motzarella //

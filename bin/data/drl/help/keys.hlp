@@ -18,16 +18,18 @@
   {!l}       -- Toggle LookMode (Escape to exit)
   {!f}       -- Fire of equipped weapon
   {!SHIFT-f} -- Alternative Fire of equipped weapon (if available)
+  {!t}       -- Manual targeting of equipped weapon
+  {!SHIFT-r} -- Alternative manual targeting of equipped weapon (if available)
   {!r}       -- Reload equipped weapon
   {!SHIFT-r} -- Special reload weapon (depending on weapon)
   {!u}       -- Unload weapon from inventory/from ground
   {!p}       -- Show screen with character info (parameters of player
             and his equipment)
-  {!t}       -- Show character traits
+  {!y}       -- Show character traits
   {!a}       -- Show known assemblies
   {!s}       -- Show previous messages
   {!,}(comma)-- Run command
-  {!TAB}     -- change tactic
+  {!x}       -- change tactic
   {!1}..{!9} -- weapon quick keys, set them up in the inventory screen
 
 {rKeys while targeting}

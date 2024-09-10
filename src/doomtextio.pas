@@ -20,6 +20,7 @@ type TDoomTextIO = class( TDoomIO )
 
     procedure SetTextMap( aMap : ITextMap );
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
+    procedure SetAutoTarget( aTarget : TCoord2D ); override;
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     procedure DrawHud; override;
@@ -137,6 +138,17 @@ begin
   if FLayers.IsEmpty then
     IO.Console.ShowCursor;
   IO.Console.MoveCursor( aTarget.x+1, aTarget.y+2 );
+end;
+
+procedure TDoomTextIO.SetAutoTarget( aTarget : TCoord2D );
+begin
+  inherited SetAutoTarget( aTarget );
+  if not FTargetEnabled then
+  begin
+    if FLayers.IsEmpty then
+      IO.Console.ShowCursor;
+    IO.Console.MoveCursor( aTarget.x+1, aTarget.y+2 );
+  end;
 end;
 
 procedure TDoomTextIO.DrawHud;

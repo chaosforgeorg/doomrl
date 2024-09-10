@@ -323,7 +323,7 @@ begin
   end;
 
   if (aInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
-  if aInput = INPUT_TACTIC then
+  if aInput = INPUT_TARGETNEXT then
   begin
     FTarget := FTargets.Next;
     UpdateTarget;
@@ -367,14 +367,15 @@ begin
     UpdateTarget;
   end;
 
-  if aInput in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT ] then
+  if aInput in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_TARGET, INPUT_ALTTARGET, INPUT_MLEFT ] then
   begin
     Finalize;
     if FTarget = FPosition then
       IO.Msg( 'Find a more constructive way to commit suicide.' )
     else
     begin
-      Player.UpdateTargeting( FTarget );
+      Doom.Targeting.OnTarget( FTarget );
+      Player.TargetPos := FTarget;
       Player.ChainFire := FChainFire;
       Doom.HandleCommand( TCommand.Create( FCommand, FTarget, FItem ) );
     end;
@@ -386,7 +387,7 @@ end;
 
 procedure TTargetModeView.Finalize;
 begin
-  FreeAndNil( FTargets );
+  FTargets := nil;
   IO.MsgUpDate;
   IO.Console.HideCursor;
   IO.Targeting := False;

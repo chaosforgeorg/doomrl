@@ -6,6 +6,23 @@ uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
      dflevel, dfdata, dfhof, dfitem,
      doomhooks, doomlua, doomcommand, doomkeybindings;
 
+type TTargeting = class
+  constructor Create;
+  procedure Clear;
+  procedure ClearPosition;
+  procedure Update( aRange : Integer );
+  procedure OnTarget( aTarget : TCoord2D );
+  destructor Destroy; override;
+private
+  FList    : TAutoTarget;
+  FLastUID : TUID;
+  FLastPos : TCoord2D;
+  FPrevPos : TCoord2D;
+public
+  property List : TAutoTarget read FList;
+  property PrevPos : TCoord2D read FPrevPos;
+end;
+
 type TDoomState = ( DSStart,      DSMenu,    DSLoading,   DSCrashLoading,
                     DSPlaying,    DSSaving,  DSNextLevel,
                     DSQuit,       DSFinished );
@@ -24,6 +41,7 @@ TDoom = class(TSystem)
        CrashSave     : Boolean;
        NVersion      : TVersion;
        ModuleID      : AnsiString;
+
        constructor Create; override;
        procedure Reconfigure;
        procedure CreateIO;
@@ -38,7 +56,7 @@ TDoom = class(TSystem)
        function HandleActionCommand( aInput : TInputKey ) : Boolean;
        function HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
        function HandleMoveCommand( aInput : TInputKey ) : Boolean;
-       function HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
+       function HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean ) : Boolean;
        function HandleUnloadCommand( aItem : TItem ) : Boolean;
        function HandleSwapWeaponCommand : Boolean;
        function HandleCommand( aCommand : TCommand ) : Boolean;
@@ -63,11 +81,13 @@ TDoom = class(TSystem)
        FSChallengeHooks : TFlags;
        FModuleHooks     : TFlags;
        FLastInputTime   : QWord;
+       FTargeting       : TTargeting;
      public
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
        property ModuleHooks : TFlags read FModuleHooks;
        property State : TDoomState read FState;
+       property Targeting : TTargeting read FTargeting;
      end;
 
 var Doom : TDoom;
@@ -85,6 +105,59 @@ uses Classes, SysUtils,
      doompagedview, doomrankupview, doommainmenuview, doomhudviews, doommessagesview,
      doomconfiguration, doomhelp, doomconfig, dfplayer;
 
+constructor TTargeting.Create;
+begin
+  FList    := TAutoTarget.Create( NewCoord2D(0,0) );
+end;
+
+procedure TTargeting.Clear;
+begin
+  FList.Clear( NewCoord2D(0,0) );
+  FLastPos.Create(0,0);
+  FLastUID := 0;
+end;
+
+procedure TTargeting.ClearPosition;
+begin
+  FLastPos.Create(0,0);
+end;
+
+procedure TTargeting.Update( aRange : Integer );
+var iBeing : TBeing;
+begin
+  Doom.Level.UpdateAutoTarget( FList, Player, aRange );
+  if (FLastUID <> 0) and Doom.Level.isAlive( FLastUID ) then
+  begin
+    iBeing := Doom.Level.FindChild( FLastUID ) as TBeing;
+    if iBeing <> nil then
+      if iBeing.isVisible then
+        if Distance( iBeing.Position, Player.Position ) <= aRange then
+          FList.PriorityTarget( iBeing.Position );
+  end;
+
+  if FLastPos.X*FLastPos.Y <> 0 then
+    if FLastUID = 0 then
+//    if Doom.Level.isVisible( FLastPos ) then
+//      if Distance( FLastPos, Player.Position ) <= aRange then
+          FList.PriorityTarget( FLastPos );
+end;
+
+procedure TTargeting.OnTarget( aTarget : TCoord2D );
+begin
+  if FLastPos.X*FLastPos.Y <> 0
+    then FPrevPos := FLastPos
+    else FPrevPos := aTarget;
+  FLastUID := 0;
+  if Doom.Level.Being[ aTarget ] <> nil then
+  FLastUID := Doom.Level.Being[ aTarget ].UID;
+  FLastPos := aTarget;
+end;
+
+destructor TTargeting.Destroy;
+begin
+  FreeAndNil( FList );
+  inherited Destroy;
+end;
 
 procedure TDoom.ModuleMainHook(Hook: AnsiString; const Params: array of const);
 begin
@@ -197,6 +270,7 @@ begin
   GameWon    := False;
   DataLoaded := False;
   CrashSave  := False;
+  FTargeting := TTargeting.Create;
   SetState( DSStart );
   FModuleHooks := [];
   FChallengeHooks := [];
@@ -264,6 +338,8 @@ begin
   if GraphicsVersion then
     (IO as TDoomGFXIO).UpdateMinimap;
   Player.PreAction;
+  FTargeting.Update( Player.Vision );
+  IO.SetAutoTarget( FTargeting.List.Current );
 end;
 
 function TDoom.Action( aInput : TInputKey ) : Boolean;
@@ -273,8 +349,10 @@ begin
     Exit( HandleMoveCommand( aInput ) );
 
   case aInput of
-    INPUT_FIRE       : Exit( HandleFireCommand( False, False ) );
-    INPUT_ALTFIRE    : Exit( HandleFireCommand( True, False ) );
+    INPUT_FIRE       : Exit( HandleFireCommand( False, False, Setting_AutoTarget ) );
+    INPUT_ALTFIRE    : Exit( HandleFireCommand( True, False, Setting_AutoTarget ) );
+    INPUT_TARGET     : Exit( HandleFireCommand( False, False, False ) );
+    INPUT_ALTTARGET  : Exit( HandleFireCommand( True, False, False ) );
     INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
     INPUT_LEGACYOPEN : Exit( HandleActionCommand( INPUT_LEGACYOPEN ) );
     INPUT_LEGACYCLOSE: Exit( HandleActionCommand( INPUT_LEGACYCLOSE ) );
@@ -448,7 +526,7 @@ begin
   Exit( False );
 end;
 
-function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean ) : Boolean;
+function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean ) : Boolean;
 var iTarget     : TCoord2D;
     iItem       : TItem;
     iFireTitle  : AnsiString;
@@ -456,10 +534,10 @@ var iTarget     : TCoord2D;
     iAltFire    : TAltFire;
     iLimitRange : Boolean;
     iRange      : Byte;
-    iTargets    : TAutoTarget;
     iCommand    : Byte;
     iEmpty      : Boolean;
 begin
+  IO.MsgUpdate;
   iLimitRange := False;
   iFireTitle  := '';
   iChainFire  := Player.ChainFire;
@@ -473,7 +551,7 @@ begin
   end;
   if not aAlt then
   begin
-    if (not aMouse) and iItem.isMelee then
+    if (not aMouse) and (not aAuto) and iItem.isMelee then
     begin
       IO.PushLayer( TMeleeDirView.Create );
       Exit( False );
@@ -499,14 +577,16 @@ begin
   begin
     if iItem.isMelee and ( iItem.AltFire = ALT_THROW ) then
     begin
-      if not aMouse then
+      if aMouse then
+        iTarget  := IO.MTarget
+      else if aAuto then
+        iTarget := FTargeting.List.Current
+      else
       begin
         iRange      := Missiles[ iItem.Missile ].Range;
         iLimitRange := MF_EXACT in Missiles[ iItem.Missile ].Flags;
         iFireTitle  := 'Choose throw target:';
-      end
-      else
-        iTarget  := IO.MTarget;
+      end;
     end;
   end;
 
@@ -537,7 +617,17 @@ begin
     if iRange = 0 then iRange := Player.Vision;
 
     iLimitRange := (not iItem.Flags[ IF_SHOTGUN ]) and (MF_EXACT in Missiles[ iItem.Missile ].Flags);
-    if not aMouse then
+    if aMouse or aAuto then
+    begin
+      if aMouse
+        then iTarget := IO.MTarget
+        else iTarget := FTargeting.List.Current;
+
+      if iLimitRange then
+        if Distance( Player.Position, iTarget ) > iRange then
+          Exit( Player.Fail( 'Out of range!', [] ) );
+    end
+    else
     begin
       iAltFire    := ALT_NONE;
       if aAlt then iAltFire := iItem.AltFire;
@@ -556,14 +646,6 @@ begin
         end;
       end
     end
-    else
-    begin
-      iTarget := IO.MTarget;
-
-      if iLimitRange then
-        if Distance( Player.Position, iTarget ) > iRange then
-          Exit( Player.Fail( 'Out of range!', [] ) );
-    end;
   end;
 
   iCommand := COMMAND_FIRE;
@@ -572,9 +654,20 @@ begin
   if iFireTitle <> '' then
   begin
     if iRange = 0 then iRange := Player.Vision;
-    iTargets := Player.CreateAutoTarget( iRange, True );
-    IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, iTargets, iChainFire ) );
+    if iRange <> Player.Vision then
+      FTargeting.Update( iRange );
+    IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, FTargeting.List, iChainFire ) );
     Exit( False );
+  end;
+
+  if aAuto then
+  begin
+    if FTargeting.List.Current = Player.Position then
+    begin
+      IO.Msg( 'No valid target.' );
+      Exit( False );
+    end;
+    FTargeting.OnTarget( iTarget );
   end;
 
   Exit( HandleCommand( TCommand.Create( iCommand, iTarget, iItem ) ) )
@@ -630,7 +723,7 @@ end;
 function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
 begin
   if not ( aCommand.Command in [ COMMAND_FIRE, COMMAND_ALTFIRE, COMMAND_RELOAD ] ) then
-    Player.FLastTargetPos.Create(0,0);
+    FTargeting.ClearPosition;
 
   if aCommand.Command = COMMAND_NONE then
     Exit( False );
@@ -741,8 +834,8 @@ begin
       else if (Player.Inv.Slot[ efWeapon ] <> nil) and (Player.Inv.Slot[ efWeapon ].isRanged) then
       begin
         if iAlt
-          then Exit( HandleFireCommand( True, True ) )
-          else Exit( HandleFireCommand( False, True ) );
+          then Exit( HandleFireCommand( True, True, False ) )
+          else Exit( HandleFireCommand( False, True, False ) );
       end
       else Exit( HandleCommand( TCommand.Create( COMMAND_MELEE,
         Player.Position + NewDirectionSmooth( Player.Position, IO.MTarget )
@@ -789,6 +882,7 @@ begin
 
     case iInput of
 //      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+      INPUT_TARGETNEXT : begin IO.SetAutoTarget( FTargeting.List.Next ); Exit; end;
       INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
       INPUT_QUIT       : begin IO.PushLayer( TAbandonView.Create ); Exit; end;
       INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
@@ -971,6 +1065,7 @@ repeat
       FLevel.PreEnter;
       FLevel.Tick;
     end;
+    FTargeting.Clear;
     PreAction;
 
     while ( State = DSPlaying ) do
@@ -1014,7 +1109,9 @@ repeat
     end;
 
     if State = DSNextLevel then
+    begin
       FLevel.Leave;
+    end;
 
     if State <> DSSaving then
     begin
@@ -1198,6 +1295,7 @@ destructor TDoom.Destroy;
 begin
   UnLoad;
   Log('Doom destroyed.');
+  FreeAndNil( FTargeting );
   FreeAndNil( IO );
   inherited Destroy;
 end;
