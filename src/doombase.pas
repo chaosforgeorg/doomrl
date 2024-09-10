@@ -1159,7 +1159,7 @@ repeat
     if Player.FScore >= -1000 then
     begin
       iReport := TPagedReport.Create('Post mortem', False );
-      iReport.Add( TextFileToUIStringArray( WritePath + 'mortem.txt' ), 'mortem.txt' );
+      iReport.Add( TextFileToUIStringArray( ModuleUserPath + 'mortem.txt' ), 'mortem.txt' );
       IO.PushLayer( TPagedView.Create( iReport ) );
       IO.WaitForLayer( True );
     end;
@@ -1203,7 +1203,7 @@ var Stream    : TStream;
 begin
   try
     try
-      Stream := TGZFileStream.Create( WritePath + 'save',gzOpenRead );
+      Stream := TGZFileStream.Create( ModuleUserPath + 'save',gzOpenRead );
       //      Stream := TDebugStream.Create( Stream );
 
       ModuleID        := Stream.ReadAnsiString;
@@ -1228,7 +1228,7 @@ begin
     finally
       Stream.Destroy;
     end;
-    DeleteFile( WritePath + 'save' );
+    DeleteFile( ModuleUserPath + 'save' );
 
     IO.Msg('Game loaded.');
 
@@ -1240,7 +1240,7 @@ begin
     on e : Exception do
     begin
       Log('Save file corrupted! Error while loading : '+ e.message );
-      DeleteFile( WritePath + 'save' );
+      DeleteFile( ModuleUserPath + 'save' );
       LoadSaveFile := False;
     end;
   end;
@@ -1254,7 +1254,7 @@ begin
   Player.FStatistics.RealTime += MSecNow() - GameRealTime;
   Player.IncStatistic('save_count');
 
-  Stream := TGZFileStream.Create( WritePath + 'save',gzOpenWrite );
+  Stream := TGZFileStream.Create( ModuleUserPath + 'save',gzOpenWrite );
   //      Stream := TDebugStream.Create( Stream );
 
   Stream.WriteAnsiString( ModuleID );
@@ -1280,7 +1280,7 @@ end;
 
 function TDoom.SaveExists : Boolean;
 begin
-  Exit( FileExists( WritePath + 'save' ) );
+  Exit( FileExists( ModuleUserPath + 'save' ) );
 end;
 
 procedure TDoom.SetupLuaConstants;

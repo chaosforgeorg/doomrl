@@ -47,7 +47,6 @@ try
   try
     Configuration := TDoomConfiguration.Create;
 
-
     {$IFDEF Darwin}
     {$IFDEF OSX_APP_BUNDLE}
     RootPath := GetResourcesPath();
@@ -67,10 +66,8 @@ try
     DataPath          := RootPath;
     ConfigurationPath := RootPath + 'config.lua';
     SettingsPath      := RootPath + 'settings.lua';
-    {$ENDIF}
 
-    {$IFDEF WINDOWS}
-    Title := 'DRL - D**m, the Roguelike';
+    Title := 'DRL';
     SetConsoleTitle(PChar(Title));
     Sleep(40);
     {$ENDIF}
@@ -109,20 +106,38 @@ try
       if isSet('writepath')  then WritePath         := get('writepath');
       if isSet('scorepath')  then ScorePath         := get('scorepath');
       if isSet('name')       then Option_AlwaysName := get('name');
+      if isSet('module')     then CoreModuleID      := get('module');
     finally
       Free;
     end;
 
+    if CoreModuleID = '' then
+    begin
+      if FileExists( WritePath + 'module' )
+        then CoreModuleID := ReadFileString( WritePath + 'module' )
+        else CoreModuleID := VERSION_CORE;
+    end;
+
+    if ScorePath = '' then ScorePath := WritePath;
+
+    begin // Make and assign directories
+      if not DirectoryExists( WritePath + 'user' ) then CreateDir( WritePath + 'user' );
+      if not DirectoryExists( WritePath + 'user' + PathDelim + CoreModuleID ) then CreateDir( WritePath + 'user' + PathDelim + CoreModuleID );
+      ModuleUserPath := WritePath + 'user' + PathDelim + CoreModuleID + PathDelim;
+      if not DirectoryExists( ModuleUserPath + 'screenshot' ) then CreateDir( ModuleUserPath + 'screenshot' );
+      if not DirectoryExists( ModuleUserPath + 'mortem' ) then CreateDir( ModuleUserPath + 'mortem' );
+      if not DirectoryExists( ModuleUserPath + 'backup' ) then CreateDir( ModuleUserPath + 'backup' );
+      if ScorePath = WritePath then ScorePath := ModuleUserPath;
+    end;
 
     {$IFDEF HEAPTRACE}
     SetHeapTraceOutput( WritePath + 'heap.txt');
     {$ENDIF}
 
-    Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, WritePath + 'log.txt', False ) );
+    Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, WritePath + 'runtime.log', False ) );
     LogSystemInfo();
     Logger.Log( LOGINFO, 'Log path set to - ' + WritePath );
 
-    if ScorePath = '' then ScorePath := WritePath;
     ErrorLogFileName := WritePath + 'error.log';
 
     Doom := Systems.Add(TDoom.Create) as TDoom;

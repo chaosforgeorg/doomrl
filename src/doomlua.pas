@@ -19,7 +19,7 @@ TDoomLua = class(TLuaSystem)
        procedure RegisterPlayer(Thing: TThing);
        function LoadFont( const aFontName : AnsiString ) : TBitmapFont;
      private
-       procedure ReadWad(WADName : string);
+       procedure ReadWad;
      private
        FCoreData     : TVDataFile;
        FMainData     : TVDataFile;
@@ -394,11 +394,11 @@ begin
   //FMsgFont := TGLConsoleRenderer( FConsole ).Font;
 end;
 
-procedure TDoomLua.ReadWad(WADName : string);
+procedure TDoomLua.ReadWad;
 var iProgBase : DWord;
 begin
-  FCoreData := TVDataFile.Create(DataPath+'core.wad');
-  FMainData := TVDataFile.Create(DataPath+WADName);
+  FCoreData := TVDataFile.Create( DataPath + 'core.wad' );
+  FMainData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
   FMainData.DKKey := LoveLace;
 
   iProgBase := IO.LoadCurrent;
@@ -407,18 +407,18 @@ begin
   if GodMode then
   begin
     RegisterModule( 'core', 'data' + DirectorySeparator + 'core' + DirectorySeparator );
-    RegisterModule( 'drl', 'data' + DirectorySeparator + 'drl' + DirectorySeparator );
+    RegisterModule( CoreModuleID, 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator );
     LoadFile( 'data' + DirectorySeparator + 'core' + DirectorySeparator + 'core.lua' );
     IO.LoadProgress(iProgBase + 20);
-    LoadFile( 'data' + DirectorySeparator + 'drl' + DirectorySeparator + 'main.lua' );
+    LoadFile( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'main.lua' );
     IO.LoadProgress(iProgBase + 30);
     if GraphicsVersion then
-      (IO as TDoomGFXIO).Textures.LoadTextureFolder( 'data' + DirectorySeparator + 'drl' + DirectorySeparator + 'graphics' );
+      (IO as TDoomGFXIO).Textures.LoadTextureFolder( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'graphics' );
   end
   else
   begin
     RegisterModule('core',FCoreData);
-    RegisterModule('drl',FMainData);
+    RegisterModule( CoreModuleID, FMainData );
     LoadStream(FCoreData,'','core.lua');
     IO.LoadProgress(iProgBase + 20);
     LoadStream(FMainData,'','main.lua');
@@ -589,7 +589,7 @@ begin
   LuaSystem.GetClassInfo( TPlayer ).RegisterHooks( BeingHooks, HookNames );
   LuaSystem.GetClassInfo( TItem ).RegisterHooks( ItemHooks, HookNames );
 
-  ReadWAD('drl.wad');
+  ReadWAD;
 
 end;
 

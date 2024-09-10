@@ -22,3 +22,9 @@ src/Makefile
 *.wad
 bin/makewad
 bin/doomrl
+bin/*.dll
+bin/*.exe
+*.mid
+bin/user/*
+bin/settings.lua
+*.log

@@ -11,7 +11,9 @@ uses Classes, SysUtils, idea,
      vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable, vioevent,
      doomconfig, doomkeybindings;
 
-const ConfigurationPath : AnsiString = 'config.lua';
+const CoreModuleID      : AnsiString = '';
+      ConfigurationPath : AnsiString = 'config.lua';
+      ModuleUserPath    : AnsiString = '';
       DataPath          : AnsiString = '';
       WritePath         : AnsiString = '';
       ScorePath         : AnsiString = '';
@@ -355,6 +357,8 @@ function DurationString( aSeconds : int64 ) : Ansistring;
 function BlindCoord( const where : TCoord2D ) : string;
 function SlotName(slot : TEqSlot) : string;
 function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
+function ReadFileString( const aFileName : Ansistring ) : Ansistring;
+function WriteFileString( const aFileName, aText : Ansistring ) : Boolean;
 
 var ColorOverrides : TIntHashMap;
 
@@ -365,6 +369,34 @@ var TIGStyleColored   : TTIGStyle;
 
 implementation
 uses typinfo, strutils, math, vdebug;
+
+
+function ReadFileString( const aFileName : Ansistring ) : Ansistring;
+var iTextFile : Text;
+begin
+  {$PUSH}
+  {$I-}
+  Assign(iTextFile,aFileName);
+  Reset(iTextFile);
+  Readln(iTextFile,Result);
+  Close(iTextFile);
+  {$POP} {restore $I}
+  if IOResult <> 0 then Exit('');
+end;
+
+function WriteFileString( const aFileName, aText : Ansistring ) : Boolean;
+var iTextFile : Text;
+begin
+  {$PUSH}
+  {$I-}
+  Assign(iTextFile,aFileName);
+  Rewrite(iTextFile);
+  Writeln(iTextFile,aText);
+  Close(iTextFile);
+  {$POP} {restore $I}
+  Exit( IOResult <> 0 );
+end;
+
 
 procedure TInterfaceLayer.Tick( aDTick : Integer );
 begin
