@@ -9,21 +9,34 @@ type TSoundEvent = packed record
        SoundID : Word;
      end;
 
-type TAnsiStringArray = specialize TGArray< AnsiString >;
+type TAudioEntry = record
+       ID       : Ansistring;
+       Root     : Ansistring;
+       FileName : Ansistring;
+       IsMusic  : Boolean;
+     end;
+
+
+
+type TAudioRegistry   = specialize TGArray< TAudioEntry >;
+     TAudioLookup     = specialize TGHashMap< Integer >;
      TSoundEventHeap  = specialize TGHeap< TSoundEvent >;
+
 
 type TDoomAudio = class
   constructor Create;
   procedure Reconfigure;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False );
+  function LoadFile( const aFile : Ansistring ) : Boolean;
+  procedure Load;
   procedure Update( aMSec : DWord );
   procedure PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
   procedure PlayMusic( const MusicID : Ansistring );
   procedure PlayMusicOnce( const MusicID : Ansistring );
   function ResolveSoundID( const ResolveIDs: array of AnsiString ) : Word;
-
   destructor Destroy; override;
 private
+  procedure Register( const aID, aFileName : AnsiString; aMusic : Boolean; const aRoot : AnsiString );
   procedure SoundQuery( nkey, nvalue : Variant );
   procedure MusicQuery( nkey, nvalue : Variant );
 private
@@ -31,17 +44,14 @@ private
   FTime        : QWord;
   FSoundEvents : TSoundEventHeap;
 
-  // Temporary values when loading
-  FSoundKeys   : TAnsiStringArray;
-  FSoundValues : TAnsiStringArray;
-  FMusicKeys   : TAnsiStringArray;
-  FMusicValues : TAnsiStringArray;
+  FAudioRegistry : TAudioRegistry;
+  FAudioLookup   : TAudioLookup;
 end;
 
 implementation
 
 uses sysutils,
-     vdebug, vsystems, vmath, vsound, vfmodsound, vsdlsound,
+     vdebug, vutil, vsystems, vmath, vsound, vfmodsound, vsdlsound, vluastate,
      doomio, doomconfiguration, dfplayer, dfdata;
 
 function DoomSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
@@ -56,6 +66,9 @@ begin
   FSoundEvents := TSoundEventHeap.Create( @DoomSoundEventCompare );
   FTime        := 0;
   FLastMusic   := '';
+
+  FAudioRegistry := TAudioRegistry.Create;
+  FAudioLookup   := TAudioLookup.Create;
 end;
 
 procedure TDoomAudio.Reconfigure;
@@ -90,8 +103,6 @@ begin
 end;
 
 procedure TDoomAudio.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
-var iCount   : DWord;
-    iProgress: DWord;
 begin
   FSoundEvents.Clear;
   if SoundVersion and (Option_SoundEngine <> 'NONE') then
@@ -106,46 +117,44 @@ begin
       end
       else
         Sound.Reset;
-
-      if aReload then
-      begin
-        FSoundKeys   := TAnsiStringArray.Create;
-        FSoundValues := TAnsiStringArray.Create;
-        FMusicKeys   := TAnsiStringArray.Create;
-        FMusicValues := TAnsiStringArray.Create;
-        if Option_Music then
-          aConfig.EntryFeed('Music', @MusicQuery );
-        if Option_Sound then
-          aConfig.RecEntryFeed('Sound', @SoundQuery );
-
-        IO.LoadStart( (FSoundKeys.Size+FMusicKeys.Size) div 2 );
-        iProgress    := 0;
-
-        if FSoundKeys.Size > 0 then
-          for iCount := 0 to FSoundKeys.Size - 1 do
-          begin
-            Sound.RegisterSample(DataPath+FSoundValues[iCount],FSoundKeys[iCount]);
-            Inc( iProgress );
-            if iProgress mod 20 = 0 then
-              IO.LoadProgress( iProgress div 2 );
-          end;
-
-        if FMusicKeys.Size > 0 then
-          for iCount := 0 to FMusicKeys.Size - 1 do
-          begin
-            Sound.RegisterMusic(DataPath+FMusicValues[iCount],FMusicKeys[iCount]);
-            Inc( iProgress );
-            if iProgress mod 20 = 0 then
-              IO.LoadProgress( iProgress div 2 );
-          end;
-        IO.LoadProgress( iProgress div 2 );
-        FreeAndNil( FSoundKeys );
-        FreeAndNil( FSoundValues );
-        FreeAndNil( FMusicKeys );
-        FreeAndNil( FMusicValues );
-      end;
     end;
   end;
+end;
+
+function TDoomAudio.LoadFile( const aFile : Ansistring ) : Boolean;
+var iState : TLuaConfig;
+begin
+  if not FileExists( aFile ) then Exit( False );
+  Result := False;
+  try
+    iState := TLuaConfig.Create( aFile );
+    if Option_Music and iState.TableExists('music') then iState.EntryFeed( 'music', @MusicQuery );
+    if Option_Sound and iState.TableExists('sound') then iState.RecEntryFeed( 'sound', @SoundQuery );
+  finally
+    iState.Free;
+  end;
+  Result := True;
+end;
+
+procedure TDoomAudio.Load;
+var iCount   : DWord;
+    iProgress: DWord;
+begin
+  IO.LoadStart( FAudioRegistry.Size );
+  iProgress    := 0;
+
+  if FAudioRegistry.Size > 0 then
+    for iCount := 0 to FAudioRegistry.Size - 1 do
+      with FAudioRegistry[ iCount ] do
+      begin
+        if IsMusic
+          then Sound.RegisterMusic( DataPath + Root + FileName, ID  )
+          else Sound.RegisterSample( DataPath + Root + FileName, ID  );
+        Inc( iProgress );
+        if iProgress mod 20 = 0 then
+          IO.LoadProgress( iProgress );
+      end;
+  IO.LoadProgress( iProgress );
 end;
 
 procedure TDoomAudio.SoundQuery(nkey,nvalue : Variant);
@@ -153,8 +162,7 @@ var iKey, iValue : AnsiString;
 begin
   iKey   := LowerCase(nKey);
   iValue := nValue;
-  FSoundKeys.Push( iKey );
-  FSoundValues.Push( iValue );
+  Register( iKey, iValue, False, '' );
 end;
 
 procedure TDoomAudio.MusicQuery(nkey,nvalue : Variant);
@@ -162,8 +170,36 @@ var iKey, iValue : AnsiString;
 begin
   iKey   := LowerCase(nKey);
   iValue := nValue;
-  FMusicKeys.Push( iKey );
-  FMusicValues.Push( iValue );
+  Register( iKey, iValue, True, '' );
+end;
+
+procedure TDoomAudio.Register( const aID, aFileName : AnsiString; aMusic : Boolean; const aRoot : AnsiString );
+var iIndex : Integer;
+    iEntry : TAudioEntry;
+begin
+  iIndex := FAudioLookup.Get( aID, -1 );
+  iEntry.ID       := aID;
+  iEntry.FileName := aFileName;
+  iEntry.Root     := aRoot;
+  iEntry.IsMusic  := aMusic;
+
+  if iIndex >= 0 then
+  begin
+    if FAudioRegistry[iIndex].Root = aRoot then
+      Log( LOGWARN, 'Audio ID "'+aID+'" redefinition within same module!' );
+    if FAudioRegistry[iIndex].IsMusic <> aMusic then
+    begin
+      Log( LOGERROR, 'Audio ID "'+aID+'" redefinition type mismatch!' );
+      Exit;
+    end;
+    FAudioRegistry[iIndex] := iEntry;
+  end
+  else
+  begin
+    iIndex := FAudioRegistry.Size;
+    FAudioRegistry.Push( iEntry );
+    FAudioLookup[ aID ] := iIndex;
+  end;
 end;
 
 procedure TDoomAudio.PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
@@ -247,6 +283,8 @@ end;
 destructor TDoomAudio.Destroy;
 begin
   FreeAndNil( FSoundEvents );
+  FreeAndNil( FAudioRegistry );
+  FreeAndNil( FAudioLookup );
 end;
 
 end.

@@ -213,6 +213,11 @@ begin
   ColorOverrides := TIntHashMap.Create( );
   Config := TDoomConfig.Create( ConfigurationPath, True );
   IO.Configure( Config, True );
+  // temporary hack, remove once drllq and drlhq are modules
+  if FileExists( WritePath + 'data' + PathDelim + CoreModuleID + PathDelim + 'audio.lua' )
+    then IO.Audio.LoadFile( WritePath + 'data' + PathDelim + CoreModuleID + PathDelim + 'audio.lua' )
+    else IO.Audio.LoadFile( WritePath + 'audio.lua' );
+  IO.Audio.Load;
   Reconfigure;
 
   FCoreHooks := [];

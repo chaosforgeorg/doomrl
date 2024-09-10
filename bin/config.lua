@@ -3,12 +3,6 @@
 --  If you mess up something overwrite with a new config.lua.
 -- ----------------------------------------------------------------------
 
-dofile "colors.lua"
-
--- pick here what music set to use (see music.lua and musicmp3.lua)
-dofile "music.lua" 
-dofile "sound.lua"
-
 -- Graphics mode. Can be CONSOLE for raw console, or TILES for graphical 
 -- tiles. Overriden by -graphics and -console command line parameters.
 Graphics = "TILES"
@@ -150,3 +144,37 @@ Messages = {
 -- same as WritePath, change for multi-user systems. -scorepath= to override
 -- on command line.
 --ScorePath = ""
+
+-- Custom coloring based on entity ID's. Search the DRL wiki
+-- for id's for entities.
+--
+-- In case of cells, there are two overrides - [id]_light and [id]_dark
+-- [id]_dark cells are out of vision, [id]_light cells are ones you can see.
+
+-- Colors can be:
+BLUE        = 1
+GREEN       = 2
+CYAN        = 3
+RED         = 4
+MAGENTA     = 5
+BROWN       = 6
+LIGHTGRAY   = 7
+DARKGRAY    = 8
+LIGHTBLUE   = 9
+LIGHTGREEN  = 10
+LIGHTCYAN   = 11
+LIGHTRED    = 12
+LIGHTMAGENTA= 13
+YELLOW      = 14
+WHITE       = 15
+
+-- An example of how to change DRL's color scheme.
+Colors = {
+--	floor_dark  = GREEN,
+--	floor_light = BLUE,
+--	former = BLUE,
+--	demon  = GREEN,
+}
+
+-- you can add move or add your changes in separate files using dofile:
+--dofile "colors.lua"
