@@ -67,6 +67,7 @@ function DoomRL.OnLoad()
 	drl.register_beings()
 	drl.register_ranks()
 	drl.register_traits()
+	drl.register_global_badges()
 	drl.register_medals()
 	drl.register_assemblies()
 	drl.register_challenges()
@@ -331,7 +332,7 @@ function drl.GetResultDescription( result, highscore )
 	return killed_by
 end
 
-function DoomRL.print_mortem()
+function drl.RunPrintMortem()
 	local result_id    = drl.GetResultId()
 	local death_reason = drl.GetResultDescription( result_id, false )
 
@@ -353,8 +354,8 @@ function DoomRL.print_mortem()
 	player:mortem_print( "--------------------------------------------------------------" )
 	player:mortem_print()
 
-	if game_module and game_module.print_mortem then
-		game_module.print_mortem()
+	if game_module and game_module.RunPrintMortem then
+		game_module.RunPrintMortem()
 		return
 	end
 
