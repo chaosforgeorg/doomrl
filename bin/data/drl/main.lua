@@ -754,12 +754,12 @@ end
 
 function DoomRL.OnWinGame()
 	if kills.get("jc") > 0 then
-		DoomRL.plot_outro_final()
+		drl.plot_outro_final()
 	elseif player.depth >= 24 then
 		if player.hp > 0 or player.depth > 24 then
-			DoomRL.plot_outro_3()
+			drl.plot_outro_3()
 		else
-			DoomRL.plot_outro_partial()
+			drl.plot_outro_partial()
 		end
 	else
 		return false

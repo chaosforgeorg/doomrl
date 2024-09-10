@@ -1191,7 +1191,7 @@ function drl.register_challenges()
 
 		OnWinGame = function ()
 			if player.eq.armor and player.eq.armor.id == "uberarmor" then
-				DoomRL.plot_outro_special()
+				drl.plot_outro_special()
 				return false
 			end
 			ui.blood_slide()

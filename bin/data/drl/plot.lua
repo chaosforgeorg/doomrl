@@ -37,7 +37,7 @@ Slurp.
 Silence.]],RED)
 end
 
-function DoomRL.plot_outro_1()
+function drl.plot_outro_1()
 --	if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
@@ -47,7 +47,7 @@ It stinks like rotten meat but it looks like the lost Deimos base. Looks like yo
 ]],RED)
 end
 
-function DoomRL.plot_outro_2()
+function drl.plot_outro_2()
 --	if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
@@ -58,7 +58,7 @@ Deimos floats above Hell itself! You've never heard of anyone escaping from Hell
 Now, it's on to the final chapter of DRL -- Inferno!]],RED)
 end
 
-function DoomRL.plot_outro_3()
+function drl.plot_outro_3()
 -- if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
@@ -71,7 +71,7 @@ You wonder what's been happening on Earth while you were battling evil unleashed
 Or could it...?]],RED)
 end
 
-function DoomRL.plot_outro_partial()
+function drl.plot_outro_partial()
 --	if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
@@ -82,13 +82,13 @@ The thermonuclear explosion erupts, and you laugh knowing that your sacrifice ha
                              ...but did you get ALL of them?]],RED)
 end
 
-function DoomRL.plot_outro_final()
+function drl.plot_outro_final()
 --	if core.game_type() ~= GAMESTANDARD then return end
 	if player.hp <= 0 then
-		DoomRL.plot_outro_final_nuked()
+		drl.plot_outro_final_nuked()
 		return
 	elseif player.eq.armor and player.eq.armor.id == "uberarmor" then
-		DoomRL.plot_outro_special()
+		drl.plot_outro_special()
 		return
 	end
 	ui.blood_slide()
@@ -104,7 +104,7 @@ This will be revealed in...
 DRL II : Hell on Earth!]],RED)
 end
 
-function DoomRL.plot_outro_final_nuked()
+function drl.plot_outro_final_nuked()
 --	if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[
@@ -114,7 +114,7 @@ The thermonuclear explosion erupts, and although you know that nothing can possi
 end
 
 
-function DoomRL.plot_outro_special()
+function drl.plot_outro_special()
 --	if core.game_type() ~= GAMESTANDARD then return end
 	ui.blood_slide()
 	ui.plot_screen([[

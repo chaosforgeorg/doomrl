@@ -59,7 +59,7 @@ register_level "hellgate"
 				level:explosion( being.position, 4, 50, 0, 0, GREEN, core.resolve_sound_id( "hellgate.use", "teleport.use", "use" ) )
 				ui.msg_enter("You feel yanked in a non-existing direction!")
 				player:exit()
-				DoomRL.plot_outro_1()
+				drl.plot_outro_1()
 			end,
 		}
 		
@@ -214,7 +214,7 @@ register_level "tower_of_babel"
 	OnKillAll = function ()
 		if not (level.flags[ LF_NUKED ] and not player.flags[BF_INV]) then
 			player:exit()
-			DoomRL.plot_outro_2()
+			drl.plot_outro_2()
 			if not level.flags[ LF_NUKED ] and statistics.damage_on_level == 0 then
 				if DIFFICULTY >= DIFF_MEDIUM then player:add_badge("hellgate3") end
 				if DIFFICULTY >= DIFF_VERYHARD and player:has_property("anomaly_win") then player:add_badge("hellgate5") end
