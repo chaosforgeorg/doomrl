@@ -1,5 +1,4 @@
 core.declare( "drl", {} )
-core.declare( "DoomRL", {} )
 
 require( "drl:generator" )
 require( "drl:generators" )
@@ -48,13 +47,13 @@ require( "drl:levels/asmosden" )
 require( "drl:levels/containment" )
 require( "drl:levels/house" )
 
--- main DoomRL lua script file --
+-- main DRL lua script file --
 
-function DoomRL.OnLoaded()
+function drl.OnLoaded()
 	ui.msg('Welcome to {RDRL}...')
 end
 
-function DoomRL.OnLoad()
+function drl.OnLoad()
 	drl.register_sprites()
 	drl.register_difficulties()
 	drl.register_base_data()
@@ -689,7 +688,7 @@ function drl.RunPrintMortem()
 	player:mortem_print( "-------------------------------------------------------------- " )
 end
 
-function DoomRL.OnCreateEpisode()
+function drl.OnCreateEpisode()
 	local BOSS_LEVEL = 24
 	player.episode = {}
 	local paired = {
@@ -753,7 +752,7 @@ Major changes since last version (see {yversion.txt} for full list)
 ]]
 end
 
-function DoomRL.OnWinGame()
+function drl.OnWinGame()
 	if kills.get("jc") > 0 then
 		drl.plot_outro_final()
 	elseif player.depth >= 24 then
@@ -895,8 +894,8 @@ function drl.GetQuitMessage()
 	return messages[math.random(#(messages))]
 end
 
-function DoomRL.OnGenerate()
-	core.log("DoomRL.OnGenerate()")
+function drl.OnGenerate()
+	core.log("drl.OnGenerate()")
 
 	local dlevel = level.danger_level
 	local choice = weight_table.new()

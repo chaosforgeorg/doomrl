@@ -465,7 +465,7 @@ begin
   ArchAngel  := False;
   Klass      := 0;
   Trait      := 0;
-  ModuleID   := 'DoomRL';
+  ModuleID   := 'drl';
   Name       := '';
 end;
 

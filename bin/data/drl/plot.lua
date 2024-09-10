@@ -1,6 +1,6 @@
--- DoomRL plot lua script file --
+-- DRL plot lua script file --
 
-function DoomRL.OnIntro( skip )
+function drl.OnIntro( skip )
 --	if core.game_type() ~= GAMESTANDARD then return end
 	if skip then return end
 	ui.blood_slide()

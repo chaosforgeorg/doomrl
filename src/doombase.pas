@@ -200,8 +200,8 @@ end;
 
 procedure TDoom.LoadModule( Base : Boolean );
 begin
-//  if ModuleID <> 'DoomRL' then Lua.LoadModule( Module );
-  FModuleHooks := LoadHooks( ['DoomRL'] ) * GlobalHooks;
+//  if ModuleID <> 'drl' then Lua.LoadModule( Module );
+  FModuleHooks := LoadHooks( [CoreModuleID] ) * GlobalHooks;
   CallHook( Hook_OnLoad, [] );
 end;
 
@@ -231,7 +231,7 @@ begin
   LuaSystem.CallDefaultResult := True;
 //  Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
-  ModuleID := 'DoomRL';
+  ModuleID := 'drl';
 
   LoadModule( True );
   if GraphicsVersion then
@@ -270,7 +270,7 @@ end;
 constructor TDoom.Create;
 begin
   inherited Create;
-  ModuleID   := 'DoomRL';
+  ModuleID   := 'drl';
   GameWon    := False;
   DataLoaded := False;
   CrashSave  := False;

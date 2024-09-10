@@ -1141,7 +1141,7 @@ function drl.register_challenges()
 		end,
 
 		OnUnLoad = function ()
-			DoomRL.OnCreateEpisode()
+			drl.OnCreateEpisode()
 		end,
 
 		OnEnter = function (l)
@@ -1303,7 +1303,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 		end,
 
 		OnUnLoad = function ()
-			DoomRL.OnCreateEpisode()
+			drl.OnCreateEpisode()
 		end,
 
 		OnMortem = function ()
@@ -1569,7 +1569,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 		end,
 
 		OnUnLoad = function ()
-			DoomRL.OnCreateEpisode()
+			drl.OnCreateEpisode()
 		end,
 
 		OnMortem = function ()
