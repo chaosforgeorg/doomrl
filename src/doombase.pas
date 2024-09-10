@@ -273,8 +273,10 @@ begin
     Exit( HandleMoveCommand( aInput ) );
 
   case aInput of
-    INPUT_FIRE       : Exit( HandleFireCommand( False, False ) );
-    INPUT_ALTFIRE    : Exit( HandleFireCommand( True, False ) );
+//    INPUT_FIRE       : Exit( HandleFireCommand( False, False ) );
+//    INPUT_ALTFIRE    : Exit( HandleFireCommand( True, False ) );
+    INPUT_TARGET     : Exit( HandleFireCommand( False, False ) );
+    INPUT_ALTTARGET  : Exit( HandleFireCommand( True, False ) );
     INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
     INPUT_LEGACYOPEN : Exit( HandleActionCommand( INPUT_LEGACYOPEN ) );
     INPUT_LEGACYCLOSE: Exit( HandleActionCommand( INPUT_LEGACYCLOSE ) );
