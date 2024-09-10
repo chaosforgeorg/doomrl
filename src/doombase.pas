@@ -213,6 +213,7 @@ begin
   ColorOverrides := TIntHashMap.Create( );
   Config := TDoomConfig.Create( ConfigurationPath, True );
   IO.Configure( Config, True );
+  IO.Audio.Load;
   Reconfigure;
 
   FCoreHooks := [];

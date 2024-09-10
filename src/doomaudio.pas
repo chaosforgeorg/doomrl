@@ -27,6 +27,7 @@ type TDoomAudio = class
   constructor Create;
   procedure Reconfigure;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False );
+  procedure Load;
   procedure Update( aMSec : DWord );
   procedure PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
   procedure PlayMusic( const MusicID : Ansistring );
@@ -101,8 +102,6 @@ begin
 end;
 
 procedure TDoomAudio.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
-var iCount   : DWord;
-    iProgress: DWord;
 begin
   FSoundEvents.Clear;
   if SoundVersion and (Option_SoundEngine <> 'NONE') then
@@ -116,31 +115,34 @@ begin
           else Sound := Systems.Add( TSDLSound.Create ) as TSound;
       end
       else
-        Sound.Reset;
-
-      if aReload then
       begin
+        Sound.Reset;
         if Option_Music then aConfig.EntryFeed( 'Music', @MusicQuery );
         if Option_Sound then aConfig.RecEntryFeed( 'Sound', @SoundQuery );
-
-        IO.LoadStart( FAudioRegistry.Size );
-        iProgress    := 0;
-
-        if FAudioRegistry.Size > 0 then
-          for iCount := 0 to FAudioRegistry.Size - 1 do
-            with FAudioRegistry[ iCount ] do
-            begin
-              if IsMusic
-                then Sound.RegisterMusic( DataPath + Root + FileName, ID  )
-                else Sound.RegisterSample( DataPath + Root + FileName, ID  );
-              Inc( iProgress );
-              if iProgress mod 20 = 0 then
-                IO.LoadProgress( iProgress );
-            end;
-        IO.LoadProgress( iProgress );
       end;
     end;
   end;
+end;
+
+procedure TDoomAudio.Load;
+var iCount   : DWord;
+    iProgress: DWord;
+begin
+  IO.LoadStart( FAudioRegistry.Size );
+  iProgress    := 0;
+
+  if FAudioRegistry.Size > 0 then
+    for iCount := 0 to FAudioRegistry.Size - 1 do
+      with FAudioRegistry[ iCount ] do
+      begin
+        if IsMusic
+          then Sound.RegisterMusic( DataPath + Root + FileName, ID  )
+          else Sound.RegisterSample( DataPath + Root + FileName, ID  );
+        Inc( iProgress );
+        if iProgress mod 20 = 0 then
+          IO.LoadProgress( iProgress );
+      end;
+  IO.LoadProgress( iProgress );
 end;
 
 procedure TDoomAudio.SoundQuery(nkey,nvalue : Variant);
