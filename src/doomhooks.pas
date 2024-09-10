@@ -43,7 +43,7 @@ const
   Hook_OnMortemPrint   = 36;  // Module, Challenge, Core (Chained)
   Hook_OnCreateEpisode = 37;  // Module, Challenge, Core (Chained)
   Hook_OnIntro         = 38;  // Module, Challenge, Core (Chained)
-  Hook_OnGenerate      = 90;  // Module, Challenge, Core (Chained)
+  Hook_OnGenerate      = 39;  // Module, Challenge, Core (Chained)
   HookAmount           = 40;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
