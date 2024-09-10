@@ -43,11 +43,11 @@ makefile = {
 				["data/drllq/sound"] = "*.wav",
 				["data/drllq/music"] = "*.mid",
 			},
-			other = { "colors.lua", "sound.lua", "music.lua", "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
+			other = { {"audiolq.lua", "audio.lua"}, "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
 		},
 		hq = {
 			exec = { "drl" },
-			files = { { "confighq.lua", "config.lua" } },
+			files = { "config.lua" },
 			os = {
 				WINDOWS = { "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "drl_console.bat" },
 				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm" },
@@ -57,7 +57,7 @@ makefile = {
 				["data/drlhq/sound"] = "*.wav",
 				["data/drlhq/music"] = "*.mp3",
 			},
-			other = { "colors.lua", "soundhq.lua", "musichq.lua", "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
+			other = { "audio.lua", "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
 		}
 	},
 	commands = {

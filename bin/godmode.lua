@@ -3,7 +3,7 @@
 --  If you mess up something overwrite with a new godmode.lua.
 -- ----------------------------------------------------------------------
 
-dofile "confighq.lua"
+dofile "config.lua"
 
 SoundEngine = "DEFAULT"
 

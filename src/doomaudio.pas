@@ -27,6 +27,7 @@ type TDoomAudio = class
   constructor Create;
   procedure Reconfigure;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False );
+  function LoadFile( const aFile : Ansistring ) : Boolean;
   procedure Load;
   procedure Update( aMSec : DWord );
   procedure PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
@@ -50,7 +51,7 @@ end;
 implementation
 
 uses sysutils,
-     vdebug, vutil, vsystems, vmath, vsound, vfmodsound, vsdlsound,
+     vdebug, vutil, vsystems, vmath, vsound, vfmodsound, vsdlsound, vluastate,
      doomio, doomconfiguration, dfplayer, dfdata;
 
 function DoomSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
@@ -115,13 +116,24 @@ begin
           else Sound := Systems.Add( TSDLSound.Create ) as TSound;
       end
       else
-      begin
         Sound.Reset;
-        if Option_Music then aConfig.EntryFeed( 'Music', @MusicQuery );
-        if Option_Sound then aConfig.RecEntryFeed( 'Sound', @SoundQuery );
-      end;
     end;
   end;
+end;
+
+function TDoomAudio.LoadFile( const aFile : Ansistring ) : Boolean;
+var iState : TLuaConfig;
+begin
+  if not FileExists( aFile ) then Exit( False );
+  Result := False;
+  try
+    iState := TLuaConfig.Create( aFile );
+    if Option_Music and iState.TableExists('music') then iState.EntryFeed( 'music', @MusicQuery );
+    if Option_Sound and iState.TableExists('sound') then iState.RecEntryFeed( 'sound', @SoundQuery );
+  finally
+    iState.Free;
+  end;
+  Result := True;
 end;
 
 procedure TDoomAudio.Load;
