@@ -367,7 +367,7 @@ begin
     UpdateTarget;
   end;
 
-  if aInput in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_MLEFT ] then
+  if aInput in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_TARGET, INPUR_ALTTARGET, INPUT_MLEFT ] then
   begin
     Finalize;
     if FTarget = FPosition then
