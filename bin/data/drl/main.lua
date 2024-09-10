@@ -835,7 +835,7 @@ function DoomRL.random_name()
 	return names[math.random(#(names))]
 end
 
-function DoomRL.get_special_item( pname )
+function drl.get_special_item( pname )
 	if DIFFICULTY > 3 then return nil end
 	local name = string.gsub( string.lower( pname or "" ), " ", "_" )
 	local matches = 

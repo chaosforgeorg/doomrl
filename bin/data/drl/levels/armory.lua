@@ -54,7 +54,7 @@ register_level "hells_armory"
 		level:set_generator_style( 1 )
 		generator.fill( "plava", area.FULL )
 
-		local special = DoomRL.get_special_item( player.name )
+		local special = drl.get_special_item( player.name )
 		if not special then 
 			special = level:roll_item{ level = 15, type = ITEMTYPE_RANGED, reqs = { is_special = true } }
 		end
