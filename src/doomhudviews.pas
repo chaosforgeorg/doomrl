@@ -323,7 +323,7 @@ begin
   end;
 
   if (aInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
-  if aInput = INPUT_TACTIC then
+  if aInput = INPUT_TARGETNEXT then
   begin
     FTarget := FTargets.Next;
     UpdateTarget;

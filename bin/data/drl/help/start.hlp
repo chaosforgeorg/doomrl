@@ -102,11 +102,11 @@ a certain experience amount needed to achieve it.
 
 Below your health and experience is "tactics". By default your tactic is
 "cautious". This tactic gives no benefits or disadvantages. If you press
-TAB once, it will change to "running" (note that changing tactics takes
+X once, it will change to "running" (note that changing tactics takes
 some in-game time). With this tactic you have increased movement speed,
 dodge chance, and defense bonus, but have a smaller chance to hit and
 reduced melee damage. After some time spent running (or after pressing
-TAB again), you will get "tired". Being tired has no effects, positive
+X again), you will get "tired". Being tired has no effects, positive
 or negative (like cautious), but while tired, you can't run again. You can
 return to the cautious tactic by leveling up, gaining health by most
 methods, or descending to next level. Since running is limited in this way,
@@ -155,9 +155,10 @@ As you go deeper into the base, you'll also find some power-ups ("^"). They
 are used as soon as you pick them up, and several contain powerful effect,
 so use them wisely.
 
-Oh, I almost forgot! To shoot, just press "f" -- you'll be asked for a
+Oh, I almost forgot! To shoot, just press "f" to fire at the currently 
+selected target! Alternatively press "t" and you'll be asked for a
 target (if you have a gun and proper ammo, that is...). Use the arrow keys
-to choose a target, and press "f" again to fire. Or, you can press "m" to
+to choose a target, and press "f/t" again to fire. Or, you can press "m" to
 see an ASCII image and description of what you are aiming at. You can also
 press TAB (when targeting) to toggle between the targets. Some weapons
 allow an alternative fire mode, such as the chainfiring mode of the

@@ -37,6 +37,8 @@ type TInputKey = (
   // Action keybindings
   INPUT_ACTION,
   INPUT_FIRE,
+  INPUT_TARGET,
+  INPUT_TARGETNEXT,
   INPUT_RELOAD,
   INPUT_PICKUP,
   INPUT_LOOKMODE,
@@ -45,6 +47,7 @@ type TInputKey = (
   INPUT_UNLOAD,
   INPUT_ALTPICKUP,
   INPUT_ALTFIRE,
+  INPUT_ALTTARGET,
   INPUT_ALTRELOAD,
 
   // UI keybindings
@@ -136,22 +139,25 @@ const KeyInfo : array[TInputKey] of TKeyInfoEntry = (
 
     // Action keybindings
     (ID: 'input_action';         Group: 'keybindings_actions';      Default: VKEY_SPACE;            Name: 'Action';           Description: 'Perform action (open/close door, descend stairs, press button).'),
-    (ID: 'input_fire';           Group: 'keybindings_actions';      Default: VKEY_F;                Name: 'Fire';             Description: 'Fire your currently wielded weapon.'),
+    (ID: 'input_fire';           Group: 'keybindings_actions';      Default: VKEY_F;                Name: 'Fire';             Description: 'Fire your currently wielded weapon at current target.'),
+    (ID: 'input_target';         Group: 'keybindings_actions';      Default: VKEY_T;                Name: 'Target';           Description: 'Pick target to fire your currently wielded weapon.'),
+    (ID: 'input_targetnext';     Group: 'keybindings_actions';      Default: VKEY_T;                Name: 'Target next';      Description: 'Select next target.'),
     (ID: 'input_reload';         Group: 'keybindings_actions';      Default: VKEY_R;                Name: 'Reload';           Description: 'Reload currently held weapon.'),
     (ID: 'input_pickup';         Group: 'keybindings_actions';      Default: VKEY_G;                Name: 'Pickup';           Description: 'Pickup item from ground.'),
     (ID: 'input_lookmode';       Group: 'keybindings_actions';      Default: VKEY_L;                Name: 'Look mode';        Description: 'Look around.'),
     (ID: 'input_swapweapon';     Group: 'keybindings_actions';      Default: VKEY_Z;                Name: 'Swap weapon';      Description: 'Swap your current and prepared weapon.'),
-    (ID: 'input_tactic';         Group: 'keybindings_actions';      Default: VKEY_TAB;              Name: 'Change tactic';    Description: 'Change tactic to running (if not tired).'),
+    (ID: 'input_tactics';        Group: 'keybindings_actions';      Default: VKEY_X;                Name: 'Change tactic';    Description: 'Change tactic to running (if not tired).'),
     (ID: 'input_unload';         Group: 'keybindings_actions';      Default: VKEY_U;                Name: 'Unload weapon';    Description: 'Unload weapon from ground (if present) or inventory.'),
     (ID: 'input_altpickup';      Group: 'keybindings_actions';      Default: VKEY_G + IOKeyCodeShiftMask; Name: 'Alternative pickup'; Description: 'Use item from ground if possible.'),
-    (ID: 'input_altfire';        Group: 'keybindings_actions';      Default: VKEY_F + IOKeyCodeShiftMask; Name: 'Alternative fire';  Description: 'Use weapons alternative fire mode (if present).'),
+    (ID: 'input_altfire';        Group: 'keybindings_actions';      Default: VKEY_F + IOKeyCodeShiftMask; Name: 'Alternative fire';   Description: 'Use weapons alternative fire mode (if present).'),
+    (ID: 'input_alttarget';      Group: 'keybindings_actions';      Default: VKEY_T + IOKeyCodeShiftMask; Name: 'Alternative target'; Description: 'Target and use weapons alternative fire mode (if present).'),
     (ID: 'input_altreload';      Group: 'keybindings_actions';      Default: VKEY_R + IOKeyCodeShiftMask; Name: 'Alternative reload'; Description: 'Use weapons alternative reload (if present).'),
 
     // UI keybindings
     (ID: 'input_help';           Group: 'keybindings_ui';           Default: VKEY_H;                Name: 'Show help screen'; Description: 'Open up help screen.'),
     (ID: 'input_inventory';      Group: 'keybindings_ui';           Default: VKEY_I;                Name: 'Show inventory screen'; Description: 'Open up inventory screen.'),
     (ID: 'input_equipment';      Group: 'keybindings_ui';           Default: VKEY_E;                Name: 'Show equipment screen'; Description: 'Open up equipment screen.'),
-    (ID: 'input_traits';         Group: 'keybindings_ui';           Default: VKEY_T;                Name: 'Show traits screen'; Description: 'Open up traits screen.'),
+    (ID: 'input_trait';          Group: 'keybindings_ui';           Default: VKEY_Y;                Name: 'Show traits screen'; Description: 'Open up traits screen.'),
     (ID: 'input_playerinfo';     Group: 'keybindings_ui';           Default: VKEY_P;                Name: 'Show player screen'; Description: 'Open up player info screen.'),
     (ID: 'input_messages';       Group: 'keybindings_ui';           Default: VKEY_S;                Name: 'Show messages screen'; Description: 'Show log of previous messages.'),
     (ID: 'input_assemblies';     Group: 'keybindings_ui';           Default: VKEY_A;                Name: 'Show assemblies screen'; Description: 'Open up known assemblies screen.'),
