@@ -537,6 +537,7 @@ var iTarget     : TCoord2D;
     iCommand    : Byte;
     iEmpty      : Boolean;
 begin
+  IO.MsgUpdate;
   iLimitRange := False;
   iFireTitle  := '';
   iChainFire  := Player.ChainFire;
@@ -659,7 +660,15 @@ begin
     Exit( False );
   end;
 
-  if aAuto then FTargeting.OnTarget( iTarget );
+  if aAuto then
+  begin
+    if FTargeting.List.Current = Player.Position then
+    begin
+      IO.Msg( 'No valid target.' );
+      Exit( False );
+    end;
+    FTargeting.OnTarget( iTarget );
+  end;
 
   Exit( HandleCommand( TCommand.Create( iCommand, iTarget, iItem ) ) )
 end;
