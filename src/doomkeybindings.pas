@@ -141,7 +141,7 @@ const KeyInfo : array[TInputKey] of TKeyInfoEntry = (
     (ID: 'input_action';         Group: 'keybindings_actions';      Default: VKEY_SPACE;            Name: 'Action';           Description: 'Perform action (open/close door, descend stairs, press button).'),
     (ID: 'input_fire';           Group: 'keybindings_actions';      Default: VKEY_F;                Name: 'Fire';             Description: 'Fire your currently wielded weapon at current target.'),
     (ID: 'input_target';         Group: 'keybindings_actions';      Default: VKEY_T;                Name: 'Target';           Description: 'Pick target to fire your currently wielded weapon.'),
-    (ID: 'input_targetnext';     Group: 'keybindings_actions';      Default: VKEY_T;                Name: 'Target next';      Description: 'Select next target.'),
+    (ID: 'input_targetnext';     Group: 'keybindings_actions';      Default: VKEY_TAB;              Name: 'Target next';      Description: 'Select next target.'),
     (ID: 'input_reload';         Group: 'keybindings_actions';      Default: VKEY_R;                Name: 'Reload';           Description: 'Reload currently held weapon.'),
     (ID: 'input_pickup';         Group: 'keybindings_actions';      Default: VKEY_G;                Name: 'Pickup';           Description: 'Pickup item from ground.'),
     (ID: 'input_lookmode';       Group: 'keybindings_actions';      Default: VKEY_L;                Name: 'Look mode';        Description: 'Look around.'),
