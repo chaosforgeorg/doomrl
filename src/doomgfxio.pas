@@ -374,6 +374,7 @@ end;
 
 procedure TDoomGFXIO.SetAutoTarget( aTarget : TCoord2D );
 begin
+  inherited SetAutoTarget( aTarget );
   SpriteMap.SetAutoTarget( aTarget )
 end;
 

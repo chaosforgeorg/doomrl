@@ -107,7 +107,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure WriteToStream( Stream: TStream ); override;
 
     function EnemiesLeft : DWord;
-    function GetLookDescription( aWhere : TCoord2D ) : Ansistring;
+    function GetLookDescription( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : Ansistring;
     procedure UpdateAutoTarget( aAutoTarget : TAutoTarget; aBeing : TBeing; aRange : Integer );
 
     class procedure RegisterLuaAPI();
@@ -1343,7 +1343,7 @@ begin
       aAutoTarget.AddTarget( iCoord );
 end;
 
-function TLevel.GetLookDescription ( aWhere : TCoord2D ) : AnsiString;
+function TLevel.GetLookDescription ( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : AnsiString;
 var iCellID : DWord;
   procedure AddInfo( const what : AnsiString );
   begin
@@ -1357,6 +1357,7 @@ begin
     if Being[ aWhere ] <> nil then
     with Being[ aWhere ] do
       AddInfo( GetName( false ) + ' (' + WoundStatus + ')' );
+    if aBeingOnly then Exit;
     if Item[ aWhere ] <> nil then
       if Item[ aWhere ].isLever then AddInfo( Player.DescribeLever( Item[ aWhere ] ) )
                                 else AddInfo( Item[ aWhere ].GetName( false ) );

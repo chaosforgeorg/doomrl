@@ -142,6 +142,7 @@ end;
 
 procedure TDoomTextIO.SetAutoTarget( aTarget : TCoord2D );
 begin
+  inherited SetAutoTarget( aTarget );
   if not FTargetEnabled then
   begin
     if FLayers.IsEmpty then
