@@ -16,9 +16,13 @@ TDoomLua = class(TLuaSystem)
        constructor Create; reintroduce;
        procedure OnError(const ErrorString : Ansistring); override;
        procedure RegisterPlayer(Thing: TThing);
+       destructor Destroy; override;
      private
        procedure ReadWad;
        procedure LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
+     private
+       FCoreData : TVDataFile;
+       FMainData : TVDataFile;
      end;
 
 type
@@ -377,57 +381,58 @@ end;
 
 procedure TDoomLua.ReadWad;
 var iProgBase : DWord;
-    iCoreData : TVDataFile;
-    iMainData : TVDataFile;
-    iCorePath : Ansistring;
-    iMainPath : Ansistring;
+    iPath     : Ansistring;
 begin
   iProgBase := IO.LoadCurrent;
   IO.LoadProgress(iProgBase + 10);
 
-  iCorePath := '';
-  iMainPath := '';
-
   if GodMode then
   begin
-    iCorePath := DataPath + 'data' + PathDelim + 'core' + PathDelim;
-    iMainPath := DataPath + 'data' + PathDelim + CoreModuleID + PathDelim;
-    RegisterModule( 'core', iCorePath );
-    RegisterModule( CoreModuleID, iMainPath );
-    LoadFile( iCorePath + 'core.lua' );
-    IO.LoadProgress(iProgBase + 20);
-    LoadFile( iMainPath + 'main.lua' );
-    IO.LoadProgress(iProgBase + 30);
-    IO.LoadProgress(iProgBase + 35);
-    LoadFiles( iMainPath + 'help', @Help.StreamLoader, '*.hlp' );
-    IO.LoadProgress(iProgBase + 40);
-    LoadFiles( iMainPath + 'ascii', @IO.ASCIILoader, '*.asc' );
-    IO.LoadProgress(iProgBase + 50);
-    if GraphicsVersion then
-      (IO as TDoomGFXIO).Textures.LoadTextureFolder( iMainPath + 'graphics' );
+    iPath := DataPath + 'data' + PathDelim + 'core' + PathDelim;
+    RegisterModule( 'core', iPath );
+    LoadFile( iPath + 'core.lua' );
   end
   else
   begin
-    iCoreData := TVDataFile.Create( DataPath + 'core.wad' );
-    iMainData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
-    iMainData.DKKey := LoveLace;
-    RegisterModule('core',iCoreData);
-    RegisterModule( CoreModuleID, iMainData );
-    LoadStream(iCoreData,'','core.lua');
-    IO.LoadProgress(iProgBase + 20);
-    LoadStream(iMainData,'','main.lua');
+    FCoreData := TVDataFile.Create( DataPath + 'core.wad' );
+    RegisterModule( 'core', FCoreData );
+    LoadStream( FCoreData,'','core.lua' );
+  end;
+
+  IO.LoadProgress(iProgBase + 20);
+
+  if GodMode then
+  begin
+    iPath := DataPath + 'data' + PathDelim + CoreModuleID + PathDelim;
+    RegisterModule( CoreModuleID, iPath );
+    LoadFile( iPath + 'main.lua' );
     IO.LoadProgress(iProgBase + 30);
-    if GraphicsVersion then
-      iMainData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
-    IO.LoadProgress(iProgBase + 35);
-    iMainData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
-    iMainData.Load('help');
+    LoadFiles( iPath + 'help', @Help.StreamLoader, '*.hlp' );
     IO.LoadProgress(iProgBase + 40);
-    iMainData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
-    iMainData.Load('ascii');
+    LoadFiles( iPath + 'ascii', @IO.ASCIILoader, '*.asc' );
     IO.LoadProgress(iProgBase + 50);
     if GraphicsVersion then
-      iMainData.Load('graphics');
+      (IO as TDoomGFXIO).Textures.LoadTextureFolder( iPath + 'graphics' );
+  end
+  else
+  begin
+    FMainData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
+    FMainData.DKKey := LoveLace;
+    RegisterModule( CoreModuleID, FMainData );
+    IO.LoadProgress(iProgBase + 20);
+    LoadStream(FMainData,'','main.lua');
+    IO.LoadProgress(iProgBase + 30);
+    FMainData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
+    FMainData.Load('help');
+    IO.LoadProgress(iProgBase + 40);
+    FMainData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
+    FMainData.Load('ascii');
+    IO.LoadProgress(iProgBase + 50);
+    if GraphicsVersion then
+    begin
+      FMainData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
+      FMainData.Load('graphics');
+    end;
   end;
   IO.LoadProgress(iProgBase + 100);
 end;
@@ -462,6 +467,13 @@ procedure TDoomLua.RegisterPlayer(Thing: TThing);
 begin
   LuaSystem.SetValue('player',Thing);
   RegisterKillsClass( Raw, (Thing as TPlayer).FKills );
+end;
+
+destructor TDoomLua.Destroy;
+begin
+  FreeAndNil( FCoreData );
+  FreeAndNil( FMainData );
+  inherited Destroy;
 end;
 
 procedure LogProps( aClass : TClass );
@@ -520,6 +532,9 @@ begin
   if GodMode
     then inherited Create( Config.Raw )
     else inherited Create( nil );
+
+  FCoreData := nil;
+  FMainData := nil;
 
   RegisterTableAuxFunctions( Raw );
   RegisterMathAuxFunctions( Raw );
