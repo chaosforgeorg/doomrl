@@ -1,5 +1,112 @@
 -- XXX Maximum length for desc is 44 characters (maybe 43)
-function drl.register_medals()
+function drl.register_awards()
+
+	register_badge "technician1"
+	{
+		name  = "Technician Bronze Badge",
+		desc  = "Discover an assembly",
+		level = 1,
+	}
+
+	register_badge "technician2"
+	{
+		name  = "Technician Silver Badge",
+		desc  = "Discover an advanced assembly",
+		level = 2,
+	}
+
+	register_badge "technician3"
+	{
+		name  = "Technician Gold Badge",
+		desc  = "Discover {!all} basic assemblies",
+		level = 3,
+	}
+
+	register_badge "technician4"
+	{
+		name  = "Technician Platinum Badge",
+		desc  = "Discover {!all} advanced assemblies",
+		level = 4,
+	}
+
+	register_badge "technician5"
+	{
+		name  = "Technician Diamond Badge",
+		desc  = "Discover {!all} assemblies",
+		level = 5,
+	}
+
+	register_badge "armorer1"
+	{
+		name  = "Armorer Bronze Badge",
+		desc  = "Discover 10 exotics/uniques",
+		level = 1,
+	}
+
+	register_badge "armorer2"
+	{
+		name  = "Armorer Silver Badge",
+		desc  = "Discover 30 exotics/uniques",
+		level = 2,
+	}
+
+	register_badge "armorer3"
+	{
+		name  = "Armorer Gold Badge",
+		desc  = "Discover {!all} exotics/uniques",
+		level = 3,
+	}
+	
+	register_badge "armorer4"
+	{
+		name  = "Armorer Platinum Badge",
+		desc  = "Find {!1,000} exotics/uniques",
+		level = 4,
+	}
+
+	register_badge "armorer5"
+	{
+		name  = "Armorer Diamond Badge",
+		desc  = "Find 3 of {!each} exotic/unique",
+		level = 5,
+	}
+
+	register_badge "heroic1"
+	{
+		name  = "Heroic Bronze Badge",
+		desc  = "Receive 8 unique medals",
+		level = 1,
+	}
+
+	register_badge "heroic2"
+	{
+		name  = "Heroic Silver Badge",
+		desc  = "Receive 16 unique medals",
+		level = 2,
+	}
+
+	register_badge "heroic3"
+	{
+		name  = "Heroic Gold Badge",
+		desc  = "Receive 24 unique medals",
+		level = 3,
+	}
+
+	register_badge "heroic4"
+	{
+		name  = "Heroic Platinum Badge",
+		desc  = "Receive 32 unique medals",
+		level = 4,
+	}
+
+	register_badge "heroic5"
+	{
+		name  = "Heroic Diamond Badge",
+		desc  = "Receive {!all} medals",
+		level = 5,
+	}
+
+	-- medals
 
 	register_medal "killall"
 	{
@@ -594,114 +701,6 @@ function drl.register_medals()
 		level = 2,
 	}
 
-end
-
-function drl.register_global_badges()
-
-	register_badge "technician1"
-	{
-		name  = "Technician Bronze Badge",
-		desc  = "Discover an assembly",
-		level = 1,
-	}
-
-	register_badge "technician2"
-	{
-		name  = "Technician Silver Badge",
-		desc  = "Discover an advanced assembly",
-		level = 2,
-	}
-
-	register_badge "technician3"
-	{
-		name  = "Technician Gold Badge",
-		desc  = "Discover {!all} basic assemblies",
-		level = 3,
-	}
-
-	register_badge "technician4"
-	{
-		name  = "Technician Platinum Badge",
-		desc  = "Discover {!all} advanced assemblies",
-		level = 4,
-	}
-
-	register_badge "technician5"
-	{
-		name  = "Technician Diamond Badge",
-		desc  = "Discover {!all} assemblies",
-		level = 5,
-	}
-
-	register_badge "armorer1"
-	{
-		name  = "Armorer Bronze Badge",
-		desc  = "Discover 10 exotics/uniques",
-		level = 1,
-	}
-
-	register_badge "armorer2"
-	{
-		name  = "Armorer Silver Badge",
-		desc  = "Discover 30 exotics/uniques",
-		level = 2,
-	}
-
-	register_badge "armorer3"
-	{
-		name  = "Armorer Gold Badge",
-		desc  = "Discover {!all} exotics/uniques",
-		level = 3,
-	}
-	
-	register_badge "armorer4"
-	{
-		name  = "Armorer Platinum Badge",
-		desc  = "Find {!1,000} exotics/uniques",
-		level = 4,
-	}
-
-	register_badge "armorer5"
-	{
-		name  = "Armorer Diamond Badge",
-		desc  = "Find 3 of {!each} exotic/unique",
-		level = 5,
-	}
-
-	register_badge "heroic1"
-	{
-		name  = "Heroic Bronze Badge",
-		desc  = "Receive 8 unique medals",
-		level = 1,
-	}
-
-	register_badge "heroic2"
-	{
-		name  = "Heroic Silver Badge",
-		desc  = "Receive 16 unique medals",
-		level = 2,
-	}
-
-	register_badge "heroic3"
-	{
-		name  = "Heroic Gold Badge",
-		desc  = "Receive 24 unique medals",
-		level = 3,
-	}
-
-	register_badge "heroic4"
-	{
-		name  = "Heroic Platinum Badge",
-		desc  = "Receive 32 unique medals",
-		level = 4,
-	}
-
-	register_badge "heroic5"
-	{
-		name  = "Heroic Diamond Badge",
-		desc  = "Receive {!all} medals",
-		level = 5,
-	}
 end
 
 function drl.award_badges( no_record )
