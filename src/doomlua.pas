@@ -18,6 +18,7 @@ TDoomLua = class(TLuaSystem)
        procedure RegisterPlayer(Thing: TThing);
      private
        procedure ReadWad;
+       procedure LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
      end;
 
 type
@@ -381,10 +382,6 @@ var iProgBase : DWord;
     iCorePath : Ansistring;
     iMainPath : Ansistring;
 begin
-  iCoreData := TVDataFile.Create( DataPath + 'core.wad' );
-  iMainData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
-  iMainData.DKKey := LoveLace;
-
   iProgBase := IO.LoadCurrent;
   IO.LoadProgress(iProgBase + 10);
 
@@ -393,19 +390,27 @@ begin
 
   if GodMode then
   begin
-    iCorePath := DataPath + 'data' + DirectorySeparator + 'core' + DirectorySeparator;
-    iMainPath := DataPath + 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator;
+    iCorePath := DataPath + 'data' + PathDelim + 'core' + PathDelim;
+    iMainPath := DataPath + 'data' + PathDelim + CoreModuleID + PathDelim;
     RegisterModule( 'core', iCorePath );
     RegisterModule( CoreModuleID, iMainPath );
     LoadFile( iCorePath + 'core.lua' );
     IO.LoadProgress(iProgBase + 20);
     LoadFile( iMainPath + 'main.lua' );
     IO.LoadProgress(iProgBase + 30);
+    IO.LoadProgress(iProgBase + 35);
+    LoadFiles( iMainPath + 'help', @Help.StreamLoader, '*.hlp' );
+    IO.LoadProgress(iProgBase + 40);
+    LoadFiles( iMainPath + 'ascii', @IO.ASCIILoader, '*.asc' );
+    IO.LoadProgress(iProgBase + 50);
     if GraphicsVersion then
       (IO as TDoomGFXIO).Textures.LoadTextureFolder( iMainPath + 'graphics' );
   end
   else
   begin
+    iCoreData := TVDataFile.Create( DataPath + 'core.wad' );
+    iMainData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
+    iMainData.DKKey := LoveLace;
     RegisterModule('core',iCoreData);
     RegisterModule( CoreModuleID, iMainData );
     LoadStream(iCoreData,'','core.lua');
@@ -414,19 +419,32 @@ begin
     IO.LoadProgress(iProgBase + 30);
     if GraphicsVersion then
       iMainData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
+    IO.LoadProgress(iProgBase + 35);
+    iMainData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
+    iMainData.Load('help');
+    IO.LoadProgress(iProgBase + 40);
+    iMainData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
+    iMainData.Load('ascii');
+    IO.LoadProgress(iProgBase + 50);
+    if GraphicsVersion then
+      iMainData.Load('graphics');
   end;
-  IO.LoadProgress(iProgBase + 35);
-  iMainData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
-  iMainData.Load('help');
-  IO.LoadProgress(iProgBase + 40);
-  iMainData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
-  iMainData.Load('ascii');
-  IO.LoadProgress(iProgBase + 50);
-
-  if (not GodMode) and GraphicsVersion then
-    iMainData.Load('graphics');
-
   IO.LoadProgress(iProgBase + 100);
+end;
+
+procedure TDoomLua.LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
+var iSearchRec : TSearchRec;
+    iStream    : TStream;
+begin
+  if FindFirst(aDirectory + PathDelim + aWildcard,0,iSearchRec) = 0 then
+  repeat
+    iStream := TFileStream.Create( aDirectory + PathDelim + iSearchRec.Name, fmOpenRead );
+    try
+      aLoader( iStream, iSearchRec.Name, iStream.Size );
+    finally
+      FreeAndNil( iStream );
+    end;
+  until (FindNext(iSearchRec) <> 0);
 end;
 
 procedure TDoomLua.OnError(const ErrorString : Ansistring);
