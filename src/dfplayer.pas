@@ -724,8 +724,7 @@ begin
   FScore := Round( FScore * Double(LuaSystem.Get([ 'diff', Doom.Difficulty, 'scorefactor' ])) );
 
   Doom.CallHook(Hook_OnMortem,[ not NoPlayerRecord ]);
-  LuaSystem.ProtectedCall([CoreModuleID,'RunAwardMedals'],[]);
-  LuaSystem.ProtectedCall([CoreModuleID,'RunRegisterAwards'],[NoPlayerRecord]);
+  LuaSystem.ProtectedCall([CoreModuleID,'RunAwards'],[NoPlayerRecord]);
 
   // FScore
   ScoreCRC(FScore);

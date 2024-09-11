@@ -1,5 +1,112 @@
 -- XXX Maximum length for desc is 44 characters (maybe 43)
-function drl.register_medals()
+function drl.register_awards()
+
+	register_badge "technician1"
+	{
+		name  = "Technician Bronze Badge",
+		desc  = "Discover an assembly",
+		level = 1,
+	}
+
+	register_badge "technician2"
+	{
+		name  = "Technician Silver Badge",
+		desc  = "Discover an advanced assembly",
+		level = 2,
+	}
+
+	register_badge "technician3"
+	{
+		name  = "Technician Gold Badge",
+		desc  = "Discover {!all} basic assemblies",
+		level = 3,
+	}
+
+	register_badge "technician4"
+	{
+		name  = "Technician Platinum Badge",
+		desc  = "Discover {!all} advanced assemblies",
+		level = 4,
+	}
+
+	register_badge "technician5"
+	{
+		name  = "Technician Diamond Badge",
+		desc  = "Discover {!all} assemblies",
+		level = 5,
+	}
+
+	register_badge "armorer1"
+	{
+		name  = "Armorer Bronze Badge",
+		desc  = "Discover 10 exotics/uniques",
+		level = 1,
+	}
+
+	register_badge "armorer2"
+	{
+		name  = "Armorer Silver Badge",
+		desc  = "Discover 30 exotics/uniques",
+		level = 2,
+	}
+
+	register_badge "armorer3"
+	{
+		name  = "Armorer Gold Badge",
+		desc  = "Discover {!all} exotics/uniques",
+		level = 3,
+	}
+	
+	register_badge "armorer4"
+	{
+		name  = "Armorer Platinum Badge",
+		desc  = "Find {!1,000} exotics/uniques",
+		level = 4,
+	}
+
+	register_badge "armorer5"
+	{
+		name  = "Armorer Diamond Badge",
+		desc  = "Find 3 of {!each} exotic/unique",
+		level = 5,
+	}
+
+	register_badge "heroic1"
+	{
+		name  = "Heroic Bronze Badge",
+		desc  = "Receive 8 unique medals",
+		level = 1,
+	}
+
+	register_badge "heroic2"
+	{
+		name  = "Heroic Silver Badge",
+		desc  = "Receive 16 unique medals",
+		level = 2,
+	}
+
+	register_badge "heroic3"
+	{
+		name  = "Heroic Gold Badge",
+		desc  = "Receive 24 unique medals",
+		level = 3,
+	}
+
+	register_badge "heroic4"
+	{
+		name  = "Heroic Platinum Badge",
+		desc  = "Receive 32 unique medals",
+		level = 4,
+	}
+
+	register_badge "heroic5"
+	{
+		name  = "Heroic Diamond Badge",
+		desc  = "Receive {!all} medals",
+		level = 5,
+	}
+
+	-- medals
 
 	register_medal "killall"
 	{
@@ -23,7 +130,7 @@ function drl.register_medals()
 		desc  = "Won & killed only with shotguns/fists",
 		hidden  = true,
 		winonly = true,
-		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + drl.count_group_kills( "weapon-shotgun" ) == statistics.kills end,
+		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + core.kills_count_group( "weapon-shotgun" ) == statistics.kills end,
 	}
 
 	register_medal "pistols"
@@ -32,7 +139,7 @@ function drl.register_medals()
 		desc  = "Won & killed only with pistols/fists",
 		hidden  = true,
 		winonly = true,
-		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + drl.count_group_kills( "weapon-pistol" ) == statistics.kills end,
+		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + core.kills_count_group( "weapon-pistol" ) == statistics.kills end,
 	}
 
 	register_medal "knives"
@@ -596,7 +703,7 @@ function drl.register_medals()
 
 end
 
-function drl.check_badges()
+function drl.award_badges( no_record )
 	-- UAC, veteran, strongman and elite badges
 	if player:has_won() then
 		local is_conqueror = (statistics.bonus_levels_completed == statistics.bonus_levels_count)
@@ -692,163 +799,10 @@ function drl.check_badges()
 		--]]
 	end
 
-end
+	if no_record then return end
 
-function drl.count_group_kills( weapon_group )
-	local total = 0
-	for _,item in ipairs( items ) do
-		if item.group == weapon_group then
-			total = total + kills.get_type(item.id)
-		end
-	end
-	return total
-end
+	-- award global badges
 
-function drl.RunAwardMedals()
-	-- check badges
-	drl.check_badges()
-
-	-- Prefetch win condition
-	local win = player:has_won()
-
-	-- Iterate through the medals
-	for _,medal_proto in ipairs(medals) do
-		if medal_proto.condition and ( ( not medal_proto.winonly ) or win ) then
-			if medal_proto.condition() then
-				player:add_medal( medal_proto.id )
-				--if the player already has lesser medals in their player.wad, remove them from mortem
-				if medal_proto.removes then
-					for _,zero_medal in ipairs(medal_proto.removes) do
-						local medal_count = player_data.get_counted( 'medals', 'medal', zero_medal )
-						if medal_count <= 0 then
-							player:add_medal( zero_medal )
-						else
-							player:remove_medal( zero_medal )
-						end
-					end
-				end
-			end
-		end
-	end
-
-	-- Check for challenge medal removals
-	if CHALLENGE ~= "" then
-		player:remove_medals( chal[CHALLENGE].removemedals )
-	end
-	if SCHALLENGE ~= "" then
-		player:remove_medals( chal[SCHALLENGE].removemedals )
-	end
-end
-
-function drl.register_global_badges()
-
-	register_badge "technician1"
-	{
-		name  = "Technician Bronze Badge",
-		desc  = "Discover an assembly",
-		level = 1,
-	}
-
-	register_badge "technician2"
-	{
-		name  = "Technician Silver Badge",
-		desc  = "Discover an advanced assembly",
-		level = 2,
-	}
-
-	register_badge "technician3"
-	{
-		name  = "Technician Gold Badge",
-		desc  = "Discover {!all} basic assemblies",
-		level = 3,
-	}
-
-	register_badge "technician4"
-	{
-		name  = "Technician Platinum Badge",
-		desc  = "Discover {!all} advanced assemblies",
-		level = 4,
-	}
-
-	register_badge "technician5"
-	{
-		name  = "Technician Diamond Badge",
-		desc  = "Discover {!all} assemblies",
-		level = 5,
-	}
-
-	register_badge "armorer1"
-	{
-		name  = "Armorer Bronze Badge",
-		desc  = "Discover 10 exotics/uniques",
-		level = 1,
-	}
-
-	register_badge "armorer2"
-	{
-		name  = "Armorer Silver Badge",
-		desc  = "Discover 30 exotics/uniques",
-		level = 2,
-	}
-
-	register_badge "armorer3"
-	{
-		name  = "Armorer Gold Badge",
-		desc  = "Discover {!all} exotics/uniques",
-		level = 3,
-	}
-	
-	register_badge "armorer4"
-	{
-		name  = "Armorer Platinum Badge",
-		desc  = "Find {!1,000} exotics/uniques",
-		level = 4,
-	}
-
-	register_badge "armorer5"
-	{
-		name  = "Armorer Diamond Badge",
-		desc  = "Find 3 of {!each} exotic/unique",
-		level = 5,
-	}
-
-	register_badge "heroic1"
-	{
-		name  = "Heroic Bronze Badge",
-		desc  = "Receive 8 unique medals",
-		level = 1,
-	}
-
-	register_badge "heroic2"
-	{
-		name  = "Heroic Silver Badge",
-		desc  = "Receive 16 unique medals",
-		level = 2,
-	}
-
-	register_badge "heroic3"
-	{
-		name  = "Heroic Gold Badge",
-		desc  = "Receive 24 unique medals",
-		level = 3,
-	}
-
-	register_badge "heroic4"
-	{
-		name  = "Heroic Platinum Badge",
-		desc  = "Receive 32 unique medals",
-		level = 4,
-	}
-
-	register_badge "heroic5"
-	{
-		name  = "Heroic Diamond Badge",
-		desc  = "Receive {!all} medals",
-		level = 5,
-	}
-end
-
-function drl.award_global_badges()
 	local medals_max = medals.__counter
 	local medals     = player_data.child_count('player/medals')
 
@@ -895,43 +849,8 @@ function drl.award_global_badges()
 	if amb_total >= amb_total_max    then player:add_badge("technician5") end
 end
 
-function drl.RunRegisterAwards( no_record )
-
-	for k,v in ipairs( awards ) do
-		if player:has_award( v.id ) then
-			player_data.add_counted( 'awards', 'award', v.id.."_"..tostring(player:get_award( v.id )))
-		end
-	end
-
-	if no_record then return end
-
-	for k,v in ipairs( items ) do
-		if ( v.is_exotic or v.is_unique ) and player:has_found_item( v.id ) then
-			player_data.add_counted( 'uniques', 'unique', v.id )
-		end
-	end
-
-	for k,v in ipairs( mod_arrays ) do
-		if player:has_assembly(v.id) then
-			player_data.add_counted( 'assemblies', 'assembly', v.id, player:has_assembly(v.id) )
-		end
-	end
-
-	for k,v in ipairs( medals ) do
-		if player:has_medal( v.id ) then
-			player_data.add_counted( 'medals', 'medal', v.id )
-		end
-	end
-
-	drl.award_global_badges()
-
-	for k,v in ipairs( badges ) do
-		if player:has_badge( v.id ) then
-			if player_data.get_counted( 'badges', 'badge', v.id ) > 0 then
-				player:remove_badge( v.id )
-			end
-			player_data.add_counted( 'badges', 'badge', v.id )
-		end
-	end
-
+function drl.RunAwards( no_record )
+	core.award_medals()
+	drl.award_badges( no_record )
+	core.update_player_data( no_record )
 end
