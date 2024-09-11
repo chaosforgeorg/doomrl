@@ -769,16 +769,13 @@ end;
 
 procedure TDoomIO.ASCIILoader ( aStream : TStream; aName : Ansistring; aSize : DWord ) ;
 var iNewImage   : TUIStringArray;
-    iCounter    : DWord;
-    iAmount     : DWord;
     iIdent      : Ansistring;
 begin
   iIdent  := LowerCase(LeftStr(aName,Length(aName)-4));
   Log('Registering ascii file '+aName+' as '+iIdent+'...');
-  iAmount := aStream.ReadDWord;
   iNewImage  := TUIStringArray.Create;
-  for iCounter := 1 to Min(iAmount,25) do
-    iNewImage.Push( aStream.ReadAnsiString );
+  while (aStream.Position < aSize) and (iNewImage.Size < 25) do
+    iNewImage.Push( ReadLineFromStream( aStream, aSize ) );
   FASCII.Items[iIdent] := iNewImage;
 end;
 

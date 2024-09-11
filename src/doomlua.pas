@@ -415,11 +415,11 @@ begin
     if GraphicsVersion then
       iMainData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
   end;
-  iMainData.RegisterLoader(FILETYPE_HELP ,@Help.StreamLoader);
-  iMainData.RegisterLoader(FILETYPE_ASCII,@IO.ASCIILoader);
   IO.LoadProgress(iProgBase + 35);
+  iMainData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
   iMainData.Load('help');
   IO.LoadProgress(iProgBase + 40);
+  iMainData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
   iMainData.Load('ascii');
   IO.LoadProgress(iProgBase + 50);
 
