@@ -23,7 +23,7 @@ function drl.register_medals()
 		desc  = "Won & killed only with shotguns/fists",
 		hidden  = true,
 		winonly = true,
-		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + drl.count_group_kills( "weapon-shotgun" ) == statistics.kills end,
+		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + core.kills_count_group( "weapon-shotgun" ) == statistics.kills end,
 	}
 
 	register_medal "pistols"
@@ -32,7 +32,7 @@ function drl.register_medals()
 		desc  = "Won & killed only with pistols/fists",
 		hidden  = true,
 		winonly = true,
-		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + drl.count_group_kills( "weapon-pistol" ) == statistics.kills end,
+		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + core.kills_count_group( "weapon-pistol" ) == statistics.kills end,
 	}
 
 	register_medal "knives"
@@ -596,150 +596,6 @@ function drl.register_medals()
 
 end
 
-function drl.check_badges()
-	-- UAC, veteran, strongman and elite badges
-	if player:has_won() then
-		local is_conqueror = (statistics.bonus_levels_completed == statistics.bonus_levels_count)
-		local is_explorer  = (statistics.bonus_levels_visited   == statistics.bonus_levels_count)
-		local is_maxkills  = (statistics.kills == statistics.max_kills)
-		local is_90kills   = (statistics.kills >= statistics.max_kills * 0.9)
-		local is_zerodmg   = (statistics.damage_taken == 0)
-		local is_fullwin   = (kills.get("jc") > 0 and player.hp > 0)
-
-		-- veteran badges
-		if is_maxkills then
-			player:add_badge( "veteran1" )
-			if DIFFICULTY >= DIFF_HARD      then player:add_badge("veteran2") end
-			if DIFFICULTY >= DIFF_VERYHARD  then player:add_badge("veteran3") end
-		end
-		if is_fullwin then
-			if DIFFICULTY >= DIFF_VERYHARD  then player:add_badge("veteran4") end
-			if DIFFICULTY >= DIFF_NIGHTMARE then 
-				player:add_badge("veteran5") 
-				if is_maxkills then
-					player:add_badge("veteran6") 
-				end
-			end
-		end
-
-		if CHALLENGE == "" then
-			-- basic UAC badges
-			player:add_badge( "buac1" )
-			if DIFFICULTY >= DIFF_HARD      then player:add_badge("buac2") end
-			if DIFFICULTY >= DIFF_VERYHARD  then player:add_badge("buac3") end
-			if DIFFICULTY >= DIFF_NIGHTMARE then
-				player:add_badge("buac4")
-				if statistics.real_time <= 20*60 then player:add_badge("buac5") end
-				if is_zerodmg                    then player:add_badge("buac6") end
-			end
-
-			local melee_other = kills.get_type( "other" ) + kills.get_type( "melee" )
-
-			-- strongman badges
-			if melee_other + kills.get_type( "knife" ) + kills.get_type( "chainsaw" ) == statistics.kills then player:add_badge("strongman1") end
-			if melee_other + kills.get_type( "knife" ) == statistics.kills then
-				player:add_badge("strongman2")
-				if DIFFICULTY >= DIFF_HARD then player:add_badge("strongman3") end
-			end
-			if melee_other == statistics.kills and DIFFICULTY >= DIFF_HARD then
-				player:add_badge("strongman4")
-				if is_maxkills then player:add_badge("strongman5") end
-				if DIFFICULTY >= DIFF_NIGHTMARE and is_90kills then
-					player:add_badge("strongman6")
-				end
-			end
-			
-			-- speedrunner badges
-			if statistics.real_time <= 30*60 then
-				player:add_badge("speedrunner1")
-			end
-			if statistics.real_time <= 25*60 and DIFFICULTY >= DIFF_MEDIUM then
-				player:add_badge("speedrunner2")
-			end
-			if statistics.real_time <= 20*60 and DIFFICULTY >= DIFF_HARD then
-				player:add_badge("speedrunner3")
-			end
-			if statistics.real_time <= 4*60 and DIFFICULTY >= DIFF_NIGHTMARE then
-				player:add_badge("speedrunner6")
-			end
-
-			-- elite badges
-			if DIFFICULTY >= DIFF_VERYHARD  and is_conqueror then player:add_badge("elite4") end
-			if DIFFICULTY >= DIFF_NIGHTMARE then
-				if is_90kills then player:add_badge("elite5") end
-				if is_maxkills and is_conqueror then player:add_badge("elite6") end
-			end
-
-			-- demonic badges
-			if DIFFICULTY >= DIFF_NIGHTMARE then
-				if is_explorer                   then player:add_badge("demonic4") end
-				if statistics.damage_taken < 200 then player:add_badge("demonic5") end
-				if is_zerodmg and is_maxkills    then player:add_badge("demonic6") end
-			end
-		end
-		--[[
-		if CHALLENGE == CHALLENGE_HASTE then
-			-- speedrunner badges
-			if statistics.real_time <= 10*60 then
-				if DIFFICULTY >= DIFF_HARD then
-					player:add_badge("speedrunner4")
-				end
-				if DIFFICULTY >= DIFF_NIGHTMARE then
-					player:add_badge("speedrunner5")
-				end
-			end
-		end
-		--]]
-	end
-
-end
-
-function drl.count_group_kills( weapon_group )
-	local total = 0
-	for _,item in ipairs( items ) do
-		if item.group == weapon_group then
-			total = total + kills.get_type(item.id)
-		end
-	end
-	return total
-end
-
-function drl.RunAwardMedals()
-	-- check badges
-	drl.check_badges()
-
-	-- Prefetch win condition
-	local win = player:has_won()
-
-	-- Iterate through the medals
-	for _,medal_proto in ipairs(medals) do
-		if medal_proto.condition and ( ( not medal_proto.winonly ) or win ) then
-			if medal_proto.condition() then
-				player:add_medal( medal_proto.id )
-				--if the player already has lesser medals in their player.wad, remove them from mortem
-				if medal_proto.removes then
-					for _,zero_medal in ipairs(medal_proto.removes) do
-						local medal_count = player_data.get_counted( 'medals', 'medal', zero_medal )
-						if medal_count <= 0 then
-							player:add_medal( zero_medal )
-						else
-							player:remove_medal( zero_medal )
-						end
-					end
-				end
-			end
-		end
-	end
-
-	-- Check for challenge medal removals
-	if CHALLENGE ~= "" then
-		player:remove_medals( chal[CHALLENGE].removemedals )
-	end
-	if SCHALLENGE ~= "" then
-		player:remove_medals( chal[SCHALLENGE].removemedals )
-	end
-end
-
 function drl.register_global_badges()
 
 	register_badge "technician1"
@@ -848,7 +704,106 @@ function drl.register_global_badges()
 	}
 end
 
-function drl.award_global_badges()
+function drl.award_badges( no_record )
+	-- UAC, veteran, strongman and elite badges
+	if player:has_won() then
+		local is_conqueror = (statistics.bonus_levels_completed == statistics.bonus_levels_count)
+		local is_explorer  = (statistics.bonus_levels_visited   == statistics.bonus_levels_count)
+		local is_maxkills  = (statistics.kills == statistics.max_kills)
+		local is_90kills   = (statistics.kills >= statistics.max_kills * 0.9)
+		local is_zerodmg   = (statistics.damage_taken == 0)
+		local is_fullwin   = (kills.get("jc") > 0 and player.hp > 0)
+
+		-- veteran badges
+		if is_maxkills then
+			player:add_badge( "veteran1" )
+			if DIFFICULTY >= DIFF_HARD      then player:add_badge("veteran2") end
+			if DIFFICULTY >= DIFF_VERYHARD  then player:add_badge("veteran3") end
+		end
+		if is_fullwin then
+			if DIFFICULTY >= DIFF_VERYHARD  then player:add_badge("veteran4") end
+			if DIFFICULTY >= DIFF_NIGHTMARE then 
+				player:add_badge("veteran5") 
+				if is_maxkills then
+					player:add_badge("veteran6") 
+				end
+			end
+		end
+
+		if CHALLENGE == "" then
+			-- basic UAC badges
+			player:add_badge( "buac1" )
+			if DIFFICULTY >= DIFF_HARD      then player:add_badge("buac2") end
+			if DIFFICULTY >= DIFF_VERYHARD  then player:add_badge("buac3") end
+			if DIFFICULTY >= DIFF_NIGHTMARE then
+				player:add_badge("buac4")
+				if statistics.real_time <= 20*60 then player:add_badge("buac5") end
+				if is_zerodmg                    then player:add_badge("buac6") end
+			end
+
+			local melee_other = kills.get_type( "other" ) + kills.get_type( "melee" )
+
+			-- strongman badges
+			if melee_other + kills.get_type( "knife" ) + kills.get_type( "chainsaw" ) == statistics.kills then player:add_badge("strongman1") end
+			if melee_other + kills.get_type( "knife" ) == statistics.kills then
+				player:add_badge("strongman2")
+				if DIFFICULTY >= DIFF_HARD then player:add_badge("strongman3") end
+			end
+			if melee_other == statistics.kills and DIFFICULTY >= DIFF_HARD then
+				player:add_badge("strongman4")
+				if is_maxkills then player:add_badge("strongman5") end
+				if DIFFICULTY >= DIFF_NIGHTMARE and is_90kills then
+					player:add_badge("strongman6")
+				end
+			end
+			
+			-- speedrunner badges
+			if statistics.real_time <= 30*60 then
+				player:add_badge("speedrunner1")
+			end
+			if statistics.real_time <= 25*60 and DIFFICULTY >= DIFF_MEDIUM then
+				player:add_badge("speedrunner2")
+			end
+			if statistics.real_time <= 20*60 and DIFFICULTY >= DIFF_HARD then
+				player:add_badge("speedrunner3")
+			end
+			if statistics.real_time <= 4*60 and DIFFICULTY >= DIFF_NIGHTMARE then
+				player:add_badge("speedrunner6")
+			end
+
+			-- elite badges
+			if DIFFICULTY >= DIFF_VERYHARD  and is_conqueror then player:add_badge("elite4") end
+			if DIFFICULTY >= DIFF_NIGHTMARE then
+				if is_90kills then player:add_badge("elite5") end
+				if is_maxkills and is_conqueror then player:add_badge("elite6") end
+			end
+
+			-- demonic badges
+			if DIFFICULTY >= DIFF_NIGHTMARE then
+				if is_explorer                   then player:add_badge("demonic4") end
+				if statistics.damage_taken < 200 then player:add_badge("demonic5") end
+				if is_zerodmg and is_maxkills    then player:add_badge("demonic6") end
+			end
+		end
+		--[[
+		if CHALLENGE == CHALLENGE_HASTE then
+			-- speedrunner badges
+			if statistics.real_time <= 10*60 then
+				if DIFFICULTY >= DIFF_HARD then
+					player:add_badge("speedrunner4")
+				end
+				if DIFFICULTY >= DIFF_NIGHTMARE then
+					player:add_badge("speedrunner5")
+				end
+			end
+		end
+		--]]
+	end
+
+	if no_record then return end
+
+	-- award global badges
+
 	local medals_max = medals.__counter
 	local medals     = player_data.child_count('player/medals')
 
@@ -895,43 +850,8 @@ function drl.award_global_badges()
 	if amb_total >= amb_total_max    then player:add_badge("technician5") end
 end
 
-function drl.RunRegisterAwards( no_record )
-
-	for k,v in ipairs( awards ) do
-		if player:has_award( v.id ) then
-			player_data.add_counted( 'awards', 'award', v.id.."_"..tostring(player:get_award( v.id )))
-		end
-	end
-
-	if no_record then return end
-
-	for k,v in ipairs( items ) do
-		if ( v.is_exotic or v.is_unique ) and player:has_found_item( v.id ) then
-			player_data.add_counted( 'uniques', 'unique', v.id )
-		end
-	end
-
-	for k,v in ipairs( mod_arrays ) do
-		if player:has_assembly(v.id) then
-			player_data.add_counted( 'assemblies', 'assembly', v.id, player:has_assembly(v.id) )
-		end
-	end
-
-	for k,v in ipairs( medals ) do
-		if player:has_medal( v.id ) then
-			player_data.add_counted( 'medals', 'medal', v.id )
-		end
-	end
-
-	drl.award_global_badges()
-
-	for k,v in ipairs( badges ) do
-		if player:has_badge( v.id ) then
-			if player_data.get_counted( 'badges', 'badge', v.id ) > 0 then
-				player:remove_badge( v.id )
-			end
-			player_data.add_counted( 'badges', 'badge', v.id )
-		end
-	end
-
+function drl.RunAwards( no_record )
+	core.award_medals()
+	drl.award_badges( no_record )
+	core.update_player_data( no_record )
 end
