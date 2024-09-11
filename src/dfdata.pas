@@ -357,6 +357,7 @@ function DurationString( aSeconds : int64 ) : Ansistring;
 function BlindCoord( const where : TCoord2D ) : string;
 function SlotName(slot : TEqSlot) : string;
 function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
+function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
 function ReadFileString( const aFileName : Ansistring ) : Ansistring;
 function WriteFileString( const aFileName, aText : Ansistring ) : Boolean;
 
@@ -370,6 +371,11 @@ var TIGStyleColored   : TTIGStyle;
 implementation
 uses typinfo, strutils, math, vdebug;
 
+function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
+begin
+  SetLength( Result, aSize );
+  if aStream.Size > 0 then aStream.ReadBuffer( Result[1], aSize );
+end;
 
 function ReadFileString( const aFileName : Ansistring ) : Ansistring;
 var iTextFile : Text;

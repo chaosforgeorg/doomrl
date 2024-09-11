@@ -57,8 +57,8 @@ type
     FVPadding    : DWord;
     FCellX       : Integer;
     FCellY       : Integer;
-    FFontSizeX   : Byte;
-    FFontSizeY   : Byte;
+    FFontSizeX   : Integer;
+    FFontSizeY   : Integer;
     FFullscreen  : Boolean;
 
     FLastMouseTime : QWord;
@@ -155,6 +155,7 @@ var iCoreData   : TVDataFile;
     iSDLFlags   : TSDLIOFlags;
     iMode       : TIODisplayMode;
     iFontName   : Ansistring;
+    iFontFormat : Ansistring;
     iWidth      : Integer;
     iHeight     : Integer;
 
@@ -200,16 +201,25 @@ begin
 
   FTextures  := TTextureManager.Create( Option_Blending );
 
-
-  iFontName := 'font10x18.png';
-  FFontSizeX := 10;
-  FFontSizeY := 18;
   if GodMode then
-    iImage := LoadImage( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + iFontName )
+  begin
+    iFontFormat := ReadFileString( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + 'default' );
+  end
   else
   begin
     iCoreData := TVDataFile.Create( DataPath + CoreModuleID + '.wad');
     iCoreData.DKKey := LoveLace;
+    iStream := iCoreData.GetFile( 'default', 'fonts' );
+    iFontFormat := ReadFileString( iStream, iCoreData.GetFileSize( 'default', 'fonts' ) );
+    FreeAndNil( iStream );
+  end;
+
+  SScanf( iFontFormat, '%s %d %d', [@iFontName, @FFontSizeX, @FFontSizeY] );
+
+  if GodMode then
+    iImage := LoadImage( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + iFontName )
+  else
+  begin
     iStream := iCoreData.GetFile( iFontName, 'fonts' );
     iImage := LoadImage( iStream, iStream.Size );
     FreeAndNil( iStream );
