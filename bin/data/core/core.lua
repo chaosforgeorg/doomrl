@@ -10,6 +10,7 @@ require( "core:player" )
 require( "core:ai" )
 require( "core:blueprints" )
 require( "core:ui" )
+require( "core:mortem" )
 
 module = false
 

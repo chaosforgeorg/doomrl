@@ -7,7 +7,7 @@ require( "drl:events" )
 require( "drl:sprites" )
 require( "drl:difficulty" )
 require( "drl:affects" )
-require( "drl:medals" )
+require( "drl:awards" )
 require( "drl:missiles" )
 require( "drl:cells" )
 require( "drl:traits" )
@@ -333,20 +333,12 @@ end
 function drl.RunPrintMortem()
 	local result_id    = drl.GetResultId()
 	local death_reason = drl.GetResultDescription( result_id, false )
-
-	local function version_string( v )
-		local result = v[1].."."..v[2].."."..v[3]
-		if v[4] then result = result.."."..v[4] end
-		return result
-	end
-
 	local game_module    = nil
-
 
 	player:mortem_print( "--------------------------------------------------------------" )
 	player:mortem_print( " DRL ("..VERSION_STRING..") roguelike post-mortem character dump")
 --	if game_type ~= GAMESTANDARD then
---		player:mortem_print( " Module : "..module.name.." ("..version_string(module.version)..")")
+--		player:mortem_print( " Module : "..module.name.." ("..mortem.version_string(module.version)..")")
 --		game_module = _G[module.id]
 --	end
 	player:mortem_print( "--------------------------------------------------------------" )
@@ -384,14 +376,8 @@ function drl.RunPrintMortem()
 		end
 	end
 
-	player:mortem_print( " He survived "..statistics.game_time.." turns and scored "..player.score.." points. ")
-	player:mortem_print( " He played for "..seconds_to_string(math.floor(statistics.real_time))..". ")
-	player:mortem_print( " "..diff[DIFFICULTY].description)
-	player:mortem_print()
-
+	mortem.print_time_and_kills()
 	local ratio = statistics.kills / statistics.max_kills
-
-	player:mortem_print( " He killed "..statistics.kills.." out of "..statistics.max_kills.." hellspawn. ("..math.floor(ratio*100).."%)" )
 
 		if statistics.kills == statistics.max_kills then
 			player:mortem_print( " This ass-kicking marine killed all of them!" )
@@ -413,219 +399,49 @@ function drl.RunPrintMortem()
 			player:mortem_print( " He held his right to remain violent." )
 	end
 
-	if CHALLENGE ~= "" then
-		if ARCHANGEL then
-			player:mortem_print( " He was an "..chal[CHALLENGE].arch_name.."!")
-		else
-			player:mortem_print( " He was an "..chal[CHALLENGE].name.."!")
-		end
-		if SCHALLENGE ~= "" then
-			player:mortem_print( " He was also an "..chal[SCHALLENGE].name.."!")
-		end
-	end
-
-	local function padded( str, size )
-		return str..string.rep(" ",math.max(0,size - string.len(str)) )
-	end
-
-	local function times( n )
-		if n <= 1 then return "once" else return n.." times" end
-	end
-
-	if statistics.save_count > 0 or statistics.crash_count > 0 then
-		player:mortem_print()
-		if statistics.crash_count > 0 then
-			player:mortem_print(" The world crashed on him "..times( statistics.crash_count ).."." )
-		end
-		if statistics.save_count > 0 then
-			player:mortem_print(" He saved himself "..times( statistics.save_count )..".")
-		end
-	end
+	mortem.print_challenge()
+	mortem.print_crash_save()
 	player:mortem_print()
-
-	if not game_module then
-		player:mortem_print("-- Special levels --------------------------------------------")
-		player:mortem_print()
-		player:mortem_print("  Levels generated : "..statistics.bonus_levels_count )
-		player:mortem_print("  Levels visited   : "..statistics.bonus_levels_visited )
-		player:mortem_print("  Levels completed : "..statistics.bonus_levels_completed )
-		player:mortem_print()
-	end
-
-	-- TODO Is it possible to identify all awards this run would have returned and mark those that *were* given?
-	local awarded = false
-	local new_awarded = false
+	player:mortem_print("-- Special levels --------------------------------------------")
+	player:mortem_print()
+	mortem.print_special_levels()
+	player:mortem_print()
 	player:mortem_print("-- Awards ----------------------------------------------------")
 	player:mortem_print()
-
-	if not game_module then
-		for k,v in ipairs( medals ) do
-			if player:has_medal( v.id ) then
-				player:mortem_print( "  "..padded( v.name, 26 ).." "..ui.strip_encoding( v.desc ) )
-				awarded = true
-			end
-		end
-
-		for k,v in ipairs( badges ) do
-			if player:has_badge( v.id ) then
-				-- TODO Potential marking code
-				--if player:record_badge ( v.id ) then
-				--	player:mortem_print( "  "..v.name )
-				--else
-				--	player:mortem_print( "* "..v.name )
-				--	new_awarded = true
-				--end
-				player:mortem_print( "  "..padded( v.name, 26 ).." "..ui.strip_encoding( v.desc ) )
-				awarded = true
-			end
-		end
-	end
-
-	for k,v in ipairs( awards ) do
-		if player:has_award( v.id ) then
-			player:mortem_print( "  "..v.name.." ("..v.levels[ player:get_award( v.id ) ].name..")" )
-			awarded = true
-		end
-	end
-
-	if not awarded then
-		player:mortem_print("  None")
-	end
+	mortem.print_awards()
 	player:mortem_print()
-
-	local function get_pic( c )
-		local being = level:get_being( c )
-		if being then
-			if string.char(being.picture) == '@' then return 'X' end
-			return string.char(being.picture)
-		end
-		local item = level:get_item( c )
-		if item then
-			return string.char(item.picture)
-		end
-		local cell = generator.get_cell( c )
-		return cells[ cell ].asciilow
-	end
 
 	player:mortem_print( "-- Graveyard -------------------------------------------------")
 	player:mortem_print()
-	-- TODO This would be a good place to use utf-8 expansions for the high-ascii text.
-	for vy = 1,MAXY do
-		local line = "  "
-		for vx = math.min( 20, math.max( 1,player.x - 30 ) ), math.min( 20, math.max(1,player.x - 30 ) ) + MAXX - 20 do
-			line = line..get_pic( coord.new( vx, vy ) )
-		end
-		player:mortem_print( line )
-	end
+	mortem.print_graveyard()
 	player:mortem_print()
-
-	local function bonus( val ) if val < 0 then return ""..val else return "+"..val end end
-
 	player:mortem_print( "-- Statistics ------------------------------------------------" )
 	player:mortem_print()
-	player:mortem_print( "  Health "..player.hp.."/"..player.hpmax.."   Experience "..player.exp.."/"..player.explevel )
-	player:mortem_print("  ToHit Ranged "..bonus( player.tohit )..
-						"  ToHit Melee "..bonus( player.tohitmelee + player.tohit )..
-						"  ToDmg Ranged "..bonus( player.todamall )..
-						"  ToDmg Melee "..bonus( player.todamall + player.todam ) )
+	mortem.print_statistics()
 	player:mortem_print()
 	player:mortem_print( "-- Traits ----------------------------------------------------" )
 	player:mortem_print()
-	player:mortem_print( "  Class : "..klasses[player.klass].name )
+	mortem.print_traits()
 	player:mortem_print()
-
-	for i = 1,traits.__counter do
-		local value = player:get_trait(i)
-		if value > 0 then
-			player:mortem_print( "    "..padded(traits[i].name,16).." (Level "..value..")" )
-		end
-	end
-
-	if player.explevel > 1 then
-		player:mortem_print()
-		player:mortem_print("  "..player:get_trait_hist() )
-	end
-	player:mortem_print()
-
-	local function letter( n ) return string.char(string.byte("a")+n) end
-
 	player:mortem_print( "-- Equipment -------------------------------------------------" )
 	player:mortem_print()
-
-	local slot_name = { "[ Armor      ]", "[ Weapon     ]", "[ Boots      ]", "[ Prepared   ]" }
-
-	for i = 0,MAX_EQ_SIZE-1 do
-		local it = player.eq[i]
-		if it then
-			player:mortem_print( "    ["..letter(i).."] "..slot_name[i+1].."   "..it.desc )
-		else
-			player:mortem_print( "    ["..letter(i).."] "..slot_name[i+1].."   nothing" )
-		end
-	end
-
+	mortem.print_equipment()
 	player:mortem_print()
 	player:mortem_print( "-- Inventory -------------------------------------------------" )
 	player:mortem_print()
-
-	local items = {}
-
-	for it in player.inv:items() do
-		table.insert( items, { itype = it.itype, nid = it.__proto.nid, desc = it.desc } )
-	end
-
-	table.sort( items, function(a,b) if (a.itype ~= b.itype) then return a.itype < b.itype else return a.nid < b.nid end end )
-
-	for k,v in ipairs(items) do
-		player:mortem_print( "    ["..letter(k-1).."] "..v.desc )
-	end
-
-	local resistance_present = false
-	local function print_resistance( name )
-		local internal = player.resist[name] or 0
-		local torso    = player:get_total_resistance(name, TARGET_TORSO)
-		local feet     = player:get_total_resistance(name, TARGET_FEET)
-		if internal == 0 and torso == 0 and feet == 0 then return end
-		player:mortem_print( "    "..padded( name, 10 ).." - "..
-		"internal "..padded( internal.."%", 5 ).." "..
-		"torso "..padded( torso.."%", 5 ).." "..
-		"feet "..padded( feet.."%", 5 )
-		)
-		resistance_present = true
-	end
-
+	mortem.print_inventory()
 	player:mortem_print()
 	player:mortem_print( "-- Resistances -----------------------------------------------" )
 	player:mortem_print()
-	print_resistance( "bullet" )
-	print_resistance( "melee" )
-	print_resistance( "shrapnel" )
-	print_resistance( "acid" )
-	print_resistance( "fire" )
-	print_resistance( "plasma" )
-	if not resistance_present then
-		player:mortem_print("    None")
-	end
-
+	mortem.print_resistances()
 	player:mortem_print()
 	player:mortem_print( "-- Kills -----------------------------------------------------" )
 	player:mortem_print()
-	for _,b in ipairs( beings ) do
-		local kills = kills.get(b.id)
-		if kills > 0 then
-			if kills == 1 then
-				player:mortem_print( "    1 "..b.name )
-			else
-				player:mortem_print( "    "..kills.." "..b.name_plural )
-			end
-		end
-	end
+	mortem.print_kills()
 	player:mortem_print()
-
 	player:mortem_print( "-- History ---------------------------------------------------" )
 	player:mortem_print()
-	for _,v in pairs( player.__props.history ) do
-		player:mortem_print( "  "..v )
-	end
+	mortem.print_history()
 	if not game_module then
 		if kills.get("jc") > 0 then
 			player:mortem_print( "  Then finally in Hell itself, he killed the final EVIL." )
@@ -634,15 +450,9 @@ function drl.RunPrintMortem()
 		end
 	end
 	player:mortem_print()
-
 	player:mortem_print( "-- Messages -------------------------------------------------- " )
 	player:mortem_print()
-
-	for i = 15,0,-1 do
-		local msg = ui.msg_history(i)
-		if msg then player:mortem_print( " ".. msg ) end
-	end
-
+	mortem.print_messages()
 	player:mortem_print()
 
 	if not game_module then
