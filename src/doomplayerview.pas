@@ -518,11 +518,12 @@ begin
   VTIG_BeginWindow(FCTitle, 'character', FSize );
   FRect := VTIG_GetWindowRect;
   iCount := 0;
-  for iString in IO.Ascii[Player.ASCIIMoreCode] do
-  begin
-    VTIG_FreeLabel( iString, Point( 47, iCount ) );
-    Inc( iCount );
-  end;
+  if Assigned( IO.Ascii[Player.ASCIIMoreCode] ) then
+    for iString in IO.Ascii[Player.ASCIIMoreCode] do
+    begin
+      VTIG_FreeLabel( iString, Point( 47, iCount ) );
+      Inc( iCount );
+    end;
   for iString in FCharacter do
     VTIG_Text( iString );
   VTIG_End('{l<{!Left,Right}> panels, <{!Escape}> exit}');
