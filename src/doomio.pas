@@ -98,6 +98,7 @@ type TDoomIO = class( TIO )
   procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
   procedure SetAutoTarget( aTarget : TCoord2D ); virtual;
 protected
+  procedure UpdateStyles;
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
   procedure ColorQuery(nkey,nvalue : Variant);
@@ -149,7 +150,7 @@ implementation
 
 uses math, video, dateutils, variants,
      vsound, vluasystem, vlog, vdebug, vuiconsole, vmath, vtigstyle,
-     vsdlio, vglconsole, vtig, vtigio,
+     vsdlio, vglconsole, vtig, vtigio, vvector,
      dflevel, dfplayer, dfitem,
      doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua,
      doomhudviews, doomplotview;
@@ -286,6 +287,15 @@ begin
 
 end;
 }
+procedure TDoomIO.UpdateStyles;
+begin
+  TIGStyleColored   := VTIGDefaultStyle;
+  TIGStyleColored.Color[ VTIG_TEXT_COLOR ] := VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ];
+  TIGStyleColored.Color[ VTIG_BOLD_COLOR ] := VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ];
+
+  TIGStyleFrameless := VTIGDefaultStyle;
+  TIGStyleFrameless.Frame[ VTIG_BORDER_FRAME ] := '';
+end;
 
 { TDoomIO }
 
@@ -337,32 +347,7 @@ begin
 
   VTIG_Initialize( FConsole, FIODriver, False );
 
-  VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := #196+#196+'  '+#196+#196+#196+#196;
-//  VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := '--  ----';
-  VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ]  := YELLOW;
-  VTIGDefaultStyle.Color[ VTIG_FRAME_COLOR ]  := RED;
-  VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ] := LIGHTRED;
-  VTIGDefaultStyle.Color[ VTIG_SELECTED_TEXT_COLOR ] := YELLOW;
-  VTIGDefaultStyle.Color[ VTIG_SCROLL_COLOR ] := YELLOW;
-  if GraphicsVersion then
-  begin
-    VTIGDefaultStyle.Color[ VTIG_BACKGROUND_COLOR ]          := $10000000;
-    VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := $442222FF;
-    VTIGDefaultStyle.Color[ VTIG_INPUT_TEXT_COLOR ]          := LightGray;
-    VTIGDefaultStyle.Color[ VTIG_INPUT_BACKGROUND_COLOR ]    := $442222FF;
-  end
-  else
-  begin
-    VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := DarkGray;
-    VTIGDefaultStyle.Color[ VTIG_SELECTED_DISABLED_COLOR ]   := Black;
-  end;
-
-  TIGStyleColored   := VTIGDefaultStyle;
-  TIGStyleColored.Color[ VTIG_TEXT_COLOR ] := VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ];
-  TIGStyleColored.Color[ VTIG_BOLD_COLOR ] := VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ];
-
-  TIGStyleFrameless := VTIGDefaultStyle;
-  TIGStyleFrameless.Frame[ VTIG_BORDER_FRAME ] := '';
+  UpdateStyles;
 
   inherited Create( FIODriver, FConsole, iStyle );
   LoadStart;
@@ -1107,7 +1092,56 @@ begin
   Result := 1;
 end;
 
-const lua_ui_lib : array[0..10] of luaL_Reg = (
+function lua_ui_set_style_color(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    iEntry : TTIGStyleColorEntry;
+    iColor : TIOColor;
+    iC4b   : TVec4b;
+begin
+  State.Init(L);
+  if State.StackSize < 2 then Exit(0);
+  iEntry := TTIGStyleColorEntry( State.ToInteger(1) );
+  iColor := 0;
+  if State.IsNumber(2) then
+    iColor := State.ToInteger(2);
+  if State.IsTable(2) then
+  begin
+    iC4b   := State.ToVec4b(2);
+    iColor := IOColor( iC4b.X, iC4b.Y, iC4b.Z, iC4b.W );
+  end;
+  VTIGDefaultStyle.Color[iEntry] := iColor;
+  Result := 0;
+end;
+
+function lua_ui_set_style_frame(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    iEntry : TTIGStyleFrameEntry;
+begin
+  State.Init(L);
+  if State.StackSize < 2 then Exit(0);
+  iEntry := TTIGStyleFrameEntry( State.ToInteger(1) );
+  VTIGDefaultStyle.Frame[iEntry] := State.ToString(2);
+  Result := 0;
+end;
+
+function lua_ui_set_style_padding(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    iEntry : TTIGStylePaddingEntry;
+begin
+  State.Init(L);
+  if State.StackSize < 2 then Exit(0);
+  iEntry := TTIGStylePaddingEntry( State.ToInteger(1) );
+  VTIGDefaultStyle.Padding[iEntry] := State.ToPoint(2);
+  Result := 0;
+end;
+
+function lua_ui_update_styles(L: Plua_State): Integer; cdecl;
+begin
+  IO.UpdateStyles;
+  Result := 0;
+end;
+
+const lua_ui_lib : array[0..14] of luaL_Reg = (
       ( name : 'msg';           func : @lua_ui_msg ),
       ( name : 'msg_clear';     func : @lua_ui_msg_clear ),
       ( name : 'msg_enter';     func : @lua_ui_msg_enter ),
@@ -1118,6 +1152,10 @@ const lua_ui_lib : array[0..10] of luaL_Reg = (
       ( name : 'plot_screen';   func : @lua_ui_plot_screen),
       ( name : 'set_hint';      func : @lua_ui_set_hint ),
       ( name : 'strip_encoding';func : @lua_ui_strip_encoding ),
+      ( name : 'set_style_color';   func : @lua_ui_set_style_color ),
+      ( name : 'set_style_frame';   func : @lua_ui_set_style_frame ),
+      ( name : 'set_style_padding'; func : @lua_ui_set_style_padding ),
+      ( name : 'update_styles';     func : @lua_ui_update_styles ),
       ( name : nil;          func : nil; )
 );
 

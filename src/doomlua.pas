@@ -41,7 +41,7 @@ implementation
 
 uses typinfo, variants, xmlread, dom,
      vnode, vdebug, viotypes, vluatools, vsystems, vluadungen, vluaentitynode,
-     vmath, vtextures, vimage,
+     vmath, vtextures, vimage, vtigstyle,
      dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, doomgfxio, doomspritemap;
 
 var SpriteSheetCounter : Integer = -1;
@@ -575,6 +575,9 @@ begin
   State.RegisterEnumValues( TypeInfo(TExplosionFlag) );
   State.RegisterEnumValues( TypeInfo(TResistance) );
   State.RegisterEnumValues( TypeInfo(TMoveResult) );
+  State.RegisterEnumValues( TypeInfo(TTIGStyleColorEntry) );
+  State.RegisterEnumValues( TypeInfo(TTIGStyleFrameEntry) );
+  State.RegisterEnumValues( TypeInfo(TTIGStylePaddingEntry) );
 
   TNode.RegisterLuaAPI( 'game_object' );
 
