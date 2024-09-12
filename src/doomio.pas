@@ -120,6 +120,7 @@ protected
   FHudEnabled  : Boolean;
   FWaiting     : Boolean;
   FTargeting   : Boolean;
+  FNarrowMode  : Boolean;
   FHint        : AnsiString;
   FHintOverlay : AnsiString;
   FHintTarget  : AnsiString;
@@ -136,6 +137,7 @@ public
   property HintOverlay : AnsiString     read FHintOverlay write FHintOverlay;
   property Targeting   : Boolean        read FTargeting   write FTargeting;
   property Time        : QWord          read FTime;
+  property NarrowMode  : Boolean        read FNarrowMode;
 
   // Textmode only
   property TargetEnabled : Boolean        read FTargetEnabled write FTargetEnabled;
@@ -313,6 +315,7 @@ begin
   FWaiting    := False;
   FHudEnabled := False;
   FTargeting  := False;
+  FNarrowMode := False;
   FHint       := '';
 
   FIODriver.SetTitle('DRL','DRL');
@@ -610,6 +613,7 @@ var iCon        : TUIConsole;
     iLevelName  : string[64];
     iCNormal    : DWord;
     iCBold      : DWord;
+    iOffset     : Integer;
 
   function ArmorColor( aValue : Integer ) : TUIColor;
   begin
@@ -644,6 +648,11 @@ var iCon        : TUIConsole;
 begin
   iCNormal := DarkGray;
   iCBold   := LightGray;
+  if FNarrowMode then
+  begin
+    iCNormal := VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ];
+    iCBold   := VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ];
+  end;
 
   iCon.Init( FConsole );
   if GraphicsVersion then
@@ -655,8 +664,16 @@ begin
     iBottom := FConsole.SizeY-1;
     if GraphicsVersion then
     begin
-      iPos    := Point( 2,FConsole.SizeY-2 );
-      iBottom := FConsole.SizeY-3;
+      if FNarrowMode then
+      begin
+        iPos    := Point( 2,FConsole.SizeY-3 );
+        iBottom := FConsole.SizeY-4;
+      end
+      else
+      begin
+        iPos    := Point( 2,FConsole.SizeY-2 );
+        iBottom := FConsole.SizeY-3;
+      end;
     end;
     iHPP    := Round((Player.HP/Player.HPMax)*100);
 
@@ -699,19 +716,24 @@ begin
         VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
   end;
 
+  iOffset := -1;
+  if FNarrowMode then iOffset := -3;
 
   if FHintOverlay <> ''
-    then VTIG_FreeLabel( ' '+FHintOverlay+' ', Point( -1-Length( FHintOverlay ), 2 ), Yellow )
+    then VTIG_FreeLabel( ' '+FHintOverlay+' ', Point( iOffset-Length( FHintOverlay ), 2 ), Yellow )
     else if FHint <> ''
-      then VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 2 ), Yellow )
+      then VTIG_FreeLabel( ' '+FHint+' ', Point( iOffset-Length( FHint ), 2 ), Yellow )
       else if (FHintTarget <> '') and Setting_AutoTarget
-        then VTIG_FreeLabel( ' '+FHintTarget+' ', Point( -1-Length( FHintTarget ), 2 ), Brown );
+        then VTIG_FreeLabel( ' '+FHintTarget+' ', Point( iOffset-Length( FHintTarget ), 2 ), Brown );
+
+  iOffset := 1;
+  if FNarrowMode then iOffset := 3;
 
   for i := 1 to 2 do
   begin
     if i > FMessages.Size then Continue;
     VTIG_HighColor := i <= FMessages.Active;
-    VTIG_FreeLabel( FMessages.Content[ -i ], Point(1,2-i), iCNormal );
+    VTIG_FreeLabel( FMessages.Content[ -i ], Point(iOffset,2-i), iCNormal );
     VTIG_HighColor := False;
   end;
 end;
@@ -1135,13 +1157,21 @@ begin
   Result := 0;
 end;
 
+function lua_ui_set_narrow_mode(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  IO.FNarrowMode := State.ToBoolean(1);
+  Result := 0;
+end;
+
 function lua_ui_update_styles(L: Plua_State): Integer; cdecl;
 begin
   IO.UpdateStyles;
   Result := 0;
 end;
 
-const lua_ui_lib : array[0..14] of luaL_Reg = (
+const lua_ui_lib : array[0..15] of luaL_Reg = (
       ( name : 'msg';           func : @lua_ui_msg ),
       ( name : 'msg_clear';     func : @lua_ui_msg_clear ),
       ( name : 'msg_enter';     func : @lua_ui_msg_enter ),
@@ -1155,6 +1185,7 @@ const lua_ui_lib : array[0..14] of luaL_Reg = (
       ( name : 'set_style_color';   func : @lua_ui_set_style_color ),
       ( name : 'set_style_frame';   func : @lua_ui_set_style_frame ),
       ( name : 'set_style_padding'; func : @lua_ui_set_style_padding ),
+      ( name : 'set_narrow_mode';   func : @lua_ui_set_narrow_mode ),
       ( name : 'update_styles';     func : @lua_ui_update_styles ),
       ( name : nil;          func : nil; )
 );
