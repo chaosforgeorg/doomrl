@@ -488,7 +488,7 @@ begin
   ArchAngel  := False;
   Klass      := 0;
   Trait      := 0;
-  ModuleID   := 'drl';
+  ModuleID   := CoreModuleID;
   Name       := '';
 end;
 

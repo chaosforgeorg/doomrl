@@ -126,6 +126,7 @@ begin
       WriteFileString( WritePath + 'drl.prc', 'DRL was already run.' );
 
       FFirst := AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetFirstText'], [] ) );
+      if FFirst = '' then FMode := MAINMENU_INTRO;
     end
     else
       FMode := MAINMENU_INTRO;
