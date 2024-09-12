@@ -91,8 +91,8 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
      dfplayer,
      doombase, doomconfiguration;
 
-const ConsoleSizeX = 80;
-      ConsoleSizeY = 25;
+var ConsoleSizeX : Integer = 80;
+    ConsoleSizeY : Integer = 25;
 
 
 procedure TDoomGFXIO.RecalculateScaling( aInitialize : Boolean );
@@ -222,7 +222,7 @@ begin
     FreeAndNil( iStream );
   end;
 
-  SScanf( iFontFormat, '%s %d %d', [@iFontName, @FFontSizeX, @FFontSizeY] );
+  SScanf( iFontFormat, '%s %d %d %d %d', [@iFontName, @FFontSizeX, @FFontSizeY, @ConsoleSizeX, @ConsoleSizeY ] );
 
   if GodMode then
     iImage := LoadImage( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + iFontName )
