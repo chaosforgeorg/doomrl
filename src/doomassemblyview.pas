@@ -65,26 +65,27 @@ const TypeName : array[0..2] of string = ('Basic','Advanced','Master');
 begin
   if FContent = nil then FContent := TStringGArray.Create;
   FContent.Clear;
-  for iType := 0 to 2 do
-  begin
-    FContent.Push('{y'+TypeName[iType]+' assemblies}');
-    FContent.Push('');
-    for i := 1 to LuaSystem.Get(['mod_arrays','__counter']) do
-    if LuaSystem.Get(['mod_arrays',i,'level']) = iType then
+  if LuaSystem.Defined(['mod_arrays','__counter']) then
+    for iType := 0 to 2 do
     begin
-      iID    := LuaSystem.Get(['mod_arrays',i,'id']);
-      iFound := HOF.GetCounted( 'assemblies','assembly', iID );
-      if LuaSystem.Get( [ 'player','__props', 'assemblies', iID ], 0 ) > 0 then Inc( iFound );
-      if iFound = 0
-        then if iType = 0
-          then iString := '  {d'+LuaSystem.Get(['mod_arrays',i,'name'])+' ({L-})}'
-          else iString := '  {d  -- ? -- ({L-})}'
-        else iString := '  {y'+Padded(LuaSystem.Get(['mod_arrays',i,'name'])+' ({L'+IntToStr(iFound)+'})}',36)
-                        + '{l' + LuaSystem.Get(['mod_arrays',i,'desc'])+'}';
-      FContent.Push( iString );
+      FContent.Push('{y'+TypeName[iType]+' assemblies}');
+      FContent.Push('');
+      for i := 1 to LuaSystem.Get(['mod_arrays','__counter']) do
+      if LuaSystem.Get(['mod_arrays',i,'level']) = iType then
+      begin
+        iID    := LuaSystem.Get(['mod_arrays',i,'id']);
+        iFound := HOF.GetCounted( 'assemblies','assembly', iID );
+        if LuaSystem.Get( [ 'player','__props', 'assemblies', iID ], 0 ) > 0 then Inc( iFound );
+        if iFound = 0
+          then if iType = 0
+            then iString := '  {d'+LuaSystem.Get(['mod_arrays',i,'name'])+' ({L-})}'
+            else iString := '  {d  -- ? -- ({L-})}'
+          else iString := '  {y'+Padded(LuaSystem.Get(['mod_arrays',i,'name'])+' ({L'+IntToStr(iFound)+'})}',36)
+                          + '{l' + LuaSystem.Get(['mod_arrays',i,'desc'])+'}';
+        FContent.Push( iString );
+      end;
+      if iType <> 2 then FContent.Push('');
     end;
-    if iType <> 2 then FContent.Push('');
-  end;
 end;
 
 
