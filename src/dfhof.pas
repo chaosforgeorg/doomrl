@@ -1022,7 +1022,7 @@ end;
 function THOF.CheckRank(rank, current : Byte) : Boolean;
 var iCount : DWord;
 begin
-  if Current+1 >= LuaSystem.Get([RankArray[ rank ],'__counter']) then Exit( False );
+  if Current+1 >= LuaSystem.Get([RankArray[ rank ],'__counter'],0) then Exit( False );
   iCount := GetRankReqCount( RankArray[ rank ], Current+1 );
   if iCount = 0 then Exit( True );
   for iCount := 1 to iCount do
