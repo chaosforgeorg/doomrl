@@ -379,6 +379,14 @@ begin
   Result := 1;
 end;
 
+function lua_core_set_vision_base_value(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  VisionBaseValue := State.ToInteger(1,8);
+  Result := 0;
+end;
+
 procedure TDoomLua.ReadWad;
 var iProgBase : DWord;
     iPath     : Ansistring;
@@ -507,7 +515,7 @@ const lua_player_data_lib : array[0..4] of luaL_Reg = (
 );
 
 
-const lua_core_lib : array[0..12] of luaL_Reg = (
+const lua_core_lib : array[0..13] of luaL_Reg = (
     ( name : 'add_to_cell_set';func : @lua_core_add_to_cell_set),
     ( name : 'game_time';func : @lua_core_game_time),
     ( name : 'is_playing';func : @lua_core_is_playing),
@@ -522,6 +530,7 @@ const lua_core_lib : array[0..12] of luaL_Reg = (
     ( name : 'texture_upload';        func : @lua_core_texture_upload),
     ( name : 'texture_generate_glow'; func : @lua_core_texture_generate_glow),
     ( name : 'register_sprite_sheet'; func : @lua_core_register_sprite_sheet),
+    ( name : 'set_vision_base_value'; func : @lua_core_set_vision_base_value),
 
     ( name : nil;          func : nil; )
 );
