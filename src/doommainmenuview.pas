@@ -57,6 +57,7 @@ protected
   FArrayKlass  : TMainMEnuEntryArray;
   FArrayChal   : TMainMEnuEntryArray;
   FTitleChal   : Ansistring;
+  FChallenges  : Boolean;
 
   FBGTexture   : TTextureID;
   FLogoTexture : TTextureID;
@@ -114,7 +115,7 @@ begin
   FArrayChal  := nil;
   FTitleChal  := '';
   FSize       := Point( 80, 25 );
-
+  FChallenges := LuaSystem.Get( ['chal','__counter'], 0 ) > 0;
 
   if not ( FMode in [MAINMENU_FIRST,MAINMENU_INTRO] ) then
     Assert( aResult <> nil, 'nil result passed!' );
@@ -257,7 +258,7 @@ begin
         ReloadArrays;
         FMode := MAINMENU_DIFFICULTY;
       end;
-    if VTIG_Selectable( TextChallengeGame, (not FSaveExists) ) then
+    if VTIG_Selectable( TextChallengeGame, (not FSaveExists) and FChallenges ) then
     begin
       FResult.Reset;
       ReloadArrays;
