@@ -510,15 +510,15 @@ end;
 procedure TMainMenuView.OnCancel;
 begin
   if (not Option_Sound) or (Sound = nil) or ( not Setting_MenuSound ) then Exit;
-  Sound.PlaySample('menu.cancel');
+  if Sound.SampleExists('menu.cancel') then Sound.PlaySample('menu.cancel');
 end;
 
 procedure SoundCallback( aEvent : TTIGSoundEvent; aParam : Pointer );
 begin
   if (not Option_Sound) or (Sound = nil) or ( not Setting_MenuSound ) then Exit;
   case aEvent of
-    VTIG_SOUND_CHANGE : Sound.PlaySample('menu.change');
-    VTIG_SOUND_ACCEPT : Sound.PlaySample('menu.pick');
+    VTIG_SOUND_CHANGE : if Sound.SampleExists('menu.change') then Sound.PlaySample('menu.change');
+    VTIG_SOUND_ACCEPT : if Sound.SampleExists('menu.pick')   then Sound.PlaySample('menu.pick');
   end;
 end;
 
