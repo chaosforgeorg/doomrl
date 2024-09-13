@@ -403,7 +403,6 @@ function generator.on_load()
 	end
 end
 
-
 function generator.reset()
 	core.log("generator.reset()")
 	ui.clear_feel()
@@ -420,3 +419,31 @@ function generator.reset()
 	generator.fill( generator.styles[ level.style ].floor )
 	generator.fill_edges( generator.styles[ level.style ].wall )
 end
+
+function generator.place_player()
+	core.log("generator.place_player()")
+	local pos = generator.safe_empty_coord()
+	level:drop_being( player, pos )
+	return pos
+end
+
+function generator.generate_stairs( stairs_id )
+	core.log("generator.generate_stairs()")
+	local pos = generator.standard_empty_coord()
+	generator.set_cell( pos, stairs_id )
+	return pos
+end
+
+function generator.generate_special_stairs( stairs_id, feelings )
+	core.log("generator.generate_special_stairs()")
+	local pos
+	if level.special_exit ~= "" then
+		pos = generator.generate_stairs( stairs_id )
+		if feelings then
+			if type(feelings) == "string" then feelings = { feelings } end
+			ui.msg_feel( table.random_pick( feelings ) )
+		end
+	end
+	return pos
+end
+
