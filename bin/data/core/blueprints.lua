@@ -72,7 +72,7 @@ core.register_blueprint "klass"
 	hidden     = { false, core.TBOOL, false },
 	traits     = { true,  core.TARRAY("klass_trait") },
 
-	OnPick     = { true,  core.TFUNC },
+	OnPick     = { false,  core.TFUNC },
 }
 
 core.register_blueprint "medal"
