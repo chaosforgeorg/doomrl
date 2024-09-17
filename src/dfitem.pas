@@ -84,6 +84,7 @@ TItem  = class( TThing )
     property MoveMod        : Integer     read FProps.MoveMod        write FProps.MoveMod;
     property DodgeMod       : Integer     read FProps.DodgeMod       write FProps.DodgeMod;
     property KnockMod       : Integer     read FProps.KnockMod       write FProps.KnockMod;
+    property SpriteMod      : Integer     read FProps.SpriteMod      write FProps.SpriteMod;
     property AmmoID         : Byte        read FProps.AmmoID         write FProps.AmmoID;
     property Ammo           : Word        read FProps.Ammo           write FProps.Ammo;
     property AmmoMax        : Word        read FProps.AmmoMax        write FProps.AmmoMax;
@@ -228,6 +229,7 @@ begin
          FProps.DodgeMod  := Table.getInteger('dodgemod');
          FProps.KnockMod := Table.getInteger('knockmod');
          FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
+         FProps.SpriteMod := Table.GetInteger('spritemod',0);
        end;
      ITEMTYPE_PACK,
      ITEMTYPE_POWER :

@@ -361,6 +361,7 @@ core.register_blueprint "item"
 			movemod    = { false, core.TNUMBER, 0 },
 			dodgemod   = { false, core.TNUMBER, 0 },
 			knockmod   = { false, core.TNUMBER, 0 },
+			spritemod  = { false, core.TNUMBER, 0 },
 			scavenge   = { false, core.TARRAY(core.TIDIN("items")) },
 		},
 		[ITEMTYPE_BOOTS] = {

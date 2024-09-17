@@ -775,8 +775,10 @@ end;
 procedure TPlayer.UpdateVisual;
 var Spr : LongInt;
     Gray : TColor;
+    iSpMod : Integer;
 begin
-  Color := LightGray;
+  Color  := LightGray;
+  iSpMod := 0;
   if Inv.Slot[ efTorso ] <> nil then
     Color := Inv.Slot[ efTorso ].Color;
   Gray := NewColor( 200,200,200 );
@@ -788,6 +790,7 @@ begin
       Include( FSprite.Flags, SF_GLOW );
     FSprite.Color     := Inv.Slot[ efTorso ].Sprite.Color;
     FSprite.GlowColor := Inv.Slot[ efTorso ].Sprite.GlowColor;
+    iSpMod            := Inv.Slot[ efTorso ].SpriteMod;
   end
   else
     FSprite.Color    := GRAY;
@@ -795,7 +798,11 @@ begin
   if Inv.Slot[ efWeapon ] <> nil then
   begin
     FSprite.SpriteID := LuaSystem.Get( ['items', Inv.Slot[ efWeapon ].ID, 'psprite'], 0 );
-    if FSprite.SpriteID <> 0 then Exit;
+    if FSprite.SpriteID <> 0 then
+    begin
+      FSprite.SpriteID += iSpMod;
+      Exit;
+    end;
     // HACK via the spritesheet
     Spr := Inv.Slot[ efWeapon ].Sprite.SpriteID - SpriteCellRow;
     if (Spr <= 12) and (Spr >= 1) then

@@ -297,6 +297,7 @@ type TItemProperties = record
            MoveMod  : Integer;
 		   DodgeMod : Integer;
            KnockMod : Integer;
+           SpriteMod : Integer;
          );
          ItemType_Ammo,
          ItemType_Melee,
