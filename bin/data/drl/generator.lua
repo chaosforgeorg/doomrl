@@ -73,8 +73,12 @@ function generator.run( gen )
 	end
 
 	if gen.place_stairs then
-		generator.generate_stairs()
-		generator.generate_special_stairs()
+		generator.generate_stairs( "stairs" )
+		generator.generate_special_stairs( "rstairs", {
+			"You feel a breeze of morbid air...",
+			"You sense a passage to a place beyond...",
+			"You shiver from cold...",
+		} )
 	end
 	if gen.place_player then
 		generator.place_player()
@@ -90,7 +94,6 @@ function generator.run( gen )
 
 	core.log("generator.run > level generated successfully.")
 end
-
 
 function generator.being_weight()
 	local danger = level.danger_level
@@ -602,33 +605,3 @@ function generator.generate_barrels()
 		generator.set_cell( generator.standard_empty_coord(), cell2 )
 	end
 end
-
-function generator.generate_stairs()
-	core.log("generator.generate_stairs()")
-	local pos = generator.standard_empty_coord()
-	generator.set_cell( pos, "stairs" )
-	return pos
-end
-
-function generator.generate_special_stairs()
-	core.log("generator.generate_special_stairs()")
-	local pos
-	if level.special_exit ~= "" then
-		pos = generator.standard_empty_coord()
-		generator.set_cell( pos, "rstairs" )
-		ui.msg_feel( table.random_pick{
-			"You feel a breeze of morbid air...",
-			"You sense a passage to a place beyond...",
-			"You shiver from cold...",
-			})
-	end
-	return pos
-end
-
-function generator.place_player()
-	core.log("generator.place_player()")
-	local pos = generator.safe_empty_coord()
-	level:drop_being( player, pos )
-	return pos
-end
-

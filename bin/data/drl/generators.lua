@@ -134,7 +134,7 @@ function drl.register_generators()
 			local hdim = coord.new( math.floor( tdim.x / 2 ), math.floor( tdim.y / 2 ) )
 			generator.tile_place( center - hdim, tile )
 			level.light[ area.new( center - hdim, center + hdim ) ][ LFNOSPAWN ] = true
-			generator.generate_special_stairs()
+			generator.generate_special_stairs( "rstairs", "You shiver from cold..." )
 		end,
 
 		post_run   = function()

@@ -37,17 +37,12 @@ end;
 
 {$HINTS OFF}
 procedure THelp.StreamLoader(Stream : TStream; Name : Ansistring; Size : DWord);
-var Count      : DWord;
-    Amount     : DWord;
 begin
   Log('Registering help file '+Name+'...');
   Inc(HNum);
-  RegHelps[HNum].text  := TUIStringArray.Create;
-
-  Amount := Stream.ReadDWord;
-  for Count := 1 to Amount do
-    RegHelps[HNum].Text.Push( Stream.ReadAnsiString );
-
+  RegHelps[HNum].Text  := TUIStringArray.Create;
+  while Stream.Position < Size do
+    RegHelps[HNum].Text.Push( ReadLineFromStream( Stream, Size ) );
   RegHelps[HNum].desc  := VTIG_StripTags( RegHelps[HNum].Text[0] );
 end;
 {$HINTS ON}

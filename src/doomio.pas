@@ -98,6 +98,7 @@ type TDoomIO = class( TIO )
   procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
   procedure SetAutoTarget( aTarget : TCoord2D ); virtual;
 protected
+  procedure UpdateStyles;
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
   procedure ColorQuery(nkey,nvalue : Variant);
@@ -119,6 +120,7 @@ protected
   FHudEnabled  : Boolean;
   FWaiting     : Boolean;
   FTargeting   : Boolean;
+  FNarrowMode  : Boolean;
   FHint        : AnsiString;
   FHintOverlay : AnsiString;
   FHintTarget  : AnsiString;
@@ -135,6 +137,7 @@ public
   property HintOverlay : AnsiString     read FHintOverlay write FHintOverlay;
   property Targeting   : Boolean        read FTargeting   write FTargeting;
   property Time        : QWord          read FTime;
+  property NarrowMode  : Boolean        read FNarrowMode;
 
   // Textmode only
   property TargetEnabled : Boolean        read FTargetEnabled write FTargetEnabled;
@@ -149,7 +152,7 @@ implementation
 
 uses math, video, dateutils, variants,
      vsound, vluasystem, vlog, vdebug, vuiconsole, vmath, vtigstyle,
-     vsdlio, vglconsole, vtig, vtigio,
+     vsdlio, vglconsole, vtig, vtigio, vvector,
      dflevel, dfplayer, dfitem,
      doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua,
      doomhudviews, doomplotview;
@@ -286,6 +289,15 @@ begin
 
 end;
 }
+procedure TDoomIO.UpdateStyles;
+begin
+  TIGStyleColored   := VTIGDefaultStyle;
+  TIGStyleColored.Color[ VTIG_TEXT_COLOR ] := VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ];
+  TIGStyleColored.Color[ VTIG_BOLD_COLOR ] := VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ];
+
+  TIGStyleFrameless := VTIGDefaultStyle;
+  TIGStyleFrameless.Frame[ VTIG_BORDER_FRAME ] := '';
+end;
 
 { TDoomIO }
 
@@ -303,6 +315,7 @@ begin
   FWaiting    := False;
   FHudEnabled := False;
   FTargeting  := False;
+  FNarrowMode := False;
   FHint       := '';
 
   FIODriver.SetTitle('DRL','DRL');
@@ -337,32 +350,7 @@ begin
 
   VTIG_Initialize( FConsole, FIODriver, False );
 
-  VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := #196+#196+'  '+#196+#196+#196+#196;
-//  VTIGDefaultStyle.Frame[ VTIG_BORDER_FRAME ] := '--  ----';
-  VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ]  := YELLOW;
-  VTIGDefaultStyle.Color[ VTIG_FRAME_COLOR ]  := RED;
-  VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ] := LIGHTRED;
-  VTIGDefaultStyle.Color[ VTIG_SELECTED_TEXT_COLOR ] := YELLOW;
-  VTIGDefaultStyle.Color[ VTIG_SCROLL_COLOR ] := YELLOW;
-  if GraphicsVersion then
-  begin
-    VTIGDefaultStyle.Color[ VTIG_BACKGROUND_COLOR ]          := $10000000;
-    VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := $442222FF;
-    VTIGDefaultStyle.Color[ VTIG_INPUT_TEXT_COLOR ]          := LightGray;
-    VTIGDefaultStyle.Color[ VTIG_INPUT_BACKGROUND_COLOR ]    := $442222FF;
-  end
-  else
-  begin
-    VTIGDefaultStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := DarkGray;
-    VTIGDefaultStyle.Color[ VTIG_SELECTED_DISABLED_COLOR ]   := Black;
-  end;
-
-  TIGStyleColored   := VTIGDefaultStyle;
-  TIGStyleColored.Color[ VTIG_TEXT_COLOR ] := VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ];
-  TIGStyleColored.Color[ VTIG_BOLD_COLOR ] := VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ];
-
-  TIGStyleFrameless := VTIGDefaultStyle;
-  TIGStyleFrameless.Frame[ VTIG_BORDER_FRAME ] := '';
+  UpdateStyles;
 
   inherited Create( FIODriver, FConsole, iStyle );
   LoadStart;
@@ -625,6 +613,7 @@ var iCon        : TUIConsole;
     iLevelName  : string[64];
     iCNormal    : DWord;
     iCBold      : DWord;
+    iOffset     : Integer;
 
   function ArmorColor( aValue : Integer ) : TUIColor;
   begin
@@ -659,6 +648,11 @@ var iCon        : TUIConsole;
 begin
   iCNormal := DarkGray;
   iCBold   := LightGray;
+  if FNarrowMode then
+  begin
+    iCNormal := VTIGDefaultStyle.Color[ VTIG_TEXT_COLOR ];
+    iCBold   := VTIGDefaultStyle.Color[ VTIG_BOLD_COLOR ];
+  end;
 
   iCon.Init( FConsole );
   if GraphicsVersion then
@@ -670,8 +664,16 @@ begin
     iBottom := FConsole.SizeY-1;
     if GraphicsVersion then
     begin
-      iPos    := Point( 2,FConsole.SizeY-2 );
-      iBottom := FConsole.SizeY-3;
+      if FNarrowMode then
+      begin
+        iPos    := Point( 2,FConsole.SizeY-3 );
+        iBottom := FConsole.SizeY-4;
+      end
+      else
+      begin
+        iPos    := Point( 2,FConsole.SizeY-2 );
+        iBottom := FConsole.SizeY-3;
+      end;
     end;
     iHPP    := Round((Player.HP/Player.HPMax)*100);
 
@@ -714,19 +716,24 @@ begin
         VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
   end;
 
+  iOffset := -1;
+  if FNarrowMode then iOffset := -3;
 
   if FHintOverlay <> ''
-    then VTIG_FreeLabel( ' '+FHintOverlay+' ', Point( -1-Length( FHintOverlay ), 2 ), Yellow )
+    then VTIG_FreeLabel( ' '+FHintOverlay+' ', Point( iOffset-Length( FHintOverlay ), 2 ), Yellow )
     else if FHint <> ''
-      then VTIG_FreeLabel( ' '+FHint+' ', Point( -1-Length( FHint ), 2 ), Yellow )
+      then VTIG_FreeLabel( ' '+FHint+' ', Point( iOffset-Length( FHint ), 2 ), Yellow )
       else if (FHintTarget <> '') and Setting_AutoTarget
-        then VTIG_FreeLabel( ' '+FHintTarget+' ', Point( -1-Length( FHintTarget ), 2 ), Brown );
+        then VTIG_FreeLabel( ' '+FHintTarget+' ', Point( iOffset-Length( FHintTarget ), 2 ), Brown );
+
+  iOffset := 1;
+  if FNarrowMode then iOffset := 3;
 
   for i := 1 to 2 do
   begin
     if i > FMessages.Size then Continue;
     VTIG_HighColor := i <= FMessages.Active;
-    VTIG_FreeLabel( FMessages.Content[ -i ], Point(1,2-i), iCNormal );
+    VTIG_FreeLabel( FMessages.Content[ -i ], Point(iOffset,2-i), iCNormal );
     VTIG_HighColor := False;
   end;
 end;
@@ -769,16 +776,13 @@ end;
 
 procedure TDoomIO.ASCIILoader ( aStream : TStream; aName : Ansistring; aSize : DWord ) ;
 var iNewImage   : TUIStringArray;
-    iCounter    : DWord;
-    iAmount     : DWord;
     iIdent      : Ansistring;
 begin
   iIdent  := LowerCase(LeftStr(aName,Length(aName)-4));
   Log('Registering ascii file '+aName+' as '+iIdent+'...');
-  iAmount := aStream.ReadDWord;
   iNewImage  := TUIStringArray.Create;
-  for iCounter := 1 to Min(iAmount,25) do
-    iNewImage.Push( aStream.ReadAnsiString );
+  while (aStream.Position < aSize) and (iNewImage.Size < 25) do
+    iNewImage.Push( ReadLineFromStream( aStream, aSize ) );
   FASCII.Items[iIdent] := iNewImage;
 end;
 
@@ -1110,7 +1114,64 @@ begin
   Result := 1;
 end;
 
-const lua_ui_lib : array[0..10] of luaL_Reg = (
+function lua_ui_set_style_color(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    iEntry : TTIGStyleColorEntry;
+    iColor : TIOColor;
+    iC4b   : TVec4b;
+begin
+  State.Init(L);
+  if State.StackSize < 2 then Exit(0);
+  iEntry := TTIGStyleColorEntry( State.ToInteger(1) );
+  iColor := 0;
+  if State.IsNumber(2) then
+    iColor := State.ToInteger(2);
+  if State.IsTable(2) then
+  begin
+    iC4b   := State.ToVec4b(2);
+    iColor := IOColor( iC4b.X, iC4b.Y, iC4b.Z, iC4b.W );
+  end;
+  VTIGDefaultStyle.Color[iEntry] := iColor;
+  Result := 0;
+end;
+
+function lua_ui_set_style_frame(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    iEntry : TTIGStyleFrameEntry;
+begin
+  State.Init(L);
+  if State.StackSize < 2 then Exit(0);
+  iEntry := TTIGStyleFrameEntry( State.ToInteger(1) );
+  VTIGDefaultStyle.Frame[iEntry] := State.ToString(2);
+  Result := 0;
+end;
+
+function lua_ui_set_style_padding(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    iEntry : TTIGStylePaddingEntry;
+begin
+  State.Init(L);
+  if State.StackSize < 2 then Exit(0);
+  iEntry := TTIGStylePaddingEntry( State.ToInteger(1) );
+  VTIGDefaultStyle.Padding[iEntry] := State.ToPoint(2);
+  Result := 0;
+end;
+
+function lua_ui_set_narrow_mode(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  IO.FNarrowMode := State.ToBoolean(1);
+  Result := 0;
+end;
+
+function lua_ui_update_styles(L: Plua_State): Integer; cdecl;
+begin
+  IO.UpdateStyles;
+  Result := 0;
+end;
+
+const lua_ui_lib : array[0..15] of luaL_Reg = (
       ( name : 'msg';           func : @lua_ui_msg ),
       ( name : 'msg_clear';     func : @lua_ui_msg_clear ),
       ( name : 'msg_enter';     func : @lua_ui_msg_enter ),
@@ -1121,6 +1182,11 @@ const lua_ui_lib : array[0..10] of luaL_Reg = (
       ( name : 'plot_screen';   func : @lua_ui_plot_screen),
       ( name : 'set_hint';      func : @lua_ui_set_hint ),
       ( name : 'strip_encoding';func : @lua_ui_strip_encoding ),
+      ( name : 'set_style_color';   func : @lua_ui_set_style_color ),
+      ( name : 'set_style_frame';   func : @lua_ui_set_style_frame ),
+      ( name : 'set_style_padding'; func : @lua_ui_set_style_padding ),
+      ( name : 'set_narrow_mode';   func : @lua_ui_set_narrow_mode ),
+      ( name : 'update_styles';     func : @lua_ui_update_styles ),
       ( name : nil;          func : nil; )
 );
 

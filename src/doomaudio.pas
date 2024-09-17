@@ -31,7 +31,7 @@ type TDoomAudio = class
   procedure Load;
   procedure Update( aMSec : DWord );
   procedure PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
-  procedure PlayMusic( const MusicID : Ansistring );
+  procedure PlayMusic( const MusicID : Ansistring; aNotFound : Boolean = False );
   procedure PlayMusicOnce( const MusicID : Ansistring );
   function ResolveSoundID( const ResolveIDs: array of AnsiString ) : Word;
   destructor Destroy; override;
@@ -246,15 +246,18 @@ begin
   Exit(0);
 end;
 
-procedure TDoomAudio.PlayMusic(const MusicID : Ansistring);
+procedure TDoomAudio.PlayMusic(const MusicID : Ansistring; aNotFound : Boolean = False );
 begin
   FLastMusic := MusicID;
   if (not SoundVersion) or (not Option_Music) or ( Setting_MusicVolume = 0 ) then Exit;
   try
     if MusicID = '' then Sound.Silence;
     if MusicOff then Exit;
-    if Sound.MusicExists(MusicID) then Sound.PlayMusic(MusicID)
-                                  else PlayMusic('level'+IntToStr(Random(23)+2));
+    if Sound.MusicExists(MusicID)
+      then Sound.PlayMusic(MusicID)
+      else if aNotFound
+        then Exit
+        else PlayMusic('level'+IntToStr(Random(23)+2), True );
   except
     on e : Exception do
     begin

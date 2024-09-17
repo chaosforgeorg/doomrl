@@ -72,7 +72,7 @@ core.register_blueprint "klass"
 	hidden     = { false, core.TBOOL, false },
 	traits     = { true,  core.TARRAY("klass_trait") },
 
-	OnPick     = { true,  core.TFUNC },
+	OnPick     = { false,  core.TFUNC },
 }
 
 core.register_blueprint "medal"
@@ -361,6 +361,7 @@ core.register_blueprint "item"
 			movemod    = { false, core.TNUMBER, 0 },
 			dodgemod   = { false, core.TNUMBER, 0 },
 			knockmod   = { false, core.TNUMBER, 0 },
+			spritemod  = { false, core.TNUMBER, 0 },
 			scavenge   = { false, core.TARRAY(core.TIDIN("items")) },
 		},
 		[ITEMTYPE_BOOTS] = {

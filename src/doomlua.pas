@@ -15,14 +15,14 @@ type
 TDoomLua = class(TLuaSystem)
        constructor Create; reintroduce;
        procedure OnError(const ErrorString : Ansistring); override;
-       destructor Destroy; override;
        procedure RegisterPlayer(Thing: TThing);
-       function LoadFont( const aFontName : AnsiString ) : TBitmapFont;
+       destructor Destroy; override;
      private
        procedure ReadWad;
+       procedure LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
      private
-       FCoreData     : TVDataFile;
-       FMainData     : TVDataFile;
+       FCoreData : TVDataFile;
+       FMainData : TVDataFile;
      end;
 
 type
@@ -39,10 +39,10 @@ end;
 
 implementation
 
-uses typinfo, variants, strutils, xmlread, dom,
+uses typinfo, variants, xmlread, dom,
      vnode, vdebug, viotypes, vluatools, vsystems, vluadungen, vluaentitynode,
-     vmath, vtextures, vimage,
-     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, vsound, doomgfxio, doomspritemap;
+     vmath, vtextures, vimage, vtigstyle,
+     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, doomgfxio, doomspritemap;
 
 var SpriteSheetCounter : Integer = -1;
 
@@ -379,65 +379,85 @@ begin
   Result := 1;
 end;
 
-function TDoomLua.LoadFont(const aFontName: AnsiString) : TBitmapFont;
-var iXML : TXMLDocument;
-//    iStream : TStream;
+function lua_core_set_vision_base_value(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
 begin
-  if GodMode
-    then ReadXMLFile( iXML, DataPath + 'graphics' + DirectorySeparator + aFontName+'.xml' )
-    else iXML := FMainData.GetXMLDocument(aFontName + '.xml','');
-  Result := TBitmapFont.CreateFromXML( (IO as TDoomGFXIO).Textures.TextureID[aFontName],iXML );
-  FreeAndNil( iXML );
-  {iStream := TFileStream.Create('aero.ttf', fmOpenRead);
-  FMsgFont := TBitmapFont.CreateFromTTF( iStream, iStream.Size, 12 );
-  FreeAndNil( iStream );}
-  //FMsgFont := TGLConsoleRenderer( FConsole ).Font;
+  State.Init(L);
+  VisionBaseValue := State.ToInteger(1,8);
+  Result := 0;
 end;
 
 procedure TDoomLua.ReadWad;
 var iProgBase : DWord;
+    iPath     : Ansistring;
 begin
-  FCoreData := TVDataFile.Create( DataPath + 'core.wad' );
-  FMainData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
-  FMainData.DKKey := LoveLace;
-
   iProgBase := IO.LoadCurrent;
   IO.LoadProgress(iProgBase + 10);
 
   if GodMode then
   begin
-    RegisterModule( 'core', 'data' + DirectorySeparator + 'core' + DirectorySeparator );
-    RegisterModule( CoreModuleID, 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator );
-    LoadFile( 'data' + DirectorySeparator + 'core' + DirectorySeparator + 'core.lua' );
-    IO.LoadProgress(iProgBase + 20);
-    LoadFile( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'main.lua' );
-    IO.LoadProgress(iProgBase + 30);
-    if GraphicsVersion then
-      (IO as TDoomGFXIO).Textures.LoadTextureFolder( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'graphics' );
+    iPath := DataPath + 'data' + PathDelim + 'core' + PathDelim;
+    RegisterModule( 'core', iPath );
+    LoadFile( iPath + 'core.lua' );
   end
   else
   begin
-    RegisterModule('core',FCoreData);
+    FCoreData := TVDataFile.Create( DataPath + 'core.wad' );
+    RegisterModule( 'core', FCoreData );
+    LoadStream( FCoreData,'','core.lua' );
+  end;
+
+  IO.LoadProgress(iProgBase + 20);
+
+  if GodMode then
+  begin
+    iPath := DataPath + 'data' + PathDelim + CoreModuleID + PathDelim;
+    RegisterModule( CoreModuleID, iPath );
+    LoadFile( iPath + 'main.lua' );
+    IO.LoadProgress(iProgBase + 30);
+    LoadFiles( iPath + 'help', @Help.StreamLoader, '*.hlp' );
+    IO.LoadProgress(iProgBase + 40);
+    LoadFiles( iPath + 'ascii', @IO.ASCIILoader, '*.asc' );
+    IO.LoadProgress(iProgBase + 50);
+    if GraphicsVersion then
+      (IO as TDoomGFXIO).Textures.LoadTextureFolder( iPath + 'graphics' );
+  end
+  else
+  begin
+    FMainData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
+    FMainData.DKKey := LoveLace;
     RegisterModule( CoreModuleID, FMainData );
-    LoadStream(FCoreData,'','core.lua');
     IO.LoadProgress(iProgBase + 20);
     LoadStream(FMainData,'','main.lua');
     IO.LoadProgress(iProgBase + 30);
+    FMainData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
+    FMainData.Load('help');
+    IO.LoadProgress(iProgBase + 40);
+    FMainData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
+    FMainData.Load('ascii');
+    IO.LoadProgress(iProgBase + 50);
     if GraphicsVersion then
+    begin
       FMainData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
+      FMainData.Load('graphics');
+    end;
   end;
-  FMainData.RegisterLoader(FILETYPE_HELP ,@Help.StreamLoader);
-  FMainData.RegisterLoader(FILETYPE_ASCII,@IO.ASCIILoader);
-  IO.LoadProgress(iProgBase + 35);
-  FMainData.Load('help');
-  IO.LoadProgress(iProgBase + 40);
-  FMainData.Load('ascii');
-  IO.LoadProgress(iProgBase + 50);
-
-  if (not GodMode) and GraphicsVersion then
-    FMainData.Load('graphics');
-
   IO.LoadProgress(iProgBase + 100);
+end;
+
+procedure TDoomLua.LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
+var iSearchRec : TSearchRec;
+    iStream    : TStream;
+begin
+  if FindFirst(aDirectory + PathDelim + aWildcard,0,iSearchRec) = 0 then
+  repeat
+    iStream := TFileStream.Create( aDirectory + PathDelim + iSearchRec.Name, fmOpenRead );
+    try
+      aLoader( iStream, iSearchRec.Name, iStream.Size );
+    finally
+      FreeAndNil( iStream );
+    end;
+  until (FindNext(iSearchRec) <> 0);
 end;
 
 procedure TDoomLua.OnError(const ErrorString : Ansistring);
@@ -451,17 +471,17 @@ begin
   Log('LuaError: '+ErrorString);
 end;
 
-destructor TDoomLua.Destroy;
-begin
-  FreeAndNil(FCoreData);
-  FreeAndNil(FMainData);
-  inherited Destroy;
-end;
-
 procedure TDoomLua.RegisterPlayer(Thing: TThing);
 begin
   LuaSystem.SetValue('player',Thing);
   RegisterKillsClass( Raw, (Thing as TPlayer).FKills );
+end;
+
+destructor TDoomLua.Destroy;
+begin
+  FreeAndNil( FCoreData );
+  FreeAndNil( FMainData );
+  inherited Destroy;
 end;
 
 procedure LogProps( aClass : TClass );
@@ -495,7 +515,7 @@ const lua_player_data_lib : array[0..4] of luaL_Reg = (
 );
 
 
-const lua_core_lib : array[0..12] of luaL_Reg = (
+const lua_core_lib : array[0..13] of luaL_Reg = (
     ( name : 'add_to_cell_set';func : @lua_core_add_to_cell_set),
     ( name : 'game_time';func : @lua_core_game_time),
     ( name : 'is_playing';func : @lua_core_is_playing),
@@ -510,6 +530,7 @@ const lua_core_lib : array[0..12] of luaL_Reg = (
     ( name : 'texture_upload';        func : @lua_core_texture_upload),
     ( name : 'texture_generate_glow'; func : @lua_core_texture_generate_glow),
     ( name : 'register_sprite_sheet'; func : @lua_core_register_sprite_sheet),
+    ( name : 'set_vision_base_value'; func : @lua_core_set_vision_base_value),
 
     ( name : nil;          func : nil; )
 );
@@ -520,6 +541,9 @@ begin
   if GodMode
     then inherited Create( Config.Raw )
     else inherited Create( nil );
+
+  FCoreData := nil;
+  FMainData := nil;
 
   RegisterTableAuxFunctions( Raw );
   RegisterMathAuxFunctions( Raw );
@@ -560,6 +584,9 @@ begin
   State.RegisterEnumValues( TypeInfo(TExplosionFlag) );
   State.RegisterEnumValues( TypeInfo(TResistance) );
   State.RegisterEnumValues( TypeInfo(TMoveResult) );
+  State.RegisterEnumValues( TypeInfo(TTIGStyleColorEntry) );
+  State.RegisterEnumValues( TypeInfo(TTIGStyleFrameEntry) );
+  State.RegisterEnumValues( TypeInfo(TTIGStylePaddingEntry) );
 
   TNode.RegisterLuaAPI( 'game_object' );
 

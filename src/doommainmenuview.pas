@@ -57,6 +57,7 @@ protected
   FArrayKlass  : TMainMEnuEntryArray;
   FArrayChal   : TMainMEnuEntryArray;
   FTitleChal   : Ansistring;
+  FChallenges  : Boolean;
 
   FBGTexture   : TTextureID;
   FLogoTexture : TTextureID;
@@ -114,7 +115,7 @@ begin
   FArrayChal  := nil;
   FTitleChal  := '';
   FSize       := Point( 80, 25 );
-
+  FChallenges := LuaSystem.Get( ['chal','__counter'], 0 ) > 0;
 
   if not ( FMode in [MAINMENU_FIRST,MAINMENU_INTRO] ) then
     Assert( aResult <> nil, 'nil result passed!' );
@@ -126,6 +127,7 @@ begin
       WriteFileString( WritePath + 'drl.prc', 'DRL was already run.' );
 
       FFirst := AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetFirstText'], [] ) );
+      if FFirst = '' then FMode := MAINMENU_INTRO;
     end
     else
       FMode := MAINMENU_INTRO;
@@ -148,6 +150,15 @@ end;
 
 procedure TMainMenuView.Update( aDTime : Integer );
 begin
+  if FMode = MAINMENU_KLASS then
+  begin
+    if FArrayKlass.Size = 1 then
+    begin
+      FResult.Klass := FArrayKlass[0].NID;
+      FMode         := MAINMENU_TRAIT;
+      IO.PushLayer( TPlayerView.CreateTrait( True, FResult.Klass ) );
+    end;
+  end;
   VTIG_Clear;
   if GraphicsVersion then Render;
   if not IO.IsTopLayer( Self ) then
@@ -256,7 +267,7 @@ begin
         ReloadArrays;
         FMode := MAINMENU_DIFFICULTY;
       end;
-    if VTIG_Selectable( TextChallengeGame, (not FSaveExists) ) then
+    if VTIG_Selectable( TextChallengeGame, (not FSaveExists) and FChallenges ) then
     begin
       FResult.Reset;
       ReloadArrays;
@@ -394,7 +405,7 @@ begin
   VTIG_End;
 
   VTIG_PushStyle( @TIGStyleFrameless );
-  VTIG_Begin( 'mainmenu_klass', Point( 16, 5 ), Point( 10, 18 ) );
+  VTIG_Begin( 'mainmenu_klass', Point( 16, 2+FArrayKlass.Size ), Point( 10, 16 ) );
   VTIG_PopStyle;
     VTIG_PushStyle( @TIGStyleColored );
     for i := 0 to FArrayKlass.Size - 1 do
@@ -408,7 +419,7 @@ begin
     VTIG_PopStyle;
   VTIG_End;
 
-  IO.RenderUIBackground(  Point(9,17), Point(25,22), 0.7 );
+  IO.RenderUIBackground(  Point(9,15), Point(25,17+FArrayKlass.Size), 0.7 );
   IO.RenderUIBackground( Point(28,15), Point(77,24), 0.7 );
   if VTIG_EventCancel then
   begin
@@ -508,15 +519,15 @@ end;
 procedure TMainMenuView.OnCancel;
 begin
   if (not Option_Sound) or (Sound = nil) or ( not Setting_MenuSound ) then Exit;
-  Sound.PlaySample('menu.cancel');
+  if Sound.SampleExists('menu.cancel') then Sound.PlaySample('menu.cancel');
 end;
 
 procedure SoundCallback( aEvent : TTIGSoundEvent; aParam : Pointer );
 begin
   if (not Option_Sound) or (Sound = nil) or ( not Setting_MenuSound ) then Exit;
   case aEvent of
-    VTIG_SOUND_CHANGE : Sound.PlaySample('menu.change');
-    VTIG_SOUND_ACCEPT : Sound.PlaySample('menu.pick');
+    VTIG_SOUND_CHANGE : if Sound.SampleExists('menu.change') then Sound.PlaySample('menu.change');
+    VTIG_SOUND_ACCEPT : if Sound.SampleExists('menu.pick')   then Sound.PlaySample('menu.pick');
   end;
 end;
 
@@ -658,7 +669,7 @@ begin
         iEntry.ID    := GetString('id');
         iEntry.Extra := '';
         iEntry.NID   := GetInteger('nid');
-        iEntry.Allow := True;
+        iEntry.Allow := IsFunction('OnPick');
         FArrayKlass.Push( iEntry );
       end;
     finally

@@ -231,7 +231,7 @@ begin
   LuaSystem.CallDefaultResult := True;
 //  Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
-  ModuleID := 'drl';
+  ModuleID := CoreModuleID;
 
   LoadModule( True );
   if GraphicsVersion then
@@ -270,7 +270,7 @@ end;
 constructor TDoom.Create;
 begin
   inherited Create;
-  ModuleID   := 'drl';
+  ModuleID   := CoreModuleID;
   GameWon    := False;
   DataLoaded := False;
   CrashSave  := False;

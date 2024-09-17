@@ -153,6 +153,7 @@ begin
   VTIG_ResetSelect( 'unload_confirm' );
   FState       := PLAYERVIEW_INVENTORY;
   FSize        := Point( 80, 25 );
+  if IO.NarrowMode then FSize := Point( 76, 25 );
   FInv         := nil;
   FEq          := nil;
   FTraits      := nil;
@@ -379,12 +380,12 @@ end;
 procedure TPlayerView.UpdateEquipment;
 const ResNames : array[TResistance] of AnsiString = ('Bullet','Melee','Shrap','Acid','Fire','Plasma');
       ResIDs   : array[TResistance] of AnsiString = ('bullet','melee','shrapnel','acid','fire','plasma');
-var iEntry       : TItemViewEntry;
-    iSelected,iY : Integer;
-    iB, iA       : Integer;
-    iCount       : Integer;
-    iRes         : TResistance;
-    iName        : Ansistring;
+var iEntry        : TItemViewEntry;
+    iSelected,iY  : Integer;
+    iB, iA, iR, iK: Integer;
+    iCount        : Integer;
+    iRes          : TResistance;
+    iName         : Ansistring;
   function Cursed : Boolean;
   begin
     if ( FEq[iSelected].Item <> nil ) and FEq[iSelected].Item.Flags[ IF_CURSED ] then
@@ -422,9 +423,17 @@ begin
     iY := 10;
     iB := 0;
     iA := 0;
+    iR := 42;
+    iK := 53;
+    if IO.NarrowMode then
+    begin
+      iR := 38;
+      iK := 50;
+    end;
+
     VTIG_FreeLabel( 'Basic traits',    Point(0, iY) );
     VTIG_FreeLabel( 'Advanced traits', Point(20,iY) );
-    VTIG_FreeLabel( 'Resistances',     Point(42,iY) );
+    VTIG_FreeLabel( 'Resistances',     Point(iR,iY) );
 
     for iCount := 1 to MAXTRAITS do
       if Player.FTraits.Values[iCount] > 0 then
@@ -447,12 +456,12 @@ begin
       Inc( iY );
       VTIG_FreeLabel( '{d'+Padded(ResNames[iRes],7)+'{!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_INTERNAL))+'%',5)+
            '} Torso {!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_TORSO))+'%',5)+
-           '} Feet {!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_FEET))+'%',5)+'}', Point( 42, iY ) );
+           '} Feet {!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_FEET))+'%',5)+'}', Point( iR, iY ) );
     end;
 
-     VTIG_FreeLabel( '<{!Enter}> take off/wear', Point(53, 18) );
-     VTIG_FreeLabel( '<{!Tab}> swap item',       Point(53, 19) );
-     VTIG_FreeLabel( '<{!Backspace}> drop item', Point(53, 20) );
+     VTIG_FreeLabel( '<{!Enter}> take off/wear', Point(iK, 18) );
+     VTIG_FreeLabel( '<{!Tab}> swap item',       Point(iK, 19) );
+     VTIG_FreeLabel( '<{!Backspace}> drop item', Point(iK, 20) );
   VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit}');
 
   if (iSelected >= 0) then
@@ -518,11 +527,12 @@ begin
   VTIG_BeginWindow(FCTitle, 'character', FSize );
   FRect := VTIG_GetWindowRect;
   iCount := 0;
-  for iString in IO.Ascii[Player.ASCIIMoreCode] do
-  begin
-    VTIG_FreeLabel( iString, Point( 47, iCount ) );
-    Inc( iCount );
-  end;
+  if Assigned( IO.Ascii[Player.ASCIIMoreCode] ) then
+    for iString in IO.Ascii[Player.ASCIIMoreCode] do
+    begin
+      VTIG_FreeLabel( iString, Point( 47, iCount ) );
+      Inc( iCount );
+    end;
   for iString in FCharacter do
     VTIG_Text( iString );
   VTIG_End('{l<{!Left,Right}> panels, <{!Escape}> exit}');

@@ -297,6 +297,7 @@ type TItemProperties = record
            MoveMod  : Integer;
 		   DodgeMod : Integer;
            KnockMod : Integer;
+           SpriteMod : Integer;
          );
          ItemType_Ammo,
          ItemType_Melee,
@@ -360,6 +361,7 @@ function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
 function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
 function ReadFileString( const aFileName : Ansistring ) : Ansistring;
 function WriteFileString( const aFileName, aText : Ansistring ) : Boolean;
+function ReadLineFromStream( aStream : TStream; aSize : Integer = -1 ) : AnsiString;
 
 var ColorOverrides : TIntHashMap;
 
@@ -403,6 +405,22 @@ begin
   Exit( IOResult <> 0 );
 end;
 
+function ReadLineFromStream( aStream : TStream; aSize : Integer = -1 ) : AnsiString;
+var iChar : Char;
+    iLine : Ansistring;
+begin
+  if aSize < 0 then aSize := aStream.Size;
+  iLine := '';
+  while aStream.Read( iChar, SizeOf(iChar) ) = SizeOf(iChar) do
+  begin
+    if iChar = #10 then Break;
+    if iChar <> #13 then iLine := iLine + iChar;
+  end;
+
+  if (iLine = '') and ( aStream.Position >= aSize )
+    then Result := ''
+    else Result := iLine;
+end;
 
 procedure TInterfaceLayer.Tick( aDTick : Integer );
 begin
@@ -471,7 +489,7 @@ begin
   ArchAngel  := False;
   Klass      := 0;
   Trait      := 0;
-  ModuleID   := 'drl';
+  ModuleID   := CoreModuleID;
   Name       := '';
 end;
 
