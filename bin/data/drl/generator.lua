@@ -203,35 +203,11 @@ function generator.generate_rivers( allow_horiz, allow_more )
 	end
 end
 
--- TODO: use Cells generated cellsets!
 function generator.add_rooms()
 	core.log("generator.add_rooms()")
-	local cell_meta_list = { "wall", "rwall", "door", "odoor", }
-	local cell_meta = generator.cell_set( cell_meta_list )
-	local room_begin = function(c)
-		if c.x == MAXX or c.y == MAXY then return false end
-		if c.x == 1 then return cell_meta[ generator.get_cell( coord.new(2, c.y) ) ] end
-		if c.y == 1 then return cell_meta[ generator.get_cell( coord.new(c.x, 2) ) ] end
-		local meta_count = generator.cross_around( c, cell_meta_list )
-		if meta_count == 4 then return true end
-		if meta_count == 3
-			and cell_meta[ generator.get_cell( coord.new( c.x + 1, c.y ) ) ]
-			and cell_meta[ generator.get_cell( coord.new( c.x, c.y + 1 ) ) ]
-			then return true end
-		return false
-	end
-
-	for start in area.coords( area.FULL ) do
-		if room_begin( start ) then
-			local ec = coord.clone( start )
-			repeat
-				ec.x = ec.x + 1
-			until ec.x == MAXX or cell_meta[ generator.get_cell( coord.new( ec.x, start.y + 1 ) ) ]
-			repeat
-				ec.y = ec.y + 1
-			until ec.y == MAXY or cell_meta[ generator.get_cell( coord.new( start.x + 1, ec.y ) ) ]
-			generator.add_room( area.new( start, ec ) )
-		end
+	local room_list = generator.read_rooms()
+	for _,room in ipairs( room_list ) do
+		generator.add_room( room )	
 	end
 end
 

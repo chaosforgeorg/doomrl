@@ -24,6 +24,10 @@ register_cell = core.register_storage( "cells", "cell", function( c )
 			end
 			generator.cell_sets[ c.set ][ c.id ] = true
 			generator.cell_sets[ c.set ][ c.nid ] = true
+			if not generator.cell_lists[ c.set ] then
+				generator.cell_lists[ c.set ] = {}
+			end
+			table.insert( generator.cell_lists[ c.set ], c.nid )
 		end
 		core.register_cell( c.nid )
 	end	

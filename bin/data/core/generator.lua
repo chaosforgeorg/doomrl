@@ -1,5 +1,6 @@
 generator.styles = {}
 generator.cell_sets = {}
+generator.cell_lists = {}
 generator.room_list = {}
 generator.room_meta = {}
 
@@ -7,6 +8,28 @@ function generator.cell_set( list )
 	local s = {}
 	for _,v in ipairs( list ) do
 		s[cells[v].nid] = true
+	end
+	return s
+end
+
+function generator.merge_cell_sets( list1, list2 )
+	local s = {}
+	for k,v in pairs( list1 ) do
+		s[k] = v
+	end
+	for k,v in pairs( list2 ) do
+		s[k] = v
+	end
+	return s
+end
+
+function generator.merge_cell_lists( list1, list2 )
+	local s = {}
+	for _,v in ipairs( list1 ) do
+		table.insert( s, v )
+	end
+	for _,v in ipairs( list2 ) do
+		table.insert( s, v )
 	end
 	return s
 end
@@ -317,6 +340,39 @@ function generator.warehouse_fill( wall_cell, fill_area, boxsize, amount, specia
 			generator.fill( fill_cell, ar )
 		end
 	end
+end
+
+function generator.read_rooms()
+	core.log("generator.add_rooms()")
+	local room_list      = {}
+	local cell_meta      = generator.merge_cell_sets( generator.cell_sets[ CELLSET_WALLS ], generator.cell_sets[ CELLSET_DOORS ] )
+	local cell_meta_list = generator.merge_cell_lists( generator.cell_lists[ CELLSET_WALLS ], generator.cell_lists[ CELLSET_DOORS ] )
+	local room_begin = function(c)
+		if c.x == MAXX or c.y == MAXY then return false end
+		if c.x == 1 then return cell_meta[ generator.get_cell( coord.new(2, c.y) ) ] end
+		if c.y == 1 then return cell_meta[ generator.get_cell( coord.new(c.x, 2) ) ] end
+		local meta_count = generator.cross_around( c, cell_meta_list )
+		if meta_count == 4 then return true end
+		if meta_count == 3
+			and cell_meta[ generator.get_cell( coord.new( c.x + 1, c.y ) ) ]
+			and cell_meta[ generator.get_cell( coord.new( c.x, c.y + 1 ) ) ]
+			then return true end
+		return false
+	end
+
+	for start in area.coords( area.FULL ) do
+		if room_begin( start ) then
+			local ec = coord.clone( start )
+			repeat
+				ec.x = ec.x + 1
+			until ec.x == MAXX or cell_meta[ generator.get_cell( coord.new( ec.x, start.y + 1 ) ) ]
+			repeat
+				ec.y = ec.y + 1
+			until ec.y == MAXY or cell_meta[ generator.get_cell( coord.new( start.x + 1, ec.y ) ) ]
+			table.insert( room_list, area.new( start, ec ) )
+		end
+	end
+	return room_list
 end
 
 function generator.add_room( room, class )
