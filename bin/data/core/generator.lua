@@ -386,6 +386,14 @@ function generator.add_room( room, class )
 	generator.room_meta[ r ] = rm
 end
 
+function generator.add_rooms()
+	core.log("generator.add_rooms()")
+	local room_list = generator.read_rooms()
+	for _,room in ipairs( room_list ) do
+		generator.add_room( room )	
+	end
+end
+
 function generator.get_room( min_size, max_x, max_y, max_area, class )
 	core.log("generator.get_room()")
 	local cl = class or "any"
@@ -403,7 +411,19 @@ function generator.get_room( min_size, max_x, max_y, max_area, class )
 	return table.random_pick( choice_list )
 end
 
-function generator.handle_rooms( count, no_monsters )
+function generator.restore_walls( wall_cell, fluid_to_perm )
+	core.log("generator.restore_walls("..wall_cell..")")
+	if fluid_to_perm then
+		for c in area.edges( area.FULL ) do
+			local sub = fluid_to_perm[ cells[generator.get_cell( c )].id ] or wall_cell
+			generator.set_cell( c, sub )
+		end
+	else
+		generator.fill_edges( wall_cell )
+	end
+end
+
+function generator.handle_rooms( count, no_monsters, restore_walls )
 	core.log("generator.handle_rooms()")
 	if count < 1 or #(generator.room_list) == 0 then return end
 	local choice = weight_table.new()
@@ -422,7 +442,7 @@ function generator.handle_rooms( count, no_monsters )
 			end
 		end
 	end
-	generator.restore_walls( generator.styles[ level.style ].wall, true )
+	generator.restore_walls( generator.styles[ level.style ].wall, restore_walls )
 end
 
 

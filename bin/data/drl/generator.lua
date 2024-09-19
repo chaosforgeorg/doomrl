@@ -57,7 +57,7 @@ function generator.run( gen )
 		if type( gen.rooms ) == "function" then
 			gen.rooms() 
 		elseif type( gen.rooms ) == "table" then
-			generator.handle_rooms( math.random( gen.rooms[1], gen.rooms[2] ), gen.rooms[3] )
+			generator.handle_rooms( math.random( gen.rooms[1], gen.rooms[2] ), gen.rooms[3], generator.fluid_to_perm )
 		end
 	end
 
@@ -119,18 +119,6 @@ function generator.item_amount()
 	return math.ceil( 21 - math.max( 25-level.danger_level, 0 ) / 3 )
 end
 
-function generator.restore_walls( wall_cell, keep_fluids )
-	core.log("generator.restore_walls("..wall_cell..")")
-	if keep_fluids then
-		for c in area.edges( area.FULL ) do
-			local sub = generator.fluid_to_perm[ cells[generator.get_cell( c )].id ] or wall_cell
-			generator.set_cell( c, sub )
-		end
-	else
-		generator.fill_edges( wall_cell )
-	end
-end
-
 function generator.horiz_river( cell, width, bridge )
 	local floor = generator.styles[ level.style ].floor
 	if bridge then bridge = 8 + math.random(60) else bridge = 100 end
@@ -143,7 +131,7 @@ function generator.horiz_river( cell, width, bridge )
 		end
 		if math.random(6) == 1 then y = math.min( math.max( y + math.random(3) - 2, 3 ), MAXY - width - 2 ) end
 	end
-	generator.restore_walls( generator.styles[ level.style ].wall, true )
+	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 end
 
 function generator.vert_river( cell, width, bridge, pos )
@@ -176,7 +164,7 @@ function generator.vert_river( cell, width, bridge, pos )
 	for y = y_start, 1, -1 do
 		iteration(y)
 	end
-	generator.restore_walls( generator.styles[ level.style ].wall, true )
+	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 end
 
 function generator.generate_rivers( allow_horiz, allow_more )
@@ -200,14 +188,6 @@ function generator.generate_rivers( allow_horiz, allow_more )
 		else
 			generator.vert_river( cell, math.random(3)+3, math.random(4) ~= 1 )
 		end
-	end
-end
-
-function generator.add_rooms()
-	core.log("generator.add_rooms()")
-	local room_list = generator.read_rooms()
-	for _,room in ipairs( room_list ) do
-		generator.add_room( room )	
 	end
 end
 
