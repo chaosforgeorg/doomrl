@@ -75,7 +75,7 @@ function level:flood_monsters( params )
 		if not where then break end
 		if bp.is_group then
 			for _,group in ipairs(bp.beings) do
-				local count = resolverange(group.amount or 1)
+				local count = core.resolve_range(group.amount or 1)
 				for i=1,count do
 					self:drop_being( group.being, where )
 					dtotal = dtotal - beings[group.being].danger

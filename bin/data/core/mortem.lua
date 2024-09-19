@@ -15,7 +15,7 @@ end
 
 function mortem.print_time_and_kills()
     player:mortem_print( " "..mortem.Pronoun.." survived "..statistics.game_time.." turns and scored "..player.score.." points. ")
-	player:mortem_print( " "..mortem.Pronoun.." played for "..seconds_to_string(math.floor(statistics.real_time))..". ")
+	player:mortem_print( " "..mortem.Pronoun.." played for "..core.seconds_to_string(math.floor(statistics.real_time))..". ")
 	player:mortem_print( " "..diff[DIFFICULTY].description)
 	player:mortem_print()
 
