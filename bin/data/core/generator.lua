@@ -205,8 +205,8 @@ function generator.safe_empty_coord( a )
 	return result
 end
 
-function generator.standard_empty_coord()
-	return generator.random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
+function generator.standard_empty_coord( param1, param2 )
+	return generator.random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }, param1, param2 )
 end
 
 function generator.set_permanence( ar, val, tile )
@@ -607,4 +607,68 @@ function generator.generate_tiled_level( settings )
 
 	generator.restore_walls( wall_cell )
 	generator.add_rooms()
+end
+
+function generator.generate_archi_level( settings )
+	core.log("generator.generate_archi_level()")
+	assert( settings, "no settings for archi level!" )
+	local data = nil
+	if settings.size then
+		data = settings
+	else
+		assert( settings.data, "no data for archi level!" )
+		if settings.data.size then
+			data = settings.data
+		else
+			data = table.random_pick( settings.data )
+			assert( data.size, "malformed data for archi level!" )
+		end
+	end
+		
+	local wall_cell    = generator.styles[ level.style ].wall
+	local translation = {
+		["X"] = wall_cell,
+		["."] = generator.styles[ level.style ].floor,
+		["+"] = generator.styles[ level.style ].door,
+	}
+
+	generator.fill( wall_cell )
+
+	local blocks = data.blocks
+	local bsize  = data.size
+	local shift  = data.shift 
+	if not blocks then
+		blocks = coord.new( math.floor( (MAXX-1) / (bsize.x-1) ), math.floor( (MAXY-1) / (bsize.y-1) ) )
+	end
+	if not shift then
+		shift = coord.new( MAXX, MAXY ) - blocks * (bsize - coord.UNIT)
+		shift.x = math.max( 1, math.floor( shift.x / 2 ) )
+		shift.y = math.max( 1, math.floor( shift.y / 2 ) )
+	end
+	core.log( "blocks: "..blocks.x.."x"..blocks.y.." size: "..bsize.x.."x"..bsize.y.." shift: "..shift.x..","..shift.y )
+	if data.trans then
+		for k,v in pairs( data.trans ) do translation[k] = v end
+	end
+	if settings.trans then
+		for k,v in pairs( settings.trans ) do translation[k] = v end
+	end
+
+	for bx=1,blocks.x do
+		for by=1,blocks.y do
+			local block = table.random_pick( data )
+			local pos   = coord.new( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
+			local tile  = generator.tile_new( block, translation )
+			tile:flip_random()
+			generator.tile_place( pos, tile )
+		end
+	end
+
+	for c in generator.each( generator.styles[ level.style ].door ) do
+		if generator.cross_around( c, wall_cell ) > 2 then
+			generator.set_cell( c, wall_cell )
+		end
+	end
+
+	generator.restore_walls( wall_cell )
+	generator.generate_fluids(area.new(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
 end
