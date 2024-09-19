@@ -523,3 +523,88 @@ function generator.generate_special_stairs( stairs_id, feelings )
 	return pos
 end
 
+function generator.generate_tiled_level( settings )
+	core.log("generator.generate_tiled_level()")
+	local settings     = settings or {}
+	local wall_cell    = settings.wall_cell  or cells[generator.styles[ level.style ].wall].nid
+	local door_cell    = settings.door_cell  or cells[generator.styles[ level.style ].door].nid
+	local floor_cell   = settings.floor_cell or cells[generator.styles[ level.style ].floor].nid
+
+	local block = generator.cell_set{ wall_cell }
+
+	local plot = function( horiz, where )
+		generator.plot_lines( where, area.FULL, horiz, wall_cell, block )
+		generator.set_cell( where, door_cell )
+	end
+
+	local div_point = function( x, yrange, ymult, ymod )
+		return coord.new( x, math.random(yrange)*ymult+ymod )
+	end
+
+	local MAX2 = math.floor(MAXX / 2)
+	local MAX4 = math.floor(MAXX / 4)
+	local MAX8 = math.floor(MAXX / 8)
+
+	local nfirst = settings.subdiv      or 5
+	local ndoors = settings.extra_doors or 4
+	local pdoors = settings.add_doors   or 8
+
+	if math.random(3) == 1 then
+		plot( false, div_point( math.random(MAX4-8)*2+4,       8,2,2 ) )
+		plot( false, div_point( math.random(MAX4-8)*2+4+MAX4*2,8,2,2 ) )
+	else
+		plot( false, div_point( math.random(MAX4-12)*2+4,            8,2,2 ) )
+		plot( false, div_point( math.random(MAX4-4)*2 + MAX2 - MAX4, 8,2,2 ) )
+		plot( false, div_point( math.random(MAX4-12)*2+8+MAX4*2,     8,2,2 ) )
+	end
+	for i = 1,4 do
+		plot( true, div_point( math.random(MAX8-6)*2+MAX4*(i-1)+2,4,4,1 ) )
+	end
+
+	for i = 1,nfirst do
+		if math.random(3) == 3 then
+			plot( true, div_point( math.random(MAX2-2)*2+1, 8,2,1 ) )
+		else
+			plot( false, div_point( math.random(MAX2-2)*2+2, 6,2,2 ) )
+		end
+	end
+
+	local door_positions = {}
+	local priority_doors = {}
+	
+	for c in area.coords( area.FULL_SHRINKED ) do
+		if generator.get_cell( c ) == wall_cell
+		and generator.around( c, door_cell ) == 0 
+		and generator.cross_around( c, wall_cell ) == 2
+		and generator.cross_around( c, floor_cell ) == 2
+		then
+			local walls = generator.around( c, wall_cell )
+			if walls > 4 then
+				if generator.around( c, door_cell ) == 0 then
+					generator.set_cell( c, door_cell )
+				end
+			elseif walls > 3 then
+				table.insert( priority_doors, c:clone() )
+			else
+				table.insert( door_positions, c:clone() )
+			end
+		end
+	end
+
+	for i = 1,pdoors do
+		local pos = table.random_remove( priority_doors )
+		if pos and generator.around( pos, door_cell ) == 0 then
+			generator.set_cell( pos, door_cell )
+		end
+	end
+
+	for i = 1,ndoors do
+		local pos = table.random_remove( door_positions )
+		if pos and generator.around( pos, door_cell ) == 0 then
+			generator.set_cell( pos, door_cell )
+		end
+	end
+
+	generator.restore_walls( wall_cell )
+	generator.add_rooms()
+end

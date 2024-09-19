@@ -191,60 +191,6 @@ function generator.generate_rivers( allow_horiz, allow_more )
 	end
 end
 
-function generator.generate_tiled()
-	core.log("generator.generate_tiled_dungeon()")
-	local wall_cell    = cells[generator.styles[ level.style ].wall].nid
-	local door_cell    = cells[generator.styles[ level.style ].door].nid
-
-
-	local block = generator.cell_set{ wall_cell }
-
-	local plot = function( horiz, where )
-		generator.plot_lines( where, area.FULL, horiz, wall_cell, block )
-		generator.set_cell( where, door_cell )
-	end
-
-	local div_point = function( x, yrange, ymod )
-		return coord.new( x, math.random(yrange)*2+ymod )
-	end
-
-	local MAX2 = math.floor(MAXX / 2)
-	local MAX4 = math.floor(MAXX / 4)
-
-	local nfirst = 5
-	local ndoors = 8
-
-	plot( false, div_point( math.random(MAX4-2)*2+2,8,2 ) )
-	plot( false, div_point( math.random(MAX4-2)*2+MAX4*2-2,8,2 ) )
-	for i = 1,3 do
-		plot( true, div_point( math.random(MAX2-2)*2+1,8,1 ) )
-	end
-	for i = 1,nfirst do
-		if math.random(3) == 3 then
-			plot( true, div_point( math.random(MAX2-2)*2+1, 8,1 ) )
-		else
-			plot( false, div_point( math.random(MAX2-2)*2+2, 6,2 ) )
-		end
-	end
-
-	local door_positions = {}
-	for c in area.coords( area.FULL_SHRINKED ) do
-		if generator.get_cell( c ) == wall_cell
-		and generator.around( c, wall_cell ) == 2 then
-			table.insert( door_positions, c:clone() )
-		end
-	end
-
-	for i = 1,ndoors do
-		local pos = table.random_pick( door_positions )
-		if generator.around( pos, door_cell ) == 0 then
-			generator.set_cell( pos, door_cell )
-		end
-	end
-	generator.restore_walls( wall_cell )
-	generator.add_rooms()
-end
-
 function generator.generate_lava_dungeon()
 	core.log("generator.generate_lava_dungeon()")
 	generator.fill("lava")

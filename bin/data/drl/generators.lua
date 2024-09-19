@@ -34,7 +34,7 @@ function drl.register_generators()
 		rivers     = 60,
 
 		run        = function() 
-			generator.generate_tiled()
+			generator.generate_tiled_level()
 		end
 	}
 
@@ -315,7 +315,7 @@ function drl.register_generators()
 			player:add_history("On level @1 he stumbled into a complex full of "..beings[monster].name_plural.."!")
 		end,
 		run        = function() 
-			generator.generate_tiled()
+			generator.generate_tiled_level()
 		end
 	}
 
@@ -342,7 +342,7 @@ function drl.register_generators()
 			player:add_history("On level @1 he stumbled into a complex full of "..beings[monster].name_plural.."!")
 		end,
 		run        = function() 
-			generator.generate_tiled()
+			generator.generate_tiled_level()
 		end
 	}
 
