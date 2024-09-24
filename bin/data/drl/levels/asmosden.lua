@@ -75,6 +75,7 @@ register_level "the_asmos_den"
 			color    = LIGHTRED,
 			sprite   = SPRITE_ARMOR,
 			coscolor = { 1.0,0.0,0.0,1.0 },
+			pcoscolor= { 1.0,0.0,0.0,1.0 },
 			level    = 200,
 			weight   = 0,
 			desc     = "The material glows a vibrant red. What's the worst that could happen?",

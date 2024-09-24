@@ -7,7 +7,7 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfitem;
 interface
-uses Classes, SysUtils, dfthing, dfdata, vrltools, vluatable, math;
+uses Classes, SysUtils, dfthing, dfdata, vrltools, vluatable, vcolor, math;
 
 type TItemSounds = record
   Pickup     : Word;
@@ -71,8 +71,10 @@ TItem  = class( TThing )
     FMods     : array[Ord('A')..Ord('Z')] of Byte;
     procedure LuaLoad( Table : TLuaTable; onFloor: boolean ); reintroduce;
     public
-    property NID           : Byte        read FNID;
-    property Sounds        : TItemSounds read FSounds;
+    property NID            : Byte        read FNID;
+    property Sounds         : TItemSounds read FSounds;
+    property PGlowColor     : TColor      read FProps.PGlowColor     write FProps.PGlowColor;
+    property PCosColor      : TColor      read FProps.PCosColor      write FProps.PCosColor;
     published
     property Armor          : Byte        read FArmor                write FArmor;
     property RechargeDelay  : Byte        read FRecharge.Delay       write FRecharge.Delay;
@@ -222,6 +224,12 @@ begin
      ITEMTYPE_ARMOR,
      ITEMTYPE_BOOTS :
        begin
+         FProps.PCosColor := ColorZero;
+         if not Table.isNil( 'pcoscolor' ) then
+           FProps.PCosColor := NewColor( Table.GetVec4f('pcoscolor' ) );
+         FProps.PGlowColor := ColorZero;
+         if not Table.isNil( 'pglow' ) then
+           FProps.PGlowColor := NewColor( Table.GetVec4f('pglow' ) );
          FProps.Durability := Table.getInteger('durability');
          if FProps.Durability = 0 then FProps.Durability := 100;
          FProps.MaxDurability := FProps.Durability;

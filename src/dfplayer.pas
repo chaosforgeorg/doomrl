@@ -776,10 +776,12 @@ begin
   Exclude( FSprite.Flags, SF_GLOW );
   if Inv.Slot[ efTorso ] <> nil then
   begin
-    if SF_GLOW in Inv.Slot[ efTorso ].Sprite.Flags then
+    if Inv.Slot[ efTorso ].PGlowColor.A > 0 then
+    begin
       Include( FSprite.Flags, SF_GLOW );
-    FSprite.Color     := Inv.Slot[ efTorso ].Sprite.Color;
-    FSprite.GlowColor := Inv.Slot[ efTorso ].Sprite.GlowColor;
+      FSprite.GlowColor := Inv.Slot[ efTorso ].PGlowColor;
+    end;
+    FSprite.Color     := Inv.Slot[ efTorso ].PCosColor;
     iSpMod            := Inv.Slot[ efTorso ].SpriteMod;
   end
   else

@@ -294,10 +294,12 @@ type TItemProperties = record
          ItemType_Armor,ItemType_Boots : (
            Durability : Word;
            MaxDurability : Word;
-           MoveMod  : Integer;
-		   DodgeMod : Integer;
-           KnockMod : Integer;
-           SpriteMod : Integer;
+           MoveMod    : Integer;
+	   DodgeMod   : Integer;
+           KnockMod   : Integer;
+           SpriteMod  : Integer;
+           PCosColor  : TColor;
+           PGlowColor : TColor;
          );
          ItemType_Ammo,
          ItemType_Melee,

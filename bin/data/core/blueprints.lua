@@ -357,6 +357,8 @@ core.register_blueprint "item"
 			ascii      = { false, core.TSTRING, "[" },
 			desc       = { true,  core.TSTRING },
 			armor      = { true,  core.TNUMBER },
+			pcoscolor  = { false, core.TTABLE },
+			pglow      = { false, core.TTABLE },
 			durability = { false, core.TNUMBER, 100 },
 			movemod    = { false, core.TNUMBER, 0 },
 			dodgemod   = { false, core.TNUMBER, 0 },
