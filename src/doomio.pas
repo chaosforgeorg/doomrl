@@ -613,6 +613,7 @@ var iCon        : TUIConsole;
     iLevelName  : string[64];
     iCNormal    : DWord;
     iCBold      : DWord;
+    iCurrent    : DWord;
     iOffset     : Integer;
 
   function ArmorColor( aValue : Integer ) : TUIColor;
@@ -733,7 +734,10 @@ begin
   begin
     if i > FMessages.Size then Continue;
     VTIG_HighColor := i <= FMessages.Active;
-    VTIG_FreeLabel( FMessages.Content[ -i ], Point(iOffset,2-i), iCNormal );
+    iCurrent := iCNormal;
+    if FNarrowMode and ( i <= FMessages.Active ) then
+      iCurrent := iCBold;
+    VTIG_FreeLabel( FMessages.Content[ -i ], Point(iOffset,2-i), iCurrent );
     VTIG_HighColor := False;
   end;
 end;
