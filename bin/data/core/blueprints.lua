@@ -48,7 +48,7 @@ core.register_blueprint "trait"
 	master         = { false, core.TBOOL,   false },
 	abbr           = { true,  core.TSTRING },
 
-	OnPick         = { true,  core.TFUNC },
+	OnPick         = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
