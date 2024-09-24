@@ -12,6 +12,10 @@ require( "core:blueprints" )
 require( "core:ui" )
 require( "core:mortem" )
 
+core.options = {
+	auto_glow_items = true,
+}
+
 module = false
 
 register_cell = core.register_storage( "cells", "cell", function( c )
@@ -34,6 +38,8 @@ register_cell = core.register_storage( "cells", "cell", function( c )
 )
 
 function register_corpse( being_proto )
+	local frames = being_proto.sframes or 1
+	if frames < 1 then frames = 1 end
 	local proto = {
 		name = being_proto.name.." corpse";
 		ascii = "%";
@@ -41,14 +47,14 @@ function register_corpse( being_proto )
 		armor = math.max(being_proto.armor, 1);
 		hp = being_proto.hp;
 		flags = {CF_CORPSE, CF_NOCHANGE, CF_OVERLAY, CF_VBLOODY, CF_RAISABLE};
-		sprite = being_proto.sprite + 2 * DRL_COLS;
+		sprite = being_proto.sprite + frames * DRL_COLS;
 		set = CELLSET_FLOORS;
 		destroyto = "bloodpool";
 		raiseto = being_proto.id;
 	}
 	if being_proto.sflags[ SF_LARGE ] then
 		proto.sflags = { SF_LARGE }
-		proto.sprite = being_proto.sprite + 4 * DRL_COLS
+		proto.sprite = being_proto.sprite + frames * 2 * DRL_COLS
 	end
 	return register_cell( being_proto.id.."corpse" ) (proto)
 end
@@ -212,10 +218,18 @@ register_item          = core.register_storage( "items", "item", function( ip )
 
 		if ip.firstmsg then ip.OnFirstPickup = function () ui.msg("\""..ip.firstmsg.."\"") end end
 
-		if not ip.glow then
-			if ip.flags[ IF_EXOTIC ] then ip.glow = { 1.0, 0.5, 1.0, 0.8 } end
-			if ip.flags[ IF_UNIQUE ] then ip.glow = { 0.5, 1.0, 0.5, 0.8 } end
-		end
+		if core.options.auto_glow_items then
+			if not ip.glow then
+				if ip.flags[ IF_EXOTIC ] then 
+					ip.glow  = { 1.0, 0.5, 1.0, 0.8 }
+					ip.pglow = { 1.0, 0.5, 1.0, 0.8 }
+				end
+				if ip.flags[ IF_UNIQUE ] then
+					ip.glow  = { 0.5, 1.0, 0.5, 0.8 }
+					ip.pglow = { 0.5, 1.0, 0.5, 0.8 }
+				end		
+			end
+		end	
 
 		if type(ip.missile) == "table" then
 			if ip.flags[ IF_SHOTGUN ] then

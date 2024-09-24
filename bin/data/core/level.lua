@@ -232,7 +232,10 @@ end
 function level:drop_item_ext( item, c )
 	local id = item
 	if type(id) == "table"  then id = id[1] end
-	if type(id) == "string" then id = items[id].nid end
+	if type(id) == "string" then
+		assert( items[id], "item "..id.." not defined!" ) 
+		id = items[id].nid
+	end
 	local new_item = self:drop_item(id,c)
 	if type(item) == "table" then
 		for k,v in pairs(item) do
