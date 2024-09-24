@@ -539,7 +539,7 @@ begin
     Sleep(10);
     FullUpdate;
     HandleEvents;
-  until FLayers.IsEmpty;
+  until FLayers.IsEmpty or (not IsModal);
   if aHideHUD then
     FHudEnabled := True;
 end;
