@@ -48,7 +48,8 @@ protected
   FSize        : TIOPoint;
   FMode        : TMainMenuViewMode;
   FFirst       : Ansistring;
-  FIntro       : Ansistring;
+  FIntro1      : Ansistring;
+  FIntro2      : Ansistring;
   FResult      : TMenuResult;
   FSaveExists  : Boolean;
 
@@ -134,7 +135,10 @@ begin
   end;
 
   if FMode in [MAINMENU_FIRST,MAINMENU_INTRO] then
-    FIntro := AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetLogoText'], [] ) );
+  begin
+    FIntro1 := AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetLogoBox'], [] ) );
+    FIntro2 := AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetLogoText'], [] ) );
+  end;
 
   if GraphicsVersion then
   begin
@@ -217,12 +221,8 @@ end;
 
 procedure TMainMenuView.UpdateIntro;
 begin
-  VTIG_FreeLabel( '{rDRL version {R'+VERSION_STRING+'}}', Point( 28, 9 ) );
-  VTIG_FreeLabel( '{rby {RKornel Kisielewicz}}', Point( 28, 10 ) );
-  VTIG_FreeLabel( '{rgraphics by {RDerek Yu}}', Point( 28, 11 ) );
-  VTIG_FreeLabel( '{rand {RLukasz Sliwinski}}', Point( 28, 12 ) );
-
-  VTIG_FreeLabel( FIntro, Rectangle(2,14,77,11) );
+  VTIG_FreeLabel( FIntro1, Point( 28, 9 ) );
+  VTIG_FreeLabel( FIntro2, Rectangle(2,14,77,11) );
 
   if VTIG_EventCancel or VTIG_EventConfirm then
     FMode := MAINMENU_DONE;

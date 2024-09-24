@@ -563,6 +563,14 @@ function drl.OnCreateEpisode()
 	statistics.bonus_levels_count = SpecLevCount
 end
 
+function drl.GetLogoBox()
+	return
+[[{rDRL version {R]]..VERSION_STRING..[[}
+by {RKornel Kisielewicz}
+graphics by {RDerek Yu}
+and {RLukasz Sliwinski}}]]
+end
+
 function drl.GetLogoText()
 	return
 [[{rAdd. coding : {ytehtmi}, {yGame Hunter}, {yshark20061} and {yadd}
