@@ -35,6 +35,7 @@ var iOther, iValue : DWord;
     iTable   : TLuaTable;
 begin
   if Blocked[ aTrait ] then Exit( False );
+  if not LuaSystem.Defined(['traits',aTrait,'OnPick']) then Exit( False );
 
   with LuaSystem.GetTable(['klasses',Klass,'trait',aTrait]) do
   try
@@ -113,6 +114,7 @@ end;
 class function TTraits.CanPickInitially(aTrait: Byte; aKlassID: Byte): Boolean;
 begin
   CanPickInitially := True;
+  if not LuaSystem.Defined(['traits',aTrait,'OnPick']) then Exit( False );
 
   // #5 ReqLevel
   with LuaSystem.GetTable(['klasses',aKlassID,'trait',aTrait]) do

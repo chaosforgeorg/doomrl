@@ -1625,7 +1625,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 			for _,level_proto in pairs(levels) do
 				if level_proto.level then
 					if not (level_proto.chance and (math.random(100) > level_proto.chance)) then
-						local lev = resolverange(level_proto.level)
+						local lev = core.resolve_range(level_proto.level)
 						if lev % 2 == 0 then
 							player.episode[lev / 2].special = level_proto.id
 						end

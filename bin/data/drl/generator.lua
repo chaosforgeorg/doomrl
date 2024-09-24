@@ -57,7 +57,7 @@ function generator.run( gen )
 		if type( gen.rooms ) == "function" then
 			gen.rooms() 
 		elseif type( gen.rooms ) == "table" then
-			generator.handle_rooms( math.random( gen.rooms[1], gen.rooms[2] ), gen.rooms[3] )
+			generator.handle_rooms( math.random( gen.rooms[1], gen.rooms[2] ), gen.rooms[3], generator.fluid_to_perm )
 		end
 	end
 
@@ -119,18 +119,6 @@ function generator.item_amount()
 	return math.ceil( 21 - math.max( 25-level.danger_level, 0 ) / 3 )
 end
 
-function generator.restore_walls( wall_cell, keep_fluids )
-	core.log("generator.restore_walls("..wall_cell..")")
-	if keep_fluids then
-		for c in area.edges( area.FULL ) do
-			local sub = generator.fluid_to_perm[ cells[generator.get_cell( c )].id ] or wall_cell
-			generator.set_cell( c, sub )
-		end
-	else
-		generator.fill_edges( wall_cell )
-	end
-end
-
 function generator.horiz_river( cell, width, bridge )
 	local floor = generator.styles[ level.style ].floor
 	if bridge then bridge = 8 + math.random(60) else bridge = 100 end
@@ -143,7 +131,7 @@ function generator.horiz_river( cell, width, bridge )
 		end
 		if math.random(6) == 1 then y = math.min( math.max( y + math.random(3) - 2, 3 ), MAXY - width - 2 ) end
 	end
-	generator.restore_walls( generator.styles[ level.style ].wall, true )
+	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 end
 
 function generator.vert_river( cell, width, bridge, pos )
@@ -176,7 +164,7 @@ function generator.vert_river( cell, width, bridge, pos )
 	for y = y_start, 1, -1 do
 		iteration(y)
 	end
-	generator.restore_walls( generator.styles[ level.style ].wall, true )
+	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 end
 
 function generator.generate_rivers( allow_horiz, allow_more )
@@ -201,92 +189,6 @@ function generator.generate_rivers( allow_horiz, allow_more )
 			generator.vert_river( cell, math.random(3)+3, math.random(4) ~= 1 )
 		end
 	end
-end
-
--- TODO: use Cells generated cellsets!
-function generator.add_rooms()
-	core.log("generator.add_rooms()")
-	local cell_meta_list = { "wall", "rwall", "door", "odoor", }
-	local cell_meta = generator.cell_set( cell_meta_list )
-	local room_begin = function(c)
-		if c.x == MAXX or c.y == MAXY then return false end
-		if c.x == 1 then return cell_meta[ generator.get_cell( coord.new(2, c.y) ) ] end
-		if c.y == 1 then return cell_meta[ generator.get_cell( coord.new(c.x, 2) ) ] end
-		local meta_count = generator.cross_around( c, cell_meta_list )
-		if meta_count == 4 then return true end
-		if meta_count == 3
-			and cell_meta[ generator.get_cell( coord.new( c.x + 1, c.y ) ) ]
-			and cell_meta[ generator.get_cell( coord.new( c.x, c.y + 1 ) ) ]
-			then return true end
-		return false
-	end
-
-	for start in area.coords( area.FULL ) do
-		if room_begin( start ) then
-			local ec = coord.clone( start )
-			repeat
-				ec.x = ec.x + 1
-			until ec.x == MAXX or cell_meta[ generator.get_cell( coord.new( ec.x, start.y + 1 ) ) ]
-			repeat
-				ec.y = ec.y + 1
-			until ec.y == MAXY or cell_meta[ generator.get_cell( coord.new( start.x + 1, ec.y ) ) ]
-			generator.add_room( area.new( start, ec ) )
-		end
-	end
-end
-
-function generator.generate_tiled()
-	core.log("generator.generate_tiled_dungeon()")
-	local wall_cell    = cells[generator.styles[ level.style ].wall].nid
-	local door_cell    = cells[generator.styles[ level.style ].door].nid
-
-
-	local block = generator.cell_set{ wall_cell }
-
-	local plot = function( horiz, where )
-		generator.plot_lines( where, area.FULL, horiz, wall_cell, block )
-		generator.set_cell( where, door_cell )
-	end
-
-	local div_point = function( x, yrange, ymod )
-		return coord.new( x, math.random(yrange)*2+ymod )
-	end
-
-	local MAX2 = math.floor(MAXX / 2)
-	local MAX4 = math.floor(MAXX / 4)
-
-	local nfirst = 5
-	local ndoors = 8
-
-	plot( false, div_point( math.random(MAX4-2)*2+2,8,2 ) )
-	plot( false, div_point( math.random(MAX4-2)*2+MAX4*2-2,8,2 ) )
-	for i = 1,3 do
-		plot( true, div_point( math.random(MAX2-2)*2+1,8,1 ) )
-	end
-	for i = 1,nfirst do
-		if math.random(3) == 3 then
-			plot( true, div_point( math.random(MAX2-2)*2+1, 8,1 ) )
-		else
-			plot( false, div_point( math.random(MAX2-2)*2+2, 6,2 ) )
-		end
-	end
-
-	local door_positions = {}
-	for c in area.coords( area.FULL_SHRINKED ) do
-		if generator.get_cell( c ) == wall_cell
-		and generator.around( c, wall_cell ) == 2 then
-			table.insert( door_positions, c:clone() )
-		end
-	end
-
-	for i = 1,ndoors do
-		local pos = table.random_pick( door_positions )
-		if generator.around( pos, door_cell ) == 0 then
-			generator.set_cell( pos, door_cell )
-		end
-	end
-	generator.restore_walls( wall_cell )
-	generator.add_rooms()
 end
 
 function generator.generate_lava_dungeon()

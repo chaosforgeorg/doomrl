@@ -1,5 +1,6 @@
 generator.styles = {}
 generator.cell_sets = {}
+generator.cell_lists = {}
 generator.room_list = {}
 generator.room_meta = {}
 
@@ -7,6 +8,28 @@ function generator.cell_set( list )
 	local s = {}
 	for _,v in ipairs( list ) do
 		s[cells[v].nid] = true
+	end
+	return s
+end
+
+function generator.merge_cell_sets( list1, list2 )
+	local s = {}
+	for k,v in pairs( list1 ) do
+		s[k] = v
+	end
+	for k,v in pairs( list2 ) do
+		s[k] = v
+	end
+	return s
+end
+
+function generator.merge_cell_lists( list1, list2 )
+	local s = {}
+	for _,v in ipairs( list1 ) do
+		table.insert( s, v )
+	end
+	for _,v in ipairs( list2 ) do
+		table.insert( s, v )
 	end
 	return s
 end
@@ -182,8 +205,8 @@ function generator.safe_empty_coord( a )
 	return result
 end
 
-function generator.standard_empty_coord()
-	return generator.random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
+function generator.standard_empty_coord( param1, param2 )
+	return generator.random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }, param1, param2 )
 end
 
 function generator.set_permanence( ar, val, tile )
@@ -319,6 +342,39 @@ function generator.warehouse_fill( wall_cell, fill_area, boxsize, amount, specia
 	end
 end
 
+function generator.read_rooms()
+	core.log("generator.add_rooms()")
+	local room_list      = {}
+	local cell_meta      = generator.merge_cell_sets( generator.cell_sets[ CELLSET_WALLS ], generator.cell_sets[ CELLSET_DOORS ] )
+	local cell_meta_list = generator.merge_cell_lists( generator.cell_lists[ CELLSET_WALLS ], generator.cell_lists[ CELLSET_DOORS ] )
+	local room_begin = function(c)
+		if c.x == MAXX or c.y == MAXY then return false end
+		if c.x == 1 then return cell_meta[ generator.get_cell( coord.new(2, c.y) ) ] end
+		if c.y == 1 then return cell_meta[ generator.get_cell( coord.new(c.x, 2) ) ] end
+		local meta_count = generator.cross_around( c, cell_meta_list )
+		if meta_count == 4 then return true end
+		if meta_count == 3
+			and cell_meta[ generator.get_cell( coord.new( c.x + 1, c.y ) ) ]
+			and cell_meta[ generator.get_cell( coord.new( c.x, c.y + 1 ) ) ]
+			then return true end
+		return false
+	end
+
+	for start in area.coords( area.FULL ) do
+		if room_begin( start ) then
+			local ec = coord.clone( start )
+			repeat
+				ec.x = ec.x + 1
+			until ec.x == MAXX or cell_meta[ generator.get_cell( coord.new( ec.x, start.y + 1 ) ) ]
+			repeat
+				ec.y = ec.y + 1
+			until ec.y == MAXY or cell_meta[ generator.get_cell( coord.new( start.x + 1, ec.y ) ) ]
+			table.insert( room_list, area.new( start, ec ) )
+		end
+	end
+	return room_list
+end
+
 function generator.add_room( room, class )
 	local r = room:clone()
 	local rm = {}
@@ -328,6 +384,14 @@ function generator.add_room( room, class )
 	rm.size  = rm.dims.x * rm.dims.y
 	table.insert( generator.room_list, r )
 	generator.room_meta[ r ] = rm
+end
+
+function generator.add_rooms()
+	core.log("generator.add_rooms()")
+	local room_list = generator.read_rooms()
+	for _,room in ipairs( room_list ) do
+		generator.add_room( room )	
+	end
 end
 
 function generator.get_room( min_size, max_x, max_y, max_area, class )
@@ -347,7 +411,19 @@ function generator.get_room( min_size, max_x, max_y, max_area, class )
 	return table.random_pick( choice_list )
 end
 
-function generator.handle_rooms( count, no_monsters )
+function generator.restore_walls( wall_cell, fluid_to_perm )
+	core.log("generator.restore_walls("..wall_cell..")")
+	if fluid_to_perm then
+		for c in area.edges( area.FULL ) do
+			local sub = fluid_to_perm[ cells[generator.get_cell( c )].id ] or wall_cell
+			generator.set_cell( c, sub )
+		end
+	else
+		generator.fill_edges( wall_cell )
+	end
+end
+
+function generator.handle_rooms( count, no_monsters, restore_walls )
 	core.log("generator.handle_rooms()")
 	if count < 1 or #(generator.room_list) == 0 then return end
 	local choice = weight_table.new()
@@ -366,7 +442,7 @@ function generator.handle_rooms( count, no_monsters )
 			end
 		end
 	end
-	generator.restore_walls( generator.styles[ level.style ].wall, true )
+	generator.restore_walls( generator.styles[ level.style ].wall, restore_walls )
 end
 
 
@@ -447,3 +523,152 @@ function generator.generate_special_stairs( stairs_id, feelings )
 	return pos
 end
 
+function generator.generate_tiled_level( settings )
+	core.log("generator.generate_tiled_level()")
+	local settings     = settings or {}
+	local wall_cell    = settings.wall_cell  or cells[generator.styles[ level.style ].wall].nid
+	local door_cell    = settings.door_cell  or cells[generator.styles[ level.style ].door].nid
+	local floor_cell   = settings.floor_cell or cells[generator.styles[ level.style ].floor].nid
+
+	local block = generator.cell_set{ wall_cell }
+
+	local plot = function( horiz, where )
+		generator.plot_lines( where, area.FULL, horiz, wall_cell, block )
+		generator.set_cell( where, door_cell )
+	end
+
+	local div_point = function( x, yrange, ymult, ymod )
+		return coord.new( x, math.random(yrange)*ymult+ymod )
+	end
+
+	local MAX2 = math.floor(MAXX / 2)
+	local MAX4 = math.floor(MAXX / 4)
+	local MAX8 = math.floor(MAXX / 8)
+
+	local nfirst = settings.subdiv      or 5
+	local ndoors = settings.extra_doors or 4
+	local pdoors = settings.add_doors   or 8
+
+	if math.random(3) == 1 then
+		plot( false, div_point( math.random(MAX4-8)*2+4,       8,2,2 ) )
+		plot( false, div_point( math.random(MAX4-8)*2+4+MAX4*2,8,2,2 ) )
+	else
+		plot( false, div_point( math.random(MAX4-12)*2+4,            8,2,2 ) )
+		plot( false, div_point( math.random(MAX4-4)*2 + MAX2 - MAX4, 8,2,2 ) )
+		plot( false, div_point( math.random(MAX4-12)*2+8+MAX4*2,     8,2,2 ) )
+	end
+	for i = 1,4 do
+		plot( true, div_point( math.random(MAX8-6)*2+MAX4*(i-1)+2,4,4,1 ) )
+	end
+
+	for i = 1,nfirst do
+		if math.random(3) == 3 then
+			plot( true, div_point( math.random(MAX2-2)*2+1, 8,2,1 ) )
+		else
+			plot( false, div_point( math.random(MAX2-2)*2+2, 6,2,2 ) )
+		end
+	end
+
+	local door_positions = {}
+	local priority_doors = {}
+	
+	for c in area.coords( area.FULL_SHRINKED ) do
+		if generator.get_cell( c ) == wall_cell
+		and generator.around( c, door_cell ) == 0 
+		and generator.cross_around( c, wall_cell ) == 2
+		and generator.cross_around( c, floor_cell ) == 2
+		then
+			local walls = generator.around( c, wall_cell )
+			if walls > 4 then
+				if generator.around( c, door_cell ) == 0 then
+					generator.set_cell( c, door_cell )
+				end
+			elseif walls > 3 then
+				table.insert( priority_doors, c:clone() )
+			else
+				table.insert( door_positions, c:clone() )
+			end
+		end
+	end
+
+	for i = 1,pdoors do
+		local pos = table.random_remove( priority_doors )
+		if pos and generator.around( pos, door_cell ) == 0 then
+			generator.set_cell( pos, door_cell )
+		end
+	end
+
+	for i = 1,ndoors do
+		local pos = table.random_remove( door_positions )
+		if pos and generator.around( pos, door_cell ) == 0 then
+			generator.set_cell( pos, door_cell )
+		end
+	end
+
+	generator.restore_walls( wall_cell )
+	generator.add_rooms()
+end
+
+function generator.generate_archi_level( settings )
+	core.log("generator.generate_archi_level()")
+	assert( settings, "no settings for archi level!" )
+	local data = nil
+	if settings.size then
+		data = settings
+	else
+		assert( settings.data, "no data for archi level!" )
+		if settings.data.size then
+			data = settings.data
+		else
+			data = table.random_pick( settings.data )
+			assert( data.size, "malformed data for archi level!" )
+		end
+	end
+		
+	local wall_cell    = generator.styles[ level.style ].wall
+	local translation = {
+		["X"] = wall_cell,
+		["."] = generator.styles[ level.style ].floor,
+		["+"] = generator.styles[ level.style ].door,
+	}
+
+	generator.fill( wall_cell )
+
+	local blocks = data.blocks
+	local bsize  = data.size
+	local shift  = data.shift 
+	if not blocks then
+		blocks = coord.new( math.floor( (MAXX-1) / (bsize.x-1) ), math.floor( (MAXY-1) / (bsize.y-1) ) )
+	end
+	if not shift then
+		shift = coord.new( MAXX, MAXY ) - blocks * (bsize - coord.UNIT)
+		shift.x = math.max( 1, math.floor( shift.x / 2 ) )
+		shift.y = math.max( 1, math.floor( shift.y / 2 ) )
+	end
+	core.log( "blocks: "..blocks.x.."x"..blocks.y.." size: "..bsize.x.."x"..bsize.y.." shift: "..shift.x..","..shift.y )
+	if data.trans then
+		for k,v in pairs( data.trans ) do translation[k] = v end
+	end
+	if settings.trans then
+		for k,v in pairs( settings.trans ) do translation[k] = v end
+	end
+
+	for bx=1,blocks.x do
+		for by=1,blocks.y do
+			local block = table.random_pick( data )
+			local pos   = coord.new( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
+			local tile  = generator.tile_new( block, translation )
+			tile:flip_random()
+			generator.tile_place( pos, tile )
+		end
+	end
+
+	for c in generator.each( generator.styles[ level.style ].door ) do
+		if generator.cross_around( c, wall_cell ) > 2 then
+			generator.set_cell( c, wall_cell )
+		end
+	end
+
+	generator.restore_walls( wall_cell )
+	generator.generate_fluids(area.new(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
+end

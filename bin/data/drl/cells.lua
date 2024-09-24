@@ -226,6 +226,7 @@ function drl.register_cells()
 		armor      = 4,
 		hp         = 6,
 		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_FRAGILE, CF_OVERLAY, CF_STICKWALL, CF_OPENABLE, CF_RUNSTOP, CF_HIGHLIGHT},
+		set        = CELLSET_DOORS,
 		sprite     = { 
 			SPRITE_STRONGDOOR, 
 			SPRITE_DOOR,
@@ -252,6 +253,7 @@ function drl.register_cells()
 		name       = "open door",
 		ascii      = "/",
 		color      = BROWN,
+		set        = CELLSET_DOORS,
 		flags      = {CF_NOCHANGE, CF_NORUN, CF_OVERLAY, CF_STICKWALL, CF_CLOSABLE, CF_RUNSTOP, CF_NUKABLE, CF_HIGHLIGHT },
 		sprite     = {
 			SPRITE_STRONGOPENDOOR,
@@ -285,6 +287,7 @@ function drl.register_cells()
 		name       = "locked door",
 		ascii      = "+",
 		color      = BROWN,
+		set        = CELLSET_DOORS,
 		armor      = 6,
 		hp         = 6,
 		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_FRAGILE, CF_OVERLAY, CF_STICKWALL, CF_RUNSTOP},

@@ -551,7 +551,7 @@ function drl.OnCreateEpisode()
 	for _,pairing in ipairs(paired) do
 		local level_proto = levels[table.random_pick(pairing)]
 		if (not level_proto.canGenerate) or level_proto.canGenerate() then
-			player.episode[resolverange(level_proto.level)].special = level_proto.id
+			player.episode[core.resolve_range(level_proto.level)].special = level_proto.id
 		end
 	end
 	local SpecLevCount = 0

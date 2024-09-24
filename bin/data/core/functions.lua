@@ -1,5 +1,5 @@
 -- utils
-function seconds_to_string( secs )
+function core.seconds_to_string( secs )
 	local function plural( name, v )
 		if v == 0 then return nil end
 		if v > 1 then
@@ -28,8 +28,13 @@ function seconds_to_string( secs )
 	return table.concat(arr, ", ")
 end
 
-function resolverange(range)
+function core.resolve_range(range)
 	if type(range) == "number" then return range end
 	if type(range) ~= "table" then error("bad range designation!") end
 	return range[1] + math.random(range[2]-range[1]+1) - 1
+end
+
+function table.random_remove( t )
+	assert( type( t ) == "table" )
+	return table.remove( t, math.random( #t ) )
 end

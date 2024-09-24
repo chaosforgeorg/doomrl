@@ -100,7 +100,13 @@ Keytable["F8"]        = function()
 	end
 end
 Keytable["BSLASH"] = function() 
-	ui.msg('Visibility!')
+	ui.msg('Visibility! '..player.x..'x'..player.y)
+	for c in area.FULL() do
+		local cell = cells[ level.map[ c ] ]
+		if cell.flags[ CF_BLOCKMOVE ] or cell.flags[ CF_NOCHANGE ] then
+			level.light[ c ][LFEXPLORED] = true
+		end
+	end
 	level.flags[ LF_BEINGSVISIBLE ] = not level.flags[ LF_BEINGSVISIBLE ]
 	level.flags[ LF_ITEMSVISIBLE  ] = not level.flags[ LF_ITEMSVISIBLE  ]
 end

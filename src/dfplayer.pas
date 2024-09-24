@@ -99,8 +99,6 @@ TPlayer = class(TBeing)
   procedure ExamineNPC;
   procedure ExamineItem;
   private
-  function OnTraitConfirm( aSender : TUIElement ) : Boolean;
-  private
   FExp            : LongInt;
   FExpLevel       : Byte;
   private
@@ -414,14 +412,6 @@ begin
     Exit( True );
   end;
   Exit( False );
-end;
-
-function TPlayer.OnTraitConfirm ( aSender : TUIElement ) : Boolean;
-begin
-  with aSender as TUICustomMenu do
-    FTraits.Upgrade( Word(SelectedItem.Data) );
-  aSender.Parent.Free;
-  Exit( True );
 end;
 
 function TPlayer.PlayerTick : Boolean;
