@@ -562,8 +562,11 @@ begin
   begin
     VTIG_Text( FTraits[iSelected].Name, LightRed );
     VTIG_Ruler;
-    VTIG_Text( FTraits[iSelected].Quote, Yellow );
-    VTIG_Text( '' );
+    if FTraits[iSelected].Quote <> '' then
+    begin
+      VTIG_Text( FTraits[iSelected].Quote, Yellow );
+      VTIG_Text( '' );
+    end;
     VTIG_Text( FTraits[iSelected].Desc );
     VTIG_Text( '' );
     if FTraits[iSelected].Requires <> '' then
