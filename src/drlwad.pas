@@ -29,7 +29,6 @@ begin
 
   if FileExists( ModuleFile ) then DeleteFile( ModuleFile );
 
-  WADMAKE := True;
   WAD := TVDataCreator.Create(ModuleFile);
 
   WAD.Add(Path+'/*.lua',FILETYPE_LUA,[vdfCompressed], '' );

@@ -90,7 +90,6 @@ type
 
 const
   DEBUG           : Boolean = False;
-  WADMAKE         : Boolean = False;
   CRASHMODE       : Boolean = False;
   EXCEPTEMMITED   : Boolean = False;
   GraphicsVersion : Boolean = True;

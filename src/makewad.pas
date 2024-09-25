@@ -9,8 +9,6 @@ var WAD         : TVDataCreator;
 
 const UserKey : TIdeaCryptKey = (123,111,10,12,222,90,1,8);
 begin
-  WADMAKE := True;
-
   EnKeyIdea(UserKey,EKey);
   DeKeyIdea(EKey,DKKey);
   
