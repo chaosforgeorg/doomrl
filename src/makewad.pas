@@ -6,23 +6,17 @@ var WAD         : TVDataCreator;
     EKey,DKKey  : TIDEAKey;
     KeyFile     : Text;
     Count       : Byte;
+    ModuleID    : AnsiString;
+    Path        : AnsiString;
 
 const UserKey : TIdeaCryptKey = (123,111,10,12,222,90,1,8);
 begin
   EnKeyIdea(UserKey,EKey);
   DeKeyIdea(EKey,DKKey);
-  
-  WAD := TVDataCreator.Create('drl.wad');
-  WAD.SetKey( EKey );
 
-  WAD.Add('data/drl/help/*.hlp',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'help' );
-  WAD.Add('data/drl/ascii/*.asc',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'ascii' );
-  WAD.Add('data/drl/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], '' );
-  WAD.Add('data/drl/levels/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'levels' );
-  WAD.Add('data/drl/items/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'items' );
-  WAD.Add('data/drl/fonts/font*.png',FILETYPE_IMAGE,[], 'fonts' );
-  WAD.Add('data/drl/fonts/default',FILETYPE_RAW,[], 'fonts' );
-  WAD.Add('data/drl/graphics/*.png',FILETYPE_IMAGE,[], 'graphics' );
+  WAD := TVDataCreator.Create('core.wad');
+  WAD.Add('data/core/*.lua',FILETYPE_LUA,[vdfCompressed], '' );
+  FreeAndNil(WAD);
 
   Assign(KeyFile,'dkey.inc');
   Rewrite(KeyFile);
@@ -32,9 +26,30 @@ begin
   Writeln(KeyFile,DKKey[High(DKKey)],' );');
   Close(KeyFile);
 
-  FreeAndNil(WAD);
+  if ParamCount < 1
+    then ModuleID := 'drl'
+    else ModuleID := ParamStr(1);
 
-  WAD := TVDataCreator.Create('core.wad');
-  WAD.Add('data/core/*.lua',FILETYPE_LUA,[vdfCompressed], '' );
-  FreeAndNil(WAD);
+  begin
+    Path := 'data/' + ModuleID + '/';
+
+    WAD := TVDataCreator.Create(ModuleID+'.wad');
+    WAD.SetKey( EKey );
+
+    WAD.Add(Path+'help/*.hlp',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'help' );
+    WAD.Add(Path+'ascii/*.asc',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'ascii' );
+    WAD.Add(Path+'*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], '' );
+    WAD.Add(Path+'levels/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'levels' );
+    WAD.Add(Path+'items/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'items' );
+    WAD.Add(Path+'fonts/font*.png',FILETYPE_IMAGE,[], 'fonts' );
+    WAD.Add(Path+'fonts/default',FILETYPE_RAW,[], 'fonts' );
+    WAD.Add(Path+'graphics/*.png',FILETYPE_IMAGE,[], 'graphics' );
+    WAD.Add(Path+'sound/*.wav',FILETYPE_RAW,[vdfCompressed], 'sound' );
+    WAD.Add(Path+'music/*.ogg',FILETYPE_RAW,[], 'music' );
+    WAD.Add(Path+'music/*.mp3',FILETYPE_RAW,[], 'music' );
+    WAD.Add(Path+'music/*.mid',FILETYPE_RAW,[vdfCompressed], 'music' );
+
+    FreeAndNil(WAD);
+
+  end;
 end.
