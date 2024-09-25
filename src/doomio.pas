@@ -41,7 +41,7 @@ type TDoomIO = class( TIO )
 
   procedure EventMore;
 
-  procedure LoadStart( aAdd : DWord = 0 );
+  procedure LoadStart;
   function LoadCurrent : DWord;
   procedure LoadProgress( aProgress : DWord );
   procedure LoadStop;
@@ -799,11 +799,10 @@ begin
   end;
 end;
 
-procedure TDoomIO.LoadStart( aAdd : DWord = 0 );
+procedure TDoomIO.LoadStart;
 begin
   if FLoading = nil then
     FLoading := PushLayer( TLoadingView.Create( 100 ) ) as TLoadingView;
-  FLoading.Max := FLoading.Max + aAdd;
 end;
 
 function TDoomIO.LoadCurrent : DWord;

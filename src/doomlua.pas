@@ -39,7 +39,7 @@ end;
 
 implementation
 
-uses typinfo, variants, xmlread, dom,
+uses typinfo, variants,
      vnode, vdebug, viotypes, vluatools, vsystems, vluadungen, vluaentitynode,
      vmath, vtextures, vimage, vtigstyle,
      dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, doomgfxio, doomspritemap;
@@ -388,11 +388,15 @@ begin
 end;
 
 procedure TDoomLua.ReadWad;
-var iProgBase : DWord;
-    iPath     : Ansistring;
+var iProgBase    : DWord;
+    iPath        : Ansistring;
+    iAudioLoaded : Boolean;
+    iStream      : TStream;
 begin
+  iAudioLoaded := False;
+  IO.LoadStart;
   iProgBase := IO.LoadCurrent;
-  IO.LoadProgress(iProgBase + 10);
+  IO.LoadProgress(iProgBase);
 
   if GodMode then
   begin
@@ -414,35 +418,58 @@ begin
     iPath := DataPath + 'data' + PathDelim + CoreModuleID + PathDelim;
     RegisterModule( CoreModuleID, iPath );
     LoadFile( iPath + 'main.lua' );
-    IO.LoadProgress(iProgBase + 30);
+    IO.LoadProgress(iProgBase + 20);
     LoadFiles( iPath + 'help', @Help.StreamLoader, '*.hlp' );
-    IO.LoadProgress(iProgBase + 40);
+    IO.LoadProgress(iProgBase + 30);
     LoadFiles( iPath + 'ascii', @IO.ASCIILoader, '*.asc' );
-    IO.LoadProgress(iProgBase + 50);
+    IO.LoadProgress(iProgBase + 40);
     if GraphicsVersion then
       (IO as TDoomGFXIO).Textures.LoadTextureFolder( iPath + 'graphics' );
+    // temporary hack, remove once drllq and drlhq are modules
+    if FileExists( iPath + 'audio.lua' ) then
+    begin
+      IO.Audio.LoadBindingFile( iPath + 'audio.lua' );
+      iAudioLoaded := True;
+    end;
   end
   else
   begin
     FMainData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
     FMainData.DKKey := LoveLace;
     RegisterModule( CoreModuleID, FMainData );
-    IO.LoadProgress(iProgBase + 20);
+    IO.LoadProgress(iProgBase + 10);
     LoadStream(FMainData,'','main.lua');
-    IO.LoadProgress(iProgBase + 30);
+    IO.LoadProgress(iProgBase + 20);
     FMainData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
     FMainData.Load('help');
-    IO.LoadProgress(iProgBase + 40);
+    IO.LoadProgress(iProgBase + 30);
     FMainData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
     FMainData.Load('ascii');
-    IO.LoadProgress(iProgBase + 50);
+    IO.LoadProgress(iProgBase + 40);
     if GraphicsVersion then
     begin
       FMainData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
       FMainData.Load('graphics');
     end;
+    if FMainData.FileExists( 'audio.lua' ) then
+    begin
+      iStream := FMainData.GetFile( 'audio.lua' );
+      try
+         IO.Audio.LoadBindingStream( iStream, FMainData.GetFileSize( 'audio.lua' ), 'audio.lua' );
+         iAudioLoaded := True;
+      finally
+        FreeAndNil( iStream );
+      end;
+    end;
   end;
-  IO.LoadProgress(iProgBase + 100);
+
+  // temporary hack, remove once drllq and drlhq are modules
+  if not iAudioLoaded then
+     IO.Audio.LoadBindingFile( WritePath + 'audio.lua' );
+
+  IO.LoadProgress(iProgBase + 50);
+  IO.Audio.Load( FMainData );
+
 end;
 
 procedure TDoomLua.LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );

@@ -206,19 +206,13 @@ begin
 end;
 
 procedure TDoom.Load;
+var iDoomLua : TDoomLua;
 begin
   FreeAndNil( Config );
   IO.LoadStart;
   ColorOverrides := TIntHashMap.Create( );
   Config := TDoomConfig.Create( ConfigurationPath, True );
   IO.Configure( Config, True );
-  // temporary hack, remove once drllq and drlhq are modules
-  if FileExists( WritePath + 'data' + PathDelim + CoreModuleID + PathDelim + 'audio.lua' )
-    then IO.Audio.LoadFile( WritePath + 'data' + PathDelim + CoreModuleID + PathDelim + 'audio.lua' )
-    else IO.Audio.LoadFile( WritePath + 'audio.lua' );
-  IO.Audio.Load;
-  Reconfigure;
-
   FCoreHooks := [];
   FModuleHooks := [];
   FChallengeHooks := [];
@@ -227,13 +221,16 @@ begin
   Help := THelp.Create;
 
   SetState( DSLoading );
-  LuaSystem := Systems.Add(TDoomLua.Create()) as TLuaSystem;
+  iDoomLua   := TDoomLua.Create();
+  LuaSystem := Systems.Add( iDoomLua ) as TLuaSystem;
   LuaSystem.CallDefaultResult := True;
 //  Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
   ModuleID := CoreModuleID;
 
   LoadModule( True );
+  Reconfigure;
+
   if GraphicsVersion then
     (IO as TDoomGFXIO).Textures.Upload;
 

@@ -24,6 +24,8 @@ uses sysutils, math, vtig, doomio, doomgfxio, vgltypes;
 
 constructor TLoadingView.Create( aMax : DWord );
 begin
+  FMax     := aMax;
+  FCurrent := 0;
   VTIG_EventClear;
 end;
 
