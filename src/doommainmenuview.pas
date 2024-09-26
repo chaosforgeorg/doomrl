@@ -240,7 +240,7 @@ const
   TextSettings      = '{b----} Settings {b------}';
 
 const
-  JHCURL = 'http://jupiterhellclassic.com/';
+  JHCURL = 'https://store.steampowered.com/app/3126530/Jupiter_Hell_Classic/';
 
 procedure TMainMenuView.UpdateMenu;
 begin
