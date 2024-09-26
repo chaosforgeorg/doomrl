@@ -46,6 +46,7 @@ protected
   procedure RenderASCIILogo;
 protected
   FSize        : TIOPoint;
+  FRect        : TIORect;
   FMode        : TMainMenuViewMode;
   FFirst       : Ansistring;
   FIntro1      : Ansistring;
@@ -495,6 +496,7 @@ begin
       end;
       VTIG_EndGroup;
 
+  FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!Up},{!Down}> select, <{!Enter}> select, <{!Escape}> cancel}');
 
   if VTIG_EventCancel then
@@ -512,8 +514,7 @@ begin
     end;
     ReloadArrays;
   end;
-
-  IO.RenderUIBackground( PointZero, FSize );
+  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 procedure TMainMenuView.OnCancel;

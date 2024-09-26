@@ -11,6 +11,7 @@ type TRankUpView = class( TInterfaceLayer )
 protected
   FFinished : Boolean;
   FSize     : TPoint;
+  FRect     : TRectangle;
   FSRName   : Ansistring;
   FERName   : Ansistring;
 end;
@@ -49,11 +50,11 @@ begin
 
   VTIG_FreeLabel( 'Press <{!Enter}>...', Point( 12, 7 ) );
 
-
+  FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!Enter},{!Escape}> continue}');
   if VTIG_EventCancel or VTIG_EventConfirm then
     FFinished := True;
-  IO.RenderUIBackground( PointZero, FSize );
+  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 

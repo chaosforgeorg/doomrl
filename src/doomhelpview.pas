@@ -15,6 +15,7 @@ protected
   FMode    : ( HELPVIEW_MENU, HELPVIEW_READ, HELPVIEW_DONE );
   FCurrent : Byte;
   FSize    : TPoint;
+  FRect    : TRectangle;
 end;
 
 implementation
@@ -35,7 +36,7 @@ procedure THelpView.Update( aDTime : Integer );
 begin
        if FMode = HELPVIEW_MENU then UpdateMenu
   else if FMode = HELPVIEW_READ then UpdateRead;
-  IO.RenderUIBackground( PointZero, FSize );
+  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 function THelpView.IsFinished : Boolean;
@@ -55,6 +56,7 @@ begin
   for iText in Help.RegHelps[FCurrent].Text do
     VTIG_Text( iText );
   VTIG_Scrollbar;
+  FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!Up},{!Down}> scroll, <{!Enter},{!Escape}> return}');
   if VTIG_EventCancel or VTIG_EventConfirm then
     FMode := HELPVIEW_MENU;
@@ -86,9 +88,7 @@ begin
   VTIG_Text('  {!G}         - get item (pickup) from floor (SHIFT to use)');
   VTIG_Text('  ...          see "Controls" entry for the rest');
 
-
-
-
+  FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!Up},{!Down}> select, <{!Enter}> open, <{!Escape}> exit}');
   if iSelect > 0 then
   begin

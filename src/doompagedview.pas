@@ -13,6 +13,7 @@ protected
   FFinished : Boolean;
   FPage     : Integer;
   FSize     : TPoint;
+  FRect     : TRectangle;
   FContent  : TPagedReport;
 end;
 
@@ -62,8 +63,9 @@ begin
 
     if FContent.Headers[ FPage ] <> '' then
       VTIG_End;
+  FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!Up},{!Down}> scroll, <{!Left},{!Right}> pages, <{!Enter},{!Escape}> return}');
-  IO.RenderUIBackground( PointZero, FSize );
+  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 
   if VTIG_EventCancel or VTIG_EventConfirm then
     FFinished := True;
