@@ -917,7 +917,7 @@ var iEvent : TIOEvent;
 begin
   repeat
     if not FIODriver.PeekEvent( iEvent ) then Exit( False );
-    if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEUP ] then
+    if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEUP, VEVENT_KEYUP ] then
     begin
       FIODriver.PollEvent( iEvent );
       Continue;
