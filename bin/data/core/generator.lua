@@ -558,7 +558,7 @@ function generator.generate_tiled_level( settings )
 		plot( false, div_point( math.random(MAX4-12)*2+8+MAX4*2,     8,2,2 ) )
 	end
 	for i = 1,4 do
-		plot( true, div_point( math.random(MAX8-6)*2+MAX4*(i-1)+2,4,4,1 ) )
+		plot( true, div_point( math.random(MAX8-3)*2+(MAX4+1)*(i-1)+3,4,4,1 ) )
 	end
 
 	for i = 1,nfirst do
