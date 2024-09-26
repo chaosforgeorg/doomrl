@@ -148,8 +148,8 @@ begin
     then FPrevPos := FLastPos
     else FPrevPos := aTarget;
   FLastUID := 0;
-  if Doom.Level.Being[ aTarget ] <> nil then
-  FLastUID := Doom.Level.Being[ aTarget ].UID;
+  if Doom.Level.isVisible(aTarget) and (Doom.Level.Being[ aTarget ] <> nil) then
+    FLastUID := Doom.Level.Being[ aTarget ].UID;
   FLastPos := aTarget;
 end;
 
