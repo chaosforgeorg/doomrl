@@ -287,6 +287,9 @@ begin
   end
   else
     RecalculateScaling( False );
+  DeviceChanged;
+  TGLConsoleRenderer( FConsole ).HideCursor;
+
   inherited Reconfigure(aConfig);
 end;
 
