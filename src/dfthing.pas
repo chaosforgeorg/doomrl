@@ -27,7 +27,9 @@ protected
   FSprite     : TSprite;
   {$TYPEINFO ON}
 public
-  property Sprite     : TSprite  read FSprite  write FSprite;
+  property Sprite     : TSprite  read FSprite          write FSprite;
+published
+  property SpriteID   : DWord    read FSprite.SpriteID write FSprite.SpriteID;
 end;
 
 implementation
