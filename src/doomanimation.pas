@@ -231,10 +231,10 @@ var c1, c2, c3 : Byte;
 begin
   inherited Create( Max( aDuration, 1 ), aDelay, 0 );
   case aColor of
-    LightBlue: begin C1 := LightBlue;C2 := Cyan;       C3 := White;  end;
-    Blue     : begin C1 := Blue;     C2 := LightBlue;  C3 := White;  end;
+    LightBlue: begin C1 := LightBlue;C2 := Cyan;       C3 := LightBlue;  end;
+    Blue     : begin C1 := Blue;     C2 := LightBlue;  C3 := LightBlue;  end;
     Magenta  : begin C1 := Magenta;  C2 := Red;        C3 := Blue;   end;
-    Green    : begin C1 := Green;    C2 := LightGreen; C3 := White;  end;
+    Green    : begin C1 := Green;    C2 := LightGreen; C3 := LightGreen;  end;
     LightRed : begin C1 := LightRed; C2 := Yellow;     C3 := White;  end;
     Yellow   : begin C1 := Brown;    C2 := Yellow;     C3 := White;  end;
   else         begin C1 := Red;      C2 := LightRed;   C3 := Yellow; end;
