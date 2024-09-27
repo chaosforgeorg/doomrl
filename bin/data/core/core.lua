@@ -391,7 +391,7 @@ function core.proto_weight( proto, weights, one_only )
 	local weight = proto.weight
 	if not weights then return weight end
 	for k,w in pairs( weights ) do
-		if proto.flags[ k ] or proto[ k ] or proto.id == k then 
+		if proto.flags[ k ] or proto.tags[ k ] or proto[ k ] or proto.id == k then 
 			weight = weight * w 
 			if one_only then return weight end
 		end
