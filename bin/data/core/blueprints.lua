@@ -199,6 +199,7 @@ core.register_blueprint "being"
 	weight      = { true,  core.TNUMBER },
 	xp          = { false, core.TNUMBER },
 	bulk        = { false, core.TNUMBER , 100 },
+	tags        = { false, core.TTABLE, {} },
 	flags       = { false, core.TFLAGS, {} },
 	ai_type     = { true,  core.TSTRING }, -- TIDIN("ais")
 	is_group    = false,
@@ -230,6 +231,7 @@ core.register_blueprint "being_group"
 	max_lev  = { false, core.TNUMBER, 10000 },
 	weight   = { true,  core.TNUMBER },
 	beings   = { true,  core.TARRAY("being_group_entry") },
+	tags     = { false, core.TTABLE, {} },
 	is_group = true,
 }
 
@@ -351,6 +353,7 @@ core.register_blueprint "item"
 	rechargelimit  = { false, core.TNUMBER, 0 },
 	firstmsg       = { false, core.TSTRING },
 	resist         = { false, core.TTABLE },
+	tags           = { false, core.TTABLE, {} },
 
 	type        = {{
 		[ITEMTYPE_ARMOR] = {

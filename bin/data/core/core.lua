@@ -120,10 +120,14 @@ levels.default = {}
 register_requirement   = core.register_storage( "requirements", "requirement" )
 register_exp_rank      = core.register_array_storage( "exp_ranks",   "rank" )
 register_skill_rank    = core.register_array_storage( "skill_ranks", "rank" )
-register_being_group   = core.register_array_storage( "being_groups", "being_group" )
+register_being_group   = core.register_array_storage( "being_groups", "being_group", function( bgp )
+	bgp.tags = table.toset( bgp.tags )
+end
+)
 
 register_being         = core.register_storage( "beings", "being", function( bp )
 		bp.name_plural = bp.name_plural or bp.name.."s"
+		bp.tags        = table.toset( bp.tags )
 
 		bp.xp = bp.xp or (bp.danger*bp.danger*3+20)
 		bp.is_group = false
@@ -201,6 +205,7 @@ register_item          = core.register_storage( "items", "item", function( ip )
 			ip.OnEquip  = core.create_seq_function( OnEquip, ip.OnEquip )
 		end
 
+		ip.tags        = table.toset( ip.tags )
 		ip.flags[ ip.type ] = true
 		ip.is_unique  = ip.flags[ IF_UNIQUE ] or false
 		ip.is_exotic  = ip.flags[ IF_EXOTIC ] or false
