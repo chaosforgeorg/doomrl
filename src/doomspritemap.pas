@@ -850,7 +850,7 @@ begin
           iCell := Cells[ Bottom ];
           if iCell.Deco[ iDeco ].SpriteID <> 0 then
           begin
-            PushSpriteTerrain( X, Y, iCell.Deco[ iDeco ], Z + DRL_Z_ENVIRO + 1 );
+            PushSpriteTerrain( X, Y, GetSprite( iCell.Deco[ iDeco ] ), Z + DRL_Z_ENVIRO + 1 );
           end;
         end;
         if (SF_FLOOR in Spr.Flags) then

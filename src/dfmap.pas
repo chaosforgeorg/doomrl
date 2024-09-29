@@ -24,7 +24,7 @@ type TCell = class
   PicChr      : Char;
   PicLow      : Char;
   Sprite      : array[0..15] of TSprite;
-  Deco        : array[1..7]  of TSprite;
+  Deco        : array[1..16] of TSprite;
   BloodSprite : TSprite;
   LightColor  : array[0..15] of Byte;
   DarkColor   : Byte;
