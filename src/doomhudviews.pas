@@ -255,7 +255,7 @@ end;
 
 procedure TMoreLayer.Update( aDTime : Integer );
 begin
-  VTIG_FreeLabel( FPrompt, Point( 1, 2 ), Yellow )
+  VTIG_FreeLabel( FPrompt, Point( 3, 2 ), Yellow )
 end;
 
 function TMoreLayer.IsFinished : Boolean;
