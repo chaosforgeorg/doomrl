@@ -53,6 +53,17 @@ function generator.scatter(scatter_area,good,fill,count)
 	end
 end
 
+function generator.scatter_cross(scatter_area,good,fill,count)
+	if type(good) == "string" then good = cells[good].nid end
+	if type(fill) == "string" then fill = cells[fill].nid end
+	for c = 1, count do
+		local c = scatter_area:random_coord()
+		if generator.get_cell(c) == good and generator.cross_around( c, good ) == 4 then 
+			generator.set_cell(c, fill)
+		end
+	end
+end
+
 function generator.transmute_marker( marker, fill, ar )
 	local a = ar or area.FULL
 	for c in a() do 
