@@ -922,7 +922,8 @@ begin
       FIODriver.PollEvent( iEvent );
       Continue;
     end;
-  until True;
+    Break;
+  until False;
   Exit( iEvent.EType in [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ] );
 end;
 
