@@ -920,6 +920,8 @@ begin
     if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEUP, VEVENT_KEYUP ] then
     begin
       FIODriver.PollEvent( iEvent );
+      OnEvent( iEvent );
+      Root.OnEvent( iEvent );
       Continue;
     end;
     Break;
