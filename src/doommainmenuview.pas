@@ -51,6 +51,7 @@ protected
   FFirst       : Ansistring;
   FIntro1      : Ansistring;
   FIntro2      : Ansistring;
+  FMOTD        : Ansistring;
   FResult      : TMenuResult;
   FSaveExists  : Boolean;
 
@@ -134,6 +135,8 @@ begin
     else
       FMode := MAINMENU_INTRO;
   end;
+
+  FMOTD := AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetMOTD'], [] ) );
 
   if FMode in [MAINMENU_FIRST,MAINMENU_INTRO] then
   begin
@@ -295,7 +298,7 @@ begin
     VTIG_PopStyle;
   VTIG_End;
 
-  VTIG_FreeLabel('{BSupport the game by {Lwishlisting} the DRL expansion at {Ljupiterhellclassic.com}!}', Point(2,24) );
+  VTIG_FreeLabel( FMOTD, Point(2,24) );
 
 
   if VTIG_EventCancel then
