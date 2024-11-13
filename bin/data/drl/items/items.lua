@@ -1541,7 +1541,7 @@ function drl.register_regular_items()
 			ui.msg("Ammo dispenser. Dispensing requested ammo...")
 			self.charges = self.charges - 1
 			local ammo_id = items[being.eq.weapon.ammoid].id
-			level:drop_item( ammo_id, being.position )
+			level:drop_item( ammo_id, being.position, true )
 			return self.charges == 0
 		end,
 	}

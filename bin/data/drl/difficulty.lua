@@ -20,6 +20,7 @@ function drl.register_difficulties()
 		description = "He didn't like it too rough.",
 		code        = "{BM}",
 		expfactor   = 1.2,
+		ammofactor  = 1,
 	}
 
 	register_difficulty	"HMP" 
