@@ -74,8 +74,10 @@ begin
     if AffectHookOnAdd in Affects[affnum].Hooks then
       LuaSystem.ProtectedCall( [ 'affects',affnum,'OnAdd' ],[Player]);
   end;
-  if List[affnum] >= 0 then
-    List[affnum] += duration;
+  if List[affnum] >= 0
+    then List[affnum] += duration;
+  if duration = -1
+    then List[affnum] := duration;
 end;
 
 function    TAffects.Remove(affnum : Byte) : boolean;
