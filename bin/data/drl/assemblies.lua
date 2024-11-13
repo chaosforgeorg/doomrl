@@ -265,6 +265,7 @@ function drl.register_assemblies()
 			item.maxdurability = 100
 			item.movemod       = item.__proto.movemod
 			item.knockmod      = item.__proto.knockmod
+			item:reset_resistances()
 			item.resist.melee     = (item.resist.melee or 0) - 30
 			item.resist.fire      =  math.min( (item.resist.fire or 0) + 30, 95 )
 		end,
@@ -281,6 +282,7 @@ function drl.register_assemblies()
 			item.durability    = 100
 			item.maxdurability = 100
 			item.knockmod      = item.__proto.knockmod
+			item:reset_resistances()
 			item.resist.fire      =  math.min( (item.resist.fire or 0) + 30, 95 )
 		end,
 	}
@@ -295,6 +297,7 @@ function drl.register_assemblies()
 			item.name          = "ballistic "..item.name
 			item.movemod       = item.__proto.movemod
 			item.knockmod      = item.__proto.knockmod
+			item:reset_resistances()
 			item.resist.melee     = math.min( (item.resist.melee or 0) + 40, 95 )
 			item.resist.bullet    = math.min( (item.resist.bullet or 0) + 40, 95 )
 			item.resist.shrapnel  = math.min( (item.resist.shrapnel or 0) + 40, 95 )
@@ -345,6 +348,7 @@ function drl.register_assemblies()
 			item.name          = "lava "..item.name
 			item.movemod       = -30
 			item.knockmod      = -30
+			item:reset_resistances()
 			item.resist.fire      = 100
 			item.flags[ IF_NODURABILITY ] = true
 		end,
@@ -512,6 +516,7 @@ function drl.register_assemblies()
 			item.maxdurability = item.__proto.durability
 			item.durability    = math.min( item.durability, item.maxdurability )
 			local presist = item.__proto.resist or {}
+			item:reset_resistances()
 			item.resist.fire      = math.min( (presist.fire or 0) + 95, 95 )
 			item.resist.acid      = math.min( (presist.acid or 0) + 95, 95 )
 		end,
@@ -750,6 +755,7 @@ function drl.register_assemblies()
 			item.armor    = 0
 			item.movemod  = -30
 			item.knockmod = -30
+			item:reset_resistances()
 			item.resist.fire = 100
 			item.resist.acid = 100
 		end,
@@ -767,6 +773,7 @@ function drl.register_assemblies()
 			item.armor      = 0
 			item.movemod    = -30
 			item.knockmod   = -30
+			item:reset_resistances()
 			item.resist.fire   = 70
 			item.resist.acid   = 70
 			item.resist.plasma = 50

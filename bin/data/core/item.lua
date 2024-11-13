@@ -112,4 +112,13 @@ function item:apply_mod_array( ma )
 	player:add_history("On level @1 he assembled a "..ma.name.."!")
 end
 
+function item:reset_resistances()
+	self.resist.bullet   = (self.__proto.resist.bullet or 0)
+	self.resist.shrapnel = (self.__proto.resist.shrapnel or 0)
+	self.resist.melee    = (self.__proto.resist.melee or 0)
+	self.resist.fire     = (self.__proto.resist.fire or 0)
+	self.resist.acid     = (self.__proto.resist.acid or 0)
+	self.resist.plasma   = (self.__proto.resist.plasma or 0)
+end
+
 setmetatable(item,getmetatable(thing))
