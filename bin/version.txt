@@ -14,6 +14,7 @@
 [fix] -- GH#167: fixed Halls of Carnage flood not working half the time
 [fix] -- GH#169: resistances are reset before constructing an assembly
 [fix] -- GH#171: thrown weapon bonuses are now applied properly (hit/dmg)
+[fix] -- GH#173: Sharpshooter will apply to explosive pistols properly
 
 0.9.9.8a
 [fix] -- GH#---: fixed music volume adjustment issues

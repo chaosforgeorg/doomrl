@@ -1941,6 +1941,7 @@ var iDirection  : TDirection;
     iHit        : Boolean;
     iLevel      : TLevel;
     iStart      : TCoord2D;
+    iMaxDamage  : Boolean;
 begin
   if aItem = nil then Exit( False );
   if not aItem.isWeapon then Exit( False );
@@ -1990,7 +1991,8 @@ begin
 
   iMisslePath.Init( iLevel, iSource, aTarget );
 
-  if (BF_MAXDAMAGE in FFlags) or (( aItem.Flags[ IF_PISTOL ]) and ( BF_PISTOLMAX in FFlags ) ) then
+  iMaxDamage := (BF_MAXDAMAGE in FFlags) or (( aItem.Flags[ IF_PISTOL ]) and ( BF_PISTOLMAX in FFlags ) );
+  if iMaxDamage then
     iDamage := aItem.maxDamage
   else
     iDamage := aItem.rollDamage;
@@ -2130,7 +2132,7 @@ begin
     iRadius := aItem.BlastRadius;
     iRoll.Init(aItem.Damage_Dice, aItem.Damage_Sides, aItem.Damage_Add + aDamageMod );
 
-    if BF_MAXDAMAGE in FFlags then
+    if iMaxDamage then
       iRoll.Init( 0,0, iRoll.Max );
 
     iSound := IO.Audio.ResolveSoundID([aItem.ID+'.explode',Missiles[iMissile].soundID+'.explode','explode']);
