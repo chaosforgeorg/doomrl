@@ -860,7 +860,7 @@ begin
       case aWeapon.AltFire of
         ALT_THROW  :
         begin
-          SendMissile( aTarget, aWeapon, FBonus.ToHit + FBonus.ToHitMelee, FBonus.ToDam + FBonus.ToDamAll );
+          SendMissile( aTarget, aWeapon, 0, FBonus.ToDam + FBonus.ToDamAll, FBonus.ToHit + FBonus.ToHitMelee );
           Dec( FSpeedCount, 1000 );
           Exit( True );
         end;
