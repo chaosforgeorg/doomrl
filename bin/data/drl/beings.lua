@@ -1543,6 +1543,8 @@ function drl.register_beings()
 		flags        = { BF_OPENDOORS, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
 		ai_type      = "archvile_ai",
 
+		resist = { bullet = 90, shrapnel = 90, melee = 90, fire = 90, acid = 90, plasma = 90 },
+
 		desc            = "This seems so unreal, as though from another story...",
 		kill_desc       = "was killed by the Apostle",
 
