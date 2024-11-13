@@ -72,7 +72,7 @@ register_level "halls_of_carnage"
 			id         = "flood_lava_event",
 			timer      = 0,
 			step       = tick,
-			direction  = (math.random(2)*2)-3,
+			direction  = 1,
 			flood_min  = 0,
 			cell		= "lava",
 		}

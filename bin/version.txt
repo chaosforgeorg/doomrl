@@ -11,6 +11,7 @@
 [mod] -- GH#142: minor improvements in level generation
 [fix] -- GH#153: mouse will be properly updated during animations
 [fix] -- GH#166: fixed permanent berserk effect
+[fix] -- GH#167: fixed Halls of Carnage flood not working half the time
 
 0.9.9.8a
 [fix] -- GH#---: fixed music volume adjustment issues
