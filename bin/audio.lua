@@ -49,6 +49,7 @@ music = {
 	unholy_cathedral  = "data/drlhq/music/unholy_cathedral.mp3",
 	the_mortuary      = "data/drlhq/music/something_wicked.mp3",
 	the_vaults        = "data/drlhq/music/dark_secrets.mp3",
+	house_of_pain     = "data/drlhq/music/dark_secrets.mp3",
 	the_lava_pits     = "data/drlhq/music/too_hot_down_here.mp3",
 
 	phobos_lab        = "data/drlhq/music/cde1m5.mp3",
