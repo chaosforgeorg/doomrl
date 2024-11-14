@@ -6,16 +6,19 @@
 [new] -- GH#056: SHIFT-direction will perform a run
 [new] -- GH#056: smoother keyboard response and non-blocking animations
 [new] -- GH#142: nicer item modding interface
+[mod] -- GH#164: N! - enemies will not respawn in vision range
 [mod] -- GH#154: fire will retarget last out of vision tile if repeatedly firing
 [mod] -- GH#142: modding interface informs of potential assemblies
 [mod] -- GH#142: minor improvements in level generation
 [fix] -- GH#153: mouse will be properly updated during animations
 [fix] -- GH#166: fixed permanent berserk effect
 [fix] -- GH#167: fixed Halls of Carnage flood not working half the time
+[fix] -- GH#168: House of Pain is marked a NORESPAWN zone to prevent N! lock
 [fix] -- GH#169: resistances are reset before constructing an assembly
 [fix] -- GH#171: thrown weapon bonuses are now applied properly (hit/dmg)
 [fix] -- GH#173: Sharpshooter will apply to explosive pistols properly
 [fix] -- GH#176: ammo levers will respect the difficulty modifier
+[fix] -- GH#178: House of Pain uses the same music as the Vaults
 
 0.9.9.8a
 [fix] -- GH#---: fixed music volume adjustment issues

@@ -1033,17 +1033,18 @@ begin
   for coord in FArea do
     if Being[ coord ] = nil then
       if cellFlagSet( coord ,CF_RAISABLE ) then
-        if Random(100) < Chance then
-        try
-          iBeing := TBeing.Create( Cells[ GetCell(coord) ].raiseto );
-          DropBeing( iBeing, coord );
-          iBeing.Flags[ BF_NOEXP ] := True;
-          // XXX: No farming?
-          iBeing.Flags[ BF_NODROP ] := False;
-          Cell[ coord ] := LuaSystem.Defines[ Cells[ GetCell(coord) ].destroyto ];
-        except
-          on EPlacementException do FreeAndNil( iBeing );
-        end;
+        if not isVisible( coord ) then
+          if Random(100) < Chance then
+          try
+            iBeing := TBeing.Create( Cells[ GetCell(coord) ].raiseto );
+            DropBeing( iBeing, coord );
+            iBeing.Flags[ BF_NOEXP ] := True;
+            // XXX: No farming?
+            iBeing.Flags[ BF_NODROP ] := False;
+            Cell[ coord ] := LuaSystem.Defines[ Cells[ GetCell(coord) ].destroyto ];
+          except
+            on EPlacementException do FreeAndNil( iBeing );
+          end;
 
 end;
 
