@@ -151,7 +151,7 @@ register_level "house_of_pain"
 			ui.msg("No? All right, I'll see you out then.")
 			generator.set_cell( coord.new(14,11), "stairs" )
 		end
-
+		level.flags[ LF_NORESPAWN ] = true
 	end,
 
 	OnExit = function ()
