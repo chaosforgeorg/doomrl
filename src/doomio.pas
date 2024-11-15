@@ -87,7 +87,7 @@ type TDoomIO = class( TIO )
   function PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer; virtual;
   function IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
   function IsModal : Boolean;
-  procedure Tick( aDTick : Integer );
+  procedure PreAction;
   procedure Clear;
   function OnEvent( const event : TIOEvent ) : Boolean; override;
 
@@ -124,6 +124,7 @@ protected
   FHint        : AnsiString;
   FHintOverlay : AnsiString;
   FHintTarget  : AnsiString;
+  FCachedAmmo  : Integer;
 
   // Textmode only
   FTargetLast     : Boolean;
@@ -366,6 +367,7 @@ begin
 
   FTargetEnabled := False;
   FTargetLast    := False;
+  FCachedAmmo    := -1;
 end;
 
 function TDoomIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
@@ -389,16 +391,15 @@ begin
   Exit( False );
 end;
 
-procedure TDoomIO.Tick( aDTick : Integer );
-var iLayer : TInterfaceLayer;
+procedure TDoomIO.PreAction;
 begin
-  for iLayer in FLayers do
-    iLayer.Tick( aDTick );
+  FCachedAmmo := -1;
 end;
 
 procedure TDoomIO.Clear;
 var iLayer : TInterfaceLayer;
 begin
+  FCachedAmmo := -1;
   for iLayer in FLayers do
     iLayer.Free;
   FLayers.Clear;
@@ -605,12 +606,14 @@ end;
 
 procedure TDoomIO.DrawHud;
 var iCon        : TUIConsole;
+    iWeapon     : TItem;
     i, iMax     : DWord;
     iColor      : TUIColor;
     iHPP        : Integer;
     iPos        : TIOPoint;
     iBottom     : Integer;
     iLevelName  : string[64];
+    iDesc       : Ansistring;
     iCNormal    : DWord;
     iCBold      : DWord;
     iCurrent    : DWord;
@@ -661,37 +664,50 @@ begin
 
   if Player <> nil then
   begin
-    iPos    := Point( 2,FConsole.SizeY-3 );
+    iPos    := Point( 1,FConsole.SizeY-3 );
     iBottom := FConsole.SizeY-1;
     if GraphicsVersion then
     begin
       if FNarrowMode then
       begin
-        iPos    := Point( 2,FConsole.SizeY-3 );
+        iPos    := Point( 1,FConsole.SizeY-3 );
         iBottom := FConsole.SizeY-4;
       end
       else
       begin
-        iPos    := Point( 2,FConsole.SizeY-2 );
+        iPos    := Point( 1,FConsole.SizeY-2 );
         iBottom := FConsole.SizeY-3;
       end;
     end;
     iHPP    := Round((Player.HP/Player.HPMax)*100);
 
-    VTIG_FreeLabel( 'Armor :',                            iPos + Point(28,0), iCNormal );
+    VTIG_FreeLabel( 'A:',                                 iPos + Point(28,0), iCNormal );
     VTIG_FreeLabel( Player.Name,                          iPos + Point(1,0),  NameColor(iHPP) );
-    VTIG_FreeLabel( 'Health:      Exp:   /      Weapon:', iPos + Point(1,1),  iCNormal );
+    VTIG_FreeLabel( 'Health:      Exp:   /      W:',      iPos + Point(1,1),  iCNormal );
     VTIG_FreeLabel( IntToStr(iHPP)+'%',                   iPos + Point(9,1),  Red );
     VTIG_FreeLabel( TwoInt(Player.ExpLevel),              iPos + Point(19,1), iCBold );
     VTIG_FreeLabel( ExpString,                            iPos + Point(22,1), iCBold );
 
-    if Player.Inv.Slot[efWeapon] = nil
-      then VTIG_FreeLabel( 'none',                                iPos + Point(36,1), iCBold )
-      else VTIG_FreeLabel( Player.Inv.Slot[efWeapon].Description, iPos + Point(36,1), WeaponColor(Player.Inv.Slot[efWeapon]) );
+    iWeapon := Player.Inv.Slot[efWeapon];
+    if iWeapon = nil
+      then VTIG_FreeLabel( 'none',                                iPos + Point(31,1), iCBold )
+      else
+      begin
+        if iWeapon.isRanged and ( not iWeapon.Flags[ IF_NOAMMO ] ) and ( not iWeapon.Flags[ IF_RECHARGE ] ) then
+        begin
+          if FCachedAmmo = -1 then
+            FCachedAmmo := Player.Inv.CountAmmo( iWeapon.AmmoID );
+          iDesc := Player.Inv.Slot[efWeapon].Description;
+          VTIG_FreeLabel( iDesc, iPos + Point(31,1), WeaponColor(Player.Inv.Slot[efWeapon]) );
+          VTIG_FreeLabel( ' ({0})', iPos + Point(31+Length(iDesc),1), [ FCachedAmmo ], iCNormal );
+        end
+        else
+          VTIG_FreeLabel( Player.Inv.Slot[efWeapon].Description, iPos + Point(31,1), WeaponColor(Player.Inv.Slot[efWeapon]) );
+      end;
 
     if Player.Inv.Slot[efTorso] = nil
-      then VTIG_FreeLabel( 'none',                                iPos + Point(36,0), iCBold )
-      else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(36,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
+      then VTIG_FreeLabel( 'none',                                iPos + Point(31,0), iCBold )
+      else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(31,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
 
     iColor := Red;
     if Doom.Level.Empty then iColor := Blue;
@@ -717,8 +733,7 @@ begin
         VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
   end;
 
-  iOffset := -1;
-  if FNarrowMode then iOffset := -3;
+  iOffset := -2;
 
   if FHintOverlay <> ''
     then VTIG_FreeLabel( ' '+FHintOverlay+' ', Point( iOffset-Length( FHintOverlay ), 2 ), Yellow )
@@ -727,9 +742,7 @@ begin
       else if (FHintTarget <> '') and Setting_AutoTarget
         then VTIG_FreeLabel( ' '+FHintTarget+' ', Point( iOffset-Length( FHintTarget ), 2 ), Brown );
 
-  iOffset := 1;
-  if FNarrowMode then iOffset := 3;
-
+  iOffset := 2;
   for i := 1 to 2 do
   begin
     if i > FMessages.Size then Continue;

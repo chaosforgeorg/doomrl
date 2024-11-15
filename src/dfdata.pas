@@ -75,7 +75,6 @@ end;
 
 type TInterfaceLayer = class
   procedure Update( aDTime : Integer ); virtual; abstract;
-  procedure Tick( aDTick : Integer ); virtual;
   function IsFinished : Boolean; virtual; abstract;
   function IsModal : Boolean; virtual;
   function HandleEvent( const aEvent : TIOEvent ) : Boolean; virtual;
@@ -421,10 +420,6 @@ begin
   if (iLine = '') and ( aStream.Position >= aSize )
     then Result := ''
     else Result := iLine;
-end;
-
-procedure TInterfaceLayer.Tick( aDTick : Integer );
-begin
 end;
 
 function TInterfaceLayer.IsModal : Boolean;

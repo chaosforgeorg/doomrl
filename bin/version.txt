@@ -6,6 +6,7 @@
 [new] -- GH#056: SHIFT-direction will perform a run
 [new] -- GH#056: smoother keyboard response and non-blocking animations
 [new] -- GH#142: nicer item modding interface
+[new] -- GH#179: info on total ammo after weapon name
 [mod] -- GH#164: all % kill requirements (including 100%) now wont count respawns
 [mod] -- GH#164: added info on kill % to both mortem and level/char info
 [mod] -- GH#164: N! - enemies will not respawn in vision range

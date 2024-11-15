@@ -20,6 +20,7 @@ TInventory = class( TVObject )
        function  Size : byte;
        procedure Add( aItem : TItem );
        function  SeekAmmo( aAmmoID : DWord ) : TItem;
+       function  CountAmmo( aAmmoID : DWord ) : Integer;
        function  AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
        function  isFull : boolean;
        procedure RawSetSlot( aIndex : TEqSlot; aItem : TItem ); inline;
@@ -136,6 +137,18 @@ begin
          iAmmoCount := iAmmo.Ammo;
        end;
 end;
+
+function TInventory.CountAmmo( aAmmoID : DWord ) : Integer;
+var iAmmo      : TItem;
+begin
+  CountAmmo := 0;
+  if aAmmoID = 0 then Exit( 0 );
+  for iAmmo in Self do
+     if iAmmo.isAmmo then
+       if iAmmo.NID = aAmmoID then
+         CountAmmo += iAmmo.Ammo;
+end;
+
 
 function TInventory.AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
 var iAmount   : Word;
