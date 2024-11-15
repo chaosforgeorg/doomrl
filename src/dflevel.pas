@@ -850,7 +850,11 @@ begin
   if aBeing = nil then Exit;
   aCoord := FMapArea.Drop( aCoord, [ EF_NOTELE,EF_NOBEINGS,EF_NOBLOCK,EF_NOSTAIRS ] );
   Add( aBeing, aCoord );
-  if not aBeing.IsPlayer then Player.FKills.MaxCount := Player.FKills.MaxCount + 1;
+  if not aBeing.IsPlayer then
+  begin
+    Player.FKills.MaxCount := Player.FKills.MaxCount + 1;
+    if not aBeing.Flags[ BF_RESPAWN ] then Player.FKillMax := Player.FKillMax + 1;
+  end;
 end;
 
 procedure TLevel.Remove ( Node : TNode ) ;

@@ -1502,7 +1502,7 @@ begin
   end;
 
   // TODO: Change to Player.RegisterKill(kill)
-  Player.RegisterKill( FID, aKiller, aWeapon );
+  Player.RegisterKill( FID, aKiller, aWeapon, not Flags[ BF_RESPAWN ] );
 
   if (aKiller <> nil) and (aWeapon <> nil) then
     aWeapon.CallHook(Hook_OnKill, [ aKiller, Self ]);

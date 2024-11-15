@@ -65,6 +65,8 @@ TPlayer = class(TBeing)
 
   FStatistics     : TStatistics;
   FKills          : TKillTable;
+  FKillMax        : DWord;
+  FKillCount      : DWord;
   FTraits         : TTraits;
   FRun            : TRunData;
   FTactic         : TTacticData;
@@ -82,7 +84,7 @@ TPlayer = class(TBeing)
   function GetRunInput : TInputKey;
   procedure LevelEnter;
   procedure doUpgradeTrait;
-  procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem );
+  procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem; aUnique : Boolean );
   procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); override;
   procedure LevelUp;
   procedure AddExp( aAmount : LongInt );
@@ -131,7 +133,7 @@ var   Player : TPlayer;
 implementation
 
 uses math, vuid, vpath, variants, vioevent, vgenerics,
-     vnode, vcolor, vuielements, vdebug, vluasystem,
+     vnode, vcolor, vdebug, vluasystem,
      dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doombase,
      doomlua, doominventory, doomplayerview, doomhudviews;
@@ -157,11 +159,13 @@ procedure TStatistics.Update;
 var iRealTime : Comp;
 begin
   iRealTime := RealTime + MSecNow() - GameRealTime;
-  Map['real_time']    := Round(iRealTime / 1000);
-  Map['real_time_ms'] := Round(iRealTime);
-  Map['game_time']    := GameTime;
-  Map['kills']        := Player.FKills.Count;
-  Map['max_kills']    := Player.FKills.MaxCount;
+  Map['real_time']       := Round(iRealTime / 1000);
+  Map['real_time_ms']    := Round(iRealTime);
+  Map['game_time']       := GameTime;
+  Map['kills']           := Player.FKills.Count;
+  Map['max_kills']       := Player.FKills.MaxCount;
+  Map['unique_kills']    := Player.FKillCount;
+  Map['max_unique_kills']:= Player.FKillMax;
 end;
 
 procedure TStatistics.UpdateNDCount( aCount : DWord );
@@ -246,6 +250,8 @@ begin
 
   FTraits.Clear;
   FKills := TKillTable.Create;
+  FKillMax        := 0;
+  FKillCount      := 0;
   FRun.Clear;
   FTactic.Clear;
   FAffects.Clear;
@@ -296,6 +302,8 @@ begin
   Stream.WriteByte( FExpLevel );
   Stream.WriteDWord( FExp );
   Stream.WriteDWord( FScore );
+  Stream.WriteDWord( FKillMax );
+  Stream.WriteDWord( FKillCount );
   Stream.WriteDWord( FBersekerLimit );
 
   Stream.Write( FExpFactor, SizeOf( FExpFactor ) );
@@ -320,6 +328,8 @@ begin
   FExpLevel      := Stream.ReadByte();
   FExp           := Stream.ReadDWord();
   FScore         := Stream.ReadDWord();
+  FKillMax       := Stream.ReadDWord();
+  FKillCount     := Stream.ReadDWord();
   FBersekerLimit := Stream.ReadDWord();
 
   Stream.Read( FExpFactor, SizeOf( FExpFactor ) );
@@ -389,7 +399,7 @@ begin
   inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource );
 end;
 
-procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem ) ;
+procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem; aUnique : Boolean ) ;
 var iKillClass : AnsiString;
 begin
   iKillClass := 'other';
@@ -400,6 +410,7 @@ begin
       iKillClass := aWeapon.ID;
   end;
   FKills.Add( aKilledID, iKillClass );
+  if aUnique then Inc( FKillCount );
 end;
 
 function TPlayer.RunPath( const aCoord : TCoord2D ) : boolean;
