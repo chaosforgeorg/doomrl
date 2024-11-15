@@ -6,6 +6,8 @@
 [new] -- GH#056: SHIFT-direction will perform a run
 [new] -- GH#056: smoother keyboard response and non-blocking animations
 [new] -- GH#142: nicer item modding interface
+[mod] -- GH#164: all % kill requirements (including 100%) now wont count respawns
+[mod] -- GH#164: added info on kill % to both mortem and level/char info
 [mod] -- GH#164: N! - enemies will not respawn in vision range
 [mod] -- GH#164: Respawns (N! and Archvile) will not drop items
 [mod] -- GH#154: fire will retarget last out of vision tile if repeatedly firing
