@@ -1455,7 +1455,9 @@ begin
             iBeing := TBeing.Create( Cells[ iCellID ].raiseto );
             iLevel.DropBeing( iBeing, sc );
             iLevel.Cell[sc] := LuaSystem.Defines[ Cells[ iCellID ].destroyto ];
-            Include( iBeing.FFlags, BF_NoExp );
+            Include( iBeing.FFlags, BF_NOEXP );
+            Include( iBeing.FFlags, BF_NODROP );
+            Include( iBeing.FFlags, BF_RESPAWN );
             if isVisible then IO.Msg(Capitalized(GetName(true))+' raises his arms!');
             if iBeing.isVisible then IO.Msg(Capitalized( iBeing.GetName(true))+' suddenly rises from the dead!');
           except

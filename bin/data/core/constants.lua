@@ -102,6 +102,8 @@ BF_SELFIMMUNE   = 49;
 BF_KNOCKIMMUNE  = 50;
 BF_NOHEAL       = 51;
 BF_GUNRUNNER    = 52;
+BF_RESPAWN      = 53;
+
 
 IF_UNIQUE         = 21;
 IF_EXOTIC         = 22;

@@ -7,6 +7,7 @@
 [new] -- GH#056: smoother keyboard response and non-blocking animations
 [new] -- GH#142: nicer item modding interface
 [mod] -- GH#164: N! - enemies will not respawn in vision range
+[mod] -- GH#164: Respawns (N! and Archvile) will not drop items
 [mod] -- GH#154: fire will retarget last out of vision tile if repeatedly firing
 [mod] -- GH#142: modding interface informs of potential assemblies
 [mod] -- GH#142: minor improvements in level generation

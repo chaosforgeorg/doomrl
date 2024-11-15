@@ -1038,9 +1038,9 @@ begin
           try
             iBeing := TBeing.Create( Cells[ GetCell(coord) ].raiseto );
             DropBeing( iBeing, coord );
-            iBeing.Flags[ BF_NOEXP ] := True;
-            // XXX: No farming?
-            iBeing.Flags[ BF_NODROP ] := False;
+            iBeing.Flags[ BF_RESPAWN ] := True;
+            iBeing.Flags[ BF_NOEXP   ] := True;
+            iBeing.Flags[ BF_NODROP ]  := True;
             Cell[ coord ] := LuaSystem.Defines[ Cells[ GetCell(coord) ].destroyto ];
           except
             on EPlacementException do FreeAndNil( iBeing );
