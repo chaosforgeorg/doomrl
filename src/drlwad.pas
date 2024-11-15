@@ -1,6 +1,6 @@
 {$INCLUDE doomrl.inc}
 program drlwad;
-uses Classes, SysUtils, strutils, vpkg, vdf, vutil, dfdata, doommodule;
+uses Classes, SysUtils, strutils, vpkg, vdf, vutil, dfdata;
 
 var WAD         : TVDataCreator;
     ModuleID    : AnsiString;
