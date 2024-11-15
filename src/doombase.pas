@@ -542,6 +542,7 @@ begin
   iLimitRange := False;
   iFireTitle  := '';
   iChainFire  := Player.ChainFire;
+  if iChainFire > 0 then aAuto := False;
   Player.ChainFire := 0;
 
   iItem := Player.Inv.Slot[ efWeapon ];

@@ -892,8 +892,12 @@ begin
     if iDist > iRange then Exit( False );
   end;
 
-  if (iAltFire = ALT_CHAIN) and ( iChainFire > 0 ) then
-    FTargetPos := Doom.Targeting.PrevPos;
+  if (iAltFire = ALT_CHAIN) then
+  begin
+    if ( iChainFire > 0 )
+      then FTargetPos := Doom.Targeting.PrevPos
+      else FTargetPos := aTarget;
+  end;
   FChainFire := iChainFire;
 
   iEnemy    := TLevel(Parent).Being[ aTarget ];
