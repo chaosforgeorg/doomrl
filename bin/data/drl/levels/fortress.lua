@@ -125,7 +125,7 @@ register_level "unholy_cathedral"
 		level:set_generator_style( 1 )
 		generator.fill( "rwall", area.FULL )
 		local reward = "spear"
-		if statistics.kills == statistics.max_kills and DIFFICULTY >= DIFF_HARD then
+		if statistics.unique_kills == statistics.max_unique_kills and DIFFICULTY >= DIFF_HARD then
 			reward = "uscythe"
 		end
 		if player:has_medal("hellchampion3") then

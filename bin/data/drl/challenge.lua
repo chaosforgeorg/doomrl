@@ -118,21 +118,21 @@ function drl.register_challenges()
 			if player.depth >= 9  then player:add_badge("berserker1") end
 			if player:has_won() then
 
-				if statistics.kills == statistics.max_kills then
+				if statistics.unique_kills == statistics.max_unique_kills then
 					player:add_medal("gargulec1")
 				end
 				player:add_badge("berserker2")
 				if DIFFICULTY >= DIFF_HARD  then
 					player:add_badge("berserker3")
 				end
-				if DIFFICULTY >= DIFF_VERYHARD and statistics.kills >= statistics.max_kills* 0.75 then
+				if DIFFICULTY >= DIFF_VERYHARD and statistics.unique_kills >= statistics.max_unique_kills * 0.75 then
 					player:add_badge("berserker4")
-					if statistics.kills == statistics.max_kills then
+					if statistics.unique_kills == statistics.max_unique_kills then
 						player:add_medal("gargulec2")
 						player:remove_medal("gargulec1")
 					end
 				end
-				if DIFFICULTY >= DIFF_NIGHTMARE and statistics.kills >= statistics.max_kills * 0.6 then
+				if DIFFICULTY >= DIFF_NIGHTMARE and statistics.unique_kills >= statistics.max_unique_kills * 0.6 then
 					player:add_badge("berserker5")
 				end
 				if SCHALLENGE == "challenge_aoms" and DIFFICULTY >= DIFF_NIGHTMARE then
@@ -182,7 +182,7 @@ function drl.register_challenges()
 	register_badge "marksman6"
 	{
 		name  = "Marksman Angelic Badge",
-		desc  = "Complete AoMr+AoD on N!/50% kills",
+		desc  = "Complete AoMr+AoD on N!/75% kills",
 		level = 6,
 	}
 
@@ -223,13 +223,13 @@ function drl.register_challenges()
 				player:add_badge("marksman2")
 				if DIFFICULTY >= DIFF_VERYHARD  then
 					player:add_badge("marksman3")
-					if statistics.kills == statistics.max_kills then
+					if statistics.unique_kills == statistics.max_unique_kills then
 						player:add_badge("marksman4")
 					end
 				end
 				if DIFFICULTY >= DIFF_NIGHTMARE then
 					player:add_badge("marksman5")
-					if SCHALLENGE == "challenge_aod" and statistics.kills >= statistics.max_kills * 0.5 then
+					if SCHALLENGE == "challenge_aod" and statistics.unique_kills >= statistics.max_unique_kills * 0.75 then
 						player:add_badge("marksman6")
 					end
 				end
@@ -277,7 +277,7 @@ function drl.register_challenges()
 	register_badge "shotgun6"
 	{
 		name  = "Shottyman Angelic Badge",
-		desc  = "Complete AoSh+AoOC on N!/50% kills",
+		desc  = "Complete AoSh+AoOC on N!/75% kills",
 		level = 6,
 	}
 
@@ -327,8 +327,8 @@ function drl.register_challenges()
 				if DIFFICULTY >= DIFF_VERYHARD  then player:add_badge("shotgun3") end
 				if DIFFICULTY >= DIFF_NIGHTMARE then
 					player:add_badge("shotgun4")
-					if statistics.kills >= statistics.max_kills * 0.8 then player:add_badge("shotgun5") end
-					if SCHALLENGE == "challenge_aooc" and statistics.kills >= statistics.max_kills * 0.5 then
+					if statistics.unique_kills >= statistics.max_unique_kills * 0.8 then player:add_badge("shotgun5") end
+					if SCHALLENGE == "challenge_aooc" and statistics.unique_kills >= statistics.max_unique_kills * 0.75 then
 						player:add_badge("shotgun6")
 					end
 				end
@@ -529,7 +529,7 @@ function drl.register_challenges()
 				if DIFFICULTY >= DIFF_VERYHARD  and klasses[player.klass].id ~= "marine"     then player:add_badge("impatient4") end
 				if DIFFICULTY >= DIFF_NIGHTMARE and klasses[player.klass].id == "technician" then player:add_badge("impatient5") end
 				if DIFFICULTY >= DIFF_NIGHTMARE and SCHALLENGE == "challenge_aora" then
-					if statistics.kills >= statistics.max_kills * 0.9 then player:add_badge("impatient6") end
+					if statistics.unique_kills >= statistics.max_unique_kills * 0.9 then player:add_badge("impatient6") end
 				end
 			end
 		end,
@@ -630,7 +630,7 @@ function drl.register_challenges()
 			if player.depth >= 9 then player:add_badge("confident1") end
 			if player:has_won() then
 				player:add_badge("confident2")
-				if statistics.kills == statistics.max_kills and DIFFICULTY >= DIFF_VERYHARD then player:add_badge("confident4") end
+				if statistics.unique_kills == statistics.max_unique_kills and DIFFICULTY >= DIFF_VERYHARD then player:add_badge("confident4") end
 			end
 		end,
 
@@ -785,11 +785,11 @@ function drl.register_challenges()
 			if player:has_won() then
 				player:add_badge("redalert2")
 				if DIFFICULTY >= DIFF_NIGHTMARE then player:add_badge("redalert4") end
-				if statistics.kills == statistics.max_kills then
+				if statistics.unique_kills == statistics.max_unique_kills then
 					player:add_badge("redalert3")
 					if DIFFICULTY >= DIFF_VERYHARD then player:add_badge("redalert5") end
 				end
-				if ARCHANGEL and DIFFICULTY >= DIFF_VERYHARD and statistics.kills >= statistics.max_kills * 0.8 then
+				if ARCHANGEL and DIFFICULTY >= DIFF_VERYHARD and statistics.unique_kills >= statistics.max_unique_kills * 0.8 then
 					player:add_badge("redalert6")
 				end
 			end
@@ -864,7 +864,7 @@ function drl.register_challenges()
 			if player.depth >= 9 then player:add_badge("darkness1") end
 			if player:has_won() then
 				player:add_badge("darkness2")
-				if DIFFICULTY >= DIFF_HARD and statistics.kills >= statistics.max_kills * 0.8 then player:add_badge("darkness3") end
+				if DIFFICULTY >= DIFF_HARD and statistics.unique_kills >= statistics.max_unique_kills * 0.8 then player:add_badge("darkness3") end
 				if DIFFICULTY >= DIFF_NIGHTMARE then
 					player:add_badge("darkness4")
 					if statistics.bonus_levels_visited == statistics.bonus_levels_count then
@@ -1530,7 +1530,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 		OnMortem = function ()
 			if player:has_won() then
 				player:add_badge("confident3")
-				if statistics.kills >= statistics.max_kills * 0.8 and DIFFICULTY >= DIFF_NIGHTMARE then player:add_badge("confident5") end
+				if statistics.unique_kills >= statistics.max_unique_kills * 0.8 and DIFFICULTY >= DIFF_NIGHTMARE then player:add_badge("confident5") end
 			end
 		end,
 
@@ -1646,7 +1646,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 			if player.depth >= 8 then player:add_badge("haste1") end
 			if player:has_won() then
 				player:add_badge("haste2")
-				if statistics.kills == statistics.max_kills and DIFFICULTY >= DIFF_VERYHARD then player:add_badge("haste3") end
+				if statistics.unique_kills == statistics.max_unique_kills and DIFFICULTY >= DIFF_VERYHARD then player:add_badge("haste3") end
 			end
 		end,
 

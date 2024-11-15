@@ -19,9 +19,17 @@ function mortem.print_time_and_kills()
 	player:mortem_print( " "..diff[DIFFICULTY].description)
 	player:mortem_print()
 
-	local ratio = statistics.kills / statistics.max_kills
 
-	player:mortem_print( " "..mortem.Pronoun.." killed "..statistics.kills.." out of "..statistics.max_kills.." hellspawn. ("..math.floor(ratio*100).."%)" )
+	local k   = statistics.kills
+	local mk  = statistics.max_kills
+	local uk  = statistics.unique_kills
+	local muk = statistics.max_unique_kills
+	local ratio = uk / muk
+
+	player:mortem_print( " "..mortem.Pronoun.." killed "..uk.." out of "..muk.." encountered hellspawn. ("..math.floor(ratio*100).."%)" )
+	if uk ~= k or muk ~= mk then
+		player:mortem_print( " "..mortem.Pronoun.." killed "..k.." out of "..mk.." enemy spawns total." )
+	end
 end
 
 function mortem.print_challenge()

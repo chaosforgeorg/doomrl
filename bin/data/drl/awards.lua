@@ -113,7 +113,7 @@ function drl.register_awards()
 		name  = "Medal of Prejudice",
 		desc  = "Won with 100% kills",
 		winonly = true,
-		condition = function() return statistics.kills == statistics.max_kills end,
+		condition = function() return statistics.unique_kills == statistics.max_unique_kills end,
 	}
 
 	register_medal "killfew"
@@ -121,7 +121,7 @@ function drl.register_awards()
 		name  = "Medal of Pacifism",
 		desc  = "Won with 10% or less kills",
 		winonly = true,
-		condition = function() return statistics.kills / statistics.max_kills <= 0.1 end,
+		condition = function() return statistics.unique_kills / statistics.max_unique_kills <= 0.1 end,
 	}
 
 	register_medal "shotguns"
@@ -708,8 +708,8 @@ function drl.award_badges( no_record )
 	if player:has_won() then
 		local is_conqueror = (statistics.bonus_levels_completed == statistics.bonus_levels_count)
 		local is_explorer  = (statistics.bonus_levels_visited   == statistics.bonus_levels_count)
-		local is_maxkills  = (statistics.kills == statistics.max_kills)
-		local is_90kills   = (statistics.kills >= statistics.max_kills * 0.9)
+		local is_maxkills  = (statistics.unique_kills >= statistics.max_unique_kills)
+		local is_90kills   = (statistics.unique_kills >= statistics.max_unique_kills * 0.9)
 		local is_zerodmg   = (statistics.damage_taken == 0)
 		local is_fullwin   = (kills.get("jc") > 0 and player.hp > 0)
 

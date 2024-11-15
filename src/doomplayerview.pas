@@ -105,7 +105,7 @@ end;
 
 implementation
 
-uses sysutils, variants,
+uses sysutils, math, variants,
      vutil, vtig, vtigio, vluasystem,
      dfplayer,
      doomcommand, doombase, doominventory;
@@ -745,9 +745,14 @@ begin
 end;
 
 procedure TPlayerView.ReadCharacter;
-var iKillRecord : Integer;
-    iDodgeBonus : Word;
-    iKnockMod   : Integer;
+var iKillRecord   : Integer;
+    iDodgeBonus   : Word;
+    iKnockMod     : Integer;
+    iLeft, iULeft : DWord;
+  function Percent( aCurrent, aMax : Integer ) : Integer;
+  begin
+    Exit( Floor( ( aCurrent / aMax ) * 100.0 ) );
+  end;
 begin
   if FCharacter = nil then FCharacter := TStringGArray.Create;
   FCharacter.Clear;
@@ -767,7 +772,9 @@ begin
     FCharacter.Push( Format( 'currently on level {!%d} of the Phobos base. ', [CurrentLevel] ) );
     FCharacter.Push( Format( 'He survived {!%d} turns, which took him {!%d} seconds. ', [ FStatistics.Map['game_time'], FStatistics.Map['real_time'] ] ) );
     FCharacter.Push( Format( 'He took {!%d} damage, {!%d} on this floor alone. ', [ FStatistics.Map['damage_taken'], FStatistics.Map['damage_on_level'] ] ) );
-    FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemies total. ', [ FStatistics.Map['kills'], FStatistics.Map['max_kills'] ] ) );
+    FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemies ({!%d%%}). ', [ FStatistics.Map['unique_kills'], FStatistics.Map['max_unique_kills'], Percent( FStatistics.Map['unique_kills'], FStatistics.Map['max_unique_kills'] ) ] ) );
+    if FStatistics.Map['kills'] <> FStatistics.Map['unique_kills'] then
+      FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemy spawns total. ', [ FStatistics.Map['kills'], FStatistics.Map['max_kills'] ] ) );
     FCharacter.Push( Format( 'His current killing spree is {!%d}, with a record of {!%d}. ', [ FKills.NoDamageSequence, iKillRecord ] ) );
     FCharacter.Push( '' );
     FCharacter.Push( Format( 'Current movement speed is {!%.2f} second/move.', [getMoveCost/(Speed*10.0)] ) );
@@ -802,7 +809,12 @@ begin
     else
       FCharacter.Push( 'He has no resistance to knockback.' );
     FCharacter.Push( '' );
-    FCharacter.Push( Format( 'Enemies left : {!%d}', [Doom.Level.EnemiesLeft] ) );
+    iLeft  := Doom.Level.EnemiesLeft;
+    iULeft := Doom.Level.EnemiesLeft( True );
+    if iLeft = iULeft
+      then FCharacter.Push( Format( 'Enemies left : {!%d}', [Doom.Level.EnemiesLeft] ) )
+      else FCharacter.Push( Format( 'Enemies left : {!%d} (%d respawned)', [iLeft, iLeft-iULeft] ) );
+
     if Doom.Level.Feeling <> '' then
       FCharacter.Push( Format( 'Level feel : {!%s}', [Doom.Level.Feeling] ) )
   end;

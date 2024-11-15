@@ -106,7 +106,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     constructor CreateFromStream( Stream: TStream ); override;
     procedure WriteToStream( Stream: TStream ); override;
 
-    function EnemiesLeft : DWord;
+    function EnemiesLeft( aUnique : Boolean = False ) : DWord;
     function GetLookDescription( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : Ansistring;
     procedure UpdateAutoTarget( aAutoTarget : TAutoTarget; aBeing : TBeing; aRange : Integer );
 
@@ -509,14 +509,15 @@ begin
 //    FNextNode    : TNode;
 end;
 
-function TLevel.EnemiesLeft: DWord;
+function TLevel.EnemiesLeft( aUnique : Boolean = False ) : DWord;
 var iEnemies : DWord;
     iNode : TNode;
 begin
   iEnemies := 0;
   for iNode in Self do
     if iNode is TBeing then
-      Inc( iEnemies );
+      if ( not aUnique ) or ( not iNode.Flags[ BF_RESPAWN ] ) then
+        Inc( iEnemies );
   Exit( iEnemies - 1 );
 end;
 
@@ -1041,8 +1042,8 @@ begin
           if Random(100) < Chance then
           try
             iBeing := TBeing.Create( Cells[ GetCell(coord) ].raiseto );
-            DropBeing( iBeing, coord );
             iBeing.Flags[ BF_RESPAWN ] := True;
+            DropBeing( iBeing, coord );
             iBeing.Flags[ BF_NOEXP   ] := True;
             iBeing.Flags[ BF_NODROP ]  := True;
             Cell[ coord ] := LuaSystem.Defines[ Cells[ GetCell(coord) ].destroyto ];
