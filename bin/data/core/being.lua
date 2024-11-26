@@ -231,10 +231,11 @@ function being:pick_item_to_mod( mod, filter )
 		if it and it.itype ~= ITEMTYPE_AMMOPACK and ( ( not filter ) or filter(it) ) then
 			local desc
 			local ma = it:find_mod_array( modletter, techbonus )
-			if (not ma) and ( not it:can_mod( modletter ) ) then
+			local cm = it:can_mod( modletter )
+			if (not ma) and ( not cm ) then
 				desc = "Max level of this mod reached!"
 			else
-				if proto.OnModDescribe then
+				if cm and proto.OnModDescribe then
 					desc = "Effect : "..proto.OnModDescribe( mod, it )
 				end
 				if it:find_mod_array( modletter, techbonus ) then

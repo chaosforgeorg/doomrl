@@ -1163,7 +1163,7 @@ function drl.register_regular_items()
 				return "magazine {!"..item.ammomax.."} -> {!"..math.floor(item.ammomax * 1.3 + 0.5).."}"
 			elseif item.itype == ITEMTYPE_ARMOR or item.itype == ITEMTYPE_BOOTS then
 				return "durability {!"..item.maxdurability.."} -> {!"..(item.maxdurability + 100).."}\n"..
-				       "         move speed "..movstr().." -> "..movstr(10)
+				       "         move speed "..movstr().." -> "..movstr(-10)
 			end
 			return "unknown"
 		end,

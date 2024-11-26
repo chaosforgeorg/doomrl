@@ -1,6 +1,8 @@
 0.9.9.9 BETA 2
 [fix] -- RCFIX : ALT_SCRIPT turns off autofire (fixes DS crash)
 [fix] -- RCFIX : fixed screenshot functionality
+[fix] -- RCFIX : properly display bulk mod speed effect
+[fix] -- RCFIX : don't show mod stats if only assembly is possible
 
 0.9.9.9 BETA 1
 [new] -- GH#092: Jupiter Hell style auto-target/fire (f, old pick target is t)
