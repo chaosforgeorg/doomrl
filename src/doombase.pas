@@ -573,6 +573,8 @@ begin
       IO.Msg( 'This weapon has no alternate fire mode' );
       Exit( False );
     end;
+    if iItem.AltFire = ALT_SCRIPT then
+      aAuto := False;
   end;
   if not iItem.CallHookCheck( Hook_OnFire, [Player,aAlt] ) then Exit( False );
 
