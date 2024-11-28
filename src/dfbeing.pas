@@ -559,7 +559,12 @@ begin
     iItem := UIDs[ iUID ] as TItem;
     if iItem <> nil then
     begin
-      if FInv.Equipped( iItem )     then Exit( Fail( 'You''re already using it!', [] ) );
+      if FInv.Equipped( iItem )     then
+      begin
+         if iItem.isWeapon and ( FInv.Slot[ efWeapon2 ] = iItem )
+           then Exit( ActionSwapWeapon )
+           else Exit( Fail( 'You''re already using it!', [] ) );
+      end;
       if not FInv.Contains( iItem ) then Exit( Fail( 'You no longer have it!', [] ) );
       Exit( ActionWear( iItem ) );
     end;
@@ -669,6 +674,11 @@ begin
   if aItem = nil then Exit( false );
   if not FInv.Contains( aItem ) then Exit( False );
   iWeapon := aItem.isWeapon;
+
+  if Option_SoundEquipPickup
+    then PlaySound( aItem.Sounds.Pickup )
+    else PlaySound( aItem.Sounds.Reload );
+
   if FInv.DoWear( aItem ) then
   begin
     if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then
@@ -686,6 +696,11 @@ begin
   if aItem = nil then Exit( false );
   if not FInv.Contains( aItem ) then Exit( False );
   iWeapon := aItem.isWeapon;
+
+  if Option_SoundEquipPickup
+    then PlaySound( aItem.Sounds.Pickup )
+    else PlaySound( aItem.Sounds.Reload );
+
   if FInv.DoWear( aItem, aSlot ) then
   begin
     if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then

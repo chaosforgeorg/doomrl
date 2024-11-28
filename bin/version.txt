@@ -1,4 +1,6 @@
 0.9.9.9 BETA 2
+[fix] -- GH#186: quickslot will weapon swap if the quick item is a prepared weapon
+[fix] -- GH#186: equiping items will have sounds again
 [fix] -- RCFIX : EXPERIMENTAL - kills outside of the player turn are marked as "other"
 [fix] -- RCFIX : ALT_SCRIPT turns off autofire (fixes DS crash)
 [fix] -- RCFIX : fixed screenshot functionality
