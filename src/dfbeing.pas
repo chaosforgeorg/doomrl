@@ -77,7 +77,6 @@ TBeing = class(TThing,IPathQuery)
     procedure Knockback( dir : TDirection; Strength : Integer );
     destructor Destroy; override;
     function rollMeleeDamage( aSlot : TEqSlot = efWeapon ) : Integer;
-    procedure playSound( aSoundID : DWord; aDelay : DWord = 0 ); virtual;
     function getMoveCost : LongInt;
     function getFireCost( aAltFire : TAltFire = ALT_NONE ) : LongInt;
     function getReloadCost : LongInt;
@@ -110,7 +109,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionAltReload : Boolean;
     function ActionFire( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean = False ) : Boolean;
     function ActionPickup : Boolean;
-    function ActionUse( Item : TItem ) : Boolean;
+    function ActionUse( aItem : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
     function ActionMove( aTarget : TCoord2D ) : Boolean;
     function ActionTactic : boolean;
@@ -387,6 +386,8 @@ begin
   FSounds.Attack := Table.getInteger('sound_attack');
   FSounds.Melee  := Table.getInteger('sound_melee');
 
+  Flags[ BF_WALKSOUND ] := ( IO.Audio.ResolveSoundID( [ FID+'.hoof', FSoundID+'.hoof' ] ) <> 0 );
+
   FHP    := FHPMax;
   FHPNom := FHPMax;
   FSpeedCount := 900+Random(90);
@@ -426,14 +427,14 @@ begin
   aShots    := Max( aShots, 1 );
 
   iDual := aShotGun.Flags[ IF_DUALSHOTGUN ];
-  if iDual then PlaySound( aShotGun.Sounds.Fire );
+  if iDual then aShotgun.PlaySound( 'fire', FPosition );
 
   iDamage.Init( aShotGun.Damage_Dice, aShotGun.Damage_Sides, aShotGun.Damage_Add + FBonus.ToDamAll );
   if BF_MAXDAMAGE in FFlags then iDamage.Init( 0, 0, iDamage.Max );
 
   for iCount := 1 to aShots do
   begin
-    if not iDual then PlaySound( aShotGun.Sounds.Fire );
+    if not iDual then aShotGun.PlaySound( 'fire', FPosition );
     iShotgun := Shotguns[ aShotGun.Missile ];
     iShotgun.DamageType := aShotGun.DamageType;
     if (BF_ARMYDEAD in FFlags) and (iShotgun.DamageType = DAMAGE_SHARPNEL) then iShotgun.DamageType := Damage_IgnoreArmor;
@@ -614,8 +615,8 @@ begin
   Inv.Wear( iWeapon );
 
   if Option_SoundEquipPickup
-    then PlaySound( iWeapon.Sounds.Pickup )
-    else PlaySound( iWeapon.Sounds.Reload );
+    then iWeapon.PlaySound( 'pickup', FPosition )
+    else iWeapon.PlaySound( 'reload', FPosition );
 
   if not ( BF_QUICKSWAP in FFlags )
      then Exit( Success( 'You prepare the %s!',[ iWeapon.Name ], 1000 ) )
@@ -631,8 +632,8 @@ begin
 
   if Inv.Slot[ efWeapon ] <> nil then
     if Option_SoundEquipPickup
-      then PlaySound( Inv.Slot[ efWeapon ].Sounds.Pickup )
-      else PlaySound( Inv.Slot[ efWeapon ].Sounds.Reload );
+      then Inv.Slot[ efWeapon ].PlaySound( 'pickup', FPosition )
+      else Inv.Slot[ efWeapon ].PlaySound( 'reload', FPosition );
 
   if ( BF_QUICKSWAP in FFlags ) or ( canDualReload )
     then Exit( Success( 'You swap your weapons instantly!',[] ) )
@@ -676,8 +677,8 @@ begin
   iWeapon := aItem.isWeapon;
 
   if Option_SoundEquipPickup
-    then PlaySound( aItem.Sounds.Pickup )
-    else PlaySound( aItem.Sounds.Reload );
+    then aItem.PlaySound( 'pickup', FPosition )
+    else aItem.PlaySound( 'reload', FPosition );
 
   if FInv.DoWear( aItem ) then
   begin
@@ -698,8 +699,8 @@ begin
   iWeapon := aItem.isWeapon;
 
   if Option_SoundEquipPickup
-    then PlaySound( aItem.Sounds.Pickup )
-    else PlaySound( aItem.Sounds.Reload );
+    then aItem.PlaySound( 'pickup', FPosition )
+    else aItem.PlaySound( 'reload', FPosition );
 
   if FInv.DoWear( aItem, aSlot ) then
   begin
@@ -946,65 +947,65 @@ end;
 
 function TBeing.ActionPickup : Boolean;
 var Amount  : byte;
-    item    : TItem;
+    iItem   : TItem;
     iName   : AnsiString;
     iCount  : Byte;
 begin
-  item := TLevel(Parent).Item[ FPosition ];
+  iItem := TLevel(Parent).Item[ FPosition ];
 
-  if item = nil then Exit( Fail( 'But there is nothing here!', [] ) );
-  if item.isLever or item.isTele then Exit( Fail( 'But there is nothing here to pick up!', [] ) );
+  if iItem = nil then Exit( Fail( 'But there is nothing here!', [] ) );
+  if iItem.isLever or iItem.isTele then Exit( Fail( 'But there is nothing here to pick up!', [] ) );
 
-  if item.isPower then
+  if iItem.isPower then
   begin
-    if item.CallHookCheck(Hook_OnPickupCheck,[Self]) then
+    if iItem.CallHookCheck(Hook_OnPickupCheck,[Self]) then
     begin
-      PlaySound( IO.Audio.ResolveSoundID([item.ID+'.powerup','powerup']) );
-      CallHook( Hook_OnPickUpItem, [item] );
-      item.CallHook(Hook_OnPickUp, [Self]);
+      iItem.PlaySound( 'powerup', FPosition );
+      CallHook( Hook_OnPickUpItem, [iItem] );
+      iItem.CallHook(Hook_OnPickUp, [Self]);
     end;
     TLevel(Parent).DestroyItem( FPosition );
     Dec(FSpeedCount,ActionCostPickUp);
     Exit( True );
   end;
 
-  if item.isAmmo then
+  if iItem.isAmmo then
   begin
-    Amount := Inv.AddAmmo(item.NID,item.Ammo);
-    if Amount <> item.Ammo then
+    Amount := Inv.AddAmmo(iItem.NID,iItem.Ammo);
+    if Amount <> iItem.Ammo then
     begin
-      playSound( item.Sounds.Pickup );
-      CallHook( Hook_OnPickUpItem, [item] );
-      iName := item.Name;
-      iCount := item.Ammo-Amount;
+      iItem.playSound( 'pickup', FPosition );
+      CallHook( Hook_OnPickUpItem, [iItem] );
+      iName := iItem.Name;
+      iCount := iItem.Ammo-Amount;
       if Amount = 0 then
         TLevel(Parent).DestroyItem( FPosition )
-      else item.Ammo := Amount;
+      else iItem.Ammo := Amount;
       Exit( Success( 'You found %d of %s.',[iCount,iName],ActionCostPickup) );
     end else Exit( Fail('You don''t have enough room in your backpack.',[]) );
   end;
 
   if BF_IMPATIENT in FFlags then
-    if item.isPack then
+    if iItem.isPack then
       begin
         if isPlayer then IO.Msg('No time to waste.');
-        CallHook( Hook_OnPickUpItem, [item] );
-        Exit( ActionUse( item ) );
+        CallHook( Hook_OnPickUpItem, [iItem] );
+        Exit( ActionUse( iItem ) );
       end;
 
   if Inv.isFull then Exit( Fail( 'You don''t have enough room in your backpack.', [] ) );
 
-  if not item.CallHookCheck(Hook_OnPickupCheck,[Self]) then  Exit( False );
-  PlaySound(item.Sounds.Pickup);
-  if isPlayer then IO.Msg('You picked up %s.',[item.GetName(false)]);
-  Inv.Add(item);
-  CallHook( Hook_OnPickUpItem, [item] );
+  if not iItem.CallHookCheck(Hook_OnPickupCheck,[Self]) then  Exit( False );
+  iItem.PlaySound('pickup', FPosition );
+  if isPlayer then IO.Msg('You picked up %s.',[iItem.GetName(false)]);
+  Inv.Add(iItem);
+  CallHook( Hook_OnPickUpItem, [iItem] );
   Dec(FSpeedCount,ActionCostPickUp);
-  item.CallHook(Hook_OnPickup, [Self]);
+  iItem.CallHook(Hook_OnPickup, [Self]);
   Exit( True );
 end;
 
-function TBeing.ActionUse ( Item : TItem ) : Boolean;
+function TBeing.ActionUse ( aItem : TItem ) : Boolean;
 var isOnGround : Boolean;
     isLever    : Boolean;
     isPack     : Boolean;
@@ -1017,15 +1018,15 @@ var isOnGround : Boolean;
 	
 begin
   isFailed   := False;
-  isOnGround := TLevel(Parent).Item[ FPosition ] = Item;
-  if Item = nil then Exit( false );
-  if (not Item.isLever) and (not Item.isPack) and (not Item.isAmmoPack) and (not Item.isWearable) then Exit( False );
-  if ((not Item.isWearable) and (not Item.CallHookCheck( Hook_OnUseCheck,[Self] ))) or (Item.isWearable and ( (not Item.CallHookCheck( Hook_OnEquipCheck,[Self] )) or (not Item.CallHookCheck( Hook_OnPickupCheck,[Self] )) )) then Exit( False );
+  isOnGround := TLevel(Parent).Item[ FPosition ] = aItem;
+  if aItem = nil then Exit( false );
+  if (not aItem.isLever) and (not aItem.isPack) and (not aItem.isAmmoPack) and (not aItem.isWearable) then Exit( False );
+  if ((not aItem.isWearable) and (not aItem.CallHookCheck( Hook_OnUseCheck,[Self] ))) or (aItem.isWearable and ( (not aItem.CallHookCheck( Hook_OnEquipCheck,[Self] )) or (not aItem.CallHookCheck( Hook_OnPickupCheck,[Self] )) )) then Exit( False );
 
-  isLever := Item.isLever;
-  isPack  := Item.isPack;
-  isEquip := Item.isWearable;
-  iUID    := Item.uid;
+  isLever := aItem.isLever;
+  isPack  := aItem.isPack;
+  isEquip := aItem.isWearable;
+  iUID    := aItem.uid;
   if isOnGround then
     begin
       if isLever then
@@ -1035,43 +1036,43 @@ begin
         end
 	  else if isPack then
 	    begin
-		  Emote( 'You use %s from the ground.', 'uses %s.', [ Item.GetName(false) ] );
+		  Emote( 'You use %s from the ground.', 'uses %s.', [ aItem.GetName(false) ] );
 		end
 	  else if isEquip then
 	    begin
-		  isPrepared := (Item.isWeapon and (Inv.Slot[ efWeapon2 ] = nil));
-		  if (Inv.Slot[ Item.eqSlot ] = nil) or isPrepared then
+		  isPrepared := (aItem.isWeapon and (Inv.Slot[ efWeapon2 ] = nil));
+		  if (Inv.Slot[ aItem.eqSlot ] = nil) or isPrepared then
 		    begin
-			  if (Inv.Slot[ Item.eqSlot ] = nil) then iSlot := Item.eqSlot
+			  if (Inv.Slot[ aItem.eqSlot ] = nil) then iSlot := aItem.eqSlot
 			  else if isPrepared then iSlot := efWeapon2;
-			  Emote( 'You equip %s from the ground.', 'equips %s.', [ Item.GetName(false) ] );
+			  Emote( 'You equip %s from the ground.', 'equips %s.', [ aItem.GetName(false) ] );
 			end
 		  else
 			begin
   			  isEquip := False;
 			  isFailed := True;
-			  Emote( 'You must unequip first!', '', [ Item.GetName(false) ] );
+			  Emote( 'You must unequip first!', '', [ aItem.GetName(false) ] );
 			end;
 		end;
 	end
   else
-     Emote( 'You use %s.', 'uses %s.', [ Item.GetName(false) ] );
+     Emote( 'You use %s.', 'uses %s.', [ aItem.GetName(false) ] );
 
   if not isFailed then
-    if isEquip then
-      PlaySound( Item.Sounds.Pickup )
-    else PlaySound( Item.Sounds.Fire );
+    if isEquip
+      then aItem.PlaySound( 'pickup', FPosition )
+      else aItem.PlaySound( 'fire', FPosition );
   if isEquip or isPack then
     begin
-      CallHook( Hook_OnPickUpItem, [Item] );
-	  Item.CallHook( Hook_OnPickup,[Self] )
+      CallHook( Hook_OnPickUpItem, [aItem] );
+	  aItem.CallHook( Hook_OnPickup,[Self] )
     end;
   if isEquip then
-    Inv.setSlot( iSlot, Item )
+    Inv.setSlot( iSlot, aItem )
   else
-    isUsed := Item.CallHookCheck( Hook_OnUse,[Self] );
+    isUsed := aItem.CallHookCheck( Hook_OnUse,[Self] );
 	 
-  if ((UIDs.Get( iUID ) <> nil) and isUsed and (isLever or isPack)) then FreeAndNil( Item );
+  if ((UIDs.Get( iUID ) <> nil) and isUsed and (isLever or isPack)) then FreeAndNil( aItem );
   
   if not isFailed then
     if (BF_INSTAUSE in FFlags) and (not isEquip) then
@@ -1091,7 +1092,7 @@ begin
     iName   := aItem.Name;
     FreeAndNil( aItem );
     aItem := TItem.Create( aDisassembleID );
-    playSound(aItem.Sounds.Reload);
+    aItem.PlaySound('reload', FPosition );
     if not Inv.isFull
        then Inv.Add( aItem )
        else TLevel(Parent).DropItem( aItem, FPosition );
@@ -1104,7 +1105,7 @@ begin
   if aItem.Flags[ IF_NOAMMO ] then Exit( Fail( 'This weapon doesn''t use ammo!', []) );
   if aItem.Ammo = 0 then Exit( Fail( 'The weapon isn''t loaded!', [] ) );
 
-  playSound(aItem.Sounds.Reload);
+  aItem.PlaySound( 'reload', FPosition );
   iName   := aItem.Name;
   iAmount := FInv.AddAmmo(aItem.AmmoID,aItem.Ammo);
   if iAmount = 0 then
@@ -1251,7 +1252,8 @@ begin
     if iLevel.BeingExplored( FPosition, Self ) or iLevel.BeingExplored( LastMove, Self ) or iLevel.BeingVisible( FPosition, Self ) or iLevel.BeingVisible( LastMove, Self ) then
       IO.addMoveAnimation(100, 0, FUID,Position,LastMove,Sprite);
   Displace( FMovePos );
-  playSound( SoundHoof );
+  if BF_WALKSOUND in FFlags then
+    PlaySound( 'hoof' );
   HandlePostDisplace;
   Exit( MoveResult );
 end;
@@ -1260,7 +1262,7 @@ procedure TBeing.Reload( AmmoItem : TItem; Single : Boolean );
 var iAmmo  : Byte;
     iPack  : Boolean;
 begin
-  PlaySound( Inv.Slot[efWeapon].Sounds.Reload );
+  Inv.Slot[efWeapon].PlaySound( 'reload', FPosition );
 
   repeat
     if Single then iAmmo := Min(AmmoItem.Ammo,1)
@@ -1551,7 +1553,7 @@ begin
   if aOverkill then
     iLevel.playSound( 'gib',FPosition )
   else
-    playSound(FSounds.Die);
+    playSound( 'die' );
   
   if not (BF_NOEXP in FFlags) then Player.AddExp(FExpValue);
 
@@ -1594,11 +1596,6 @@ begin
   rollMeleeDamage := iDamage;
 end;
 
-procedure TBeing.PlaySound( aSoundID : DWord; aDelay : DWord = 0 );
-begin
-  IO.Audio.PlaySound(aSoundID,FPosition,aDelay);
-end;
-
 procedure TBeing.Attack( aWhere : TCoord2D );
 var iSlot   : TEqSlot;
     iWeapon : TItem;
@@ -1616,8 +1613,8 @@ begin
     if iSlot in [ efWeapon, efWeapon2 ] then
 	  iWeapon := Inv.Slot[ iSlot ];
 	if iWeapon <> nil
-      then playSound( iWeapon.Sounds.Fire )
-      else playSound( FSounds.Melee );
+      then iWeapon.PlaySound( 'fire', FPosition )
+      else PlaySound( 'melee' );
     TLevel(Parent).DamageTile( aWhere, rollMeleeDamage( iSlot ), Damage_Melee );
     if iWeapon <> nil then
       Dec( FSpeedCount, Inv.Slot[iSlot].UseTime * FTimes.Fire )
@@ -1665,11 +1662,11 @@ begin
   // Play Sound
   if (iWeapon <> nil) then
   begin
-    playSound(iWeapon.Sounds.Fire);
+    iWeapon.PlaySound( 'fire', FPosition );
     iDamageType := iWeapon.DamageType;
   end
   else
-    playSound(FSounds.Melee);
+    PlaySound( 'melee' );
 
   // Attack cost
   if (iWeapon <> nil) then
@@ -1846,9 +1843,7 @@ begin
   end;
 
   if not isPlayer then
-  begin
-    playSound(FSounds.Hit);
-  end;
+    PlaySound( 'hit' );
 
   iArmor := nil;
   iSlot := efWeapon;
@@ -2508,7 +2503,7 @@ var State : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  Being.playSound( State.ToSoundId(2), State.ToInteger(3,0) );
+  Being.playSoundID( State.ToSoundId(2), State.ToInteger(3,0) );
   Result := 0;
 end;
 

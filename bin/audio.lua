@@ -313,7 +313,7 @@ sound = {
 	-- Combat Knife
 	
 	knife = {
-		attack		= "data/drlhq/sound/dspunch.wav",
+		fire 		= "data/drlhq/sound/dspunch.wav",
 		pickup		= "data/drlhq/sound/dswpnup.wav",
 	},
 	
@@ -391,7 +391,6 @@ sound = {
 		die			= "data/drlhq/sound/dspldeth.wav",
 		hit			= "data/drlhq/sound/dsplpain.wav",
 		melee		= "data/drlhq/sound/dspunch.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 		phase		= "data/drlhq/sound/dstelept.wav",
 	},
 	
@@ -402,7 +401,6 @@ sound = {
 		act			= "data/drlhq/sound/dsposact.wav",
 		hit			= "data/drlhq/sound/dspopain.wav",
 		melee		= "data/drlhq/sound/dspunch.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Former Sergeant
@@ -412,7 +410,6 @@ sound = {
 		act			= "data/drlhq/sound/dsposact.wav",
 		hit			= "data/drlhq/sound/dspopain.wav",
 		melee		= "data/drlhq/sound/dspunch.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Former Captain
@@ -422,7 +419,6 @@ sound = {
 		act			= "data/drlhq/sound/dsposact.wav",
 		hit			= "data/drlhq/sound/dspopain.wav",
 		melee		= "data/drlhq/sound/dspunch.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Former Commando
@@ -432,7 +428,6 @@ sound = {
 		act			= "data/drlhq/sound/dsposact.wav",
 		hit			= "data/drlhq/sound/dspopain.wav",
 		melee		= "data/drlhq/sound/dspunch.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Imp
@@ -444,7 +439,6 @@ sound = {
 		melee		= "data/drlhq/sound/dsclaw.wav",
 		fire		= "data/drlhq/sound/dsfirsht.wav",
 		explode		= "data/drlhq/sound/dsfirxpl.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Lost Soul
@@ -472,7 +466,6 @@ sound = {
 		act			= "data/drlhq/sound/dsdmact.wav",
 		hit			= "data/drlhq/sound/dsdmpain.wav",
 		melee		= "data/drlhq/sound/dssgtatk.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Cacodemon
@@ -494,7 +487,6 @@ sound = {
 		hit			= "data/drlhq/sound/dsdmpain.wav",
 		melee		= "data/drlhq/sound/dsclaw.wav",
 		fire		= "data/drlhq/sound/dsplasma.wav",
-	--	hoof		= "data/drlhq/sound/dsmetal.wav",
 	},
 	
 	-- Hell Knight
@@ -506,7 +498,6 @@ sound = {
 		melee		= "data/drlhq/sound/dsclaw.wav",
 		fire		= "data/drlhq/sound/dsfirsht.wav",
 		explode		= "data/drlhq/sound/dsfirxpl.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Baron of Hell
@@ -518,7 +509,6 @@ sound = {
 		melee		= "data/drlhq/sound/dsclaw.wav",
 		fire		= "data/drlhq/sound/dsfirsht.wav",
 		explode		= "data/drlhq/sound/dsfirxpl.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Mancubus
@@ -529,7 +519,6 @@ sound = {
 		hit			= "data/drlhq/sound/dsmnpain.wav",
 		fire		= "data/drlhq/sound/dsfirsht.wav",
 		explode		= "data/drlhq/sound/dsfirxpl.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Revenant
@@ -541,7 +530,6 @@ sound = {
 		melee		= "data/drlhq/sound/dsskepch.wav",
 		fire		= "data/drlhq/sound/dsskeatk.wav",
 		explode		= "data/drlhq/sound/dsbarexp.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Arch-vile
@@ -551,7 +539,6 @@ sound = {
 		act			= "data/drlhq/sound/dsvilact.wav",
 		hit			= "data/drlhq/sound/dsvipain.wav",
 		fire		= "data/drlhq/sound/dsvilatk.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Bruiser Brothers
@@ -563,7 +550,6 @@ sound = {
 		melee		= "data/drlhq/sound/dsclaw.wav",
 		fire		= "data/drlhq/sound/dsfirsht.wav",
 		explode		= "data/drlhq/sound/dsfirxpl.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 	
 	-- Cyberdemon
@@ -582,7 +568,6 @@ sound = {
 		act			= "data/drlhq/sound/dsposact.wav",
 		hit			= "data/drlhq/sound/dspopain.wav",
 		melee		= "data/drlhq/sound/dspunch.wav",
-	--	hoof		= "data/drlhq/sound/dshoof.wav";
 	},
 
 	-- AoD
@@ -612,7 +597,7 @@ sound = {
 	-- Exotic #18 (Chainsaw)
 	
 	chainsaw = {
-		attack		= "data/drlhq/sound/dssawhit.wav",
+		fire		= "data/drlhq/sound/dssawhit.wav",
 		pickup		= "data/drlhq/sound/dswpnup.wav",
 	},
 	
@@ -632,7 +617,7 @@ sound = {
 	-- Unique #17 (Longinus Spear)
 	
 	spear = {
-		attack		= "data/drlhq/sound/dsgetpow.wav",
+		fire		= "data/drlhq/sound/dsgetpow.wav",
 		pickup		= "data/drlhq/sound/dswpnup.wav",
 		explode		= "data/drlhq/sound/dsrxplod.wav",
 	},
