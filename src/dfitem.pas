@@ -9,12 +9,6 @@ unit dfitem;
 interface
 uses Classes, SysUtils, dfthing, dfdata, vrltools, vluatable, vcolor, math;
 
-type TItemSounds = record
-  Pickup     : Word;
-  Reload     : Word;
-  Fire       : Word;
-end;
-
 type TItemRecharge = record
   Delay   : Byte;
   Amount  : Byte;
@@ -64,7 +58,6 @@ TItem  = class( TThing )
     class procedure RegisterLuaAPI();
     private
     FRecharge : TItemRecharge;
-    FSounds   : TItemSounds;
     FArmor    : Byte;
     FNID      : Byte;
     FProps    : TItemProperties;
@@ -72,7 +65,6 @@ TItem  = class( TThing )
     procedure LuaLoad( Table : TLuaTable; onFloor: boolean ); reintroduce;
     public
     property NID            : Byte        read FNID;
-    property Sounds         : TItemSounds read FSounds;
     property PGlowColor     : TColor      read FProps.PGlowColor     write FProps.PGlowColor;
     property PCosColor      : TColor      read FProps.PCosColor      write FProps.PCosColor;
     published
@@ -171,7 +163,6 @@ begin
   inherited CreateFromStream ( Stream ) ;
 
   Stream.Read( FRecharge, SizeOf( FRecharge ) );
-  Stream.Read( FSounds,   SizeOf( FSounds ) );
   Stream.Read( FMods,     SizeOf( FMods ) );
   Stream.Read( FProps,    SizeOf( FProps ) );
 
@@ -184,7 +175,6 @@ begin
   inherited WriteToStream ( Stream ) ;
 
   Stream.Write( FRecharge, SizeOf( FRecharge ) );
-  Stream.Write( FSounds,   SizeOf( FSounds ) );
   Stream.Write( FMods,     SizeOf( FMods ) );
   Stream.Write( FProps,    SizeOf( FProps ) );
 
@@ -200,10 +190,7 @@ begin
   FHooks := FHooks * ItemHooks;
 
   FProps.itype:= TItemType( Table.getInteger('type') );
-  FSounds.Pickup := 0;
-  FSounds.Reload := 0;
-  FSounds.Fire   := 0;
-  
+
   for cnt := Ord('A') to Ord('Z') do FMods[cnt] := 0;
 
   FArmor           := Table.getInteger('armor',0);
@@ -215,12 +202,9 @@ begin
 
    case FProps.IType of
      ITEMTYPE_TELE,
-     ITEMTYPE_LEVER :
-       begin
-         soundid := Table.getString('sound_id','');
-         if soundid = '' then soundid := ID;
-         FSounds.Fire := IO.Audio.ResolveSoundID([ID+'.use',soundid+'.use','use']);
-       end;
+     ITEMTYPE_LEVER,
+     ITEMTYPE_PACK,
+     ITEMTYPE_POWER : ;
      ITEMTYPE_ARMOR,
      ITEMTYPE_BOOTS :
        begin
@@ -236,29 +220,17 @@ begin
          FProps.MoveMod  := Table.getInteger('movemod');
          FProps.DodgeMod  := Table.getInteger('dodgemod');
          FProps.KnockMod := Table.getInteger('knockmod');
-         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
          FProps.SpriteMod := Table.GetInteger('spritemod',0);
-       end;
-     ITEMTYPE_PACK,
-     ITEMTYPE_POWER :
-       begin
-         if FProps.IType = ITEMTYPE_POWER
-           then FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.activate','activate'])
-           else FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.use','use']);
-         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
        end;
      ITEMTYPE_AMMO, ITEMTYPE_AMMOPACK :
        begin
          FProps.Ammo        := Table.getInteger('ammo');
          FProps.AmmoMax     := Table.getInteger('ammomax');
          FProps.AmmoID      := Table.getInteger('ammo_id',0);
-         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
        end;
      ITEMTYPE_MELEE :
        begin
          FProps.Damage      := NewDiceRoll( Table.getInteger('damage_dice'), Table.getInteger('damage_sides'), Table.getInteger('damage_bonus') );
-         FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.attack','attack']);
-         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
          FProps.DamageType  := TDamageType( Table.getInteger('damagetype') );
          FProps.Acc         := Table.getInteger('acc');
          FProps.UseTime     := Table.getInteger('fire');
@@ -281,11 +253,6 @@ begin
          FProps.AltFire     := TAltFire( Table.getInteger('altfire',0) );
          FProps.AltReload   := TAltReload( Table.getInteger('altreload',0) );
          FProps.DamageType  := TDamageType( Table.getInteger('damagetype',0) );
-         soundid := Table.getString('sound_id','');
-         if soundid = '' then soundid := ID;
-         FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.fire', SoundID+'.fire', 'fire']);
-         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup', SoundID+'.pickup', 'pickup']);
-         FSounds.Reload := IO.Audio.ResolveSoundID([ID+'.reload', SoundID+'.reload', 'reload']);
        end;
   end;
 
