@@ -26,15 +26,6 @@ type TBonuses = record
   Dodge      : ShortInt;
 end;
 
-type TBeingSounds = record
-  Act      : Word;
-  Hit      : Word;
-  Die      : Word;
-  Attack   : Word;
-  Melee    : Word;
-  Hoof     : Word;
-end;
-
 type TBeingTimes = record
   Reload : Byte;
   Fire   : Byte;
@@ -154,7 +145,6 @@ TBeing = class(TThing,IPathQuery)
 
     FBonus         : TBonuses;
     FTimes         : TBeingTimes;
-    FSounds        : TBeingSounds;
 
     FVisionRadius  : Byte;
     FSpeedCount    : LongInt;
@@ -213,13 +203,6 @@ TBeing = class(TThing,IPathQuery)
     property ReloadTime   : Byte       read FTimes.Reload   write FTimes.Reload;
     property FireTime     : Byte       read FTimes.Fire     write FTimes.Fire;
     property MoveTime     : Byte       read FTimes.Move     write FTimes.Move;
-    
-    property SoundAct     : Word       read FSounds.Act     write FSounds.Act;
-    property SoundHit     : Word       read FSounds.Hit     write FSounds.Hit;
-    property SoundDie     : Word       read FSounds.Die     write FSounds.Die;
-    property SoundAttack  : Word       read FSounds.Attack  write FSounds.Attack;
-    property SoundMelee   : Word       read FSounds.Melee   write FSounds.Melee;
-    property SoundHoof    : Word       read FSounds.Hoof    write FSounds.Hoof;
   end;
 
 
@@ -292,7 +275,6 @@ begin
 
   Stream.Read( FBonus,  SizeOf( FBonus ) );
   Stream.Read( FTimes,  SizeOf( FTimes ) );
-  Stream.Read( FSounds, SizeOf( FSounds ) );
 
   FVisionRadius := Stream.ReadByte();
   FSpeedCount   := Stream.ReadWord();
@@ -321,7 +303,6 @@ begin
 
   Stream.Write( FBonus,  SizeOf( FBonus ) );
   Stream.Write( FTimes,  SizeOf( FTimes ) );
-  Stream.Write( FSounds, SizeOf( FSounds ) );
 
   Stream.WriteByte( FVisionRadius );
   Stream.WriteWord( FSpeedCount );
@@ -378,13 +359,6 @@ begin
   FSpeed      := Table.getInteger('speed');
 
   FVisionRadius := VisionBaseValue + Table.getInteger('vision');
-
-  FSounds.Act    := Table.getInteger('sound_act');
-  FSounds.Hit    := Table.getInteger('sound_hit');
-  FSounds.Die    := Table.getInteger('sound_die');
-  FSounds.Hoof   := Table.getInteger('sound_hoof');
-  FSounds.Attack := Table.getInteger('sound_attack');
-  FSounds.Melee  := Table.getInteger('sound_melee');
 
   Flags[ BF_WALKSOUND ] := ( IO.Audio.ResolveSoundID( [ FID+'.hoof', FSoundID+'.hoof' ] ) <> 0 );
 
@@ -2510,6 +2484,16 @@ begin
   Result := 0;
 end;
 
+function lua_being_play_sound_new(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Being : TBeing;
+begin
+  State.Init(L);
+  Being := State.ToObject(1) as TBeing;
+  Being.playSound( State.ToString(2), State.ToInteger(3,0) );
+  Result := 0;
+end;
+
 function lua_being_quick_swap(L: Plua_State): Integer; cdecl;
 var State  : TDoomLuaState;
     Being  : TBeing;
@@ -2771,7 +2755,7 @@ begin
   Result := 0;
 end;
 
-const lua_being_lib : array[0..25] of luaL_Reg = (
+const lua_being_lib : array[0..26] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -2782,6 +2766,7 @@ const lua_being_lib : array[0..25] of luaL_Reg = (
       ( name : 'set_eq_item';   func : @lua_being_set_eq_item),
       ( name : 'add_inv_item';  func : @lua_being_add_inv_item),
       ( name : 'play_sound';    func : @lua_being_play_sound),
+      ( name : 'play_sound_new';func : @lua_being_play_sound_new),
       ( name : 'get_total_resistance';func : @lua_being_get_total_resistance),
 
       ( name : 'quick_swap';    func : @lua_being_quick_swap),

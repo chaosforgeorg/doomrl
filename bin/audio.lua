@@ -632,4 +632,5 @@ sound = {
 	fire			= "data/drlhq/sound/dsfirsht.wav",
 	explode			= "data/drlhq/sound/dsfirxpl.wav",
 	powerup			= "data/drlhq/sound/dsgetpow.wav",
+	phasing			= "data/drlhq/sound/dstelept.wav",
 }

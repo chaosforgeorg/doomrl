@@ -400,7 +400,7 @@ register_ai "melee_seek_ai"
 
 		pursue = function( self )
 			if math.random(30) == 1 then
-				self:play_sound( self.__proto.sound_act )
+				self:play_sound_new( "act" )
 			end
 			self.steps = self.steps + 1
 			local step = self:path_next()
@@ -504,8 +504,8 @@ register_ai "cyberdemon_ai"
 		use_item = function( self ) return ai_tools.use_item_action( self ) end,
 
 		pursue = function( self )
-			if math.random(30) == 1 and self.__proto.sound_act then
-				self:play_sound( self.__proto.sound_act )
+			if math.random(30) == 1 then
+				self:play_sound_new( "act" )
 			end
 
 			if self:distance_to( self.move_to ) == 0 then
@@ -621,7 +621,7 @@ register_ai "jc_ai"
 					mob:kill()
 				end
 			end
-			self:play_sound("soldier.phase")
+			self:play_sound_new("phasing")
 			level:explosion( self.position, 2, 50, 0, 0, LIGHTBLUE )
 			self:relocate( self.move_to )
 			level:explosion( self.position, 4, 50, 0, 0, LIGHTBLUE )
@@ -973,7 +973,6 @@ register_ai "sequential_ai"
 		self:add_property( "attack_to", coord.new(0,0) )
 		self:add_property( "ai_state", "thinking" )
 		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
-		self:add_property( "sound_attack", core.resolve_sound_id(self.id .. ".attack") )
 	end,
 
 	OnAttacked = function( self )
@@ -1015,7 +1014,7 @@ register_ai "sequential_ai"
 				elseif self.ai_state == "pursue" then
 					walk = player.position
 				elseif self.ai_state == "fire" then
-					self:play_sound( self.sound_attack )
+					self:play_sound_new( "attack" )
 					self.attack_to = player.position
 					self.shots = 2 + math.random(3)
 					self.assigned = true
@@ -1133,7 +1132,7 @@ register_ai "teleboss_ai"
 
 		hunt = function( self )
 			if math.random(30) == 1 then
-				self:play_sound( self.__proto.sound_act )
+				self:play_sound_new( "act" )
 			end
 
 			if self:distance_to( self.move_to ) == 0 then
@@ -1158,7 +1157,7 @@ register_ai "teleboss_ai"
 
 		teleport = function( self )
 			self.assigned = false
-			self:play_sound("soldier.phase")
+			self:play_sound_new("phasing")
 			level:explosion( self, 2, 50, 0, 0, YELLOW )
 			local target = generator.drop_coord( self.move_to, {EF_NOBEINGS,EF_NOBLOCK} )
 			self:relocate( target )
@@ -1229,7 +1228,7 @@ register_ai "spawnonly_ai"
 
 		idle = function( self )
 			if math.random(30) == 1 then
-				self:play_sound( self.__proto.sound_act )
+				self:play_sound_new( "act" )
 			end
 
 			if self:distance_to( self.move_to ) == 0 or self:in_sight(player) then
@@ -1430,8 +1429,8 @@ register_ai "mastermind_ai"
 				self.assigned = false
 				return "thinking"
 			end
-			if math.random(30) == 1 and self.__proto.sound_act then
-				self:play_sound( self.__proto.sound_act )
+			if math.random(30) == 1 then
+				self:play_sound_new( "act" )
 			end
 			local move_check, move_coord
 			move_check,move_coord = self:path_next()
@@ -1453,8 +1452,8 @@ register_ai "mastermind_ai"
 				self.attacked = false
 				return "thinking"
 			end
-			if math.random(30) == 1 and self.__proto.sound_act then
-				self:play_sound( self.__proto.sound_act )
+			if math.random(30) == 1 then
+				self:play_sound_new( "act" )
 			end
 			local move_check, move_coord = self:path_next()
 			if not move_check or self:in_sight(player) then

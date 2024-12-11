@@ -465,7 +465,7 @@ function drl.register_cells()
 				if being:is_affect("enviro") then return end
 				ui.msg("Argh!!! Acid!")
 				if core.game_time() % 3 == 0 then
-					being:play_sound(being.soundhit)
+					being:play_sound_new("hit")
 				end
 			end
 			being:apply_damage(damage,TARGET_FEET,DAMAGE_ACID)
@@ -491,7 +491,7 @@ function drl.register_cells()
 				if being:is_affect("enviro") then return end
 				ui.msg("Argh!!! Lava!")
 				if core.game_time() % 3 == 0 then
-					being:play_sound(being.soundhit)
+					being:play_sound_new("hit")
 				end
 			end
 			being:apply_damage(damage,TARGET_FEET,DAMAGE_FIRE)
