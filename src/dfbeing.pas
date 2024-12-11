@@ -1061,7 +1061,10 @@ begin
   if not isFailed then
     if isEquip
       then aItem.PlaySound( 'pickup', FPosition )
-      else aItem.PlaySound( 'fire', FPosition );
+      else begin
+        if not aItem.PlaySound( 'use', FPosition ) then
+          aItem.PlaySound( 'fire', FPosition );
+      end;
   if isEquip or isPack then
     begin
       CallHook( Hook_OnPickUpItem, [aItem] );

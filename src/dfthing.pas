@@ -16,9 +16,9 @@ type
 TThing = class( TLuaEntityNode )
   constructor Create( const aID : AnsiString );
   constructor CreateFromStream( Stream : TStream ); override;
-  procedure PlaySound( const aSoundID : string; aDelay : Integer = 0 );
-  procedure PlaySound( const aSoundID : string; aPosition : TCoord2D; aDelay : Integer = 0 );
-  procedure PlaySoundID( aSoundID : Integer; aDelay : Integer = 0 );
+  function PlaySound( const aSoundID : string; aDelay : Integer = 0 ) : Boolean;
+  function PlaySound( const aSoundID : string; aPosition : TCoord2D; aDelay : Integer = 0 ) : Boolean;
+  function PlaySoundID( aSoundID : Integer; aDelay : Integer = 0 ) : Boolean;
   procedure CallHook( Hook : Byte; const Params : array of Const );
   function CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
   function GetSprite : TSprite; virtual;
@@ -64,23 +64,28 @@ begin
 
 end;
 
-procedure TThing.PlaySound( const aSoundID : string; aDelay : Integer = 0 );
+function TThing.PlaySound( const aSoundID : string; aDelay : Integer = 0 ) : Boolean;
 begin
-  if FSoundID = ''
-    then IO.Audio.PlaySound( IO.Audio.ResolveSoundID( [ FID+'.'+aSoundID, aSoundID ] ), FPosition, aDelay )
-    else IO.Audio.PlaySound( IO.Audio.ResolveSoundID( [ FID+'.'+aSoundID, FSoundID+'.'+aSoundID, aSoundID ] ), FPosition, aDelay );
+  Exit( PlaySound( aSoundID, FPosition, aDelay ) );
 end;
 
-procedure TThing.PlaySound( const aSoundID : string; aPosition : TCoord2D; aDelay : Integer = 0 );
+function TThing.PlaySound( const aSoundID : string; aPosition : TCoord2D; aDelay : Integer = 0 ) : Boolean;
+var iSoundID : Word;
 begin
   if FSoundID = ''
-    then IO.Audio.PlaySound( IO.Audio.ResolveSoundID( [ FID+'.'+aSoundID, aSoundID ] ), aPosition, aDelay )
-    else IO.Audio.PlaySound( IO.Audio.ResolveSoundID( [ FID+'.'+aSoundID, FSoundID+'.'+aSoundID, aSoundID ] ), aPosition, aDelay );
+    then iSoundID := IO.Audio.ResolveSoundID( [ FID+'.'+aSoundID, aSoundID ] )
+    else iSoundID := IO.Audio.ResolveSoundID( [ FID+'.'+aSoundID, FSoundID+'.'+aSoundID, aSoundID ] );
+
+  if iSoundID = 0 then Exit( False );
+  IO.Audio.PlaySound( iSoundID, aPosition, aDelay );
+  Exit( True );
 end;
 
-procedure TThing.PlaySoundID( aSoundID : Integer; aDelay : Integer = 0 );
+function TThing.PlaySoundID( aSoundID : Integer; aDelay : Integer = 0 ) : Boolean;
 begin
+  if aSoundID = 0 then Exit( False );
   IO.Audio.PlaySound(aSoundID,FPosition,aDelay);
+  Exit( True );
 end;
 
 procedure TThing.CallHook ( Hook : Byte; const Params : array of const ) ;
