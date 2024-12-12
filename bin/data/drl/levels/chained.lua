@@ -31,7 +31,7 @@ register_level "the_chained_court"
 				ui.msg("You raise your arms!")
 				if level.id == "the_vaults" and level.status < 2 then
 					ui.msg("With a sudden inspiration you yell \"OPEN SESAME!\"!")
-					player:play_sound("lever.use")
+					player:play_sound( "lever.use" )
 					for c in generator.each( "rwall", area.FULL_SHRINKED ) do
 						if level.light[ c ][ LFBLOOD ] then
 							level.light[ c ][ LFPERMANENT ] = false
@@ -48,7 +48,7 @@ register_level "the_chained_court"
 					ui.msg("you have bested one of my offspring. Very well, you are allowed ")
 					ui.msg("full access to my domain as you traverse through it.\"")
 					generator.transmute( "ldoor", "odoor" )
-					player:play_sound("door.open")
+					level:play_sound( "door.open", player.position)
 					being.scount = being.scount - 1000
 					being.tired = true
 					return true
@@ -310,7 +310,7 @@ register_level "the_chained_court"
 		if level.status == 0 then
 			ui.msg("A devilish voice booms:")
 			ui.msg("\"Come to think of it... I'd rather see you dead, mortal... prepare yourself!\"")
-			player:play_sound("baron.act")
+			level:play_sound( "baron.act", player.position )
 		end
 	end,
 

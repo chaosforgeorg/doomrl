@@ -40,9 +40,11 @@ register_level "hells_armory"
 						level.light[ coord.new(x,y) ][ LFBLOOD ] = true
 					end
 				end
-				level:drop_being("shambler",coord.new(6,10))
+				local b = level:drop_being("shambler",coord.new(6,10))
 				level.status = 1
-				player:play_sound{"shambler.act", "baron.act"}
+				if b then
+					b:play_sound("act")
+				end
 				ui.msg("You hear a loud wail!")
 				return true
 			end,

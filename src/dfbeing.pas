@@ -1035,10 +1035,7 @@ begin
   if not isFailed then
     if isEquip
       then aItem.PlaySound( 'pickup', FPosition )
-      else begin
-        if not aItem.PlaySound( 'use', FPosition ) then
-          aItem.PlaySound( 'fire', FPosition );
-      end;
+      else aItem.PlaySound( 'use', FPosition );
   if isEquip or isPack then
     begin
       CallHook( Hook_OnPickUpItem, [aItem] );
@@ -2473,18 +2470,7 @@ begin
   Result := 1;
 end;
 
-
 function lua_being_play_sound(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Being : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  Being.playSoundID( State.ToSoundId(2), State.ToInteger(3,0) );
-  Result := 0;
-end;
-
-function lua_being_play_sound_new(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
     Being : TBeing;
 begin
@@ -2755,7 +2741,7 @@ begin
   Result := 0;
 end;
 
-const lua_being_lib : array[0..26] of luaL_Reg = (
+const lua_being_lib : array[0..25] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -2766,7 +2752,6 @@ const lua_being_lib : array[0..26] of luaL_Reg = (
       ( name : 'set_eq_item';   func : @lua_being_set_eq_item),
       ( name : 'add_inv_item';  func : @lua_being_add_inv_item),
       ( name : 'play_sound';    func : @lua_being_play_sound),
-      ( name : 'play_sound_new';func : @lua_being_play_sound_new),
       ( name : 'get_total_resistance';func : @lua_being_get_total_resistance),
 
       ( name : 'quick_swap';    func : @lua_being_quick_swap),

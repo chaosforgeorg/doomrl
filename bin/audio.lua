@@ -540,7 +540,20 @@ sound = {
 		hit			= "data/drlhq/sound/dsvipain.wav",
 		fire		= "data/drlhq/sound/dsvilatk.wav",
 	},
+
+	-- Shambler
 	
+	shambler = {
+		act			= "data/drlhq/sound/dsbrssit.wav",
+		die			= "data/drlhq/sound/dsbspdth.wav",
+	},
+
+	-- Lava Elemental
+	
+	lava_elemental = {
+		die			= "data/drlhq/sound/dsvildth.wav",
+	},
+
 	-- Bruiser Brothers
 	
 	bruiser = {
@@ -630,6 +643,7 @@ sound = {
 	reload			= "data/drlhq/sound/dswpnup.wav",
 	pickup			= "data/drlhq/sound/dsitemup.wav",
 	fire			= "data/drlhq/sound/dsfirsht.wav",
+	use				= "data/drlhq/sound/dsgetpow.wav",
 	explode			= "data/drlhq/sound/dsfirxpl.wav",
 	powerup			= "data/drlhq/sound/dsgetpow.wav",
 	phasing			= "data/drlhq/sound/dstelept.wav",

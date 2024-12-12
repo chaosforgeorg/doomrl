@@ -21,9 +21,9 @@ register_level "phobos_lab"
 			desc = "unlocks door",
 
 			color_id = false,
+			sound_id = "lever",
 
 			OnUse = function(self,being)
-				player:play_sound("lever.use")
 				generator.transmute( "ldoor", "floor", level.data.door1 )
 				generator.transmute( "floor", "door",  level.data.door1 )
 				ui.msg("Green access granted, west doors unlocked.")
@@ -43,9 +43,9 @@ register_level "phobos_lab"
 			desc = "unlocks door",
 
 			color_id = false,
+			sound_id = "lever",
 
 			OnUse = function(self,being)
-				player:play_sound("lever.use")
 				generator.transmute( "ldoor", "floor", level.data.door1 )
 				generator.transmute( "floor", "door",  level.data.door1 )
 				generator.transmute( "ldoor", "floor", level.data.door2 )
@@ -148,7 +148,7 @@ register_level "phobos_lab"
 				generator.transmute( "wall", "floor", level.data.trap11 )
 				generator.transmute( "wall", "floor", level.data.trap12 )
 				player:remove_affect("enviro")
-				player:play_sound("door.open")
+				level:play_sound( "door.open", player.position )
 				level.status = 2
 			end
 		elseif level.status == 2 then
@@ -157,7 +157,7 @@ register_level "phobos_lab"
 				generator.transmute( "wall", "floor", level.data.trap21 )
 				generator.transmute( "wall", "floor", level.data.trap22 )
 				player:remove_affect("enviro")
-				player:play_sound("door.open")
+				level:play_sound( "door.open", player.position )
 				level.status = 3
 			end
 		end

@@ -639,6 +639,7 @@ sound = {
 	reload			= "data/drllq/sound/dswpnup.wav",
 	pickup			= "data/drllq/sound/dsitemup.wav",
 	fire			= "data/drllq/sound/dsfirsht.wav",
+	use				= "data/drllq/sound/dsgetpow.wav",
 	explode			= "data/drllq/sound/dsfirxpl.wav",
 	powerup			= "data/drllq/sound/dsgetpow.wav",
 	phasing 	    = "data/drllq/sound/dstelept.wav",

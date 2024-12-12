@@ -18,7 +18,6 @@ TThing = class( TLuaEntityNode )
   constructor CreateFromStream( Stream : TStream ); override;
   function PlaySound( const aSoundID : string; aDelay : Integer = 0 ) : Boolean;
   function PlaySound( const aSoundID : string; aPosition : TCoord2D; aDelay : Integer = 0 ) : Boolean;
-  function PlaySoundID( aSoundID : Integer; aDelay : Integer = 0 ) : Boolean;
   procedure CallHook( Hook : Byte; const Params : array of Const );
   function CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
   function GetSprite : TSprite; virtual;
@@ -78,13 +77,6 @@ begin
 
   if iSoundID = 0 then Exit( False );
   IO.Audio.PlaySound( iSoundID, aPosition, aDelay );
-  Exit( True );
-end;
-
-function TThing.PlaySoundID( aSoundID : Integer; aDelay : Integer = 0 ) : Boolean;
-begin
-  if aSoundID = 0 then Exit( False );
-  IO.Audio.PlaySound(aSoundID,FPosition,aDelay);
   Exit( True );
 end;
 

@@ -400,7 +400,7 @@ register_ai "melee_seek_ai"
 
 		pursue = function( self )
 			if math.random(30) == 1 then
-				self:play_sound_new( "act" )
+				self:play_sound( "act" )
 			end
 			self.steps = self.steps + 1
 			local step = self:path_next()
@@ -505,7 +505,7 @@ register_ai "cyberdemon_ai"
 
 		pursue = function( self )
 			if math.random(30) == 1 then
-				self:play_sound_new( "act" )
+				self:play_sound( "act" )
 			end
 
 			if self:distance_to( self.move_to ) == 0 then
@@ -621,7 +621,7 @@ register_ai "jc_ai"
 					mob:kill()
 				end
 			end
-			self:play_sound_new("phasing")
+			self:play_sound("phasing")
 			level:explosion( self.position, 2, 50, 0, 0, LIGHTBLUE )
 			self:relocate( self.move_to )
 			level:explosion( self.position, 4, 50, 0, 0, LIGHTBLUE )
@@ -1014,7 +1014,7 @@ register_ai "sequential_ai"
 				elseif self.ai_state == "pursue" then
 					walk = player.position
 				elseif self.ai_state == "fire" then
-					self:play_sound_new( "attack" )
+					self:play_sound( "attack" )
 					self.attack_to = player.position
 					self.shots = 2 + math.random(3)
 					self.assigned = true
@@ -1132,7 +1132,7 @@ register_ai "teleboss_ai"
 
 		hunt = function( self )
 			if math.random(30) == 1 then
-				self:play_sound_new( "act" )
+				self:play_sound( "act" )
 			end
 
 			if self:distance_to( self.move_to ) == 0 then
@@ -1157,7 +1157,7 @@ register_ai "teleboss_ai"
 
 		teleport = function( self )
 			self.assigned = false
-			self:play_sound_new("phasing")
+			self:play_sound("phasing")
 			level:explosion( self, 2, 50, 0, 0, YELLOW )
 			local target = generator.drop_coord( self.move_to, {EF_NOBEINGS,EF_NOBLOCK} )
 			self:relocate( target )
@@ -1228,7 +1228,7 @@ register_ai "spawnonly_ai"
 
 		idle = function( self )
 			if math.random(30) == 1 then
-				self:play_sound_new( "act" )
+				self:play_sound( "act" )
 			end
 
 			if self:distance_to( self.move_to ) == 0 or self:in_sight(player) then
@@ -1430,7 +1430,7 @@ register_ai "mastermind_ai"
 				return "thinking"
 			end
 			if math.random(30) == 1 then
-				self:play_sound_new( "act" )
+				self:play_sound( "act" )
 			end
 			local move_check, move_coord
 			move_check,move_coord = self:path_next()
@@ -1453,7 +1453,7 @@ register_ai "mastermind_ai"
 				return "thinking"
 			end
 			if math.random(30) == 1 then
-				self:play_sound_new( "act" )
+				self:play_sound( "act" )
 			end
 			local move_check, move_coord = self:path_next()
 			if not move_check or self:in_sight(player) then

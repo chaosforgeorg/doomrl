@@ -30,10 +30,10 @@ register_level "deimos_lab"
 			desc = "opens the lab",
 
 			color_id = false,
+			sound_id = "lever",
 
 			OnUse = function(self,being)
 				if level.status > 5 then return true end
-				player:play_sound("lever.use")
 				level.status = level.status + 1
 				if level.status == 2 then
 					ui.msg("The walls rise!")
@@ -42,7 +42,7 @@ register_level "deimos_lab"
 					level:recalc_fluids()
 				elseif level.status == 6 then
 					ui.msg("The vault opens!")
-					player:play_sound{"shambler.act", "baron.act"}
+					level:play_sound( "baron.act", player.position, 100 )
 					ui.msg("You hear a loud wail!")
 					generator.transmute( "gwall", "floor", level.data.vault1 )
 					level:drop_being("shambler",coord.new(39,10))

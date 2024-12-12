@@ -84,7 +84,7 @@ function drl.register_unique_items()
 		missile       = "mplasma",
 
 		OnHitBeing = function(self,being,target)
-			target:play_sound("soldier.phase")
+			target:play_sound("phasing")
 			being:msg("Suddenly "..target:get_name(true,false).." crashes!")
 			if target.flags[ BF_BOSS ] then
 				target.scount = math.max( target.scount - 500, 1000 )
@@ -116,7 +116,7 @@ function drl.register_unique_items()
 				return false
 			end;
 			being.tired = true
-			being:play_sound("soldier.phase")
+			being:play_sound("phasing")
 			ui.msg("You feel yanked in a non-existing direction!")
 			being:phase()
 			being.scount = being.scount - 1000

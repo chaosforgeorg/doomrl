@@ -60,7 +60,7 @@ register_level "the_asmos_den"
 			OnAction = function (self)
 				if self:distance_to(player) > self.vision-1 then
 					local target = generator.drop_coord( self.position, {EF_NOBEINGS,EF_NOBLOCK} )
-					self:play_sound("soldier.phase")
+					self:play_sound("phasing")
 					level:explosion( player, 2, 50, 0, 0, YELLOW )
 					player:relocate( target )
 					level:explosion( player, 1, 50, 0, 0, YELLOW )

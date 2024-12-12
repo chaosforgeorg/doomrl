@@ -132,7 +132,7 @@ register_level "house_of_pain"
 			else return
 			end
 			if not level.data.is_staff then
-				player:play_sound("door.close")
+				level:play_sound( "door.close", player.position )
 				generator.transmute({"door","odoor"},"ldoor")
 				generator.set_permanence(area.FULL, true, "ldoor")
 				ui.msg("The doors shut violently!")

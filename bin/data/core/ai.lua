@@ -82,7 +82,7 @@ function ai_tools.idle_action_ranged( self, use_item )
 	end
 
 	if math.random(30) == 1 then
-		self:play_sound_new( "act" )
+		self:play_sound( "act" )
 	end
 
 	if self:distance_to( self.move_to ) == 0 then
@@ -110,7 +110,7 @@ end
 
 function ai_tools.idle_action_melee( self )
 	if math.random(30) == 1 then
-		self:play_sound_new( "act" )
+		self:play_sound( "act" )
 	end
 	if self:distance_to(self.move_to) == 0 then
 		self.scount = self.scount - 500
@@ -158,7 +158,7 @@ function ai_tools.pursue_action( self, approach, wander )
 		return "thinking"
 	end
 	if math.random(30) == 1 then
-		self:play_sound_new( "act" )
+		self:play_sound( "act" )
 	end
 	local move_check = nil
 	local move_coord = nil
