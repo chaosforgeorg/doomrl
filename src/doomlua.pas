@@ -3,7 +3,7 @@ unit doomlua;
 interface
 
 uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil,
-     vcolor, vdf, vbitmapfont, vgenerics, dfitem, dfbeing, dfthing, dfdata;
+     vcolor, vdf, vgenerics, dfitem, dfbeing, dfthing, dfdata, doommodule;
 
 var LuaPlayerX : Byte = 2;
     LuaPlayerY : Byte = 2;
@@ -24,6 +24,7 @@ TDoomLua = class(TLuaSystem)
        procedure LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
      private
        FOpenData : TVDataFileArray;
+       FModules  : TDoomModules;
      end;
 
 type
@@ -505,6 +506,7 @@ begin
   for iData in FOpenData do
     iData.Free;
   FreeAndNil( FOpenData );
+  FreeAndNil( FModules );
   inherited Destroy;
 end;
 
@@ -564,6 +566,9 @@ begin
   if GodMode
     then inherited Create( Config.Raw )
     else inherited Create( nil );
+
+  FModules := TDoomModules.Create;
+  FModules.ScanModules;
 
   FOpenData := TVDataFileArray.Create;
 
