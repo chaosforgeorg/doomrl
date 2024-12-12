@@ -108,6 +108,12 @@ sound = {
 	teleport = {
 		use			= "data/drlhq/sound/dstelept.wav",
 	},
+
+	-- Hellgate
+	
+	teleport = {
+		use			= "data/drlhq/sound/dstelept.wav",
+	},
 	
 	-- Levers
 	

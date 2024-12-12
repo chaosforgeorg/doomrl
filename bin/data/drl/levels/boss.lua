@@ -56,7 +56,7 @@ register_level "hellgate"
 
 			OnEnter = function( self, being )
 				if not being:is_player() then return end
-				level:explosion( being.position, 4, 50, 0, 0, GREEN, core.resolve_sound_id( "hellgate.use", "teleport.use", "use" ) )
+				level:explosion( being.position, 4, 50, 0, 0, GREEN, "hellgate.use" )
 				ui.msg_enter("You feel yanked in a non-existing direction!")
 				player:exit()
 				drl.plot_outro_1()

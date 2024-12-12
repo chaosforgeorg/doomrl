@@ -31,7 +31,6 @@ type
 
 TDoomLuaState = object(TLuaState)
   function ToId( Index : Integer) : DWord;
-  function ToSoundId( Index : Integer ) : DWord;
   function ToPosition( Index : Integer ) : TCoord2D;
 end;
 
@@ -279,14 +278,6 @@ var State : TDoomLuaState;
 begin
   State.Init(L);
   State.Push( Boolean(HOF.AddCounted( State.ToString( 1 ), State.ToString( 2 ), State.ToString( 3 ), State.ToInteger( 4,1 ) ) ) );
-  Result := 1;
-end;
-
-function lua_core_resolve_sound_id(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  State.Push(IO.Audio.ResolveSoundID([State.ToString(1),State.ToString(2),State.ToString(3)]));
   Result := 1;
 end;
 
@@ -542,7 +533,7 @@ const lua_player_data_lib : array[0..4] of luaL_Reg = (
 );
 
 
-const lua_core_lib : array[0..13] of luaL_Reg = (
+const lua_core_lib : array[0..12] of luaL_Reg = (
     ( name : 'add_to_cell_set';func : @lua_core_add_to_cell_set),
     ( name : 'game_time';func : @lua_core_game_time),
     ( name : 'is_playing';func : @lua_core_is_playing),
@@ -551,7 +542,6 @@ const lua_core_lib : array[0..13] of luaL_Reg = (
     ( name : 'register_shotgun';func : @lua_core_register_shotgun),
     ( name : 'register_affect'; func : @lua_core_register_affect),
 
-    ( name : 'resolve_sound_id';func : @lua_core_resolve_sound_id),
     ( name : 'play_music';func : @lua_core_play_music),
 
     ( name : 'texture_upload';        func : @lua_core_texture_upload),
@@ -654,16 +644,6 @@ begin
   if IsNumber( Index ) then Exit( ToInteger( Index ) );
   ToId := LuaSystem.Defines[ToString( Index )];
   if ToId = 0 then Error( 'unknown define ('+ToString( Index ) +')!' );
-end;
-
-function TDoomLuaState.ToSoundId(Index: Integer): DWord;
-begin
-  if IsNumber( Index ) then
-     Exit( ToInteger( Index ) )
-  else if IsTable( Index ) then
-     Exit( IO.Audio.ResolveSoundID( ToStringArray( Index ) ) )
-  else
-     Exit( IO.Audio.ResolveSoundID( [ ToString(Index) ] ) );
 end;
 
 function TDoomLuaState.ToPosition( Index : Integer ) : TCoord2D;
