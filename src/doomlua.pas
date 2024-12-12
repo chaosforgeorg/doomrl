@@ -2,11 +2,13 @@
 unit doomlua;
 interface
 
-uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil, vcolor, vdf, vbitmapfont, dfitem, dfbeing, dfthing, dfdata;
+uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil,
+     vcolor, vdf, vbitmapfont, vgenerics, dfitem, dfbeing, dfthing, dfdata;
 
 var LuaPlayerX : Byte = 2;
     LuaPlayerY : Byte = 2;
-    
+
+type TVDataFileArray = specialize TGArray< TVDataFile >;
 
 type
 
@@ -21,8 +23,7 @@ TDoomLua = class(TLuaSystem)
        procedure ReadWad;
        procedure LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
      private
-       FCoreData : TVDataFile;
-       FMainData : TVDataFile;
+       FOpenData : TVDataFileArray;
      end;
 
 type
@@ -383,6 +384,7 @@ var iProgBase    : DWord;
     iPath        : Ansistring;
     iAudioLoaded : Boolean;
     iStream      : TStream;
+    iData        : TVDataFile;
 begin
   iAudioLoaded := False;
   IO.LoadStart;
@@ -397,9 +399,10 @@ begin
   end
   else
   begin
-    FCoreData := TVDataFile.Create( DataPath + 'core.wad' );
-    RegisterModule( 'core', FCoreData );
-    LoadStream( FCoreData,'','core.lua' );
+    iData := TVDataFile.Create( DataPath + 'core.wad' );
+    RegisterModule( 'core', iData );
+    LoadStream( iData,'','core.lua' );
+    FOpenData.Push( iData );
   end;
 
   IO.LoadProgress(iProgBase + 20);
@@ -425,28 +428,28 @@ begin
   end
   else
   begin
-    FMainData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
-    FMainData.DKKey := LoveLace;
-    RegisterModule( CoreModuleID, FMainData );
+    iData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
+    iData.DKKey := LoveLace;
+    RegisterModule( CoreModuleID, iData );
     IO.LoadProgress(iProgBase + 10);
-    LoadStream(FMainData,'','main.lua');
+    LoadStream(iData,'','main.lua');
     IO.LoadProgress(iProgBase + 20);
-    FMainData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
-    FMainData.Load('help');
+    iData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
+    iData.Load('help');
     IO.LoadProgress(iProgBase + 30);
-    FMainData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
-    FMainData.Load('ascii');
+    iData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
+    iData.Load('ascii');
     IO.LoadProgress(iProgBase + 40);
     if GraphicsVersion then
     begin
-      FMainData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
-      FMainData.Load('graphics');
+      iData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
+      iData.Load('graphics');
     end;
-    if FMainData.FileExists( 'audio.lua' ) then
+    if iData.FileExists( 'audio.lua' ) then
     begin
-      iStream := FMainData.GetFile( 'audio.lua' );
+      iStream := iData.GetFile( 'audio.lua' );
       try
-         IO.Audio.LoadBindingStream( iStream, FMainData.GetFileSize( 'audio.lua' ), 'audio.lua' );
+         IO.Audio.LoadBindingStream( iStream, iData.GetFileSize( 'audio.lua' ), 'audio.lua' );
          iAudioLoaded := True;
       finally
         FreeAndNil( iStream );
@@ -459,7 +462,7 @@ begin
      IO.Audio.LoadBindingFile( WritePath + 'audio.lua' );
 
   IO.LoadProgress(iProgBase + 50);
-  IO.Audio.Load( FMainData );
+  IO.Audio.Load( iData );
 
 end;
 
@@ -496,9 +499,11 @@ begin
 end;
 
 destructor TDoomLua.Destroy;
+var iData : TVDataFile;
 begin
-  FreeAndNil( FCoreData );
-  FreeAndNil( FMainData );
+  for iData in FOpenData do
+    iData.Free;
+  FreeAndNil( FOpenData );
   inherited Destroy;
 end;
 
@@ -559,8 +564,7 @@ begin
     then inherited Create( Config.Raw )
     else inherited Create( nil );
 
-  FCoreData := nil;
-  FMainData := nil;
+  FOpenData := TVDataFileArray.Create;
 
   RegisterTableAuxFunctions( Raw );
   RegisterMathAuxFunctions( Raw );
