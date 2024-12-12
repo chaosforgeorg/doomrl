@@ -401,8 +401,8 @@ begin
   begin
     iData := TVDataFile.Create( DataPath + 'core.wad' );
     RegisterModule( 'core', iData );
-    LoadStream( iData,'','core.lua' );
     FOpenData.Push( iData );
+    LoadStream( iData,'','core.lua' );
   end;
 
   IO.LoadProgress(iProgBase + 20);
@@ -431,6 +431,7 @@ begin
     iData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
     iData.DKKey := LoveLace;
     RegisterModule( CoreModuleID, iData );
+    FOpenData.Push( iData );
     IO.LoadProgress(iProgBase + 10);
     LoadStream(iData,'','main.lua');
     IO.LoadProgress(iProgBase + 20);
