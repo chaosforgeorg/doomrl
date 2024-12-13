@@ -27,17 +27,20 @@ type
 
 TDoomModules = class(TVObject)
   constructor Create;
-  procedure ScanModules;
+  procedure ScanModules( const aCoreModuleID : Ansistring );
   destructor Destroy; override;
 private
-  FModules   : TModuleArray;
-  FModuleMap : TModuleHash;
+  FActiveModules : TModuleList;
+  FModules       : TModuleArray;
+  FModuleMap     : TModuleHash;
+  FCoreModuleID  : Ansistring;
 private
   function ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDoomModule;
   procedure ReadMetaFromWAD( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
   procedure ReadMetaFromFolder( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
 public
-  property Modules : TModuleArray read FModules;
+  property ActiveModules : TModuleList read FActiveModules;
+  property CoreModuleID  : Ansistring  read FCoreModuleID;
 end;
 
 var Modules : TDoomModules;
@@ -46,18 +49,28 @@ implementation
 
 uses sysutils, vluatable, vdf, dfdata;
 
-constructor TDoomModules.Create;
+function DoomModuleCompare( const A, B : TDoomModule ) : Integer;
 begin
-  FModules   := TModuleArray.Create( True );
-  FModuleMap := TModuleHash.Create;
+  Exit( B.LoadPriority - A.LoadPriority );
 end;
 
-procedure TDoomModules.ScanModules;
-var iInfo : TSearchRec;
-    iLua  : TLua;
+constructor TDoomModules.Create;
 begin
+  FModules       := TModuleArray.Create( True );
+  FModuleMap     := TModuleHash.Create;
+  FActiveModules := TModuleList.Create;
+  FCoreModuleID  := '';
+end;
+
+procedure TDoomModules.ScanModules( const aCoreModuleID : Ansistring );
+var iInfo   : TSearchRec;
+    iModule : TDoomModule;
+    iLua    : TLua;
+begin
+  FCoreModuleID := aCoreModuleID;
   FModules.Clear;
   FModuleMap.Clear;
+  FActiveModules.Clear;
   try
     iLua := TLua.Create;
 
@@ -80,6 +93,11 @@ begin
   finally
     FreeAndNil( iLua );
   end;
+
+  FModules.Sort( @DoomModuleCompare );
+  for iModule in FModules do
+    if ( iModule.BaseRequired = aCoreModuleID ) or ( iModule.BaseRequired = '' ) then
+      FActiveModules.Push( iModule );
 end;
 
 function TDoomModules.ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDoomModule;
@@ -172,6 +190,7 @@ destructor TDoomModules.Destroy;
 begin
   FreeAndNil( FModules );
   FreeAndNil( FModuleMap );
+  FreeAndNil( FActiveModules );
   inherited Destroy;
 end;
 

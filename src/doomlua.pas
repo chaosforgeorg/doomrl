@@ -568,7 +568,7 @@ begin
     else inherited Create( nil );
 
   FModules := TDoomModules.Create;
-  FModules.ScanModules;
+  FModules.ScanModules( CoreModuleID );
 
   FOpenData := TVDataFileArray.Create;
 
