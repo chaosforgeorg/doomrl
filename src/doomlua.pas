@@ -396,14 +396,14 @@ begin
   begin
     iPath := DataPath + 'data' + PathDelim + 'core' + PathDelim;
     RegisterModule( 'core', iPath );
-    LoadFile( iPath + 'core.lua' );
+    LoadFile( iPath + 'main.lua' );
   end
   else
   begin
     iData := TVDataFile.Create( DataPath + 'core.wad' );
     RegisterModule( 'core', iData );
     FOpenData.Push( iData );
-    LoadStream( iData,'','core.lua' );
+    LoadStream( iData,'','main.lua' );
   end;
 
   IO.LoadProgress(iProgBase + 20);
