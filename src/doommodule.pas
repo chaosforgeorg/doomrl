@@ -84,7 +84,7 @@ begin
     begin
       repeat
         if (iInfo.Attr and faDirectory <> 0) and (iInfo.Name <> '.') and (iInfo.Name <> '..') then
-          ReadMetaFromFolder( iLua,DataPath + 'data' + PathDelim + iInfo.Name + PathDelim );
+          ReadMetaFromFolder( iLua,DataPath + 'data' + PathDelim + iInfo.Name + PathDelim, GodMode );
       until FindNext(iInfo) <> 0;
     end;
     FindClose(iInfo);
@@ -96,8 +96,12 @@ begin
 
   FModules.Sort( @DoomModuleCompare );
   for iModule in FModules do
-    if ( iModule.BaseRequired = aCoreModuleID ) or ( iModule.BaseRequired = '' ) then
+    if ( ( iModule.BaseRequired = aCoreModuleID ) or ( iModule.BaseRequired = '' ) )
+    and ( ( not iModule.IsBase ) or ( iModule.ID = aCoreModuleID ) ) then
+    begin
       FActiveModules.Push( iModule );
+      Log( 'activating module %s (%s)', [ iModule.ID, iModule.Path ] );
+    end;
 end;
 
 function TDoomModules.ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDoomModule;
@@ -123,7 +127,7 @@ begin
     end;
   except on e : Exception do
     begin
-      Log( LOGERROR, 'error while loading module "%s" ...', [iModule.ID] );
+      Log( LOGERROR, 'error while loading module "%s"...', [iModule.ID] );
       FreeAndNil( iModule );
       Exit( nil );
     end;
@@ -142,12 +146,12 @@ begin
         FModules[i] := iModule;
         Break;
       end;
-    Log( LOGINFO, 'overriding module "%s" successfuly!', [iModule.ID] );
+    Log( LOGINFO, 'overriding module "%s"!', [iModule.ID] );
   end
   else
   begin
     FModules.Push( iModule );
-    Log( LOGINFO, 'loaded module "%s" successfuly!', [iModule.ID] );
+    Log( LOGINFO, 'registered module "%s".', [iModule.ID] );
   end;
   FModuleMap[ iModule.ID ] := iModule;
   Exit( iModule );

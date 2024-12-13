@@ -382,9 +382,9 @@ end;
 
 procedure TDoomLua.ReadWad;
 var iProgBase    : DWord;
-    iPath        : Ansistring;
     iAudioLoaded : Boolean;
     iStream      : TStream;
+    iModule      : TDoomModule;
     iData        : TVDataFile;
 begin
   iAudioLoaded := False;
@@ -392,69 +392,55 @@ begin
   iProgBase := IO.LoadCurrent;
   IO.LoadProgress(iProgBase);
 
-  if GodMode then
+  for iModule in FModules.ActiveModules do
   begin
-    iPath := DataPath + 'data' + PathDelim + 'core' + PathDelim;
-    RegisterModule( 'core', iPath );
-    LoadFile( iPath + 'main.lua' );
-  end
-  else
-  begin
-    iData := TVDataFile.Create( DataPath + 'core.wad' );
-    RegisterModule( 'core', iData );
-    FOpenData.Push( iData );
-    LoadStream( iData,'','main.lua' );
-  end;
-
-  IO.LoadProgress(iProgBase + 20);
-
-  if GodMode then
-  begin
-    iPath := DataPath + 'data' + PathDelim + CoreModuleID + PathDelim;
-    RegisterModule( CoreModuleID, iPath );
-    LoadFile( iPath + 'main.lua' );
-    IO.LoadProgress(iProgBase + 20);
-    LoadFiles( iPath + 'help', @Help.StreamLoader, '*.hlp' );
-    IO.LoadProgress(iProgBase + 30);
-    LoadFiles( iPath + 'ascii', @IO.ASCIILoader, '*.asc' );
-    IO.LoadProgress(iProgBase + 40);
-    if GraphicsVersion then
-      (IO as TDoomGFXIO).Textures.LoadTextureFolder( iPath + 'graphics' );
-    // temporary hack, remove once drllq and drlhq are modules
-    if FileExists( iPath + 'audio.lua' ) then
+    iData := nil;
+    if iModule.Path.EndsWith( '.wad' ) then
     begin
-      IO.Audio.LoadBindingFile( iPath + 'audio.lua' );
-      iAudioLoaded := True;
-    end;
-  end
-  else
-  begin
-    iData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
-    iData.DKKey := LoveLace;
-    RegisterModule( CoreModuleID, iData );
-    FOpenData.Push( iData );
-    IO.LoadProgress(iProgBase + 10);
-    LoadStream(iData,'','main.lua');
-    IO.LoadProgress(iProgBase + 20);
-    iData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
-    iData.Load('help');
-    IO.LoadProgress(iProgBase + 30);
-    iData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
-    iData.Load('ascii');
-    IO.LoadProgress(iProgBase + 40);
-    if GraphicsVersion then
+      iData := TVDataFile.Create( iModule.Path );
+      iData.DKKey := LoveLace;
+      if iData.FileExists( 'main.lua' ) then
+      begin
+        RegisterModule( iModule.ID, iData );
+        FOpenData.Push( iData );
+        LoadStream( iData,'','main.lua' );
+      end;
+      iData.RegisterLoader( FILETYPE_RAW, @Help.StreamLoader );
+      iData.Load('help');
+      iData.RegisterLoader( FILETYPE_RAW, @IO.ASCIILoader );
+      iData.Load('ascii');
+      if GraphicsVersion then
+      begin
+        iData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
+        iData.Load('graphics');
+      end;
+      if iData.FileExists( 'audio.lua' ) then
+      begin
+        iStream := iData.GetFile( 'audio.lua' );
+        try
+           IO.Audio.LoadBindingStream( iStream, iData.GetFileSize( 'audio.lua' ), 'audio.lua' );
+           iAudioLoaded := True;
+        finally
+          FreeAndNil( iStream );
+        end;
+      end;
+    end
+    else
     begin
-      iData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
-      iData.Load('graphics');
-    end;
-    if iData.FileExists( 'audio.lua' ) then
-    begin
-      iStream := iData.GetFile( 'audio.lua' );
-      try
-         IO.Audio.LoadBindingStream( iStream, iData.GetFileSize( 'audio.lua' ), 'audio.lua' );
-         iAudioLoaded := True;
-      finally
-        FreeAndNil( iStream );
+      if FileExists( iModule.Path + 'main.lua' ) then
+      begin
+        RegisterModule( iModule.ID, iModule.Path );
+        LoadFile( iModule.Path + 'main.lua' );
+      end;
+      LoadFiles( iModule.Path + 'help', @Help.StreamLoader, '*.hlp' );
+      LoadFiles( iModule.Path + 'ascii', @IO.ASCIILoader, '*.asc' );
+      if GraphicsVersion then
+        (IO as TDoomGFXIO).Textures.LoadTextureFolder( iModule.Path + 'graphics' );
+      // temporary hack, remove once drllq and drlhq are modules
+      if FileExists( iModule.Path + 'audio.lua' ) then
+      begin
+        IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua' );
+        iAudioLoaded := True;
       end;
     end;
   end;
@@ -465,7 +451,6 @@ begin
 
   IO.LoadProgress(iProgBase + 50);
   IO.Audio.Load( iData );
-
 end;
 
 procedure TDoomLua.LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
