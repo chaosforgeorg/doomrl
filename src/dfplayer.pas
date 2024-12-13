@@ -676,7 +676,7 @@ begin
 
   if aOverkill
      then iLevel.playSound( 'gib',FPosition )
-     else playSound(FSounds.Die);
+     else PlaySound( 'die' );
 
   IO.WaitForAnimation;
 

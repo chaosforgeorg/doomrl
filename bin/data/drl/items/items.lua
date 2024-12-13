@@ -819,7 +819,7 @@ function drl.register_regular_items()
 		type       = ITEMTYPE_PACK,
 
 		OnUse = function(self,being)
-			being:play_sound("soldier.phase")
+			being:play_sound("phasing")
 			being:msg("You feel yanked in a non-existing direction!","Suddenly "..being:get_name(true,false).." blinks away!")
 			level:explosion( being.position, 2, 50, 0, 0, LIGHTBLUE )
 			being:phase()
@@ -845,7 +845,7 @@ function drl.register_regular_items()
 		type       = ITEMTYPE_PACK,
 
 		OnUse = function(self,being)
-			being:play_sound("soldier.phase")
+			being:play_sound("phasing")
 			being:msg("You feel yanked in a non-existing direction!","Suddenly "..being:get_name(true,false).." blinks away!")
 			level:explosion( being.position, 2, 50, 0, 0, GREEN )
 			if level.flags[ LF_NOHOMING ] then
@@ -1358,12 +1358,12 @@ function drl.register_regular_items()
 
 		OnUse = function(self,being)
 			local room = self.target_area:clamped( area.FULL_SHRINKED )
-			player:play_sound("barrel.explode")
+			level:play_sound( "barrel.explode", being.position )
 			for c in room() do
 				local tile = cells[level.map[c]]
 				if tile.set == CELLSET_WALLS then
 					if math.random(10) == 1 then
-						player:play_sound("barrel.explode", math.random(500))
+						level:play_sound( "barrel.explode", c, math.random(500) + 500 )
 					end
 					level.map[c] = generator.styles[ level.style ].floor
 					level.light[c][LFPERMANENT] = false
@@ -1625,7 +1625,7 @@ function drl.register_regular_items()
 
 		OnUse = function(self,being)
 			if being:is_player() then
-				being:play_sound("soldier.phase")
+				being:play_sound( "phasing" )
 				being:set_affect("inv",core.power_duration(9))
 			end
 			return true

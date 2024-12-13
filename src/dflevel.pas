@@ -1444,7 +1444,7 @@ var State : TDoomLuaState;
 begin
   State.Init(L);
   Level := State.ToObject(1) as TLevel;
-  Level.playSound( State.ToSoundId(2), State.ToPosition(3), State.ToInteger(4,0) );
+  Level.playSound( IO.Audio.ResolveSoundID( [State.ToString(2)] ), State.ToPosition(3), State.ToInteger(4,0) );
   Result := 0;
 end;
 
@@ -1480,7 +1480,7 @@ begin
   Sound   := 0;
   if State.StackSize < 7 then Exit(0);
   if (State.StackSize >= 12) and (not State.IsNil(12)) then Content := State.ToId(12);
-  if (State.StackSize >= 8 ) and (not State.IsNil(8))  then Sound := State.ToSoundId(8);
+  if (State.StackSize >= 8 ) and (not State.IsNil(8))  then Sound   := IO.Audio.ResolveSoundID( [State.ToString(8)] );
 
   Level.Explosion(0, State.ToPosition(2),
                   State.ToInteger(3),State.ToInteger(4),

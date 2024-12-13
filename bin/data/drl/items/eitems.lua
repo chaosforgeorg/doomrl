@@ -422,7 +422,7 @@ function drl.register_exotic_items()
 		missile       = "mplasma",
 
 		OnHitBeing = function(self,being,target)
-			target:play_sound("soldier.phase")
+			target:play_sound("phasing")
 			being:msg("Suddenly "..target:get_name(true,false).." blinks away!")
 			level:explosion( target.position, 2, 50, 0, 0, LIGHTBLUE )
 			target:phase()

@@ -240,7 +240,7 @@ function drl.register_cells()
 
 		OnAct = function(c,being)
 			being:msg("You open the door.")
-			being:play_sound("door.open")
+			level:play_sound( "door.open", being.position )
 			level.map[ c ] = "odoor"
 			being.scount = being.scount - 500
 			level:animate_cell( c, -3 )
@@ -270,7 +270,7 @@ function drl.register_cells()
 		OnAct = function(c,being)
 			if level:get_being(c) == nil and level:get_item(c) == nil then
 				being:msg("You close the door.")
-				being:play_sound("door.close")
+				level:play_sound( "door.close", being.position )
 				level.map[ c ] = "door"
 				being.scount = being.scount - 500
 				level:animate_cell( c, 3 )
@@ -465,7 +465,7 @@ function drl.register_cells()
 				if being:is_affect("enviro") then return end
 				ui.msg("Argh!!! Acid!")
 				if core.game_time() % 3 == 0 then
-					being:play_sound(being.soundhit)
+					being:play_sound("hit")
 				end
 			end
 			being:apply_damage(damage,TARGET_FEET,DAMAGE_ACID)
@@ -491,7 +491,7 @@ function drl.register_cells()
 				if being:is_affect("enviro") then return end
 				ui.msg("Argh!!! Lava!")
 				if core.game_time() % 3 == 0 then
-					being:play_sound(being.soundhit)
+					being:play_sound("hit")
 				end
 			end
 			being:apply_damage(damage,TARGET_FEET,DAMAGE_FIRE)

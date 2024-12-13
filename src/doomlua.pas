@@ -2,11 +2,11 @@
 unit doomlua;
 interface
 
-uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil, vcolor, vdf, vbitmapfont, dfitem, dfbeing, dfthing, dfdata;
+uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil,
+     vcolor, vdf, vgenerics, dfitem, dfbeing, dfthing, dfdata, doommodule;
 
 var LuaPlayerX : Byte = 2;
     LuaPlayerY : Byte = 2;
-    
 
 type
 
@@ -21,8 +21,8 @@ TDoomLua = class(TLuaSystem)
        procedure ReadWad;
        procedure LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
      private
-       FCoreData : TVDataFile;
-       FMainData : TVDataFile;
+       FOpenData : TVDataFileArray;
+       FModules  : TDoomModules;
      end;
 
 type
@@ -31,7 +31,6 @@ type
 
 TDoomLuaState = object(TLuaState)
   function ToId( Index : Integer) : DWord;
-  function ToSoundId( Index : Integer ) : DWord;
   function ToPosition( Index : Integer ) : TCoord2D;
 end;
 
@@ -282,14 +281,6 @@ begin
   Result := 1;
 end;
 
-function lua_core_resolve_sound_id(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-begin
-  State.Init(L);
-  State.Push(IO.Audio.ResolveSoundID([State.ToString(1),State.ToString(2),State.ToString(3)]));
-  Result := 1;
-end;
-
 function lua_core_play_music(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
@@ -389,87 +380,59 @@ end;
 
 procedure TDoomLua.ReadWad;
 var iProgBase    : DWord;
-    iPath        : Ansistring;
     iAudioLoaded : Boolean;
     iStream      : TStream;
+    iModule      : TDoomModule;
+    iData        : TVDataFile;
+    iAudioData   : TVDataFileArray;
 begin
   iAudioLoaded := False;
   IO.LoadStart;
   iProgBase := IO.LoadCurrent;
   IO.LoadProgress(iProgBase);
 
-  if GodMode then
+  for iModule in FModules.ActiveModules do
   begin
-    iPath := DataPath + 'data' + PathDelim + 'core' + PathDelim;
-    RegisterModule( 'core', iPath );
-    LoadFile( iPath + 'core.lua' );
-  end
-  else
-  begin
-    FCoreData := TVDataFile.Create( DataPath + 'core.wad' );
-    RegisterModule( 'core', FCoreData );
-    LoadStream( FCoreData,'','core.lua' );
-  end;
-
-  IO.LoadProgress(iProgBase + 20);
-
-  if GodMode then
-  begin
-    iPath := DataPath + 'data' + PathDelim + CoreModuleID + PathDelim;
-    RegisterModule( CoreModuleID, iPath );
-    LoadFile( iPath + 'main.lua' );
-    IO.LoadProgress(iProgBase + 20);
-    LoadFiles( iPath + 'help', @Help.StreamLoader, '*.hlp' );
-    IO.LoadProgress(iProgBase + 30);
-    LoadFiles( iPath + 'ascii', @IO.ASCIILoader, '*.asc' );
-    IO.LoadProgress(iProgBase + 40);
-    if GraphicsVersion then
-      (IO as TDoomGFXIO).Textures.LoadTextureFolder( iPath + 'graphics' );
-    // temporary hack, remove once drllq and drlhq are modules
-    if FileExists( iPath + 'audio.lua' ) then
+    iData := nil;
+    if iModule.Path.EndsWith( '.wad' ) then
     begin
-      IO.Audio.LoadBindingFile( iPath + 'audio.lua' );
-      iAudioLoaded := True;
-    end;
-  end
-  else
-  begin
-    FMainData := TVDataFile.Create( DataPath + CoreModuleID+'.wad' );
-    FMainData.DKKey := LoveLace;
-    RegisterModule( CoreModuleID, FMainData );
-    IO.LoadProgress(iProgBase + 10);
-    LoadStream(FMainData,'','main.lua');
-    IO.LoadProgress(iProgBase + 20);
-    FMainData.RegisterLoader(FILETYPE_RAW,@Help.StreamLoader);
-    FMainData.Load('help');
-    IO.LoadProgress(iProgBase + 30);
-    FMainData.RegisterLoader(FILETYPE_RAW,@IO.ASCIILoader);
-    FMainData.Load('ascii');
-    IO.LoadProgress(iProgBase + 40);
-    if GraphicsVersion then
-    begin
-      FMainData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
-      FMainData.Load('graphics');
-    end;
-    if FMainData.FileExists( 'audio.lua' ) then
-    begin
-      iStream := FMainData.GetFile( 'audio.lua' );
-      try
-         IO.Audio.LoadBindingStream( iStream, FMainData.GetFileSize( 'audio.lua' ), 'audio.lua' );
-         iAudioLoaded := True;
-      finally
-        FreeAndNil( iStream );
+      iData := TVDataFile.Create( iModule.Path );
+      iData.DKKey := LoveLace;
+      if iData.FileExists( 'main.lua' ) then
+      begin
+        RegisterModule( iModule.ID, iData );
+        LoadStream( iData,'','main.lua' );
       end;
+      iData.RegisterLoader( FILETYPE_RAW, @Help.StreamLoader );
+      iData.Load('help');
+      iData.RegisterLoader( FILETYPE_RAW, @IO.ASCIILoader );
+      iData.Load('ascii');
+      if GraphicsVersion then
+      begin
+        iData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
+        iData.Load('graphics');
+      end;
+      IO.Audio.LoadBindingDataFile( iData, 'audio.lua', DataPath );
+      FOpenData.Push( iData );
+    end
+    else
+    begin
+      if FileExists( iModule.Path + 'main.lua' ) then
+      begin
+        RegisterModule( iModule.ID, iModule.Path );
+        LoadFile( iModule.Path + 'main.lua' );
+      end;
+      LoadFiles( iModule.Path + 'help', @Help.StreamLoader, '*.hlp' );
+      LoadFiles( iModule.Path + 'ascii', @IO.ASCIILoader, '*.asc' );
+      if GraphicsVersion then
+        (IO as TDoomGFXIO).Textures.LoadTextureFolder( iModule.Path + 'graphics' );
+      // temporary hack, remove once drllq and drlhq are modules
+      IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua', iModule.Path );
     end;
   end;
-
-  // temporary hack, remove once drllq and drlhq are modules
-  if not iAudioLoaded then
-     IO.Audio.LoadBindingFile( WritePath + 'audio.lua' );
 
   IO.LoadProgress(iProgBase + 50);
-  IO.Audio.Load( FMainData );
-
+  IO.Audio.Load;
 end;
 
 procedure TDoomLua.LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
@@ -505,9 +468,12 @@ begin
 end;
 
 destructor TDoomLua.Destroy;
+var iData : TVDataFile;
 begin
-  FreeAndNil( FCoreData );
-  FreeAndNil( FMainData );
+  for iData in FOpenData do
+    iData.Free;
+  FreeAndNil( FOpenData );
+  FreeAndNil( FModules );
   inherited Destroy;
 end;
 
@@ -542,7 +508,7 @@ const lua_player_data_lib : array[0..4] of luaL_Reg = (
 );
 
 
-const lua_core_lib : array[0..13] of luaL_Reg = (
+const lua_core_lib : array[0..12] of luaL_Reg = (
     ( name : 'add_to_cell_set';func : @lua_core_add_to_cell_set),
     ( name : 'game_time';func : @lua_core_game_time),
     ( name : 'is_playing';func : @lua_core_is_playing),
@@ -551,7 +517,6 @@ const lua_core_lib : array[0..13] of luaL_Reg = (
     ( name : 'register_shotgun';func : @lua_core_register_shotgun),
     ( name : 'register_affect'; func : @lua_core_register_affect),
 
-    ( name : 'resolve_sound_id';func : @lua_core_resolve_sound_id),
     ( name : 'play_music';func : @lua_core_play_music),
 
     ( name : 'texture_upload';        func : @lua_core_texture_upload),
@@ -569,8 +534,10 @@ begin
     then inherited Create( Config.Raw )
     else inherited Create( nil );
 
-  FCoreData := nil;
-  FMainData := nil;
+  FModules := TDoomModules.Create;
+  FModules.ScanModules( CoreModuleID );
+
+  FOpenData := TVDataFileArray.Create;
 
   RegisterTableAuxFunctions( Raw );
   RegisterMathAuxFunctions( Raw );
@@ -654,16 +621,6 @@ begin
   if IsNumber( Index ) then Exit( ToInteger( Index ) );
   ToId := LuaSystem.Defines[ToString( Index )];
   if ToId = 0 then Error( 'unknown define ('+ToString( Index ) +')!' );
-end;
-
-function TDoomLuaState.ToSoundId(Index: Integer): DWord;
-begin
-  if IsNumber( Index ) then
-     Exit( ToInteger( Index ) )
-  else if IsTable( Index ) then
-     Exit( IO.Audio.ResolveSoundID( ToStringArray( Index ) ) )
-  else
-     Exit( IO.Audio.ResolveSoundID( [ ToString(Index) ] ) );
 end;
 
 function TDoomLuaState.ToPosition( Index : Integer ) : TCoord2D;

@@ -201,7 +201,7 @@ function drl.register_events()
 				-- TODO We need a better way to deal with articles.  Removing this one for now.
 				ui.msg( "Suddenly, "..b.name.." appears near you!" )
 				b:relocate( c )
-				b:play_sound("soldier.phase")
+				b:play_sound("phasing")
 				b.scount = b.scount - math.max( 1000 - DIFFICULTY * 50, 500 )
 				level:explosion( b.position, 1, 50, 0, 0, LIGHTBLUE )
 			end

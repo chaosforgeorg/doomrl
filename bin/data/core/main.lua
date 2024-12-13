@@ -173,13 +173,6 @@ register_being         = core.register_storage( "beings", "being", function( bp 
 			if type(bp.corpse) == "string"  then bp.corpse = cells[bp.corpse].nid end
 		end
 
-		core.resolve_thing_sound( bp, "act" )
-		core.resolve_thing_sound( bp, "hit" )
-		core.resolve_thing_sound( bp, "die" )
-		core.resolve_thing_sound( bp, "hoof" )
-		core.resolve_thing_sound( bp, "attack" )
-		core.resolve_thing_sound( bp, "melee" )
-
 		core.register_resistances( bp )
 	end
 )
@@ -351,16 +344,6 @@ function core.register_resistances( proto )
 		end
 	end
 	proto.OnCreate = core.create_seq_function( OnCreate, proto.OnCreate )
-end
-
-function core.resolve_thing_sound( proto, sound_id )
-	if proto.sound_id then
-		proto["sound_"..sound_id] = proto["sound_"..sound_id] or
-			core.resolve_sound_id( proto.id.."."..sound_id, proto.sound_id.."."..sound_id, sound_id )
-	else
-		proto["sound_"..sound_id] = proto["sound_"..sound_id] or
-			core.resolve_sound_id( proto.id.."."..sound_id, sound_id )
-	end
 end
 
 function core.mod_list_signature( mod_list )

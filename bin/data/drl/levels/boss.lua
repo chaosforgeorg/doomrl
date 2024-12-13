@@ -56,7 +56,7 @@ register_level "hellgate"
 
 			OnEnter = function( self, being )
 				if not being:is_player() then return end
-				level:explosion( being.position, 4, 50, 0, 0, GREEN, core.resolve_sound_id( "hellgate.use", "teleport.use", "use" ) )
+				level:explosion( being.position, 4, 50, 0, 0, GREEN, "hellgate.use" )
 				ui.msg_enter("You feel yanked in a non-existing direction!")
 				player:exit()
 				drl.plot_outro_1()
@@ -135,7 +135,7 @@ register_level "hellgate"
 	OnEnter = function ()
 		level.status = 1
 		ui.msg_feel("You sense a certain tension.")
-		player:play_sound("baron.act")
+		level:play_sound( "baron.act", player.position )
 	end,
 
 	OnKillAll = function ()
@@ -155,14 +155,14 @@ register_level "hellgate"
 		if res == 1 and player.x > 20 then
 			if DIFFICULTY > DIFF_EASY then
 				ui.msg("Suddenly the walls lower!")
-				player:play_sound("door.close")
+				level:play_sound( "door.close", player.position )
 				generator.transmute( "wall", "floor", area.new( 9, 4, 29, 16 ) )
 			end
 			level.status = 2
 		end
 		if res == 2 and player.x > 50 then
 			ui.msg("Suddenly the walls disappear!")
-			player:play_sound("barrel.explode")
+			level:play_sound( "barrel.explode", player.position )
 			generator.transmute( "rwall", "floor", area.new( 53, 7, 60, 13 ) )
 			generator.transmute( "wall", "floor",  area.new( 60, 7, 74, 13 ) )
 			level.status = 3

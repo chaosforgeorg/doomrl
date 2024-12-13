@@ -7,7 +7,7 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 }
 unit dfthing;
 interface
-uses SysUtils, Classes, vluaentitynode, vutil, vluatable, dfdata, doomhooks;
+uses SysUtils, Classes, vluaentitynode, vutil, vrltools, vluatable, dfdata, doomhooks;
 
 type
 
@@ -16,7 +16,8 @@ type
 TThing = class( TLuaEntityNode )
   constructor Create( const aID : AnsiString );
   constructor CreateFromStream( Stream : TStream ); override;
-  procedure playBasicSound(const SoundID : string);
+  function PlaySound( const aSoundID : string; aDelay : Integer = 0 ) : Boolean;
+  function PlaySound( const aSoundID : string; aPosition : TCoord2D; aDelay : Integer = 0 ) : Boolean;
   procedure CallHook( Hook : Byte; const Params : array of Const );
   function CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
   function GetSprite : TSprite; virtual;
@@ -24,7 +25,8 @@ TThing = class( TLuaEntityNode )
 protected
   procedure LuaLoad( Table : TLuaTable ); virtual;
 protected
-  FSprite     : TSprite;
+  FSprite  : TSprite;
+  FSoundID : string[16];
   {$TYPEINFO ON}
 public
   property Sprite     : TSprite  read FSprite          write FSprite;
@@ -35,7 +37,7 @@ end;
 implementation
 
 uses typinfo, variants,
-     vluasystem, vcolor, vdebug,
+     vluasystem, vdebug,
      doombase, doomio;
 
 constructor TThing.Create( const aID : AnsiString );
@@ -48,6 +50,7 @@ var iColorID : AnsiString;
 begin
   FGylph.ASCII := Table.getChar('ascii');
   FGylph.Color := Table.getInteger('color');
+  FSoundID     := Table.getString('sound_id','');
   Name         := Table.getString('name');
   FillChar( FSprite, SizeOf( FSprite ), 0 );
   ReadSprite( Table, FSprite );
@@ -60,9 +63,21 @@ begin
 
 end;
 
-procedure TThing.playBasicSound(const SoundID: string);
+function TThing.PlaySound( const aSoundID : string; aDelay : Integer = 0 ) : Boolean;
 begin
-  IO.Audio.PlaySound( IO.Audio.ResolveSoundID( [FID+'.'+SoundID, SoundID] ), FPosition );
+  Exit( PlaySound( aSoundID, FPosition, aDelay ) );
+end;
+
+function TThing.PlaySound( const aSoundID : string; aPosition : TCoord2D; aDelay : Integer = 0 ) : Boolean;
+var iSoundID : Word;
+begin
+  if FSoundID = ''
+    then iSoundID := IO.Audio.ResolveSoundID( [ FID+'.'+aSoundID, aSoundID ] )
+    else iSoundID := IO.Audio.ResolveSoundID( [ FID+'.'+aSoundID, FSoundID+'.'+aSoundID, aSoundID ] );
+
+  if iSoundID = 0 then Exit( False );
+  IO.Audio.PlaySound( iSoundID, aPosition, aDelay );
+  Exit( True );
 end;
 
 procedure TThing.CallHook ( Hook : Byte; const Params : array of const ) ;
@@ -87,13 +102,15 @@ end;
 procedure TThing.WriteToStream( Stream: TStream );
 begin
   inherited WriteToStream( Stream );
-  Stream.Write( FSprite,     SizeOf( FSprite ) );
+  Stream.Write( FSprite,  SizeOf( FSprite ) );
+  Stream.Write( FSoundID, SizeOf( FSoundID ) );
 end;
 
 constructor TThing.CreateFromStream( Stream: TStream );
 begin
   inherited CreateFromStream( Stream );
-  Stream.Read( FSprite,     SizeOf( FSprite ) );
+  Stream.Read( FSprite,  SizeOf( FSprite ) );
+  Stream.Read( FSoundID, SizeOf( FSoundID ) );
 end;
 
 end.

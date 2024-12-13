@@ -42,8 +42,9 @@ makefile = {
 			subdirs = {
 				["data/drllq/sound"] = "*.wav",
 				["data/drllq/music"] = "*.mid",
+				["data/drllq"] = "*.lua",
 			},
-			other = { {"audiolq.lua", "audio.lua"}, "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
+			other = { "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
 		},
 		hq = {
 			exec = { "drl" },
@@ -56,8 +57,9 @@ makefile = {
 			subdirs = {
 				["data/drlhq/sound"] = "*.wav",
 				["data/drlhq/music"] = "*.mp3",
+				["data/drlhq"] = "*.lua",
 			},
-			other = { "audio.lua", "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
+			other = { "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
 		}
 	},
 	commands = {

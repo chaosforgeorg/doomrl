@@ -87,7 +87,7 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 			ui.msg( "\"It's a trap!\"" )
 			generator.transmute("ldoor","door")
 			res = 3
-			player:play_sound("soldier.phase")
+			level:play_sound( "phasing", player.position )
 			
 			local total   = 8 + DIFFICULTY
 			local knights = math.max( 9 - (3*( DIFFICULTY - 1 ) ), 0 )
@@ -96,8 +96,8 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 			if DIFFICULTY >= 4 then
 				level:summon{ "arch",  DIFFICULTY-3,     area = level.data.middle }
 			end
-			player:play_sound("soldier.phase")
-			player:play_sound("baron.act")
+			level:play_sound( "phasing", player.position, 50 ) 
+			level:play_sound( "baron.act", player.position, 100 )
 		end
 		level.status = res
 	end,

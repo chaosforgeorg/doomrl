@@ -96,7 +96,7 @@ register_level "abyssal_plains"
 		if res > 1 then return end
 		if res == 0 and player.x > 29 and player.x < 49 and player.y > 8 and player.y < 13 then
 			ui.msg("Suddenly you're trapped in!")
-			player:play_sound("door.close")
+			level:play_sound( "door.close", player.position )
 			generator.transmute( "gwall", "floor" )
 			generator.transmute( "floor", "rwall", area.new( 28, 9, 28, 12 ) )
 			generator.transmute( "floor", "rwall", area.new( 50, 9, 50, 12 ) )

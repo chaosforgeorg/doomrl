@@ -176,7 +176,7 @@ function drl.register_base_data()
 				self.target = generator.random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
 			end
 			-- Explosions can have sounds, but by the time the sound plays, the player has already moved
-			level:play_sound( core.resolve_sound_id( "teleport.use", "use" ), being.position )
+			level:play_sound( "teleport.use", being.position )
 			level:explosion( being.position, 4, 50, 0, 0, GREEN, 0 )
 			being:msg( "You feel yanked away!", being:get_name(true,true).." suddenly disappears!" )
 			local target = self.target

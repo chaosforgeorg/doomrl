@@ -1032,12 +1032,8 @@ function drl.register_beings()
 			end
 			--old explosion was LIGHTBLUE
 			if math.random(10) == 1 then
-				self:play_sound{"shambler.act","baron.act"}
+				self:play_sound("act")
 			end
-		end,
-
-		OnDie = function (self)
-			self:play_sound{"shambler.die","arachno.die"}
 		end,
 	}
 
@@ -1102,10 +1098,6 @@ function drl.register_beings()
 				self.hp = self.hp + 1
 			end
 			--old explosion was RED
-		end,
-
-		OnDie = function (self)
-			self:play_sound{"lava_elemental.die","arch.die"}
 		end,
 	}
 
@@ -1542,6 +1534,7 @@ function drl.register_beings()
 		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
 		ai_type      = "archvile_ai",
+		sound_id     = "arch",
 
 		resist = { bullet = 75, shrapnel = 75, melee = 75, fire = 75, acid = 75, plasma = 75 },
 
@@ -1578,18 +1571,17 @@ function drl.register_beings()
 				self.hp = self.hp + 1
 			end
 			if math.random(20) == 1 then
-				self:play_sound{"apostle.phase", "soldier.phase"}
+				self:play_sound("phasing")
 				level:explosion( self.position, 1, 50, 0, 0, LIGHTBLUE )
 				self:phase()
 				level:explosion( self.position, 1, 50, 0, 0, LIGHTBLUE )
 			end
 			if math.random(10) == 1 then
-				self:play_sound{"apostle.act", "arch.act"}
+				self:play_sound("act")
 			end
 		end,
 
 		OnDie = function (self)
-			self:play_sound{"apostle.die", "arch.die"}
 			player:add_medal("dragonslayer2")
 			if CHALLENGE == "challenge_a100" then
 				level.map[ self.position ] = "stairs"
