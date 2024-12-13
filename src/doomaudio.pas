@@ -14,6 +14,7 @@ type TAudioEntry = record
        Root     : Ansistring;
        FileName : Ansistring;
        IsMusic  : Boolean;
+       DataFile : TVDataFile;
      end;
 
 
@@ -27,9 +28,9 @@ type TDoomAudio = class
   constructor Create;
   procedure Reconfigure;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False );
-  function LoadBindingFile( const aFile : Ansistring ) : Boolean;
-  procedure LoadBindingStream( aStream : TStream; aSize : DWord; const aStreamName : Ansistring );
-  procedure Load( aTempSource : TVDataFile );
+  function LoadBindingFile( const aFile, aRoot : Ansistring ) : Boolean;
+  function LoadBindingDataFile( aData : TVDataFile; const aFile, aRoot : Ansistring ) : Boolean;
+  procedure Load;
   procedure Update( aMSec : DWord );
   procedure PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
   procedure PlayMusic( const MusicID : Ansistring; aNotFound : Boolean = False );
@@ -44,10 +45,13 @@ private
   FLastMusic   : Ansistring;
   FTime        : QWord;
   FSoundEvents : TSoundEventHeap;
+  FCurrentData : TVDataFile;
+
 
   FAudioRegistry : TAudioRegistry;
   FMusicCount    : DWord;
   FAudioLookup   : TAudioLookup;
+  FRoot          : Ansistring;
 end;
 
 implementation
@@ -124,10 +128,12 @@ begin
   end;
 end;
 
-function TDoomAudio.LoadBindingFile( const aFile : Ansistring ) : Boolean;
+function TDoomAudio.LoadBindingFile( const aFile, aRoot : Ansistring ) : Boolean;
 var iState : TLuaConfig;
 begin
+  FCurrentData := nil;
   if not FileExists( aFile ) then Exit( False );
+  FRoot  := aRoot;
   Result := False;
   try
     iState := TLuaConfig.Create( aFile );
@@ -139,35 +145,47 @@ begin
   Result := True;
 end;
 
-procedure TDoomAudio.LoadBindingStream( aStream : TStream; aSize : DWord; const aStreamName : Ansistring );
-var iState : TLuaConfig;
+function TDoomAudio.LoadBindingDataFile( aData : TVDataFile; const aFile, aRoot : Ansistring ) : Boolean;
+var iStream : TStream;
+    iSize   : Integer;
+    iState  : TLuaConfig;
 begin
+  if not aData.FileExists( aFile ) then Exit( False );
+  FCurrentData := aData;
+  iSize   := aData.GetFileSize( aFile );
+  iStream := aData.GetFile( aFile );
   try
+    FRoot  := aRoot;
     iState := TLuaConfig.Create;
-    iState.Load( aStream, aSize, aStreamName );
+    iState.Load( iStream, iSize, aFile );
     if Option_Music and iState.TableExists('music') then iState.EntryFeed( 'music', @MusicQuery );
     if Option_Sound and iState.TableExists('sound') then iState.RecEntryFeed( 'sound', @SoundQuery );
   finally
-    iState.Free;
+    FreeAndNil( iState );
+    FreeAndNil( iStream );
   end;
+  Exit( True );
 end;
 
-procedure TDoomAudio.Load( aTempSource : TVDataFile );
+
+procedure TDoomAudio.Load;
 var iCount   : DWord;
     iProgress: DWord;
     iProgMod : Single;
+    iDataFile: TVDataFile;
+
   procedure RegisterMusic( const aPath : Ansistring; aID : Ansistring );
   var iFileName : Ansistring;
       iStream   : TStream;
   begin
-    if aTempSource <> nil then
+    if iDataFile <> nil then
     begin
       iFileName := ExtractFileName( aPath );
-      if aTempSource.FileExists( iFileName, 'music' ) then
+      if iDataFile.FileExists( iFileName, 'music' ) then
       begin
-        iStream := aTempSource.GetFile( iFileName, 'music' );
+        iStream := iDataFile.GetFile( iFileName, 'music' );
         try
-          Sound.RegisterMusic( iStream, aTempSource.GetFileSize( iFileName, 'music' ), aID, ExtractFileExt( iFileName ) );
+          Sound.RegisterMusic( iStream, iDataFile.GetFileSize( iFileName, 'music' ), aID, ExtractFileExt( iFileName ) );
         finally
           FreeAndNil( iStream );
         end;
@@ -181,14 +199,14 @@ var iCount   : DWord;
   var iFileName : Ansistring;
       iStream   : TStream;
   begin
-    if aTempSource <> nil then
+    if iDataFile <> nil then
     begin
       iFileName := ExtractFileName( aPath );
-      if aTempSource.FileExists( iFileName, 'sound' ) then
+      if iDataFile.FileExists( iFileName, 'sound' ) then
       begin
-        iStream := aTempSource.GetFile( iFileName, 'sound' );
+        iStream := iDataFile.GetFile( iFileName, 'sound' );
         try
-          Sound.RegisterSample( iStream, aTempSource.GetFileSize( iFileName, 'sound' ), aID );
+          Sound.RegisterSample( iStream, iDataFile.GetFileSize( iFileName, 'sound' ), aID );
         finally
           FreeAndNil( iStream );
         end;
@@ -208,9 +226,10 @@ begin
     for iCount := 0 to FAudioRegistry.Size - 1 do
       with FAudioRegistry[ iCount ] do
       begin
+        iDataFile := DataFile;
         if IsMusic
-          then RegisterMusic( DataPath + Root + FileName, ID  )
-          else RegisterSample( DataPath + Root + FileName, ID  );
+          then RegisterMusic( Root + FileName, ID  )
+          else RegisterSample( Root + FileName, ID  );
         if iCount mod 10 = 0 then
           IO.LoadProgress( Floor(iProgMod * iCount) + iProgress );
       end;
@@ -222,7 +241,7 @@ var iKey, iValue : AnsiString;
 begin
   iKey   := LowerCase(nKey);
   iValue := nValue;
-  Register( iKey, iValue, False, '' );
+  Register( iKey, iValue, False, FRoot );
 end;
 
 procedure TDoomAudio.MusicQuery(nkey,nvalue : Variant);
@@ -230,7 +249,7 @@ var iKey, iValue : AnsiString;
 begin
   iKey   := LowerCase(nKey);
   iValue := nValue;
-  Register( iKey, iValue, True, '' );
+  Register( iKey, iValue, True, FRoot );
 end;
 
 procedure TDoomAudio.Register( const aID, aFileName : AnsiString; aMusic : Boolean; const aRoot : AnsiString );
@@ -242,6 +261,7 @@ begin
   iEntry.FileName := aFileName;
   iEntry.Root     := aRoot;
   iEntry.IsMusic  := aMusic;
+  iEntry.DataFile := FCurrentData;
 
   if iIndex >= 0 then
   begin

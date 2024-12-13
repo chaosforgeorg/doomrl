@@ -8,8 +8,6 @@ uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil,
 var LuaPlayerX : Byte = 2;
     LuaPlayerY : Byte = 2;
 
-type TVDataFileArray = specialize TGArray< TVDataFile >;
-
 type
 
 { TDoomLua }
@@ -386,6 +384,7 @@ var iProgBase    : DWord;
     iStream      : TStream;
     iModule      : TDoomModule;
     iData        : TVDataFile;
+    iAudioData   : TVDataFileArray;
 begin
   iAudioLoaded := False;
   IO.LoadStart;
@@ -402,7 +401,6 @@ begin
       if iData.FileExists( 'main.lua' ) then
       begin
         RegisterModule( iModule.ID, iData );
-        FOpenData.Push( iData );
         LoadStream( iData,'','main.lua' );
       end;
       iData.RegisterLoader( FILETYPE_RAW, @Help.StreamLoader );
@@ -414,16 +412,9 @@ begin
         iData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
         iData.Load('graphics');
       end;
-      if iData.FileExists( 'audio.lua' ) then
-      begin
-        iStream := iData.GetFile( 'audio.lua' );
-        try
-           IO.Audio.LoadBindingStream( iStream, iData.GetFileSize( 'audio.lua' ), 'audio.lua' );
-           iAudioLoaded := True;
-        finally
-          FreeAndNil( iStream );
-        end;
-      end;
+      if IO.Audio.LoadBindingDataFile( iData, 'audio.lua', DataPath ) then
+        iAudioLoaded := True;
+      FOpenData.Push( iData );
     end
     else
     begin
@@ -437,20 +428,17 @@ begin
       if GraphicsVersion then
         (IO as TDoomGFXIO).Textures.LoadTextureFolder( iModule.Path + 'graphics' );
       // temporary hack, remove once drllq and drlhq are modules
-      if FileExists( iModule.Path + 'audio.lua' ) then
-      begin
-        IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua' );
+      if IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua', DataPath ) then
         iAudioLoaded := True;
-      end;
     end;
   end;
 
   // temporary hack, remove once drllq and drlhq are modules
   if not iAudioLoaded then
-     IO.Audio.LoadBindingFile( WritePath + 'audio.lua' );
+     IO.Audio.LoadBindingFile( WritePath + 'audio.lua', DataPath );
 
   IO.LoadProgress(iProgBase + 50);
-  IO.Audio.Load( iData );
+  IO.Audio.Load;
 end;
 
 procedure TDoomLua.LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
