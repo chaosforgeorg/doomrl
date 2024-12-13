@@ -412,8 +412,7 @@ begin
         iData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
         iData.Load('graphics');
       end;
-      if IO.Audio.LoadBindingDataFile( iData, 'audio.lua', DataPath ) then
-        iAudioLoaded := True;
+      IO.Audio.LoadBindingDataFile( iData, 'audio.lua', DataPath );
       FOpenData.Push( iData );
     end
     else
@@ -428,14 +427,9 @@ begin
       if GraphicsVersion then
         (IO as TDoomGFXIO).Textures.LoadTextureFolder( iModule.Path + 'graphics' );
       // temporary hack, remove once drllq and drlhq are modules
-      if IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua', DataPath ) then
-        iAudioLoaded := True;
+      IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua', iModule.Path );
     end;
   end;
-
-  // temporary hack, remove once drllq and drlhq are modules
-  if not iAudioLoaded then
-     IO.Audio.LoadBindingFile( WritePath + 'audio.lua', DataPath );
 
   IO.LoadProgress(iProgBase + 50);
   IO.Audio.Load;
