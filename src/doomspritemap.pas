@@ -268,7 +268,7 @@ const TargetSprite : TSprite = (
 begin
   TargetSprite.SpriteID := HARDSPRITE_SELECT;
   iIO := IO as TDoomGFXIO;
-  FSpriteEngine.Position := Vec2i( FShift.X + FOffset.X, FShift.Y  + FOffset.Y );
+  FSpriteEngine.Position := FShift + FOffset;
 
   if iIO.MCursor.Active and iIO.Driver.GetMousePos( iPoint ) then
   begin
@@ -922,17 +922,17 @@ begin
            (not Doom.Level.isEmpty( FTargetList[iL], [ EF_NOBLOCK, EF_NOVISION ] )) then
           iColor := NewColor( 128, 0, 0 );
         with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-          Cosplay.Push( HARDSPRITE_SELECT mod 100000, TVec2i.Create(FTargetList[iL].X, FTargetList[iL].Y ), iColor, DRL_Z_FX );
+          Cosplay.Push( HARDSPRITE_SELECT mod 100000, FTargetList[iL], iColor, DRL_Z_FX );
       end;
       if FTargetList.Size > 0 then
         with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
-          Cosplay.Push( HARDSPRITE_MARK mod 100000, TVec2i.Create( FTarget.X, FTarget.Y ), FTargetColor, DRL_Z_FX );
+          Cosplay.Push( HARDSPRITE_MARK mod 100000, FTarget, FTargetColor, DRL_Z_FX );
     end
   else
     if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
     begin
       with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-        Cosplay.Push( HARDSPRITE_SELECT mod 100000, TVec2i.Create( FAutoTarget.X, FAutoTarget.Y ), NewColor( Yellow ), DRL_Z_FX );
+        Cosplay.Push( HARDSPRITE_SELECT mod 100000, FAutoTarget, NewColor( Yellow ), DRL_Z_FX );
     end;
 
   if FGridActive then
@@ -940,7 +940,7 @@ begin
     for iX := iDMinX to iDMaxX do
     with FSpriteEngine.Layers[ HARDSPRITE_GRID div 100000 ] do
     begin
-      Normal.Push( HARDSPRITE_GRID mod 100000, Vec2i( iX, iY ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
+      Normal.Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
     end;
 
 end;
