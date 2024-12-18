@@ -2,7 +2,7 @@
 unit doomgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
-     vrltools, vutil, vtextures,
+     vrltools, vutil, vtextures, vvector,
      doomio, doomspritemap, doomanimation, dfdata;
 
 type
@@ -419,7 +419,7 @@ var iMousePos : TIOPoint;
     iActiveY  : Integer;
     iMaxX     : Integer;
     iMaxY     : Integer;
-    iShift    : TCoord2D;
+    iShift    : TVec2i;
     iSizeY    : DWord;
     iSizeX    : DWord;
     iMinus    : Integer;
@@ -456,7 +456,7 @@ begin
     iShift := SpriteMap.Shift;
     if (iValueX <> 0) or (iValueY <> 0) then
     begin
-      iShift := NewCoord2D(
+      iShift := Vec2i(
         Clamp( SpriteMap.Shift.X + Ceil( iValueX * aMSec ), SpriteMap.MinShift.X, SpriteMap.MaxShift.X ),
         Clamp( SpriteMap.Shift.Y + Ceil( iValueY * aMSec ), SpriteMap.MinShift.Y, SpriteMap.MaxShift.Y )
       );

@@ -2,7 +2,7 @@
 unit doomspritemap;
 interface
 uses Classes, SysUtils,
-     vutil, vgltypes, vrltools, vgenerics, vcolor, vglquadrenderer, vglprogram,
+     vutil, vgltypes, vrltools, vgenerics, vvector, vcolor, vglquadrenderer, vglprogram,
      vglfullscreentriangle, vnode, vspriteengine, vtextures, vglframebuffer, dfdata;
 
 // TODO : remove
@@ -51,7 +51,7 @@ type
   procedure PushSpriteFX( aX,aY : Byte; const aSprite : TSprite );
   procedure PushSpriteFXRotated( aX,aY : Integer; const aSprite : TSprite; aRotation : Single );
   procedure PushSpriteTerrain( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aTSX : Single = 0; aTSY : Single = 0 );
-  function ShiftValue( aFocus : TCoord2D ) : TCoord2D;
+  function ShiftValue( aFocus : TCoord2D ) : TVec2i;
   procedure SetTarget( aTarget : TCoord2D; aColor : TColor; aDrawPath : Boolean );
   procedure SetAutoTarget( aTarget : TCoord2D );
   procedure ClearTarget;
@@ -61,8 +61,8 @@ type
   destructor Destroy; override;
 private
   FGridActive     : Boolean;
-  FMaxShift       : TPoint;
-  FMinShift       : TPoint;
+  FMaxShift       : TVec2i;
+  FMinShift       : TVec2i;
   FFluidX         : Single;
   FFluidY         : Single;
   FTimer          : DWord;
@@ -71,9 +71,9 @@ private
   FTarget         : TCoord2D;
   FTargetList     : TCoord2DArray;
   FTargetColor    : TColor;
-  FNewShift       : TCoord2D;
-  FShift          : TCoord2D;
-  FOffset         : TCoord2D;
+  FNewShift       : TVec2i;
+  FShift          : TVec2i;
+  FOffset         : TVec2i;
   FLastCoord      : TCoord2D;
   FAutoTarget     : TCoord2D;
   FSpriteEngine   : TSpriteEngine;
@@ -95,11 +95,11 @@ private
   function GetSprite( aCell, aStyle : Byte ) : TSprite;
 public
   property Engine : TSpriteEngine read FSpriteEngine;
-  property MaxShift : TPoint read FMaxShift;
-  property MinShift : TPoint read FMinShift;
-  property Shift : TCoord2D read FShift;
-  property NewShift : TCoord2D read FNewShift write FNewShift;
-  property Offset : TCoord2D read FOffset write FOffset;
+  property MaxShift : TVec2i read FMaxShift;
+  property MinShift : TVec2i read FMinShift;
+  property Shift : TVec2i read FShift;
+  property NewShift : TVec2i read FNewShift write FNewShift;
+  property Offset : TVec2i read FOffset write FOffset;
 end;
 
 var SpriteMap : TDoomSpriteMap = nil;
@@ -148,16 +148,16 @@ begin
 end;
 
 procedure TDoomMouseCursor.Draw ( x, y : Integer; aTicks : DWord; aTarget : TGLQuadList ) ;
-var iColor : TGLVec4f;
+var iColor : TVec4f;
 begin
   if ( FSize = 0 ) or ( not FActive ) then Exit;
 
   iColor.Init( 1.0, ( Sin( aTicks / 100 ) + 1.0 ) / 2 , 0.1, 1.0 );
   aTarget.PushTexturedQuad(
-    TGLVec2i.Create(x,y),
-    TGLVec2i.Create(x+FSize,y+FSize),
+    TVec2i.Create(x,y),
+    TVec2i.Create(x+FSize,y+FSize),
     iColor,
-    TGLVec2f.Create(0,0), TGLVec2f.Create(1,1),
+    TVec2f.Create(0,0), TVec2f.Create(1,1),
     (IO as TDoomGFXIO).Textures[ FTextureID ].GLTexture
     );
 end;
@@ -193,7 +193,7 @@ begin
   FFluidTime := 0;
   FLutTexture := 0;
   FTarget.Create(0,0);
-  FSpriteEngine := TSpriteEngine.Create( GLVec2i( 32, 32 ) );
+  FSpriteEngine := TSpriteEngine.Create( Vec2i( 32, 32 ) );
   FGridActive     := False;
   FLastCoord.Create(0,0);
   FAutoTarget.Create(0,0);
@@ -210,8 +210,8 @@ var iIO : TDoomGFXIO;
 begin
   iIO := (IO as TDoomGFXIO);
   FSpriteEngine.SetScale( iIO.TileMult );
-  FMinShift := Point(0,0);
-  FMaxShift := Point(
+  FMinShift := Vec2i(0,0);
+  FMaxShift := Vec2i(
     Max(FSpriteEngine.Grid.X*MAXX-iIO.Driver.GetSizeX,0),
     Max(FSpriteEngine.Grid.Y*MAXY-iIO.Driver.GetSizeY,0)
   );
@@ -223,8 +223,8 @@ begin
   end
   else
   begin
-    FMinShift.Y -= 18*iIO.FontMult*2;
-    FMaxShift.Y += 18*iIO.FontMult*3;
+    FMinShift.Y := FMinShift.Y - 18*iIO.FontMult*2;
+    FMaxShift.Y := FMaxShift.Y + 18*iIO.FontMult*3;
   end;
   FFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
 
@@ -268,7 +268,7 @@ const TargetSprite : TSprite = (
 begin
   TargetSprite.SpriteID := HARDSPRITE_SELECT;
   iIO := IO as TDoomGFXIO;
-  FSpriteEngine.Position := GLVec2i( FShift.X + FOffset.X, FShift.Y  + FOffset.Y );
+  FSpriteEngine.Position := Vec2i( FShift.X + FOffset.X, FShift.Y  + FOffset.Y );
 
   if iIO.MCursor.Active and iIO.Driver.GetMousePos( iPoint ) then
   begin
@@ -331,7 +331,7 @@ var iCoord    : TGLRawQCoord;
     iSizeH    : Word;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
-  function Rotated( pX, pY : Float ) : TGLVec2i;
+  function Rotated( pX, pY : Float ) : TVec2i;
   begin
     Rotated.x := Round( pX * cos( aRotation ) - pY * sin( aRotation ) + aX );
     Rotated.y := Round( pY * cos( aRotation ) + pX * sin( aRotation ) + aY );
@@ -347,7 +347,7 @@ begin
   iCoord.Data[ 2 ] := Rotated( +iSizeH, +iSizeH );
   iCoord.Data[ 3 ] := Rotated( +iSizeH, -iSizeH );
 
-  iTP := TGLVec2f.CreateModDiv( (iSpriteID-1), iLayer.Normal.RowSize );
+  iTP := TVec2f.CreateModDiv( (iSpriteID-1), iLayer.Normal.RowSize );
 
   iTex.init(
     iTP * iLayer.Normal.TexUnit,
@@ -375,7 +375,7 @@ end;
 
 procedure TDoomSpriteMap.PushSprite( aX, aY : Integer; const aSprite : TSprite; aLight : Byte; aZ : Integer ) ;
 var iSize     : Byte;
-    ip        : TGLVec2i;
+    ip        : TVec2i;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
 begin
@@ -389,7 +389,7 @@ begin
     aX -= FSpriteEngine.Grid.X div 2;
     aY -= FSpriteEngine.Grid.Y;
   end;
-  ip := TGLVec2i.Create(aX,aY);
+  ip := TVec2i.Create(aX,aY);
   with iLayer do
   begin
 // TODO: facing
@@ -519,22 +519,22 @@ end;
 procedure TDoomSpriteMap.PushSpriteTerrainPart( aX,aY : Byte; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
 var i         : Byte;
     iColors   : TGLRawQColor;
-    iGridF    : TGLVec2f;
-    iPosition : TGLVec2i;
-    iPa, iPb  : TGLVec2i;
+    iGridF    : TVec2f;
+    iPosition : TVec2i;
+    iPa, iPb  : TVec2i;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
     iLight    : array[0..3] of Byte;
-    iStart    : TGLVec2f;
-    iEnd      : TGLVec2f;
-    iPStart   : TGLVec2f;
-    iPEnd     : TGLVec2f;
+    iStart    : TVec2f;
+    iEnd      : TVec2f;
+    iPStart   : TVec2f;
+    iPEnd     : TVec2f;
   procedure Push( aData : TSpriteDataVTC );
   begin
     aData.PushPart( iSpriteID, iPa, iPb, @iColors, aZ, iStart, iEnd );
   end;
 
-  function BilinearLight( aPos : TGLVec2f ) : Byte;
+  function BilinearLight( aPos : TVec2f ) : Byte;
   var iX1, iX2 : Single;
   begin
     iX1 := ( 1 - aPos.X ) * iLight[0] + aPos.X * iLight[3];
@@ -551,8 +551,8 @@ begin
   iLight[2] := FLightMap[aX  ,aY  ];
   iLight[3] := FLightMap[aX  ,aY-1];
 
-  iStart    := TGLVec2f.Create(0,0);
-  iEnd      := TGLVec2f.Create(1,1);
+  iStart    := TVec2f.Create(0,0);
+  iEnd      := TVec2f.Create(1,1);
 
   case aPart of
     T : iEnd.Y := TOP;
@@ -565,17 +565,17 @@ begin
     BR : iStart.Init( 0.5, TOP );
   end;
 
-  iColors.Data[0] := TGLVec3b.CreateAll( BilinearLight( iStart ) );
-  iColors.Data[1] := TGLVec3b.CreateAll(BilinearLight( TGLVec2f.Create( iStart.X, iEnd.Y ) ) );
-  iColors.Data[2] := TGLVec3b.CreateAll(BilinearLight( iEnd ) );
-  iColors.Data[3] := TGLVec3b.CreateAll(BilinearLight( TGLVec2f.Create( iEnd.X, iStart.Y ) ) );
+  iColors.Data[0] := TVec3b.CreateAll( BilinearLight( iStart ) );
+  iColors.Data[1] := TVec3b.CreateAll(BilinearLight( TVec2f.Create( iStart.X, iEnd.Y ) ) );
+  iColors.Data[2] := TVec3b.CreateAll(BilinearLight( iEnd ) );
+  iColors.Data[3] := TVec3b.CreateAll(BilinearLight( TVec2f.Create( iEnd.X, iStart.Y ) ) );
 
-  iGridF    := TGLVec2f.Create( FSpriteEngine.Grid.X, FSpriteEngine.Grid.Y );
-  iPosition := GLVec2i( aX-1, aY-1 ) * FSpriteEngine.Grid;
+  iGridF    := TVec2f.Create( FSpriteEngine.Grid.X, FSpriteEngine.Grid.Y );
+  iPosition := Vec2i( aX-1, aY-1 ) * FSpriteEngine.Grid;
   iPStart   := iGridF * iStart;
   iPEnd     := iGridF * iEnd;
-  iPa       := iPosition + TGLVec2i.Create( Round( iPStart.X ), Round( iPStart.Y ) );
-  iPb       := iPosition + TGLVec2i.Create( Round( iPEnd.X ), Round( iPEnd.Y ) );
+  iPa       := iPosition + TVec2i.Create( Round( iPStart.X ), Round( iPStart.Y ) );
+  iPb       := iPosition + TVec2i.Create( Round( iPEnd.X ), Round( iPEnd.Y ) );
   with iLayer do
   begin
     Push( Normal );
@@ -630,7 +630,7 @@ end;
 procedure TDoomSpriteMap.PushSpriteTerrain( aX, aY : Byte; const aSprite : TSprite; aZ : Integer; aTSX : Single; aTSY : Single ) ;
 var i         : Byte;
     iColors   : TGLRawQColor;
-    ip        : TGLVec2i;
+    ip        : TVec2i;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
     iLight    : array[0..3] of Byte;
@@ -644,9 +644,9 @@ begin
   iLight[3] := FLightMap[aX  ,aY-1];
 
   for i := 0 to 3 do
-    iColors.Data[i] := TGLVec3b.CreateAll( iLight[i] );
+    iColors.Data[i] := TVec3b.CreateAll( iLight[i] );
 
-  ip := TGLVec2i.Create( aX-1, aY-1 ) * FSpriteEngine.Grid;
+  ip := TVec2i.Create( aX-1, aY-1 ) * FSpriteEngine.Grid;
   with iLayer do
   begin
     Normal.PushXY( iSpriteID, 1, ip, @iColors, aTSX, aTSY, aZ );
@@ -665,7 +665,7 @@ begin
   end;
 end;
 
-function TDoomSpriteMap.ShiftValue ( aFocus : TCoord2D ) : TCoord2D;
+function TDoomSpriteMap.ShiftValue ( aFocus : TCoord2D ) : TVec2i;
 const YFactor = 6;
 begin
   ShiftValue.X := S5Interpolate(FMinShift.X,FMaxShift.X, (aFocus.X-2)/(MAXX-3));
@@ -923,17 +923,17 @@ begin
            (not Doom.Level.isEmpty( FTargetList[L], [ EF_NOBLOCK, EF_NOVISION ] )) then
           iColor := NewColor( 128, 0, 0 );
         with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-          Cosplay.Push( HARDSPRITE_SELECT mod 100000, TGLVec2i.Create(FTargetList[L].X, FTargetList[L].Y ), iColor, DRL_Z_FX );
+          Cosplay.Push( HARDSPRITE_SELECT mod 100000, TVec2i.Create(FTargetList[L].X, FTargetList[L].Y ), iColor, DRL_Z_FX );
       end;
       if FTargetList.Size > 0 then
         with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
-          Cosplay.Push( HARDSPRITE_MARK mod 100000, TGLVec2i.Create( FTarget.X, FTarget.Y ), FTargetColor, DRL_Z_FX );
+          Cosplay.Push( HARDSPRITE_MARK mod 100000, TVec2i.Create( FTarget.X, FTarget.Y ), FTargetColor, DRL_Z_FX );
     end
   else
     if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
     begin
       with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-        Cosplay.Push( HARDSPRITE_SELECT mod 100000, TGLVec2i.Create( FAutoTarget.X, FAutoTarget.Y ), NewColor( Yellow ), DRL_Z_FX );
+        Cosplay.Push( HARDSPRITE_SELECT mod 100000, TVec2i.Create( FAutoTarget.X, FAutoTarget.Y ), NewColor( Yellow ), DRL_Z_FX );
     end;
 
   if FGridActive then
@@ -941,7 +941,7 @@ begin
     for X := DMinX to DMaxX do
     with FSpriteEngine.Layers[ HARDSPRITE_GRID div 100000 ] do
     begin
-      Normal.Push( HARDSPRITE_GRID mod 100000, TGLVec2i.Create( X, Y ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
+      Normal.Push( HARDSPRITE_GRID mod 100000, TVec2i.Create( X, Y ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
     end;
 
 end;
