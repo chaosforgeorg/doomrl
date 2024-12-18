@@ -52,7 +52,8 @@ type TDoomIO = class( TIO )
 
   procedure SetHint( const aText : AnsiString );
 
-  procedure Focus( aCoord: TCoord2D );
+  procedure Focus( aCoord: TCoord2D ); virtual;
+  procedure FinishTargeting; virtual;
 
   procedure LookDescription( aWhere : TCoord2D );
 
@@ -943,6 +944,15 @@ end;
 procedure TDoomIO.Focus(aCoord: TCoord2D);
 begin
   FConsole.MoveCursor(aCoord.x+1,aCoord.y+2);
+end;
+
+procedure TDoomIO.FinishTargeting;
+begin
+  MsgUpDate;
+  FConsole.HideCursor;
+  FTargeting := False;
+  if SpriteMap <> nil then SpriteMap.ClearTarget;
+  FTargetEnabled := False;
 end;
 
 procedure TDoomIO.LookDescription(aWhere: TCoord2D);

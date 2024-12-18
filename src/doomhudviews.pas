@@ -135,10 +135,7 @@ var iLevel : TLevel;
 begin
   if aInput in [ INPUT_ESCAPE, INPUT_MRIGHT, INPUT_QUIT, INPUT_HARDQUIT ] then
   begin
-    IO.MsgUpDate;
-    IO.Console.HideCursor;
-    IO.Targeting := False;
-    if SpriteMap <> nil then SpriteMap.ClearTarget;
+    IO.FinishTargeting;
     FFinished := true;
     Exit( True );
   end;
@@ -388,11 +385,7 @@ end;
 procedure TTargetModeView.Finalize;
 begin
   FTargets := nil;
-  IO.MsgUpDate;
-  IO.Console.HideCursor;
-  IO.Targeting := False;
-  if SpriteMap <> nil then SpriteMap.ClearTarget;
-  IO.TargetEnabled := False;
+  IO.FinishTargeting;
   FFinished := true;
 end;
 
