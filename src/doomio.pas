@@ -889,7 +889,6 @@ begin
 end;
 
 function TDoomIO.EventToInput( const aEvent : TIOEvent ) : TInputKey;
-var iPoint : TPoint;
 begin
   if (aEvent.EType = VEVENT_SYSTEM) then
     if Option_LockClose
@@ -897,15 +896,13 @@ begin
        else Exit( INPUT_HARDQUIT );
   if (aEvent.EType = VEVENT_MOUSEMOVE) then
   begin
-    iPoint := SpriteMap.DevicePointToCoord( aEvent.MouseMove.Pos );
-    FMTarget.Create( iPoint.X, iPoint.Y );
+    FMTarget := SpriteMap.DevicePointToCoord( aEvent.MouseMove.Pos );
     if Doom.Level.isProperCoord( FMTarget ) then
       Exit( INPUT_MMOVE );
   end;
   if aEvent.EType = VEVENT_MOUSEDOWN then
   begin
-    iPoint := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
-    FMTarget.Create( iPoint.X, iPoint.Y );
+    FMTarget := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
     if Doom.Level.isProperCoord( FMTarget ) then
     begin
       case aEvent.Mouse.Button of

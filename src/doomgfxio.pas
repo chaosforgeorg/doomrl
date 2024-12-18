@@ -2,7 +2,7 @@
 unit doomgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
-     vrltools, vutil, vtextures,
+     vrltools, vutil, vtextures, vvector,
      doomio, doomspritemap, doomanimation, dfdata;
 
 type
@@ -85,7 +85,7 @@ type
 implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
-     classes, sysutils, math,
+     classes, sysutils,
      vdebug, vlog, vmath, vdf, vgl3library,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfplayer,
@@ -411,20 +411,17 @@ end;
 procedure TDoomGFXIO.Update( aMSec : DWord );
 const UnitTex : TGLVec2f = ( Data : ( 1, 1 ) );
       ZeroTex : TGLVec2f = ( Data : ( 0, 0 ) );
-var iMousePos : TIOPoint;
-    iPoint    : TIOPoint;
-    iValueX   : Single;
-    iValueY   : Single;
-    iActiveX  : Integer;
-    iActiveY  : Integer;
-    iMaxX     : Integer;
-    iMaxY     : Integer;
-    iShift    : TCoord2D;
-    iSizeY    : DWord;
-    iSizeX    : DWord;
-    iMinus    : Integer;
-    iAbsolute : TIORect;
-    iP1, iP2  : TIOPoint;
+var iMousePoint : TIOPoint;
+    iMousePos   : TVec2i;
+    iMax        : TVec2i;
+    iActive     : TVec2i;
+    iValue      : TVec2f;
+    iSizeY      : DWord;
+    iSizeX      : DWord;
+    iMinus      : Integer;
+    iAbsolute   : TIORect;
+    iP1, iP2    : TIOPoint;
+    iMouse      : Boolean;
 begin
   if not Assigned( FQuadRenderer ) then Exit;
 
@@ -435,35 +432,25 @@ begin
       FHintOverlay := '';
   end;
 
-  if (FMCursor.Active) and FIODriver.GetMousePos( iPoint ) and (not FMouseLock) and (not isModal) then
-  begin
-    iMaxX   := FIODriver.GetSizeX;
-    iMaxY   := FIODriver.GetSizeY;
-    iValueX := 0;
-    iValueY := 0;
-    iActiveX := iMaxX div 8;
-    iActiveY := iMaxY div 8;
-    if iPoint.X < iActiveX       then iValueX := ((iActiveX -       iPoint.X) / iActiveX);
-    if iPoint.X > iMaxX-iActiveX then iValueX := ((iActiveX -(iMaxX-iPoint.X)) /iActiveX);
-    if iPoint.X < iActiveX then iValueX := -iValueX;
-    if iMaxY < MAXY*FTileMult*32 then
-    begin
-      if iPoint.Y < iActiveY       then iValueY := ((iActiveY -        iPoint.Y) / iActiveY) / 2;
-      if iPoint.Y > iMaxY-iActiveY then iValueY := ((iActiveY -(iMaxY-iPoint.Y)) /iActiveY) / 2;
-      if iPoint.Y < iActiveY then iValueY := -iValueY;
-    end;
+  iMouse := (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos( iMousePoint );
 
-    iShift := SpriteMap.Shift;
-    if (iValueX <> 0) or (iValueY <> 0) then
+  if iMouse and (not FMouseLock) and (not isModal) then
+  begin
+    iMousePos := Vec2i( iMousePoint.X, iMousePoint.Y );
+    iMax      := Vec2i( FIODriver.GetSizeX, FIODriver.GetSizeY );
+    iActive   := Vec2i( iMax.X div 8, iMax.Y div 8 );
+    iValue    := Vec2f;
+    if iMousePos.X < iActive.X        then iValue.X :=-((iActive.X -        iMousePos.X) / iActive.X);
+    if iMousePos.X > iMax.X-iActive.X then iValue.X := ((iActive.X -(iMax.X-iMousePos.X)) /iActive.X);
+    if iMousePos.Y < iActive.Y        then iValue.Y :=-((iActive.Y -        iMousePos.Y) / iActive.Y) / 2;
+    if iMousePos.Y > iMax.Y-iActive.Y then iValue.Y := ((iActive.Y -(iMax.Y-iMousePos.Y)) /iActive.Y) / 2;
+
+    if (iValue.X <> 0) or (iValue.Y <> 0) then
     begin
-      iShift := NewCoord2D(
-        Clamp( SpriteMap.Shift.X + Ceil( iValueX * aMSec ), SpriteMap.MinShift.X, SpriteMap.MaxShift.X ),
-        Clamp( SpriteMap.Shift.Y + Ceil( iValueY * aMSec ), SpriteMap.MinShift.Y, SpriteMap.MaxShift.Y )
-      );
-      SpriteMap.NewShift := iShift;
+      SpriteMap.NewShift := Clamp( SpriteMap.Shift + Ceil( iValue.Scaled( aMSec ) ), SpriteMap.MinShift, SpriteMap.MaxShift );
       FMouseLock :=
-        ((iShift.X = SpriteMap.MinShift.X) or (iShift.X = SpriteMap.MaxShift.X))
-     and ((iShift.Y = SpriteMap.MinShift.Y) or (iShift.Y = SpriteMap.MaxShift.Y));
+        ((SpriteMap.NewShift.X = SpriteMap.MinShift.X) or (SpriteMap.NewShift.X = SpriteMap.MaxShift.X))
+     and ((SpriteMap.NewShift.Y = SpriteMap.MinShift.Y) or (SpriteMap.NewShift.Y = SpriteMap.MaxShift.Y));
     end;
   end;
 
@@ -516,12 +503,9 @@ begin
   FQuadRenderer.Render( FQuadSheet );
   inherited Update( aMSec );
 
-  if FTextSheet <> nil then FQuadRenderer.Render( FTextSheet );
-  if (FPostSheet <> nil) and (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos(iMousePos) then
-  begin
-    FMCursor.Draw( iMousePos.X, iMousePos.Y, FLastUpdate, FPostSheet );
-  end;
-  if FPostSheet <> nil then FQuadRenderer.Render( FPostSheet );
+  if  FTextSheet <> nil             then FQuadRenderer.Render( FTextSheet );
+  if (FPostSheet <> nil) and iMouse then FMCursor.Draw( iMousePoint, FLastUpdate, FPostSheet );
+  if  FPostSheet <> nil             then FQuadRenderer.Render( FPostSheet );
 end;
 
 procedure TDoomGFXIO.ResetVideoMode;

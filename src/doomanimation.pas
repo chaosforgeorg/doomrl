@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, math,
-  vnode, vutil, vcolor, vmath, vrltools, vvision, vgltypes, vanimation,
+  vnode, vutil, vcolor, vmath, vvector, vrltools, vvision, vanimation,
   dfdata;
 
 type TAnimation        = vanimation.TAnimation;
@@ -18,8 +18,8 @@ TDoomMissile = class(TAnimation)
   procedure OnUpdate( aTime : DWord ); override;
   procedure OnDraw; override;
 private
-  FSource   : TGLVec2i;
-  FTarget   : TGLVec2i;
+  FSource   : TVec2i;
+  FTarget   : TVec2i;
   FPath     : TVisionRay;
   FHeading  : Float;
   FRay      : Boolean;
@@ -88,8 +88,8 @@ private
   FLightStart : Byte;
   FLightEnd   : Byte;
   FSprite     : TSprite;
-  FSource     : TGLVec2i;
-  FTarget     : TGLVec2i;
+  FSource     : TVec2i;
+  FTarget     : TVec2i;
 end;
 
 { TDoomScreenMove }
@@ -101,8 +101,8 @@ TDoomScreenMove = class(TAnimation)
   procedure OnDraw; override;
   destructor Destroy; override;
 private
-  FSource : TCoord2D;
-  FDest   : TCoord2D;
+  FSource : TVec2i;
+  FDest   : TVec2i;
 protected
   class var CCurrent : TDoomScreenMove;
 end;
@@ -182,12 +182,12 @@ begin
 end;
 
 procedure TDoomMissile.OnDraw;
-var v : TGLVec2i;
+var iPos : TVec2i;
 begin
   if Doom.Level.isProperCoord( FPath.GetC ) and Doom.Level.isVisible( FPath.GetC ) then
   begin
-    v := Lerp( FSource, FTarget, Minf(FTime / FDuration, 1.0) );
-    SpriteMap.PushSpriteFXRotated( v.x, v.y, FSprite, FHeading + PI/2)
+    iPos := Lerp( FSource, FTarget, Minf(FTime / FDuration, 1.0) );
+    SpriteMap.PushSpriteFXRotated( iPos, FSprite, FHeading + PI/2)
   end;
 end;
 
@@ -221,7 +221,7 @@ var iMarkSprite : TSprite;
 begin
   iMarkSprite.Flags    := [];
   iMarkSprite.SpriteID := HARDSPRITE_HIT;
-  SpriteMap.PushSpriteFX( FCoord.X, FCoord.Y, iMarkSprite )
+  SpriteMap.PushSpriteFX( FCoord, iMarkSprite )
 end;
 
 { TDoomExplodeMark }
@@ -257,7 +257,7 @@ begin
     2 : iMarkSprite.Color    := FGColor3;
   else iMarkSprite.Color    := FGColor2;
   end;
-  SpriteMap.PushSpriteFX( FCoord.X, FCoord.Y, iMarkSprite );
+  SpriteMap.PushSpriteFX( FCoord, iMarkSprite );
 end;
 
 { TDoomSoundEvent }
@@ -285,7 +285,7 @@ end;
 procedure TDoomBlink.OnDraw;
 begin
   if GraphicsVersion then
-    (IO as TDoomGFXIO).PostSheet.PushColoredQuad( TGLVec2i.Create(0,0), TGLVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TGLVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
+    (IO as TDoomGFXIO).PostSheet.PushColoredQuad( TVec2i.Create(0,0), TVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
 end;
 
 { TDoomMove }
@@ -319,14 +319,14 @@ begin
 end;
 
 procedure TDoomMove.OnDraw;
-var iPosition : TGLVec2i;
+var iPosition : TVec2i;
     iValue    : Single;
     iLight    : Byte;
 begin
   iValue    := Clampf( FTime / FDuration, 0, 1 );
   iLight    := Lerp( FLightStart, FLightEnd, iValue );
   iPosition := Lerp( FSource, FTarget, iValue );
-  SpriteMap.PushSpriteBeing( iPosition.X, iPosition.Y, FSprite, iLight );
+  SpriteMap.PushSpriteBeing( iPosition, FSprite, iLight );
 end;
 
 destructor TDoomMove.Destroy;
@@ -344,7 +344,7 @@ begin
   inherited Create( aDuration, 0, 0 );
   FSource   := SpriteMap.Shift;
   FDest     := SpriteMap.ShiftValue(aTo);
-  FDuration := Max( FDuration, Round( Sqrt( Distance( FSource, FDest ) ) ) );
+  FDuration := Max( FDuration, Round( Sqrt( FSource.Distance( FDest ) ) ) );
   CCurrent  := Self;
 end;
 
@@ -355,17 +355,14 @@ begin
   CCurrent.FSource   := SpriteMap.NewShift;
   CCurrent.FDest     := SpriteMap.ShiftValue( aTo );
   CCurrent.FTime     := 0;
-  CCurrent.FDuration := Max( aDuration, Round( Sqrt( Distance( CCurrent.FSource, CCurrent.FDest ) ) ) );;
+  CCurrent.FDuration := Max( aDuration, Round( Sqrt( CCurrent.FSource.Distance( CCurrent.FDest ) ) ) );;
   Exit( True );
 end;
 
 procedure TDoomScreenMove.OnUpdate( aTime : DWord );
 begin
   inherited OnUpdate( aTime );
-  SpriteMap.NewShift := NewCoord2D(
-    Lerp( FSource.X, FDest.X, Minf(FTime/FDuration,1.0) ),
-    Lerp( FSource.Y, FDest.Y, Minf(FTime/FDuration,1.0) )
-  );
+  SpriteMap.NewShift := Lerp( FSource, FDest, Minf(FTime/FDuration,1.0) );
 end;
 
 procedure TDoomScreenMove.OnDraw;
@@ -401,7 +398,7 @@ begin
   if ( iSegment <> FValue ) then
     iSegment += Sgn( FValue );
   iSprite.SpriteID += ( FValue - iSegment ) * DRL_COLS;
-  SpriteMap.PushSpriteDoodad( FCoord.X, FCoord.Y, iSprite );
+  SpriteMap.PushSpriteDoodad( FCoord, iSprite );
 end;
 
 destructor TDoomAnimateCell.Destroy;
@@ -430,12 +427,12 @@ end;
 procedure TDoomScreenShake.OnUpdate( aTime : DWord );
 var iFactor : Single;
     iFade   : Single;
-    iOffset : TCoord2D;
+    iOffset : TVec2i;
     iMaxX   : Single;
     iMaxY   : Single;
 begin
   inherited OnUpdate( aTime );
-  iOffset.Create(0,0);
+  iOffset := Vec2i(0,0);
   if FTime < FDuration then
   begin
     iFactor := Minf( FTime / FDuration, 1.0 );
@@ -455,7 +452,7 @@ end;
 
 destructor TDoomScreenShake.Destroy;
 begin
-  if Assigned( SpriteMap ) then SpriteMap.Offset := NewCoord2D(0,0);
+  if Assigned( SpriteMap ) then SpriteMap.Offset := Vec2i(0,0);
   inherited Destroy;
 end;
 

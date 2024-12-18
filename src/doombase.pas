@@ -764,12 +764,10 @@ end;
 
 
 function TDoom.HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
-var iPoint   : TIOPoint;
-    iAlt     : Boolean;
+var iAlt     : Boolean;
     iButton  : TIOMouseButton;
 begin
-  iPoint := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
-  IO.MTarget.Create( iPoint.X, iPoint.Y );
+  IO.MTarget := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
   if Doom.Level.isProperCoord( IO.MTarget ) then
   begin
     iButton  := aEvent.Mouse.Button;
