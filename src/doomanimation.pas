@@ -182,12 +182,12 @@ begin
 end;
 
 procedure TDoomMissile.OnDraw;
-var v : TVec2i;
+var iPos : TVec2i;
 begin
   if Doom.Level.isProperCoord( FPath.GetC ) and Doom.Level.isVisible( FPath.GetC ) then
   begin
-    v := Lerp( FSource, FTarget, Minf(FTime / FDuration, 1.0) );
-    SpriteMap.PushSpriteFXRotated( v.x, v.y, FSprite, FHeading + PI/2)
+    iPos := Lerp( FSource, FTarget, Minf(FTime / FDuration, 1.0) );
+    SpriteMap.PushSpriteFXRotated( iPos, FSprite, FHeading + PI/2)
   end;
 end;
 
@@ -221,7 +221,7 @@ var iMarkSprite : TSprite;
 begin
   iMarkSprite.Flags    := [];
   iMarkSprite.SpriteID := HARDSPRITE_HIT;
-  SpriteMap.PushSpriteFX( FCoord.X, FCoord.Y, iMarkSprite )
+  SpriteMap.PushSpriteFX( FCoord, iMarkSprite )
 end;
 
 { TDoomExplodeMark }
@@ -257,7 +257,7 @@ begin
     2 : iMarkSprite.Color    := FGColor3;
   else iMarkSprite.Color    := FGColor2;
   end;
-  SpriteMap.PushSpriteFX( FCoord.X, FCoord.Y, iMarkSprite );
+  SpriteMap.PushSpriteFX( FCoord, iMarkSprite );
 end;
 
 { TDoomSoundEvent }
@@ -326,7 +326,7 @@ begin
   iValue    := Clampf( FTime / FDuration, 0, 1 );
   iLight    := Lerp( FLightStart, FLightEnd, iValue );
   iPosition := Lerp( FSource, FTarget, iValue );
-  SpriteMap.PushSpriteBeing( iPosition.X, iPosition.Y, FSprite, iLight );
+  SpriteMap.PushSpriteBeing( iPosition, FSprite, iLight );
 end;
 
 destructor TDoomMove.Destroy;
@@ -398,7 +398,7 @@ begin
   if ( iSegment <> FValue ) then
     iSegment += Sgn( FValue );
   iSprite.SpriteID += ( FValue - iSegment ) * DRL_COLS;
-  SpriteMap.PushSpriteDoodad( FCoord.X, FCoord.Y, iSprite );
+  SpriteMap.PushSpriteDoodad( FCoord, iSprite );
 end;
 
 destructor TDoomAnimateCell.Destroy;

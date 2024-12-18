@@ -519,7 +519,7 @@ begin
   if FTextSheet <> nil then FQuadRenderer.Render( FTextSheet );
   if (FPostSheet <> nil) and (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos(iMousePos) then
   begin
-    FMCursor.Draw( iMousePos.X, iMousePos.Y, FLastUpdate, FPostSheet );
+    FMCursor.Draw( iMousePos, FLastUpdate, FPostSheet );
   end;
   if FPostSheet <> nil then FQuadRenderer.Render( FPostSheet );
 end;
