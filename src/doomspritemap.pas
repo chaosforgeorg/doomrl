@@ -46,7 +46,7 @@ type
   procedure Update( aTime : DWord; aProjection : TMatrix44 );
   procedure Draw;
   function DevicePointToCoord( aPoint : TPoint ) : TCoord2D;
-  procedure PushSpriteBeing(  aPos : TVec2i; const aSprite : TSprite; aLight : Byte );
+  procedure PushSpriteBeing( aPos : TVec2i; const aSprite : TSprite; aLight : Byte );
   procedure PushSpriteDoodad( aCoord : TCoord2D; const aSprite : TSprite; aLight : Integer = -1 );
   procedure PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite );
   procedure PushSpriteFXRotated( aPos : TVec2i; const aSprite : TSprite; aRotation : Single );
