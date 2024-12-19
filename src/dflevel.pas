@@ -825,7 +825,8 @@ begin
   if Cell[ aCoord ] in CellFloors then
   begin
     Cell[ aCoord ] := CellID;
-    LightFlag[ aCoord, lfFresh ] := True;
+    LightFlag[ aCoord, lfFresh ]     := True;
+    LightFlag[ aCoord, lfPermanent ] := False;
   end;
 end;
 
