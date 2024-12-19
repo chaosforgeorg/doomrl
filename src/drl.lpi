@@ -52,7 +52,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="44">
+    <Units Count="45">
       <Unit0>
         <Filename Value="drl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -229,6 +229,10 @@
         <Filename Value="doommodule.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit43>
+      <Unit44>
+        <Filename Value="doomminimap.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit44>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

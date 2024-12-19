@@ -3,7 +3,7 @@ unit doomgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
      vrltools, vutil, vtextures, vvector,
-     doomio, doomspritemap, doomanimation, dfdata;
+     doomio, doomspritemap, doomanimation, doomminimap, dfdata;
 
 type
 
@@ -66,11 +66,7 @@ type
     FLastMouseTime : QWord;
     FMouseLock     : Boolean;
     FMCursor       : TDoomMouseCursor;
-
-    FMinimapImage   : TImage;
-    FMinimapTexture : DWord;
-    FMinimapScale   : Integer;
-    FMinimapGLPos   : TGLVec2i;
+    FMinimap       : TDoomMinimap;
 
     FAnimations     : TAnimationManager;
     FTextures       : TTextureManager;
@@ -241,6 +237,7 @@ begin
 
   iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
 
+  FMinimap      := TDoomMinimap.Create;
   RecalculateScaling( True );
 
   CalculateConsoleParams;
@@ -263,23 +260,21 @@ begin
   FPostSheet := TGLQuadList.Create;
   FQuadRenderer := TGLQuadRenderer.Create;
 
-  FMinimapScale    := 0;
-  FMinimapTexture  := 0;
-  FMinimapGLPos    := TGLVec2i.Create( 0, 0 );
-  FMinimapImage    := TImage.Create( 128, 32 );
-  FMinimapImage.Fill( NewColor( 0,0,0,0 ) );
-
   SetMinimapScale( FMiniScale );
 
   FAnimations := TAnimationManager.Create;
 end;
 
 procedure TDoomGFXIO.Reconfigure(aConfig: TLuaConfig);
-var iWidth  : Integer;
-    iHeight : Integer;
+var iWidth   : Integer;
+    iHeight  : Integer;
+    iOpacity : Integer;
 begin
   iWidth  := Configuration.GetInteger('screen_width');
   iHeight := Configuration.GetInteger('screen_height');
+  iOpacity:= Configuration.GetInteger( 'minimap_opacity' );
+  FMinimap.SetOpacity( iOpacity );
+
   if ( ( iWidth > 0 ) and ( iWidth <> FIODriver.GetSizeX ) ) or
      ( ( iHeight > 0 ) and ( iHeight <> FIODriver.GetSizeY ) ) or
      ( Configuration.GetBoolean('fullscreen') <> FFullscreen ) then
@@ -303,7 +298,7 @@ begin
   FreeAndNil( FPostSheet );
   FreeAndNil( FQuadRenderer );
 
-  FreeAndNil( FMinimapImage );
+  FreeAndNil( FMinimap );
   FreeAndNil( FAnimations );
 
   FreeAndNil( SpriteMap );
@@ -435,8 +430,6 @@ begin
 end;
 
 procedure TDoomGFXIO.Update( aMSec : DWord );
-const UnitTex : TGLVec2f = ( Data : ( 1, 1 ) );
-      ZeroTex : TGLVec2f = ( Data : ( 0, 0 ) );
 var iMousePoint : TIOPoint;
     iMousePos   : TVec2i;
     iMax        : TVec2i;
@@ -506,10 +499,7 @@ begin
 
   if FHudEnabled then
   begin
-    FQuadSheet.PushTexturedQuad(
-      FMinimapGLPos,
-      FMinimapGLPos + TGLVec2i.Create( FMinimapScale*128, FMinimapScale*32 ),
-      ZeroTex, UnitTex, FMinimapTexture );
+    FMinimap.Render( FQuadSheet );
 
     iAbsolute := vutil.Rectangle( 1,1,ConsoleSizeX,ConsoleSizeY );
     iP1 := ConsoleCoordToDeviceCoord( iAbsolute.Pos );
@@ -590,24 +580,18 @@ begin
 end;
 
 procedure TDoomGFXIO.UpdateMinimap;
-var x, y : DWord;
 begin
-  if Doom.State = DSPlaying then
-  begin
-    for x := 0 to MAXX+1 do
-      for y := 0 to MAXY+1 do
-        FMinimapImage.ColorXY[x,y] := Doom.Level.GetMiniMapColor( NewCoord2D( x, y ) );
-    if FMinimapTexture = 0
-      then FMinimapTexture := UploadImage( FMinimapImage, False )
-      else ReUploadImage( FMinimapTexture, FMinimapImage, False );
-  end;
+  FMinimap.Redraw;
 end;
 
 procedure TDoomGFXIO.SetMinimapScale ( aScale : Byte ) ;
 begin
-  FMinimapScale := aScale;
-  FMinimapGLPos.Init( FIODriver.GetSizeX - FMinimapScale*(MAXX+2) - 10, FIODriver.GetSizeY - FMinimapScale*(MAXY+2) - ( 10 + FFontMult*20*3 ) );
-  UpdateMinimap;
+  FMinimap.SetScale( aScale );
+  FMinimap.SetPosition( Vec2i(
+    FIODriver.GetSizeX - aScale*(MAXX+2) - 10,
+    FIODriver.GetSizeY - aScale*(MAXY+2) - ( 10 + FFontMult*20*3 )
+  ) );
+  FMinimap.Redraw;
 end;
 
 procedure TDoomGFXIO.DeviceChanged;

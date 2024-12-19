@@ -8,8 +8,8 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 unit dflevel;
 interface
 uses SysUtils, Classes,
-     vluaentitynode, vutil, vvision, vcolor, vmath, viotypes, vrltools, vnode,
-     vluamapnode, vmaparea, vconuirl, vtextmap,
+     vluaentitynode, vutil, vvision, vmath, viotypes, vrltools, vnode,
+     vluamapnode, vmaparea, vtextmap,
      dfdata, dfmap, dfthing, dfbeing, dfitem,
      doomhooks;
 
@@ -100,7 +100,6 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure Place( Thing : TThing; Coord : TCoord2D );
     procedure RevealBeings;
-    function GetMiniMapColor( aCoord : TCoord2D ) : TColor;
     function getGylph( const aCoord : TCoord2D ) : TIOGylph;
     function EntityFromStream( aStream : TStream; aEntityID : Byte ) : TLuaEntityNode; override;
     constructor CreateFromStream( Stream: TStream ); override;
@@ -294,59 +293,6 @@ begin
   for iNode in Self do
     if iNode is TBeing then
       TBeing(iNode).AnimCount := 0;
-end;
-
-function TLevel.GetMiniMapColor ( aCoord : TCoord2D ) : TColor;
-const DefColor : TColor = ( R : 0; G : 0; B : 0; A : 50 );
-var iColor : Byte;
-    iItem  : TItem;
-    iBeing : TBeing;
-
-begin
-  if not isProperCoord( aCoord ) then Exit( DefColor );
-  iColor := Black;
-  iBeing := Being[ aCoord ];
-  iItem  := Item[ aCoord ];
-
-  if BeingVisible( aCoord, iBeing ) or BeingExplored( aCoord, iBeing ) or BeingIntuited( aCoord, iBeing ) then
-  begin
-    if iBeing.isPlayer
-      then iColor := LightGreen
-      else iColor := LightRed;
-  end
-  else if ItemVisible( aCoord, iItem ) or ItemExplored( aCoord, iItem ) then
-    iColor := LightBlue
-  else if CellExplored( aCoord ) then
-  begin
-    if not isVisible( aCoord ) then
-    begin
-      with Cells[ getCell(aCoord) ] do
-      if CF_BLOCKMOVE in Flags then
-        iColor := DarkGray
-      else
-      if CF_STAIRS in Flags then
-        iColor := Yellow;
-    end
-    else
-      with Cells[ getCell(aCoord) ] do
-      if CF_PUSHABLE in Flags then
-        iColor := Magenta
-      else
-      if CF_LIQUID in Flags then
-        iColor := Blue
-      else
-      if CF_STAIRS in Flags then
-        iColor := Yellow
-      else
-      if CF_BLOCKMOVE in Flags then
-        iColor := LightGray
-      else
-        iColor := DarkGray;
-  end;
-
-  if iColor = Black then Exit( DefColor );
-  Result := NewColor( iColor );
-  Result.A := 50;
 end;
 
 function TLevel.getGylph(const aCoord: TCoord2D): TIOGylph;
