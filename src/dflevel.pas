@@ -8,8 +8,8 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 unit dflevel;
 interface
 uses SysUtils, Classes,
-     vluaentitynode, vutil, vvision, vcolor, vmath, viotypes, vrltools, vnode,
-     vluamapnode, vmaparea, vconuirl, vtextmap,
+     vluaentitynode, vutil, vvision, vmath, viotypes, vrltools, vnode,
+     vluamapnode, vmaparea, vtextmap,
      dfdata, dfmap, dfthing, dfbeing, dfitem,
      doomhooks;
 

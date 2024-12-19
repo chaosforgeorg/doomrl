@@ -89,6 +89,11 @@ begin
     .SetName('Minimap size multiplier')
     .SetDescription('Control minimap size multiplier. Set to {!0} to pick one based on resolution.')
     ;
+  iGroup.AddInteger( 'minimap_opacity', 2 )
+    .SetRange(0,5)
+    .SetName('Minimap opacity')
+    .SetDescription('Control minimap opacity. Set to {!0} to disable minimap.')
+    ;
   iGroup.AddToggle( 'screen_shake', True )
     .SetName('Screen shake effect')
     .SetDescription('Setting to {!Disabled} will disable screen shake FX.')

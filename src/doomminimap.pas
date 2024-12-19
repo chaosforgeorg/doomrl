@@ -8,6 +8,7 @@ type TDoomMinimap = class
   procedure Redraw;
   procedure Render( aTarget : TGLQuadList );
   procedure SetScale( aScale : Byte );
+  procedure SetOpacity( aOpacity : Byte );
   procedure SetPosition( aPos : TVec2i );
   destructor Destroy; override;
 private
@@ -15,16 +16,18 @@ private
 private
   FImage   : TImage;
   FTexture : DWord;
+  FOpacity : Integer;
   FScale   : Integer;
   FGLPos   : TVec2i;
 end;
 
 implementation
 
-uses sysutils, viotypes, vglimage, dfdata, dfitem, dfbeing, dfmap, doomio, doombase;
+uses sysutils, viotypes, vglimage, dfdata, dfitem, dfbeing, dfmap, doombase;
 
 constructor TDoomMinimap.Create;
 begin
+  FOpacity  := 2;
   FScale    := 0;
   FTexture  := 0;
   FGLPos    := TVec2i.Create( 0, 0 );
@@ -60,6 +63,12 @@ begin
   FScale := aScale;
 end;
 
+procedure TDoomMinimap.SetOpacity( aOpacity : Byte );
+begin
+  FOpacity := aOpacity;
+  Redraw;
+end;
+
 procedure TDoomMinimap.SetPosition( aPos : TVec2i );
 begin
   FGLPos := aPos;
@@ -79,8 +88,7 @@ var iColor : Byte;
 begin
   with Doom.Level do
   begin
-    if not isProperCoord( aCoord ) then
-      Exit( DefColor );
+    if not isProperCoord( aCoord ) then Exit( DefColor );
     iColor := Black;
     iBeing := Being[ aCoord ];
     iItem  := Item[ aCoord ];
@@ -123,11 +131,12 @@ begin
 
     if iColor = Black then
     begin
-      Result := DefColor;
+      Result   := DefColor;
+      Result.A := FOpacity * 25;
       Exit;
     end;
     Result := NewColor( iColor );
-    Result.A := 100;
+    Result.A := FOpacity * 50;
   end;
 end;
 

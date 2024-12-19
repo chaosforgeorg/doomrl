@@ -237,6 +237,7 @@ begin
 
   iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
 
+  FMinimap      := TDoomMinimap.Create;
   RecalculateScaling( True );
 
   CalculateConsoleParams;
@@ -259,18 +260,21 @@ begin
   FPostSheet := TGLQuadList.Create;
   FQuadRenderer := TGLQuadRenderer.Create;
 
-  FMinimap      := TDoomMinimap.Create;
   SetMinimapScale( FMiniScale );
 
   FAnimations := TAnimationManager.Create;
 end;
 
 procedure TDoomGFXIO.Reconfigure(aConfig: TLuaConfig);
-var iWidth  : Integer;
-    iHeight : Integer;
+var iWidth   : Integer;
+    iHeight  : Integer;
+    iOpacity : Integer;
 begin
   iWidth  := Configuration.GetInteger('screen_width');
   iHeight := Configuration.GetInteger('screen_height');
+  iOpacity:= Configuration.GetInteger( 'minimap_opacity' );
+  FMinimap.SetOpacity( iOpacity );
+
   if ( ( iWidth > 0 ) and ( iWidth <> FIODriver.GetSizeX ) ) or
      ( ( iHeight > 0 ) and ( iHeight <> FIODriver.GetSizeY ) ) or
      ( Configuration.GetBoolean('fullscreen') <> FFullscreen ) then
