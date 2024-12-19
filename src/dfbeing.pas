@@ -882,7 +882,7 @@ begin
     if iDist > iRange then
     begin
       if iRange = 1 then // Rocket jump hack!
-        aTarget := FPosition + NewDirectionSmooth( FPosition, aTarget );
+        aTarget := FPosition + NewDirectionSmooth( FPosition, aTarget )
       else
         Exit( False );
     end;
