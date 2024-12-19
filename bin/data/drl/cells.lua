@@ -290,11 +290,12 @@ function drl.register_cells()
 		set        = CELLSET_DOORS,
 		armor      = 6,
 		hp         = 6,
-		flags      = {CF_BLOCKLOS, CF_BLOCKMOVE, CF_FRAGILE, CF_OVERLAY, CF_STICKWALL, CF_RUNSTOP},
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_FRAGILE, CF_OVERLAY, CF_STICKWALL, CF_OPENABLE, CF_RUNSTOP, CF_HIGHLIGHT },
 		sprite     = { SPRITE_DOOR, SPRITE_DOOR, SPRITE_HELLDOOR, },
 
 		OnAct = function(c,being)
 			being:msg("The door is locked.")
+			level:play_sound( "door.fail", being.position )
 			return false
 		end,
 	}

@@ -101,6 +101,7 @@ sound = {
 	door			= {
 		open		= "sound/dsbdopn.wav",
 		close		= "sound/dsbdcls.wav",
+		fail		= "sound/dsnoway.wav",
 	},
 	
 	-- Teleport
