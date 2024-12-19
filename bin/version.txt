@@ -1,4 +1,7 @@
 0.9.9.9 BETA 2
+[mod] -- GH#157: new scheme for audio configuration
+[mod] -- GH#172: when targeting/looking with the keyboard the map will scroll
+[fix] -- GH#156: changing sound assignments wont break save file audio anymore
 [fix] -- GH#186: quickslot will weapon swap if the quick item is a prepared weapon
 [fix] -- GH#186: equiping items will have sounds again
 [fix] -- RCFIX : EXPERIMENTAL - kills outside of the player turn are marked as "other"

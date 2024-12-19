@@ -37,6 +37,8 @@ type
     procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); override;
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
     procedure SetAutoTarget( aTarget : TCoord2D ); override;
+    procedure Focus( aCoord : TCoord2D ); override;
+    procedure FinishTargeting; override;
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
@@ -397,6 +399,30 @@ procedure TDoomGFXIO.SetAutoTarget( aTarget : TCoord2D );
 begin
   inherited SetAutoTarget( aTarget );
   SpriteMap.SetAutoTarget( aTarget )
+end;
+
+procedure TDoomGFXIO.Focus( aCoord : TCoord2D );
+var iDiff     : TCoord2D;
+const RangeX = 9;
+      RangeY = 7;
+begin
+  inherited Focus( aCoord );
+  if FTargeting and (not FMCursor.Active) and ( aCoord <> Player.Position ) then
+  begin
+    iDiff := aCoord - Player.Position;
+    if iDiff.X > RangeX then iDiff.X -= RangeX else if iDiff.X < -RangeX then iDiff.X += RangeX else iDiff.X := 0;
+    if iDiff.Y > RangeY then iDiff.Y -= RangeY else if iDiff.Y < -RangeY then iDiff.Y += RangeY else iDiff.Y := 0;
+    if ( iDiff.X <> 0 ) or ( iDiff.Y <> 0 ) then
+    begin
+      SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position + iDiff );
+    end;
+  end;
+end;
+
+procedure TDoomGFXIO.FinishTargeting;
+begin
+  inherited FinishTargeting;
+  SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
 end;
 
 procedure TDoomGFXIO.Configure( aConfig : TLuaConfig; aReload : Boolean = False );
