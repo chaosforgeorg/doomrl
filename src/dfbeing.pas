@@ -878,8 +878,14 @@ begin
 
   if iLimitRange then
   begin
-    iDist := Distance(self.Position.x, self.Position.y, aTarget.x, aTarget.y);
-    if iDist > iRange then Exit( False );
+    iDist := Distance( FPosition, aTarget );
+    if iDist > iRange then
+    begin
+      if iRange = 1 then // Rocket jump hack!
+        aTarget := FPosition + NewDirectionSmooth( FPosition, aTarget );
+      else
+        Exit( False );
+    end;
   end;
 
   if (iAltFire = ALT_CHAIN) then

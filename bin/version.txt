@@ -2,6 +2,7 @@
 [mod] -- GH#030: locked doors will behave like doors, not wall tiles
 [mod] -- GH#157: new scheme for audio configuration
 [mod] -- GH#172: when targeting/looking with the keyboard the map will scroll
+[mod] -- GH#174: rocket jump altfire will fire at any target and shorten it to range 1
 [fix] -- GH#156: changing sound assignments wont break save file audio anymore
 [fix] -- GH#186: quickslot will weapon swap if the quick item is a prepared weapon
 [fix] -- GH#186: equiping items will have sounds again
