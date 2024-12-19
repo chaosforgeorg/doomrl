@@ -304,9 +304,10 @@ function TLevel.getGylph(const aCoord: TCoord2D): TIOGylph;
     begin
       Mod2 := ((aCoord.x+aCoord.y) mod 2) = 0;
       case aAtr of
-        COLOR_WATER : if Mod2 then aAtr := BLUE   else aAtr := LIGHTBLUE;
-        COLOR_ACID  : if Mod2 then aAtr := GREEN  else aAtr := LIGHTGREEN;
-        COLOR_LAVA  : if Mod2 then aAtr := YELLOW else aAtr := RED;
+        COLOR_WATER : if Mod2 then aAtr := BLUE     else aAtr := LIGHTBLUE;
+        COLOR_ACID  : if Mod2 then aAtr := GREEN    else aAtr := LIGHTGREEN;
+        COLOR_LAVA  : if Mod2 then aAtr := YELLOW   else aAtr := RED;
+        COLOR_BLOOD : if Mod2 then aAtr := LIGHTRED else aAtr := RED;
         MULTIPORTAL : case (( Player.FStatistics.GameTime div 10 ) mod 3) of
                         0 : aAtr := LIGHTMAGENTA;
                         1 : aAtr := MAGENTA;
