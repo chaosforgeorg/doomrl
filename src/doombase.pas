@@ -638,7 +638,7 @@ begin
       if aAlt then iAltFire := iItem.AltFire;
       iFireTitle := 'Choose fire target:';
       case iAltFire of
-        ALT_SCRIPT  : iFireTitle := 'Fire target ({L'+LuaSystem.Get([ 'items', iItem.ID, 'altname' ],'')+'}):';
+        ALT_SCRIPT  : iFireTitle := 'Fire target ({L'+LuaSystem.Get([ 'items', iItem.ID, 'altfirename' ],'')+'}):';
         ALT_AIMED   : iFireTitle := 'Fire target ({Laimed}):';
         ALT_SINGLE  : iFireTitle := 'Fire target ({Lsingle}):';
       end;

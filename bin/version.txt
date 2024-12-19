@@ -7,6 +7,7 @@
 [fix] -- GH#186: equiping items will have sounds again
 [fix] -- RCFIX : EXPERIMENTAL - kills outside of the player turn are marked as "other"
 [fix] -- RCFIX : ALT_SCRIPT turns off autofire (fixes DS crash)
+[fix] -- RCFIX : ALT_SCRIPT altfire name fixed
 [fix] -- RCFIX : fixed screenshot functionality
 [fix] -- RCFIX : properly display bulk mod speed effect
 [fix] -- RCFIX : don't show mod stats if only assembly is possible
