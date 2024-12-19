@@ -4,16 +4,20 @@ generator.fluid_to_perm = {
 	water  = "pwater",
 	lava   = "plava",
 	acid   = "pacid",
+	blood  = "pblood",
 	pwater = "pwater",
 	plava  = "plava",
 	pacid  = "pacid",
+	pblood = "pblood",
 }
 
 generator.wall_to_ice = {
 	lava   = "water",
 	acid   = "water",
+	blood  = "water",
 	plava  = "pwater",
 	pacid  = "pwater",
+	pblood = "pwater",
 }
 
 function generator.run( gen )

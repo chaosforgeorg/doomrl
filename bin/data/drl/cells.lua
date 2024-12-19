@@ -499,6 +499,32 @@ function drl.register_cells()
 		end
 	}
 
+	register_cell "blood"
+	{
+		name       = "blood",
+		ascii      = "=",
+		color      = COLOR_BLOOD,
+		flags      = { CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HIGHLIGHT },
+		sprite     = SPRITE_BLOODLAVA,
+		sflags     = { SF_FLOW, SF_FLUID },
+
+		OnEnter = function(c,being)
+			if not being:is_player() then return end
+			local damage = 12
+			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
+			if being.flags[ BF_ENVIROSAFE ] then return end
+			if being:get_total_resistance( "plasma", TARGET_FEET ) == 100 then return end
+
+			if being.running then damage = damage / 2 end
+			if being:is_affect("enviro") then return end
+			ui.msg("Argh!!! Blood!")
+			if core.game_time() % 3 == 0 then
+				being:play_sound("hit")
+			end
+			being:apply_damage( damage, TARGET_FEET, DAMAGE_PLASMA )
+		end
+	}
+
 	register_cell "pwater"
 	{
   		name       = "water",
@@ -532,6 +558,18 @@ function drl.register_cells()
 		set        = CELLSET_WALLS,
 		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_HIGHLIGHT},
 		sprite     = SPRITE_LAVA,
+		sflags     = { SF_FLOW, SF_FLUID },
+	}
+
+	register_cell "pblood"
+	{
+		name       = "blood",
+		ascii      = "=",
+		color      = COLOR_BLOOD,
+		color_id   = "blood",
+		set        = CELLSET_WALLS,
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_HIGHLIGHT},
+		sprite     = SPRITE_BLOODLAVA,
 		sflags     = { SF_FLOW, SF_FLUID },
 	}
 
