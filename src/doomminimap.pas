@@ -23,7 +23,7 @@ end;
 
 implementation
 
-uses sysutils, viotypes, vglimage, dfdata, dfitem, dfbeing, dfmap, doombase;
+uses math, sysutils, viotypes, vglimage, dfdata, dfitem, dfbeing, dfmap, doombase;
 
 constructor TDoomMinimap.Create;
 begin
@@ -85,16 +85,19 @@ const DefColor : TColor = ( R : 0; G : 0; B : 0; A : 100 );
 var iColor : Byte;
     iItem  : TItem;
     iBeing : TBeing;
+    iOMult : Byte;
 begin
   with Doom.Level do
   begin
     if not isProperCoord( aCoord ) then Exit( DefColor );
+    iOMult := 1;
     iColor := Black;
     iBeing := Being[ aCoord ];
     iItem  := Item[ aCoord ];
 
     if BeingVisible( aCoord, iBeing ) or BeingExplored( aCoord, iBeing ) or BeingIntuited( aCoord, iBeing ) then
     begin
+      iOMult := 2;
       if iBeing.isPlayer
         then iColor := LightGreen
         else iColor := LightRed;
@@ -110,7 +113,10 @@ begin
           iColor := DarkGray
         else
         if CF_STAIRS in Flags then
+        begin
           iColor := Yellow;
+          iOMult := 2;
+        end;
       end
       else
         with Cells[ getCell(aCoord) ] do
@@ -121,7 +127,10 @@ begin
           iColor := Blue
         else
         if CF_STAIRS in Flags then
-          iColor := Yellow
+        begin
+          iColor := Yellow;
+          iOMult := 2;
+        end
         else
         if CF_BLOCKMOVE in Flags then
           iColor := LightGray
@@ -136,7 +145,7 @@ begin
       Exit;
     end;
     Result := NewColor( iColor );
-    Result.A := FOpacity * 50;
+    Result.A := Min( FOpacity * 50 * iOMult, 250 );
   end;
 end;
 
