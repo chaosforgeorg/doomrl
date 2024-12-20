@@ -774,7 +774,7 @@ function drl.register_unique_items()
 		desc     = "I fear lava nor acid no more!",
 		flags    = { IF_UNIQUE, IF_NODURABILITY, IF_PLURALNAME },
 
-		resist = { fire = 100, acid = 100 },
+		resist = { fire = 100, acid = 100, plasma = 25 },
 
 		type       = ITEMTYPE_BOOTS,
 		armor      = 0,
@@ -797,7 +797,7 @@ function drl.register_unique_items()
 		rechargeamount = 5,
 		rechargedelay  = 10,
 
-		resist = { fire = 30, acid = 30 },
+		resist = { fire = 30, acid = 30, plasma = 30 },
 
 		type       = ITEMTYPE_BOOTS,
 		armor      = 6,
