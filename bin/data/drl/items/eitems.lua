@@ -733,6 +733,23 @@ function drl.register_exotic_items()
 		armor      = 0,
 	}
 
+	register_item "ubloodboots"
+	{
+		name     = "blood boots",
+		color    = LIGHTMAGENTA,
+		sprite   = SPRITE_BOOTS,
+		coscolor = { 1.0,0.2,0.0,1.0 },
+		level    = 25,
+		weight   = 4,
+		desc     = "Pair of archaic looking creepy looking boots.",
+		flags    = { IF_EXOTIC, IF_PLURALNAME },
+
+		resist = { plasma = 100 },
+
+		type       = ITEMTYPE_BOOTS,
+		armor      = 0,
+	}
+
   -- Exotic Mods
 
 	register_item "umod_firestorm"

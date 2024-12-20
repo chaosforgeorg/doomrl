@@ -3,6 +3,7 @@
 [new] -- GH#177: Limbo uses blood instead of lava
 [new] -- GH#159: mimimap - better visibility of important stuff
 [new] -- GH#159: mimimap - configurable opacity
+[new] -- GH#177: one new late-game exotic boots added
 [mod] -- GH#177: plasma resistance added to several boots
 [mod] -- GH#177: much more fluid variety in Ao100+ (including blood)
 [mod] -- GH#030: locked doors will behave like doors, not wall tiles
