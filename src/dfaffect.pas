@@ -9,17 +9,17 @@ type
 
 TAffects = object
   List : array[1..MAXAFFECT] of LongInt;
-  constructor Clear;
-  procedure   Add( affnum : Byte; duration : LongInt );
-  function    Remove( affnum : Byte ) : boolean;
-  procedure   Tick;
-  function    IsActive( affnum : Byte ) : boolean;
-  function    IsExpiring( affnum : Byte ) : boolean;
-  function    getEffect : TStatusEffect;
-  function    getTime( affnum : Byte ) : longint;
+  procedure Clear;
+  procedure Add( affnum : Byte; duration : LongInt );
+  function  Remove( affnum : Byte ) : boolean;
+  procedure Tick;
+  function  IsActive( affnum : Byte ) : boolean;
+  function  IsExpiring( affnum : Byte ) : boolean;
+  function  getEffect : TStatusEffect;
+  function  getTime( affnum : Byte ) : longint;
   private
-  procedure   Run( affnum : Byte );
-  procedure   Expire( affnum : Byte );
+  procedure Run( affnum : Byte );
+  procedure Expire( affnum : Byte );
 
 end;
 
@@ -27,7 +27,7 @@ implementation
 
 uses vdebug, vluasystem, dfplayer, doomio;
 
-constructor TAffects.Clear;
+procedure TAffects.Clear;
 var aff : Word;
 begin
   for aff := 1 to MAXAFFECT do
