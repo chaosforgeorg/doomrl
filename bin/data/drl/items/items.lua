@@ -127,7 +127,7 @@ function drl.register_regular_items()
 		weight   = 80,
 		desc     = "The perfect boots for hazardous terrain.",
 
-		resist = { acid = 50, fire = 25 },
+		resist = { acid = 50, fire = 25, plasma = 10 },
 
 		type       = ITEMTYPE_BOOTS,
 		armor      = 2,

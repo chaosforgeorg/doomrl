@@ -517,8 +517,9 @@ function drl.register_assemblies()
 			item.durability    = math.min( item.durability, item.maxdurability )
 			local presist = item.__proto.resist or {}
 			item:reset_resistances()
-			item.resist.fire      = math.min( (presist.fire or 0) + 95, 95 )
-			item.resist.acid      = math.min( (presist.acid or 0) + 95, 95 )
+			item.resist.fire      = math.min( (presist.fire or 0) + 95,   95 )
+			item.resist.acid      = math.min( (presist.acid or 0) + 95,   95 )
+			item.resist.plasma    = math.min( (presist.plasma or 0) + 20, 95 )
 		end,
 	}
 
@@ -756,8 +757,9 @@ function drl.register_assemblies()
 			item.movemod  = -30
 			item.knockmod = -30
 			item:reset_resistances()
-			item.resist.fire = 100
-			item.resist.acid = 100
+			item.resist.fire   = 100
+			item.resist.acid   = 100
+			item.resist.plasma = 50
 		end,
 	}
 

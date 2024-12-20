@@ -61,18 +61,18 @@ register_level "limbo"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		generator.fill( "plava", area.FULL )
+		generator.fill( "pblood", area.FULL )
 
 		local translation = {
 			['.'] = "floor",
-			['='] = "lava",
+			['='] = "blood",
 			['>'] = "stairs",
 			[','] = "bridge",
 			['>'] = "stairs",
 			['X'] = "gwall",
 			['#'] = "rwall",
-			['w'] = { "lava", flags = { LFMARKER1 } },
-			['e'] = { "lava", flags = { LFMARKER2 } },
+			['w'] = { "blood", flags = { LFMARKER1 } },
+			['e'] = { "blood", flags = { LFMARKER2 } },
 			['W'] = { "floor", item = "lever_limbow" },
 			['E'] = { "floor", item = "lever_limboe" },
 			['1'] = { "floor", flags = { LFBLOOD }, item = "lmed" },
