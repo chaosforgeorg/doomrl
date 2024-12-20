@@ -4,6 +4,7 @@
 [new] -- GH#159: G-version - mimimap - better visibility of important stuff
 [new] -- GH#159: G-version - mimimap - configurable opacity
 [new] -- GH#177: one new late-game exotic boots added
+[new] -- GH#177: all fluids slow down the player by 20%
 [mod] -- GH#177: G-version - sprite movement speed dependent on ingame speed
 [mod] -- GH#177: plasma resistance added to several boots
 [mod] -- GH#177: much more fluid variety in Ao100+ (including blood)

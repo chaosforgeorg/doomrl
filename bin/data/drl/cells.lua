@@ -445,6 +445,7 @@ function drl.register_cells()
 		flags      = { CF_LIQUID, CF_NOCHANGE},
 		sprite     = SPRITE_WATER,
 		sflags     = { SF_FLOW, SF_FLUID },
+		move_cost  = 1.25,
 	}
 
 	register_cell "acid"
@@ -455,6 +456,7 @@ function drl.register_cells()
 		flags      = { CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HAZARD, CF_HIGHLIGHT},
 		sprite     = SPRITE_ACID,
 		sflags     = { SF_FLOW, SF_FLUID },
+		move_cost  = 1.25,
 
 		OnEnter = function(c,being)
 			local damage   = 6
@@ -482,6 +484,7 @@ function drl.register_cells()
 		flags      = { CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HAZARD, CF_HIGHLIGHT},
 		sprite     = SPRITE_LAVA,
 		sflags     = { SF_FLOW, SF_FLUID },
+		move_cost  = 1.25,
 
 		OnEnter = function(c,being)
 			local damage = 12
@@ -509,6 +512,7 @@ function drl.register_cells()
 		flags      = { CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HIGHLIGHT },
 		sprite     = SPRITE_BLOODLAVA,
 		sflags     = { SF_FLOW, SF_FLUID },
+		move_cost  = 1.25,
 
 		OnEnter = function(c,being)
 			if not being:is_player() then return end
