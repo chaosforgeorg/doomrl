@@ -37,12 +37,14 @@ function drl.register_exotic_items()
 		trigger = 2,
 
 		OnEquip = function (self,being)
-				being.flags[ BF_ENVIROSAFE ] = true
+			being.flags[ BF_ENVIROSAFE ] = true
+			being.flags[ BF_FLY ] = true
 			being:msg( "You start to float!" )
 		end,
 
 		OnRemove = function (self,being)
-				being.flags[ BF_ENVIROSAFE ] = false
+			being.flags[ BF_ENVIROSAFE ] = false
+			being.flags[ BF_FLY ] = false
 			being:msg( "You touch the ground." )
 		end,
 	}

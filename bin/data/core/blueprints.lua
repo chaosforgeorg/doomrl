@@ -260,6 +260,7 @@ core.register_blueprint "cell"
 	raiseto    = { false, core.TIDIN("beings"), "" },
 	hp         = { false, core.TNUMBER },
 	set        = { false, core.TNUMBER },
+	move_cost  = { false, core.TNUMBER, 1.0 },
 
 	OnEnter    = { false, core.TFUNC },
 	OnExit     = { false, core.TFUNC },

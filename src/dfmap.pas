@@ -35,6 +35,7 @@ type TCell = class
   HP          : Byte;
   Flags       : TFlags;
   Hooks       : TCellHooks;
+  MoveCost    : Single;
   bloodto     : AnsiString;
   destroyto   : AnsiString;
   raiseto     : AnsiString;
@@ -125,6 +126,7 @@ begin
     iCell.bloodto   := getString('bloodto');
     iCell.destroyto := getString('destroyto');
     iCell.raiseto   := getString('raiseto');
+    iCell.MoveCost  := getFloat('move_cost', 1.0 );
     FillChar( iCell.Sprite,      SizeOf(iCell.Sprite),      0 );
     FillChar( iCell.BloodSprite, SizeOf(iCell.BloodSprite), 0 );
     FillChar( iCell.Deco,        SizeOf(iCell.Deco),        0 );

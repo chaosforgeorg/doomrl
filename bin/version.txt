@@ -1,14 +1,17 @@
 0.9.9.9 BETA 2
-[new] -- GH#177: added new environment fluid - blood (plasma, damages ONLY player!)
+[new] -- GH#177: new lategame environment fluid - blood (plasma, damages ONLY player!)
+[new] -- GH#177: new early game environment fluid - mud - like water but slows by 40%
 [new] -- GH#177: Limbo uses blood instead of lava
-[new] -- GH#159: mimimap - better visibility of important stuff
-[new] -- GH#159: mimimap - configurable opacity
+[new] -- GH#159: G-version - mimimap - better visibility of important stuff
+[new] -- GH#159: G-version - mimimap - configurable opacity
 [new] -- GH#177: one new late-game exotic boots added
+[new] -- GH#177: all fluids slow down the player by 20%
+[mod] -- GH#177: G-version - sprite movement speed dependent on ingame speed
 [mod] -- GH#177: plasma resistance added to several boots
 [mod] -- GH#177: much more fluid variety in Ao100+ (including blood)
 [mod] -- GH#030: locked doors will behave like doors, not wall tiles
 [mod] -- GH#157: new scheme for audio configuration
-[mod] -- GH#172: when targeting/looking with the keyboard the map will scroll
+[mod] -- GH#172: G-version - when targeting/looking with the keyboard the map will scroll
 [mod] -- GH#174: rocket jump altfire will fire at any target and shorten it to range 1
 [fix] -- GH#170: dropped corpses remove "permanent" cell status - should fix ungibbable corpses
 [fix] -- GH#156: changing sound assignments wont break save file audio anymore

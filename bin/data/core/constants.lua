@@ -104,6 +104,7 @@ BF_NOHEAL       = 51;
 BF_GUNRUNNER    = 52;
 BF_RESPAWN      = 53;
 BF_WALKSOUND    = 54;
+BF_FLY          = 55;
 
 IF_UNIQUE         = 21;
 IF_EXOTIC         = 22;
@@ -202,6 +203,7 @@ COLOR_WATER = 21;
 COLOR_ACID  = 22;
 COLOR_LAVA  = 23;
 COLOR_BLOOD = 24;
+COLOR_MUD   = 25;
 
 FRAME_TIME  = 500;
 

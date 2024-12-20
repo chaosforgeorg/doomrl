@@ -442,9 +442,21 @@ function drl.register_cells()
 		name       = "water",
 		ascii      = "=",
 		color      = COLOR_WATER,
-		flags      = { CF_LIQUID, CF_NOCHANGE},
+		flags      = { CF_LIQUID, CF_NOCHANGE },
 		sprite     = SPRITE_WATER,
 		sflags     = { SF_FLOW, SF_FLUID },
+		move_cost  = 1.25,
+	}
+
+	register_cell "mud"
+	{
+		name       = "mud",
+		ascii      = "=",
+		color      = COLOR_MUD,
+		flags      = { CF_LIQUID, CF_NOCHANGE },
+		sprite     = SPRITE_MUD,
+		sflags     = { SF_FLOW, SF_FLUID },
+		move_cost  = 1.65,
 	}
 
 	register_cell "acid"
@@ -455,11 +467,13 @@ function drl.register_cells()
 		flags      = { CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HAZARD, CF_HIGHLIGHT},
 		sprite     = SPRITE_ACID,
 		sflags     = { SF_FLOW, SF_FLUID },
+		move_cost  = 1.25,
 
 		OnEnter = function(c,being)
 			local damage   = 6
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
 			if being.flags[ BF_ENVIROSAFE ] then return end
+			if being.flags[ BF_FLY ] then return end
 			if being:get_total_resistance( "acid", TARGET_FEET ) == 100 then return end
 			if being:is_player() then
 				if being.running then damage = damage / 2 end
@@ -481,11 +495,13 @@ function drl.register_cells()
 		flags      = { CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HAZARD, CF_HIGHLIGHT},
 		sprite     = SPRITE_LAVA,
 		sflags     = { SF_FLOW, SF_FLUID },
+		move_cost  = 1.25,
 
 		OnEnter = function(c,being)
 			local damage = 12
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
 			if being.flags[ BF_ENVIROSAFE ] then return end
+			if being.flags[ BF_FLY ] then return end
 			if being:get_total_resistance( "fire", TARGET_FEET ) == 100 then return end
 			if being:is_player() then
 				if being.running then damage = damage / 2 end
@@ -507,12 +523,14 @@ function drl.register_cells()
 		flags      = { CF_LIQUID, CF_NOCHANGE, CF_NORUN, CF_HIGHLIGHT },
 		sprite     = SPRITE_BLOODLAVA,
 		sflags     = { SF_FLOW, SF_FLUID },
+		move_cost  = 1.25,
 
 		OnEnter = function(c,being)
 			if not being:is_player() then return end
 			local damage = 12
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
 			if being.flags[ BF_ENVIROSAFE ] then return end
+			if being.flags[ BF_FLY ] then return end
 			if being:get_total_resistance( "plasma", TARGET_FEET ) == 100 then return end
 
 			if being.running then damage = damage / 2 end
@@ -531,6 +549,18 @@ function drl.register_cells()
 		ascii      = "=",
 		color      = COLOR_WATER,
 		color_id   = "water",
+		set        = CELLSET_WALLS,
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE},
+		sprite     = SPRITE_WATER,
+		sflags     = { SF_FLOW, SF_FLUID },
+	}
+
+	register_cell "pmud"
+	{
+  		name       = "mud",
+		ascii      = "=",
+		color      = COLOR_MUD,
+		color_id   = "mud",
 		set        = CELLSET_WALLS,
 		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE},
 		sprite     = SPRITE_WATER,

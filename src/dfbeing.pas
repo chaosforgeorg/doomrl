@@ -48,8 +48,8 @@ TBeing = class(TThing,IPathQuery)
     procedure HandlePostMove; virtual;
     procedure HandlePostDisplace;
     function HandleCommand( aCommand : TCommand ) : Boolean;
-    function  TryMove( where : TCoord2D ) : TMoveResult;
-    function  MoveTowards( where : TCoord2D ) : TMoveResult;
+    function  TryMove( aWhere : TCoord2D ) : TMoveResult;
+    function  MoveTowards( aWhere : TCoord2D; aVisualMultiplier : Single = 1.0 ) : TMoveResult;
     procedure Reload( AmmoItem : TItem; Single : Boolean );
     procedure Ressurect( RRange : Byte );
     procedure Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem ); virtual;
@@ -1100,15 +1100,19 @@ begin
 end;
 
 function TBeing.ActionMove( aTarget : TCoord2D ) : Boolean;
+var iVisualTime : Integer;
+    iMoveCost   : Integer;
 begin
+  iMoveCost := getMoveCost;
   if GraphicsVersion then
   begin
+    iVisualTime := Ceil( ( 100.0 / FSpeed ) * ( iMoveCost / 1000.0 ) * 100.0 );
     if isPlayer then
-      IO.addScreenMoveAnimation( 100, aTarget );
-    IO.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
+      IO.addScreenMoveAnimation( iVisualTime, aTarget );
+    IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite );
   end;
   Displace( aTarget );
-  Dec( FSpeedCount, getMoveCost );
+  Dec( FSpeedCount, iMoveCost );
   HandlePostDisplace;
   HandlePostMove;
   Exit( True );
@@ -1183,59 +1187,65 @@ begin
 end;
 
 
-function TBeing.TryMove( where : TCoord2D ) : TMoveResult;
+function TBeing.TryMove( aWhere : TCoord2D ) : TMoveResult;
 var iLevel : TLevel;
 begin
   iLevel := TLevel(Parent);
-  if not iLevel.isProperCoord( where )            then Exit( MoveBlock );
-  if iLevel.cellFlagSet( where, CF_OPENABLE )   then Exit( MoveDoor  );
-  if not iLevel.isEmpty( where, [EF_NOBLOCK] )   then Exit( MoveBlock );
-  if ( not Self.isPlayer ) and iLevel.cellFlagSet( where, CF_HAZARD ) and (not (BF_CHARGE in FFlags)) then
+  if not iLevel.isProperCoord( aWhere )          then Exit( MoveBlock );
+  if iLevel.cellFlagSet( aWhere, CF_OPENABLE )   then Exit( MoveDoor  );
+  if not iLevel.isEmpty( aWhere, [EF_NOBLOCK] )  then Exit( MoveBlock );
+  if ( not Self.isPlayer ) and iLevel.cellFlagSet( aWhere, CF_HAZARD ) and (not (BF_CHARGE in FFlags)) then
   begin
     if not (BF_ENVIROSAFE in FFlags) then Exit( MoveBlock );
   end;
-  if iLevel.Being[ where ] <> nil               then Exit( MoveBeing );
+  if iLevel.Being[ aWhere ] <> nil               then Exit( MoveBeing );
   Exit( MoveOk );
 end;
 
-function TBeing.MoveTowards( where : TCoord2D ): TMoveResult;
-var Dir        : TDirection;
-    MoveResult : TMoveResult;
-    iLevel     : TLevel;
+function TBeing.MoveTowards( aWhere : TCoord2D; aVisualMultiplier : Single = 1.0 ): TMoveResult;
+var iDir        : TDirection;
+    iMoveResult : TMoveResult;
+    iMoveCost   : Integer;
+    iVisualMult : Single;
+    iLevel      : TLevel;
 begin
   iLevel := TLevel(Parent);
-  Dir.CreateSmooth( FPosition, where );
-  FMovePos := FPosition + Dir;
-  MoveResult := TryMove( FMovePos );
-  if MoveResult = MoveBlock then
+  iDir.CreateSmooth( FPosition, aWhere );
+  FMovePos := FPosition + iDir;
+  iMoveResult := TryMove( FMovePos );
+  if iMoveResult = MoveBlock then
   begin
-    dir.Create( FPosition, where );
-    FMovePos := FPosition + Dir;
-    MoveResult := TryMove( FMovePos );
+    iDir.Create( FPosition, aWhere );
+    FMovePos := FPosition + iDir;
+    iMoveResult := TryMove( FMovePos );
   end;
-  if ( MoveResult = MoveBlock ) and ( Dir.x <> 0 ) then
+  if ( iMoveResult = MoveBlock ) and ( iDir.x <> 0 ) then
   begin
-    FMovePos.x := FPosition.x + Dir.x;
+    FMovePos.x := FPosition.x + iDir.x;
     FMovePos.y := FPosition.y;
-    MoveResult := TryMove( FMovePos );
+    iMoveResult := TryMove( FMovePos );
   end;
-  if ( MoveResult = MoveBlock ) and ( Dir.y <> 0 ) then
+  if ( iMoveResult = MoveBlock ) and ( iDir.y <> 0 ) then
   begin
     FMovePos.x := FPosition.x;
-    FMovePos.y := FPosition.y + Dir.y;
-    MoveResult := TryMove( FMovePos );
+    FMovePos.y := FPosition.y + iDir.y;
+    iMoveResult := TryMove( FMovePos );
   end;
-  if MoveResult <> MoveOk then Exit( MoveResult );
+  if iMoveResult <> MoveOk then Exit( iMoveResult );
 
-  SCount := SCount - getMoveCost;
+  iMoveCost   := getMoveCost;
+  FSpeedCount := FSpeedCount - iMoveCost;
   if GraphicsVersion then
     if iLevel.BeingExplored( FPosition, Self ) or iLevel.BeingExplored( LastMove, Self ) or iLevel.BeingVisible( FPosition, Self ) or iLevel.BeingVisible( LastMove, Self ) then
-      IO.addMoveAnimation(100, 0, FUID,Position,LastMove,Sprite);
+    begin
+      iVisualMult := ( 100.0 / FSpeed ) * ( iMoveCost / 1000.0 ) * aVisualMultiplier;
+      IO.addMoveAnimation( Ceil( iVisualMult * 100 ), 0, FUID,Position,LastMove,Sprite);
+    end;
   Displace( FMovePos );
   if BF_WALKSOUND in FFlags then
     PlaySound( 'hoof' );
   HandlePostDisplace;
-  Exit( MoveResult );
+  Exit( iMoveResult );
 end;
 
 procedure TBeing.Reload( AmmoItem : TItem; Single : Boolean );
@@ -2196,17 +2206,20 @@ begin
 end;
 
 function TBeing.getMoveCost: LongInt;
-var Modifier : Real;
+var iModifier : Single;
 begin
-  Modifier := FTimes.Move/100.;
-  if Inv.Slot[efTorso] <> nil then Modifier *= (100-Inv.Slot[efTorso].MoveMod)/100.;
-  if Inv.Slot[efBoots] <> nil then Modifier *= (100-Inv.Slot[efBoots].MoveMod)/100.;
-  if isPlayer and (Player.FTactic.Current = TacticRunning) then Modifier *= 0.7;
-  getMoveCost := Round(ActionCostMove*Modifier);
+  iModifier := FTimes.Move/100.;
+  if Inv.Slot[efTorso] <> nil then iModifier *= (100-Inv.Slot[efTorso].MoveMod)/100.;
+  if Inv.Slot[efBoots] <> nil then iModifier *= (100-Inv.Slot[efBoots].MoveMod)/100.;
+  if isPlayer and (Player.FTactic.Current = TacticRunning) then iModifier *= 0.7;
+  if not ( BF_FLY in FFlags ) then
+    with Cells[ TLevel(Parent).getCell(FPosition) ] do
+      iModifier *= MoveCost;
+  getMoveCost := Round( ActionCostMove * iModifier );
 end;
 
 function TBeing.getFireCost( aAltFire : TAltFire ) : LongInt;
-var iModifier : Real;
+var iModifier : Single;
 begin
   if (Inv.Slot[ efWeapon ] = nil) then Exit(10*FTimes.Fire);
   if (Inv.Slot[ efWeapon ].isMelee) then Exit(Inv.Slot[ efWeapon ].UseTime * FTimes.Fire);
@@ -2327,17 +2340,20 @@ end;
 { IBeingAI }
 
 function TBeing.MoveCost(const Start, Stop: TCoord2D): Single;
-var Diff : TCoord2D;
+var iDiff     : TCoord2D;
+    iStopCell : TCell;
 begin
-  Diff := Start - Stop;
-  if Diff.x * Diff.y = 0
+  iDiff := Start - Stop;
+  if iDiff.x * iDiff.y = 0
      then MoveCost := 1.0
      else MoveCost := 1.3;
 
   if TLevel(Parent).Being[ Stop ] <> nil then MoveCost := MoveCost * 5;
 
+  iStopCell := Cells[ TLevel(Parent).getCell(Stop) ];
+  if not ( BF_FLY in FFlags ) then MoveCost := MoveCost * iStopCell.MoveCost;
   if BF_ENVIROSAFE in FFlags then Exit;
-  if CF_HAZARD in Cells[ TLevel(Parent).getCell(Stop) ].Flags then
+  if CF_HAZARD in iStopCell.Flags then
   begin
     if FHp = FHpMax then Exit( 30 * MoveCost );
     if CF_HAZARD in Cells[ TLevel(Parent).getCell(Start) ].Flags then Exit( 3 * MoveCost );
@@ -2560,7 +2576,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if State.IsNil(2) then begin State.Push( Byte(MoveBlock) ); Exit(1); end;
-  State.Push( Byte(Being.MoveTowards(State.ToPosition(2))) );
+  State.Push( Byte(Being.MoveTowards(State.ToPosition(2), State.ToFloat(3,1.0))) );
   State.PushCoord( Being.LastMove );
   Result := 2;
 end;
