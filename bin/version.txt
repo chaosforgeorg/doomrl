@@ -1,4 +1,6 @@
 0.9.9.9 BETA 2
+[new] -- GH#177: added new environment fluid - blood (plasma, damages ONLY player!)
+[new] -- GH#177: Limbo uses blood instead of lava
 [new] -- GH#159: mimimap - better visibility of important stuff
 [new] -- GH#159: mimimap - configurable opacity
 [mod] -- GH#030: locked doors will behave like doors, not wall tiles
