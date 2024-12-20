@@ -442,10 +442,21 @@ function drl.register_cells()
 		name       = "water",
 		ascii      = "=",
 		color      = COLOR_WATER,
-		flags      = { CF_LIQUID, CF_NOCHANGE},
+		flags      = { CF_LIQUID, CF_NOCHANGE },
 		sprite     = SPRITE_WATER,
 		sflags     = { SF_FLOW, SF_FLUID },
 		move_cost  = 1.25,
+	}
+
+	register_cell "mud"
+	{
+		name       = "mud",
+		ascii      = "=",
+		color      = COLOR_MUD,
+		flags      = { CF_LIQUID, CF_NOCHANGE },
+		sprite     = SPRITE_MUD,
+		sflags     = { SF_FLOW, SF_FLUID },
+		move_cost  = 1.65,
 	}
 
 	register_cell "acid"
@@ -538,6 +549,18 @@ function drl.register_cells()
 		ascii      = "=",
 		color      = COLOR_WATER,
 		color_id   = "water",
+		set        = CELLSET_WALLS,
+		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE},
+		sprite     = SPRITE_WATER,
+		sflags     = { SF_FLOW, SF_FLUID },
+	}
+
+	register_cell "pmud"
+	{
+  		name       = "mud",
+		ascii      = "=",
+		color      = COLOR_MUD,
+		color_id   = "mud",
 		set        = CELLSET_WALLS,
 		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE},
 		sprite     = SPRITE_WATER,

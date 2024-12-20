@@ -2,10 +2,12 @@ require( "drl:archi" )
 
 generator.fluid_to_perm = {
 	water  = "pwater",
+	mud    = "pmud",
 	lava   = "plava",
 	acid   = "pacid",
 	blood  = "pblood",
 	pwater = "pwater",
+	pmud   = "pmud",
 	plava  = "plava",
 	pacid  = "pacid",
 	pblood = "pblood",
@@ -14,10 +16,12 @@ generator.fluid_to_perm = {
 generator.wall_to_ice = {
 	lava   = "water",
 	acid   = "water",
+	mud    = "water",
 	blood  = "water",
 	plava  = "pwater",
 	pacid  = "pwater",
 	pblood = "pwater",
+	pmud   = "pwater",
 }
 
 function generator.run( gen )
@@ -174,7 +178,7 @@ end
 function generator.generate_rivers( allow_horiz, allow_more )
 	local cell  = "lava"
 	local lvl = level.danger_level + math.random(DIFFICULTY * 2 + 6)
-	    if lvl < 17 then cell = "water"
+	    if lvl < 17 then cell = table.random_pick{ "water", "water", "water", "mud" }
 	elseif lvl < 27 then cell = "acid"
 	elseif lvl > 50 then cell = table.random_pick{ "lava", "lava", "acid", "blood" } end
 
@@ -291,7 +295,7 @@ function generator.generate_caves_dungeon()
 
 	local amount, step, fluid
 
-	    if dlevel < 7  then amount = math.random(3); step = math.random(40)+22; fluid = "water"
+	    if dlevel < 7  then amount = math.random(3); step = math.random(40)+22; fluid = table.random_pick{ "water", "water", "water", "mud" }
 	elseif dlevel < 12 then amount = math.random(3); step = math.random(40)+42; fluid = "acid"
 	else                    amount = math.random(5); step = math.random(50)+42; fluid = "lava"
 	end
@@ -318,7 +322,7 @@ function generator.generate_caves_dungeon()
 		local cell  = "lava"
 		if fluid == "blood" then cell = "blood" end
 		local lvl = level.danger_level + math.random(DIFFICULTY * 2 + 6)
-		    if lvl < 17 then cell = "water"
+		    if lvl < 17 then cell = table.random_pick{ "water", "water", "water", "mud" }
 		elseif lvl < 27 then cell = "acid" end
 
 		if math.random(3) == 1 then
@@ -504,7 +508,7 @@ function generator.generate_fluids( drunk_area )
 		lvl  = math.random(20) + 5
 		lava = table.random_pick{ "lava", "lava", "blood" }
 	end
-	    if lvl < 7   then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, "water", nil, nil, drunk_area )
+	    if lvl < 7   then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, table.random_pick{ "water", "water", "mud" }, nil, nil, drunk_area )
 	elseif lvl < 12  then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, "acid", nil, nil, drunk_area )
 	elseif lvl < 17  then generator.drunkard_walks( math.random(5)-1, math.random(50)+2, lava, nil, nil, drunk_area )
 	else generator.drunkard_walks( math.random(5)+3, math.random(40)+2, lava, nil, nil, drunk_area ) end
