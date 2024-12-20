@@ -175,7 +175,8 @@ function generator.generate_rivers( allow_horiz, allow_more )
 	local cell  = "lava"
 	local lvl = level.danger_level + math.random(DIFFICULTY * 2 + 6)
 	    if lvl < 17 then cell = "water"
-	elseif lvl < 27 then cell = "acid" end
+	elseif lvl < 27 then cell = "acid"
+	elseif lvl > 50 then cell = table.random_pick{ "lava", "lava", "acid", "blood" } end
 
 	if allow_horiz and math.random(4) == 1 then
 		generator.horiz_river( cell, math.random(3)+1, math.random(6) ~= 1 )
@@ -197,12 +198,23 @@ end
 
 function generator.generate_lava_dungeon()
 	core.log("generator.generate_lava_dungeon()")
-	generator.fill("lava")
-	generator.fill_edges("plava")
+	local fluids = {
+		{ "lava", "plava" },
+		{ "lava", "plava" },
+		{ "acid", "pacid" },
+		{ "blood","pblood" },
+	}
+	local range = 2
+	if level.danger_level > 30 then range = 3 end
+	if level.danger_level > 40 then range = 4 end
+	local fluid = fluids[ math.random( range ) ]
+
+	generator.fill( fluid[1] )
+	generator.fill_edges( fluid[2] )
 	local wall_cell    = generator.styles[ level.style ].wall
 	local floor_cell   = generator.styles[ level.style ].floor
 	local door_cell    = generator.styles[ level.style ].door
-	local lava_nid     = cells[ "lava" ].nid
+	local lava_nid     = cells[ fluid[1] ].nid
 	local wall_nid     = cells[ wall_cell ].nid
 
 	local tries = 3
@@ -223,7 +235,7 @@ function generator.generate_lava_dungeon()
 
 		if math.random(2) == 1 then
 			quad:shrink(1)
-			generator.fill( "lava", quad )
+			generator.fill( fluid[1], quad )
 			quad:expand(1)
 		end
 
@@ -284,6 +296,12 @@ function generator.generate_caves_dungeon()
 	else                    amount = math.random(5); step = math.random(50)+42; fluid = "lava"
 	end
 
+	if dlevel >= 30 then
+		fluid = table.random_pick{ "lava", "lava", "acid", "blood" }
+	elseif dlevel > 20 and fluid == "lava" and DIFFICULTY >= DIFF_HARD then
+		fluid = math.random{ "lava", "lava", "blood" }
+	end
+
 	local drunk = function( amount, step, cell )
 		generator.contd_drunkard_walks( amount, step, cell, { floor_cell, fluid }, {wall_cell}, nil, true )
 	end
@@ -298,6 +316,7 @@ function generator.generate_caves_dungeon()
 
 	if math.random(3) == 1 then
 		local cell  = "lava"
+		if fluid == "blood" then cell = "blood" end
 		local lvl = level.danger_level + math.random(DIFFICULTY * 2 + 6)
 		    if lvl < 17 then cell = "water"
 		elseif lvl < 27 then cell = "acid" end
@@ -399,6 +418,7 @@ function generator.generate_caves_2_dungeon()
 	local fluid      = cells["lava"].nid
 	if math.random(4) == 1 then fluid = cells["water"].nid end
 	if math.random(4) == 1 then fluid = cells["acid"].nid end
+	if dlevel > 30 and math.random(3) == 1 then fluid = cells["blood"].nid end
 	local level_area = area.FULL
 	local w,h = level_area.b.x, level_area.b.y
 
@@ -478,12 +498,16 @@ end
 
 function generator.generate_fluids( drunk_area )
 	core.log("generator.generate_fluids()")
-	local lvl = level.danger_level
-	if lvl > 30 then lvl = math.random(20) + 5 end
-	    if lvl < 7  then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, "water", nil, nil, drunk_area )
-	elseif lvl < 12 then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, "acid", nil, nil, drunk_area )
-	elseif lvl < 17 then generator.drunkard_walks( math.random(5)-1, math.random(50)+2, "lava", nil, nil, drunk_area )
-	else generator.drunkard_walks( math.random(5)+3, math.random(40)+2, "lava", nil, nil, drunk_area ) end
+	local lvl  = level.danger_level
+	local lava = "lava"
+	if lvl > 30 then 
+		lvl  = math.random(20) + 5
+		lava = table.random_pick{ "lava", "lava", "blood" }
+	end
+	    if lvl < 7   then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, "water", nil, nil, drunk_area )
+	elseif lvl < 12  then generator.drunkard_walks( math.random(3)-1, math.random(40)+2, "acid", nil, nil, drunk_area )
+	elseif lvl < 17  then generator.drunkard_walks( math.random(5)-1, math.random(50)+2, lava, nil, nil, drunk_area )
+	else generator.drunkard_walks( math.random(5)+3, math.random(40)+2, lava, nil, nil, drunk_area ) end
 end
 
 function generator.generate_barrels()
