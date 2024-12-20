@@ -2212,6 +2212,9 @@ begin
   if Inv.Slot[efTorso] <> nil then iModifier *= (100-Inv.Slot[efTorso].MoveMod)/100.;
   if Inv.Slot[efBoots] <> nil then iModifier *= (100-Inv.Slot[efBoots].MoveMod)/100.;
   if isPlayer and (Player.FTactic.Current = TacticRunning) then iModifier *= 0.7;
+  if not ( BF_FLY in FFlags ) then
+    with Cells[ TLevel(Parent).getCell(FPosition) ] do
+      iModifier *= MoveCost;
   getMoveCost := Round( ActionCostMove * iModifier );
 end;
 
@@ -2348,6 +2351,7 @@ begin
   if TLevel(Parent).Being[ Stop ] <> nil then MoveCost := MoveCost * 5;
 
   iStopCell := Cells[ TLevel(Parent).getCell(Stop) ];
+  if not ( BF_FLY in FFlags ) then MoveCost := MoveCost * iStopCell.MoveCost;
   if BF_ENVIROSAFE in FFlags then Exit;
   if CF_HAZARD in iStopCell.Flags then
   begin
