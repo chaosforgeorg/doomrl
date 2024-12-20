@@ -231,7 +231,7 @@ register_ai "lostsoul_ai"
 		idle = function( self ) return ai_tools.idle_action_melee( self ) end,
 
 		charge = function( self )
-			local move_check,move_coord = self:direct_seek( self.move_to_player )
+			local move_check,move_coord = self:direct_seek( self.move_to_player, 0.5 )
 			if move_check ~= MOVEOK then
 				if player:distance_to(move_coord) == 0 then
 					self:attack(move_coord)
@@ -255,7 +255,7 @@ register_ai "lostsoul_ai"
 				self.attacked = false
 				return "thinking"
 			else
-				local move_check,move_coord = self:direct_seek( self.move_to )
+				local move_check,move_coord = self:direct_seek( self.move_to, 0.5 )
 				if move_check ~= MOVEOK then
 					if player:distance_to(move_coord) == 0 then
 						self:attack(move_coord)

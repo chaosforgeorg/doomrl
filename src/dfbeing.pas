@@ -1100,15 +1100,19 @@ begin
 end;
 
 function TBeing.ActionMove( aTarget : TCoord2D ) : Boolean;
+var iVisualTime : Integer;
+    iMoveCost   : Integer;
 begin
+  iMoveCost := getMoveCost;
   if GraphicsVersion then
   begin
+    iVisualTime := Ceil( ( 100.0 / FSpeed ) * ( iMoveCost / 1000.0 ) * 100.0 );
     if isPlayer then
-      IO.addScreenMoveAnimation( 100, aTarget );
-    IO.addMoveAnimation(100, 0, FUID, Position, aTarget, Sprite );
+      IO.addScreenMoveAnimation( iVisualTime, aTarget );
+    IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite );
   end;
   Displace( aTarget );
-  Dec( FSpeedCount, getMoveCost );
+  Dec( FSpeedCount, iMoveCost );
   HandlePostDisplace;
   HandlePostMove;
   Exit( True );
@@ -1201,6 +1205,8 @@ end;
 function TBeing.MoveTowards( aWhere : TCoord2D; aVisualMultiplier : Single = 1.0 ): TMoveResult;
 var iDir        : TDirection;
     iMoveResult : TMoveResult;
+    iMoveCost   : Integer;
+    iVisualMult : Single;
     iLevel      : TLevel;
 begin
   iLevel := TLevel(Parent);
@@ -1227,10 +1233,14 @@ begin
   end;
   if iMoveResult <> MoveOk then Exit( iMoveResult );
 
-  FSpeedCount := FSpeedCount - getMoveCost;
+  iMoveCost   := getMoveCost;
+  FSpeedCount := FSpeedCount - iMoveCost;
   if GraphicsVersion then
     if iLevel.BeingExplored( FPosition, Self ) or iLevel.BeingExplored( LastMove, Self ) or iLevel.BeingVisible( FPosition, Self ) or iLevel.BeingVisible( LastMove, Self ) then
-      IO.addMoveAnimation(100, 0, FUID,Position,LastMove,Sprite);
+    begin
+      iVisualMult := ( 100.0 / FSpeed ) * ( iMoveCost / 1000.0 ) * aVisualMultiplier;
+      IO.addMoveAnimation( Ceil( iVisualMult * 100 ), 0, FUID,Position,LastMove,Sprite);
+    end;
   Displace( FMovePos );
   if BF_WALKSOUND in FFlags then
     PlaySound( 'hoof' );
