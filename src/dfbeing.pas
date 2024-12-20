@@ -2206,17 +2206,17 @@ begin
 end;
 
 function TBeing.getMoveCost: LongInt;
-var Modifier : Real;
+var iModifier : Single;
 begin
-  Modifier := FTimes.Move/100.;
-  if Inv.Slot[efTorso] <> nil then Modifier *= (100-Inv.Slot[efTorso].MoveMod)/100.;
-  if Inv.Slot[efBoots] <> nil then Modifier *= (100-Inv.Slot[efBoots].MoveMod)/100.;
-  if isPlayer and (Player.FTactic.Current = TacticRunning) then Modifier *= 0.7;
-  getMoveCost := Round(ActionCostMove*Modifier);
+  iModifier := FTimes.Move/100.;
+  if Inv.Slot[efTorso] <> nil then iModifier *= (100-Inv.Slot[efTorso].MoveMod)/100.;
+  if Inv.Slot[efBoots] <> nil then iModifier *= (100-Inv.Slot[efBoots].MoveMod)/100.;
+  if isPlayer and (Player.FTactic.Current = TacticRunning) then iModifier *= 0.7;
+  getMoveCost := Round( ActionCostMove * iModifier );
 end;
 
 function TBeing.getFireCost( aAltFire : TAltFire ) : LongInt;
-var iModifier : Real;
+var iModifier : Single;
 begin
   if (Inv.Slot[ efWeapon ] = nil) then Exit(10*FTimes.Fire);
   if (Inv.Slot[ efWeapon ].isMelee) then Exit(Inv.Slot[ efWeapon ].UseTime * FTimes.Fire);
@@ -2337,17 +2337,19 @@ end;
 { IBeingAI }
 
 function TBeing.MoveCost(const Start, Stop: TCoord2D): Single;
-var Diff : TCoord2D;
+var iDiff     : TCoord2D;
+    iStopCell : TCell;
 begin
-  Diff := Start - Stop;
-  if Diff.x * Diff.y = 0
+  iDiff := Start - Stop;
+  if iDiff.x * iDiff.y = 0
      then MoveCost := 1.0
      else MoveCost := 1.3;
 
   if TLevel(Parent).Being[ Stop ] <> nil then MoveCost := MoveCost * 5;
 
+  iStopCell := Cells[ TLevel(Parent).getCell(Stop) ];
   if BF_ENVIROSAFE in FFlags then Exit;
-  if CF_HAZARD in Cells[ TLevel(Parent).getCell(Stop) ].Flags then
+  if CF_HAZARD in iStopCell.Flags then
   begin
     if FHp = FHpMax then Exit( 30 * MoveCost );
     if CF_HAZARD in Cells[ TLevel(Parent).getCell(Start) ].Flags then Exit( 3 * MoveCost );

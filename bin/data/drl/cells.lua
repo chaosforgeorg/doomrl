@@ -460,6 +460,7 @@ function drl.register_cells()
 			local damage   = 6
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
 			if being.flags[ BF_ENVIROSAFE ] then return end
+			if being.flags[ BF_FLY ] then return end
 			if being:get_total_resistance( "acid", TARGET_FEET ) == 100 then return end
 			if being:is_player() then
 				if being.running then damage = damage / 2 end
@@ -486,6 +487,7 @@ function drl.register_cells()
 			local damage = 12
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
 			if being.flags[ BF_ENVIROSAFE ] then return end
+			if being.flags[ BF_FLY ] then return end
 			if being:get_total_resistance( "fire", TARGET_FEET ) == 100 then return end
 			if being:is_player() then
 				if being.running then damage = damage / 2 end
@@ -513,6 +515,7 @@ function drl.register_cells()
 			local damage = 12
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
 			if being.flags[ BF_ENVIROSAFE ] then return end
+			if being.flags[ BF_FLY ] then return end
 			if being:get_total_resistance( "plasma", TARGET_FEET ) == 100 then return end
 
 			if being.running then damage = damage / 2 end

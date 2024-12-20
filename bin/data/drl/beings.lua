@@ -171,7 +171,7 @@ function drl.register_beings()
 		danger       = 3,
 		weight       = 10,
 		bulk         = 100,
-		flags        = { BF_ENVIROSAFE },
+		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "lostsoul_ai",
 
 		resist = { fire = 75, bullet = 50 },
@@ -197,7 +197,7 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 6,
 		weight       = 6,
-		flags        = { BF_ENVIROSAFE },
+		flags        = { BF_ENVIROSAFE, BF_FLY },
 		bulk         = 100,
 		ai_type      = "melee_ranged_ai",
 
@@ -407,7 +407,7 @@ function drl.register_beings()
 		danger       = 6,
 		weight       = 4,
 		bulk         = 100,
-		flags        = { BF_ENVIROSAFE },
+		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "spawnonly_ai",
 
 		desc            = "Pain, pain, pain - this is the only thing these monsters live by, and the only thing they deliver. Wait, look again - they also deliver lost souls!",
@@ -629,7 +629,7 @@ function drl.register_beings()
 		danger       = 10,
 		weight       = 6,
 		bulk         = 100,
-		flags        = { BF_ENVIROSAFE },
+		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "ranged_ai",
 
 		desc            = "Hell's latest improvement on demonic warfare - they're stronger, tougher, and angrier than ever.",
@@ -1056,7 +1056,7 @@ function drl.register_beings()
 		danger       = 16,
 		weight       = 1,
 		bulk         = 100,
-		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
+		flags        = { BF_OPENDOORS, BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "teleboss_ai",
 
 		resist = { fire = 100 },
@@ -1116,7 +1116,7 @@ function drl.register_beings()
 		danger       = 20,
 		weight       = 1,
 		bulk         = 100,
-		flags        = { BF_ENVIROSAFE },
+		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "spawnonly_ai",
 
 		desc            = "Seems like the pain elementals' big momma!",
