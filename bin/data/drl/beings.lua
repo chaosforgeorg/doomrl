@@ -1008,7 +1008,6 @@ function drl.register_beings()
 			damage     = "4d5",
 			damagetype = DAMAGE_PLASMA,
 			missile = {
-				sound_id  = "baron",
 				color     = WHITE,
 				sprite    = SPRITE_SHOT,
 				delay     = 35,

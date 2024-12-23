@@ -556,6 +556,17 @@ sound = {
 		hit			= "sound/dsvipain.wav",
 		fire		= "sound/dsvilatk.wav",
 	},
+
+		-- Shambler
+	
+	shambler = {
+		act			= "sound/dsbrssit.wav",
+		die			= "sound/dsbspdth.wav",
+		melee		= "sound/dsclaw.wav",
+		hit			= "sound/dsdmpain.wav",
+		fire		= "sound/dsfirsht.wav",
+		explode		= "sound/dsfirxpl.wav",
+	},
 	
 	-- Bruiser Brothers
 	
