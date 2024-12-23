@@ -113,12 +113,21 @@ function item:apply_mod_array( ma )
 end
 
 function item:reset_resistances()
-	self.resist.bullet   = (self.__proto.resist.bullet or 0)
-	self.resist.shrapnel = (self.__proto.resist.shrapnel or 0)
-	self.resist.melee    = (self.__proto.resist.melee or 0)
-	self.resist.fire     = (self.__proto.resist.fire or 0)
-	self.resist.acid     = (self.__proto.resist.acid or 0)
-	self.resist.plasma   = (self.__proto.resist.plasma or 0)
+	if self.__proto.resist then
+		self.resist.bullet   = (self.__proto.resist.bullet or 0)
+		self.resist.shrapnel = (self.__proto.resist.shrapnel or 0)
+		self.resist.melee    = (self.__proto.resist.melee or 0)
+		self.resist.fire     = (self.__proto.resist.fire or 0)
+		self.resist.acid     = (self.__proto.resist.acid or 0)
+		self.resist.plasma   = (self.__proto.resist.plasma or 0)
+	else
+		self.resist.bullet   = 0
+		self.resist.shrapnel = 0
+		self.resist.melee    = 0
+		self.resist.fire     = 0
+		self.resist.acid     = 0
+		self.resist.plasma   = 0
+	end		
 end
 
 setmetatable(item,getmetatable(thing))

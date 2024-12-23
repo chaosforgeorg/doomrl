@@ -1,5 +1,7 @@
 0.9.9.9 BETA 2b
 [fix] -- RCFIX : fix for locked doors ai loop error
+[fix] -- RCFIX : play locked door sound only for player
+[fix] -- RCFIX : fixed reset of item resistances on items without initial resists
 
 0.9.9.9 BETA 2
 [new] -- GH#177: new lategame environment fluid - blood (plasma, damages ONLY player!)
