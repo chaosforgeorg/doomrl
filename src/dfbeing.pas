@@ -2635,60 +2635,64 @@ begin
 end;
 
 function lua_being_path_find(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
-    Being  : TBeing;
+var iState  : TDoomLuaState;
+    iBeing  : TBeing;
 begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  if State.IsNil(2) then begin State.Push( false ); Exit(1); end;
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  if iState.IsNil(2) then begin iState.Push( false ); Exit(1); end;
 
-  with Being do
+  with iBeing do
   begin
-    if FPath = nil then FPath := TPathfinder.Create( Being );
-    State.Push( FPath.Run( Being.FPosition, State.ToPosition(2), State.ToInteger(3), State.ToInteger(4) ) );
+    if FPath = nil then FPath := TPathfinder.Create( iBeing );
+    iState.Push( FPath.Run( iBeing.FPosition, iState.ToPosition(2), iState.ToInteger(3), iState.ToInteger(4) ) );
     if FPath.Found then FPath.Start := FPath.Start.Child;
   end;
   Result := 1;
 end;
 
 function lua_being_path_next(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
-    Being  : TBeing;
-    MoveR  : TMoveResult;
+var iState  : TDoomLuaState;
+    iBeing  : TBeing;
+    iMoveR  : TMoveResult;
+    iSuccess: Boolean;
 begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  with Being do
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  with iBeing do
   begin
     if (FPath = nil) or (not FPath.Found)
-      or (FPath.Start = nil) or (Distance( FPath.Start.Coord, Being.Position ) <> 1) then
+      or (FPath.Start = nil) or (Distance( FPath.Start.Coord, iBeing.Position ) <> 1) then
       begin
-        State.Push( False );
+        iState.Push( False );
         Exit(1);
       end;
 
-    MoveR := Being.TryMove( FPath.Start.Coord );
+    iMoveR := iBeing.TryMove( FPath.Start.Coord );
 
-    if MoveR in [ MoveBlock, MoveBeing ] then
+    if iMoveR in [ MoveBlock, MoveBeing ] then
     begin
-      State.Push( Byte(MoveR) );
-      State.PushCoord( Being.LastMove );
+      iState.Push( Byte(iMoveR) );
+      iState.PushCoord( iBeing.LastMove );
       Exit(2);
     end;
 
-    if MoveR = MoveDoor then
+    if iMoveR = MoveDoor then
     begin
-      if BF_OPENDOORS in Being.FFlags then
-        TLevel(Being.Parent).CallHook( FPath.Start.Coord, Being, CellHook_OnAct );
-      State.Push( Byte(MoveR) );
-      State.PushCoord( Being.LastMove );
+      if BF_OPENDOORS in iBeing.FFlags then
+      begin
+        iSuccess := Boolean( TLevel(iBeing.Parent).CallHook( FPath.Start.Coord, iBeing, CellHook_OnAct ) );
+        if not iSuccess then iMoveR := MoveBlock;
+      end;
+      iState.Push( Byte(iMoveR) );
+      iState.PushCoord( iBeing.LastMove );
       Exit(2);
     end;
 
-    Being.MoveTowards(FPath.Start.Coord);
+    iBeing.MoveTowards(FPath.Start.Coord);
     FPath.Start := FPath.Start.Child;
-    State.Push( Byte(MoveR) );
-    State.PushCoord( Being.LastMove );
+    iState.Push( Byte(iMoveR) );
+    iState.PushCoord( iBeing.LastMove );
   end;
   Result := 2;
 end;

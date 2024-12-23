@@ -295,7 +295,9 @@ function drl.register_cells()
 
 		OnAct = function(c,being)
 			being:msg("The door is locked.")
-			level:play_sound( "door.fail", being.position )
+			if being:is_player() then
+				level:play_sound( "door.fail", being.position )
+			end
 			return false
 		end,
 	}
