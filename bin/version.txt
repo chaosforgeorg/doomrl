@@ -1,3 +1,6 @@
+0.9.9.9 BETA 2b
+[fix] -- RCFIX : fix for locked doors ai loop error
+
 0.9.9.9 BETA 2
 [new] -- GH#177: new lategame environment fluid - blood (plasma, damages ONLY player!)
 [new] -- GH#177: new early game environment fluid - mud - like water but slows by 40%
