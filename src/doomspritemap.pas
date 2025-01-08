@@ -800,6 +800,7 @@ var iDMinX  : Word;
     iZ      : Integer;
     iY,iX   : DWord;
     iSpr    : TSprite;
+    iFSpr   : TSprite;
     iCoord  : TCoord2D;
     iStyle  : Byte;
     iDeco   : Byte;
@@ -836,9 +837,12 @@ begin
           end;
         if (SF_FLUID in iSpr.Flags) and (Doom.Level.Rotation[ iCoord ] <> 0) then
         begin
-          iSpr := GetSprite( Doom.Level.FloorCell, Doom.Level.FloorStyle );
-          iSpr.SpriteID += Doom.Level.Rotation[iCoord];
-          PushSpriteTerrain( iCoord, iSpr, iZ + DRL_Z_ENVIRO );
+          iFSpr := GetSprite( Doom.Level.FloorCell, Doom.Level.FloorStyle );
+          if SF_HASALTEDGE in iFSpr.Flags then
+            if SF_USEALTEDGE in iSpr.Flags then
+              iFSpr.SpriteID += DRL_COLS;
+          iFSpr.SpriteID += Doom.Level.Rotation[iCoord];
+          PushSpriteTerrain( iCoord, iFSpr, iZ + DRL_Z_ENVIRO );
         end;
         if Doom.Level.LightFlag[ iCoord, LFBLOOD ] and (Cells[iBottom].BloodSprite.SpriteID <> 0) then
           PushSpriteDoodad( iCoord, Cells[iBottom].BloodSprite );

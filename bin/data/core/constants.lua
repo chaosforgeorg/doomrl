@@ -160,14 +160,16 @@ LF_RESPAWN        = 10;
 LF_SHARPFLUID     = 11;
 LF_BOSS           = 12;
 
-SF_LARGE    = 1;
-SF_OVERLAY  = 2;
-SF_COSPLAY  = 3;
-SF_GLOW     = 4;
-SF_FLOW     = 5;
-SF_FLUID    = 6;
-SF_MULTI    = 7;
-SF_FLOOR    = 8;
+SF_LARGE      = 1;
+SF_OVERLAY    = 2;
+SF_COSPLAY    = 3;
+SF_GLOW       = 4;
+SF_FLOW       = 5;
+SF_FLUID      = 6;
+SF_MULTI      = 7;
+SF_FLOOR      = 8;
+SF_HASALTEDGE = 9;
+SF_USEALTEDGE = 10;
 
 EF_NOBLOCK  = 0;
 EF_NOBEINGS = 1;
