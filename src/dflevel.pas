@@ -1497,7 +1497,7 @@ begin
   if State.IsNil(2) then Exit(0);
   iLevel.FStyle := State.ToInteger(2);
   iLevel.FFloorCell := LuaSystem.Defines[LuaSystem.Get(['generator','styles',iLevel.FStyle,'floor'])];
-  iLevel.FFloorStyle := LuaSystem.Get(['generator','styles',iLevel.FStyle,'style']);
+  iLevel.FFloorStyle := LuaSystem.Get(['generator','styles',iLevel.FStyle,'style'], 0);
   for iCoord in iLevel.FArea do
   begin
     iLevel.FMap.Style[iCoord.X,iCoord.Y] := iLevel.FFloorStyle;
