@@ -496,8 +496,8 @@ begin
   FEmpty := False;
   FHooks := [];
 
-  FFloorCell := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
-  FFloorStyle := LuaSystem.Get(['generator','styles',FStyle,'style']);
+  FFloorCell  := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
+  FFloorStyle := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
   if LuaSystem.Get(['diff',Doom.Difficulty,'respawn']) then Include( FFlags, LF_RESPAWN );
   FToHitBonus := LuaSystem.Get(['diff',Doom.Difficulty,'tohitbonus']);
 end;
