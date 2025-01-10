@@ -249,7 +249,10 @@ begin
   if iHover <> nil
     then VTIG_Text( iHover.Description );
 
-  VTIG_End('{l<{!Up,Down}> select, <{!Enter}> change or enter submenu, <{!Escape}> back}');
+
+  if FState in SETTINGSVIEW_KEYS
+    then VTIG_End('{l<{!Up,Down}> select, <{!Enter}> change/enter, <{!Escape}> back, <{!Backspace}> clear}')
+    else VTIG_End('{l<{!Up,Down}> select, <{!Enter}> change or enter submenu, <{!Escape}> back}');
 
   IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 
@@ -331,6 +334,8 @@ begin
         FKey     := 0;
         Exit( False );
       end;
+    if VTIG_Event( [VTIG_IE_BACKSPACE] ) then
+      aValue^ := 0;
   end;
   Exit( False );
 end;
