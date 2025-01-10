@@ -98,7 +98,7 @@ procedure TDoomTextIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWo
 var iChr : Char;
 begin
   if Option_HighASCII then iChr := Chr(219) else iChr := '#';
-  if not Setting_NoFlash then
+  if Setting_Flash then
     FTextMap.AddAnimation( TTextBlinkAnimation.Create( IOGylph( iChr, aColor ), aDuration, aDelay ) );
 end;
 

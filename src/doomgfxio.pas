@@ -326,7 +326,7 @@ end;
 
 procedure TDoomGFXIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
 begin
-  if not Setting_NoFlash then
+  if Setting_Flash then
     FAnimations.AddAnimation( TDoomBlink.Create(aDuration,aDelay,aColor) );
 end;
 

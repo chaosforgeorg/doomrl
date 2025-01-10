@@ -33,33 +33,9 @@ begin
 
   iGroup := AddGroup( 'general' );
   iGroup.AddToggle( 'first_run', True );
-  iGroup.AddToggle( 'always_random_name', False )
-    .SetName('Always random name')
-    .SetDescription( 'Setting to {!Enabled} will skip name entry and always supply a random name.')
-    ;
   iGroup.AddToggle( 'skip_intro', False )
     .SetName('Skip intro')
     .SetDescription('Setting to {!Enabled} will skip the plot intro text before playing.')
-    ;
-  iGroup.AddToggle( 'hide_hints', False )
-    .SetName('Hide hints')
-    .SetDescription('Setting to {!Enabled} will hide the hints in the top right corner.')
-    ;
-  iGroup.AddToggle( 'no_flashing', False )
-    .SetName('Disable screen flashing')
-    .SetDescription('Setting to {!Enabled} will disable screen flash FX.')
-    ;
-  iGroup.AddToggle( 'empty_confirm', False )
-    .SetName('Confirm firing empty weapon')
-    .SetDescription('Setting to {!Enabled} will make the game wait for confirmation if trying to fire an empty weapon')
-    ;
-  iGroup.AddToggle( 'run_over_items', False )
-    .SetName('Run over items')
-    .SetDescription('Setting to {!Enabled} will make the run command not stop on items.')
-    ;
-  iGroup.AddToggle( 'unlock_all', False )
-    .SetName('Unlock all unlocks')
-    .SetDescription('For returning players so they don''t have to unlock everything again. Otherwise a cheat!')
     ;
 
   iGroup := AddGroup( 'display' );
@@ -98,6 +74,10 @@ begin
     .SetName('Screen shake effect')
     .SetDescription('Setting to {!Disabled} will disable screen shake FX.')
     ;
+  iGroup.AddToggle( 'flashing_fx', True )
+    .SetName('Screen flashing')
+    .SetDescription('Setting to {!Disabled} will disable screen flash FX.')
+    ;
 
   iGroup := AddGroup( 'audio' );
   iGroup.AddInteger( 'sound_volume', 25 )
@@ -113,6 +93,30 @@ begin
   iGroup.AddToggle( 'menu_sound', True )
     .SetName('Menu sounds')
     .SetDescription('Set to {!Disabled} to disable the chunky menu sounds.')
+    ;
+
+  iGroup := AddGroup( 'gameplay' );
+  iGroup.AddToggle( 'always_random_name', False )
+    .SetName('Always random name')
+    .SetDescription( 'Setting to {!Enabled} will skip name entry and always supply a random name.')
+    ;
+  iGroup.AddToggle( 'hide_hints', False )
+    .SetName('Hide hints')
+    .SetDescription('Setting to {!Enabled} will hide the hints in the top right corner.')
+    ;
+  iGroup.AddToggle( 'run_over_items', False )
+    .SetName('Run over items')
+    .SetDescription('Setting to {!Enabled} will make the run command not stop on items.')
+    ;
+  iGroup.AddToggle( 'unlock_all', False )
+    .SetName('Unlock all unlocks')
+    .SetDescription('For returning players so they don''t have to unlock everything again. Otherwise a cheat!')
+    ;
+
+  iGroup := AddGroup( 'input' );
+  iGroup.AddToggle( 'empty_confirm', False )
+    .SetName('Confirm firing empty weapon')
+    .SetDescription('Setting to {!Enabled} will make the game wait for confirmation if trying to fire an empty weapon')
     ;
 
   iGroup := AddGroup( 'keybindings_hidden' );
