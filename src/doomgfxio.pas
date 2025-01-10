@@ -451,7 +451,7 @@ begin
       FHintOverlay := '';
   end;
 
-  iMouse := (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos( iMousePoint );
+  iMouse := Setting_Mouse and (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos( iMousePoint );
 
   if iMouse and (not FMouseLock) and (not isModal) then
   begin
@@ -561,7 +561,7 @@ function TDoomGFXIO.OnEvent( const event : TIOEvent ) : Boolean;
 begin
   if event.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN ] then
   begin
-    if FMCursor <> nil then FMCursor.Active := True;
+    if ( FMCursor <> nil ) then FMCursor.Active := Setting_Mouse;
     FLastMouseTime := FTime;
     FMouseLock     := False;
   end;
@@ -574,7 +574,7 @@ begin
   begin
     if FMCursor.Size = 0 then
       FMCursor.SetTextureID( FTextures.TextureID['cursor'], 32 );
-    FMCursor.Active := True;
+    FMCursor.Active := Setting_Mouse;
   end;
   Result := inherited PushLayer( aLayer );
 end;

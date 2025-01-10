@@ -118,6 +118,10 @@ begin
     .SetName('Confirm firing empty weapon')
     .SetDescription('Setting to {!Enabled} will make the game wait for confirmation if trying to fire an empty weapon')
     ;
+  iGroup.AddToggle( 'enable_mouse', True )
+    .SetName('Mouse control')
+    .SetDescription('Setting to {!Disabled} will turn off interaction and visuals of the mouse.')
+    ;
 
   iGroup := AddGroup( 'keybindings_hidden' );
   iGroup.AddInteger( 'input_escape', VKEY_ESCAPE );

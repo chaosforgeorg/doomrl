@@ -292,6 +292,7 @@ begin
   Setting_RunOverItems     := Configuration.GetBoolean( 'run_over_items' );
   Setting_HideHints        := Configuration.GetBoolean( 'hide_hints' );
   Setting_EmptyConfirm     := Configuration.GetBoolean( 'empty_confirm' );
+  Setting_Mouse            := Configuration.GetBoolean( 'enable_mouse' );
   Setting_UnlockAll        := Configuration.GetBoolean( 'unlock_all' );
   Setting_MenuSound        := Configuration.GetBoolean( 'menu_sound' );
 end;
@@ -767,6 +768,7 @@ function TDoom.HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
 var iAlt     : Boolean;
     iButton  : TIOMouseButton;
 begin
+  if not Setting_Mouse then Exit( False );
   IO.MTarget := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
   if Doom.Level.isProperCoord( IO.MTarget ) then
   begin

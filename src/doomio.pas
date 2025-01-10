@@ -447,6 +447,7 @@ begin
 
   if ( event.EType in [ VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
   begin
+    if not Setting_Mouse then Exit( False );
     iEvent := event;
     iEvent.Mouse.Pos := DeviceCoordToConsoleCoord( event.Mouse.Pos );
     VTIG_GetIOState.MouseState.HandleEvent( iEvent );
@@ -455,7 +456,10 @@ begin
   end;
 
   if ( event.EType in [ VEVENT_MOUSEMOVE ] ) then
+  begin
+    if not Setting_Mouse then Exit( False );
     FUIMouse := DeviceCoordToConsoleCoord( event.MouseMove.Pos );
+  end;
 
   iInput := EventToInput( event );
   if iInput <> INPUT_NONE then
@@ -897,12 +901,14 @@ begin
        else Exit( INPUT_HARDQUIT );
   if (aEvent.EType = VEVENT_MOUSEMOVE) then
   begin
+    if not Setting_Mouse then Exit( INPUT_NONE );
     FMTarget := SpriteMap.DevicePointToCoord( aEvent.MouseMove.Pos );
     if Doom.Level.isProperCoord( FMTarget ) then
       Exit( INPUT_MMOVE );
   end;
   if aEvent.EType = VEVENT_MOUSEDOWN then
   begin
+    if not Setting_Mouse then Exit( INPUT_NONE );
     FMTarget := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
     if Doom.Level.isProperCoord( FMTarget ) then
     begin
@@ -929,6 +935,11 @@ var iEvent : TIOEvent;
 begin
   repeat
     if not FIODriver.PeekEvent( iEvent ) then Exit( False );
+    if ( not Setting_Mouse ) and ( iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEUP, VEVENT_MOUSEDOWN ] ) then
+    begin
+      FIODriver.PollEvent( iEvent );
+      Continue;
+    end;
     if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEUP, VEVENT_KEYUP ] then
     begin
       FIODriver.PollEvent( iEvent );
