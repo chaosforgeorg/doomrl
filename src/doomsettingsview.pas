@@ -131,7 +131,7 @@ begin
         VTIG_Selectable( 'Resolution' );
 
       if FState = SETTINGSVIEW_GENERAL then
-        for i := 1 to 8 do
+        for i := 1 to High( CSub ) do
           if VTIG_Selectable( CSub[i].Select ) then
             iNext := CSub[i].State;
 
@@ -151,9 +151,9 @@ begin
       i := 0;
       if FState = SETTINGSVIEW_GENERAL then
       begin
-        for i := 1 to 8 do
+        for i := 1 to High( CSub ) do
           VTIG_Text( '' );
-        i := 8;
+        i := High( CSub );
       end;
       if iGroup <> nil then
       begin
@@ -228,7 +228,7 @@ begin
 
   if FState = SETTINGSVIEW_GENERAL then
   begin
-    if iSelected in [0..7]
+    if iSelected in [0..High( CSub )-1]
       then VTIG_Text( CSub[iSelected + 1].Desc );
     if iSelected = i   then VTIG_Text( 'Resets ALL configuration values to default values.' );
     if iSelected = i+1 then VTIG_Text( 'Apply changes and exit.' );
