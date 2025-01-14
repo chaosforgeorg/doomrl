@@ -366,10 +366,10 @@ begin
   iNormal   := LoadTexture( 1 );
   iCosplay  := LoadTexture( 2 );
   iGlow     := LoadTexture( 3 );
-  iEmissive := LoadTexture( 3 );
+  iEmissive := LoadTexture( 4 );
   if iNormal = nil then State.Error( 'Bad parameters passes to register_sprite_sheet!');
-  State.Push( Integer( SpriteMap.Engine.Add( iNormal, iCosplay, iEmissive, State.ToInteger(4) ) * 100000 ) );
-  if iGlow <> nil then SpriteMap.Engine.Add( iGlow, nil, nil, State.ToInteger(4) );
+  State.Push( Integer( SpriteMap.Engine.Add( iNormal, iCosplay, iEmissive, State.ToInteger(5) ) * 100000 ) );
+  if iGlow <> nil then SpriteMap.Engine.Add( iGlow, nil, nil, State.ToInteger(5) );
   Result := 1;
 end;
 

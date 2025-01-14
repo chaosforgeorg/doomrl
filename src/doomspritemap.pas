@@ -904,17 +904,17 @@ begin
            (not Doom.Level.isEmpty( FTargetList[iL], [ EF_NOBLOCK, EF_NOVISION ] )) then
           iColor := NewColor( 128, 0, 0 );
         with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-          Push( HARDSPRITE_SELECT mod 100000, FTargetList[iL], ColorBlack, iColor, DRL_Z_FX );
+          Push( HARDSPRITE_SELECT mod 100000, FTargetList[iL], ColorWhite, iColor, DRL_Z_FX );
       end;
       if FTargetList.Size > 0 then
         with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
-          Push( HARDSPRITE_MARK mod 100000, FTarget, ColorBlack, FTargetColor, DRL_Z_FX );
+          Push( HARDSPRITE_MARK mod 100000, FTarget, ColorWhite, FTargetColor, DRL_Z_FX );
     end
   else
     if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
     begin
       with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-        Push( HARDSPRITE_SELECT mod 100000, FAutoTarget, ColorBlack, NewColor( Yellow ), DRL_Z_FX );
+        Push( HARDSPRITE_SELECT mod 100000, FAutoTarget, ColorWhite, NewColor( Yellow ), DRL_Z_FX );
     end;
 
   if FGridActive then
