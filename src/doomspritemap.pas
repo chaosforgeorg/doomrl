@@ -363,12 +363,13 @@ begin
       iColor.SetAll( ColorToGL( aSprite.Color ) );
       Cosplay.Push( @iCoord, @iTex, @iColor, DRL_Z_FX );
     end;
+  end;
 
-    if SF_GLOW in aSprite.Flags then
-    begin
-      iColor.SetAll( ColorToGL( aSprite.GlowColor ) );
-      Glow.Push( @iCoord, @iTex, @iColor, DRL_Z_FX );
-    end;
+  if SF_GLOW in aSprite.Flags then
+  with FSpriteEngine.Layers[ ( aSprite.SpriteID div 100000 ) + 1 ] do
+  begin
+    iColor.SetAll( ColorToGL( aSprite.GlowColor ) );
+    Normal.Push( @iCoord, @iTex, @iColor, DRL_Z_FX );
   end;
 end;
 
@@ -395,9 +396,11 @@ begin
       else Normal.PushXY( iSpriteID, iSize, aPos, NewColor( aLight, aLight, aLight ), aZ );
     if ( SF_COSPLAY in aSprite.Flags ) and (Cosplay <> nil) then
       Cosplay.PushXY( iSpriteID, iSize, aPos, aSprite.Color, aZ );
-    if ( SF_GLOW in aSprite.Flags ) and (Glow <> nil) then
-      Glow.PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, aZ );
   end;
+  if ( SF_GLOW in aSprite.Flags ) then
+  with FSpriteEngine.Layers[ ( aSprite.SpriteID div 100000 ) + 1 ] do
+    Normal.PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, aZ );
+
 end;
 
 procedure TDoomSpriteMap.PushMultiSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
