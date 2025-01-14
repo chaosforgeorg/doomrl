@@ -346,25 +346,25 @@ begin
   iCoord.Data[ 2 ] := Rotated( +iSizeH, +iSizeH );
   iCoord.Data[ 3 ] := Rotated( +iSizeH, -iSizeH );
 
-  iTP := TVec2f.CreateModDiv( (iSpriteID-1), iLayer.Normal.RowSize );
+  iTP := TVec2f.CreateModDiv( (iSpriteID-1), iLayer.RowSize );
 
   iTex.init(
-    iTP * iLayer.Normal.TexUnit,
-    iTP.Shifted(1) * iLayer.Normal.TexUnit
+    iTP * iLayer.TexUnit,
+    iTP.Shifted(1) * iLayer.TexUnit
   );
 
   with iLayer do
   begin
     iColor.FillAll( 255 );
     if SF_OVERLAY in aSprite.Flags then iColor.SetAll( ColorToGL( aSprite.Color ) );
-    Normal.Push( @iCoord, @iTex, @iColor, aSprite.Color, DRL_Z_FX );
+    Push( @iCoord, @iTex, @iColor, aSprite.Color, DRL_Z_FX );
   end;
 
   if SF_GLOW in aSprite.Flags then
   with FSpriteEngine.Layers[ ( aSprite.SpriteID div 100000 ) + 1 ] do
   begin
     iColor.SetAll( ColorToGL( aSprite.GlowColor ) );
-    Normal.Push( @iCoord, @iTex, @iColor, ColorZero, DRL_Z_FX );
+    Push( @iCoord, @iTex, @iColor, ColorZero, DRL_Z_FX );
   end;
 end;
 
@@ -392,12 +392,12 @@ begin
       iCosColor := aSprite.Color;
 
     if SF_OVERLAY in aSprite.Flags
-      then Normal.PushXY( iSpriteID, iSize, aPos, aSprite.Color, iCosColor, aZ )
-      else Normal.PushXY( iSpriteID, iSize, aPos, NewColor( aLight, aLight, aLight ), iCosColor, aZ );
+      then PushXY( iSpriteID, iSize, aPos, aSprite.Color, iCosColor, aZ )
+      else PushXY( iSpriteID, iSize, aPos, NewColor( aLight, aLight, aLight ), iCosColor, aZ );
   end;
   if ( SF_GLOW in aSprite.Flags ) then
   with FSpriteEngine.Layers[ ( aSprite.SpriteID div 100000 ) + 1 ] do
-    Normal.PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, ColorZero, aZ );
+    PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, ColorZero, aZ );
 
 end;
 
@@ -527,9 +527,9 @@ var i         : Byte;
     iEnd      : TVec2f;
     iPStart   : TVec2f;
     iPEnd     : TVec2f;
-  procedure Push( aData : TSpriteDataVTC; aCosColor : TColor );
+  procedure Push( aLayer : TSpriteDataSet; aCosColor : TColor );
   begin
-    aData.PushPart( iSpriteID, iPa, iPb, @iColors, aCosColor, aZ, iStart, iEnd );
+    aLayer.PushPart( iSpriteID, iPa, iPb, @iColors, aCosColor, aZ, iStart, iEnd );
   end;
 
   function BilinearLight( aPos : TVec2f ) : Byte;
@@ -574,12 +574,9 @@ begin
   iPEnd     := iGridF * iEnd;
   iPa       := iPosition + TVec2i.Create( Round( iPStart.X ), Round( iPStart.Y ) );
   iPb       := iPosition + TVec2i.Create( Round( iPEnd.X ), Round( iPEnd.Y ) );
-  with iLayer do
-  begin
-    if ( SF_COSPLAY in aSprite.Flags )
-      then Push( Normal, aSprite.Color )
-      else Push( Normal, ColorZero );
-  end;
+  if ( SF_COSPLAY in aSprite.Flags )
+    then Push( iLayer, aSprite.Color )
+    else Push( iLayer, ColorZero );
 end;
 
 
@@ -638,8 +635,8 @@ begin
   with iLayer do
   begin
     if ( SF_COSPLAY in aSprite.Flags )
-      then Normal.PushXY( iSpriteID, 1, ip, @iColors, aSprite.Color, aTSX, aTSY, aZ )
-      else Normal.PushXY( iSpriteID, 1, ip, @iColors, ColorZero, aTSX, aTSY, aZ );
+      then PushXY( iSpriteID, 1, ip, @iColors, aSprite.Color, aTSX, aTSY, aZ )
+      else PushXY( iSpriteID, 1, ip, @iColors, ColorZero, aTSX, aTSY, aZ );
   end;
 end;
 
@@ -907,26 +904,24 @@ begin
            (not Doom.Level.isEmpty( FTargetList[iL], [ EF_NOBLOCK, EF_NOVISION ] )) then
           iColor := NewColor( 128, 0, 0 );
         with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-          Normal.Push( HARDSPRITE_SELECT mod 100000, FTargetList[iL], ColorBlack, iColor, DRL_Z_FX );
+          Push( HARDSPRITE_SELECT mod 100000, FTargetList[iL], ColorBlack, iColor, DRL_Z_FX );
       end;
       if FTargetList.Size > 0 then
         with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
-          Normal.Push( HARDSPRITE_MARK mod 100000, FTarget, ColorBlack, FTargetColor, DRL_Z_FX );
+          Push( HARDSPRITE_MARK mod 100000, FTarget, ColorBlack, FTargetColor, DRL_Z_FX );
     end
   else
     if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
     begin
       with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-        Normal.Push( HARDSPRITE_SELECT mod 100000, FAutoTarget, ColorBlack, NewColor( Yellow ), DRL_Z_FX );
+        Push( HARDSPRITE_SELECT mod 100000, FAutoTarget, ColorBlack, NewColor( Yellow ), DRL_Z_FX );
     end;
 
   if FGridActive then
   for iY := 1 to MAXY do
     for iX := iDMinX to iDMaxX do
     with FSpriteEngine.Layers[ HARDSPRITE_GRID div 100000 ] do
-    begin
-      Normal.Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), ColorZero, DRL_Z_ITEMS );
-    end;
+      Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), ColorZero, DRL_Z_ITEMS );
 
 end;
 
