@@ -79,7 +79,11 @@ private
   FSpriteEngine   : TSpriteEngine;
   FLightMap       : array[0..MAXX] of array[0..MAXY] of Byte;
   FFramebuffer    : TGLFramebuffer;
+  FHBFramebuffer  : TGLFramebuffer;
+  FVBFramebuffer  : TGLFramebuffer;
   FPostProgram    : TGLProgram;
+  FHBlurProgram   : TGLProgram;
+  FVBlurProgram   : TGLProgram;
   FFullscreen     : TGLFullscreenTriangle;
   FLutTexture     : Cardinal;
 private
@@ -175,13 +179,49 @@ VPostFragmentShader : Ansistring =
 '#version 330 core'+#10+
 'uniform sampler2D utexture;'+#10+
 'uniform sampler3D ulut;'+#10+
+'uniform sampler2D ublur;'+#10+
 'uniform vec2 screen_size;'+#10+
 'out vec4 frag_color;'+#10+
 #10+
 'void main() {'+#10+
 'vec2 uv    = gl_FragCoord.xy / screen_size;'+#10+
-'frag_color = texture( ulut, texture(utexture, uv).xyz );'+#10+
+'vec3 color = clamp( texture( utexture, uv ).xyz + texture( ublur, uv ).xyz * 2.0, 0.0, 1.0 );'+#10+
+'frag_color = texture( ulut, color.xzy );'+#10+
 //'frag_color = texture(utexture, uv);'+#10+
+'}'+#10;
+
+VHorizBlurFragmentShader : Ansistring =
+'#version 330 core'+#10+
+'uniform sampler2D utexture;'+#10+
+'uniform vec2 screen_size;'+#10+
+'out vec4 frag_color;'+#10+
+#10+
+'void main() {'+#10+
+'    vec2 uv = gl_FragCoord.xy / screen_size;'+#10+
+'    vec4 result = vec4(0.0);'+#10+
+'    float weights[5] = float[](0.227027, 0.316216, 0.070270, 0.050987, 0.016216);'+#10+
+'    for (int i = -2; i <= 2; ++i) {'+#10+
+'        vec2 offset = vec2(i, 0.0) / screen_size;'+#10+
+'        result += texture(utexture, uv + offset) * weights[abs(i)];'+#10+
+'    }'+#10+
+'    frag_color = result;'+#10+
+'}'+#10;
+
+VVerticBlurFragmentShader : Ansistring =
+'#version 330 core'+#10+
+'uniform sampler2D utexture;'+#10+
+'uniform vec2 screen_size;'+#10+
+'out vec4 frag_color;'+#10+
+#10+
+'void main() {'+#10+
+'    vec2 uv = gl_FragCoord.xy / screen_size;'+#10+
+'    vec4 result = vec4(0.0);'+#10+
+'    float weights[5] = float[](0.227027, 0.316216, 0.070270, 0.050987, 0.016216);'+#10+
+'    for (int i = -2; i <= 2; ++i) {'+#10+
+'        vec2 offset = vec2(0.0, i) / screen_size;'+#10+
+'        result += texture(utexture, uv + offset) * weights[abs(i)];'+#10+
+'    }'+#10+
+'    frag_color = result;'+#10+
 '}'+#10;
 
 { TDoomSpriteMap }
@@ -198,8 +238,12 @@ begin
   FLastCoord.Create(0,0);
   FAutoTarget.Create(0,0);
 
-  FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+  FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY, 2 );
+  FHBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+  FVBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
   FPostProgram  := TGLProgram.Create(VCleanVertexShader, VPostFragmentShader);
+  FHBlurProgram := TGLProgram.Create(VCleanVertexShader, VHorizBlurFragmentShader);
+  FVBlurProgram := TGLProgram.Create(VCleanVertexShader, VVerticBlurFragmentShader);
   FFullscreen   := TGLFullscreenTriangle.Create;
 
   Recalculate;
@@ -227,12 +271,26 @@ begin
     FMaxShift.Y := FMaxShift.Y + 18*iIO.FontMult*3;
   end;
   FFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
+  FHBFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
+  FVBFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
 
   FPostProgram.Bind;
     FPostProgram.SetUniformi( 'utexture', 0 );
     FPostProgram.SetUniformi( 'ulut', 1 );
+    FPostProgram.SetUniformi( 'ublur', 2 );
     FPostProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX, IO.Driver.GetSizeY );
   FPostProgram.UnBind;
+
+  FHBlurProgram.Bind;
+    FHBlurProgram.SetUniformi( 'utexture', 0 );
+    FHBlurProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+  FHBlurProgram.UnBind;
+
+  FVBlurProgram.Bind;
+    FVBlurProgram.SetUniformi( 'utexture', 0 );
+    FVBlurProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+  FVBlurProgram.UnBind;
+
 end;
 
 procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
@@ -291,17 +349,35 @@ begin
     end;
   end;
 
-  if FLutTexture <> 0 then
+//  if FLutTexture <> 0 then
   begin
     FFramebuffer.BindAndClear;
     FSpriteEngine.Draw;
     FFramebuffer.UnBind;
 
+    FHBlurProgram.Bind;
+      glActiveTexture( GL_TEXTURE0 );
+      glBindTexture( GL_TEXTURE_2D, FFramebuffer.GetTextureID(1) );
+      FHBFramebuffer.BindAndClear;
+      FFullscreen.Render;
+      FHBFramebuffer.UnBind;
+    FHBlurProgram.UnBind;
+
+    FVBlurProgram.Bind;
+      glActiveTexture( GL_TEXTURE0 );
+      glBindTexture( GL_TEXTURE_2D, FHBFramebuffer.GetTextureID(0) );
+      FVBFramebuffer.BindAndClear;
+      FFullscreen.Render;
+      FVBFramebuffer.UnBind;
+    FVBlurProgram.UnBind;
+
     FPostProgram.Bind;
       glActiveTexture( GL_TEXTURE0 );
-      glBindTexture( GL_TEXTURE_2D, FFramebuffer.GetTextureID );
+      glBindTexture( GL_TEXTURE_2D, FFramebuffer.GetTextureID(0) );
       glActiveTexture( GL_TEXTURE1 );
       glBindTexture( GL_TEXTURE_3D, FLutTexture );
+      glActiveTexture( GL_TEXTURE2 );
+      glBindTexture( GL_TEXTURE_2D, FVBFramebuffer.GetTextureID(0) );
 
       FFullscreen.Render;
 
@@ -309,10 +385,12 @@ begin
       glBindTexture( GL_TEXTURE_2D, 0 );
       glActiveTexture( GL_TEXTURE1 );
       glBindTexture( GL_TEXTURE_3D, 0 );
+      glActiveTexture( GL_TEXTURE2 );
+      glBindTexture( GL_TEXTURE_3D, 0 );
     FPostProgram.UnBind;
-  end
-  else
-    FSpriteEngine.Draw;
+  end;
+//  else
+//    FSpriteEngine.Draw;
 end;
 
 function TDoomSpriteMap.DevicePointToCoord ( aPoint : TPoint ) : TCoord2D;
@@ -515,8 +593,7 @@ begin
 end;
 
 procedure TDoomSpriteMap.PushSpriteTerrainPart( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
-var i         : Byte;
-    iColors   : TGLRawQColor;
+var iColors   : TGLRawQColor;
     iGridF    : TVec2f;
     iPosition : TVec2i;
     iPa, iPb  : TVec2i;
@@ -704,7 +781,11 @@ begin
   FreeAndNil( FSpriteEngine );
   FreeAndNil( FTargetList );
   FreeAndNil( FFramebuffer );
+  FreeAndNil( FHBFramebuffer );
+  FreeAndNil( FVBFramebuffer );
   FreeAndNil( FPostProgram );
+  FreeAndNil( FHBlurProgram );
+  FreeAndNil( FVBlurProgram );
   FreeAndNil( FFullscreen );
   inherited Destroy;
 end;
@@ -715,7 +796,7 @@ begin
     StatusRed    : FLutTexture := (IO as TDoomGFXIO).Textures['lut_berserk'].GLTexture;
     StatusGreen  : FLutTexture := (IO as TDoomGFXIO).Textures['lut_enviro'].GLTexture;
     StatusInvert : FLutTexture := (IO as TDoomGFXIO).Textures['lut_iddqd'].GLTexture;
-    else FLutTexture := 0;
+    else FLutTexture := (IO as TDoomGFXIO).Textures['lut_clear'].GLTexture;;
   end;
 end;
 
