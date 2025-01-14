@@ -7,6 +7,8 @@ type TSettingsViewState = (
   SETTINGSVIEW_GENERAL,
   SETTINGSVIEW_DISPLAY,
   SETTINGSVIEW_AUDIO,
+  SETTINGSVIEW_GAMEPLAY,
+  SETTINGSVIEW_INPUT,
   SETTINGSVIEW_KEYMOVEMENT,
   SETTINGSVIEW_KEYACTION,
   SETTINGSVIEW_KEYUI,
@@ -55,6 +57,8 @@ const CStates : array[ TSettingsViewState ] of record Title, ID : Ansistring; en
    ( Title : 'Settings'; ID : 'general' ),
    ( Title : 'Settings (Display)'; ID : 'display' ),
    ( Title : 'Settings (Audio)'; ID : 'audio' ),
+   ( Title : 'Settings (Gameplay)'; ID : 'gameplay' ),
+   ( Title : 'Settings (Input)'; ID : 'input' ),
    ( Title : 'Settings (Keybindings - Movement)'; ID : 'keybindings_movement' ),
    ( Title : 'Settings (Keybindings - Actions)'; ID : 'keybindings_actions' ),
    ( Title : 'Settings (Keybindings - UI)'; ID : 'keybindings_ui' ),
@@ -64,9 +68,11 @@ const CStates : array[ TSettingsViewState ] of record Title, ID : Ansistring; en
    ( Title : ''; ID : '' )
 );
 
-const CSub : array[ 1..8 ] of record State : TSettingsViewState; Select, Desc : Ansistring; end = (
+const CSub : array[ 1..10 ] of record State : TSettingsViewState; Select, Desc : Ansistring; end = (
   ( State : SETTINGSVIEW_DISPLAY;     Select : 'Display';                  Desc : 'Configure video and display options.' ),
   ( State : SETTINGSVIEW_AUDIO;       Select : 'Audio';                    Desc : 'Configure audio, music and sound options.' ),
+  ( State : SETTINGSVIEW_GAMEPLAY;    Select : 'Gameplay';                 Desc : 'Configure gameplay options.' ),
+  ( State : SETTINGSVIEW_INPUT;       Select : 'Input';                    Desc : 'Configure input options (apart from keybindings).' ),
   ( State : SETTINGSVIEW_KEYMOVEMENT; Select : 'Keybindings - Movement';   Desc : 'Configure keybindings for movement.' ),
   ( State : SETTINGSVIEW_KEYACTION;   Select : 'Keybindings - Actions';    Desc : 'Configure keybindings for in-game actions.' ),
   ( State : SETTINGSVIEW_KEYUI;       Select : 'Keybindings - UI';         Desc : 'Configure keybindings accessing UI elements (inventory, etc.).' ),
@@ -125,7 +131,7 @@ begin
         VTIG_Selectable( 'Resolution' );
 
       if FState = SETTINGSVIEW_GENERAL then
-        for i := 1 to 8 do
+        for i := 1 to High( CSub ) do
           if VTIG_Selectable( CSub[i].Select ) then
             iNext := CSub[i].State;
 
@@ -145,9 +151,9 @@ begin
       i := 0;
       if FState = SETTINGSVIEW_GENERAL then
       begin
-        for i := 1 to 8 do
+        for i := 1 to High( CSub ) do
           VTIG_Text( '' );
-        i := 8;
+        i := High( CSub );
       end;
       if iGroup <> nil then
       begin
@@ -222,7 +228,7 @@ begin
 
   if FState = SETTINGSVIEW_GENERAL then
   begin
-    if iSelected in [0..7]
+    if iSelected in [0..High( CSub )-1]
       then VTIG_Text( CSub[iSelected + 1].Desc );
     if iSelected = i   then VTIG_Text( 'Resets ALL configuration values to default values.' );
     if iSelected = i+1 then VTIG_Text( 'Apply changes and exit.' );
@@ -243,7 +249,10 @@ begin
   if iHover <> nil
     then VTIG_Text( iHover.Description );
 
-  VTIG_End('{l<{!Up,Down}> select, <{!Enter}> change or enter submenu, <{!Escape}> back}');
+
+  if FState in SETTINGSVIEW_KEYS
+    then VTIG_End('{l<{!Up,Down}> select, <{!Enter}> change/enter, <{!Escape}> back, <{!Backspace}> clear}')
+    else VTIG_End('{l<{!Up,Down}> select, <{!Enter}> change or enter submenu, <{!Escape}> back}');
 
   IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 
@@ -325,6 +334,8 @@ begin
         FKey     := 0;
         Exit( False );
       end;
+    if VTIG_Event( [VTIG_IE_BACKSPACE] ) then
+      aValue^ := 0;
   end;
   Exit( False );
 end;

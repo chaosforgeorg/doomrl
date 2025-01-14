@@ -135,12 +135,13 @@ const
 const
   Setting_AlwaysRandomName : Boolean = False;
   Setting_NoIntro          : Boolean = False;
-  Setting_NoFlash          : Boolean = False;
   Setting_RunOverItems     : Boolean = False;
   Setting_HideHints        : Boolean = False;
   Setting_EmptyConfirm     : Boolean = False;
   Setting_UnlockAll        : Boolean = False;
   Setting_MenuSound        : Boolean = False;
+  Setting_Mouse            : Boolean = True;
+  Setting_Flash            : Boolean = True;
   Setting_ScreenShake      : Boolean = True;
   Setting_AutoTarget       : Boolean = True;
   Setting_MusicVolume      : Byte = 25;
