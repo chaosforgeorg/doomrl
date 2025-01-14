@@ -381,13 +381,9 @@ end;
 
 procedure TDoomLua.ReadWad;
 var iProgBase    : DWord;
-    iAudioLoaded : Boolean;
-    iStream      : TStream;
     iModule      : TDoomModule;
     iData        : TVDataFile;
-    iAudioData   : TVDataFileArray;
 begin
-  iAudioLoaded := False;
   IO.LoadStart;
   iProgBase := IO.LoadCurrent;
   IO.LoadProgress(iProgBase);
