@@ -181,12 +181,14 @@ VPostFragmentShader : Ansistring =
 'uniform sampler3D ulut;'+#10+
 'uniform sampler2D ublur;'+#10+
 'uniform vec2 screen_size;'+#10+
+'uniform int toggle_glow;'+#10+
 'out vec4 frag_color;'+#10+
 #10+
 'void main() {'+#10+
 'vec2 uv    = gl_FragCoord.xy / screen_size;'+#10+
-'vec3 color = clamp( texture( utexture, uv ).xyz + texture( ublur, uv ).xyz * 1.6, 0.0, 1.0 );'+#10+
-'frag_color = texture( ulut, color.xzy );'+#10+
+'vec3 color = texture( utexture, uv ).xyz;'+#10+
+'if ( toggle_glow > 0 ) color += texture( ublur, uv ).xyz * 1.6;'+#10+
+'frag_color = texture( ulut, clamp( color.xzy, 0.0, 1.0 ) );'+#10+
 //'frag_color = texture(utexture, uv);'+#10+
 '}'+#10;
 
@@ -280,6 +282,9 @@ begin
     FPostProgram.SetUniformi( 'utexture', 0 );
     FPostProgram.SetUniformi( 'ulut', 1 );
     FPostProgram.SetUniformi( 'ublur', 2 );
+    if Setting_Glow
+      then FPostProgram.SetUniformi( 'toggle_glow', 1 )
+      else FPostProgram.SetUniformi( 'toggle_glow', 0 );
     FPostProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX, IO.Driver.GetSizeY );
   FPostProgram.UnBind;
 
@@ -351,29 +356,32 @@ begin
     end;
   end;
 
-//  if FLutTexture <> 0 then
+  if ( FLutTexture <> 0 ) or ( Setting_Glow ) then
   begin
     FFramebuffer.BindAndClear;
     FSpriteEngine.Draw;
     FFramebuffer.UnBind;
 
-    FHBlurProgram.Bind;
-      glActiveTexture( GL_TEXTURE0 );
-      glBindTexture( GL_TEXTURE_2D, FFramebuffer.GetTextureID(1) );
-      FHBFramebuffer.BindAndClear;
-      FFullscreen.Render;
-      FHBFramebuffer.UnBind;
-    FHBlurProgram.UnBind;
+    if Setting_Glow then
+    begin
+      FHBlurProgram.Bind;
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, FFramebuffer.GetTextureID(1) );
+        FHBFramebuffer.BindAndClear;
+        FFullscreen.Render;
+        FHBFramebuffer.UnBind;
+      FHBlurProgram.UnBind;
 
-    FVBlurProgram.Bind;
-      glActiveTexture( GL_TEXTURE0 );
-      glBindTexture( GL_TEXTURE_2D, FHBFramebuffer.GetTextureID(0) );
-      FVBFramebuffer.BindAndClear;
-      FFullscreen.Render;
-      FVBFramebuffer.UnBind;
-    FVBlurProgram.UnBind;
+      FVBlurProgram.Bind;
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, FHBFramebuffer.GetTextureID(0) );
+        FVBFramebuffer.BindAndClear;
+        FFullscreen.Render;
+        FVBFramebuffer.UnBind;
+      FVBlurProgram.UnBind;
 
-    glViewport( 0, 0, iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
+      glViewport( 0, 0, iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
+    end;
 
     FPostProgram.Bind;
       glActiveTexture( GL_TEXTURE0 );

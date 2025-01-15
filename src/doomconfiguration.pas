@@ -78,6 +78,10 @@ begin
     .SetName('Screen flashing')
     .SetDescription('Setting to {!Disabled} will disable screen flash FX.')
     ;
+  iGroup.AddToggle( 'glow_fx', True )
+    .SetName('Emissive glow')
+    .SetDescription('Setting to {!Disabled} will disable glow FX and improve performance.')
+    ;
 
   iGroup := AddGroup( 'audio' );
   iGroup.AddInteger( 'sound_volume', 25 )
