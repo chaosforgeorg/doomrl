@@ -695,6 +695,13 @@ begin
     iSprite.Color := ScaleColor( iSprite.Color, Byte(iLight) );
   iZ := aCoord.Y * DRL_Z_LINE;
   PushSprite( Vec2i( (aCoord.X-1)*FSpriteEngine.Grid.X, (aCoord.Y-1)*FSpriteEngine.Grid.Y ), iSprite, iLight, iZ + DRL_Z_DOODAD );
+  if ( SF_HIGHSPRITE in aSprite.Flags ) and ( aCoord.y > 0 ) then
+  begin
+    iSprite := aSprite;
+    iSprite.SpriteID[0] := iSprite.SpriteID[0] - DRL_COLS;
+    Exclude( iSprite.Flags, SF_HIGHSPRITE );
+    PushSpriteDoodad( NewCoord2D( aCoord.x, aCoord.y-1 ), iSprite, aLight );
+  end;
 end;
 
 procedure TDoomSpriteMap.PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite ) ;
