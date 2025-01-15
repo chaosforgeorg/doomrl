@@ -138,7 +138,7 @@ end;
 
 implementation
 
-uses viotypes, vuid, vlog,
+uses viotypes, vuid, vlog, vdebug,
      dfbeing,
      doombase, doomgfxio, doomio, doomspritemap;
 
@@ -219,8 +219,8 @@ end;
 procedure TDoomMark.OnDraw;
 var iMarkSprite : TSprite;
 begin
-  iMarkSprite.Flags    := [];
-  iMarkSprite.SpriteID := HARDSPRITE_HIT;
+  iMarkSprite.Flags       := [];
+  iMarkSprite.SpriteID[0] := HARDSPRITE_HIT;
   SpriteMap.PushSpriteFX( FCoord, iMarkSprite )
 end;
 
@@ -248,8 +248,8 @@ end;
 procedure TDoomExplodeMark.OnDraw;
 var iMarkSprite : TSprite;
 begin
-  iMarkSprite.Flags    := [ SF_OVERLAY ];
-  iMarkSprite.SpriteID := HARDSPRITE_EXPL;
+  iMarkSprite.Flags       := [ SF_OVERLAY ];
+  iMarkSprite.SpriteID[0] := HARDSPRITE_EXPL;
 
   case (( FTime * 3 ) div FDuration) of
     0 : iMarkSprite.Color    := FGColor1;
@@ -381,7 +381,7 @@ begin
   inherited Create( aDuration, aDelay, 0 );
   FCoord := aCoord;
   FSprite := aSprite;
-  FValue  := aValue - Sgn( FValue );
+  FValue  := aValue;
 end;
 
 procedure TDoomAnimateCell.OnStart;
@@ -397,7 +397,14 @@ begin
   iSegment := ( FTime * FValue ) div FDuration;
   if ( iSegment <> FValue ) then
     iSegment += Sgn( FValue );
-  iSprite.SpriteID += ( FValue - iSegment ) * DRL_COLS;
+  Log( '%d (%d)', [ Abs( iSegment ), FValue ] );
+  if iSprite.SCount > 1 then
+  begin
+    iSegment := Abs( iSegment );
+    iSprite.SpriteID[0] := iSprite.SpriteID[ iSegment ];
+  end
+  else
+    iSprite.SpriteID[0] += ( FValue - iSegment ) * DRL_COLS;
   SpriteMap.PushSpriteDoodad( FCoord, iSprite );
 end;
 

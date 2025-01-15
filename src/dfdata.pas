@@ -208,10 +208,11 @@ type TCellSet = set of Byte;
      TSprite = record
        Color     : TColor;
        GlowColor : TColor;
-       SpriteID  : DWord;
-       Flags     : TFlags;
+       SpriteID  : array[0..7] of DWord;
+       SCount    : Word;
        Frames    : Word;
        Frametime : Word;
+       Flags     : TFlags;
      end;
 
 function NewSprite( ID : DWord ) : TSprite;
@@ -664,19 +665,19 @@ end;
 
 function NewSprite ( ID : DWord ) : TSprite;
 begin
-  NewSprite.Flags     := [];
-  NewSprite.SpriteID  := ID;
-  NewSprite.Frames    := 0;
-  NewSprite.Frametime := 0;
+  NewSprite.Flags       := [];
+  NewSprite.SpriteID[0] := ID;
+  NewSprite.Frames      := 0;
+  NewSprite.Frametime   := 0;
 end;
 
 function NewSprite ( ID : DWord; Color : TColor ) : TSprite;
 begin
-  NewSprite.Flags     := [ SF_COSPLAY ];
-  NewSprite.Color     := Color;
-  NewSprite.SpriteID  := ID;
-  NewSprite.Frames    := 0;
-  NewSprite.Frametime := 0;
+  NewSprite.Flags       := [ SF_COSPLAY ];
+  NewSprite.Color       := Color;
+  NewSprite.SpriteID[0] := ID;
+  NewSprite.Frames      := 0;
+  NewSprite.Frametime   := 0;
 end;
 
 function Roll(stat : Integer) : Integer;
@@ -732,12 +733,28 @@ end;
 
 function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
 var iTable : TLuaTable;
+    iPair  : TLuaIndexValue;
+    i      : Word;
 begin
   ReadSprite := False;
   if aTable.IsNumber( 'sprite' ) then
   begin
-    aSprite.SpriteID  := aTable.getInteger('sprite',0);
-    ReadSprite        := True;
+    aSprite.SCount      := 1;
+    aSprite.SpriteID[0] := aTable.getInteger('sprite',0);
+    ReadSprite          := True;
+  end;
+  if aTable.IsTable( 'sprites' ) then
+  begin
+    aSprite.SCount  := aTable.GetTableSize( 'sprites' );
+    Assert( aSprite.SCount > 0, '!' );
+    try
+      iTable := aTable.GetTable( 'sprites' );
+      for iPair in iTable.IPairs do
+        aSprite.SpriteID[iPair.Index-1] := iPair.Value.ToInteger;
+    finally
+      iTable.Free;
+    end;
+    ReadSprite          := True;
   end;
   if aTable.IsTable( 'sflags' ) then
     aSprite.Flags     := aTable.getFlags('sflags');

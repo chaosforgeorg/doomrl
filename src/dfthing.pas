@@ -29,9 +29,9 @@ protected
   FSoundID : string[16];
   {$TYPEINFO ON}
 public
-  property Sprite     : TSprite  read FSprite          write FSprite;
+  property Sprite     : TSprite  read FSprite             write FSprite;
 published
-  property SpriteID   : DWord    read FSprite.SpriteID write FSprite.SpriteID;
+  property SpriteID   : DWord    read FSprite.SpriteID[0] write FSprite.SpriteID[0];
 end;
 
 implementation

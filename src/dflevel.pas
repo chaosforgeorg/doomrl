@@ -1273,7 +1273,7 @@ var iCell  : TCell;
 begin
   iCell   := Cells[ getCellTop( Index ) ];
   iStyle  := getStyle( Index );
-  if iCell.Sprite[ iStyle ].SpriteID <> 0 then;
+  if iCell.Sprite[ iStyle ].SpriteID[0] <> 0 then;
     Exit( iCell.Sprite[ iStyle ] );
   Exit( iCell.Sprite[ iStyle ] );
 end;
@@ -1284,7 +1284,7 @@ var iCell  : TCell;
 begin
   iCell   := Cells[ getCellBottom( Index ) ];
   iStyle  := getStyle( Index );
-  if iCell.Sprite[ iStyle ].SpriteID <> 0 then;
+  if iCell.Sprite[ iStyle ].SpriteID[0] <> 0 then;
     Exit( iCell.Sprite[ iStyle ] );
   Exit( iCell.Sprite[ iStyle ] );
 end;

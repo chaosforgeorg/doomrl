@@ -797,21 +797,21 @@ begin
   end
   else
     FSprite.Color    := GRAY;
-  FSprite.SpriteID := HARDSPRITE_PLAYER;
+  FSprite.SpriteID[0] := HARDSPRITE_PLAYER;
   if Inv.Slot[ efWeapon ] <> nil then
   begin
-    FSprite.SpriteID := LuaSystem.Get( ['items', Inv.Slot[ efWeapon ].ID, 'psprite'], 0 );
-    if FSprite.SpriteID <> 0 then
+    FSprite.SpriteID[0] := LuaSystem.Get( ['items', Inv.Slot[ efWeapon ].ID, 'psprite'], 0 );
+    if FSprite.SpriteID[0] <> 0 then
     begin
-      FSprite.SpriteID += iSpMod;
+      FSprite.SpriteID[0] += iSpMod;
       Exit;
     end;
     // HACK via the spritesheet
-    Spr := Inv.Slot[ efWeapon ].Sprite.SpriteID - SpriteCellRow;
+    Spr := Inv.Slot[ efWeapon ].Sprite.SpriteID[0] - SpriteCellRow;
     if (Spr <= 12) and (Spr >= 1) then
-      FSprite.SpriteID := Spr
+      FSprite.SpriteID[0] := Spr
     else
-      if Inv.Slot[ efWeapon ].isMelee then FSprite.SpriteID := 2 else FSprite.SpriteID := 11;
+      if Inv.Slot[ efWeapon ].isMelee then FSprite.SpriteID[0] := 2 else FSprite.SpriteID[0] := 11;
   end;
 end;
 

@@ -144,7 +144,7 @@ begin
         begin
           iSprite := iBase;
           if IsNumber( i ) then
-            iSprite.SpriteID := GetValue( i )
+            iSprite.SpriteID[0] := GetValue( i )
           else
           begin
             iSubTable := iTable.GetTable( ['sprite',i] );
@@ -159,7 +159,7 @@ begin
     end
     else
       iCell.Sprite[0] := iBase;
-    iCell.BloodSprite.SpriteID := getInteger('blsprite',0);
+    iCell.BloodSprite.SpriteID[0] := getInteger('blsprite',0);
     if iTable.IsTable( 'deco' ) then
     begin
       iSize := iTable.GetTableSize( 'deco' );
@@ -172,7 +172,7 @@ begin
         begin
           iSprite := iCell.Deco[ i ];
           if IsNumber( i ) then
-            iSprite.SpriteID := GetValue( i )
+            iSprite.SpriteID[0] := GetValue( i )
           else
           begin
             iSubTable := iTable.GetTable( ['deco',i] );
