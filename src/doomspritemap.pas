@@ -185,7 +185,7 @@ VPostFragmentShader : Ansistring =
 #10+
 'void main() {'+#10+
 'vec2 uv    = gl_FragCoord.xy / screen_size;'+#10+
-'vec3 color = clamp( texture( utexture, uv ).xyz + texture( ublur, uv ).xyz * 2.0, 0.0, 1.0 );'+#10+
+'vec3 color = clamp( texture( utexture, uv ).xyz + texture( ublur, uv ).xyz * 1.6, 0.0, 1.0 );'+#10+
 'frag_color = texture( ulut, color.xzy );'+#10+
 //'frag_color = texture(utexture, uv);'+#10+
 '}'+#10;
@@ -227,6 +227,7 @@ VVerticBlurFragmentShader : Ansistring =
 { TDoomSpriteMap }
 
 constructor TDoomSpriteMap.Create;
+var iIO : TDoomGFXIO;
 begin
   FTargeting := False;
   FTargetList := TCoord2DArray.Create();
@@ -238,9 +239,10 @@ begin
   FLastCoord.Create(0,0);
   FAutoTarget.Create(0,0);
 
-  FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY, 2 );
-  FHBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
-  FVBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+  iIO := (IO as TDoomGFXIO);
+  FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY, 2, False );
+  FHBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult, 1, False );
+  FVBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult, 1, False );
   FPostProgram  := TGLProgram.Create(VCleanVertexShader, VPostFragmentShader);
   FHBlurProgram := TGLProgram.Create(VCleanVertexShader, VHorizBlurFragmentShader);
   FVBlurProgram := TGLProgram.Create(VCleanVertexShader, VVerticBlurFragmentShader);
@@ -271,8 +273,8 @@ begin
     FMaxShift.Y := FMaxShift.Y + 18*iIO.FontMult*3;
   end;
   FFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
-  FHBFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
-  FVBFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
+  FHBFramebuffer.Resize( iIO.Driver.GetSizeX div iIO.TileMult, iIO.Driver.GetSizeY div iIO.TileMult );
+  FVBFramebuffer.Resize( iIO.Driver.GetSizeX div iIO.TileMult, iIO.Driver.GetSizeY div iIO.TileMult );
 
   FPostProgram.Bind;
     FPostProgram.SetUniformi( 'utexture', 0 );
@@ -283,14 +285,14 @@ begin
 
   FHBlurProgram.Bind;
     FHBlurProgram.SetUniformi( 'utexture', 0 );
-    FHBlurProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+    FHBlurProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
   FHBlurProgram.UnBind;
 
   FVBlurProgram.Bind;
     FVBlurProgram.SetUniformi( 'utexture', 0 );
-    FVBlurProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+    FVBlurProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
   FVBlurProgram.UnBind;
-
+  glViewport( 0, 0, iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
 end;
 
 procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
@@ -370,6 +372,8 @@ begin
       FFullscreen.Render;
       FVBFramebuffer.UnBind;
     FVBlurProgram.UnBind;
+
+    glViewport( 0, 0, iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
 
     FPostProgram.Bind;
       glActiveTexture( GL_TEXTURE0 );
