@@ -242,7 +242,7 @@ begin
   FAutoTarget.Create(0,0);
 
   iIO := (IO as TDoomGFXIO);
-  FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY, 2, False );
+  FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY, 2, False, True );
   FHBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult, 1, False );
   FVBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult, 1, False );
   FPostProgram  := TGLProgram.Create(VCleanVertexShader, VPostFragmentShader);
@@ -400,9 +400,9 @@ begin
       glActiveTexture( GL_TEXTURE2 );
       glBindTexture( GL_TEXTURE_3D, 0 );
     FPostProgram.UnBind;
-  end;
-//  else
-//    FSpriteEngine.Draw;
+  end
+  else
+    FSpriteEngine.Draw;
 end;
 
 function TDoomSpriteMap.DevicePointToCoord ( aPoint : TPoint ) : TCoord2D;
@@ -808,7 +808,12 @@ begin
     StatusRed    : FLutTexture := (IO as TDoomGFXIO).Textures['lut_berserk'].GLTexture;
     StatusGreen  : FLutTexture := (IO as TDoomGFXIO).Textures['lut_enviro'].GLTexture;
     StatusInvert : FLutTexture := (IO as TDoomGFXIO).Textures['lut_iddqd'].GLTexture;
-    else FLutTexture := (IO as TDoomGFXIO).Textures['lut_clear'].GLTexture;;
+    else
+    begin
+      if Setting_Glow
+        then FLutTexture := (IO as TDoomGFXIO).Textures['lut_clear'].GLTexture
+        else FLutTexture := 0;
+    end;
   end;
 end;
 
@@ -903,7 +908,7 @@ begin
           begin
             if SF_MULTI in iSpr.Flags then
               PushMultiSpriteTerrain( iCoord, iSpr, iZ, Doom.Level.Rotation[ iCoord ] )
-             else
+            else
               PushSpriteTerrain( iCoord, iSpr, iZ );
           end;
         if (SF_FLUID in iSpr.Flags) and (Doom.Level.Rotation[ iCoord ] <> 0) then
