@@ -339,19 +339,20 @@ end;
 
 
 function lua_core_register_sprite_sheet(L: Plua_State): Integer; cdecl;
-var State    : TDoomLuaState;
-    iNormal  : TTexture;
-    iCosplay : TTexture;
-    iGlow    : TTexture;
+var State     : TDoomLuaState;
+    iNormal   : TTexture;
+    iCosplay  : TTexture;
+    iGlow     : TTexture;
+    iEmissive : TTexture;
 
-  function LoadTexture( iIndex : Integer ) : TTexture;
+  function LoadTexture( aIndex : Integer ) : TTexture;
   begin
-    if not State.IsString( iIndex ) then Exit( nil );
-    LoadTexture := (IO as TDoomGFXIO).Textures.Textures[ State.ToString( iIndex ) ];
-    if LoadTexture = nil then State.Error( 'register_sprite_sheet - texture not found : "'+State.ToString( iIndex )+'"!');
+    if not State.IsString( aIndex ) then Exit( nil );
+    LoadTexture := (IO as TDoomGFXIO).Textures.Textures[ State.ToString( aIndex ) ];
+    if LoadTexture = nil then State.Error( 'register_sprite_sheet - texture not found : "'+State.ToString( aIndex )+'"!');
     if LoadTexture.GLTexture = 0 then
       LoadTexture.Upload;
-    if LoadTexture.Size.X * LoadTexture.Size.Y = 0 then State.Error( 'register_sprite_sheet - texture malformed : "'+State.ToString( iIndex )+'"!');
+    if LoadTexture.Size.X * LoadTexture.Size.Y = 0 then State.Error( 'register_sprite_sheet - texture malformed : "'+State.ToString( aIndex )+'"!');
   end;
 
 begin
@@ -362,11 +363,13 @@ begin
     State.Push( Integer( SpriteSheetCounter * 100000 ) );
     Exit( 1 );
   end;
-  iNormal  := LoadTexture( 1 );
-  iCosplay := LoadTexture( 2 );
-  iGlow    := LoadTexture( 3 );
+  iNormal   := LoadTexture( 1 );
+  iCosplay  := LoadTexture( 2 );
+  iGlow     := LoadTexture( 3 );
+  iEmissive := LoadTexture( 4 );
   if iNormal = nil then State.Error( 'Bad parameters passes to register_sprite_sheet!');
-  State.Push( Integer( SpriteMap.Engine.Add( iNormal, iCosplay, iGlow, State.ToInteger(4) ) * 100000 ) );
+  State.Push( Integer( SpriteMap.Engine.Add( iNormal, iCosplay, iEmissive, State.ToInteger(5) ) * 100000 ) );
+  if iGlow <> nil then SpriteMap.Engine.Add( iGlow, nil, nil, State.ToInteger(5) );
   Result := 1;
 end;
 
@@ -380,13 +383,9 @@ end;
 
 procedure TDoomLua.ReadWad;
 var iProgBase    : DWord;
-    iAudioLoaded : Boolean;
-    iStream      : TStream;
     iModule      : TDoomModule;
     iData        : TVDataFile;
-    iAudioData   : TVDataFileArray;
 begin
-  iAudioLoaded := False;
   IO.LoadStart;
   iProgBase := IO.LoadCurrent;
   IO.LoadProgress(iProgBase);

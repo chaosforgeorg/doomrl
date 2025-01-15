@@ -288,6 +288,7 @@ begin
   Setting_AlwaysRandomName := Configuration.GetBoolean( 'always_random_name' );
   Setting_NoIntro          := Configuration.GetBoolean( 'skip_intro' );
   Setting_Flash            := Configuration.GetBoolean( 'flashing_fx' );
+  Setting_Glow             := Configuration.GetBoolean( 'glow_fx' );
   Setting_ScreenShake      := Configuration.GetBoolean( 'screen_shake' );
   Setting_RunOverItems     := Configuration.GetBoolean( 'run_over_items' );
   Setting_HideHints        := Configuration.GetBoolean( 'hide_hints' );
@@ -295,6 +296,9 @@ begin
   Setting_Mouse            := Configuration.GetBoolean( 'enable_mouse' );
   Setting_UnlockAll        := Configuration.GetBoolean( 'unlock_all' );
   Setting_MenuSound        := Configuration.GetBoolean( 'menu_sound' );
+  // HACK - remove when DoomRL gets glow
+  if ModuleID = 'drl' then
+    Setting_Glow := False;
 end;
 
 procedure TDoom.CreateIO;

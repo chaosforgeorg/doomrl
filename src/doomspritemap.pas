@@ -79,7 +79,11 @@ private
   FSpriteEngine   : TSpriteEngine;
   FLightMap       : array[0..MAXX] of array[0..MAXY] of Byte;
   FFramebuffer    : TGLFramebuffer;
+  FHBFramebuffer  : TGLFramebuffer;
+  FVBFramebuffer  : TGLFramebuffer;
   FPostProgram    : TGLProgram;
+  FHBlurProgram   : TGLProgram;
+  FVBlurProgram   : TGLProgram;
   FFullscreen     : TGLFullscreenTriangle;
   FLutTexture     : Cardinal;
 private
@@ -175,18 +179,57 @@ VPostFragmentShader : Ansistring =
 '#version 330 core'+#10+
 'uniform sampler2D utexture;'+#10+
 'uniform sampler3D ulut;'+#10+
+'uniform sampler2D ublur;'+#10+
 'uniform vec2 screen_size;'+#10+
+'uniform int toggle_glow;'+#10+
 'out vec4 frag_color;'+#10+
 #10+
 'void main() {'+#10+
 'vec2 uv    = gl_FragCoord.xy / screen_size;'+#10+
-'frag_color = texture( ulut, texture(utexture, uv).xyz );'+#10+
+'vec3 color = texture( utexture, uv ).xyz;'+#10+
+'if ( toggle_glow > 0 ) color += texture( ublur, uv ).xyz * 1.6;'+#10+
+'frag_color = texture( ulut, clamp( color.xzy, 0.0, 1.0 ) );'+#10+
 //'frag_color = texture(utexture, uv);'+#10+
+'}'+#10;
+
+VHorizBlurFragmentShader : Ansistring =
+'#version 330 core'+#10+
+'uniform sampler2D utexture;'+#10+
+'uniform vec2 screen_size;'+#10+
+'out vec4 frag_color;'+#10+
+#10+
+'void main() {'+#10+
+'    vec2 uv = gl_FragCoord.xy / screen_size;'+#10+
+'    vec4 result = vec4(0.0);'+#10+
+'    float weights[5] = float[](0.227027, 0.316216, 0.070270, 0.050987, 0.016216);'+#10+
+'    for (int i = -2; i <= 2; ++i) {'+#10+
+'        vec2 offset = vec2(i, 0.0) / screen_size;'+#10+
+'        result += texture(utexture, uv + offset) * weights[abs(i)];'+#10+
+'    }'+#10+
+'    frag_color = result;'+#10+
+'}'+#10;
+
+VVerticBlurFragmentShader : Ansistring =
+'#version 330 core'+#10+
+'uniform sampler2D utexture;'+#10+
+'uniform vec2 screen_size;'+#10+
+'out vec4 frag_color;'+#10+
+#10+
+'void main() {'+#10+
+'    vec2 uv = gl_FragCoord.xy / screen_size;'+#10+
+'    vec4 result = vec4(0.0);'+#10+
+'    float weights[5] = float[](0.227027, 0.316216, 0.070270, 0.050987, 0.016216);'+#10+
+'    for (int i = -2; i <= 2; ++i) {'+#10+
+'        vec2 offset = vec2(0.0, i) / screen_size;'+#10+
+'        result += texture(utexture, uv + offset) * weights[abs(i)];'+#10+
+'    }'+#10+
+'    frag_color = result;'+#10+
 '}'+#10;
 
 { TDoomSpriteMap }
 
 constructor TDoomSpriteMap.Create;
+var iIO : TDoomGFXIO;
 begin
   FTargeting := False;
   FTargetList := TCoord2DArray.Create();
@@ -198,8 +241,13 @@ begin
   FLastCoord.Create(0,0);
   FAutoTarget.Create(0,0);
 
-  FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+  iIO := (IO as TDoomGFXIO);
+  FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY, 2, False );
+  FHBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult, 1, False );
+  FVBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult, 1, False );
   FPostProgram  := TGLProgram.Create(VCleanVertexShader, VPostFragmentShader);
+  FHBlurProgram := TGLProgram.Create(VCleanVertexShader, VHorizBlurFragmentShader);
+  FVBlurProgram := TGLProgram.Create(VCleanVertexShader, VVerticBlurFragmentShader);
   FFullscreen   := TGLFullscreenTriangle.Create;
 
   Recalculate;
@@ -227,12 +275,29 @@ begin
     FMaxShift.Y := FMaxShift.Y + 18*iIO.FontMult*3;
   end;
   FFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
+  FHBFramebuffer.Resize( iIO.Driver.GetSizeX div iIO.TileMult, iIO.Driver.GetSizeY div iIO.TileMult );
+  FVBFramebuffer.Resize( iIO.Driver.GetSizeX div iIO.TileMult, iIO.Driver.GetSizeY div iIO.TileMult );
 
   FPostProgram.Bind;
     FPostProgram.SetUniformi( 'utexture', 0 );
     FPostProgram.SetUniformi( 'ulut', 1 );
+    FPostProgram.SetUniformi( 'ublur', 2 );
+    if Setting_Glow
+      then FPostProgram.SetUniformi( 'toggle_glow', 1 )
+      else FPostProgram.SetUniformi( 'toggle_glow', 0 );
     FPostProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX, IO.Driver.GetSizeY );
   FPostProgram.UnBind;
+
+  FHBlurProgram.Bind;
+    FHBlurProgram.SetUniformi( 'utexture', 0 );
+    FHBlurProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
+  FHBlurProgram.UnBind;
+
+  FVBlurProgram.Bind;
+    FVBlurProgram.SetUniformi( 'utexture', 0 );
+    FVBlurProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
+  FVBlurProgram.UnBind;
+  glViewport( 0, 0, iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
 end;
 
 procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
@@ -291,17 +356,40 @@ begin
     end;
   end;
 
-  if FLutTexture <> 0 then
+  if ( FLutTexture <> 0 ) or ( Setting_Glow ) then
   begin
     FFramebuffer.BindAndClear;
     FSpriteEngine.Draw;
     FFramebuffer.UnBind;
 
+    if Setting_Glow then
+    begin
+      FHBlurProgram.Bind;
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, FFramebuffer.GetTextureID(1) );
+        FHBFramebuffer.BindAndClear;
+        FFullscreen.Render;
+        FHBFramebuffer.UnBind;
+      FHBlurProgram.UnBind;
+
+      FVBlurProgram.Bind;
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, FHBFramebuffer.GetTextureID(0) );
+        FVBFramebuffer.BindAndClear;
+        FFullscreen.Render;
+        FVBFramebuffer.UnBind;
+      FVBlurProgram.UnBind;
+
+      glViewport( 0, 0, iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
+    end;
+
     FPostProgram.Bind;
       glActiveTexture( GL_TEXTURE0 );
-      glBindTexture( GL_TEXTURE_2D, FFramebuffer.GetTextureID );
+      glBindTexture( GL_TEXTURE_2D, FFramebuffer.GetTextureID(0) );
       glActiveTexture( GL_TEXTURE1 );
       glBindTexture( GL_TEXTURE_3D, FLutTexture );
+      glActiveTexture( GL_TEXTURE2 );
+      glBindTexture( GL_TEXTURE_2D, FVBFramebuffer.GetTextureID(0) );
 
       FFullscreen.Render;
 
@@ -309,10 +397,12 @@ begin
       glBindTexture( GL_TEXTURE_2D, 0 );
       glActiveTexture( GL_TEXTURE1 );
       glBindTexture( GL_TEXTURE_3D, 0 );
+      glActiveTexture( GL_TEXTURE2 );
+      glBindTexture( GL_TEXTURE_3D, 0 );
     FPostProgram.UnBind;
-  end
-  else
-    FSpriteEngine.Draw;
+  end;
+//  else
+//    FSpriteEngine.Draw;
 end;
 
 function TDoomSpriteMap.DevicePointToCoord ( aPoint : TPoint ) : TCoord2D;
@@ -346,29 +436,25 @@ begin
   iCoord.Data[ 2 ] := Rotated( +iSizeH, +iSizeH );
   iCoord.Data[ 3 ] := Rotated( +iSizeH, -iSizeH );
 
-  iTP := TVec2f.CreateModDiv( (iSpriteID-1), iLayer.Normal.RowSize );
+  iTP := TVec2f.CreateModDiv( (iSpriteID-1), iLayer.RowSize );
 
   iTex.init(
-    iTP * iLayer.Normal.TexUnit,
-    iTP.Shifted(1) * iLayer.Normal.TexUnit
+    iTP * iLayer.TexUnit,
+    iTP.Shifted(1) * iLayer.TexUnit
   );
 
   with iLayer do
   begin
     iColor.FillAll( 255 );
     if SF_OVERLAY in aSprite.Flags then iColor.SetAll( ColorToGL( aSprite.Color ) );
-    Normal.Push( @iCoord, @iTex, @iColor, DRL_Z_FX );
-    if SF_COSPLAY in aSprite.Flags then
-    begin
-      iColor.SetAll( ColorToGL( aSprite.Color ) );
-      Cosplay.Push( @iCoord, @iTex, @iColor, DRL_Z_FX );
-    end;
+    Push( @iCoord, @iTex, @iColor, aSprite.Color, DRL_Z_FX );
+  end;
 
-    if SF_GLOW in aSprite.Flags then
-    begin
-      iColor.SetAll( ColorToGL( aSprite.GlowColor ) );
-      Glow.Push( @iCoord, @iTex, @iColor, DRL_Z_FX );
-    end;
+  if SF_GLOW in aSprite.Flags then
+  with FSpriteEngine.Layers[ ( aSprite.SpriteID div 100000 ) + 1 ] do
+  begin
+    iColor.SetAll( ColorToGL( aSprite.GlowColor ) );
+    Push( @iCoord, @iTex, @iColor, ColorZero, DRL_Z_FX );
   end;
 end;
 
@@ -376,6 +462,7 @@ procedure TDoomSpriteMap.PushSprite( aPos : TVec2i; const aSprite : TSprite; aLi
 var iSize     : Byte;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
+    iCosColor : TColor;
 begin
   iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID div 100000 ];
   iSpriteID := aSprite.SpriteID mod 100000;
@@ -390,14 +477,18 @@ begin
   with iLayer do
   begin
 // TODO: facing
+    iCosColor := ColorZero;
+    if SF_COSPLAY in aSprite.Flags then
+      iCosColor := aSprite.Color;
+
     if SF_OVERLAY in aSprite.Flags
-      then Normal.PushXY( iSpriteID, iSize, aPos, aSprite.Color, aZ )
-      else Normal.PushXY( iSpriteID, iSize, aPos, NewColor( aLight, aLight, aLight ), aZ );
-    if ( SF_COSPLAY in aSprite.Flags ) and (Cosplay <> nil) then
-      Cosplay.PushXY( iSpriteID, iSize, aPos, aSprite.Color, aZ );
-    if ( SF_GLOW in aSprite.Flags ) and (Glow <> nil) then
-      Glow.PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, aZ );
+      then PushXY( iSpriteID, iSize, aPos, aSprite.Color, iCosColor, aZ )
+      else PushXY( iSpriteID, iSize, aPos, NewColor( aLight, aLight, aLight ), iCosColor, aZ );
   end;
+  if ( SF_GLOW in aSprite.Flags ) then
+  with FSpriteEngine.Layers[ ( aSprite.SpriteID div 100000 ) + 1 ] do
+    PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, ColorZero, aZ );
+
 end;
 
 procedure TDoomSpriteMap.PushMultiSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
@@ -514,8 +605,7 @@ begin
 end;
 
 procedure TDoomSpriteMap.PushSpriteTerrainPart( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
-var i         : Byte;
-    iColors   : TGLRawQColor;
+var iColors   : TGLRawQColor;
     iGridF    : TVec2f;
     iPosition : TVec2i;
     iPa, iPb  : TVec2i;
@@ -526,9 +616,9 @@ var i         : Byte;
     iEnd      : TVec2f;
     iPStart   : TVec2f;
     iPEnd     : TVec2f;
-  procedure Push( aData : TSpriteDataVTC );
+  procedure Push( aLayer : TSpriteDataSet; aCosColor : TColor );
   begin
-    aData.PushPart( iSpriteID, iPa, iPb, @iColors, aZ, iStart, iEnd );
+    aLayer.PushPart( iSpriteID, iPa, iPb, @iColors, aCosColor, aZ, iStart, iEnd );
   end;
 
   function BilinearLight( aPos : TVec2f ) : Byte;
@@ -573,22 +663,9 @@ begin
   iPEnd     := iGridF * iEnd;
   iPa       := iPosition + TVec2i.Create( Round( iPStart.X ), Round( iPStart.Y ) );
   iPb       := iPosition + TVec2i.Create( Round( iPEnd.X ), Round( iPEnd.Y ) );
-  with iLayer do
-  begin
-    Push( Normal );
-
-    if ( SF_COSPLAY in aSprite.Flags ) and (Cosplay <> nil) then
-    begin
-      for i := 0 to 3 do
-      begin
-        // TODO : This should be one line!
-        iColors.Data[ i ].X := Clamp( Floor( ( aSprite.Color.R / 255 ) * iColors.Data[ i ].X  ), 0, 255 );
-        iColors.Data[ i ].Y := Clamp( Floor( ( aSprite.Color.G / 255 ) * iColors.Data[ i ].Y  ), 0, 255 );
-        iColors.Data[ i ].Z := Clamp( Floor( ( aSprite.Color.B / 255 ) * iColors.Data[ i ].Z  ), 0, 255 );
-      end;
-      Push( Cosplay );
-    end;
-  end;
+  if ( SF_COSPLAY in aSprite.Flags )
+    then Push( iLayer, aSprite.Color )
+    else Push( iLayer, ColorZero );
 end;
 
 
@@ -646,19 +723,9 @@ begin
   ip := Vec2i( aCoord.X-1, aCoord.Y-1 ) * FSpriteEngine.Grid;
   with iLayer do
   begin
-    Normal.PushXY( iSpriteID, 1, ip, @iColors, aTSX, aTSY, aZ );
-
-    if ( SF_COSPLAY in aSprite.Flags ) and (Cosplay <> nil) then
-    begin
-      for i := 0 to 3 do
-      begin
-        // TODO : This should be one line!
-        iColors.Data[ i ].X := Clamp( Floor( ( aSprite.Color.R / 255 ) * iColors.Data[ i ].X  ), 0, 255 );
-        iColors.Data[ i ].Y := Clamp( Floor( ( aSprite.Color.G / 255 ) * iColors.Data[ i ].Y  ), 0, 255 );
-        iColors.Data[ i ].Z := Clamp( Floor( ( aSprite.Color.B / 255 ) * iColors.Data[ i ].Z  ), 0, 255 );
-      end;
-      Cosplay.PushXY( iSpriteID, 1, ip, @iColors, aTSX, aTSY, aZ );
-    end;
+    if ( SF_COSPLAY in aSprite.Flags )
+      then PushXY( iSpriteID, 1, ip, @iColors, aSprite.Color, aTSX, aTSY, aZ )
+      else PushXY( iSpriteID, 1, ip, @iColors, ColorZero, aTSX, aTSY, aZ );
   end;
 end;
 
@@ -726,7 +793,11 @@ begin
   FreeAndNil( FSpriteEngine );
   FreeAndNil( FTargetList );
   FreeAndNil( FFramebuffer );
+  FreeAndNil( FHBFramebuffer );
+  FreeAndNil( FVBFramebuffer );
   FreeAndNil( FPostProgram );
+  FreeAndNil( FHBlurProgram );
+  FreeAndNil( FVBlurProgram );
   FreeAndNil( FFullscreen );
   inherited Destroy;
 end;
@@ -737,7 +808,7 @@ begin
     StatusRed    : FLutTexture := (IO as TDoomGFXIO).Textures['lut_berserk'].GLTexture;
     StatusGreen  : FLutTexture := (IO as TDoomGFXIO).Textures['lut_enviro'].GLTexture;
     StatusInvert : FLutTexture := (IO as TDoomGFXIO).Textures['lut_iddqd'].GLTexture;
-    else FLutTexture := 0;
+    else FLutTexture := (IO as TDoomGFXIO).Textures['lut_clear'].GLTexture;;
   end;
 end;
 
@@ -926,26 +997,24 @@ begin
            (not Doom.Level.isEmpty( FTargetList[iL], [ EF_NOBLOCK, EF_NOVISION ] )) then
           iColor := NewColor( 128, 0, 0 );
         with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-          Cosplay.Push( HARDSPRITE_SELECT mod 100000, FTargetList[iL], iColor, DRL_Z_FX );
+          Push( HARDSPRITE_SELECT mod 100000, FTargetList[iL], ColorWhite, iColor, DRL_Z_FX );
       end;
       if FTargetList.Size > 0 then
         with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
-          Cosplay.Push( HARDSPRITE_MARK mod 100000, FTarget, FTargetColor, DRL_Z_FX );
+          Push( HARDSPRITE_MARK mod 100000, FTarget, ColorWhite, FTargetColor, DRL_Z_FX );
     end
   else
     if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
     begin
       with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-        Cosplay.Push( HARDSPRITE_SELECT mod 100000, FAutoTarget, NewColor( Yellow ), DRL_Z_FX );
+        Push( HARDSPRITE_SELECT mod 100000, FAutoTarget, ColorWhite, NewColor( Yellow ), DRL_Z_FX );
     end;
 
   if FGridActive then
   for iY := 1 to MAXY do
     for iX := iDMinX to iDMaxX do
     with FSpriteEngine.Layers[ HARDSPRITE_GRID div 100000 ] do
-    begin
-      Normal.Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), DRL_Z_ITEMS );
-    end;
+      Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), ColorZero, DRL_Z_ITEMS );
 
 end;
 

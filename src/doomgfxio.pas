@@ -97,13 +97,11 @@ procedure TDoomGFXIO.RecalculateScaling( aInitialize : Boolean );
 var iWidth        : Integer;
     iHeight       : Integer;
     iOldFontMult  : Integer;
-    iOldTileMult  : Integer;
     iOldMiniScale : Integer;
 begin
   iWidth      := FIODriver.GetSizeX;
   iHeight     := FIODriver.GetSizeY;
   iOldFontMult  := FFontMult;
-  iOldTileMult  := FTileMult;
   iOldMiniScale := FMiniScale;
   FFontMult   := Configuration.GetInteger( 'font_multiplier' );
   FTileMult   := Configuration.GetInteger( 'tile_multiplier' );
@@ -138,12 +136,9 @@ begin
   if FMiniScale <> iOldMiniScale then
     SetMinimapScale( FMiniScale );
 
-  if FTileMult <> iOldTileMult then
-  begin
-    SpriteMap.Recalculate;
-    if Player <> nil then
-      SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
-  end;
+  SpriteMap.Recalculate;
+  if Player <> nil then
+    SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
 
   if FFontMult <> iOldFontMult then
   begin
