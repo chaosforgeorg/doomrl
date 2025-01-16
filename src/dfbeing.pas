@@ -137,6 +137,7 @@ TBeing = class(TThing,IPathQuery)
     function HandleShotgunFire( aTarget : TCoord2D; aShotGun : TItem; aShots : DWord ) : Boolean;
     function HandleSpreadShots( aTarget : TCoord2D; aGun : TItem ) : Boolean;
     function HandleShots( aTarget : TCoord2D; aGun : TItem; aShots : DWord; toHit, toDam : Integer; iChaining : Boolean ) : Boolean;
+    function VisualTime( aActionCost : Word = 1000; aBaseTime : Word = 100 ) : Word;
     protected
     FHP            : Integer;
     FHPNom         : Word;
@@ -478,6 +479,11 @@ begin
        end;
   end;
   Exit( True );
+end;
+
+function TBeing.VisualTime( aActionCost : Word = 1000; aBaseTime : Word = 100 ) : Word;
+begin
+  Result := Ceil( ( 100.0 / FSpeed ) * ( aActionCost / 1000.0 ) * Single( aBaseTime ) );
 end;
 
 function TBeing.IsPlayer : Boolean;
@@ -1106,7 +1112,7 @@ begin
   iMoveCost := getMoveCost;
   if GraphicsVersion then
   begin
-    iVisualTime := Ceil( ( 100.0 / FSpeed ) * ( iMoveCost / 1000.0 ) * 100.0 );
+    iVisualTime := VisualTime( iMoveCost, 100 );
     if isPlayer then
       IO.addScreenMoveAnimation( iVisualTime, aTarget );
     IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite );
@@ -1587,9 +1593,9 @@ begin
 end;
 
 procedure TBeing.Attack( aWhere : TCoord2D );
-var iSlot   : TEqSlot;
-    iWeapon : TItem;
-	
+var iSlot       : TEqSlot;
+    iWeapon     : TItem;
+    iAttackCost : DWord;
 begin
   FMeleeAttack := True;
   iSlot := efTorso;
@@ -1605,6 +1611,14 @@ begin
 	if iWeapon <> nil
       then iWeapon.PlaySound( 'fire', FPosition )
       else PlaySound( 'melee' );
+
+    // Attack cost
+    if iWeapon <> nil
+      then iAttackCost := iWeapon.UseTime * FTimes.Fire
+      else iAttackCost := 10*FTimes.Fire;
+
+    IO.addMeleeAnimation( VisualTime( iAttackCost, 100 ), 0, FUID, Position, aWhere, Sprite );
+
     TLevel(Parent).DamageTile( aWhere, rollMeleeDamage( iSlot ), Damage_Melee );
     if iWeapon <> nil then
       Dec( FSpeedCount, Inv.Slot[iSlot].UseTime * FTimes.Fire )
@@ -1659,10 +1673,12 @@ begin
     PlaySound( 'melee' );
 
   // Attack cost
-  if (iWeapon <> nil) then
-    iAttackCost := iWeapon.UseTime * FTimes.Fire
-  else
-    iAttackCost := 10*FTimes.Fire;
+  if iWeapon <> nil
+    then iAttackCost := iWeapon.UseTime * FTimes.Fire
+    else iAttackCost := 10*FTimes.Fire;
+
+  if not Second then
+    IO.addMeleeAnimation( VisualTime( iAttackCost, 100 ), 0, FUID, Position, aTarget.Position, Sprite );
 
   if iDualAttack then iAttackCost := iAttackCost div 2;
   Dec( FSpeedCount, iAttackCost );

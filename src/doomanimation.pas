@@ -80,7 +80,7 @@ end;
 { TDoomMove }
 
 TDoomMove = class(TAnimation)
-  constructor Create( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite );
+  constructor Create( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aPartial : Single = 0.0 );
   procedure OnStart; override;
   procedure OnDraw; override;
   destructor Destroy; override;
@@ -294,7 +294,7 @@ end;
 { TDoomMove }
 
 constructor TDoomMove.Create ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D;
-  aSprite : TSprite ) ;
+  aSprite : TSprite; aPartial : Single ) ;
 var iSize : Word;
 begin
   inherited Create( aDuration, aDelay, 0 );
@@ -312,6 +312,10 @@ begin
   iSize := SpriteMap.GetGridSize;
   FSource.Init( (aFrom.X - 1)*iSize,(aFrom.Y - 1)*iSize);
   FTarget.Init( (aTo.X   - 1)*iSize,(aTo.Y   - 1)*iSize);
+  if aPartial > 0.0 then
+    FTarget := Lerp( FSource, FTarget, aPartial );
+  if aPartial < 0.0 then
+    FSource := Lerp( FSource, FTarget, 1.0+aPartial );
   FPosition := FSource;
 end;
 

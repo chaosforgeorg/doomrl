@@ -2,6 +2,7 @@
 [new] -- GH#149: settings - you can now clear a keybinding using Backspace
 [new] -- GH#188: settings - you can now disable mouse rendering and interaction
 [mod] -- GH#192: G-version - auto-target reticle now follows enemy sprite
+[mod] -- GH#193: G-version - melee bump animation added
 [fix] -- GH#191: fixed overdraw on diagonal movement
 [fix] -- GH#197: fixed lut correction
 
