@@ -847,7 +847,7 @@ begin
   begin
     if (not aWeapon.isWeapon) then Exit( False );
     if aWeapon.isMelee then FMeleeAttack := True;
-    if aWeapon.AltFire = ALT_SCRIPT then
+    if aWeapon.AltFire in [ ALT_SCRIPT, ALT_TARGETSCRIPT ] then
       if not aWeapon.CallHookCheck( Hook_OnAltFire, [Self] ) 
         then Exit( False );
 
@@ -1621,9 +1621,9 @@ begin
 
     TLevel(Parent).DamageTile( aWhere, rollMeleeDamage( iSlot ), Damage_Melee );
     if iWeapon <> nil then
-      Dec( FSpeedCount, Inv.Slot[iSlot].UseTime * FTimes.Fire )
+      Dec( FSpeedCount, Integer( iWeapon.UseTime ) * Integer( FTimes.Fire ) )
     else
-      Dec( FSpeedCount, 10*FTimes.Fire )
+      Dec( FSpeedCount, 10*Integer( FTimes.Fire ) )
   end;
 end;
 

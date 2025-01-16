@@ -967,12 +967,15 @@ function drl.register_unique_items()
 			else
 				local scount = being.scount
 				local pos    = being.position
+				local use    = self.usetime
+				self.usetime = 4
 				ui.msg("Whirlwind!")
 				for c in area.around( pos, 1 )() do
 					if c ~= pos and area.FULL:contains( c ) then
 						being:attack( c )
 					end
 				end
+				self.usetime = use
 				being.tired = true
 				being.scount = scount - math.max( ( self.usetime * being.firetime * 8 - 5000 ), 8 * being.speed )
 			end

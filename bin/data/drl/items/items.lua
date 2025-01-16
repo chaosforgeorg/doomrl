@@ -654,7 +654,7 @@ function drl.register_regular_items()
 		fire          = 10,
 		radius        = 4,
 		reload        = 15,
-		altfire       = ALT_SCRIPT,
+		altfire       = ALT_TARGETSCRIPT,
 		altfirename   = "rocketjump",
 		missile       = "mrocket",
 		flags         = { IF_ROCKET },
