@@ -1599,6 +1599,7 @@ begin
     Attack( TLevel(Parent).Being[ aWhere ] )
   else
   begin
+    IO.addMeleeAnimation( 100, 0, FUID, Position, aWhere, Sprite );
     iSlot := meleeWeaponSlot;
     if iSlot in [ efWeapon, efWeapon2 ] then
 	  iWeapon := Inv.Slot[ iSlot ];
@@ -1636,6 +1637,9 @@ begin
   iDualAttack  := canDualBlade;
   iTargetUID   := aTarget.UID;
   iMissed      := False;
+
+  if not Second then
+    IO.addMeleeAnimation( 100, 0, FUID, Position, aTarget.Position, Sprite );
 
   // Choose weaponSlot
   iWeaponSlot := meleeWeaponSlot;
