@@ -418,16 +418,31 @@ function drl.register_exotic_items()
 		damage        = "0d0",
 		damagetype    = DAMAGE_PLASMA,
 		acc           = 4,
-		fire          = 15,
+		fire          = 10,
 		reload        = 20,
 		shotcost      = 5,
 		missile       = "mplasma",
+		altfire       = ALT_SCRIPT,
+		altfirename   = "self-target",
 
 		OnHitBeing = function(self,being,target)
 			target:play_sound("phasing")
 			being:msg("Suddenly "..target:get_name(true,false).." blinks away!")
 			level:explosion( target.position, 2, 50, 0, 0, LIGHTBLUE )
 			target:phase()
+			return false
+		end,
+
+		OnAltFire = function(self,being)
+			if self.ammo < 30 then 
+				being:msg("You have not enough ammo to self-target!")
+			else
+				self.ammo = self.ammo - 30
+				being:msg("You feel yanked in a non-descript direction!")
+				level:explosion( being.position, 2, 50, 0, 0, LIGHTBLUE )
+				being:phase();
+				being.scount = being.scount - 1000
+			end
 			return false
 		end,
 	}
