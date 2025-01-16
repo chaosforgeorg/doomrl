@@ -4,6 +4,7 @@
 [mod] -- GH#192: G-version - auto-target reticle now follows enemy sprite
 [mod] -- GH#193: G-version - melee bump animation added
 [mod] -- GH#017: you can invoke the combat translocator to self-phase for a higher cost
+[fix] -- GH#018: player info will show level name instead of "level X of Phobos Base"
 [fix] -- GH#191: fixed overdraw on diagonal movement
 [fix] -- GH#197: fixed lut correction
 

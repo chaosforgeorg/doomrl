@@ -769,7 +769,9 @@ begin
     if FKills.NoDamageSequence > iKillRecord then iKillRecord := FKills.NoDamageSequence;
 
     FCharacter.Push( Format( '{!%s}, level {!%d} {!%s},',[ Name, ExpLevel, AnsiString(LuaSystem.Get(['klasses',Klass,'name']))] ) );
-    FCharacter.Push( Format( 'currently on level {!%d} of the Phobos base. ', [CurrentLevel] ) );
+    if Doom.Level.Name_Number > 0
+      then FCharacter.Push( Format( 'currently on level {!%d} of {!%s}. ', [ Doom.Level.Name_Number, Doom.Level.Name ] ) )
+      else FCharacter.Push( Format( 'currently at {!%s}. ', [ Doom.Level.Name ] ) );
     FCharacter.Push( Format( 'He survived {!%d} turns, which took him {!%d} seconds. ', [ FStatistics.Map['game_time'], FStatistics.Map['real_time'] ] ) );
     FCharacter.Push( Format( 'He took {!%d} damage, {!%d} on this floor alone. ', [ FStatistics.Map['damage_taken'], FStatistics.Map['damage_on_level'] ] ) );
     FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemies ({!%d%%}). ', [ FStatistics.Map['unique_kills'], FStatistics.Map['max_unique_kills'], Percent( FStatistics.Map['unique_kills'], FStatistics.Map['max_unique_kills'] ) ] ) );
