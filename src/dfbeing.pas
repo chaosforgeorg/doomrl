@@ -1593,9 +1593,9 @@ begin
 end;
 
 procedure TBeing.Attack( aWhere : TCoord2D );
-var iSlot   : TEqSlot;
-    iWeapon : TItem;
-	
+var iSlot       : TEqSlot;
+    iWeapon     : TItem;
+    iAttackCost : DWord;
 begin
   FMeleeAttack := True;
   iSlot := efTorso;
@@ -1605,13 +1605,20 @@ begin
     Attack( TLevel(Parent).Being[ aWhere ] )
   else
   begin
-    IO.addMeleeAnimation( 100, 0, FUID, Position, aWhere, Sprite );
     iSlot := meleeWeaponSlot;
     if iSlot in [ efWeapon, efWeapon2 ] then
 	  iWeapon := Inv.Slot[ iSlot ];
 	if iWeapon <> nil
       then iWeapon.PlaySound( 'fire', FPosition )
       else PlaySound( 'melee' );
+
+    // Attack cost
+    if iWeapon <> nil
+      then iAttackCost := iWeapon.UseTime * FTimes.Fire
+      else iAttackCost := 10*FTimes.Fire;
+
+    IO.addMeleeAnimation( VisualTime( iAttackCost, 100 ), 0, FUID, Position, aWhere, Sprite );
+
     TLevel(Parent).DamageTile( aWhere, rollMeleeDamage( iSlot ), Damage_Melee );
     if iWeapon <> nil then
       Dec( FSpeedCount, Inv.Slot[iSlot].UseTime * FTimes.Fire )
@@ -1644,9 +1651,6 @@ begin
   iTargetUID   := aTarget.UID;
   iMissed      := False;
 
-  if not Second then
-    IO.addMeleeAnimation( 100, 0, FUID, Position, aTarget.Position, Sprite );
-
   // Choose weaponSlot
   iWeaponSlot := meleeWeaponSlot;
   if Second then iWeaponSlot := efWeapon2;
@@ -1669,10 +1673,12 @@ begin
     PlaySound( 'melee' );
 
   // Attack cost
-  if (iWeapon <> nil) then
-    iAttackCost := iWeapon.UseTime * FTimes.Fire
-  else
-    iAttackCost := 10*FTimes.Fire;
+  if iWeapon <> nil
+    then iAttackCost := iWeapon.UseTime * FTimes.Fire
+    else iAttackCost := 10*FTimes.Fire;
+
+  if not Second then
+    IO.addMeleeAnimation( VisualTime( iAttackCost, 100 ), 0, FUID, Position, aTarget.Position, Sprite );
 
   if iDualAttack then iAttackCost := iAttackCost div 2;
   Dec( FSpeedCount, iAttackCost );
