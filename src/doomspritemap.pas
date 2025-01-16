@@ -953,6 +953,7 @@ var iDMinX  : Word;
     iDMaxX  : Word;
     iY,iX   : DWord;
     iTop,iL : DWord;
+    iV      : TVec2i;
     iZ      : Integer;
     iCoord  : TCoord2D;
     iBeing  : TBeing;
@@ -1019,8 +1020,9 @@ begin
   else
     if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
     begin
+      iV := Vec2i( FAutoTarget.X-1, FAutoTarget.Y-1 ) * FSpriteEngine.Grid;
       with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-        Push( HARDSPRITE_SELECT mod 100000, FAutoTarget, ColorWhite, NewColor( Yellow ), DRL_Z_FX );
+        PushXY( HARDSPRITE_SELECT mod 100000, 1, iV, ColorWhite, NewColor( Yellow ), DRL_Z_FX );
     end;
 
   if FGridActive then
