@@ -30,6 +30,7 @@ type
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
     procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte; aPic : Char ); override;
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
+    function getUIDPosition( aUID : TUID; var aPosition : TVec2i ) : Boolean;
 
     procedure DeviceChanged;
     function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; override;
@@ -337,6 +338,19 @@ procedure TDoomGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID 
 begin
   if Doom.State <> DSPlaying then Exit;
   FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite));
+end;
+
+function TDoomGFXIO.getUIDPosition( aUID : TUID; var aPosition : TVec2i ) : Boolean;
+var iAnimation : TAnimation;
+begin
+  for iAnimation in FAnimations.Animations do
+    if ( iAnimation.UID = aUID ) and ( iAnimation.Delay = 0 ) then
+      if iAnimation is TDoomMove then
+      begin
+        aPosition := ( iAnimation as TDoomMove ).LastPosition;
+        Exit( True );
+      end;
+  Exit( False );
 end;
 
 procedure TDoomGFXIO.addScreenMoveAnimation(aDuration: DWord; aTo: TCoord2D);
