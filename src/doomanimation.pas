@@ -88,8 +88,11 @@ private
   FLightStart : Byte;
   FLightEnd   : Byte;
   FSprite     : TSprite;
+  FPosition   : TVec2i;
   FSource     : TVec2i;
   FTarget     : TVec2i;
+public
+  property LastPosition : TVec2i read FPosition;
 end;
 
 { TDoomScreenMove }
@@ -309,6 +312,7 @@ begin
   iSize := SpriteMap.GetGridSize;
   FSource.Init( (aFrom.X - 1)*iSize,(aFrom.Y - 1)*iSize);
   FTarget.Init( (aTo.X   - 1)*iSize,(aTo.Y   - 1)*iSize);
+  FPosition := FSource;
 end;
 
 procedure TDoomMove.OnStart;
@@ -319,14 +323,13 @@ begin
 end;
 
 procedure TDoomMove.OnDraw;
-var iPosition : TVec2i;
-    iValue    : Single;
+var iValue    : Single;
     iLight    : Byte;
 begin
   iValue    := Clampf( FTime / FDuration, 0, 1 );
   iLight    := Lerp( FLightStart, FLightEnd, iValue );
-  iPosition := Lerp( FSource, FTarget, iValue );
-  SpriteMap.PushSpriteBeing( iPosition, FSprite, iLight );
+  FPosition := Lerp( FSource, FTarget, iValue );
+  SpriteMap.PushSpriteBeing( FPosition, FSprite, iLight );
 end;
 
 destructor TDoomMove.Destroy;
