@@ -1020,7 +1020,10 @@ begin
   else
     if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
     begin
-      iV := Vec2i( FAutoTarget.X-1, FAutoTarget.Y-1 ) * FSpriteEngine.Grid;
+      iBeing := Doom.Level.Being[FAutoTarget];
+      iV     := Vec2i( FAutoTarget.X-1, FAutoTarget.Y-1 ) * FSpriteEngine.Grid;
+      if ( iBeing <> nil ) and ( iBeing.AnimCount > 0 ) then
+         (IO as TDoomGFXIO).getUIDPosition( iBeing.UID, iV );
       with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
         PushXY( HARDSPRITE_SELECT mod 100000, 1, iV, ColorWhite, NewColor( Yellow ), DRL_Z_FX );
     end;
