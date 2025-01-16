@@ -137,6 +137,7 @@ TBeing = class(TThing,IPathQuery)
     function HandleShotgunFire( aTarget : TCoord2D; aShotGun : TItem; aShots : DWord ) : Boolean;
     function HandleSpreadShots( aTarget : TCoord2D; aGun : TItem ) : Boolean;
     function HandleShots( aTarget : TCoord2D; aGun : TItem; aShots : DWord; toHit, toDam : Integer; iChaining : Boolean ) : Boolean;
+    function VisualTime( aActionCost : Word = 1000; aBaseTime : Word = 100 ) : Word;
     protected
     FHP            : Integer;
     FHPNom         : Word;
@@ -478,6 +479,11 @@ begin
        end;
   end;
   Exit( True );
+end;
+
+function TBeing.VisualTime( aActionCost : Word = 1000; aBaseTime : Word = 100 ) : Word;
+begin
+  Result := Ceil( ( 100.0 / FSpeed ) * ( aActionCost / 1000.0 ) * Single( aBaseTime ) );
 end;
 
 function TBeing.IsPlayer : Boolean;
@@ -1106,7 +1112,7 @@ begin
   iMoveCost := getMoveCost;
   if GraphicsVersion then
   begin
-    iVisualTime := Ceil( ( 100.0 / FSpeed ) * ( iMoveCost / 1000.0 ) * 100.0 );
+    iVisualTime := VisualTime( iMoveCost, 100 );
     if isPlayer then
       IO.addScreenMoveAnimation( iVisualTime, aTarget );
     IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite );
