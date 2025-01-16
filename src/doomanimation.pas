@@ -397,7 +397,6 @@ begin
   iSegment := ( FTime * FValue ) div FDuration;
   if ( iSegment <> FValue ) then
     iSegment += Sgn( FValue );
-  Log( '%d (%d)', [ Abs( iSegment ), FValue ] );
   if iSprite.SCount > 1 then
   begin
     iSegment := Abs( iSegment );
