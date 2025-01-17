@@ -123,7 +123,7 @@ function being:flock_target( range, mind, maxd )
 		elseif cdist <= mind then
 			closest = 2*pos - closest
 			area.FULL:clamp_coord(closest)
-			if not level:get_being(closest) or cells[level.map[closest]].flags[CF_BLOCKMOVE] then
+			if ( not level:get_being(closest) ) or ( not level:is_passable( closest ) ) then
 				return closest
 			end
 		end

@@ -39,17 +39,19 @@ TItem  = class( TThing )
     function    CanMod(aModChar : char) : Boolean;
     function    AddMod(aModChar : char) : Boolean;
     function    eqSlot : TEqSlot;
-    function    isAmmo : boolean;
-    function    isMelee : boolean;
-    function    isRanged : boolean;
-    function    isWeapon : boolean;
-    function    isTele : boolean;
-    function    isLever : boolean;
-    function    isPower : boolean;
-    function    isPack : boolean;
-    function    isAmmoPack : boolean;
-    function    isWearable : boolean;
-    function    canFire : boolean;
+    function    isAmmo : Boolean;
+    function    isMelee : Boolean;
+    function    isRanged : Boolean;
+    function    isWeapon : Boolean;
+    function    isTele : Boolean;
+    function    isLever : Boolean;
+    function    isPower : Boolean;
+    function    isPack : Boolean;
+    function    isAmmoPack : Boolean;
+    function    isFeature : Boolean;
+    function    isWearable : Boolean;
+    function    isPickupable : Boolean;
+    function    canFire : Boolean;
     function MenuColor : byte;
     procedure RechargeReset;
     procedure Tick( Owner : TThing );
@@ -58,7 +60,6 @@ TItem  = class( TThing )
     class procedure RegisterLuaAPI();
     private
     FRecharge : TItemRecharge;
-    FArmor    : Byte;
     FNID      : Byte;
     FProps    : TItemProperties;
     FMods     : array[Ord('A')..Ord('Z')] of Byte;
@@ -68,7 +69,6 @@ TItem  = class( TThing )
     property PGlowColor     : TColor      read FProps.PGlowColor     write FProps.PGlowColor;
     property PCosColor      : TColor      read FProps.PCosColor      write FProps.PCosColor;
     published
-    property Armor          : Byte        read FArmor                write FArmor;
     property RechargeDelay  : Byte        read FRecharge.Delay       write FRecharge.Delay;
     property RechargeAmount : Byte        read FRecharge.Amount      write FRecharge.Amount;
     property RechargeLimit  : Byte        read FRecharge.Limit       write FRecharge.Limit;
@@ -166,7 +166,6 @@ begin
   Stream.Read( FMods,     SizeOf( FMods ) );
   Stream.Read( FProps,    SizeOf( FProps ) );
 
-  FArmor := Stream.ReadByte();
   FNID   := Stream.ReadByte();
 end;
 
@@ -178,22 +177,19 @@ begin
   Stream.Write( FMods,     SizeOf( FMods ) );
   Stream.Write( FProps,    SizeOf( FProps ) );
 
-  Stream.WriteByte( FArmor );
   Stream.WriteByte( FNID );
 end;
 
 procedure TItem.LuaLoad( Table : TLuaTable; onFloor: boolean );
-var cnt : byte;
-    soundID : string[20];
+var i : Byte;
 begin
   inherited LuaLoad( Table );
   FHooks := FHooks * ItemHooks;
 
   FProps.itype:= TItemType( Table.getInteger('type') );
 
-  for cnt := Ord('A') to Ord('Z') do FMods[cnt] := 0;
+  for i := Ord('A') to Ord('Z') do FMods[i] := 0;
 
-  FArmor           := Table.getInteger('armor',0);
   FNID             := Table.getInteger('nid');
   FRecharge.Delay  := Table.getInteger('rechargedelay',0);
   FRecharge.Amount := Table.getInteger('rechargeamount',0);
@@ -204,6 +200,7 @@ begin
      ITEMTYPE_TELE,
      ITEMTYPE_LEVER,
      ITEMTYPE_PACK,
+     ITEMTYPE_FEATURE,
      ITEMTYPE_POWER : ;
      ITEMTYPE_ARMOR,
      ITEMTYPE_BOOTS :
@@ -321,7 +318,9 @@ var FlagStr : string[10];
 begin
   Description := Name;
   case FProps.IType of
-    ITEMTYPE_LEVER    : Exit(Description);
+    ITEMTYPE_LEVER,
+    ITEMTYPE_TELE,
+    ITEMTYPE_FEATURE  : Exit(Description);
     ITEMTYPE_AMMO     : if FProps.Ammo > 1 then Description += ' (x'+IntToStr(FProps.Ammo)+')';
     ITEMTYPE_AMMOPACK : Description += ' (x'+IntToStr(FProps.Ammo)+')';
     ITEMTYPE_MELEE :
@@ -587,9 +586,19 @@ begin
   Exit(FProps.IType = ITEMTYPE_AMMOPACK);
 end;
 
+function TItem.isFeature : Boolean;
+begin
+  Exit(FProps.IType = ITEMTYPE_FEATURE);
+end;
+
 function TItem.isWearable : boolean;
 begin
   Exit(FProps.IType in [ITEMTYPE_RANGED,ITEMTYPE_NRANGED,ITEMTYPE_ARMOR,ITEMTYPE_MELEE,ITEMTYPE_BOOTS,ITEMTYPE_AMMOPACK]);
+end;
+
+function TItem.isPickupable : Boolean;
+begin
+  Exit( not ( FProps.IType in [ ITEMTYPE_FEATURE, ITEMTYPE_TELE, ITEMTYPE_LEVER ] ) );
 end;
 
 function TItem.canFire: boolean;

@@ -102,9 +102,9 @@ TBeing = class(TThing,IPathQuery)
     function ActionPickup : Boolean;
     function ActionUse( aItem : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
-    function ActionMove( aTarget : TCoord2D ) : Boolean;
+    function ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0 ) : Boolean;
     function ActionTactic : boolean;
-
+    function ActionAction( aTarget : TCoord2D ) : Boolean;
 
     // Always returns False.
     //
@@ -125,7 +125,8 @@ TBeing = class(TThing,IPathQuery)
 
     function MoveCost( const Start, Stop : TCoord2D ) : Single;
     function CostEstimate( const Start, Stop : TCoord2D ) : Single;
-    function passableCoord( const Coord : TCoord2D ) : boolean;
+    function passableCoord( const aCoord : TCoord2D ) : boolean;
+    function VisualTime( aActionCost : Word = 1000; aBaseTime : Word = 100 ) : Word;
 
     class procedure RegisterLuaAPI();
 
@@ -137,9 +138,7 @@ TBeing = class(TThing,IPathQuery)
     function HandleShotgunFire( aTarget : TCoord2D; aShotGun : TItem; aShots : DWord ) : Boolean;
     function HandleSpreadShots( aTarget : TCoord2D; aGun : TItem ) : Boolean;
     function HandleShots( aTarget : TCoord2D; aGun : TItem; aShots : DWord; toHit, toDam : Integer; iChaining : Boolean ) : Boolean;
-    function VisualTime( aActionCost : Word = 1000; aBaseTime : Word = 100 ) : Word;
     protected
-    FHP            : Integer;
     FHPNom         : Word;
     FHPMax         : Word;
     FHPDecayMax    : Word;
@@ -150,7 +149,6 @@ TBeing = class(TThing,IPathQuery)
     FVisionRadius  : Byte;
     FSpeedCount    : LongInt;
     FSpeed         : Byte;
-    FArmor         : Byte;
     FExpValue      : Word;
 
     FMeleeAttack   : Boolean;
@@ -163,7 +161,6 @@ TBeing = class(TThing,IPathQuery)
     FChainFire     : Byte;
     FPath          : TPathFinder;
     FKnockBacked   : Boolean;
-    FAnimCount     : Word;
     public
     property Inv       : TInventory  read FInv       write FInv;
     property TargetPos : TCoord2D    read FTargetPos write FTargetPos;
@@ -171,14 +168,12 @@ TBeing = class(TThing,IPathQuery)
     property LastMove  : TCoord2D    read FMovePos   write FMovePos;
 
     property KnockBacked  : Boolean read FKnockBacked  write FKnockBacked;
-    property AnimCount    : Word    read FAnimCount    write FAnimCount;
     property SilentAction : Boolean read FSilentAction write FSilentAction;
     property MeleeAttack  : Boolean read FMeleeAttack;
     property ChainFire    : Byte    read FChainFire    write FChainFire;
     published
 
     property can_dual_reload : Boolean read canDualReload;
-    property HP           : Integer    read FHP           write FHP;
     property HPMax        : Word       read FHPMax        write FHPMax;
     property HPNom        : Word       read FHPNom        write FHPNom;
 
@@ -191,7 +186,6 @@ TBeing = class(TThing,IPathQuery)
     property ToHitMelee   : ShortInt   read FBonus.ToHitMelee   write FBonus.ToHitMelee;
 
     property Speed        : Byte       read FSpeed        write FSpeed;
-    property Armor        : Byte       read FArmor        write FArmor;
     property ExpValue     : Word       read FExpValue     write FExpValue;
 
     property TechBonus    : ShortInt   read FBonus.Tech   write FBonus.Tech;
@@ -209,7 +203,7 @@ TBeing = class(TThing,IPathQuery)
 
 implementation
 
-uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem,
+uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem, vluatools,
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio;
 
@@ -269,7 +263,6 @@ begin
 
   Initialize;
 
-  FHP         := Stream.ReadWord();
   FHPMax      := Stream.ReadWord();
   FHPNom      := Stream.ReadWord();
   FHPDecayMax := Stream.ReadWord();
@@ -280,7 +273,6 @@ begin
   FVisionRadius := Stream.ReadByte();
   FSpeedCount   := Stream.ReadWord();
   FSpeed        := Stream.ReadByte();
-  FArmor        := Stream.ReadByte();
   FExpValue     := Stream.ReadWord();
 
   Amount := Stream.ReadByte;
@@ -297,7 +289,6 @@ var Item : TItem;
 begin
   inherited WriteToStream ( Stream ) ;
 
-  Stream.WriteWord( FHP );
   Stream.WriteWord( FHPMax );
   Stream.WriteWord( FHPNom );
   Stream.WriteWord( FHPDecayMax );
@@ -308,7 +299,6 @@ begin
   Stream.WriteByte( FVisionRadius );
   Stream.WriteWord( FSpeedCount );
   Stream.WriteByte( FSpeed );
-  Stream.WriteByte( FArmor );
   Stream.WriteWord( FExpValue );
 
   Stream.WriteByte( FInv.Size );
@@ -340,7 +330,6 @@ begin
   FSilentAction := False;
   FKnockBacked  := False;
   FMeleeAttack  := False;
-  FAnimCount    := 0;
 end;
 
 procedure TBeing.LuaLoad( Table : TLuaTable );
@@ -353,9 +342,7 @@ begin
   FBonus.ToHit      := Table.getInteger('tohit');
   FBonus.ToHitMelee := Table.getInteger('tohitmelee');
   FBonus.ToDam      := Table.getInteger('todam');
-  FHPMax            := Table.getInteger('hp');
   FExpValue         := Table.getInteger('xp');
-  FArmor            := Table.getInteger('armor');
 
   FSpeed      := Table.getInteger('speed');
 
@@ -363,8 +350,8 @@ begin
 
   Flags[ BF_WALKSOUND ] := ( IO.Audio.ResolveSoundID( [ FID+'.hoof', FSoundID+'.hoof' ] ) <> 0 );
 
-  FHP    := FHPMax;
-  FHPNom := FHPMax;
+  FHPMax := FHP;
+  FHPNom := FHP;
   FSpeedCount := 900+Random(90);
 
   FTimes.Reload := 100;
@@ -932,15 +919,15 @@ begin
 end;
 
 function TBeing.ActionPickup : Boolean;
-var Amount  : byte;
+var iAmount  : byte;
     iItem   : TItem;
     iName   : AnsiString;
     iCount  : Byte;
 begin
   iItem := TLevel(Parent).Item[ FPosition ];
 
-  if iItem = nil then Exit( Fail( 'But there is nothing here!', [] ) );
-  if iItem.isLever or iItem.isTele then Exit( Fail( 'But there is nothing here to pick up!', [] ) );
+  if iItem = nil            then Exit( Fail( 'But there is nothing here!', [] ) );
+  if not iItem.isPickupable then Exit( Fail( 'But there is nothing here to pick up!', [] ) );
 
   if iItem.isPower then
   begin
@@ -957,16 +944,16 @@ begin
 
   if iItem.isAmmo then
   begin
-    Amount := Inv.AddAmmo(iItem.NID,iItem.Ammo);
-    if Amount <> iItem.Ammo then
+    iAmount := Inv.AddAmmo(iItem.NID,iItem.Ammo);
+    if iAmount <> iItem.Ammo then
     begin
       iItem.playSound( 'pickup', FPosition );
       CallHook( Hook_OnPickUpItem, [iItem] );
       iName := iItem.Name;
-      iCount := iItem.Ammo-Amount;
-      if Amount = 0 then
+      iCount := iItem.Ammo-iAmount;
+      if iAmount = 0 then
         TLevel(Parent).DestroyItem( FPosition )
-      else iItem.Ammo := Amount;
+      else iItem.Ammo := iAmount;
       Exit( Success( 'You found %d of %s.',[iCount,iName],ActionCostPickup) );
     end else Exit( Fail('You don''t have enough room in your backpack.',[]) );
   end;
@@ -1105,17 +1092,17 @@ begin
   Exit( Success( 'You partially unload the %s.', [ iName ], ActionCostReload ) );
 end;
 
-function TBeing.ActionMove( aTarget : TCoord2D ) : Boolean;
+function TBeing.ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0 ) : Boolean;
 var iVisualTime : Integer;
     iMoveCost   : Integer;
 begin
   iMoveCost := getMoveCost;
   if GraphicsVersion then
   begin
-    iVisualTime := VisualTime( iMoveCost, 100 );
+    iVisualTime := Ceil( VisualTime( iMoveCost, 100 ) * aVisualMultiplier );
     if isPlayer then
       IO.addScreenMoveAnimation( iVisualTime, aTarget );
-    IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite );
+    IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite, True );
   end;
   Displace( aTarget );
   Dec( FSpeedCount, iMoveCost );
@@ -1133,6 +1120,18 @@ begin
     Exit( True );
   end;
   Exit( False );
+end;
+
+function TBeing.ActionAction( aTarget : TCoord2D ) : Boolean;
+var iLevel : TLevel;
+    iItem  : TItem;
+begin
+  iLevel := TLevel(Parent);
+  iItem := iLevel.Item[ aTarget ];
+  if Assigned( iItem ) and iItem.HasHook( Hook_OnAct )
+    then iItem.CallHook( Hook_OnAct, [ LuaCoord( aTarget ), Self ] )
+    else iLevel.CallHook( aTarget, Self, CellHook_OnAct );
+  Exit( True );
 end;
 
 function TBeing.Fail ( const aText: AnsiString; const aParams: array of const ): Boolean;
@@ -1245,7 +1244,7 @@ begin
     if iLevel.BeingExplored( FPosition, Self ) or iLevel.BeingExplored( LastMove, Self ) or iLevel.BeingVisible( FPosition, Self ) or iLevel.BeingVisible( LastMove, Self ) then
     begin
       iVisualMult := ( 100.0 / FSpeed ) * ( iMoveCost / 1000.0 ) * aVisualMultiplier;
-      IO.addMoveAnimation( Ceil( iVisualMult * 100 ), 0, FUID,Position,LastMove,Sprite);
+      IO.addMoveAnimation( Ceil( iVisualMult * 100 ), 0, FUID,Position,LastMove,Sprite, True);
     end;
   Displace( FMovePos );
   if BF_WALKSOUND in FFlags then
@@ -1419,7 +1418,7 @@ begin
     COMMAND_TAKEOFF   : Exit( ActionTakeOff( aCommand.Slot ) );
     COMMAND_SWAP      : Exit( ActionSwap( aCommand.Item, aCommand.Slot ) );
     COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
-    COMMAND_ACTION    : TLevel( Parent ).CallHook( aCommand.Target, Self, CellHook_OnAct );
+    COMMAND_ACTION    : Exit( ActionAction( aCommand.Target ) );
     COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
     COMMAND_MELEE     : Attack( aCommand.Target );
     COMMAND_RELOAD    : Exit( ActionReload );
@@ -1460,7 +1459,7 @@ begin
   for Range := 1 to RRange do
     for sc in NewArea( FPosition, Range ).Clamped( iLevel.Area.Shrinked ) do
       if iLevel.cellFlagSet( sc, CF_RAISABLE ) then
-        if iLevel.isEmpty(sc,[EF_NOBEINGS]) then
+        if iLevel.isEmpty(sc,[EF_NOBEINGS,EF_NOBLOCK]) then
         if iLevel.isEyeContact( FPosition, sc ) then
         begin
           try
@@ -2214,7 +2213,7 @@ begin
       if isPlayer then
         IO.addScreenMoveAnimation(100, knock );
       if isVisible then
-        IO.addMoveAnimation(100,0,FUID,Position,knock,Sprite);
+        IO.addMoveAnimation(100,0,FUID,Position,knock,Sprite,True);
     end;
     Displace( knock );
     HandlePostDisplace;
@@ -2382,14 +2381,17 @@ begin
   Exit( RealDistance(Start,Stop) )
 end;
 
-function TBeing.passableCoord(const Coord: TCoord2D): boolean;
+function TBeing.passableCoord( const aCoord : TCoord2D ): boolean;
+var iItem : TItem;
 begin
-  if not TLevel(Parent).isProperCoord( coord ) then Exit( False );
-  with Cells[ TLevel(Parent).getCell( coord ) ] do
+  if not TLevel(Parent).isProperCoord( aCoord ) then Exit( False );
+  with Cells[ TLevel(Parent).getCell( aCoord ) ] do
   begin
     if (CF_HAZARD in Flags) and (not ((BF_ENVIROSAFE in FFlags) or (BF_CHARGE in FFlags))) then Exit( False );
+    iItem := TLevel(Parent).Item[ aCoord ];
+    if Assigned( iItem ) and ( iItem.Flags[ IF_BLOCKMOVE ] ) then Exit( False );
     if (not ( CF_BLOCKMOVE in Flags )) then Exit( True );
-    if (BF_OPENDOORS in FFlags) and ( CF_OPENABLE in Flags ) then Exit( true );
+    if (BF_OPENDOORS in FFlags) and ( CF_OPENABLE in Flags ) then Exit( True );
   end;
   Exit( False );
 end;

@@ -112,7 +112,7 @@ const
 
 
 type
-    TItemType       = ( ItemType_None, ItemType_Ranged, ItemType_NRanged, ItemType_Armor, ItemType_Melee, ItemType_Ammo, ItemType_Pack, ItemType_Power, ItemType_Boots, ItemType_Tele, ItemType_Lever, ItemType_AmmoPack );
+    TItemType       = ( ItemType_None, ItemType_Ranged, ItemType_NRanged, ItemType_Armor, ItemType_Melee, ItemType_Ammo, ItemType_Pack, ItemType_Power, ItemType_Boots, ItemType_Tele, ItemType_Lever, ItemType_Feature, ItemType_AmmoPack );
     TBodyTarget     = ( Target_Internal, Target_Torso, Target_Feet );
     TEqSlot         = ( efTorso, efWeapon, efBoots, efWeapon2 );
     TStatusEffect   = ( StatusNormal, StatusInvert, StatusRed, StatusGreen, StatusBlue, StatusCyan, StatusMagenta, StatusYellow, StatusGray, StatusWhite );

@@ -25,13 +25,19 @@ TThing = class( TLuaEntityNode )
 protected
   procedure LuaLoad( Table : TLuaTable ); virtual;
 protected
-  FSprite  : TSprite;
-  FSoundID : string[16];
+  FHP        : Integer;
+  FArmor     : Integer;
+  FSprite    : TSprite;
+  FSoundID   : string[16];
+  FAnimCount : Word;
   {$TYPEINFO ON}
 public
   property Sprite     : TSprite  read FSprite             write FSprite;
+  property AnimCount  : Word     read FAnimCount          write FAnimCount;
 published
   property SpriteID   : DWord    read FSprite.SpriteID[0] write FSprite.SpriteID[0];
+  property HP         : Integer  read FHP                 write FHP;
+  property Armor      : Integer  read FArmor              write FArmor;
 end;
 
 implementation
@@ -43,15 +49,20 @@ uses typinfo, variants,
 constructor TThing.Create( const aID : AnsiString );
 begin
   inherited Create( aID );
+  FAnimCount := 0;
 end;
 
 procedure TThing.LuaLoad(Table: TLuaTable);
 var iColorID : AnsiString;
 begin
+  FAnimCount   := 0;
   FGylph.ASCII := Table.getChar('ascii');
   FGylph.Color := Table.getInteger('color');
   FSoundID     := Table.getString('sound_id','');
   Name         := Table.getString('name');
+  FHP          := Table.getInteger('hp',0);
+  FArmor       := Table.getInteger('armor',0);
+
   FillChar( FSprite, SizeOf( FSprite ), 0 );
   ReadSprite( Table, FSprite );
 
@@ -60,7 +71,6 @@ begin
 
   if ColorOverrides.Exists(iColorID) then
     FGylph.Color := ColorOverrides[iColorID];
-
 end;
 
 function TThing.PlaySound( const aSoundID : string; aDelay : Integer = 0 ) : Boolean;
@@ -104,6 +114,8 @@ begin
   inherited WriteToStream( Stream );
   Stream.Write( FSprite,  SizeOf( FSprite ) );
   Stream.Write( FSoundID, SizeOf( FSoundID ) );
+  Stream.Write( FHP,      SizeOf( FHP ) );
+  Stream.Write( FArmor,   SizeOf( FArmor ) );
 end;
 
 constructor TThing.CreateFromStream( Stream: TStream );
@@ -111,6 +123,10 @@ begin
   inherited CreateFromStream( Stream );
   Stream.Read( FSprite,  SizeOf( FSprite ) );
   Stream.Read( FSoundID, SizeOf( FSoundID ) );
+  Stream.Read( FHP,      SizeOf( FHP ) );
+  Stream.Read( FArmor,   SizeOf( FArmor ) );
+
+  FAnimCount := 0;
 end;
 
 end.

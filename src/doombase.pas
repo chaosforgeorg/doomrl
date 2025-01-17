@@ -381,7 +381,7 @@ begin
     INPUT_PICKUP     : Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) );
     INPUT_ALTPICKUP  : begin
       iItem := Level.Item[ Player.Position ];
-      if ( iItem = nil ) or (not (iItem.isLever or iItem.isPack or iItem.isWearable) ) then
+      if ( iItem = nil ) or (not (iItem.isPickupable or iItem.isPack or iItem.isWearable) ) then
       begin
         IO.Msg( 'There''s nothing to use on the ground!' );
         Exit( False );
@@ -492,6 +492,7 @@ function TDoom.HandleMoveCommand( aInput : TInputKey ) : Boolean;
 var iDir        : TDirection;
     iTarget     : TCoord2D;
     iMoveResult : TMoveResult;
+    iItem       : TItem;
 begin
   if Player.Flags[ BF_SESSILE ] then
   begin
@@ -518,10 +519,14 @@ begin
   case iMoveResult of
      MoveBlock :
        begin
-         if Level.isProperCoord( iTarget ) and Level.cellFlagSet( iTarget, CF_PUSHABLE ) then
+         if not Level.isProperCoord( iTarget ) then Exit( False );
+         if Level.cellFlagSet( iTarget, CF_PUSHABLE ) then
            Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) )
          else
          begin
+           iItem := Level.Item[ iTarget ];
+           if Assigned( iItem ) and iItem.HasHook( Hook_OnAct ) then
+             Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
            if Option_Blindmode then IO.Msg( 'You bump into a wall.' );
            Exit( False );
          end;

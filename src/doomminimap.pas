@@ -120,9 +120,6 @@ begin
       end
       else
         with Cells[ getCell(aCoord) ] do
-        if CF_PUSHABLE in Flags then
-          iColor := Magenta
-        else
         if CF_LIQUID in Flags then
           iColor := Blue
         else

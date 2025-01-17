@@ -66,11 +66,11 @@ TLevel = class(TLuaMapNode, ITextMap)
     function CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
-    procedure DamageTile( coord : TCoord2D; dmg : Integer; DamageType : TDamageType );
+    procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
     procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False );
     procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; Shotgun : TShotgunData; aItem : TItem );
-    procedure Respawn( Chance : byte );
-    function isPassable( const coord : TCoord2D ) : Boolean; override;
+    procedure Respawn( aChance : byte );
+    function isPassable( const aCoord : TCoord2D ) : Boolean; override;
     function isEmpty( const coord : TCoord2D; EmptyFlags : TFlags32 = []) : Boolean; override;
     function cellFlagSet( coord : TCoord2D; Flag : byte) : Boolean;
     procedure playSound( const aSoundID : DWord; aCoord : TCoord2D; aDelay : DWord = 0 ); overload;
@@ -108,6 +108,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function EnemiesLeft( aUnique : Boolean = False ) : DWord;
     function GetLookDescription( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : Ansistring;
     procedure UpdateAutoTarget( aAutoTarget : TAutoTarget; aBeing : TBeing; aRange : Integer );
+    function PushItem( aWho : TBeing; aWhat : TItem; aFrom, aTo : TCoord2D ) : Boolean;
 
     class procedure RegisterLuaAPI();
 
@@ -735,42 +736,56 @@ begin
 end;
 
 
-procedure TLevel.DamageTile( coord : TCoord2D; Dmg : Integer; DamageType : TDamageType );
-var cellID : byte;
-    Heavy  : Boolean;
+procedure TLevel.DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
+var iCellID  : Byte;
+    iHeavy   : Boolean;
+    iFeature : TItem;
+    iDamage  : Integer;
 begin
-  Heavy := DamageType in [Damage_Acid, Damage_Fire, Damage_Plasma, Damage_SPlasma];
-  if not isProperCoord(coord) then Exit;
-  cellID := Cell[Coord];
-  
-  if LightFlag[ coord, lfPermanent ] then Exit;
-  if LightFlag[ coord, lfFresh ]     then Exit;
+  if not isProperCoord( aCoord )      then Exit;
+  if LightFlag[ aCoord, lfPermanent ] then Exit;
+  if LightFlag[ aCoord, lfFresh ]     then Exit;
 
-  if (not Heavy) and (not (CF_FRAGILE in Cells[cellID].Flags)) then Exit;
-  if Cells[cellID].DR = 0 then Exit;
+  iHeavy   := aDamageType in [Damage_Acid, Damage_Fire, Damage_Plasma, Damage_SPlasma];
+  iCellID  := Cell[ aCoord ];
+  iFeature := Item[ aCoord ];
+  if Assigned( iFeature ) and ( not iFeature.isFeature ) then
+    iFeature := nil;
 
-  dmg -= Cells[cellID].DR;
+  if ( Cells[ iCellID ].DR > 0 ) and ( Cells[ iCellID ].DR < aDamage ) and ( iHeavy or ( CF_FRAGILE in Cells[ iCellID ].Flags ) ) then
+  begin
+    iDamage := aDamage - Cells[ iCellID ].DR;
+    if CF_CORPSE in Cells[ iCellID ].Flags then
+    case aDamageType of
+      Damage_Acid    : iDamage := iDamage * 2;
+      Damage_SPlasma : iDamage := iDamage * 3;
+      Damage_Plasma  : iDamage := Round( iDamage * 1.5 );
+    end;
 
-  if CF_CORPSE in Cells[cellID].Flags then
-  case DamageType of
-    Damage_Acid    : Dmg := Dmg * 2;
-    Damage_SPlasma : Dmg := Dmg * 3;
-    Damage_Plasma  : Dmg := Round( Dmg * 1.5 );
+    HitPoints[ aCoord ] := Max( 0, HitPoints[ aCoord ] - iDamage );
+    if HitPoints[ aCoord ] = 0 then
+    begin
+
+      if CF_CORPSE in Cells[ iCellID ].Flags then
+        playSound( 'gib', aCoord );
+
+      if Cells[ iCellID ].destroyto = ''
+        then Cell[ aCoord ] := FFloorCell
+        else Cell[ aCoord ] := LuaSystem.Defines[ Cells[ iCellID ].destroyto ];
+
+      CallHook( aCoord, iCellID, CellHook_OnDestroy );
+    end;
   end;
 
-  if dmg <= 0 then Exit;
-
-  HitPoints[coord] := Max(0,HitPoints[coord]-dmg);
-  if HitPoints[coord] > 0 then Exit;
-  
-  if CF_CORPSE in Cells[cellID].Flags then
-    playSound( 'gib', coord );
-
-  if Cells[cellID].destroyto = ''
-    then Cell[coord] := FFloorCell
-    else Cell[coord] := LuaSystem.Defines[ Cells[cellID].destroyto ];
-
-  CallHook( coord, CellID, CellHook_OnDestroy );
+  if Assigned( iFeature ) and ( iFeature.HP > 0 ) and ( iFeature.Armor < aDamage ) then
+  begin
+    iFeature.HP := iFeature.HP - ( aDamage - iFeature.Armor );
+    if iFeature.HP <= 0 then
+    begin
+      iFeature.CallHook( Hook_OnDestroy, [ LuaCoord( aCoord ) ] );
+      DestroyItem( aCoord );
+    end;
+  end;
 end;
 
 
@@ -881,12 +896,11 @@ begin
           ApplyDamage( iDamage, Target_Torso, DamageType, aItem );
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
-        if Item[a] <> nil then
-           if (iDamage > 10) then
-           begin
-             if efChain in aFlags then Explosion(Sequence + Distance( a, coord ) * Delay,a,Max( Range div 2 - 1, 1 ), Delay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
-             DestroyItem( a );
-           end;
+        if ( iDamage > 10 ) and ( Item[a] <> nil ) and (not Item[a].isFeature) then
+        begin
+          if efChain in aFlags then Explosion(Sequence + Distance( a, coord ) * Delay,a,Max( Range div 2 - 1, 1 ), Delay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
+          DestroyItem( a );
+        end;
         if (aContent <> 0) and isEmpty( a, [ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM ] ) then
         begin
           if (iDamage > 20) or ((efRandomContent in aFlags) and (Random(2) = 1)) then
@@ -972,39 +986,44 @@ begin
         end;
         
         DamageTile( tc, dmg, Shotgun.DamageType );
-        if cellFlagSet(tc,CF_BLOCKMOVE) then
-          if isVisible(tc) then IO.Mark(tc,LightGray,'*',100);
+        if isVisible( tc ) and ( not isPassable( tc ) ) then
+          IO.Mark(tc,LightGray,'*',100);
       end;
   ClearLightMapBits([lfDamage]);
 end;
 
 
-procedure TLevel.Respawn( Chance : byte );
-var coord  : TCoord2D;
+procedure TLevel.Respawn( aChance : byte );
+var iCoord : TCoord2D;
     iBeing : TBeing;
 begin
   if LF_NORESPAWN in FFlags then Exit;
-  for coord in FArea do
-    if Being[ coord ] = nil then
-      if cellFlagSet( coord ,CF_RAISABLE ) then
-        if not isVisible( coord ) then
-          if Random(100) < Chance then
-          try
-            iBeing := TBeing.Create( Cells[ GetCell(coord) ].raiseto );
-            iBeing.Flags[ BF_RESPAWN ] := True;
-            DropBeing( iBeing, coord );
-            iBeing.Flags[ BF_NOEXP   ] := True;
-            iBeing.Flags[ BF_NODROP ]  := True;
-            Cell[ coord ] := LuaSystem.Defines[ Cells[ GetCell(coord) ].destroyto ];
-          except
-            on EPlacementException do FreeAndNil( iBeing );
-          end;
+  for iCoord in FArea do
+    if Being[ iCoord ] = nil then
+      if cellFlagSet( iCoord, CF_RAISABLE ) then
+        if not isVisible( iCoord ) then
+          if isPassable( iCoord ) then
+            if Random(100) < aChance then
+            try
+              iBeing := TBeing.Create( Cells[ GetCell(iCoord) ].raiseto );
+              iBeing.Flags[ BF_RESPAWN ] := True;
+              DropBeing( iBeing, iCoord );
+              iBeing.Flags[ BF_NOEXP   ] := True;
+              iBeing.Flags[ BF_NODROP ]  := True;
+              Cell[ iCoord ] := LuaSystem.Defines[ Cells[ GetCell(iCoord) ].destroyto ];
+            except
+              on EPlacementException do FreeAndNil( iBeing );
+            end;
 
 end;
 
-function TLevel.isPassable ( const coord : TCoord2D ) : Boolean;
+function TLevel.isPassable ( const aCoord : TCoord2D ) : Boolean;
+var iItem : TItem;
 begin
-  Exit( not cellFlagSet(coord,CF_BLOCKMOVE) );
+  if cellFlagSet( aCoord, CF_BLOCKMOVE ) then Exit( False );
+  iItem := GetItem( aCoord );
+  if Assigned( iItem ) and iItem.Flags[ IF_BLOCKMOVE ] then Exit( False );
+  Exit( True );
 end;
 
 procedure TLevel.DestroyItem( coord : TCoord2D );
@@ -1298,6 +1317,23 @@ begin
       aAutoTarget.AddTarget( iCoord );
 end;
 
+function TLevel.PushItem( aWho : TBeing; aWhat : TItem; aFrom, aTo : TCoord2D ) : Boolean;
+var iItemOld : TItem;
+begin
+  if ( aWho = nil ) or ( aWhat = nil ) or ( aWhat.Position <> aFrom ) then Exit( False );
+  IO.addMoveAnimation( aWho.VisualTime( aWho.getMoveCost, 150 ), 0, aWhat.UID, aFrom, aTo, aWhat.Sprite, False );
+  iItemOld := Item[ aTo ];
+  SetItem( aTo, aWhat );
+  SetItem( aFrom, nil );
+  aWhat.Position := aTo;
+  if Assigned( iItemOld ) then
+  begin
+    SetItem( aFrom, iItemOld );
+    iItemOld.Position := aFrom;
+  end;
+  aWho.ActionMove( aFrom, 1.5 );
+end;
+
 function TLevel.GetLookDescription ( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : AnsiString;
 var iCellID : DWord;
   procedure AddInfo( const what : AnsiString );
@@ -1562,7 +1598,27 @@ begin
   Result := 1;
 end;
 
-const lua_level_lib : array[0..14] of luaL_Reg = (
+function lua_level_damage_tile(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Level : TLevel;
+begin
+  State.Init(L);
+  Level := State.ToObject(1) as TLevel;
+  Level.DamageTile( State.ToCoord(2), State.ToInteger(3), TDamageType( State.ToInteger(4,Byte(Damage_Bullet)) ) );
+  Exit( 0 );
+end;
+
+function lua_level_push_item(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Level : TLevel;
+begin
+  State.Init(L);
+  Level := State.ToObject(1) as TLevel;
+  Level.PushItem( State.ToObject(2) as TBeing, State.ToObject(3) as TItem, State.ToCoord(4), State.ToCoord(5) );
+  Exit( 0 );
+end;
+
+const lua_level_lib : array[0..16] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1577,6 +1633,8 @@ const lua_level_lib : array[0..14] of luaL_Reg = (
       ( name : 'get_raw_style';      func : @lua_level_get_raw_style),
       ( name : 'set_raw_deco';      func : @lua_level_set_raw_deco),
       ( name : 'get_raw_deco';      func : @lua_level_get_raw_deco),
+      ( name : 'damage_tile';func : @lua_level_damage_tile),
+      ( name : 'push_item';  func : @lua_level_push_item),
       ( name : nil;          func : nil; )
 );
 
