@@ -70,7 +70,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False );
     procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; Shotgun : TShotgunData; aItem : TItem );
     procedure Respawn( Chance : byte );
-    function isPassable( const coord : TCoord2D ) : Boolean; override;
+    function isPassable( const aCoord : TCoord2D ) : Boolean; override;
     function isEmpty( const coord : TCoord2D; EmptyFlags : TFlags32 = []) : Boolean; override;
     function cellFlagSet( coord : TCoord2D; Flag : byte) : Boolean;
     procedure playSound( const aSoundID : DWord; aCoord : TCoord2D; aDelay : DWord = 0 ); overload;
@@ -972,8 +972,8 @@ begin
         end;
         
         DamageTile( tc, dmg, Shotgun.DamageType );
-        if cellFlagSet(tc,CF_BLOCKMOVE) then
-          if isVisible(tc) then IO.Mark(tc,LightGray,'*',100);
+        if isVisible( tc ) and ( not isPassable( tc ) ) then
+          IO.Mark(tc,LightGray,'*',100);
       end;
   ClearLightMapBits([lfDamage]);
 end;
@@ -1002,9 +1002,13 @@ begin
 
 end;
 
-function TLevel.isPassable ( const coord : TCoord2D ) : Boolean;
+function TLevel.isPassable ( const aCoord : TCoord2D ) : Boolean;
+var iItem : TItem;
 begin
-  Exit( not cellFlagSet(coord,CF_BLOCKMOVE) );
+  if cellFlagSet( aCoord, CF_BLOCKMOVE ) then Exit( False );
+  iItem := GetItem( aCoord );
+  if Assigned( iItem ) and iItem.Flags[ IF_BLOCKMOVE ] then Exit( False );
+  Exit( True );
 end;
 
 procedure TLevel.DestroyItem( coord : TCoord2D );

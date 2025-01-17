@@ -125,7 +125,7 @@ TBeing = class(TThing,IPathQuery)
 
     function MoveCost( const Start, Stop : TCoord2D ) : Single;
     function CostEstimate( const Start, Stop : TCoord2D ) : Single;
-    function passableCoord( const Coord : TCoord2D ) : boolean;
+    function passableCoord( const aCoord : TCoord2D ) : boolean;
 
     class procedure RegisterLuaAPI();
 
@@ -2382,14 +2382,17 @@ begin
   Exit( RealDistance(Start,Stop) )
 end;
 
-function TBeing.passableCoord(const Coord: TCoord2D): boolean;
+function TBeing.passableCoord( const aCoord : TCoord2D ): boolean;
+var iItem : TItem;
 begin
-  if not TLevel(Parent).isProperCoord( coord ) then Exit( False );
-  with Cells[ TLevel(Parent).getCell( coord ) ] do
+  if not TLevel(Parent).isProperCoord( aCoord ) then Exit( False );
+  with Cells[ TLevel(Parent).getCell( aCoord ) ] do
   begin
     if (CF_HAZARD in Flags) and (not ((BF_ENVIROSAFE in FFlags) or (BF_CHARGE in FFlags))) then Exit( False );
+    iItem := TLevel(Parent).Item[ aCoord ];
+    if Assigned( iItem ) and ( iItem.Flags[ IF_BLOCKMOVE ] ) then Exit( False );
     if (not ( CF_BLOCKMOVE in Flags )) then Exit( True );
-    if (BF_OPENDOORS in FFlags) and ( CF_OPENABLE in Flags ) then Exit( true );
+    if (BF_OPENDOORS in FFlags) and ( CF_OPENABLE in Flags ) then Exit( True );
   end;
   Exit( False );
 end;

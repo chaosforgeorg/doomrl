@@ -601,7 +601,7 @@ begin
   iEntry.Color := aItem.MenuColor;
   iEntry.QSlot := 0;
 
-  iEntry.Desc  := LuaSystem.Get(['items',aItem.ID,'desc']);
+  iEntry.Desc  := LuaSystem.Get(['items',aItem.ID,'desc'], '');
   if aItem.Flags[ IF_SETITEM ] then
   begin
     iSet        := LuaSystem.Get(['items',aItem.ID,'set']);

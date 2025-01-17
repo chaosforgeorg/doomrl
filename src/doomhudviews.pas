@@ -402,7 +402,7 @@ begin
     iBlock := false;
     repeat
       iTargetLine.Next;
-      if iLevel.cellFlagSet( iTargetLine.GetC, CF_BLOCKMOVE ) then iBlock := true;
+      if not iLevel.isPassable( iTargetLine.GetC ) then iBlock := true;
     until iTargetLine.Done;
   end
   else iBlock := False;

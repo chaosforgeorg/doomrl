@@ -189,7 +189,7 @@ begin
         if iColor = Green then if iTargetLine.Cnt > FTargetRange then icolor := Yellow;
         if iTargetLine.Done then Paint( iCurrent, iColor, 'X' )
                             else Paint( iCurrent, iColor, '*' );
-        if iLevel.cellFlagSet( iCurrent, CF_BLOCKMOVE ) then iColor := Red;
+        if not iLevel.isPassable( iCurrent ) then iColor := Red;
       until (iTargetLine.Done) or (iTargetLine.cnt > 30);
     end;
   end;
