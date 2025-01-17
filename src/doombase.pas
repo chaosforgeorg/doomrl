@@ -492,6 +492,7 @@ function TDoom.HandleMoveCommand( aInput : TInputKey ) : Boolean;
 var iDir        : TDirection;
     iTarget     : TCoord2D;
     iMoveResult : TMoveResult;
+    iItem       : TItem;
 begin
   if Player.Flags[ BF_SESSILE ] then
   begin
@@ -518,10 +519,14 @@ begin
   case iMoveResult of
      MoveBlock :
        begin
-         if Level.isProperCoord( iTarget ) and Level.cellFlagSet( iTarget, CF_PUSHABLE ) then
+         if not Level.isProperCoord( iTarget ) then Exit( False );
+         if Level.cellFlagSet( iTarget, CF_PUSHABLE ) then
            Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) )
          else
          begin
+           iItem := Level.Item[ iTarget ];
+           if Assigned( iItem ) and iItem.HasHook( Hook_OnAct ) then
+             Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
            if Option_Blindmode then IO.Msg( 'You bump into a wall.' );
            Exit( False );
          end;

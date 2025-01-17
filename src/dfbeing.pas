@@ -104,7 +104,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
     function ActionMove( aTarget : TCoord2D ) : Boolean;
     function ActionTactic : boolean;
-
+    function ActionAction( aTarget : TCoord2D ) : Boolean;
 
     // Always returns False.
     //
@@ -205,7 +205,7 @@ TBeing = class(TThing,IPathQuery)
 
 implementation
 
-uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem,
+uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem, vluatools,
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio;
 
@@ -1125,6 +1125,18 @@ begin
   Exit( False );
 end;
 
+function TBeing.ActionAction( aTarget : TCoord2D ) : Boolean;
+var iLevel : TLevel;
+    iItem  : TItem;
+begin
+  iLevel := TLevel(Parent);
+  iItem := iLevel.Item[ aTarget ];
+  if Assigned( iItem ) and iItem.HasHook( Hook_OnAct )
+    then iItem.CallHook( Hook_OnAct, [ LuaCoord( aTarget ), Self ] )
+    else iLevel.CallHook( aTarget, Self, CellHook_OnAct );
+  Exit( True );
+end;
+
 function TBeing.Fail ( const aText: AnsiString; const aParams: array of const ): Boolean;
 begin
   if FSilentAction then Exit( False );
@@ -1409,7 +1421,7 @@ begin
     COMMAND_TAKEOFF   : Exit( ActionTakeOff( aCommand.Slot ) );
     COMMAND_SWAP      : Exit( ActionSwap( aCommand.Item, aCommand.Slot ) );
     COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
-    COMMAND_ACTION    : TLevel( Parent ).CallHook( aCommand.Target, Self, CellHook_OnAct );
+    COMMAND_ACTION    : Exit( ActionAction( aCommand.Target ) );
     COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
     COMMAND_MELEE     : Attack( aCommand.Target );
     COMMAND_RELOAD    : Exit( ActionReload );
