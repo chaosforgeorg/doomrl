@@ -7,6 +7,7 @@
 [fix] -- GH#018: player info will show level name instead of "level X of Phobos Base"
 [fix] -- GH#191: fixed overdraw on diagonal movement
 [fix] -- GH#197: fixed lut correction
+[fix] -- GH#183: fixed melee kill counting (fixes Lightfoot Badges)
 
 0.9.9.9 BETA 2b
 [fix] -- RCFIX : fix for locked doors ai loop error

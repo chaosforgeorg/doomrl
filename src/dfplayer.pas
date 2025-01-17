@@ -403,7 +403,7 @@ procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing;
 var iKillClass : AnsiString;
 begin
   iKillClass := 'other';
-  if ( aKiller = Self ) and ( TLevel(Parent).ActiveBeing = Self ) then
+  if ( aKiller = Self ) and ( TLevel(Parent).ActiveBeing = Self ) and ( FMeleeAttack ) then
   begin
     iKillClass := 'melee';
     if aWeapon <> nil then
