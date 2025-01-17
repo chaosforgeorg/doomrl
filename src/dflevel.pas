@@ -108,6 +108,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function EnemiesLeft( aUnique : Boolean = False ) : DWord;
     function GetLookDescription( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : Ansistring;
     procedure UpdateAutoTarget( aAutoTarget : TAutoTarget; aBeing : TBeing; aRange : Integer );
+    function PushItem( aWho : TBeing; aWhat : TItem; aFrom, aTo : TCoord2D ) : Boolean;
 
     class procedure RegisterLuaAPI();
 
@@ -1315,6 +1316,21 @@ begin
       aAutoTarget.AddTarget( iCoord );
 end;
 
+function TLevel.PushItem( aWho : TBeing; aWhat : TItem; aFrom, aTo : TCoord2D ) : Boolean;
+var iItemOld : TItem;
+begin
+  if ( aWho = nil ) or ( aWhat = nil ) or ( aWhat.Position <> aFrom ) then Exit( False );
+  iItemOld := Item[ aTo ];
+  SetItem( aTo, aWhat );
+  SetItem( aFrom, nil );
+  aWhat.Position := aTo;
+  if Assigned( iItemOld ) then
+  begin
+    SetItem( aFrom, iItemOld );
+    iItemOld.Position := aFrom;
+  end;
+end;
+
 function TLevel.GetLookDescription ( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : AnsiString;
 var iCellID : DWord;
   procedure AddInfo( const what : AnsiString );
@@ -1579,7 +1595,27 @@ begin
   Result := 1;
 end;
 
-const lua_level_lib : array[0..14] of luaL_Reg = (
+function lua_level_damage_tile(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Level : TLevel;
+begin
+  State.Init(L);
+  Level := State.ToObject(1) as TLevel;
+  Level.DamageTile( State.ToCoord(2), State.ToInteger(3), TDamageType( State.ToInteger(4,Byte(Damage_Bullet)) ) );
+  Exit( 0 );
+end;
+
+function lua_level_push_item(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Level : TLevel;
+begin
+  State.Init(L);
+  Level := State.ToObject(1) as TLevel;
+  Level.PushItem( State.ToObject(2) as TBeing, State.ToObject(3) as TItem, State.ToCoord(4), State.ToCoord(5) );
+  Exit( 0 );
+end;
+
+const lua_level_lib : array[0..16] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1594,6 +1630,8 @@ const lua_level_lib : array[0..14] of luaL_Reg = (
       ( name : 'get_raw_style';      func : @lua_level_get_raw_style),
       ( name : 'set_raw_deco';      func : @lua_level_set_raw_deco),
       ( name : 'get_raw_deco';      func : @lua_level_get_raw_deco),
+      ( name : 'damage_tile';func : @lua_level_damage_tile),
+      ( name : 'push_item';  func : @lua_level_push_item),
       ( name : nil;          func : nil; )
 );
 
