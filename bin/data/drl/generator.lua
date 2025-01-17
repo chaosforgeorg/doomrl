@@ -57,16 +57,16 @@ function generator.run( gen )
 		end
 	end
 
-	if gen.barrels then
-		generator.generate_barrels()
-	end
-
 	if gen.rooms then
 		if type( gen.rooms ) == "function" then
 			gen.rooms() 
 		elseif type( gen.rooms ) == "table" then
 			generator.handle_rooms( math.random( gen.rooms[1], gen.rooms[2] ), gen.rooms[3], generator.fluid_to_perm )
 		end
+	end
+
+	if gen.barrels then
+		generator.generate_barrels()
 	end
 
 	if type( gen.monsters ) == "function" then
@@ -535,7 +535,7 @@ function generator.generate_barrels()
 	end
 
 	for i=1,count/2 do
-		generator.set_cell( generator.standard_empty_coord(), cell1 )
-		generator.set_cell( generator.standard_empty_coord(), cell2 )
+		level:drop_item( cell1, generator.standard_empty_coord(), true )
+		level:drop_item( cell2, generator.standard_empty_coord(), true )
 	end
 end

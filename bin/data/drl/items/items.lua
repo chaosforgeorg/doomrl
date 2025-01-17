@@ -1189,6 +1189,87 @@ function drl.register_regular_items()
 		end,
 	}
 
+	-- barrels --
+
+	register_item "barrel"
+	{
+		name       = "barrel of fuel",
+		ascii      = "0",
+		color      = BROWN,
+		armor      = 3,
+		hp         = 2,
+		flags      = { IF_BLOCKMOVE },
+		sprite     = SPRITE_BARREL,
+
+		type       = ITEMTYPE_FEATURE,
+		weight     = 0,
+
+		OnAct = function( self, c, being )
+			local source = being.position
+			local push   = c + (c - source)
+			level:push_barrel( being, self, c, push ) 
+		end,
+
+		OnDestroy = function(self,c)
+			if level:is_visible(c) then ui.msg('The barrel explodes!') end
+			level:explosion(c,4,40,5,5,RED, "barrel.explode" )
+		end
+	}
+
+	register_item "barrela"
+	{
+		name       = "barrel of acid",
+		ascii      = "0",
+		color      = GREEN,
+		armor      = 4,
+		hp         = 2,
+		flags      = { IF_BLOCKMOVE },
+		sprite     = SPRITE_ACIDBARREL,
+		sframes    = 2,
+
+		type       = ITEMTYPE_FEATURE,
+		weight     = 0,
+
+		OnAct = function( self, c, being )
+			local source = being.position
+			local push   = c + (c - source)
+			level:push_barrel( being, self, c, push ) 
+		end,
+
+		OnDestroy = function(self,c)
+			if level:is_visible(c) then ui.msg('The barrel explodes!') end
+			level.map[ c ] = "acid"
+			level:explosion(c,3,40,6,6,GREEN, "barrel.explode", DAMAGE_ACID, nil, {}, "acid")
+		end
+	}
+
+	register_item "barreln"
+	{
+		name       = "barrel of napalm",
+		ascii      = "0",
+		color      = LIGHTRED,
+		armor      = 5,
+		hp         = 2,
+		flags      = { IF_BLOCKMOVE },
+		sprite     = SPRITE_LAVABARREL,
+		sframes    = 2,
+
+		type       = ITEMTYPE_FEATURE,
+		weight     = 0,
+
+		OnAct = function( self, c, being )
+			local source = being.position
+			local push   = c + (c - source)
+			level:push_barrel( being, self, c, push ) 
+		end,
+
+		OnDestroy = function(self,c)
+			if level:is_visible(c) then ui.msg('The barrel explodes!') end
+			level.map[ c ] = "lava"
+			level:explosion(c,2,40,7,7,RED, "barrel.explode", DAMAGE_FIRE, nil, {}, "lava")
+		end
+	}
+
 	-- levers --
 
 	register_item "lever_flood_water"
@@ -1327,11 +1408,9 @@ function drl.register_regular_items()
 		OnUse = function(self,being)
 			local position = self.position
 			for c in self.target_area() do
-				local tile = cells[ level.map[c] ]
-				local is_barrel = tile.id == "barrel" or tile.id == "barrela" or tile.id == "barreln"
-				if is_barrel and tile.OnDestroy then
-					level.map[c] = "floor"
-					tile.OnDestroy(c)
+				local item = level:get_item( c )
+				if item and item.hp > 0 then
+					level:damage_tile( c, 1000, DAMAGE_PLASMA )
 				end
 			end
 			return true
