@@ -60,7 +60,6 @@ TItem  = class( TThing )
     class procedure RegisterLuaAPI();
     private
     FRecharge : TItemRecharge;
-    FArmor    : Byte;
     FNID      : Byte;
     FProps    : TItemProperties;
     FMods     : array[Ord('A')..Ord('Z')] of Byte;
@@ -70,7 +69,6 @@ TItem  = class( TThing )
     property PGlowColor     : TColor      read FProps.PGlowColor     write FProps.PGlowColor;
     property PCosColor      : TColor      read FProps.PCosColor      write FProps.PCosColor;
     published
-    property Armor          : Byte        read FArmor                write FArmor;
     property RechargeDelay  : Byte        read FRecharge.Delay       write FRecharge.Delay;
     property RechargeAmount : Byte        read FRecharge.Amount      write FRecharge.Amount;
     property RechargeLimit  : Byte        read FRecharge.Limit       write FRecharge.Limit;
@@ -168,7 +166,6 @@ begin
   Stream.Read( FMods,     SizeOf( FMods ) );
   Stream.Read( FProps,    SizeOf( FProps ) );
 
-  FArmor := Stream.ReadByte();
   FNID   := Stream.ReadByte();
 end;
 
@@ -180,7 +177,6 @@ begin
   Stream.Write( FMods,     SizeOf( FMods ) );
   Stream.Write( FProps,    SizeOf( FProps ) );
 
-  Stream.WriteByte( FArmor );
   Stream.WriteByte( FNID );
 end;
 
@@ -194,7 +190,6 @@ begin
 
   for i := Ord('A') to Ord('Z') do FMods[i] := 0;
 
-  FArmor           := Table.getInteger('armor',0);
   FNID             := Table.getInteger('nid');
   FRecharge.Delay  := Table.getInteger('rechargedelay',0);
   FRecharge.Amount := Table.getInteger('rechargeamount',0);

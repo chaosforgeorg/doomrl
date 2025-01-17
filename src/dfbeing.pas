@@ -139,7 +139,6 @@ TBeing = class(TThing,IPathQuery)
     function HandleShots( aTarget : TCoord2D; aGun : TItem; aShots : DWord; toHit, toDam : Integer; iChaining : Boolean ) : Boolean;
     function VisualTime( aActionCost : Word = 1000; aBaseTime : Word = 100 ) : Word;
     protected
-    FHP            : Integer;
     FHPNom         : Word;
     FHPMax         : Word;
     FHPDecayMax    : Word;
@@ -150,7 +149,6 @@ TBeing = class(TThing,IPathQuery)
     FVisionRadius  : Byte;
     FSpeedCount    : LongInt;
     FSpeed         : Byte;
-    FArmor         : Byte;
     FExpValue      : Word;
 
     FMeleeAttack   : Boolean;
@@ -178,7 +176,6 @@ TBeing = class(TThing,IPathQuery)
     published
 
     property can_dual_reload : Boolean read canDualReload;
-    property HP           : Integer    read FHP           write FHP;
     property HPMax        : Word       read FHPMax        write FHPMax;
     property HPNom        : Word       read FHPNom        write FHPNom;
 
@@ -191,7 +188,6 @@ TBeing = class(TThing,IPathQuery)
     property ToHitMelee   : ShortInt   read FBonus.ToHitMelee   write FBonus.ToHitMelee;
 
     property Speed        : Byte       read FSpeed        write FSpeed;
-    property Armor        : Byte       read FArmor        write FArmor;
     property ExpValue     : Word       read FExpValue     write FExpValue;
 
     property TechBonus    : ShortInt   read FBonus.Tech   write FBonus.Tech;
@@ -269,7 +265,6 @@ begin
 
   Initialize;
 
-  FHP         := Stream.ReadWord();
   FHPMax      := Stream.ReadWord();
   FHPNom      := Stream.ReadWord();
   FHPDecayMax := Stream.ReadWord();
@@ -280,7 +275,6 @@ begin
   FVisionRadius := Stream.ReadByte();
   FSpeedCount   := Stream.ReadWord();
   FSpeed        := Stream.ReadByte();
-  FArmor        := Stream.ReadByte();
   FExpValue     := Stream.ReadWord();
 
   Amount := Stream.ReadByte;
@@ -297,7 +291,6 @@ var Item : TItem;
 begin
   inherited WriteToStream ( Stream ) ;
 
-  Stream.WriteWord( FHP );
   Stream.WriteWord( FHPMax );
   Stream.WriteWord( FHPNom );
   Stream.WriteWord( FHPDecayMax );
@@ -308,7 +301,6 @@ begin
   Stream.WriteByte( FVisionRadius );
   Stream.WriteWord( FSpeedCount );
   Stream.WriteByte( FSpeed );
-  Stream.WriteByte( FArmor );
   Stream.WriteWord( FExpValue );
 
   Stream.WriteByte( FInv.Size );
@@ -353,9 +345,7 @@ begin
   FBonus.ToHit      := Table.getInteger('tohit');
   FBonus.ToHitMelee := Table.getInteger('tohitmelee');
   FBonus.ToDam      := Table.getInteger('todam');
-  FHPMax            := Table.getInteger('hp');
   FExpValue         := Table.getInteger('xp');
-  FArmor            := Table.getInteger('armor');
 
   FSpeed      := Table.getInteger('speed');
 
@@ -363,8 +353,8 @@ begin
 
   Flags[ BF_WALKSOUND ] := ( IO.Audio.ResolveSoundID( [ FID+'.hoof', FSoundID+'.hoof' ] ) <> 0 );
 
-  FHP    := FHPMax;
-  FHPNom := FHPMax;
+  FHPMax := FHP;
+  FHPNom := FHP;
   FSpeedCount := 900+Random(90);
 
   FTimes.Reload := 100;
