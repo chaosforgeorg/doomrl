@@ -285,6 +285,42 @@ function level:is_corpse( c )
 	return cell.id == "corpse" or cell.flags[ CF_CORPSE ]
 end
 
+function level:push_barrel( who, what, c, target, quiet )
+	local item_id = what.id
+	local name    = what.name
+	if not area.FULL:contains(target) then
+		if not quiet then ui.msg( "It doesn't seem to move there." ) end
+		self:play_sound( item_id .. ".movefail", c )
+		return false
+	end
+	local target_cell_id = self.map[target]
+	local target_cell    = cells[target_cell_id]
+	if target_cell.flags[CF_HAZARD] then
+		if not quiet then ui.msg( "Oh my, how stupid!" ) end
+		self:play_sound( item_id .. ".move", c )
+		level:damage_tile( c, 1000, DAMAGE_PLASMA )
+		who.scount = who.scount - 1000
+		return true
+	end
+	if target_cell.flags[CF_STAIRS] or target_cell.flags[CF_LIQUID]  then
+		if not quiet then ui.msg( "It doesn't seem to move there." ) end
+		self:play_sound( item_id .. ".movefail", c )
+		return false
+	end
+	local item = level:get_item( target )
+	if ( not generator.is_empty( target, { EF_NOBLOCK, EF_NOBEINGS } ) ) or 
+	( item and ( item.itype == ITEMTYPE_LEVER or item.itype == ITEMTYPE_TELE or item.itype == ITEMTYPE_FEATURE ) ) then
+		if not quiet then ui.msg( "Something's blocking the "..name.."." ) end
+		self:play_sound( item_id .. ".movefail", c )
+		return false
+	end
+	self:play_sound( item_id .. ".move", c )
+	if not quiet then ui.msg( "You push the "..name.."." ) end
+	level:push_item( who, what, c, target )
+	who.scount = who.scount - 1000
+	return true
+end
+
 function level:push_cell(c, target, quiet)
 	local cell_id = self.map[c]
 	local name    = cells[ cell_id ].name
