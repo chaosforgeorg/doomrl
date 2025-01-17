@@ -66,7 +66,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
-    procedure DamageTile( coord : TCoord2D; dmg : Integer; DamageType : TDamageType );
+    procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
     procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False );
     procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; Shotgun : TShotgunData; aItem : TItem );
     procedure Respawn( Chance : byte );
@@ -735,42 +735,56 @@ begin
 end;
 
 
-procedure TLevel.DamageTile( coord : TCoord2D; Dmg : Integer; DamageType : TDamageType );
-var cellID : byte;
-    Heavy  : Boolean;
+procedure TLevel.DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
+var iCellID  : Byte;
+    iHeavy   : Boolean;
+    iFeature : TItem;
+    iDamage  : Integer;
 begin
-  Heavy := DamageType in [Damage_Acid, Damage_Fire, Damage_Plasma, Damage_SPlasma];
-  if not isProperCoord(coord) then Exit;
-  cellID := Cell[Coord];
-  
-  if LightFlag[ coord, lfPermanent ] then Exit;
-  if LightFlag[ coord, lfFresh ]     then Exit;
+  if not isProperCoord( aCoord )      then Exit;
+  if LightFlag[ aCoord, lfPermanent ] then Exit;
+  if LightFlag[ aCoord, lfFresh ]     then Exit;
 
-  if (not Heavy) and (not (CF_FRAGILE in Cells[cellID].Flags)) then Exit;
-  if Cells[cellID].DR = 0 then Exit;
+  iHeavy   := aDamageType in [Damage_Acid, Damage_Fire, Damage_Plasma, Damage_SPlasma];
+  iCellID  := Cell[ aCoord ];
+  iFeature := Item[ aCoord ];
+  if Assigned( iFeature ) and ( not iFeature.isFeature ) then
+    iFeature := nil;
 
-  dmg -= Cells[cellID].DR;
+  if ( Cells[ iCellID ].DR > 0 ) and ( Cells[ iCellID ].DR < aDamage ) and ( iHeavy or ( CF_FRAGILE in Cells[ iCellID ].Flags ) ) then
+  begin
+    iDamage := aDamage - Cells[ iCellID ].DR;
+    if CF_CORPSE in Cells[ iCellID ].Flags then
+    case aDamageType of
+      Damage_Acid    : iDamage := iDamage * 2;
+      Damage_SPlasma : iDamage := iDamage * 3;
+      Damage_Plasma  : iDamage := Round( iDamage * 1.5 );
+    end;
 
-  if CF_CORPSE in Cells[cellID].Flags then
-  case DamageType of
-    Damage_Acid    : Dmg := Dmg * 2;
-    Damage_SPlasma : Dmg := Dmg * 3;
-    Damage_Plasma  : Dmg := Round( Dmg * 1.5 );
+    HitPoints[ aCoord ] := Max( 0, HitPoints[ aCoord ] - iDamage );
+    if HitPoints[ aCoord ] = 0 then
+    begin
+
+      if CF_CORPSE in Cells[ iCellID ].Flags then
+        playSound( 'gib', aCoord );
+
+      if Cells[ iCellID ].destroyto = ''
+        then Cell[ aCoord ] := FFloorCell
+        else Cell[ aCoord ] := LuaSystem.Defines[ Cells[ iCellID ].destroyto ];
+
+      CallHook( aCoord, iCellID, CellHook_OnDestroy );
+    end;
   end;
 
-  if dmg <= 0 then Exit;
-
-  HitPoints[coord] := Max(0,HitPoints[coord]-dmg);
-  if HitPoints[coord] > 0 then Exit;
-  
-  if CF_CORPSE in Cells[cellID].Flags then
-    playSound( 'gib', coord );
-
-  if Cells[cellID].destroyto = ''
-    then Cell[coord] := FFloorCell
-    else Cell[coord] := LuaSystem.Defines[ Cells[cellID].destroyto ];
-
-  CallHook( coord, CellID, CellHook_OnDestroy );
+  if Assigned( iFeature ) and ( iFeature.HP > 0 ) and ( iFeature.Armor < aDamage ) then
+  begin
+    iFeature.HP := iFeature.HP - ( aDamage - iFeature.Armor );
+    if iFeature.HP <= 0 then
+    begin
+      iFeature.CallHook( Hook_OnDestroy, [ LuaCoord( aCoord ) ] );
+      DestroyItem( aCoord );
+    end;
+  end;
 end;
 
 
@@ -881,12 +895,11 @@ begin
           ApplyDamage( iDamage, Target_Torso, DamageType, aItem );
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
-        if Item[a] <> nil then
-           if (iDamage > 10) then
-           begin
-             if efChain in aFlags then Explosion(Sequence + Distance( a, coord ) * Delay,a,Max( Range div 2 - 1, 1 ), Delay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
-             DestroyItem( a );
-           end;
+        if ( iDamage > 10 ) and ( Item[a] <> nil ) and (not Item[a].isFeature) then
+        begin
+          if efChain in aFlags then Explosion(Sequence + Distance( a, coord ) * Delay,a,Max( Range div 2 - 1, 1 ), Delay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
+          DestroyItem( a );
+        end;
         if (aContent <> 0) and isEmpty( a, [ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM ] ) then
         begin
           if (iDamage > 20) or ((efRandomContent in aFlags) and (Random(2) = 1)) then

@@ -25,26 +25,27 @@ const
   Hook_OnReload        = 18;  // Item
   Hook_OnEquipTick     = 19;  // Item
   Hook_OnEquipCheck    = 20;  // Item
-  Hook_OnEnter         = 21;  // Item (separate),  Level, Module, Challenge, Core (chained)
-  Hook_OnFire          = 22;  // Item, Level, Module, Challenge, Core (Chained)
-  Hook_OnFired         = 23;  // Item, Level, Module, Challenge, Core (Chained)
-  Hook_OnExit          = 24;  // Level, Module, Challenge, Core (Chained)
-  Hook_OnTick          = 25;  // Level, Module, Challenge, Core (Chained)
-  Hook_OnCompletedCheck= 26;  // Level, Module, Challenge, Core (Chained)
-  Hook_OnNuked         = 27;  // Level, Module, Challenge, Core (Chained)
-  Hook_OnLoad          = 28;  // Module, Challenge, Core (Chained)
-  Hook_OnLoaded        = 29;  // Module, Challenge, Core (Chained)
-  Hook_OnUnLoad        = 30;  // Module, Challenge, Core (Chained)
-  Hook_OnCreatePlayer  = 31;  // Module, Challenge, Core (Chained)
-  Hook_OnLevelUp       = 32;  // Module, Challenge, Core (Chained)
-  Hook_OnPreLevelUp    = 33;  // Module, Challenge, Core (Chained)
-  Hook_OnWinGame       = 34;  // Module, Challenge, Core (Chained)
-  Hook_OnMortem        = 35;  // Module, Challenge, Core (Chained)
-  Hook_OnMortemPrint   = 36;  // Module, Challenge, Core (Chained)
-  Hook_OnCreateEpisode = 37;  // Module, Challenge, Core (Chained)
-  Hook_OnIntro         = 38;  // Module, Challenge, Core (Chained)
-  Hook_OnGenerate      = 39;  // Module, Challenge, Core (Chained)
-  HookAmount           = 40;
+  Hook_OnDestroy       = 21;  // Item
+  Hook_OnEnter         = 22;  // Item (separate),  Level, Module, Challenge, Core (chained)
+  Hook_OnFire          = 23;  // Item, Level, Module, Challenge, Core (Chained)
+  Hook_OnFired         = 24;  // Item, Level, Module, Challenge, Core (Chained)
+  Hook_OnExit          = 25;  // Level, Module, Challenge, Core (Chained)
+  Hook_OnTick          = 26;  // Level, Module, Challenge, Core (Chained)
+  Hook_OnCompletedCheck= 27;  // Level, Module, Challenge, Core (Chained)
+  Hook_OnNuked         = 28;  // Level, Module, Challenge, Core (Chained)
+  Hook_OnLoad          = 29;  // Module, Challenge, Core (Chained)
+  Hook_OnLoaded        = 30;  // Module, Challenge, Core (Chained)
+  Hook_OnUnLoad        = 31;  // Module, Challenge, Core (Chained)
+  Hook_OnCreatePlayer  = 32;  // Module, Challenge, Core (Chained)
+  Hook_OnLevelUp       = 33;  // Module, Challenge, Core (Chained)
+  Hook_OnPreLevelUp    = 34;  // Module, Challenge, Core (Chained)
+  Hook_OnWinGame       = 35;  // Module, Challenge, Core (Chained)
+  Hook_OnMortem        = 36;  // Module, Challenge, Core (Chained)
+  Hook_OnMortemPrint   = 37;  // Module, Challenge, Core (Chained)
+  Hook_OnCreateEpisode = 38;  // Module, Challenge, Core (Chained)
+  Hook_OnIntro         = 39;  // Module, Challenge, Core (Chained)
+  Hook_OnGenerate      = 40;  // Module, Challenge, Core (Chained)
+  HookAmount           = 41;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
 
@@ -58,7 +59,7 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnCreate', 'OnAction', 'OnAttacked', 'OnDie', 'OnDieCheck',
       'OnPickupItem', 'OnPickup','OnPickupCheck','OnFirstPickup','OnUse','OnUseCheck',
       'OnAltFire', 'OnAltReload', 'OnEquip', 'OnRemove', 'OnKill', 'OnKillAll',
-      'OnHitBeing', 'OnReload', 'OnEquipTick', 'OnEquipCheck', 'OnEnter',
+      'OnHitBeing', 'OnReload', 'OnEquipTick', 'OnEquipCheck', 'OnDestroy', 'OnEnter',
       'OnFire', 'OnFired', 'OnExit', 'OnTick', 'OnCompletedCheck', 'OnNuked',
       'OnLoad','OnLoaded','OnUnLoad', 'OnCreatePlayer', 'OnLevelUp','OnPreLevelUp',
       'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro', 'OnGenerate'
@@ -91,7 +92,7 @@ BeingHooks   := [ Hook_OnCreate, Hook_OnAction, Hook_OnAttacked, Hook_OnDie, Hoo
 ItemHooks    := [ Hook_OnCreate, Hook_OnPickup, Hook_OnPickupCheck, Hook_OnFirstPickup,
   Hook_OnUse, Hook_OnUseCheck, Hook_OnAltFire, Hook_OnAltReload, Hook_OnEquip,
   Hook_OnRemove, Hook_OnKill, Hook_OnKillAll, Hook_OnHitBeing, Hook_OnReload,
-  Hook_OnEquipTick, Hook_OnEquipCheck, Hook_OnEnter, Hook_OnFire, Hook_OnFired ];
+  Hook_OnEquipTick, Hook_OnEquipCheck, Hook_OnEnter, Hook_OnFire, Hook_OnFired, Hook_OnDestroy ];
 ChainedHooks := [ Hook_OnCreate, Hook_OnDie, Hook_OnDieCheck, Hook_OnPickup, Hook_OnPickUpItem, Hook_OnKillAll,
   Hook_OnPickupCheck, Hook_OnUse, Hook_OnUseCheck,
   Hook_OnFire, Hook_OnFired ];

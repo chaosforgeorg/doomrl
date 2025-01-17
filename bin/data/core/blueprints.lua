@@ -474,7 +474,11 @@ core.register_blueprint "item"
 			OnEnter = { true, core.TFUNC },
 		},
 		[ITEMTYPE_FEATURE] = {
-			ascii   = { false, core.TSTRING, "*" },
+			ascii     = { false, core.TSTRING, "*" },
+			armor     = { false, core.TNUMBER },
+			hp        = { false, core.TNUMBER },
+			OnDestroy = { false, core.TFUNC },
+			OnAct     = { false, core.TFUNC },
 		},
 	}},
 
