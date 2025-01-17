@@ -1462,7 +1462,7 @@ begin
   for Range := 1 to RRange do
     for sc in NewArea( FPosition, Range ).Clamped( iLevel.Area.Shrinked ) do
       if iLevel.cellFlagSet( sc, CF_RAISABLE ) then
-        if iLevel.isEmpty(sc,[EF_NOBEINGS]) then
+        if iLevel.isEmpty(sc,[EF_NOBEINGS,EF_NOBLOCK]) then
         if iLevel.isEyeContact( FPosition, sc ) then
         begin
           try
