@@ -80,7 +80,7 @@ end;
 { TDoomMove }
 
 TDoomMove = class(TAnimation)
-  constructor Create( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aPartial : Single = 0.0 );
+  constructor Create( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean; aPartial : Single = 0.0 );
   procedure OnStart; override;
   procedure OnDraw; override;
   destructor Destroy; override;
@@ -91,6 +91,7 @@ private
   FPosition   : TVec2i;
   FSource     : TVec2i;
   FTarget     : TVec2i;
+  FBeing      : Boolean;
 public
   property LastPosition : TVec2i read FPosition;
 end;
@@ -142,7 +143,7 @@ end;
 implementation
 
 uses viotypes, vuid, vlog, vdebug,
-     dfbeing,
+     dfbeing, dfthing,
      doombase, doomgfxio, doomio, doomspritemap;
 
 { TDoomMissile }
@@ -294,16 +295,17 @@ end;
 { TDoomMove }
 
 constructor TDoomMove.Create ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D;
-  aSprite : TSprite; aPartial : Single ) ;
-var iSize : Word;
+  aSprite : TSprite; aBeing : Boolean; aPartial : Single ) ;
+var iSize  : Word;
 begin
   inherited Create( aDuration, aDelay, 0 );
   FUID        := aUID;
   FSprite     := aSprite;
+  FBeing      := aBeing;
   FLightStart := Iif( Doom.Level.isVisible(aFrom), 255, 0 );
   FLightEnd   := Iif( Doom.Level.isVisible(aTo),   255, 0 );
 
-  if Doom.Level.Flags[ LF_BEINGSVISIBLE ] then
+  if aBeing and Doom.Level.Flags[ LF_BEINGSVISIBLE ] then
   begin
     FLightStart := Max( FLightStart, 40 );
     FLightEnd   := Max( FLightEnd, 40 );
@@ -320,10 +322,10 @@ begin
 end;
 
 procedure TDoomMove.OnStart;
-var iBeing : TBeing;
+var iThing : TThing;
 begin
-  iBeing := UIDs.Get( FUID ) as TBeing;
-  if iBeing <> nil then iBeing.AnimCount := iBeing.AnimCount + 1;
+  iThing := UIDs.Get( FUID ) as TThing;
+  if iThing <> nil then iThing.AnimCount := iThing.AnimCount + 1;
 end;
 
 procedure TDoomMove.OnDraw;
@@ -333,14 +335,16 @@ begin
   iValue    := Clampf( FTime / FDuration, 0, 1 );
   iLight    := Lerp( FLightStart, FLightEnd, iValue );
   FPosition := Lerp( FSource, FTarget, iValue );
-  SpriteMap.PushSpriteBeing( FPosition, FSprite, iLight );
+  if FBeing
+    then SpriteMap.PushSpriteBeing( FPosition, FSprite, iLight )
+    else SpriteMap.PushSpriteItem( FPosition, FSprite, iLight );
 end;
 
 destructor TDoomMove.Destroy;
-var iBeing : TBeing;
+var iThing : TThing;
 begin
-  iBeing := UIDs.Get( FUID ) as TBeing;
-  if iBeing <> nil then iBeing.AnimCount := Max( 0, iBeing.AnimCount - 1 );
+  iThing := UIDs.Get( FUID ) as TThing;
+  if iThing <> nil then iThing.AnimCount := Max( 0, iThing.AnimCount - 1 );
   inherited Destroy;
 end;
 

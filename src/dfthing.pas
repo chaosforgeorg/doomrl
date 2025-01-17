@@ -25,13 +25,15 @@ TThing = class( TLuaEntityNode )
 protected
   procedure LuaLoad( Table : TLuaTable ); virtual;
 protected
-  FHP      : Integer;
-  FArmor   : Integer;
-  FSprite  : TSprite;
-  FSoundID : string[16];
+  FHP        : Integer;
+  FArmor     : Integer;
+  FSprite    : TSprite;
+  FSoundID   : string[16];
+  FAnimCount : Word;
   {$TYPEINFO ON}
 public
   property Sprite     : TSprite  read FSprite             write FSprite;
+  property AnimCount  : Word     read FAnimCount          write FAnimCount;
 published
   property SpriteID   : DWord    read FSprite.SpriteID[0] write FSprite.SpriteID[0];
   property HP         : Integer  read FHP                 write FHP;
@@ -47,11 +49,13 @@ uses typinfo, variants,
 constructor TThing.Create( const aID : AnsiString );
 begin
   inherited Create( aID );
+  FAnimCount := 0;
 end;
 
 procedure TThing.LuaLoad(Table: TLuaTable);
 var iColorID : AnsiString;
 begin
+  FAnimCount   := 0;
   FGylph.ASCII := Table.getChar('ascii');
   FGylph.Color := Table.getInteger('color');
   FSoundID     := Table.getString('sound_id','');
@@ -121,6 +125,8 @@ begin
   Stream.Read( FSoundID, SizeOf( FSoundID ) );
   Stream.Read( FHP,      SizeOf( FHP ) );
   Stream.Read( FArmor,   SizeOf( FArmor ) );
+
+  FAnimCount := 0;
 end;
 
 end.

@@ -47,6 +47,7 @@ type
   procedure Draw;
   function DevicePointToCoord( aPoint : TPoint ) : TCoord2D;
   procedure PushSpriteBeing( aPos : TVec2i; const aSprite : TSprite; aLight : Byte );
+  procedure PushSpriteItem( aPos : TVec2i; const aSprite : TSprite; aLight : Byte );
   procedure PushSpriteDoodad( aCoord : TCoord2D; const aSprite : TSprite; aLight : Integer = -1 );
   procedure PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite );
   procedure PushSpriteFXRotated( aPos : TVec2i; const aSprite : TSprite; aRotation : Single );
@@ -681,6 +682,11 @@ begin
   PushSprite( aPos, aSprite, aLight, z );
 end;
 
+procedure TDoomSpriteMap.PushSpriteItem( aPos : TVec2i; const aSprite : TSprite; aLight : Byte ) ;
+begin
+  PushSprite( aPos, aSprite, aLight, aPos.Y * DRL_Z_LINE + DRL_Z_ITEMS + 500);
+end;
+
 procedure TDoomSpriteMap.PushSpriteDoodad( aCoord : TCoord2D; const aSprite: TSprite; aLight: Integer );
 var iLight  : Byte;
     iSprite : TSprite;
@@ -979,10 +985,11 @@ begin
 
       iItem := Doom.Level.Item[iCoord];
       if Doom.Level.ItemVisible(iCoord, iItem) or Doom.Level.ItemExplored(iCoord, iItem) then
-      begin
-        if Doom.Level.ItemVisible(iCoord, iItem) then iL := 255 else iL := 70;
-        PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iItem.Sprite ), iL, iZ + DRL_Z_ITEMS );
-      end;
+        if (iItem.AnimCount = 0) then
+        begin
+          if Doom.Level.ItemVisible(iCoord, iItem) then iL := 255 else iL := 70;
+          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iItem.Sprite ), iL, iZ + DRL_Z_ITEMS );
+        end;
     end;
 
   for iY := 1 to MAXY do

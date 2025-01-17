@@ -317,7 +317,6 @@ function level:push_barrel( who, what, c, target, quiet )
 	self:play_sound( item_id .. ".move", c )
 	if not quiet then ui.msg( "You push the "..name.."." ) end
 	level:push_item( who, what, c, target )
-	who.scount = who.scount - 1000
 	return true
 end
 

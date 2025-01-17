@@ -102,7 +102,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionPickup : Boolean;
     function ActionUse( aItem : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
-    function ActionMove( aTarget : TCoord2D ) : Boolean;
+    function ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0 ) : Boolean;
     function ActionTactic : boolean;
     function ActionAction( aTarget : TCoord2D ) : Boolean;
 
@@ -126,6 +126,7 @@ TBeing = class(TThing,IPathQuery)
     function MoveCost( const Start, Stop : TCoord2D ) : Single;
     function CostEstimate( const Start, Stop : TCoord2D ) : Single;
     function passableCoord( const aCoord : TCoord2D ) : boolean;
+    function VisualTime( aActionCost : Word = 1000; aBaseTime : Word = 100 ) : Word;
 
     class procedure RegisterLuaAPI();
 
@@ -137,7 +138,6 @@ TBeing = class(TThing,IPathQuery)
     function HandleShotgunFire( aTarget : TCoord2D; aShotGun : TItem; aShots : DWord ) : Boolean;
     function HandleSpreadShots( aTarget : TCoord2D; aGun : TItem ) : Boolean;
     function HandleShots( aTarget : TCoord2D; aGun : TItem; aShots : DWord; toHit, toDam : Integer; iChaining : Boolean ) : Boolean;
-    function VisualTime( aActionCost : Word = 1000; aBaseTime : Word = 100 ) : Word;
     protected
     FHPNom         : Word;
     FHPMax         : Word;
@@ -161,7 +161,6 @@ TBeing = class(TThing,IPathQuery)
     FChainFire     : Byte;
     FPath          : TPathFinder;
     FKnockBacked   : Boolean;
-    FAnimCount     : Word;
     public
     property Inv       : TInventory  read FInv       write FInv;
     property TargetPos : TCoord2D    read FTargetPos write FTargetPos;
@@ -169,7 +168,6 @@ TBeing = class(TThing,IPathQuery)
     property LastMove  : TCoord2D    read FMovePos   write FMovePos;
 
     property KnockBacked  : Boolean read FKnockBacked  write FKnockBacked;
-    property AnimCount    : Word    read FAnimCount    write FAnimCount;
     property SilentAction : Boolean read FSilentAction write FSilentAction;
     property MeleeAttack  : Boolean read FMeleeAttack;
     property ChainFire    : Byte    read FChainFire    write FChainFire;
@@ -332,7 +330,6 @@ begin
   FSilentAction := False;
   FKnockBacked  := False;
   FMeleeAttack  := False;
-  FAnimCount    := 0;
 end;
 
 procedure TBeing.LuaLoad( Table : TLuaTable );
@@ -1095,17 +1092,17 @@ begin
   Exit( Success( 'You partially unload the %s.', [ iName ], ActionCostReload ) );
 end;
 
-function TBeing.ActionMove( aTarget : TCoord2D ) : Boolean;
+function TBeing.ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0 ) : Boolean;
 var iVisualTime : Integer;
     iMoveCost   : Integer;
 begin
   iMoveCost := getMoveCost;
   if GraphicsVersion then
   begin
-    iVisualTime := VisualTime( iMoveCost, 100 );
+    iVisualTime := Ceil( VisualTime( iMoveCost, 100 ) * aVisualMultiplier );
     if isPlayer then
       IO.addScreenMoveAnimation( iVisualTime, aTarget );
-    IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite );
+    IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite, True );
   end;
   Displace( aTarget );
   Dec( FSpeedCount, iMoveCost );
@@ -1247,7 +1244,7 @@ begin
     if iLevel.BeingExplored( FPosition, Self ) or iLevel.BeingExplored( LastMove, Self ) or iLevel.BeingVisible( FPosition, Self ) or iLevel.BeingVisible( LastMove, Self ) then
     begin
       iVisualMult := ( 100.0 / FSpeed ) * ( iMoveCost / 1000.0 ) * aVisualMultiplier;
-      IO.addMoveAnimation( Ceil( iVisualMult * 100 ), 0, FUID,Position,LastMove,Sprite);
+      IO.addMoveAnimation( Ceil( iVisualMult * 100 ), 0, FUID,Position,LastMove,Sprite, True);
     end;
   Displace( FMovePos );
   if BF_WALKSOUND in FFlags then
@@ -2216,7 +2213,7 @@ begin
       if isPlayer then
         IO.addScreenMoveAnimation(100, knock );
       if isVisible then
-        IO.addMoveAnimation(100,0,FUID,Position,knock,Sprite);
+        IO.addMoveAnimation(100,0,FUID,Position,knock,Sprite,True);
     end;
     Displace( knock );
     HandlePostDisplace;

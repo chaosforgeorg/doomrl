@@ -2,8 +2,10 @@
 [new] -- GH#149: settings - you can now clear a keybinding using Backspace
 [new] -- GH#188: settings - you can now disable mouse rendering and interaction
 [new] -- GH#094: barrels can be moved much more freely now!
+[new] -- GH#094: you move with the barrel now!
 [mod] -- GH#192: G-version - auto-target reticle now follows enemy sprite
 [mod] -- GH#193: G-version - melee bump animation added
+[mod] -- GH#193: G-version - smooth barrel movement
 [mod] -- GH#017: you can invoke the combat translocator to self-phase for a higher cost
 [fix] -- GH#018: player info will show level name instead of "level X of Phobos Base"
 [fix] -- GH#191: fixed overdraw on diagonal movement
