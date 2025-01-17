@@ -932,15 +932,15 @@ begin
 end;
 
 function TBeing.ActionPickup : Boolean;
-var Amount  : byte;
+var iAmount  : byte;
     iItem   : TItem;
     iName   : AnsiString;
     iCount  : Byte;
 begin
   iItem := TLevel(Parent).Item[ FPosition ];
 
-  if iItem = nil then Exit( Fail( 'But there is nothing here!', [] ) );
-  if iItem.isLever or iItem.isTele then Exit( Fail( 'But there is nothing here to pick up!', [] ) );
+  if iItem = nil            then Exit( Fail( 'But there is nothing here!', [] ) );
+  if not iItem.isPickupable then Exit( Fail( 'But there is nothing here to pick up!', [] ) );
 
   if iItem.isPower then
   begin
@@ -957,16 +957,16 @@ begin
 
   if iItem.isAmmo then
   begin
-    Amount := Inv.AddAmmo(iItem.NID,iItem.Ammo);
-    if Amount <> iItem.Ammo then
+    iAmount := Inv.AddAmmo(iItem.NID,iItem.Ammo);
+    if iAmount <> iItem.Ammo then
     begin
       iItem.playSound( 'pickup', FPosition );
       CallHook( Hook_OnPickUpItem, [iItem] );
       iName := iItem.Name;
-      iCount := iItem.Ammo-Amount;
-      if Amount = 0 then
+      iCount := iItem.Ammo-iAmount;
+      if iAmount = 0 then
         TLevel(Parent).DestroyItem( FPosition )
-      else iItem.Ammo := Amount;
+      else iItem.Ammo := iAmount;
       Exit( Success( 'You found %d of %s.',[iCount,iName],ActionCostPickup) );
     end else Exit( Fail('You don''t have enough room in your backpack.',[]) );
   end;

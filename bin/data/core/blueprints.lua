@@ -473,6 +473,9 @@ core.register_blueprint "item"
 			ascii   = { false, core.TSTRING, "*" },
 			OnEnter = { true, core.TFUNC },
 		},
+		[ITEMTYPE_FEATURE] = {
+			ascii   = { false, core.TSTRING, "*" },
+		},
 	}},
 
 	OnCreate      = { false, core.TFUNC },
