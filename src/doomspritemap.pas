@@ -1004,8 +1004,10 @@ begin
         else if Doom.Level.BeingExplored(iCoord, iBeing) then
           PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iBeing.Sprite ), 40, iZ + DRL_Z_BEINGS )
         else if Doom.Level.BeingIntuited(iCoord, iBeing) then
-          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, NewSprite( HARDSPRITE_MARK, NewColor( Magenta ) ), 25, iZ + DRL_Z_BEINGS )
-
+        begin
+          with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
+            Push( HARDSPRITE_MARK mod 100000, iCoord, ColorWhite, NewColor( Magenta ), DRL_Z_FX-1 );
+        end;
     end;
 
   if FTargeting then
