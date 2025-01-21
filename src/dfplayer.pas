@@ -403,11 +403,10 @@ procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing;
 var iKillClass : AnsiString;
 begin
   iKillClass := 'other';
-  if ( aKiller = Self ) and ( TLevel(Parent).ActiveBeing = Self ) and ( FMeleeAttack ) then
+  if ( aKiller = Self ) and ( TLevel(Parent).ActiveBeing = Self ) then
   begin
-    iKillClass := 'melee';
-    if aWeapon <> nil then
-      iKillClass := aWeapon.ID;
+    if FMeleeAttack   then iKillClass := 'melee';
+    if aWeapon <> nil then iKillClass := aWeapon.ID;
   end;
   FKills.Add( aKilledID, iKillClass );
   if aUnique then Inc( FKillCount );
