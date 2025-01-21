@@ -534,8 +534,13 @@ function generator.generate_barrels()
 		cell2 = "barrela"
 	end
 
+	local function barrel_coord()
+		return generator.random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_NOLIQUID } )
+	end
+	
+
 	for i=1,count/2 do
-		level:drop_item( cell1, generator.standard_empty_coord(), true )
-		level:drop_item( cell2, generator.standard_empty_coord(), true )
+		level:drop_item( cell1, barrel_coord(), true )
+		level:drop_item( cell2, barrel_coord(), true )
 	end
 end
