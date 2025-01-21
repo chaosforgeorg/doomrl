@@ -4,6 +4,7 @@
 [fix] -- RCFIX : players can no longer spawn in liquid
 [fix] -- RCFIX : fixed edge mud sprite
 [fix] -- RCFIX : don't spawn barrels on liquids
+[fix] -- RCFIX : return stronger item glow (temp?)
 
 0.9.9.9 BETA 3
 [new] -- GH#149: settings - you can now clear a keybinding using Backspace
