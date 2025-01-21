@@ -192,7 +192,8 @@ VPostFragmentShader : Ansistring =
 '  vec4 blur  = texture( ublur, uv );'+#10+
 '  color += blur.xyz * 1.6;'+#10+
 '}'+#10+
-'frag_color = texture( ulut, clamp( color.xzy, 0.0, 1.0 ) );'+#10+
+'vec3 lookup = color.xzy * vec3( 30.0 / 32.0 ) + vec3( 1.0 / 32.0 );'+#10+
+'frag_color = vec4( texture( ulut, clamp( lookup, 0.0, 1.0 ) ).xyz, 1.0 );'+#10+
 //'frag_color = vec4(color.xyz, 1.0);'+#10+
 '}'+#10;
 
