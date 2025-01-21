@@ -296,9 +296,6 @@ begin
   Setting_Mouse            := Configuration.GetBoolean( 'enable_mouse' );
   Setting_UnlockAll        := Configuration.GetBoolean( 'unlock_all' );
   Setting_MenuSound        := Configuration.GetBoolean( 'menu_sound' );
-  // HACK - remove when DoomRL gets glow
-  if ModuleID = 'drl' then
-    Setting_Glow := False;
 end;
 
 procedure TDoom.CreateIO;

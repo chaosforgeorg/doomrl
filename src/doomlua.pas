@@ -45,49 +45,6 @@ uses typinfo, variants,
 
 var SpriteSheetCounter : Integer = -1;
 
-function GenerateGlow ( Shadow : TImage ) : TImage;
-const GaussSize = 1;
-var Glow        : TImage;
-    X,Y,P,XX,YY : Integer;
-    RX,RY       : Integer;
-    Value       : Integer;
-begin
-  Glow := TImage.Create( Shadow.SizeX, Shadow.SizeY );
-  Glow.Fill( ColorZero );
-  XX := 1 * 4;
-  YY := Glow.SizeX * 4;
-  for X := 1 to Glow.SizeX - 2 do
-    for Y := 1 to Glow.SizeY - 2 do
-    begin
-      P  := (Integer(Glow.SizeX)*Y + X) * 4;
-      RX := ( Shadow.Data[ P-YY ] - Shadow.Data[ P+YY ] );
-      RY := ( Shadow.Data[ P+XX ] - Shadow.Data[ P-XX ] );
-      Value := Clamp( Round( 0.1 * Sqrt( RX * RX + RY * RY ) ), 0, 255 );
-      Glow.Data[ P   ] := Value;
-      Glow.Data[ P+1 ] := Value;
-      Glow.Data[ P+2 ] := Value;
-      Glow.Data[ P+3 ] := Value;
-    end;
-  GenerateGlow := Glow.Clone;
-  for X := GaussSize to Glow.SizeX - 1 - GaussSize do
-    for Y := GaussSize to Glow.SizeY - 1 - GaussSize do
-    begin
-      Value := 0;
-      for RX := -GaussSize to GaussSize do
-        for RY := -GaussSize to GaussSize do
-          Value += Glow.Data[ (Integer(Glow.SizeX)*(Y+RY) + (X+RX)) * 4 ];
-      Value := Clamp( Value div ( GaussSize * GaussSize ), 0, 255 );
-      P  := (Integer(Glow.SizeX)*Y + X) * 4;
-      GenerateGlow.Data[ P   ] := Value;
-      GenerateGlow.Data[ P+1 ] := Value;
-      GenerateGlow.Data[ P+2 ] := Value;
-      GenerateGlow.Data[ P+3 ] := Value;
-    end;
-  GenerateGlow.RawX := Shadow.RawX;
-  GenerateGlow.RawY := Shadow.RawY;
-  FreeAndNil( Glow );
-end;
-
 function lua_core_is_playing(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
@@ -324,20 +281,6 @@ begin
   Result := 0;
 end;
 
-
-function lua_core_texture_generate_glow(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    iIn   : TTexture;
-begin
-  State.Init(L);
-  if not GraphicsVersion then Exit( 0 );
-  iIn := (IO as TDoomGFXIO).Textures.Textures[ State.ToString(1) ];
-  if iIn = nil then State.Error( 'Texture not found: '+State.ToString(1) );
-  (IO as TDoomGFXIO).Textures.AddImage( State.ToString(2), GenerateGlow( iIn.Image ), Option_Blending );
-  Result := 0;
-end;
-
-
 function lua_core_register_sprite_sheet(L: Plua_State): Integer; cdecl;
 var State     : TDoomLuaState;
     iNormal   : TTexture;
@@ -368,8 +311,7 @@ begin
   iGlow     := LoadTexture( 3 );
   iEmissive := LoadTexture( 4 );
   if iNormal = nil then State.Error( 'Bad parameters passes to register_sprite_sheet!');
-  State.Push( Integer( SpriteMap.Engine.Add( iNormal, iCosplay, iEmissive, State.ToInteger(5) ) * 100000 ) );
-  if iGlow <> nil then SpriteMap.Engine.Add( iGlow, nil, nil, State.ToInteger(5) );
+  State.Push( Integer( SpriteMap.Engine.Add( iNormal, iCosplay, iEmissive, iGlow, State.ToInteger(5) ) * 100000 ) );
   Result := 1;
 end;
 
@@ -507,7 +449,7 @@ const lua_player_data_lib : array[0..4] of luaL_Reg = (
 );
 
 
-const lua_core_lib : array[0..12] of luaL_Reg = (
+const lua_core_lib : array[0..11] of luaL_Reg = (
     ( name : 'add_to_cell_set';func : @lua_core_add_to_cell_set),
     ( name : 'game_time';func : @lua_core_game_time),
     ( name : 'is_playing';func : @lua_core_is_playing),
@@ -519,7 +461,6 @@ const lua_core_lib : array[0..12] of luaL_Reg = (
     ( name : 'play_music';func : @lua_core_play_music),
 
     ( name : 'texture_upload';        func : @lua_core_texture_upload),
-    ( name : 'texture_generate_glow'; func : @lua_core_texture_generate_glow),
     ( name : 'register_sprite_sheet'; func : @lua_core_register_sprite_sheet),
     ( name : 'set_vision_base_value'; func : @lua_core_set_vision_base_value),
 

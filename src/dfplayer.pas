@@ -783,19 +783,18 @@ begin
     Color := Inv.Slot[ efTorso ].Color;
   Gray := NewColor( 200,200,200 );
   Include( FSprite.Flags, SF_COSPLAY );
-  Exclude( FSprite.Flags, SF_GLOW );
   if Inv.Slot[ efTorso ] <> nil then
   begin
     if Inv.Slot[ efTorso ].PGlowColor.A > 0 then
-    begin
-      Include( FSprite.Flags, SF_GLOW );
       FSprite.GlowColor := Inv.Slot[ efTorso ].PGlowColor;
-    end;
     FSprite.Color     := Inv.Slot[ efTorso ].PCosColor;
     iSpMod            := Inv.Slot[ efTorso ].SpriteMod;
   end
   else
-    FSprite.Color    := GRAY;
+  begin
+    FSprite.Color     := GRAY;
+    FSprite.GlowColor := ColorZero;
+  end;
   FSprite.SpriteID[0] := HARDSPRITE_PLAYER;
   if Inv.Slot[ efWeapon ] <> nil then
   begin
