@@ -201,13 +201,16 @@ VHorizBlurFragmentShader : Ansistring =
 #10+
 'void main() {'+#10+
 '    vec2 uv = gl_FragCoord.xy / screen_size;'+#10+
-'    vec4 result = vec4(0.0);'+#10+
+'    vec3 result = vec3(0.0);'+#10+
 '    float weights[5] = float[](0.227027, 0.316216, 0.070270, 0.050987, 0.016216);'+#10+
+'    float w = 0.0;'+#10+
 '    for (int i = -2; i <= 2; ++i) {'+#10+
 '        vec2 offset = vec2(i, 0.0) / screen_size;'+#10+
-'        result += texture(utexture, uv + offset) * weights[abs(i)];'+#10+
+'        vec4 texel  = texture(utexture, uv + offset);'+#10+
+'        if ( i == 0 ) w = texel.w;'+#10+
+'        result += texel.xyz * weights[abs(i)];'+#10+
 '    }'+#10+
-'    frag_color = result;'+#10+
+'    frag_color = vec4( result, w );'+#10+
 '}'+#10;
 
 VVerticBlurFragmentShader : Ansistring =
@@ -218,13 +221,16 @@ VVerticBlurFragmentShader : Ansistring =
 #10+
 'void main() {'+#10+
 '    vec2 uv = gl_FragCoord.xy / screen_size;'+#10+
-'    vec4 result = vec4(0.0);'+#10+
+'    vec3 result = vec3(0.0);'+#10+
 '    float weights[5] = float[](0.227027, 0.316216, 0.070270, 0.050987, 0.016216);'+#10+
+'    float w = 0.0;'+#10+
 '    for (int i = -2; i <= 2; ++i) {'+#10+
 '        vec2 offset = vec2(0.0, i) / screen_size;'+#10+
-'        result += texture(utexture, uv + offset) * weights[abs(i)];'+#10+
+'        vec4 texel  = texture(utexture, uv + offset);'+#10+
+'        if ( i == 0 ) w = texel.w;'+#10+
+'        result += texel.xyz * weights[abs(i)];'+#10+
 '    }'+#10+
-'    frag_color = result;'+#10+
+'    frag_color = vec4( result, w );'+#10+
 '}'+#10;
 
 { TDoomSpriteMap }
