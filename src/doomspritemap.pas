@@ -456,7 +456,7 @@ begin
   with FSpriteEngine.Layers[ ( aSprite.SpriteID[0] div 100000 ) + 1 ] do
   begin
     iColor.SetAll( ColorToGL( aSprite.GlowColor ) );
-    Push( @iCoord, @iTex, @iColor, ColorZero, DRL_Z_FX );
+    Push( @iCoord, @iTex, @iColor, ColorBlack, DRL_Z_FX );
   end;
 end;
 
@@ -479,7 +479,7 @@ begin
   with iLayer do
   begin
 // TODO: facing
-    iCosColor := ColorZero;
+    iCosColor := ColorBlack;
     if SF_COSPLAY in aSprite.Flags then
       iCosColor := aSprite.Color;
 
@@ -667,7 +667,7 @@ begin
   iPb       := iPosition + TVec2i.Create( Round( iPEnd.X ), Round( iPEnd.Y ) );
   if ( SF_COSPLAY in aSprite.Flags )
     then Push( iLayer, aSprite.Color )
-    else Push( iLayer, ColorZero );
+    else Push( iLayer, ColorBlack );
 end;
 
 
@@ -739,7 +739,7 @@ begin
   begin
     if ( SF_COSPLAY in aSprite.Flags )
       then PushXY( iSpriteID, 1, ip, @iColors, aSprite.Color, aTSX, aTSY, aZ )
-      else PushXY( iSpriteID, 1, ip, @iColors, ColorZero, aTSX, aTSY, aZ );
+      else PushXY( iSpriteID, 1, ip, @iColors, ColorBlack, aTSX, aTSY, aZ );
   end;
 end;
 
@@ -1041,7 +1041,7 @@ begin
   for iY := 1 to MAXY do
     for iX := iDMinX to iDMaxX do
     with FSpriteEngine.Layers[ HARDSPRITE_GRID div 100000 ] do
-      Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), ColorZero, DRL_Z_ITEMS );
+      Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), ColorBlack, DRL_Z_ITEMS );
 
 end;
 
