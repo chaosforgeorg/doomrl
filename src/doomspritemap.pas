@@ -188,9 +188,12 @@ VPostFragmentShader : Ansistring =
 'void main() {'+#10+
 'vec2 uv    = gl_FragCoord.xy / screen_size;'+#10+
 'vec3 color = texture( utexture, uv ).xyz;'+#10+
-'if ( toggle_glow > 0 ) color += texture( ublur, uv ).xyz * 1.6;'+#10+
+'if ( toggle_glow > 0 ) {'+#10+
+'  vec4 blur  = texture( ublur, uv );'+#10+
+'  color += blur.xyz * 1.6;'+#10+
+'}'+#10+
 'frag_color = texture( ulut, clamp( color.xzy, 0.0, 1.0 ) );'+#10+
-//'frag_color = texture(utexture, uv);'+#10+
+//'frag_color = vec4(color.xyz, 1.0);'+#10+
 '}'+#10;
 
 VHorizBlurFragmentShader : Ansistring =
@@ -495,7 +498,12 @@ begin
   end;
   if ( SF_GLOW in aSprite.Flags ) then
   with FSpriteEngine.Layers[ ( aSprite.SpriteID[0] div 100000 ) + 1 ] do
-    PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, ColorZero, aZ+1 );
+  begin
+    //iCosColor
+    if not Setting_Glow
+      then PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, ColorZero, aZ-1, 1.0 + (1.0/8.0) )
+      else PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, ColorZero, aZ+1 );
+  end;
 
 end;
 
