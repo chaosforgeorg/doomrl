@@ -182,6 +182,7 @@ EF_NOTELE   = 5;
 EF_NOHARM   = 6;
 EF_NOSAFE   = 7;
 EF_NOSPAWN  = 8;
+EF_NOLIQUID = 9;
 
 DIFF_EASY      = 1;
 DIFF_MEDIUM    = 2;
