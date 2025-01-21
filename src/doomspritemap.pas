@@ -190,7 +190,7 @@ VPostFragmentShader : Ansistring =
 'vec3 color = texture( utexture, uv ).xyz;'+#10+
 'if ( toggle_glow > 0 ) {'+#10+
 '  vec4 blur  = texture( ublur, uv );'+#10+
-'  color += blur.xyz * 1.6;'+#10+
+'  color += blur.xyz * 1.6 * blur.w;'+#10+
 '}'+#10+
 'vec3 lookup = color.xzy * vec3( 30.0 / 32.0 ) + vec3( 1.0 / 32.0 );'+#10+
 'frag_color = vec4( texture( ulut, clamp( lookup, 0.0, 1.0 ) ).xyz, 1.0 );'+#10+
@@ -376,6 +376,8 @@ begin
 
     if Setting_Glow then
     begin
+      glDisable( GL_BLEND );
+
       FHBlurProgram.Bind;
         glActiveTexture( GL_TEXTURE0 );
         glBindTexture( GL_TEXTURE_2D, FFramebuffer.GetTextureID(1) );
@@ -391,6 +393,8 @@ begin
         FFullscreen.Render;
         FVBFramebuffer.UnBind;
       FVBlurProgram.UnBind;
+
+      glEnable( GL_BLEND );
 
       glViewport( 0, 0, iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
     end;
@@ -459,14 +463,7 @@ begin
   begin
     iColor.FillAll( 255 );
     if SF_OVERLAY in aSprite.Flags then iColor.SetAll( ColorToGL( aSprite.Color ) );
-    Push( @iCoord, @iTex, @iColor, aSprite.Color, DRL_Z_FX );
-  end;
-
-  if SF_GLOW in aSprite.Flags then
-  with FSpriteEngine.Layers[ ( aSprite.SpriteID[0] div 100000 ) + 1 ] do
-  begin
-    iColor.SetAll( ColorToGL( aSprite.GlowColor ) );
-    Push( @iCoord, @iTex, @iColor, ColorBlack, DRL_Z_FX );
+    Push( @iCoord, @iTex, @iColor, aSprite.Color, aSprite.GlowColor, DRL_Z_FX );
   end;
 end;
 
@@ -494,18 +491,16 @@ begin
       iCosColor := aSprite.Color;
 
     if SF_OVERLAY in aSprite.Flags
-      then PushXY( iSpriteID, iSize, aPos, aSprite.Color, iCosColor, aZ )
-      else PushXY( iSpriteID, iSize, aPos, NewColor( aLight, aLight, aLight ), iCosColor, aZ );
-  end;
-  if ( SF_GLOW in aSprite.Flags ) then
-  with FSpriteEngine.Layers[ ( aSprite.SpriteID[0] div 100000 ) + 1 ] do
-  begin
-    //iCosColor
-    if not Setting_Glow
-      then PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, ColorZero, aZ-1, 1.0 + (1.0/8.0) )
-      else PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, ColorZero, aZ+1 );
-  end;
+      then PushXY( iSpriteID, iSize, aPos, aSprite.Color, iCosColor, aSprite.GlowColor, aZ )
+      else PushXY( iSpriteID, iSize, aPos, NewColor( aLight, aLight, aLight ), iCosColor, aSprite.GlowColor, aZ );
 
+    if ( not Setting_Glow ) and ( aSprite.GlowColor.A > 0 ) then
+    begin
+      iCosColor := aSprite.GlowColor;
+      iCosColor.A := 4;
+      PushXY( iSpriteID, iSize, aPos, ColorWhite, ColorZero, iCosColor, aZ-1, 1.0 + (1.0/8.0) )
+    end;
+  end;
 end;
 
 procedure TDoomSpriteMap.PushMultiSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
@@ -635,7 +630,7 @@ var iColors   : TGLRawQColor;
     iPEnd     : TVec2f;
   procedure Push( aLayer : TSpriteDataSet; aCosColor : TColor );
   begin
-    aLayer.PushPart( iSpriteID, iPa, iPb, @iColors, aCosColor, aZ, iStart, iEnd );
+    aLayer.PushPart( iSpriteID, iPa, iPb, @iColors, aCosColor, ColorZero, aZ, iStart, iEnd );
   end;
 
   function BilinearLight( aPos : TVec2f ) : Byte;
@@ -753,8 +748,8 @@ begin
   with iLayer do
   begin
     if ( SF_COSPLAY in aSprite.Flags )
-      then PushXY( iSpriteID, 1, ip, @iColors, aSprite.Color, aTSX, aTSY, aZ )
-      else PushXY( iSpriteID, 1, ip, @iColors, ColorBlack, aTSX, aTSY, aZ );
+      then PushXY( iSpriteID, 1, ip, @iColors, aSprite.Color, ColorZero, aTSX, aTSY, aZ )
+      else PushXY( iSpriteID, 1, ip, @iColors, ColorBlack, ColorZero, aTSX, aTSY, aZ );
   end;
 end;
 
@@ -1021,7 +1016,7 @@ begin
         else if Doom.Level.BeingIntuited(iCoord, iBeing) then
         begin
           with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
-            Push( HARDSPRITE_MARK mod 100000, iCoord, ColorWhite, NewColor( Magenta ), DRL_Z_FX-1 );
+            Push( HARDSPRITE_MARK mod 100000, iCoord, ColorWhite, NewColor( Magenta ), ColorZero, DRL_Z_FX-1 );
         end;
     end;
 
@@ -1035,11 +1030,11 @@ begin
            (not Doom.Level.isEmpty( FTargetList[iL], [ EF_NOBLOCK, EF_NOVISION ] )) then
           iColor := NewColor( 128, 0, 0 );
         with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-          Push( HARDSPRITE_SELECT mod 100000, FTargetList[iL], ColorWhite, iColor, DRL_Z_FX );
+          Push( HARDSPRITE_SELECT mod 100000, FTargetList[iL], ColorWhite, iColor, ColorZero, DRL_Z_FX );
       end;
       if FTargetList.Size > 0 then
         with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
-          Push( HARDSPRITE_MARK mod 100000, FTarget, ColorWhite, FTargetColor, DRL_Z_FX );
+          Push( HARDSPRITE_MARK mod 100000, FTarget, ColorWhite, FTargetColor, ColorZero, DRL_Z_FX );
     end
   else
     if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
@@ -1049,14 +1044,14 @@ begin
       if ( iBeing <> nil ) and ( iBeing.AnimCount > 0 ) then
          (IO as TDoomGFXIO).getUIDPosition( iBeing.UID, iV );
       with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
-        PushXY( HARDSPRITE_SELECT mod 100000, 1, iV, ColorWhite, NewColor( Yellow ), DRL_Z_FX );
+        PushXY( HARDSPRITE_SELECT mod 100000, 1, iV, ColorWhite, NewColor( Yellow ), ColorZero, DRL_Z_FX );
     end;
 
   if FGridActive then
   for iY := 1 to MAXY do
     for iX := iDMinX to iDMaxX do
     with FSpriteEngine.Layers[ HARDSPRITE_GRID div 100000 ] do
-      Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), ColorBlack, DRL_Z_ITEMS );
+      Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), ColorBlack, ColorZero, DRL_Z_ITEMS );
 
 end;
 

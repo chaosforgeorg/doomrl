@@ -6,14 +6,6 @@ function drl.register_sprites()
     core.texture_upload( "lut_enviro",  true, true )
     core.texture_upload( "lut_berserk", true, true )
 
-    --[[
-    core.texture_generate_glow( "doomguy_shadow", "doomguy_glow" )
-    core.texture_generate_glow( "enemies_shadow", "enemies_glow" )
-    core.texture_generate_glow( "enemies_big_shadow", "enemies_big_glow" )
-    core.texture_generate_glow( "guns_and_pickups_shadow", "guns_and_pickups_glow" )
-    core.texture_generate_glow( "doors_and_decorations_shadow", "doors_and_decorations_glow" )
-    --]]
-
     local DRL_SENVIRO = core.register_sprite_sheet( "levels", "levels_mask", nil, nil, 0 )
     local DRL_SDOODAD = core.register_sprite_sheet( "doors_and_decorations", "doors_and_decorations_mask", "doors_and_decorations_shadow", nil,100 )
     local DRL_SITEMS  = core.register_sprite_sheet( "guns_and_pickups", "guns_and_pickups_mask", "guns_and_pickups_shadow", nil, 200 )

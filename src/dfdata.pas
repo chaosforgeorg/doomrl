@@ -773,10 +773,8 @@ begin
     aSprite.Color := NewColor( aTable.GetVec4f('coscolor' ) );
   end;
   if not aTable.isNil( 'glow' ) then
-  begin
-    Include( aSprite.Flags, SF_GLOW );
     aSprite.GlowColor := NewColor( aTable.GetVec4f('glow' ) );
-  end;
+
   // so we can later move to in-sprite table sprite info definitions slowly
   if aTable.IsTable( 'sprite' ) then
   begin
