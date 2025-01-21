@@ -489,7 +489,7 @@ begin
   end;
   if ( SF_GLOW in aSprite.Flags ) then
   with FSpriteEngine.Layers[ ( aSprite.SpriteID[0] div 100000 ) + 1 ] do
-    PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, ColorZero, aZ );
+    PushXY( iSpriteID, iSize, aPos, aSprite.GlowColor, ColorZero, aZ+1 );
 
 end;
 
