@@ -487,7 +487,7 @@ function drl.register_cells()
 		color_id   = "mud",
 		set        = CELLSET_WALLS,
 		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE},
-		sprite     = SPRITE_WATER,
+		sprite     = SPRITE_MUD,
 		sflags     = { SF_FLOW, SF_FLUID },
 	}
 
