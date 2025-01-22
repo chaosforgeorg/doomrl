@@ -105,6 +105,7 @@ end
 function item:apply_mod_array( ma )
 	if not ma then return end
 	ma.OnApply(self)
+	self.color = LIGHTCYAN
 	self.flags[ IF_MODIFIED ] = false
 	self.flags[ IF_ASSEMBLED ] = true
 	self:clear_mods()
