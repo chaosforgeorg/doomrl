@@ -302,13 +302,19 @@ begin
   FUID        := aUID;
   FSprite     := aSprite;
   FBeing      := aBeing;
-  FLightStart := Iif( Doom.Level.isVisible(aFrom), 255, 0 );
-  FLightEnd   := Iif( Doom.Level.isVisible(aTo),   255, 0 );
+  FLightStart := 255;
+  FLightEnd   := 255;
 
-  if aBeing and Doom.Level.Flags[ LF_BEINGSVISIBLE ] then
+  if aBeing then
   begin
-    FLightStart := Max( FLightStart, 40 );
-    FLightEnd   := Max( FLightEnd, 40 );
+    FLightStart := Iif( Doom.Level.isVisible(aFrom), 255, 0 );
+    FLightEnd   := Iif( Doom.Level.isVisible(aTo),   255, 0 );
+
+    if Doom.Level.Flags[ LF_BEINGSVISIBLE ] then
+    begin
+      FLightStart := Max( FLightStart, 40 );
+      FLightEnd   := Max( FLightEnd, 40 );
+    end;
   end;
 
   iSize := SpriteMap.GetGridSize;

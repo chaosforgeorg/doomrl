@@ -147,6 +147,7 @@ IF_MODABLE        = 58;
 IF_THROWDROP      = 59;
 IF_PLURALNAME     = 60;
 IF_BLOCKMOVE      = 61;
+IF_BLOCKLOS       = 62;
 
 LF_NOHOMING       = 1;
 LF_UNIQUEITEM     = 2;

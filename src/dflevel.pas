@@ -33,7 +33,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure NukeTick;
     procedure NukeCell( where : TCoord2D );
      
-    function blocksVision( const coord : TCoord2D ) : boolean; override;
+    function blocksVision( const aCoord : TCoord2D ) : boolean; override;
 	
 	{ Determines if the cell is explored by the player. }
 	function CellExplored( coord : TCoord2D ) : boolean;
@@ -239,7 +239,7 @@ begin
   if EmptyFlags = [] then EmptyFlags := [EF_NOITEMS,EF_NOBEINGS,EF_NOBLOCK,EF_NOSTAIRS];
   if not inherited isEmpty( coord, EmptyFlags ) then Exit( False );
   isEmpty := True;
-  if EF_NOVISION in EmptyFlags then if cellFlagSet(coord,CF_BLOCKLOS) then Exit(False);
+  if EF_NOVISION in EmptyFlags then if blocksVision(coord) then Exit(False);
   if EF_NOSTAIRS in EmptyFlags then if CellHook_OnExit in Cells[Cell[coord]].Hooks then Exit(False);
   if EF_NOTELE   in EmptyFlags then if (Item[coord] <> nil) and (Item[coord].IType = ITEMTYPE_TELE) then Exit(False);
   if EF_NOHARM   in EmptyFlags then if cellFlagSet(coord,CF_HAZARD) then Exit(False);
@@ -1226,10 +1226,14 @@ begin
     DestroyItem( where );
 end;
 
-
-function TLevel.blocksVision( const coord : TCoord2D ): boolean;
+function TLevel.blocksVision( const aCoord : TCoord2D ) : Boolean;
+var iItem : TItem;
 begin
-  Exit(isProperCoord(coord) and (cellFlagSet(coord,CF_BLOCKLOS)));
+  if not isProperCoord( aCoord )        then Exit( True );
+  if cellFlagSet( aCoord, CF_BLOCKLOS ) then Exit( True );
+  iItem := GetItem( aCoord );
+  if Assigned( iItem ) and iItem.Flags[ IF_BLOCKLOS ] then Exit( True );
+  Exit( False );
 end;
 
 function TLevel.getCell( const aWhere : TCoord2D ) : byte;

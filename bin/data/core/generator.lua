@@ -163,6 +163,8 @@ function generator.create_translation( code )
 		translation[k] = v
 		if type(v) == "table"  then translation[k] = translation[k][1] end
 		if type(v) == "string" then translation[k] = cells[v].nid end
+		if translation[k] == "FLOOR" then translation[k] = generator.styles[ level.style ].floor end
+		if translation[k] == "WALL"  then translation[k] = generator.styles[ level.style ].wall end
 	end
 	return translation
 end
@@ -691,14 +693,15 @@ function generator.generate_archi_level( settings )
 	if settings.trans then
 		for k,v in pairs( settings.trans ) do translation[k] = v end
 	end
+	local pure_translation = generator.create_translation( translation )
 
 	for bx=1,blocks.x do
 		for by=1,blocks.y do
 			local block = table.random_pick( data )
 			local pos   = coord.new( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
-			local tile  = generator.tile_new( block, translation )
+			local tile  = generator.tile_new( block, pure_translation, true )
 			tile:flip_random()
-			generator.tile_place( pos, tile )
+			generator.place_dungen_tile( translation, tile, pos )
 		end
 	end
 
