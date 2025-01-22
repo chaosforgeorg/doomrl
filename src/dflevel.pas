@@ -783,8 +783,10 @@ begin
     iFeature.HP := iFeature.HP - ( aDamage - iFeature.Armor );
     if iFeature.HP <= 0 then
     begin
+      SetItem( aCoord, nil );
+      iFeature.Detach;
       iFeature.CallHook( Hook_OnDestroy, [ LuaCoord( aCoord ) ] );
-      DestroyItem( aCoord );
+      FreeAndNil( iFeature );
     end;
   end;
 end;
