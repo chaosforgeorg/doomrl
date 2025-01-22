@@ -253,9 +253,21 @@ begin
   FAutoTarget.Create(0,0);
 
   iIO := (IO as TDoomGFXIO);
-  FFramebuffer  := TGLFramebuffer.Create( IO.Driver.GetSizeX, IO.Driver.GetSizeY, 2, False, True );
-  FHBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult, 1, False );
-  FVBFramebuffer:= TGLFramebuffer.Create( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult, 1, False );
+
+  FFramebuffer := TGLFramebuffer.Create;
+  FFramebuffer.AddAttachment( RGBA8, False );
+  FFramebuffer.AddAttachment( RGBA8, False );
+  FFramebuffer.AddDepthBuffer;
+  FFramebuffer.Resize( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+
+  FHBFramebuffer := TGLFramebuffer.Create;
+  FHBFramebuffer.AddAttachment( RGBA8, False );
+  FHBFramebuffer.Resize( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
+
+  FVBFramebuffer:= TGLFramebuffer.Create;
+  FVBFramebuffer.AddAttachment( RGBA8, False );
+  FVBFramebuffer.Resize( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
+
   FPostProgram  := TGLProgram.Create(VCleanVertexShader, VPostFragmentShader);
   FHBlurProgram := TGLProgram.Create(VCleanVertexShader, VHorizBlurFragmentShader);
   FVBlurProgram := TGLProgram.Create(VCleanVertexShader, VVerticBlurFragmentShader);
