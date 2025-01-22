@@ -47,7 +47,7 @@ end
 function generator.scatter(scatter_area,good,fill,count)
 	if type(good) == "string" then good = cells[good].nid end
 	if type(fill) == "string" then fill = cells[fill].nid end
-	for c = 1, count do
+	for _ = 1, count do
 		local c = scatter_area:random_coord()
 		if generator.get_cell(c) == good then generator.set_cell(c, fill) end
 	end
@@ -56,10 +56,28 @@ end
 function generator.scatter_cross(scatter_area,good,fill,count)
 	if type(good) == "string" then good = cells[good].nid end
 	if type(fill) == "string" then fill = cells[fill].nid end
-	for c = 1, count do
+	for _ = 1, count do
 		local c = scatter_area:random_coord()
 		if generator.get_cell(c) == good and generator.cross_around( c, good ) == 4 then 
 			generator.set_cell(c, fill)
+		end
+	end
+end
+
+function generator.scatter_cross_item(scatter_area,good,item_id,count)
+	if type(good) == "string" then good = cells[good].nid end
+	local test = function( c )
+		return generator.is_empty( c, { EF_NOBLOCK } )
+	end
+	for _ = 1, count do
+		local c = generator.random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
+		if c then
+			if generator.get_cell( c ) == good then
+				if test( coord.new( c.x-1, c.y ) ) and test( coord.new( c.x+1, c.y ) ) and
+					test( coord.new( c.x, c.y-1 ) ) and test( coord.new( c.x, c.y+1 ) ) then
+					level:drop_item( item_id, c, true )
+				end
+			end
 		end
 	end
 end
