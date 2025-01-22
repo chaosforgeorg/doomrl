@@ -1238,7 +1238,7 @@ function drl.register_regular_items()
 
 		OnDestroy = function(self,c)
 			if level:is_visible(c) then ui.msg('The barrel explodes!') end
-			level.map[ c ] = "acid"
+			level:destroy_to( c, "acid" )
 			level:explosion(c,3,40,6,6,GREEN, "barrel.explode", DAMAGE_ACID, nil, {}, "acid")
 		end
 	}
@@ -1265,7 +1265,7 @@ function drl.register_regular_items()
 
 		OnDestroy = function(self,c)
 			if level:is_visible(c) then ui.msg('The barrel explodes!') end
-			level.map[ c ] = "lava"
+			level:destroy_to( c, "lava" )
 			level:explosion(c,2,40,7,7,RED, "barrel.explode", DAMAGE_FIRE, nil, {}, "lava")
 		end
 	}

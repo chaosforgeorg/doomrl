@@ -1,3 +1,12 @@
+function level:destroy_to( c, cell_id )
+	local cell = cells[ level.map[ c ] ]
+	if not cell.flags[ CF_NOCHANGE ] then
+		level.map[ c ] = cell_id
+		return true
+	end
+	return false
+end
+
 function level:get_being_table( dlevel, weights, reqs, dmod )
 	local dmod   = dmod or math.clamp( (DIFFICULTY-2)*3, 0, 6 )
 	local danger = dlevel or self.danger_level
