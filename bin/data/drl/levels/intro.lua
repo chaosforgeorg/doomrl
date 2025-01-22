@@ -203,9 +203,9 @@ register_level "intro"
 		else
 			generator.place_proto_map( coord.new( 12, 3 ), proto_map, proto_key, translation )
 		end
-		generator.scatter( area.FULL:shrinked(3),"rock","tree", 20)
+		generator.scatter_item( area.FULL:shrinked(3),"rock","tree", 20)
 		for c in area.around( coord.new( 4, 10 ), 3 )() do
-			generator.set_cell( c, "rock" );
+			level:try_destroy_item( c )
 		end
 
 		level:player(4,10)
@@ -242,14 +242,6 @@ register_level "intro"
 	end,
 	OnExit = function ()
 		ui.set_hint("")
-	end,
-
-	-- this is needed only to render the trees properly in G-version
-	OnEnter = function ()
-		for c in generator.each( "tree", area.FULL_SHRINKED ) do
-			generator.set_cell( c, "rock" )
-			generator.set_cell( c, "tree" )
-		end
 	end,
 
 }

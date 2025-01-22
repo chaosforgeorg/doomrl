@@ -53,6 +53,16 @@ function generator.scatter(scatter_area,good,fill,count)
 	end
 end
 
+function generator.scatter_item(scatter_area,good,item_id,count)
+	if type(good) == "string" then good = cells[good].nid end
+	for _ = 1, count do
+		local c = generator.random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
+		if generator.get_cell(c) == good then
+			level:drop_item( item_id, c, true )
+		end
+	end
+end
+
 function generator.scatter_cross(scatter_area,good,fill,count)
 	if type(good) == "string" then good = cells[good].nid end
 	if type(fill) == "string" then fill = cells[fill].nid end

@@ -1270,6 +1270,23 @@ function drl.register_regular_items()
 		end
 	}
 
+	-- features --
+
+	register_item "tree"
+	{
+		name       = "Phobos tree",
+		ascii      = "T",
+		color      = BROWN,
+		armor      = 5,
+		hp         = 5,
+		flags      = { IF_BLOCKMOVE },
+		sprite     = SPRITE_TREE,
+
+		type       = ITEMTYPE_FEATURE,
+		weight     = 0,
+	}
+
+
 	-- levers --
 
 	register_item "lever_flood_water"

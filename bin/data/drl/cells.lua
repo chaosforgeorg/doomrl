@@ -566,20 +566,6 @@ function drl.register_cells()
 		sframes    = 2,
 	}
 
-	register_cell "tree"
-	{
-		name       = "Phobos tree",
-		ascii      = "T",
-		color      = BROWN,
-		armor      = 5,
-		hp         = 5,
-		set        = CELLSET_WALLS,
-		flags      = { CF_BLOCKMOVE, CF_OVERLAY },
-		destroyto  = "rock",
-		sprite     = SPRITE_TREE,
-		sflags     = { SF_FLUID },
-	}
-
 -- End Misc --
 
 	register_cell "crate_ammo"
