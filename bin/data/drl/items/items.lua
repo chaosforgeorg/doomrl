@@ -1207,7 +1207,7 @@ function drl.register_regular_items()
 		OnAct = function( self, c, being )
 			local source = being.position
 			local push   = c + (c - source)
-			level:push_barrel( being, self, c, push ) 
+			level:push_feature( being, self, c, push ) 
 		end,
 
 		OnDestroy = function(self,c)
@@ -1233,7 +1233,7 @@ function drl.register_regular_items()
 		OnAct = function( self, c, being )
 			local source = being.position
 			local push   = c + (c - source)
-			level:push_barrel( being, self, c, push ) 
+			level:push_feature( being, self, c, push ) 
 		end,
 
 		OnDestroy = function(self,c)
@@ -1260,7 +1260,7 @@ function drl.register_regular_items()
 		OnAct = function( self, c, being )
 			local source = being.position
 			local push   = c + (c - source)
-			level:push_barrel( being, self, c, push ) 
+			level:push_feature( being, self, c, push ) 
 		end,
 
 		OnDestroy = function(self,c)

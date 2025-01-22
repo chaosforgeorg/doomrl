@@ -294,7 +294,7 @@ function level:is_corpse( c )
 	return cell.id == "corpse" or cell.flags[ CF_CORPSE ]
 end
 
-function level:push_barrel( who, what, c, target, quiet )
+function level:push_feature( who, what, c, target, quiet )
 	local item_id = what.id
 	local name    = what.name
 	if not area.FULL:contains(target) then
