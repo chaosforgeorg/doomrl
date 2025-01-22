@@ -517,16 +517,11 @@ begin
      MoveBlock :
        begin
          if not Level.isProperCoord( iTarget ) then Exit( False );
-         if Level.cellFlagSet( iTarget, CF_PUSHABLE ) then
-           Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) )
-         else
-         begin
-           iItem := Level.Item[ iTarget ];
-           if Assigned( iItem ) and iItem.HasHook( Hook_OnAct ) then
-             Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
-           if Option_Blindmode then IO.Msg( 'You bump into a wall.' );
-           Exit( False );
-         end;
+         iItem := Level.Item[ iTarget ];
+         if Assigned( iItem ) and iItem.HasHook( Hook_OnAct ) then
+           Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
+         if Option_Blindmode then IO.Msg( 'You bump into a wall.' );
+         Exit( False );
        end;
      MoveBeing : Exit( HandleCommand( TCommand.Create( COMMAND_MELEE, iTarget ) ) );
      MoveDoor  : Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );

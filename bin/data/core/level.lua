@@ -329,46 +329,6 @@ function level:push_feature( who, what, c, target, quiet )
 	return true
 end
 
-function level:push_cell(c, target, quiet)
-	local cell_id = self.map[c]
-	local name    = cells[ cell_id ].name
-	if not area.FULL:contains(target) then
-		if not quiet then ui.msg( "It doesn't seem to move there." ) end
-		self:play_sound( cell_id .. ".movefail", c )
-		return false
-	end
-	local cell = cells[cell_id]
-	local target_cell_id = self.map[target]
-	local target_cell = cells[target_cell_id]
-	if target_cell.flags[CF_HAZARD] then
-		if not quiet then ui.msg( "Oh my, how stupid!" ) end
-		self:play_sound( cell_id .. ".move", c )
-		--self.map[c] = cell.destroyto
-		cell.OnDestroy( c )
-		return true
-	end
-	if target_cell.set ~= CELLSET_FLOORS then
-		if not quiet then ui.msg( "It doesn't seem to move there." ) end
-		self:play_sound( cell_id .. ".movefail", c )
-		return false
-	end
-	if not generator.is_empty( target, { EF_NOITEMS, EF_NOBEINGS } ) then
-		if not quiet then ui.msg( "Something's blocking the "..name.."." ) end
-		self:play_sound( cell_id .. ".movefail", c )
-		return false
-	end
-	self:play_sound( cell_id .. ".move", c )
-	--TODO: trigger smooth move animation in G-version?
-	local hp_c = self.hp[c]
-	local hp_target = self.hp[target]
-	self.map[c] = target_cell_id
-	self.map[target] = cell_id
-	self.hp[target] = hp_c
-	self.hp[c] = hp_target
-	if not quiet then ui.msg( "You push the "..name.."." ) end
-	return true
-end
-
 function level:beings()
 	return self:children("being")
 end

@@ -32,7 +32,7 @@ CF_BLOCKLOS   = 2;
 CF_CORPSE     = 3;
 CF_NOCHANGE   = 4;
 CF_NORUN      = 5;
-CF_PUSHABLE   = 6;
+
 CF_FRAGILE    = 7;
 CF_HAZARD     = 8;
 CF_OVERLAY    = 9;
