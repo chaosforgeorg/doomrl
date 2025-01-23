@@ -87,6 +87,8 @@ private
   FVBlurProgram   : TGLProgram;
   FFullscreen     : TGLFullscreenTriangle;
   FLutTexture     : Cardinal;
+  FMinVisibleX    : Integer;
+  FMaxVisibleX    : Integer;
 private
   procedure ApplyEffect;
   procedure UpdateLightMap;
@@ -240,33 +242,29 @@ VVerticBlurFragmentShader : Ansistring =
 { TDoomSpriteMap }
 
 constructor TDoomSpriteMap.Create;
-var iIO : TDoomGFXIO;
 begin
   FTargeting := False;
   FTargetList := TCoord2DArray.Create();
   FFluidTime := 0;
   FLutTexture := 0;
+  FMinVisibleX := 0;
+  FMaxVisibleX := 0;
   FTarget.Create(0,0);
   FSpriteEngine := TSpriteEngine.Create( Vec2i( 32, 32 ) );
   FGridActive     := False;
   FLastCoord.Create(0,0);
   FAutoTarget.Create(0,0);
 
-  iIO := (IO as TDoomGFXIO);
-
   FFramebuffer := TGLFramebuffer.Create;
   FFramebuffer.AddAttachment( RGBA8, False );
   FFramebuffer.AddAttachment( RGBA8, False );
   FFramebuffer.AddDepthBuffer;
-  FFramebuffer.Resize( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
 
   FHBFramebuffer := TGLFramebuffer.Create;
   FHBFramebuffer.AddAttachment( RGBA8, False );
-  FHBFramebuffer.Resize( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
 
   FVBFramebuffer:= TGLFramebuffer.Create;
   FVBFramebuffer.AddAttachment( RGBA8, False );
-  FVBFramebuffer.Resize( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
 
   FPostProgram  := TGLProgram.Create(VCleanVertexShader, VPostFragmentShader);
   FHBlurProgram := TGLProgram.Create(VCleanVertexShader, VHorizBlurFragmentShader);
@@ -280,24 +278,25 @@ procedure TDoomSpriteMap.Recalculate;
 var iIO : TDoomGFXIO;
 begin
   iIO := (IO as TDoomGFXIO);
-  FSpriteEngine.SetScale( iIO.TileMult );
+  //FSpriteEngine.SetScale( iIO.TileMult );
   FMinShift := Vec2i(0,0);
   FMaxShift := Vec2i(
-    Max(FSpriteEngine.Grid.X*MAXX-iIO.Driver.GetSizeX,0),
-    Max(FSpriteEngine.Grid.Y*MAXY-iIO.Driver.GetSizeY,0)
+    Max(FSpriteEngine.Grid.X*MAXX * iIO.TileMult-iIO.Driver.GetSizeX,0),
+    Max(FSpriteEngine.Grid.Y*MAXY * iIO.TileMult-iIO.Driver.GetSizeY,0)
   );
 
-  if IO.Driver.GetSizeY > 20*FSpriteEngine.Grid.Y then
+  if IO.Driver.GetSizeY > 20 * FSpriteEngine.Grid.Y * iIO.TileMult then
   begin
-    FMinShift.Y := -( IO.Driver.GetSizeY - 20*FSpriteEngine.Grid.Y ) div 2;
+    FMinShift.Y := -( IO.Driver.GetSizeY - 20*FSpriteEngine.Grid.Y * iIO.TileMult  ) div 2;
     FMaxShift.Y := FMinShift.Y;
   end
   else
   begin
-    FMinShift.Y := FMinShift.Y - 18*iIO.FontMult*2;
-    FMaxShift.Y := FMaxShift.Y + 18*iIO.FontMult*3;
+    FMinShift.Y := FMinShift.Y - ( 18*iIO.FontMult*2 ) div iIO.TileMult;
+    FMaxShift.Y := FMaxShift.Y + ( 18*iIO.FontMult*3 ) div iIO.TileMult;
   end;
-  FFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
+
+  FFramebuffer.Resize( iIO.Driver.GetSizeX div iIO.TileMult, iIO.Driver.GetSizeY div iIO.TileMult);
   FHBFramebuffer.Resize( iIO.Driver.GetSizeX div iIO.TileMult, iIO.Driver.GetSizeY div iIO.TileMult );
   FVBFramebuffer.Resize( iIO.Driver.GetSizeX div iIO.TileMult, iIO.Driver.GetSizeY div iIO.TileMult );
 
@@ -324,6 +323,8 @@ begin
 end;
 
 procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
+var iIO   : TDoomGFXIO;
+    iGrid : Integer;
 begin
   FShift := FNewShift;
   {$PUSH}
@@ -336,14 +337,21 @@ begin
   ApplyEffect;
   UpdateLightMap;
   FSpriteEngine.Update( aProjection );
+
+  iIO   := (IO as TDoomGFXIO);
+  iGrid := FSpriteEngine.Grid.X * iIO.TileMult;
+  FMinVisibleX := Max( FShift.X div iGrid + 1, 1 );
+  FMaxVisibleX := Min( FShift.X div iGrid + (IO.Driver.GetSizeX div iGrid + 1), MAXX );
+
   PushTerrain;
   PushObjects;
 end;
 
 procedure TDoomSpriteMap.Draw;
-var iPoint   : TPoint;
-    iCoord   : TCoord2D;
-    iIO      : TDoomGFXIO;
+var iPoint    : TPoint;
+    iCoord    : TCoord2D;
+    iIO       : TDoomGFXIO;
+    iPosition : TVec2i;
 const TargetSprite : TSprite = (
   Color     : (R:0;G:0;B:0;A:255);
   GlowColor : (R:0;G:0;B:0;A:0);
@@ -357,7 +365,8 @@ const TargetSprite : TSprite = (
 begin
   TargetSprite.SpriteID[0] := HARDSPRITE_SELECT;
   iIO := IO as TDoomGFXIO;
-  FSpriteEngine.Position := FShift + FOffset;
+  iPosition := FShift + FOffset;
+  FSpriteEngine.Position.Init( iPosition.X / iIO.TileMult - 0.01, iPosition.Y / iIO.TileMult - 0.01 );
 
   if iIO.MCursor.Active and iIO.Driver.GetMousePos( iPoint ) then
   begin
@@ -434,9 +443,11 @@ begin
 end;
 
 function TDoomSpriteMap.DevicePointToCoord ( aPoint : TPoint ) : TCoord2D;
+var iIO : TDoomGFXIO;
 begin
-  Result.x := Floor((aPoint.x + FShift.X) / FSpriteEngine.Grid.X)+1;
-  Result.y := Floor((aPoint.y + FShift.Y) / FSpriteEngine.Grid.Y)+1;
+  iIO := (IO as TDoomGFXIO);
+  Result.x := Floor(( (aPoint.x + FShift.X) div iIO.TileMult ) / FSpriteEngine.Grid.X)+1;
+  Result.y := Floor(( (aPoint.y + FShift.Y) div iIO.TileMult ) / FSpriteEngine.Grid.Y)+1;
 end;
 
 procedure TDoomSpriteMap.PushSpriteFXRotated ( aPos : TVec2i;
@@ -906,9 +917,7 @@ begin
 end;
 
 procedure TDoomSpriteMap.PushTerrain;
-var iDMinX  : Word;
-    iDMaxX  : Word;
-    iBottom : Word;
+var iBottom : Word;
     iZ      : Integer;
     iY,iX   : DWord;
     iSpr    : TSprite;
@@ -924,11 +933,8 @@ var iDMinX  : Word;
     end;
 
 begin
-  iDMinX := FShift.X div FSpriteEngine.Grid.X + 1;
-  iDMaxX := Min(FShift.X div FSpriteEngine.Grid.X + (IO.Driver.GetSizeX div FSpriteEngine.Grid.X + 1),MAXX);
-
   for iY := 1 to MAXY do
-    for iX := iDMinX to iDMaxX do
+    for iX := FMinVisibleX to FMaxVisibleX do
     begin
       iCoord.Create(iX,iY);
       if not Doom.Level.CellExplored(iCoord) then Continue;
@@ -977,9 +983,7 @@ begin
 end;
 
 procedure TDoomSpriteMap.PushObjects;
-var iDMinX  : Word;
-    iDMaxX  : Word;
-    iY,iX   : DWord;
+var iY,iX   : DWord;
     iTop,iL : DWord;
     iV      : TVec2i;
     iZ      : Integer;
@@ -988,11 +992,8 @@ var iDMinX  : Word;
     iItem   : TItem;
     iColor  : TColor;
 begin
-  iDMinX := FShift.X div FSpriteEngine.Grid.X + 1;
-  iDMaxX := Min(FShift.X div FSpriteEngine.Grid.X + (IO.Driver.GetSizeX div FSpriteEngine.Grid.X + 1),MAXX);
-
   for iY := 1 to MAXY do
-    for iX := iDMinX to iDMaxX do
+    for iX := FMinVisibleX to FMaxVisibleX do
     begin
       iCoord.Create(iX,iY);
       iZ   := iY * DRL_Z_LINE;
@@ -1015,7 +1016,7 @@ begin
     end;
 
   for iY := 1 to MAXY do
-    for iX := iDMinX to iDMaxX do
+    for iX := FMinVisibleX to FMaxVisibleX do
     begin
       iCoord.Create(iX,iY);
       iZ     := iY * DRL_Z_LINE;
@@ -1061,7 +1062,7 @@ begin
 
   if FGridActive then
   for iY := 1 to MAXY do
-    for iX := iDMinX to iDMaxX do
+    for iX := FMinVisibleX to FMaxVisibleX do
     with FSpriteEngine.Layers[ HARDSPRITE_GRID div 100000 ] do
       Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), ColorBlack, ColorZero, DRL_Z_ITEMS );
 

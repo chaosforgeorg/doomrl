@@ -459,6 +459,7 @@ var iMousePoint : TIOPoint;
     iAbsolute   : TIORect;
     iP1, iP2    : TIOPoint;
     iMouse      : Boolean;
+    iProjection : TMatrix44;
 begin
   if not Assigned( FQuadRenderer ) then Exit;
 
@@ -501,14 +502,14 @@ begin
   glDisable( GL_DEPTH_TEST );
   glEnable( GL_BLEND );
   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-  FProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -16384, 16384 );
 
   if (Doom <> nil) and (Doom.State = DSPlaying) then
   begin
     if FConsoleWindow = nil then
        FConsole.HideCursor;
     //if not UI.AnimationsRunning then SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
-    SpriteMap.Update( aMSec, FProjection );
+    iProjection := GLCreateOrtho( 0, iSizeX div FTileMult, iSizeY div FTileMult, 0, -16384, 16384 );
+    SpriteMap.Update( aMSec, iProjection );
     FAnimations.Draw;
     glEnable( GL_DEPTH_TEST );
     SpriteMap.Draw;
@@ -533,7 +534,8 @@ begin
   end;
 
 
-  FQuadRenderer.Update( FProjection );
+  iProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -16384, 16384 );
+  FQuadRenderer.Update( iProjection );
   FQuadRenderer.Render( FQuadSheet );
   inherited Update( aMSec );
 
