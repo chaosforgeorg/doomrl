@@ -126,6 +126,10 @@ begin
     .SetName('Mouse control')
     .SetDescription('Setting to {!Disabled} will turn off interaction and visuals of the mouse.')
     ;
+  iGroup.AddToggle( 'mouse_edge_pan', False )
+    .SetName('Screen edge mouse scroll')
+    .SetDescription('Setting to {!Enabled} will make the screen scroll if the mouse is at the edge.')
+    ;
 
   iGroup := AddGroup( 'keybindings_hidden' );
   iGroup.AddInteger( 'input_escape', VKEY_ESCAPE );

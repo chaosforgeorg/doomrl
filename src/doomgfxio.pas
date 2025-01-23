@@ -472,7 +472,7 @@ begin
 
   iMouse := Setting_Mouse and (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos( iMousePoint );
 
-  if iMouse and (not FMouseLock) and (not isModal) then
+  if iMouse and (not FMouseLock) and (not isModal) and (Setting_MouseEdgePan) then
   begin
     iMousePos := Vec2i( iMousePoint.X, iMousePoint.Y );
     iMax      := Vec2i( FIODriver.GetSizeX, FIODriver.GetSizeY );

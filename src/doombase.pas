@@ -294,6 +294,7 @@ begin
   Setting_HideHints        := Configuration.GetBoolean( 'hide_hints' );
   Setting_EmptyConfirm     := Configuration.GetBoolean( 'empty_confirm' );
   Setting_Mouse            := Configuration.GetBoolean( 'enable_mouse' );
+  Setting_MouseEdgePan     := Configuration.GetBoolean( 'mouse_edge_pan' );
   Setting_UnlockAll        := Configuration.GetBoolean( 'unlock_all' );
   Setting_MenuSound        := Configuration.GetBoolean( 'menu_sound' );
 end;
