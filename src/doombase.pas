@@ -784,8 +784,8 @@ begin
       if IO.MTarget = Player.Position
         then Exit( HandleSwapWeaponCommand )
         else begin
-          IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) );
-          Exit( True );
+//          IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) );
+//          Exit( True );
         end;
 
     if iButton = VMB_BUTTON_LEFT then

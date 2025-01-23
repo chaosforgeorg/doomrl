@@ -15,7 +15,7 @@ type
     procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
     procedure Update( aMSec : DWord ); override;
     function PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer; override;
-    function OnEvent( const event : TIOEvent ) : Boolean; override;
+    function OnEvent( const iEvent : TIOEvent ) : Boolean; override;
     procedure UpdateMinimap;
     destructor Destroy; override;
 
@@ -86,7 +86,7 @@ implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils,
-     vdebug, vlog, vmath, vdf, vgl3library,
+     vdebug, vlog, vmath, vdf, vgl3library, vsdl2library,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfplayer,
      doombase, doomconfiguration;
@@ -577,15 +577,34 @@ begin
   FLineSpace := Max((FIODriver.GetSizeY - ConsoleSizeY*FFontSizeY*FFontMult - 2*FVPadding) div ConsoleSizeY div FFontMult,0);
 end;
 
-function TDoomGFXIO.OnEvent( const event : TIOEvent ) : Boolean;
+function TDoomGFXIO.OnEvent( const iEvent : TIOEvent ) : Boolean;
+var iDiscardEvent : SDL_Event;
 begin
-  if event.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN ] then
+  if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN ] then
   begin
     if ( FMCursor <> nil ) then FMCursor.Active := Setting_Mouse;
     FLastMouseTime := FTime;
     FMouseLock     := False;
+
+    if ( iEvent.EType = VEVENT_MOUSEMOVE ) and ( VMB_BUTTON_MIDDLE in iEvent.MouseMove.ButtonState ) then
+        if ( Doom.State = DSPlaying ) and ( not isModal ) then
+        begin
+          SpriteMap.NewShift := Clamp(
+            Vec2i(
+              SpriteMap.NewShift.X - iEvent.MouseMove.RelPos.X,
+              SpriteMap.NewShift.Y - iEvent.MouseMove.RelPos.Y
+            )
+            , SpriteMap.MinShift, SpriteMap.MaxShift );
+
+          //SDL_WarpMouseInWindow( SDLIO.NativeWindow,
+          //  iEvent.MouseMove.Pos.X - iEvent.MouseMove.RelPos.X,
+          //  iEvent.MouseMove.Pos.Y - iEvent.MouseMove.RelPos.Y
+          //);
+          // Immediately remove the synthetic event
+          //while ( SDL_PeepEvents( @iDiscardEvent, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEMOTION) > 0 ) do;
+        end;
   end;
-  Exit( inherited OnEvent( event ) )
+  Exit( inherited OnEvent( iEvent ) )
 end;
 
 function TDoomGFXIO.PushLayer(  aLayer : TInterfaceLayer ) : TInterfaceLayer;
