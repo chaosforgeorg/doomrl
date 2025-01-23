@@ -1,4 +1,5 @@
 0.9.9.9 BETA 4
+[new] -- GH#---: G-version - mouse edge pan is disabled by default, use MMB to pan!
 [mod] -- GH#197: G-version - glow is calculated live and tied to self-illumination
 [fix] -- RCFIX : fix for L2 intuition markers
 [fix] -- RCFIX : fix for weapon kill count
