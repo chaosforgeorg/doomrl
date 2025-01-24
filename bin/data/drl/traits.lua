@@ -289,15 +289,16 @@ function drl.register_traits()
 	register_trait "malicious"
 	{
 		name   = "Malicious Blades",
-		desc   = "Allows dual attack using blades and gives 75% melee resist if blade in off-hand",
+		desc   = "Double blade damage, dual attack using blades and resists if blade in off-hand",
 		quote  = "\"Don't need a gun! Guns are for wusses!\"",
-		full   = "Knives, knives, knives! You can attack with a blade in each hand at the same time, and while carrying a blade in your off-hand, you parry 75% melee damage, and shield against 50% bullet, shrapnel and fire damage!",
+		full   = "Knives, knives, knives! Not only do you do double damage with blades, but you can attack with a blade in each hand at the same time, and while carrying a blade in your off-hand, you parry 75% melee damage, and shield against 50% bullet, shrapnel and fire damage!",
 		abbr   = "MMB",
 		master = true,
 
 		OnPick = function (being)
 			being.flags[ BF_DUALBLADE ] = true
 			being.flags[ BF_BLADEDEFEND ] = true
+			being.flags[ BF_BLADEBONUS ] = true
 		end,
 	}
 

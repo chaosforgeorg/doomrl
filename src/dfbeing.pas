@@ -1575,6 +1575,9 @@ begin
       iDamage += Inv.Slot[ aSlot ].maxDamage
     else
       iDamage += Inv.Slot[ aSlot ].rollDamage;
+
+    if ( BF_BLADEBONUS in FFlags ) and Inv.Slot[ aSlot ].Flags[ IF_BLADE ] then
+      iDamage *= 2;
   end
   else
   begin
