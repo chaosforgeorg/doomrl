@@ -281,13 +281,13 @@ begin
   //FSpriteEngine.SetScale( iIO.TileMult );
   FMinShift := Vec2i(0,0);
   FMaxShift := Vec2i(
-    Max(FSpriteEngine.TileSize.X*MAXX * iIO.TileMult-iIO.Driver.GetSizeX,0),
-    Max(FSpriteEngine.TileSize.Y*MAXY * iIO.TileMult-iIO.Driver.GetSizeY,0)
+    Max(FSpriteEngine.Grid.X*MAXX * iIO.TileMult-iIO.Driver.GetSizeX,0),
+    Max(FSpriteEngine.Grid.Y*MAXY * iIO.TileMult-iIO.Driver.GetSizeY,0)
   );
 
-  if IO.Driver.GetSizeY > 20 * FSpriteEngine.TileSize.Y * iIO.TileMult then
+  if IO.Driver.GetSizeY > 20 * FSpriteEngine.Grid.Y * iIO.TileMult then
   begin
-    FMinShift.Y := -( IO.Driver.GetSizeY - 20*FSpriteEngine.TileSize.Y * iIO.TileMult  ) div 2;
+    FMinShift.Y := -( IO.Driver.GetSizeY - 20*FSpriteEngine.Grid.Y * iIO.TileMult  ) div 2;
     FMaxShift.Y := FMinShift.Y;
   end
   else
@@ -339,7 +339,7 @@ begin
   FSpriteEngine.Update( aProjection );
 
   iIO   := (IO as TDoomGFXIO);
-  iGrid := FSpriteEngine.TileSize.X * iIO.TileMult;
+  iGrid := FSpriteEngine.Grid.X * iIO.TileMult;
   FMinVisibleX := Max( FShift.X div iGrid + 1, 1 );
   FMaxVisibleX := Min( FShift.X div iGrid + (IO.Driver.GetSizeX div iGrid + 1), MAXX );
 
@@ -446,8 +446,8 @@ function TDoomSpriteMap.DevicePointToCoord ( aPoint : TPoint ) : TCoord2D;
 var iIO : TDoomGFXIO;
 begin
   iIO := (IO as TDoomGFXIO);
-  Result.x := Floor(( (aPoint.x + FShift.X) div iIO.TileMult ) / FSpriteEngine.TileSize.X)+1;
-  Result.y := Floor(( (aPoint.y + FShift.Y) div iIO.TileMult ) / FSpriteEngine.TileSize.Y)+1;
+  Result.x := Floor(( (aPoint.x + FShift.X) div iIO.TileMult ) / FSpriteEngine.Grid.X)+1;
+  Result.y := Floor(( (aPoint.y + FShift.Y) div iIO.TileMult ) / FSpriteEngine.Grid.Y)+1;
 end;
 
 procedure TDoomSpriteMap.PushSpriteFXRotated ( aPos : TVec2i;
@@ -468,7 +468,7 @@ begin
   iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID[0] div 100000 ];
   iSpriteID := aSprite.SpriteID[0] mod 100000;
 
-  iSizeH := FSpriteEngine.TileSize.X div 2;
+  iSizeH := FSpriteEngine.Grid.X div 2;
 
   iCoord.Data[ 0 ] := Rotated( -iSizeH, -iSizeH );
   iCoord.Data[ 1 ] := Rotated( -iSizeH, +iSizeH );
@@ -503,8 +503,8 @@ begin
   if SF_LARGE in aSprite.Flags then
   begin
     iSize := 2;
-    aPos.X := aPos.X - FSpriteEngine.TileSize.X div 2;
-    aPos.Y := aPos.Y - FSpriteEngine.TileSize.Y;
+    aPos.X := aPos.X - FSpriteEngine.Grid.X div 2;
+    aPos.Y := aPos.Y - FSpriteEngine.Grid.Y;
   end;
   with iLayer do
   begin
@@ -692,8 +692,8 @@ begin
   iColors.Data[2] := TVec3b.CreateAll(BilinearLight( iEnd ) );
   iColors.Data[3] := TVec3b.CreateAll(BilinearLight( TVec2f.Create( iEnd.X, iStart.Y ) ) );
 
-  iGridF    := TVec2f.Create( FSpriteEngine.TileSize.X, FSpriteEngine.TileSize.Y );
-  iPosition := Vec2i( aCoord.X-1, aCoord.Y-1 ) * FSpriteEngine.TileSize;
+  iGridF    := TVec2f.Create( FSpriteEngine.Grid.X, FSpriteEngine.Grid.Y );
+  iPosition := Vec2i( aCoord.X-1, aCoord.Y-1 ) * FSpriteEngine.Grid;
   iPStart   := iGridF * iStart;
   iPEnd     := iGridF * iEnd;
   iPa       := iPosition + TVec2i.Create( Round( iPStart.X ), Round( iPStart.Y ) );
@@ -733,7 +733,7 @@ begin
   if SF_COSPLAY in iSprite.Flags then
     iSprite.Color := ScaleColor( iSprite.Color, Byte(iLight) );
   iZ := aCoord.Y * DRL_Z_LINE;
-  PushSprite( Vec2i( (aCoord.X-1)*FSpriteEngine.TileSize.X, (aCoord.Y-1)*FSpriteEngine.TileSize.Y ), iSprite, iLight, iZ + DRL_Z_DOODAD );
+  PushSprite( Vec2i( (aCoord.X-1)*FSpriteEngine.Grid.X, (aCoord.Y-1)*FSpriteEngine.Grid.Y ), iSprite, iLight, iZ + DRL_Z_DOODAD );
   if ( SF_HIGHSPRITE in aSprite.Flags ) and ( aCoord.y > 0 ) then
   begin
     iSprite := aSprite;
@@ -745,7 +745,7 @@ end;
 
 procedure TDoomSpriteMap.PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite ) ;
 begin
-  PushSprite( Vec2i( (aCoord.X-1) * FSpriteEngine.TileSize.X, (aCoord.Y-1) * FSpriteEngine.TileSize.Y ), aSprite, 255, DRL_Z_FX );
+  PushSprite( Vec2i( (aCoord.X-1) * FSpriteEngine.Grid.X, (aCoord.Y-1) * FSpriteEngine.Grid.Y ), aSprite, 255, DRL_Z_FX );
 end;
 
 procedure TDoomSpriteMap.PushSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aTSX : Single; aTSY : Single ) ;
@@ -767,7 +767,7 @@ begin
   for i := 0 to 3 do
     iColors.Data[i] := TVec3b.CreateAll( iLight[i] );
 
-  ip := Vec2i( aCoord.X-1, aCoord.Y-1 ) * FSpriteEngine.TileSize;
+  ip := Vec2i( aCoord.X-1, aCoord.Y-1 ) * FSpriteEngine.Grid;
   with iLayer do
   begin
     if ( SF_COSPLAY in aSprite.Flags )
@@ -780,7 +780,7 @@ function TDoomSpriteMap.ShiftValue ( aFocus : TCoord2D ) : TVec2i;
 const YFactor = 6;
 begin
   ShiftValue.X := S5Interpolate(FMinShift.X,FMaxShift.X, (aFocus.X-2)/(MAXX-3));
-  if FMaxShift.Y - FMinShift.Y > 4* FSpriteEngine.TileSize.Y then
+  if FMaxShift.Y - FMinShift.Y > 4* FSpriteEngine.Grid.Y then
   begin
     if aFocus.Y < YFactor then
       ShiftValue.Y := FMinShift.Y
@@ -1011,7 +1011,7 @@ begin
         if (iItem.AnimCount = 0) then
         begin
           if Doom.Level.ItemVisible(iCoord, iItem) then iL := 255 else iL := 70;
-          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.TileSize, GetSprite( iItem.Sprite ), iL, iZ + DRL_Z_ITEMS );
+          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iItem.Sprite ), iL, iZ + DRL_Z_ITEMS );
         end;
     end;
 
@@ -1023,9 +1023,9 @@ begin
       iBeing := Doom.Level.Being[iCoord];
       if (iBeing <> nil) and (iBeing.AnimCount = 0) then
         if Doom.Level.BeingVisible(iCoord, iBeing) then
-          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.TileSize, GetSprite( iBeing.Sprite ), 255, iZ + DRL_Z_BEINGS )
+          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iBeing.Sprite ), 255, iZ + DRL_Z_BEINGS )
         else if Doom.Level.BeingExplored(iCoord, iBeing) then
-          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.TileSize, GetSprite( iBeing.Sprite ), 40, iZ + DRL_Z_BEINGS )
+          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iBeing.Sprite ), 40, iZ + DRL_Z_BEINGS )
         else if Doom.Level.BeingIntuited(iCoord, iBeing) then
         begin
           with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
@@ -1053,7 +1053,7 @@ begin
     if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
     begin
       iBeing := Doom.Level.Being[FAutoTarget];
-      iV     := Vec2i( FAutoTarget.X-1, FAutoTarget.Y-1 ) * FSpriteEngine.TileSize;
+      iV     := Vec2i( FAutoTarget.X-1, FAutoTarget.Y-1 ) * FSpriteEngine.Grid;
       if ( iBeing <> nil ) and ( iBeing.AnimCount > 0 ) then
          (IO as TDoomGFXIO).getUIDPosition( iBeing.UID, iV );
       with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
@@ -1099,7 +1099,7 @@ end;
 
 function TDoomSpriteMap.GetGridSize: Word;
 begin
-  Exit( FSpriteEngine.TileSize.X );
+  Exit( FSpriteEngine.Grid.X );
 end;
 
 end.
