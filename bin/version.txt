@@ -23,7 +23,6 @@
 [fix] -- RCFIX : fixed edge mud sprite
 [fix] -- RCFIX : don't spawn barrels on liquids
 [fix] -- RCFIX : fix for assembly item color in inventory
-[fix] -- RCFIX : fix barrels destroying underlying stairs etc
 
 0.9.9.9 BETA 3
 [new] -- GH#149: settings - you can now clear a keybinding using Backspace
