@@ -35,27 +35,30 @@ function drl.register_traits()
 	register_trait "hellrunner"
 	{
 		name   = "Hellrunner",
-		desc   = "Movecost -15%/lv, Dodge chance +15%/lv.",
+		desc   = "Movecost -15%/lv, Dodge chance +10%/lv.",
 		quote  = "\"Ohh, here it comes! Here comes the night train! Choo choo cha boogie!\"",
-		full   = "You're like a train on legs - not only do you move 15% faster for every level of this trait but you also get an extra 15% chance to dodge those pesky bullets coming your way.",
+		full   = "You're like a train on legs - not only do you move 15% faster for every level of this trait but you also get an extra 10% chance to dodge those pesky bullets coming your way.",
 		abbr = "HR",
 
 		OnPick = function (being)
-			being.movetime = being.movetime - 15
-			being.dodgebonus = being.dodgebonus + 15
+			being.movetime   = being.movetime - 15
+			being.dodgebonus = being.dodgebonus + 10
 		end,
 	}
 
 	register_trait "nails"
 	{
 		name   = "Tough as nails",
-		desc   = "Increases body armor by 1/lv.",
+		desc   = "Increases armor by 1/lv, fire/acid/plasma resist +10%/lv.",
 		quote  = "\"The horrors of Hell could not kill you!\"",
-		full   = "That sound you're hearing isn't from the bullets flying off the walls, but from the bullets flying off of YOU! Your skin is so hard that you'll shrug off 1 more point of damage for every level of this trait.",
+		full   = "That sound you're hearing isn't from the bullets flying off the walls, but from the bullets flying off of YOU! Your skin is so hard that per every level of this trait you'll shrug off 1 more point of damage and receive +10% fire, acid and plasma resistance.",
 		abbr   = "TaN",
 
 		OnPick = function (being)
 			being.armor = being.armor + 1
+			being.resist.fire   = ( being.resist.fire   or 0 ) + 10
+			being.resist.acid   = ( being.resist.acid   or 0 ) + 10
+			being.resist.plasma = ( being.resist.plasma or 0 ) + 10
 		end,
 	}
 
