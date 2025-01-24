@@ -45,9 +45,9 @@ function drl.register_klasses()
 			being.inv:add( "smed" )
 			being.inv:add( "smed" )
 
-			being.resist.fire   = 20
-			being.resist.acid   = 20
-			being.resist.plasma = 20
+			being.resist.fire   = 10
+			being.resist.acid   = 10
+			being.resist.plasma = 10
 		end
 	}
 
