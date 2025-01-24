@@ -574,7 +574,7 @@ function drl.register_exotic_items()
 		type       = ITEMTYPE_BOOTS,
 		armor      = 10,
 		durability = 200,
-		movemod    = -15,
+		movemod    = -10,
 		knockmod   = -70,
 	}
 
@@ -756,8 +756,8 @@ function drl.register_exotic_items()
 		color    = LIGHTMAGENTA,
 		sprite   = SPRITE_BOOTS,
 		coscolor = { 1.0,0.2,0.0,1.0 },
-		level    = 25,
-		weight   = 4,
+		level    = 20,
+		weight   = 3,
 		desc     = "Pair of archaic looking creepy looking boots.",
 		flags    = { IF_EXOTIC, IF_PLURALNAME },
 

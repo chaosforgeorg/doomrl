@@ -1,6 +1,22 @@
 0.9.9.9 BETA 4
 [new] -- GH#---: G-version - mouse edge pan is disabled by default, use MMB to pan!
 [mod] -- GH#197: G-version - glow is calculated live and tied to self-illumination
+[mod] -- GH#206: balance - Vampyre no longer overheals, blocks TaN instead of SoB
+[mod] -- GH#206: balance - Ammochain blocks Ironman instead of SoG
+[mod] -- GH#206: balance - Army of the Dead blocks SoB instead of HR
+[mod] -- GH#206: balance - Son of a gun is -10% firetime but +3 damage
+[mod] -- GH#206: balance - Entrenchment buffed to 50%, also volleys after first are 1 ammo
+[mod] -- GH#206: balance - Malicious Blades doubles damage of Blades
+[mod] -- GH#206: balance - Survivalist, Gunrunner and Scavenger require only level 5
+[mod] -- GH#206: balance - Survivalist, Gunrunner and Scavenger have less reqs and blocks
+[mod] -- GH#206: balance - Fireangel - ALL missiles explode, +1 to existing explosions radius
+[mod] -- GH#206: balance - Hellrunner dodge +15%->+10%
+[mod] -- GH#206: balance - Marine inherent resists 20%->10%
+[mod] -- GH#206: balance - berserk resistance boost 60%->50%
+[mod] -- GH#206: balance - TaN grants 10% fire/acid/plasma resists per level
+[mod] -- GH#206: balance - decreased movement penalty on heavier boots
+[mod] -- RCFIX : blood boots - rarity 4->3, min level 25->20
+[fix] -- RCFIX : fixed Gunrunner not working
 [fix] -- RCFIX : fix for L2 intuition markers
 [fix] -- RCFIX : fix for weapon kill count
 [fix] -- RCFIX : players can no longer spawn in liquid

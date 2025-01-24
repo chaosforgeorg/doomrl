@@ -778,7 +778,7 @@ function drl.register_unique_items()
 
 		type       = ITEMTYPE_BOOTS,
 		armor      = 0,
-		movemod    = -25,
+		movemod    = -15,
 		knockmod   = -50,
 	}
 

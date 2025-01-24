@@ -35,27 +35,30 @@ function drl.register_traits()
 	register_trait "hellrunner"
 	{
 		name   = "Hellrunner",
-		desc   = "Movecost -15%/lv, Dodge chance +15%/lv.",
+		desc   = "Movecost -15%/lv, Dodge chance +10%/lv.",
 		quote  = "\"Ohh, here it comes! Here comes the night train! Choo choo cha boogie!\"",
-		full   = "You're like a train on legs - not only do you move 15% faster for every level of this trait but you also get an extra 15% chance to dodge those pesky bullets coming your way.",
+		full   = "You're like a train on legs - not only do you move 15% faster for every level of this trait but you also get an extra 10% chance to dodge those pesky bullets coming your way.",
 		abbr = "HR",
 
 		OnPick = function (being)
-			being.movetime = being.movetime - 15
-			being.dodgebonus = being.dodgebonus + 15
+			being.movetime   = being.movetime - 15
+			being.dodgebonus = being.dodgebonus + 10
 		end,
 	}
 
 	register_trait "nails"
 	{
 		name   = "Tough as nails",
-		desc   = "Increases body armor by 1/lv.",
+		desc   = "Increases armor by 1/lv, fire/acid/plasma resist +10%/lv.",
 		quote  = "\"The horrors of Hell could not kill you!\"",
-		full   = "That sound you're hearing isn't from the bullets flying off the walls, but from the bullets flying off of YOU! Your skin is so hard that you'll shrug off 1 more point of damage for every level of this trait.",
+		full   = "That sound you're hearing isn't from the bullets flying off the walls, but from the bullets flying off of YOU! Your skin is so hard that per every level of this trait you'll shrug off 1 more point of damage and receive +10% fire, acid and plasma resistance.",
 		abbr   = "TaN",
 
 		OnPick = function (being)
 			being.armor = being.armor + 1
+			being.resist.fire   = ( being.resist.fire   or 0 ) + 10
+			being.resist.acid   = ( being.resist.acid   or 0 ) + 10
+			being.resist.plasma = ( being.resist.plasma or 0 ) + 10
 		end,
 	}
 
@@ -75,9 +78,9 @@ function drl.register_traits()
 	register_trait "gun"
 	{
 		name   = "Son of a gun",
-		desc   = "Pistol: firing time -20%/lv, Dmg+1/lv.",
+		desc   = "Pistol: firing time -10%/lv, Dmg+3/lv.",
 		quote  = "\"Dig the prowess, the capacity for violence!\"",
-		full   = "You love your pistols. You clean them every day and make sure they are always in top condition. You know your pistols so well that for every level of this trait you can fire them 20% faster and deal 1 more damage.",
+		full   = "You love your pistols. You clean them every day and make sure they are always in top condition. You know your pistols so well that for every level of this trait you can fire them 10% faster and deal 3 more damage.",
 		abbr   = "SoG",
 
 		OnPick = function (being)
@@ -289,15 +292,16 @@ function drl.register_traits()
 	register_trait "malicious"
 	{
 		name   = "Malicious Blades",
-		desc   = "Allows dual attack using blades and gives 75% melee resist if blade in off-hand",
+		desc   = "Double blade damage, dual attack using blades and resists if blade in off-hand",
 		quote  = "\"Don't need a gun! Guns are for wusses!\"",
-		full   = "Knives, knives, knives! You can attack with a blade in each hand at the same time, and while carrying a blade in your off-hand, you parry 75% melee damage, and shield against 50% bullet, shrapnel and fire damage!",
+		full   = "Knives, knives, knives! Not only do you do double damage with blades, but you can attack with a blade in each hand at the same time, and while carrying a blade in your off-hand, you parry 75% melee damage, and shield against 50% bullet, shrapnel and fire damage!",
 		abbr   = "MMB",
 		master = true,
 
 		OnPick = function (being)
 			being.flags[ BF_DUALBLADE ] = true
 			being.flags[ BF_BLADEDEFEND ] = true
+			being.flags[ BF_BLADEBONUS ] = true
 		end,
 	}
 
@@ -393,9 +397,9 @@ function drl.register_traits()
 	register_trait "fireangel"
 	{
 		name   = "Fireangel",
-		desc   = "Explosion damage has no effect, only direct hits.",
+		desc   = "Missiles explode, +1 radius, splash damage has no effect.",
 		quote  = "\"Woo baby, I'm burnin' out of control!\"",
-		full   = "You love heat, you're the angel of fire! No explosion affects you, unless you take a direct hit.",
+		full   = "You love heat, you're the angel of fire! Every missile you fire explodes, and those that already do explode with a +1 radius! Also, no explosion affects you, unless you take a direct hit.",
 		author = "Kornel",
 		abbr   = "MFa",
 		master = true,
@@ -437,9 +441,9 @@ function drl.register_traits()
 	register_trait "entrenchment"
 	{
 		name   = "Entrenchment",
-		desc   = "When chainfiring your resistances get a +30% bonus",
+		desc   = "When chainfiring +50% resists, volleys after first take 1 ammo",
 		quote  = "\"Hoy, hoy, I'm the boy... Packin' 80 pounds of heavenly joy!\"",
-		full   = "Once the barrels get rollin' you become one hardcore fighting platform... when chainfiring a rapid weapon you get +30% to all resistances!",
+		full   = "Once the barrels get rollin' you become one hardcore fighting platform... when chainfiring a rapid weapon you get +50% to all resistances, and volleys after the first, take just one ammo!",
 		abbr   = "MEn",
 		master = true,
 

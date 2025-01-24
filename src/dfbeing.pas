@@ -1304,7 +1304,7 @@ begin
 
   iDamageBonus := FBonus.ToDamAll;
   iToHitBonus  := 0;
-  if aGun.Flags[ IF_PISTOL ] then iDamageBonus += FBonus.Pistol;
+  if aGun.Flags[ IF_PISTOL ] then iDamageBonus += 3 * FBonus.Pistol;
 
   iShots       := Max( aGun.Shots, 1 );
   iChaining    := ( aAlt = ALT_CHAIN ) and ( iShots > 1 );
@@ -1324,7 +1324,10 @@ begin
 
   if ( aAlt = ALT_AIMED ) then iToHitBonus += 3;
 
-  iAmmoChaining:= ( BF_AMMOCHAIN in FFlags ) and ( aGun.AltFire = ALT_CHAIN );
+  iAmmoChaining := ( aGun.AltFire = ALT_CHAIN ) and (
+    ( BF_AMMOCHAIN in FFlags ) or
+    ( ( BF_ENTRENCHMENT in FFlags ) and ( iChaining ) and ( FChainFire > 0 ) )
+  );
 
   if iChaining then
   begin
@@ -1572,6 +1575,9 @@ begin
       iDamage += Inv.Slot[ aSlot ].maxDamage
     else
       iDamage += Inv.Slot[ aSlot ].rollDamage;
+
+    if ( BF_BLADEBONUS in FFlags ) and Inv.Slot[ aSlot ].Flags[ IF_BLADE ] then
+      iDamage *= 2;
   end
   else
   begin
@@ -1724,9 +1730,9 @@ begin
 
     // Vampyre
     if ( BF_VAMPYRE in FFlags ) and
-      ( FHP < FHPMax * 2 ) and
+      ( FHP < FHPMax ) and
       ( not TLevel(Parent).isAlive( iTargetUID ) ) then
-       FHP := Min( FHP + Ceil(aTarget.FHPMax / 10), FHPMax * 2 );
+       FHP := Min( FHP + Ceil(aTarget.FHPMax / 10), FHPMax );
 
 
     // Berserker roll
@@ -1807,7 +1813,7 @@ begin
     end;
 
   if (BF_ENTRENCHMENT in FFlags) and (FChainFire > 0) then
-    iResist += 30;
+    iResist += 50;
 
   getTotalResistance += iResist;
   getTotalResistance := Min( 95, getTotalResistance );
@@ -2025,6 +2031,10 @@ begin
   iIsHit := MF_EXACT in Missiles[iMissile].Flags;
   iStart := iMisslePath.GetSource;
 
+  iRadius := aItem.BlastRadius;
+  if ( BF_FIREANGEL in FFlags ) and ( not ( aItem.Hooks[ Hook_OnHitBeing ] ) ) then
+    iRadius += 1;
+
   repeat
     iOldCoord := iMisslePath.GetC;
     if not ( MF_IMMIDATE in Missiles[iMissile].Flags ) then
@@ -2084,7 +2094,7 @@ begin
           iDirection.CreateSmooth( Self.FPosition, iCoord );
           iBeing.KnockBack( iDirection, iDamage div 12 );
         end;
-        if aItem.BlastRadius = 0 then
+        if iRadius = 0 then
         begin
           iRunDamage := True;
           if aItem.Hooks[ Hook_OnHitBeing ] then
@@ -2147,10 +2157,9 @@ begin
   except
     FreeAndNil( aItem );
   end;
-  
-  if aItem.BlastRadius <> 0 then
+
+  if iRadius <> 0 then
   begin
-    iRadius := aItem.BlastRadius;
     iRoll.Init(aItem.Damage_Dice, aItem.Damage_Sides, aItem.Damage_Add + aDamageMod );
 
     if iMaxDamage then
@@ -2244,7 +2253,7 @@ begin
     iModifier := Inv.Slot[ efWeapon ].UseTime;
   iModifier *= FTimes.Fire/1000.;
 
-  if (FBonus.Pistol > 0) and Inv.Slot[ efWeapon ].Flags[ IF_PISTOL ] then iModifier *= Max( (5.-FBonus.Pistol)/5, 0.1 );
+  if (FBonus.Pistol > 0) and Inv.Slot[ efWeapon ].Flags[ IF_PISTOL ] then iModifier *= Max( (10.-FBonus.Pistol)/10, 0.1 );
   if (BF_BULLETDANCE in FFlags) and Inv.Slot[ efWeapon ].Flags[ IF_PISTOL ] and (aAltFire = ALT_NONE) then iModifier *= ( 1 + 0.5 * FBonus.Rapid );
   if (aAltFire = ALT_AIMED) then iModifier *= 2;
   if (BF_SHOTTYHEAD in FFlags) and Inv.Slot[efWeapon].Flags[ IF_SHOTGUN ] then iModifier *= 0.33;

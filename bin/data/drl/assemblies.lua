@@ -346,7 +346,7 @@ function drl.register_assemblies()
 
 		OnApply = function (item)
 			item.name          = "lava "..item.name
-			item.movemod       = -30
+			item.movemod       = -20
 			item.knockmod      = -30
 			item:reset_resistances()
 			item.resist.fire      = 100
@@ -510,7 +510,7 @@ function drl.register_assemblies()
 
 		OnApply = function (item)
 			item.name          = "environmental "..item.name
-			item.movemod       = item.__proto.movemod - 25
+			item.movemod       = item.__proto.movemod - 15
 			item.knockmod      = item.__proto.knockmod
 			item.armor         = item.__proto.armor
 			item.maxdurability = item.__proto.durability
@@ -754,7 +754,7 @@ function drl.register_assemblies()
 		OnApply = function (item)
 			item.name     = "cerberus "..item.name
 			item.armor    = 0
-			item.movemod  = -30
+			item.movemod  = -20
 			item.knockmod = -30
 			item:reset_resistances()
 			item.resist.fire   = 100

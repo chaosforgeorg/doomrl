@@ -105,6 +105,7 @@ BF_GUNRUNNER    = 52;
 BF_RESPAWN      = 53;
 BF_WALKSOUND    = 54;
 BF_FLY          = 55;
+BF_BLADEBONUS   = 56;
 
 IF_UNIQUE         = 21;
 IF_EXOTIC         = 22;
