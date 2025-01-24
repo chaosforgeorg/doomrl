@@ -10,6 +10,7 @@
 [mod] -- GH#206: balance - Survivalist, Gunrunner and Scavenger require only level 5
 [mod] -- GH#206: balance - Survivalist, Gunrunner and Scavenger have less reqs and blocks
 [mod] -- GH#206: balance - Fireangel - ALL missiles explode, +1 to existing explosions radius
+[fix] -- RCFIX : fixed Gunrunner not working
 [fix] -- RCFIX : fix for L2 intuition markers
 [fix] -- RCFIX : fix for weapon kill count
 [fix] -- RCFIX : players can no longer spawn in liquid

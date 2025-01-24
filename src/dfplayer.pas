@@ -444,6 +444,7 @@ end;
 procedure TPlayer.HandlePostMove;
 var iTempSC     : LongInt;
     iItem       : TItem;
+    iWeapon     : TItem;
     iAutoTarget : TAutoTarget;
 
   function RunStopNear : boolean;
@@ -457,8 +458,9 @@ var iTempSC     : LongInt;
 
 begin
   iTempSC := FSpeedCount;
-  if Inv.Slot[ efWeapon ] <> nil then
-  with Inv.Slot[ efWeapon ] do
+  iWeapon := Inv.Slot[ efWeapon ];
+  if iWeapon <> nil then
+  with iWeapon do
     if isRanged then
     begin // Autoreloading
      if Ammo < AmmoMax then
@@ -479,7 +481,11 @@ begin
          Exclude( FFlags, IF_CHAMBEREMPTY );
          IO.Msg( 'You pump a shell into the shotgun chamber.' );
        end;
-     if (BF_GUNRUNNER in Self.FFlags) and canFire and (Shots < 3) and GetRunning then
+    end;
+
+
+  if ( iWeapon <> nil ) and ( iWeapon.isRanged ) then
+     if (BF_GUNRUNNER in Self.FFlags) and iWeapon.canFire and (iWeapon.Shots < 3) and GetRunning then
      begin
        iAutoTarget := TAutoTarget.Create( FPosition );
        TLevel(Parent).UpdateAutoTarget( iAutoTarget, Self, Player.Vision );
@@ -489,14 +495,13 @@ begin
          if FTargetPos <> FPosition then
          begin
            // TODO: fix?
-           if Inv.Slot[ efWeapon ].CallHookCheck( Hook_OnFire, [Self,false] ) then
-             ActionFire( FTargetPos, Inv.Slot[ efWeapon ] );
+           if iWeapon.CallHookCheck( Hook_OnFire, [ Self, false ] ) then
+             ActionFire( FTargetPos, iWeapon );
          end;
        finally
          Free;
        end;
      end;
-    end;
   FSpeedCount := iTempSC;
 
   if FRun.Active and (not FPathRun) then
