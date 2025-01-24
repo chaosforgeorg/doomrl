@@ -437,9 +437,9 @@ function drl.register_traits()
 	register_trait "entrenchment"
 	{
 		name   = "Entrenchment",
-		desc   = "When chainfiring your resistances get a +30% bonus",
+		desc   = "When chainfiring +50% resists, volleys after first take 1 ammo",
 		quote  = "\"Hoy, hoy, I'm the boy... Packin' 80 pounds of heavenly joy!\"",
-		full   = "Once the barrels get rollin' you become one hardcore fighting platform... when chainfiring a rapid weapon you get +30% to all resistances!",
+		full   = "Once the barrels get rollin' you become one hardcore fighting platform... when chainfiring a rapid weapon you get +50% to all resistances, and volleys after the first, take just one ammo!",
 		abbr   = "MEn",
 		master = true,
 

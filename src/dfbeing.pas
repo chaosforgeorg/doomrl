@@ -1324,7 +1324,10 @@ begin
 
   if ( aAlt = ALT_AIMED ) then iToHitBonus += 3;
 
-  iAmmoChaining:= ( BF_AMMOCHAIN in FFlags ) and ( aGun.AltFire = ALT_CHAIN );
+  iAmmoChaining := ( aGun.AltFire = ALT_CHAIN ) and (
+    ( BF_AMMOCHAIN in FFlags ) or
+    ( ( BF_ENTRENCHMENT in FFlags ) and ( iChaining ) and ( FChainFire > 0 ) )
+  );
 
   if iChaining then
   begin
@@ -1807,7 +1810,7 @@ begin
     end;
 
   if (BF_ENTRENCHMENT in FFlags) and (FChainFire > 0) then
-    iResist += 30;
+    iResist += 50;
 
   getTotalResistance += iResist;
   getTotalResistance := Min( 95, getTotalResistance );
