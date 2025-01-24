@@ -1724,9 +1724,9 @@ begin
 
     // Vampyre
     if ( BF_VAMPYRE in FFlags ) and
-      ( FHP < FHPMax * 2 ) and
+      ( FHP < FHPMax ) and
       ( not TLevel(Parent).isAlive( iTargetUID ) ) then
-       FHP := Min( FHP + Ceil(aTarget.FHPMax / 10), FHPMax * 2 );
+       FHP := Min( FHP + Ceil(aTarget.FHPMax / 10), FHPMax );
 
 
     // Berserker roll
