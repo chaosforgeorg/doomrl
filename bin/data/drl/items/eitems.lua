@@ -574,7 +574,7 @@ function drl.register_exotic_items()
 		type       = ITEMTYPE_BOOTS,
 		armor      = 10,
 		durability = 200,
-		movemod    = -15,
+		movemod    = -10,
 		knockmod   = -70,
 	}
 
