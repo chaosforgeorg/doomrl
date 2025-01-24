@@ -3,10 +3,11 @@
 [mod] -- GH#197: G-version - glow is calculated live and tied to self-illumination
 [mod] -- GH#206: balance - Vampyre no longer overheals
 [mod] -- GH#206: balance - Ammochain blocks Ironman instead of SoG
-[mod] -- GH#206: balance - Survivalist blocks Reloader instead of HR
 [mod] -- GH#206: balance - Army of the Dead blocks SoB instead of HR
 [mod] -- GH#206: balance - Son of a gun is -10% firetime but +3 damage
 [mod] -- GH#206: balance - Entrenchment buffed to 50%, also volleys after first are 1 ammo
+[mod] -- GH#206: balance - Survivalist, Gunrunner and Scavenger require only level 5
+[mod] -- GH#206: balance - Survivalist, Gunrunner and Scavenger have less reqs and blocks
 [fix] -- RCFIX : fix for L2 intuition markers
 [fix] -- RCFIX : fix for weapon kill count
 [fix] -- RCFIX : players can no longer spawn in liquid

@@ -30,7 +30,7 @@ function drl.register_klasses()
 			{ id = "bulletdance",  requires = {{ "dualgunner",   1 }, { "triggerhappy", 1 },               }, blocks = { "hellrunner", "intuition", "brute",      },               master = true },
 			{ id = "armydead",     requires = {{ "shottyman",    1 }, { "badass",       1 },               }, blocks = { "gun",        "eagle",     "bitch",      }, reqlevel = 6, master = true },
 			{ id = "ammochain",    requires = {{ "triggerhappy", 2 }, { "reloader",     2 },               }, blocks = { "nails",      "ironman",   "eagle",      },               master = true },
-			{ id = "survivalist",  requires = {{ "badass",       1 }, { "ironman",      2 }, {"nails", 2}, }, blocks = { "reloader",   "berserker", "bitch",      },               master = true },
+			{ id = "survivalist",  requires = {{ "nails",        2 },                                      }, blocks = { "berserker",  "bitch",                   }, reqlevel = 5, master = true },
 		},
 
 		desc = "Marines are the backbone of the UAC, resilient and hardy. They start with 10 more health points, +20% fire/acid/plasma resistance and powerups they use have a +50% duration bonus (+25% on Nightmare).",
@@ -80,7 +80,7 @@ function drl.register_klasses()
 			{ id = "gunkata",      requires = {{ "dualgunner",   1 }, { "dodgemaster", 1},                      }, blocks = { "nails",    "bitch", "brute",      },               master = true },
 			{ id = "shottyhead",   requires = {{ "juggler",      1 }, { "shottyman",   1}, { "hellrunner", 1 }, }, blocks = { "nails",    "bitch", "eagle",      },               master = true },
 			{ id = "cateye",       requires = {{ "triggerhappy", 1 }, { "intuition",   1},                      }, blocks = { "reloader", "brute", "nails",      }, reqlevel = 6, master = true },
-			{ id = "gunrunner",    requires = {{ "dodgemaster",  1 }, { "juggler",     1},                      }, blocks = { "bitch",    "nails", "brute",      },               master = true },
+			{ id = "gunrunner",    requires = {{ "hellrunner",   2 },                                           }, blocks = { "nails",   "brute",                }, reqlevel = 5, master = true },
 		},
 
 		desc = "Scouts are agile and have the best intel. They are generally 10% faster and inherently know the location of stairs on any given level.",
@@ -125,7 +125,7 @@ function drl.register_klasses()
 			{ id = "sharpshooter", requires = {{ "gun",          3 }, { "eagle",     3 },                   }, blocks = { "dualgunner",   "nails",     "bitch",      },               master = true },
 			{ id = "fireangel",    requires = {{ "dodgemaster",  1 }, { "shottyman", 1 },                   }, blocks = { "gun",          "bitch",     "eagle",      },               master = true },
 			{ id = "entrenchment", requires = {{ "triggerhappy", 1 }, { "badass",    1 },                   }, blocks = { "finesse",      "reloader",  "gun",        },               master = true },
-			{ id = "scavenger",    requires = {{ "whizkid",      2 }, { "intuition", 1 },                   }, blocks = { "triggerhappy", "berserker", "dualgunner", }, reqlevel = 6, master = true },
+			{ id = "scavenger",    requires = {{ "whizkid",      2 },                                       }, blocks = { "triggerhappy", "berserker",               }, reqlevel = 5, master = true },
 		},
 		desc = "Technicians are masters of equipment and tinkering. They use consumables almost instantly and can hack computer maps for tracking data. Only they can also mod some really unique tech.",
 
