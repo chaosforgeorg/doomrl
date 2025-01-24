@@ -1,6 +1,7 @@
 0.9.9.9 BETA 4
-[new] -- GH#---: G-version - mouse edge pan is disabled by default, use MMB to pan!
+[mod] -- GH#197: G-version - added self-illumination to several sprites
 [mod] -- GH#197: G-version - glow is calculated live and tied to self-illumination
+[new] -- GH#000: G-version - mouse edge pan is disabled by default, use MMB to pan!
 [mod] -- GH#206: balance - Vampyre no longer overheals, blocks TaN instead of SoB
 [mod] -- GH#206: balance - Ammochain blocks Ironman instead of SoG
 [mod] -- GH#206: balance - Army of the Dead blocks SoB instead of HR

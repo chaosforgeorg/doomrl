@@ -324,15 +324,24 @@ begin
 end;
 
 procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
+var iShift : Single;
+    iPixel : Integer;
+    iIO    : TDoomGFXIO;
 begin
+  iIO := IO as TDoomGFXIO;
   FShift := FNewShift;
   {$PUSH}
   {$Q-}
   FTimer += aTime;
   {$POP}
-  FFluidTime += aTime*0.0001;
-  FFluidX := 1-(FFluidTime - Floor( FFluidTime ));
-  FFluidY := (FFluidTime - Floor( FFluidTime ));
+
+  // Technically this should smooth out fluids -_-
+  FFluidTime := IO.Driver.GetMs*0.0001;
+  iShift     := FFluidTime - Floor( FFluidTime );
+  iPixel     := Floor( iShift * ( 32*iIO.TileMult ) );
+  iShift     := iPixel / ( 32*iIO.TileMult );
+  FFluidX := 1-iShift;
+  FFluidY := iShift;
   ApplyEffect;
   UpdateLightMap;
   FSpriteEngine.Update( aProjection );
