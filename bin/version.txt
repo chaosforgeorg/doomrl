@@ -3,6 +3,7 @@
 [mod] -- GH#197: G-version - glow is calculated live and tied to self-illumination
 [mod] -- GH#206: balance - Vampyre no longer overheals
 [mod] -- GH#206: balance - Ammochain blocks Ironman instead of SoG
+[mod] -- GH#206: balance - Survivalist blocks Reloader instead of HR
 [fix] -- RCFIX : fix for L2 intuition markers
 [fix] -- RCFIX : fix for weapon kill count
 [fix] -- RCFIX : players can no longer spawn in liquid
