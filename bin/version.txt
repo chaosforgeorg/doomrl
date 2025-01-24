@@ -4,6 +4,7 @@
 [mod] -- GH#206: balance - Vampyre no longer overheals
 [mod] -- GH#206: balance - Ammochain blocks Ironman instead of SoG
 [mod] -- GH#206: balance - Survivalist blocks Reloader instead of HR
+[mod] -- GH#206: balance - Army of the Dead blocks SoB instead of HR
 [mod] -- GH#206: balance - Son of a gun is -10% firetime but +3 damage
 [fix] -- RCFIX : fix for L2 intuition markers
 [fix] -- RCFIX : fix for weapon kill count
