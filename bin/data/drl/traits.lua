@@ -75,9 +75,9 @@ function drl.register_traits()
 	register_trait "gun"
 	{
 		name   = "Son of a gun",
-		desc   = "Pistol: firing time -20%/lv, Dmg+1/lv.",
+		desc   = "Pistol: firing time -10%/lv, Dmg+3/lv.",
 		quote  = "\"Dig the prowess, the capacity for violence!\"",
-		full   = "You love your pistols. You clean them every day and make sure they are always in top condition. You know your pistols so well that for every level of this trait you can fire them 20% faster and deal 1 more damage.",
+		full   = "You love your pistols. You clean them every day and make sure they are always in top condition. You know your pistols so well that for every level of this trait you can fire them 10% faster and deal 3 more damage.",
 		abbr   = "SoG",
 
 		OnPick = function (being)

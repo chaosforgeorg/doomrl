@@ -1304,7 +1304,7 @@ begin
 
   iDamageBonus := FBonus.ToDamAll;
   iToHitBonus  := 0;
-  if aGun.Flags[ IF_PISTOL ] then iDamageBonus += FBonus.Pistol;
+  if aGun.Flags[ IF_PISTOL ] then iDamageBonus += 3 * FBonus.Pistol;
 
   iShots       := Max( aGun.Shots, 1 );
   iChaining    := ( aAlt = ALT_CHAIN ) and ( iShots > 1 );
@@ -2244,7 +2244,7 @@ begin
     iModifier := Inv.Slot[ efWeapon ].UseTime;
   iModifier *= FTimes.Fire/1000.;
 
-  if (FBonus.Pistol > 0) and Inv.Slot[ efWeapon ].Flags[ IF_PISTOL ] then iModifier *= Max( (5.-FBonus.Pistol)/5, 0.1 );
+  if (FBonus.Pistol > 0) and Inv.Slot[ efWeapon ].Flags[ IF_PISTOL ] then iModifier *= Max( (10.-FBonus.Pistol)/10, 0.1 );
   if (BF_BULLETDANCE in FFlags) and Inv.Slot[ efWeapon ].Flags[ IF_PISTOL ] and (aAltFire = ALT_NONE) then iModifier *= ( 1 + 0.5 * FBonus.Rapid );
   if (aAltFire = ALT_AIMED) then iModifier *= 2;
   if (BF_SHOTTYHEAD in FFlags) and Inv.Slot[efWeapon].Flags[ IF_SHOTGUN ] then iModifier *= 0.33;
