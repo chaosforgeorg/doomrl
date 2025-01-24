@@ -394,9 +394,9 @@ function drl.register_traits()
 	register_trait "fireangel"
 	{
 		name   = "Fireangel",
-		desc   = "Explosion damage has no effect, only direct hits.",
+		desc   = "Missiles explode, +1 radius, splash damage has no effect.",
 		quote  = "\"Woo baby, I'm burnin' out of control!\"",
-		full   = "You love heat, you're the angel of fire! No explosion affects you, unless you take a direct hit.",
+		full   = "You love heat, you're the angel of fire! Every missile you fire explodes, and those that already do explode with a +1 radius! Also, no explosion affects you, unless you take a direct hit.",
 		author = "Kornel",
 		abbr   = "MFa",
 		master = true,

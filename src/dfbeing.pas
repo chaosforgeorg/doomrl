@@ -2031,6 +2031,10 @@ begin
   iIsHit := MF_EXACT in Missiles[iMissile].Flags;
   iStart := iMisslePath.GetSource;
 
+  iRadius := aItem.BlastRadius;
+  if ( BF_FIREANGEL in FFlags ) and ( not ( aItem.Hooks[ Hook_OnHitBeing ] ) ) then
+    iRadius += 1;
+
   repeat
     iOldCoord := iMisslePath.GetC;
     if not ( MF_IMMIDATE in Missiles[iMissile].Flags ) then
@@ -2090,7 +2094,7 @@ begin
           iDirection.CreateSmooth( Self.FPosition, iCoord );
           iBeing.KnockBack( iDirection, iDamage div 12 );
         end;
-        if aItem.BlastRadius = 0 then
+        if iRadius = 0 then
         begin
           iRunDamage := True;
           if aItem.Hooks[ Hook_OnHitBeing ] then
@@ -2153,10 +2157,9 @@ begin
   except
     FreeAndNil( aItem );
   end;
-  
-  if aItem.BlastRadius <> 0 then
+
+  if iRadius <> 0 then
   begin
-    iRadius := aItem.BlastRadius;
     iRoll.Init(aItem.Damage_Dice, aItem.Damage_Sides, aItem.Damage_Add + aDamageMod );
 
     if iMaxDamage then
