@@ -12,6 +12,7 @@
 [mod] -- GH#206: balance - Fireangel - ALL missiles explode, +1 to existing explosions radius
 [mod] -- GH#206: balance - Hellrunner dodge +15%->+10%
 [mod] -- GH#206: balance - Marine inherent resists 20%->10%
+[mod] -- GH#206: balance - berserk resistance boost 60%->50%
 [mod] -- GH#206: balance - TaN grants 10% fire/acid/plasma resists per level
 [mod] -- GH#206: balance - decreased movement penalty on heavier boots
 [fix] -- RCFIX : fixed Gunrunner not working

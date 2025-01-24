@@ -14,12 +14,12 @@ function drl.register_affects()
 		OnAdd          = function(being)
 			being.flags[ BF_BERSERK ] = true
 			being.speed = being.speed + 50
-			being.resist.bullet = (being.resist.bullet or 0) + 60
-			being.resist.melee = (being.resist.melee or 0) + 60
-			being.resist.shrapnel = (being.resist.shrapnel or 0) + 60
-			being.resist.acid = (being.resist.acid or 0) + 60
-			being.resist.fire = (being.resist.fire or 0) + 60
-			being.resist.plasma = (being.resist.plasma or 0) + 60
+			being.resist.bullet = (being.resist.bullet or 0) + 50
+			being.resist.melee = (being.resist.melee or 0) + 50
+			being.resist.shrapnel = (being.resist.shrapnel or 0) + 50
+			being.resist.acid = (being.resist.acid or 0) + 50
+			being.resist.fire = (being.resist.fire or 0) + 50
+			being.resist.plasma = (being.resist.plasma or 0) + 50
 		end,
 		OnTick         = function(being)
 			ui.msg("You need to taste blood!")
@@ -27,12 +27,12 @@ function drl.register_affects()
 		OnRemove       = function(being)
 			being.flags[ BF_BERSERK ] = false
 			being.speed = being.speed - 50
-			being.resist.bullet = (being.resist.bullet or 0) - 60
-			being.resist.melee = (being.resist.melee or 0) - 60
-			being.resist.shrapnel = (being.resist.shrapnel or 0) - 60
-			being.resist.acid = (being.resist.acid or 0) - 60
-			being.resist.fire = (being.resist.fire or 0) - 60
-			being.resist.plasma = (being.resist.plasma or 0) - 60
+			being.resist.bullet = (being.resist.bullet or 0) - 50
+			being.resist.melee = (being.resist.melee or 0) - 50
+			being.resist.shrapnel = (being.resist.shrapnel or 0) - 50
+			being.resist.acid = (being.resist.acid or 0) - 50
+			being.resist.fire = (being.resist.fire or 0) - 50
+			being.resist.plasma = (being.resist.plasma or 0) - 50
 		end,
 	}
 
