@@ -1643,7 +1643,7 @@ var iName          : string;
     iDefenderName  : string;
     iResult        : string;
     iDamage        : Integer;
-    iDefence       : Integet;
+    iDefence       : Integer;
     iWeaponSlot    : TEqSlot;
     iWeapon        : TItem;
     iDamageType    : TDamageType;

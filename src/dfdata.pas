@@ -702,9 +702,9 @@ end;
 
 function toHitPercent( aEffSkill : Integer ): string;
 begin
-  if EffSkill <= 3  then Exit('1%');
-  if EffSkill >= 16 then Exit('98%');
-  case EffSkill of
+  if aEffSkill <= 3  then Exit('1%');
+  if aEffSkill >= 16 then Exit('98%');
+  case aEffSkill of
     4 : Exit('2%');
     5 : Exit('5%');
     6 : Exit('9%');
