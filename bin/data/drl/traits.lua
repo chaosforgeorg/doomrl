@@ -467,7 +467,7 @@ function drl.register_traits()
 		end,
 	}
 
-	register_trait "running"
+	register_trait "runningman"
 	{
 		name   = "Running Man",
 		desc   = "Running time *2, no to hit penalty",
