@@ -736,8 +736,8 @@ begin
         if FAffects.IsExpiring(i)
           then iColor := Affects[i].Color_exp
           else iColor := Affects[i].Color;
-        VTIG_FreeLabel( Affects[i].name, Point( iPos.X+iP+14, iBottom ), iColor );
-        iP += 6;
+        VTIG_FreeLabel( Affects[i].name, Point( iPos.X+iP+1+13, iBottom ), iColor );
+        iP += Length( Affects[i].name ) + 1;
       end;
 
     with Player do

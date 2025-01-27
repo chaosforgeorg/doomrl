@@ -2,7 +2,7 @@ function drl.register_affects()
 	
 	register_affect "berserk"
 	{
-		name           = "brsrk",
+		name           = "berserk",
 		color          = LIGHTRED,
 		color_expire   = RED,
 		message_init   = "You feel like a killing machine!",
@@ -38,7 +38,7 @@ function drl.register_affects()
 
 	register_affect "inv"
 	{
-		name           = "invul",
+		name           = "invulnerable",
 		color          = WHITE,
 		color_expire   = DARKGRAY,
 		message_init   = "You feel invincible!",
@@ -62,7 +62,7 @@ function drl.register_affects()
 
 	register_affect "enviro"
 	{
-		name           = "envir",
+		name           = "enviro",
 		color          = LIGHTGREEN,
 		color_expire   = GREEN,
 		message_init   = "You feel protected!",
