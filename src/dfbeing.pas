@@ -105,7 +105,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionUse( aItem : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
     function ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0 ) : Boolean;
-    function ActionTactic : boolean;
+    function ActionActive : boolean;
     function ActionAction( aTarget : TCoord2D ) : Boolean;
 
     // Always returns False.
@@ -1113,7 +1113,7 @@ begin
   Exit( True );
 end;
 
-function TBeing.ActionTactic : Boolean;
+function TBeing.ActionActive : Boolean;
 begin
   if ( not isPlayer ) then Exit( False );
   Exit( CallHookCheck( Hook_OnUseActive, [] ) );
@@ -1429,7 +1429,7 @@ begin
     COMMAND_UNLOAD    : Exit( ActionUnLoad( aCommand.Item, aCommand.ID ) );
     COMMAND_SWAPWEAPON: Exit( ActionSwapWeapon );
     COMMAND_QUICKKEY  : Exit( ActionQuickKey( Ord( aCommand.ID[1] ) - Ord( '0' ) ) );
-    COMMAND_TACTIC    : Exit( ActionTactic );
+    COMMAND_ACTIVE    : Exit( ActionActive );
   else Exit( False );
   end;
   Exit( True );

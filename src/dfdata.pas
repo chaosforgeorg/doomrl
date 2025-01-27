@@ -227,7 +227,6 @@ const
   ActionCostWear   = 1000;
   ActionCostMove   = 1000;
   ActionCostFire   = 1000;
-  ActionCostTactic = 100;
 
   ActSoundChance    = 30;
 

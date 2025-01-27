@@ -273,7 +273,7 @@ function drl.register_base_data()
 				return false
 			else
 				self:set_affect( "running", self.runningtime )
-				self.scount = self.scount - 1000
+				self.scount = self.scount - 100
 				return true
 			end
 		end,
