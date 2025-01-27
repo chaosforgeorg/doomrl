@@ -23,8 +23,10 @@ function drl.register_affects()
 
 		OnAdd          = function(being)
 			being:remove_affect( "tired" )
+			being.dodgebonus = being.dodgebonus + 20
 		end,
 		OnRemove       = function(being)
+			being.dodgebonus = being.dodgebonus - 20
 			being:set_affect( "tired" );
 		end,
 	}

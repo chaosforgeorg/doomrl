@@ -2280,7 +2280,6 @@ begin
   Result := DodgeBonus;
   if Inv.Slot[efTorso] <> nil    then Result += Inv.Slot[efTorso].DodgeMod;
   if Inv.Slot[efBoots] <> nil    then Result += Inv.Slot[efBoots].DodgeMod;
-  if isPlayer and Player.Running then Result += 20;
 end;
 
 function TBeing.getKnockMod : LongInt;
