@@ -736,15 +736,9 @@ begin
         if FAffects.IsExpiring(i)
           then iColor := Affects[i].Color_exp
           else iColor := Affects[i].Color;
-        VTIG_FreeLabel( Affects[i].name, Point( iPos.X+iP+1+13, iBottom ), iColor );
+        VTIG_FreeLabel( Affects[i].name, Point( iPos.X+iP+1, iBottom ), iColor );
         iP += Length( Affects[i].name ) + 1;
       end;
-
-    with Player do
-      if (FTactic.Current = TacticRunning) and (FTactic.Count < 6) then
-        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), Brown )
-      else
-        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
   end;
 
   iOffset := -2;

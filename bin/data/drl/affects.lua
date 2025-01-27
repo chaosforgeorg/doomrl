@@ -1,5 +1,34 @@
 function drl.register_affects()
 	
+	register_affect "tired"
+	{
+		name           = "tired",
+		color          = DARKGRAY,
+		color_expire   = DARKGRAY,
+		
+		OnAdd          = function(being)
+			being:remove_affect( "running" )
+		end,
+		OnRemove       = function(being)
+		end,
+	}
+
+	register_affect "running"
+	{
+		name           = "running",
+		color          = YELLOW,
+		color_expire   = BROWN,
+		message_init   = "You start running!",
+		message_done   = "You stop running.",
+
+		OnAdd          = function(being)
+			being:remove_affect( "tired" )
+		end,
+		OnRemove       = function(being)
+			being:set_affect( "tired", -1 );
+		end,
+	}
+
 	register_affect "berserk"
 	{
 		name           = "berserk",
@@ -12,6 +41,7 @@ function drl.register_affects()
 		status_strength= 5,
 
 		OnAdd          = function(being)
+			being:remove_affect( "running", true )
 			being.flags[ BF_BERSERK ] = true
 			being.speed = being.speed + 50
 			being.resist.bullet = (being.resist.bullet or 0) + 50

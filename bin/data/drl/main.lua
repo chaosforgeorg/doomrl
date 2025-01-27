@@ -260,6 +260,11 @@ function drl.register_base_data()
 
 end
 
+function drl.OnEnter()
+	player:remove_affect( "running" )
+	player:remove_affect( "tired" )
+end
+
 function drl.GetDisassembleId( it )
 	local modlist = {"mod_agility","mod_bulk","mod_tech","mod_power"}
 	if it.__proto.scavenge then

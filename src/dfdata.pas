@@ -327,12 +327,6 @@ type TItemProperties = record
 
 const MaxPlayerLevel = 26;
 
-type  TTactic = (tacticNormal,tacticRunning,tacticTired);
-const TacticName : array[TTactic] of string =
-                   ('cautious','running','tired');
-      TacticColor: array[TTactic] of byte =
-                   (lightgray,yellow,darkgray);
-
 const ExpTable : array[1..MaxPlayerLevel] of LongInt =
               (     0,    500,   1500,
                  4000,   7000,  11000,

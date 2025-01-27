@@ -19,13 +19,7 @@ TRunData = object
 end;
 
 TTacticData = object
-  Current : TTactic;
-  Count   : Word;
   Max     : Word;
-  procedure Clear;
-  procedure Stop;
-  procedure Tick;
-  procedure Reset;
 end;
 
 TStatistics = object
@@ -172,38 +166,6 @@ begin
   Map['kills_non_damage'] := Max( Map['kills_non_damage'], aCount );
 end;
 
-{ TTacticData }
-
-procedure TTacticData.Clear;
-begin
-  Count   := 30;
-  Current := tacticNormal;
-end;
-
-procedure TTacticData.Stop;
-begin
-  if Current = tacticRunning then Current := TacticTired;
-end;
-
-procedure TTacticData.Tick;
-begin
-  if ( Count > 0 ) and ( Current = TacticRunning ) then
-  begin
-    Dec( Count );
-    if Count = 0 then
-    begin
-      IO.Msg('You stop running.');
-      Current := tacticTired;
-    end;
-  end;
-end;
-
-procedure TTacticData.Reset;
-begin
-  Current := tacticNormal;
-  Count := 0;
-end;
-
 { TRunData }
 
 procedure TRunData.Clear;
@@ -234,7 +196,6 @@ begin
   FKillMax        := 0;
   FKillCount      := 0;
   FRun.Clear;
-  FTactic.Clear;
   FAffects.Clear;
 
   CurrentLevel  := 0;
@@ -367,7 +328,6 @@ begin
     if BF_BERSERKER in FFlags then
     begin
       IO.Msg('That hurt! You''re going berserk!');
-      FTactic.Stop;
       FAffects.Add(LuaSystem.Defines['berserk'],20);
     end;
   end;
@@ -415,7 +375,6 @@ begin
   MasterDodge := False;
   FAffects.Tick;
   if Doom.State <> DSPlaying then Exit( False );
-  FTactic.Tick;
   Inv.EqTick;
   FLastPos := FPosition;
   FMeleeAttack := False;
@@ -585,7 +544,6 @@ begin
   FStatistics.Map['entry_time'] := FStatistics.GameTime;
 
   FTargetPos.Create(0,0);
-  FTactic.Reset;
   FChainFire := 0;
 end;
 
@@ -808,27 +766,26 @@ end;
 
 procedure TPlayer.SetTired(Value: Boolean);
 begin
-  if Value then FTactic.Current := TacticTired   else FTactic.Current := TacticNormal;
+  if Value
+    then FAffects.Add( LuaSystem.Defines['tired'], -1 )
+    else FAffects.Remove( LuaSystem.Defines['tired'], False );
 end;
 
 procedure TPlayer.SetRunning(Value: Boolean);
 begin
-  if Value then
-  begin
-    FTactic.Current := TacticRunning;
-    FTactic.Count   := FTactic.Max;
-  end
-  else FTactic.Current := TacticTired;
+  if Value
+    then FAffects.Add( LuaSystem.Defines['running'], FTactic.Max )
+    else FAffects.Remove( LuaSystem.Defines['running'], True );
 end;
 
 function TPlayer.GetTired: Boolean;
 begin
-  Exit( FTactic.Current = TacticTired );
+  Exit( FAffects.IsActive( LuaSystem.Defines['tired'] ) );
 end;
 
 function TPlayer.GetRunning: Boolean;
 begin
-  Exit( FTactic.Current = TacticRunning );
+  Exit( FAffects.IsActive( LuaSystem.Defines['running'] ) );
 end;
 
 function TPlayer.GetSkillRank: Word;
