@@ -82,7 +82,7 @@ TItem  = class( TThing )
     property AmmoID         : Byte        read FProps.AmmoID         write FProps.AmmoID;
     property Ammo           : Word        read FProps.Ammo           write FProps.Ammo;
     property AmmoMax        : Word        read FProps.AmmoMax        write FProps.AmmoMax;
-    property Acc            : ShortInt    read FProps.Acc            write FProps.Acc;
+    property Acc            : Integer     read FProps.Acc            write FProps.Acc;
     property Damage_Dice    : Word        read FProps.Damage.Amount  write FProps.Damage.Amount;
     property Damage_Sides   : Word        read FProps.Damage.Sides   write FProps.Damage.Sides;
     property Damage_Add     : Integer     read FProps.Damage.Bonus   write FProps.Damage.Bonus;

@@ -792,7 +792,7 @@ var XMLElement : TDOMElement;
     iGameResult : String;
     iKills : DWord;
     iChalAbbr  : string;
-    iChalInc : shortint;
+    iChalInc : Integer;
     iDiffID : string;
     iWeaponGroup    : AnsiString;
     iKillsEntry     : TKillTableIterator.TPairType;

@@ -15,15 +15,15 @@ uses Classes, SysUtils,
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
 
 type TBonuses = record
-  ToHit      : ShortInt;
-  ToDam      : ShortInt;
-  ToDamAll   : ShortInt;
-  ToHitMelee : ShortInt;
-  Pistol     : ShortInt;
-  Rapid      : ShortInt;
-  Body       : ShortInt;
-  Tech       : ShortInt;
-  Dodge      : ShortInt;
+  ToHit      : Integer;
+  ToDam      : Integer;
+  ToDamAll   : Integer;
+  ToHitMelee : Integer;
+  Pistol     : Integer;
+  Rapid      : Integer;
+  Body       : Integer;
+  Tech       : Integer;
+  Dodge      : Integer;
 end;
 
 type TBeingTimes = record
@@ -59,7 +59,7 @@ TBeing = class(TThing,IPathQuery)
     function meleeWeaponSlot : TEqSlot;
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
     procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); virtual;
-    function SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : ShortInt = 0; aToHitMod : ShortInt = 0; aShotCount : ShortInt = 0 ) : Boolean;
+    function SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : Integer = 0; aToHitMod : Integer = 0; aShotCount : Integer = 0 ) : Boolean;
     function  isActive : boolean;
     function  WoundStatus : string;
     function  IsPlayer : Boolean;
@@ -73,8 +73,8 @@ TBeing = class(TThing,IPathQuery)
     function getReloadCost : LongInt;
     function getDodgeMod : LongInt;
     function getKnockMod : LongInt;
-    function getToHitMelee( Item : TItem ) : ShortInt;
-    function getToHitRanged( Item : TItem ) : ShortInt;
+    function getToHitMelee( Item : TItem ) : Integer;
+    function getToHitRanged( Item : TItem ) : Integer;
     function canDualGun : boolean;
     function canDualBlade : boolean;
     function canDualReload : Boolean;
@@ -180,19 +180,19 @@ TBeing = class(TThing,IPathQuery)
     property Vision       : Byte       read FVisionRadius write FVisionRadius;
     property SCount       : LongInt    read FSpeedCount   write FSpeedCount;
 
-    property ToHit        : ShortInt   read FBonus.ToHit        write FBonus.ToHit;
-    property ToDam        : ShortInt   read FBonus.ToDam        write FBonus.ToDam;
-    property ToDamAll     : ShortInt   read FBonus.ToDamAll     write FBonus.ToDamAll;
-    property ToHitMelee   : ShortInt   read FBonus.ToHitMelee   write FBonus.ToHitMelee;
+    property ToHit        : Integer    read FBonus.ToHit        write FBonus.ToHit;
+    property ToDam        : Integer    read FBonus.ToDam        write FBonus.ToDam;
+    property ToDamAll     : Integer    read FBonus.ToDamAll     write FBonus.ToDamAll;
+    property ToHitMelee   : Integer    read FBonus.ToHitMelee   write FBonus.ToHitMelee;
 
     property Speed        : Byte       read FSpeed        write FSpeed;
     property ExpValue     : Word       read FExpValue     write FExpValue;
 
-    property TechBonus    : ShortInt   read FBonus.Tech   write FBonus.Tech;
-    property PistolBonus  : ShortInt   read FBonus.Pistol write FBonus.Pistol;
-    property RapidBonus   : ShortInt   read FBonus.Rapid  write FBonus.Rapid;
-    property BodyBonus    : ShortInt   read FBonus.Body   write FBonus.Body;
-    property DodgeBonus   : ShortInt   read FBonus.Dodge  write FBonus.Dodge;
+    property TechBonus    : Integer    read FBonus.Tech   write FBonus.Tech;
+    property PistolBonus  : Integer    read FBonus.Pistol write FBonus.Pistol;
+    property RapidBonus   : Integer    read FBonus.Rapid  write FBonus.Rapid;
+    property BodyBonus    : Integer    read FBonus.Body   write FBonus.Body;
+    property DodgeBonus   : Integer    read FBonus.Dodge  write FBonus.Dodge;
     property HPDecayMax   : Word       read FHPDecayMax   write FHPDecayMax;
 
     property ReloadTime   : Byte       read FTimes.Reload   write FTimes.Reload;
@@ -1294,7 +1294,7 @@ begin
 end;
 
 function TBeing.FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire ) : Boolean;
-var iShots       : ShortInt;
+var iShots       : Integer;
     iDamageBonus : Integer;
     iToHitBonus  : Integer;
     iShotCost    : Byte;
@@ -1643,7 +1643,7 @@ var iName          : string;
     iDefenderName  : string;
     iResult        : string;
     iDamage        : Integer;
-    iDefence       : ShortInt;
+    iDefence       : Integet;
     iWeaponSlot    : TEqSlot;
     iWeapon        : TItem;
     iDamageType    : TDamageType;
@@ -1941,7 +1941,7 @@ begin
     else CallHook( Hook_OnAttacked, [ TLevel(Parent).ActiveBeing, aSource ] );
 end;
 
-function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : ShortInt = 0; aToHitMod : ShortInt = 0; aShotCount : ShortInt = 0) : Boolean;
+function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : Integer = 0; aToHitMod : Integer = 0; aShotCount : Integer = 0) : Boolean;
 var iDirection  : TDirection;
     iMisslePath : TVisionRay;
     iOldCoord   : TCoord2D;
@@ -2338,7 +2338,7 @@ begin
     and ( Pack.AmmoID = Weapon.AmmoID) );
 end;
 
-function TBeing.getToHitRanged(Item : TItem) : ShortInt;
+function TBeing.getToHitRanged(Item : TItem) : Integer;
 begin
   getToHitRanged := FBonus.ToHit;
   if (Item <> nil) and (Item.isRanged) then getToHitRanged += Item.Acc;
@@ -2347,7 +2347,7 @@ begin
     getToHitRanged += TLevel(Parent).ToHitBonus;
 end;
 
-function TBeing.getToHitMelee(Item : TItem) : ShortInt;
+function TBeing.getToHitMelee(Item : TItem) : Integer;
 begin
   getToHitMelee := FBonus.ToHit + FBonus.ToHitMelee;
   if (Item <> nil) and (Item.isMelee) then getToHitMelee += Item.Acc;
