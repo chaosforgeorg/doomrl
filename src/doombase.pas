@@ -865,7 +865,8 @@ begin
 
   // Handle key-repeat
   if aEvent.Key.Repeated then
-    if ( not ( iInput in [ INPUT_WAIT ] + INPUT_MOVE ) ) or ( IO.Time - FLastInputTime < 99 ) or (Player.BeingsInVision > 1) then
+    if ( not ( iInput in [ INPUT_WAIT ] + INPUT_MOVE ) ) or
+       ( IO.Time - FLastInputTime < Player.VisualTime( Player.getMoveCost, 98 ) ) or (Player.BeingsInVision > 1) then
       Exit( False );
   FLastInputTime := IO.Time;
 
