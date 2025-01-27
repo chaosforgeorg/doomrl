@@ -235,6 +235,8 @@ function drl.register_base_data()
 				self.scount = 4000 --Removes player's start delay on level 1
 				self.expfactor = diff[DIFFICULTY].expfactor
 			end
+
+			self:add_property( "runningtime", 30 )
 		end,
 
 		--These stubs exist so that modders can hijack them properly

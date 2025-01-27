@@ -58,7 +58,6 @@ TPlayer = class(TBeing)
   FKillCount      : DWord;
   FTraits         : TTraits;
   FRun            : TRunData;
-  FRunningTime    : Word;
   FAffects        : TAffects;
   FPathRun        : Boolean;
   FQuickSlots     : array[1..9] of TQuickSlotInfo;
@@ -102,7 +101,6 @@ TPlayer = class(TBeing)
   property ExpLevel      : Byte       read FExpLevel     write FExpLevel;
   property NukeTime      : Word       read NukeActivated write NukeActivated;
   property Klass         : Byte       read FTraits.Klass write FTraits.Klass;
-  property RunningTime   : Word       read FRunningTime  write FRunningTime;
   property ExpFactor     : Real       read FExpFactor    write FExpFactor;
   property SkillRank     : Word       read GetSkillRank;
   property ExpRank       : Word       read GetExpRank;
@@ -199,7 +197,6 @@ begin
   FPathRun    := False;
 
   InventorySize := High( TItemSlot );
-  FRunningTime := 30;
   FExpFactor := 1.0;
 
   Initialize;
@@ -242,7 +239,6 @@ begin
   Stream.Write( FAffects,    SizeOf( FAffects ) );
   Stream.Write( FTraits,     SizeOf( FTraits ) );
   Stream.Write( FRun,        SizeOf( FRun ) );
-  Stream.Write( FRunningTime,SizeOf( FRunningTime ) );
   Stream.Write( FStatistics, SizeOf( FStatistics ) );
   Stream.Write( FQuickSlots, SizeOf( FQuickSlots ) );
 
@@ -268,7 +264,6 @@ begin
   Stream.Read( FAffects,    SizeOf( TAffects ) );
   Stream.Read( FTraits,     SizeOf( FTraits ) );
   Stream.Read( FRun,        SizeOf( FRun ) );
-  Stream.Read( FRunningTime,SizeOf( FRunningTime ) );
   Stream.Read( FStatistics, SizeOf( FStatistics ) );
   Stream.Read( FQuickSlots, SizeOf( FQuickSlots ) );
 
