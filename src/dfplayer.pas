@@ -890,7 +890,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  Player.FAffects.Remove(State.ToId(2));
+  Player.FAffects.Remove( State.ToId(2), State.ToBoolean( 3, False ) );
   Result := 0;
 end;
 
