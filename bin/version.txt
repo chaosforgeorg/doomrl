@@ -1,3 +1,6 @@
+0.9.9.9 BETA 5
+[fix] -- GH#000: MAJOR - dodge chance was calculated wrong (too high), fixed
+
 0.9.9.9 BETA 4
 [mod] -- GH#197: G-version - added self-illumination to several sprites
 [mod] -- GH#197: G-version - glow is calculated live and tied to self-illumination

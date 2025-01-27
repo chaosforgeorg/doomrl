@@ -79,7 +79,7 @@ TBeing = class(TThing,IPathQuery)
     function canDualBlade : boolean;
     function canDualReload : Boolean;
     function canPackReload : Boolean;
-    function getStrayChance( defender : TBeing; missile : byte ) : byte;
+    function getStrayChance( aDefender : TBeing; aMissile : Byte ) : Byte;
     function Preposition( Creature : AnsiString ) : string;
     function Dead : Boolean;
     procedure Remove( Node : TNode ); override;
@@ -207,31 +207,28 @@ uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasys
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio;
 
-function TBeing.getStrayChance( defender : TBeing; missile : byte ) : byte;
-var miss     : Integer;
-    Modifier : Real;
+function TBeing.getStrayChance( aDefender : TBeing; aMissile : Byte ) : Byte;
+var iMiss : Integer;
 begin
-  if IsPlayer       then Exit(0);
-  if defender = nil then Exit(0);
+  if IsPlayer        then Exit(0);
+  if aDefender = nil then Exit(0);
 
-  miss := Missiles[missile].MissBase +
-          Missiles[missile].MissDist *
-          Distance( FPosition, defender.FPosition );
-  Modifier := 100;
-		  
+  iMiss := Missiles[ aMissile ].MissBase +
+          Missiles[ aMissile ].MissDist *
+          Distance( FPosition, aDefender.FPosition );
 
-  if defender.IsPlayer then
+  if aDefender.IsPlayer then
   begin
-    if Player.Running then miss += 20;
     if (Player.Flags[ BF_MASTERDODGE ]) and (not Player.MasterDodge) then
     begin
       Player.MasterDodge := true;
       Exit(100);
     end;
+    if Player.Running then iMiss += 20;
   end;
-  Modifier := defender.getDodgeMod;
-  miss += Round( 100-Modifier );
-  Exit( Clamp( miss, 0, 95 ) );
+
+  iMiss += aDefender.getDodgeMod;
+  Exit( Clamp( iMiss, 0, 95 ) );
 end;
 
 constructor TBeing.Create(nid : byte);
