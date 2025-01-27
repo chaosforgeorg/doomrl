@@ -222,7 +222,7 @@ begin
 
   if defender.IsPlayer then
   begin
-    if (Player.FTactic.Current = tacticRunning) then miss += 20;
+    if Player.Running then miss += 20;
     if (Player.Flags[ BF_MASTERDODGE ]) and (not Player.MasterDodge) then
     begin
       Player.MasterDodge := true;
@@ -1114,12 +1114,23 @@ end;
 function TBeing.ActionTactic : Boolean;
 begin
   if ( not isPlayer ) or ( BF_BERSERK in FFlags ) then Exit( False );
-  if Player.FTactic.Change then
+  if Player.Tired then
   begin
+    IO.Msg('Too tired to do that right now.');
+    Exit( False );
+  end;
+  if Player.Running then
+  begin
+    IO.Msg('You stop running.');
+    Player.Running := False;
+    Exit( False );
+  end
+  else
+  begin
+    Player.Running := True;
     Dec( FSpeedCount, ActionCostTactic );
     Exit( True );
   end;
-  Exit( False );
 end;
 
 function TBeing.ActionAction( aTarget : TCoord2D ) : Boolean;
@@ -1697,7 +1708,7 @@ begin
   // Last kill
   iToHit := getToHitMelee( iWeapon );
 
-  if (aTarget.isPlayer) and (Player.FTactic.Current = tacticRunning)
+  if (aTarget.isPlayer) and Player.Running
     then iDefence := 4
     else iDefence := 0;
 
@@ -1744,7 +1755,7 @@ begin
           begin
             TLevel(Parent).playSound('bpack','powerup',FPosition);
             IO.Blink(Red,30);
-            Player.FTactic.Stop;
+            if Player.Running then Player.Running := False;
             if Player.FAffects.IsActive(LuaSystem.Defines['berserk']) then
             begin
               iBerserk  := Player.FAffects.List[LuaSystem.Defines['berserk']];
@@ -2064,7 +2075,7 @@ begin
       iBeing := iLevel.Being[ iCoord ];
       if iBeing = iAimedBeing then iDodged := False;
 
-      if iBeing.isPlayer and ( Player.FTactic.Current = TacticRunning ) then Dec(iToHit,4);
+      if iBeing.isPlayer and Player.Running then Dec(iToHit,4);
       
 	  if aItem.Flags[ IF_FARHIT ]
         then iIsHit := Roll( 10 + iToHit) >= 0
@@ -2235,7 +2246,7 @@ begin
   iModifier := FTimes.Move/100.;
   if Inv.Slot[efTorso] <> nil then iModifier *= (100-Inv.Slot[efTorso].MoveMod)/100.;
   if Inv.Slot[efBoots] <> nil then iModifier *= (100-Inv.Slot[efBoots].MoveMod)/100.;
-  if isPlayer and (Player.FTactic.Current = TacticRunning) then iModifier *= 0.7;
+  if isPlayer and Player.Running then iModifier *= 0.7;
   if not ( BF_FLY in FFlags ) then
     with Cells[ TLevel(Parent).getCell(FPosition) ] do
       iModifier *= MoveCost;
@@ -2340,7 +2351,7 @@ function TBeing.getToHitRanged(Item : TItem) : ShortInt;
 begin
   getToHitRanged := FBonus.ToHit;
   if (Item <> nil) and (Item.isRanged) then getToHitRanged += Item.Acc;
-  if isPlayer and (Player.FTactic.Current = TacticRunning) and (not Player.Flags[ BF_NORUNPENALTY ]) then Dec(getToHitRanged,2);
+  if isPlayer and Player.Running and (not Player.Flags[ BF_NORUNPENALTY ]) then Dec(getToHitRanged,2);
   if not isPlayer then
     getToHitRanged += TLevel(Parent).ToHitBonus;
 end;
@@ -2349,7 +2360,7 @@ function TBeing.getToHitMelee(Item : TItem) : ShortInt;
 begin
   getToHitMelee := FBonus.ToHit + FBonus.ToHitMelee;
   if (Item <> nil) and (Item.isMelee) then getToHitMelee += Item.Acc;
-  if isPlayer and (Player.FTactic.Current = TacticRunning) and (not Player.Flags[ BF_NORUNPENALTY ]) then Dec(getToHitMelee,2);
+  if isPlayer and Player.Running and (not Player.Flags[ BF_NORUNPENALTY ]) then Dec(getToHitMelee,2);
   if not isPlayer then
     getToHitMelee += TLevel(Parent).ToHitBonus;
 end;

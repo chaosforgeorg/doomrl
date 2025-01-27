@@ -26,7 +26,6 @@ TTacticData = object
   procedure Stop;
   procedure Tick;
   procedure Reset;
-  function Change : Boolean;
 end;
 
 TStatistics = object
@@ -203,24 +202,6 @@ procedure TTacticData.Reset;
 begin
   Current := tacticNormal;
   Count := 0;
-end;
-
-function TTacticData.Change : Boolean;
-begin
-  Change := False;
-  case Current of
-    tacticTired   : IO.Msg('Too tired to do that right now.');
-    tacticRunning : begin
-                      IO.Msg('You stop running.');
-                      Current := tacticTired;
-                    end;
-    tacticNormal  : begin
-                      IO.Msg('You start running!');
-                      Count := Max;
-                      Current := tacticRunning;
-                      Change := True;
-                    end;
-  end;
 end;
 
 { TRunData }
@@ -832,7 +813,12 @@ end;
 
 procedure TPlayer.SetRunning(Value: Boolean);
 begin
-  if Value then FTactic.Current := TacticRunning else FTactic.Current := TacticTired;
+  if Value then
+  begin
+    FTactic.Current := TacticRunning;
+    FTactic.Count   := FTactic.Max;
+  end
+  else FTactic.Current := TacticTired;
 end;
 
 function TPlayer.GetTired: Boolean;
