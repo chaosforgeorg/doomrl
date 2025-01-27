@@ -93,14 +93,11 @@ TPlayer = class(TBeing)
   FExp            : LongInt;
   FExpLevel       : Byte;
   private
-  procedure SetRunning( Value : Boolean );
-  function GetRunning : Boolean;
   function GetSkillRank : Word;
   function GetExpRank : Word;
   published
   property KilledBy      : AnsiString read FKilledBy;
   property KilledMelee   : Boolean    read FKilledMelee;
-  property Running       : Boolean    read GetRunning    write SetRunning;
   property Exp           : LongInt    read FExp          write FExp;
   property ExpLevel      : Byte       read FExpLevel     write FExpLevel;
   property NukeTime      : Word       read NukeActivated write NukeActivated;
@@ -418,7 +415,7 @@ begin
 
 
   if ( iWeapon <> nil ) and ( iWeapon.isRanged ) then
-     if (BF_GUNRUNNER in Self.FFlags) and iWeapon.canFire and (iWeapon.Shots < 3) and GetRunning then
+     if (BF_GUNRUNNER in Self.FFlags) and iWeapon.canFire and (iWeapon.Shots < 3) and FAffects.IsActive( LuaSystem.Defines['running'] ) then
      begin
        iAutoTarget := TAutoTarget.Create( FPosition );
        TLevel(Parent).UpdateAutoTarget( iAutoTarget, Self, Player.Vision );
@@ -755,18 +752,6 @@ begin
   if (Inv.Slot[efTorso] <> nil) and (IO.ASCII.Exists(Inv.Slot[efTorso].ID)) then
     exit(Inv.Slot[efTorso].ID);
   Exit('player');
-end;
-
-procedure TPlayer.SetRunning(Value: Boolean);
-begin
-  if Value
-    then FAffects.Add( LuaSystem.Defines['running'], FRunningTime )
-    else FAffects.Remove( LuaSystem.Defines['running'], True );
-end;
-
-function TPlayer.GetRunning: Boolean;
-begin
-  Exit( FAffects.IsActive( LuaSystem.Defines['running'] ) );
 end;
 
 function TPlayer.GetSkillRank: Word;
