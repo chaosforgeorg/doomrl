@@ -224,7 +224,6 @@ begin
       Player.MasterDodge := true;
       Exit(100);
     end;
-    if Player.Running then iMiss += 20;
   end;
 
   iMiss += aDefender.getDodgeMod;
@@ -2277,14 +2276,11 @@ begin
 end;
 
 function TBeing.getDodgeMod : LongInt;
-var Modifier : Real;
 begin
-  Modifier := DodgeBonus;
-  if Inv.Slot[efTorso] <> nil then
-    Modifier := 100 - ( 100 - Modifier ) * ( 100 - Inv.Slot[efTorso].DodgeMod ) / 100. ;
-  if Inv.Slot[efBoots] <> nil then
-    Modifier := 100 - ( 100 - Modifier ) * ( 100 - Inv.Slot[efBoots].DodgeMod ) / 100. ;
-  getDodgeMod := Clamp(Round(Modifier), 0, 95);
+  Result := DodgeBonus;
+  if Inv.Slot[efTorso] <> nil    then Result += Inv.Slot[efTorso].DodgeMod;
+  if Inv.Slot[efBoots] <> nil    then Result += Inv.Slot[efBoots].DodgeMod;
+  if isPlayer and Player.Running then Result += 20;
 end;
 
 function TBeing.getKnockMod : LongInt;

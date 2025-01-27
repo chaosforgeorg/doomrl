@@ -1,4 +1,5 @@
 0.9.9.9 BETA 5
+[mod] -- GH#000: dodge bonus from armor additive, not multiplicative
 [fix] -- GH#000: MAJOR - dodge chance was calculated wrong (too high), fixed
 
 0.9.9.9 BETA 4
