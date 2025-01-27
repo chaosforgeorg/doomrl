@@ -1017,7 +1017,7 @@ function drl.register_challenges()
 				ui.msg("SuperCharge!")
 				ui.blink(LIGHTBLUE,100)
 				player.hp = 2 * player.hpmax
-				player.tired = false
+				player:remove_affect( "tired" )
 			end
 		end,
 

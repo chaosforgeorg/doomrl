@@ -1,8 +1,49 @@
 function drl.register_affects()
 	
+	register_affect "tired"
+	{
+		name           = "tired",
+		color          = DARKGRAY,
+		color_expire   = DARKGRAY,
+		
+		OnAdd          = function(being)
+			being:remove_affect( "running" )
+		end,
+		OnRemove       = function(being)
+		end,
+	}
+
+	register_affect "running"
+	{
+		name           = "running",
+		color          = YELLOW,
+		color_expire   = BROWN,
+		message_init   = "You start running!",
+		message_done   = "You stop running.",
+
+		OnAdd          = function(being)
+			being:remove_affect( "tired" )
+			being.dodgebonus   = being.dodgebonus   + 20
+			being.movebonus    = being.movebonus    + 30
+			being.defencebonus = being.defencebonus + 4
+			if not being.flags[ BF_NORUNPENALTY ] then
+				being.tohit      = being.tohit - 2
+			end
+		end,
+		OnRemove       = function(being)
+			being.dodgebonus   = being.dodgebonus   - 20
+			being.movebonus    = being.movebonus    - 30
+			being.defencebonus = being.defencebonus - 4
+			if not being.flags[ BF_NORUNPENALTY ] then
+				being.tohit      = being.tohit + 2
+			end
+			being:set_affect( "tired" );
+		end,
+	}
+
 	register_affect "berserk"
 	{
-		name           = "brk",
+		name           = "berserk",
 		color          = LIGHTRED,
 		color_expire   = RED,
 		message_init   = "You feel like a killing machine!",
@@ -12,6 +53,7 @@ function drl.register_affects()
 		status_strength= 5,
 
 		OnAdd          = function(being)
+			being:remove_affect( "running", true )
 			being.flags[ BF_BERSERK ] = true
 			being.speed = being.speed + 50
 			being.resist.bullet = (being.resist.bullet or 0) + 50
@@ -38,7 +80,7 @@ function drl.register_affects()
 
 	register_affect "inv"
 	{
-		name           = "inv",
+		name           = "invulnerable",
 		color          = WHITE,
 		color_expire   = DARKGRAY,
 		message_init   = "You feel invincible!",
@@ -62,7 +104,7 @@ function drl.register_affects()
 
 	register_affect "enviro"
 	{
-		name           = "env",
+		name           = "enviro",
 		color          = LIGHTGREEN,
 		color_expire   = GREEN,
 		message_init   = "You feel protected!",
@@ -84,7 +126,7 @@ function drl.register_affects()
 
 	register_affect "light"
 	{
-		name           = "lit",
+		name           = "light",
 		color          = YELLOW,
 		color_expire   = BROWN,
 		message_init   = "You see further!",

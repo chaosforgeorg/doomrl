@@ -15,15 +15,17 @@ uses Classes, SysUtils,
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
 
 type TBonuses = record
-  ToHit      : ShortInt;
-  ToDam      : ShortInt;
-  ToDamAll   : ShortInt;
-  ToHitMelee : ShortInt;
-  Pistol     : ShortInt;
-  Rapid      : ShortInt;
-  Body       : ShortInt;
-  Tech       : ShortInt;
-  Dodge      : ShortInt;
+  ToHit      : Integer;
+  ToDam      : Integer;
+  ToDamAll   : Integer;
+  ToHitMelee : Integer;
+  Pistol     : Integer;
+  Rapid      : Integer;
+  Body       : Integer;
+  Tech       : Integer;
+  Dodge      : Integer;
+  Move       : Integer;
+  Defence    : Integer;
 end;
 
 type TBeingTimes = record
@@ -59,7 +61,7 @@ TBeing = class(TThing,IPathQuery)
     function meleeWeaponSlot : TEqSlot;
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
     procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); virtual;
-    function SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : ShortInt = 0; aToHitMod : ShortInt = 0; aShotCount : ShortInt = 0 ) : Boolean;
+    function SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : Integer = 0; aToHitMod : Integer = 0; aShotCount : Integer = 0 ) : Boolean;
     function  isActive : boolean;
     function  WoundStatus : string;
     function  IsPlayer : Boolean;
@@ -73,13 +75,13 @@ TBeing = class(TThing,IPathQuery)
     function getReloadCost : LongInt;
     function getDodgeMod : LongInt;
     function getKnockMod : LongInt;
-    function getToHitMelee( Item : TItem ) : ShortInt;
-    function getToHitRanged( Item : TItem ) : ShortInt;
+    function getToHitMelee( Item : TItem ) : Integer;
+    function getToHitRanged( Item : TItem ) : Integer;
     function canDualGun : boolean;
     function canDualBlade : boolean;
     function canDualReload : Boolean;
     function canPackReload : Boolean;
-    function getStrayChance( defender : TBeing; missile : byte ) : byte;
+    function getStrayChance( aDefender : TBeing; aMissile : Byte ) : Byte;
     function Preposition( Creature : AnsiString ) : string;
     function Dead : Boolean;
     procedure Remove( Node : TNode ); override;
@@ -103,7 +105,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionUse( aItem : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
     function ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0 ) : Boolean;
-    function ActionTactic : boolean;
+    function ActionActive : boolean;
     function ActionAction( aTarget : TCoord2D ) : Boolean;
 
     // Always returns False.
@@ -180,24 +182,26 @@ TBeing = class(TThing,IPathQuery)
     property Vision       : Byte       read FVisionRadius write FVisionRadius;
     property SCount       : LongInt    read FSpeedCount   write FSpeedCount;
 
-    property ToHit        : ShortInt   read FBonus.ToHit        write FBonus.ToHit;
-    property ToDam        : ShortInt   read FBonus.ToDam        write FBonus.ToDam;
-    property ToDamAll     : ShortInt   read FBonus.ToDamAll     write FBonus.ToDamAll;
-    property ToHitMelee   : ShortInt   read FBonus.ToHitMelee   write FBonus.ToHitMelee;
+    property ToHit        : Integer    read FBonus.ToHit        write FBonus.ToHit;
+    property ToDam        : Integer    read FBonus.ToDam        write FBonus.ToDam;
+    property ToDamAll     : Integer    read FBonus.ToDamAll     write FBonus.ToDamAll;
+    property ToHitMelee   : Integer    read FBonus.ToHitMelee   write FBonus.ToHitMelee;
 
-    property Speed        : Byte       read FSpeed        write FSpeed;
-    property ExpValue     : Word       read FExpValue     write FExpValue;
+    property Speed        : Byte       read FSpeed         write FSpeed;
+    property ExpValue     : Word       read FExpValue      write FExpValue;
 
-    property TechBonus    : ShortInt   read FBonus.Tech   write FBonus.Tech;
-    property PistolBonus  : ShortInt   read FBonus.Pistol write FBonus.Pistol;
-    property RapidBonus   : ShortInt   read FBonus.Rapid  write FBonus.Rapid;
-    property BodyBonus    : ShortInt   read FBonus.Body   write FBonus.Body;
-    property DodgeBonus   : ShortInt   read FBonus.Dodge  write FBonus.Dodge;
-    property HPDecayMax   : Word       read FHPDecayMax   write FHPDecayMax;
+    property TechBonus    : Integer    read FBonus.Tech    write FBonus.Tech;
+    property PistolBonus  : Integer    read FBonus.Pistol  write FBonus.Pistol;
+    property RapidBonus   : Integer    read FBonus.Rapid   write FBonus.Rapid;
+    property BodyBonus    : Integer    read FBonus.Body    write FBonus.Body;
+    property DodgeBonus   : Integer    read FBonus.Dodge   write FBonus.Dodge;
+    property MoveBonus    : Integer    read FBonus.Move    write FBonus.Move;
+    property DefenceBonus : Integer    read FBonus.Defence write FBonus.Defence;
+    property HPDecayMax   : Word       read FHPDecayMax    write FHPDecayMax;
 
-    property ReloadTime   : Byte       read FTimes.Reload   write FTimes.Reload;
-    property FireTime     : Byte       read FTimes.Fire     write FTimes.Fire;
-    property MoveTime     : Byte       read FTimes.Move     write FTimes.Move;
+    property ReloadTime   : Byte       read FTimes.Reload  write FTimes.Reload;
+    property FireTime     : Byte       read FTimes.Fire    write FTimes.Fire;
+    property MoveTime     : Byte       read FTimes.Move    write FTimes.Move;
   end;
 
 
@@ -207,31 +211,27 @@ uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasys
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio;
 
-function TBeing.getStrayChance( defender : TBeing; missile : byte ) : byte;
-var miss     : Integer;
-    Modifier : Real;
+function TBeing.getStrayChance( aDefender : TBeing; aMissile : Byte ) : Byte;
+var iMiss : Integer;
 begin
-  if IsPlayer       then Exit(0);
-  if defender = nil then Exit(0);
+  if IsPlayer        then Exit(0);
+  if aDefender = nil then Exit(0);
 
-  miss := Missiles[missile].MissBase +
-          Missiles[missile].MissDist *
-          Distance( FPosition, defender.FPosition );
-  Modifier := 100;
-		  
+  iMiss := Missiles[ aMissile ].MissBase +
+          Missiles[ aMissile ].MissDist *
+          Distance( FPosition, aDefender.FPosition );
 
-  if defender.IsPlayer then
+  if aDefender.IsPlayer then
   begin
-    if (Player.FTactic.Current = tacticRunning) then miss += 20;
     if (Player.Flags[ BF_MASTERDODGE ]) and (not Player.MasterDodge) then
     begin
       Player.MasterDodge := true;
       Exit(100);
     end;
   end;
-  Modifier := defender.getDodgeMod;
-  miss += Round( 100-Modifier );
-  Exit( Clamp( miss, 0, 95 ) );
+
+  iMiss += aDefender.getDodgeMod;
+  Exit( Clamp( iMiss, 0, 95 ) );
 end;
 
 constructor TBeing.Create(nid : byte);
@@ -363,6 +363,8 @@ begin
   FBonus.Tech   := 0;
   FBonus.Body   := 0;
   FBonus.Dodge  := 0;
+  FBonus.Move   := 0;
+  FBonus.Defence:= 0;
   FHPDecayMax   := 100;
 
   if not isPlayer then
@@ -1111,15 +1113,10 @@ begin
   Exit( True );
 end;
 
-function TBeing.ActionTactic : Boolean;
+function TBeing.ActionActive : Boolean;
 begin
-  if ( not isPlayer ) or ( BF_BERSERK in FFlags ) then Exit( False );
-  if Player.FTactic.Change then
-  begin
-    Dec( FSpeedCount, ActionCostTactic );
-    Exit( True );
-  end;
-  Exit( False );
+  if ( not isPlayer ) then Exit( False );
+  Exit( CallHookCheck( Hook_OnUseActive, [] ) );
 end;
 
 function TBeing.ActionAction( aTarget : TCoord2D ) : Boolean;
@@ -1288,7 +1285,7 @@ begin
 end;
 
 function TBeing.FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire ) : Boolean;
-var iShots       : ShortInt;
+var iShots       : Integer;
     iDamageBonus : Integer;
     iToHitBonus  : Integer;
     iShotCost    : Byte;
@@ -1432,7 +1429,7 @@ begin
     COMMAND_UNLOAD    : Exit( ActionUnLoad( aCommand.Item, aCommand.ID ) );
     COMMAND_SWAPWEAPON: Exit( ActionSwapWeapon );
     COMMAND_QUICKKEY  : Exit( ActionQuickKey( Ord( aCommand.ID[1] ) - Ord( '0' ) ) );
-    COMMAND_TACTIC    : Exit( ActionTactic );
+    COMMAND_ACTIVE    : Exit( ActionActive );
   else Exit( False );
   end;
   Exit( True );
@@ -1637,7 +1634,7 @@ var iName          : string;
     iDefenderName  : string;
     iResult        : string;
     iDamage        : Integer;
-    iDefence       : ShortInt;
+    iDefence       : Integer;
     iWeaponSlot    : TEqSlot;
     iWeapon        : TItem;
     iDamageType    : TDamageType;
@@ -1695,13 +1692,9 @@ begin
   if aTarget.IsPlayer then iDefenderName := 'you';
 
   // Last kill
-  iToHit := getToHitMelee( iWeapon );
+  iToHit := getToHitMelee( iWeapon ) - aTarget.DefenceBonus;
 
-  if (aTarget.isPlayer) and (Player.FTactic.Current = tacticRunning)
-    then iDefence := 4
-    else iDefence := 0;
-
-  if Roll( 12 + iToHit ) < iDefence then
+  if Roll( 12 + iToHit ) < 0 then
   begin
     if IsPlayer then iResult := ' miss ' else iResult := ' misses ';
     if isVisible then IO.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
@@ -1744,7 +1737,6 @@ begin
           begin
             TLevel(Parent).playSound('bpack','powerup',FPosition);
             IO.Blink(Red,30);
-            Player.FTactic.Stop;
             if Player.FAffects.IsActive(LuaSystem.Defines['berserk']) then
             begin
               iBerserk  := Player.FAffects.List[LuaSystem.Defines['berserk']];
@@ -1936,7 +1928,7 @@ begin
     else CallHook( Hook_OnAttacked, [ TLevel(Parent).ActiveBeing, aSource ] );
 end;
 
-function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : ShortInt = 0; aToHitMod : ShortInt = 0; aShotCount : ShortInt = 0) : Boolean;
+function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : Integer = 0; aToHitMod : Integer = 0; aShotCount : Integer = 0) : Boolean;
 var iDirection  : TDirection;
     iMisslePath : TVisionRay;
     iOldCoord   : TCoord2D;
@@ -2064,11 +2056,11 @@ begin
       iBeing := iLevel.Being[ iCoord ];
       if iBeing = iAimedBeing then iDodged := False;
 
-      if iBeing.isPlayer and ( Player.FTactic.Current = TacticRunning ) then Dec(iToHit,4);
-      
-	  if aItem.Flags[ IF_FARHIT ]
+      iToHit -= iBeing.DefenceBonus;
+
+      if aItem.Flags[ IF_FARHIT ]
         then iIsHit := Roll( 10 + iToHit) >= 0
-		else iIsHit := Roll( 10 - (distance(FPosition, iCoord ) div 3 ) + iToHit) >= 0;
+	else iIsHit := Roll( 10 - (distance(FPosition, iCoord ) div 3 ) + iToHit) >= 0;
       
       if iIsHit and ( not iLevel.isVisible( iCoord ) ) and ( not aItem.Flags[ IF_UNSEENHIT ] ) then
         iIsHit := (Random(10) > 4);
@@ -2235,7 +2227,7 @@ begin
   iModifier := FTimes.Move/100.;
   if Inv.Slot[efTorso] <> nil then iModifier *= (100-Inv.Slot[efTorso].MoveMod)/100.;
   if Inv.Slot[efBoots] <> nil then iModifier *= (100-Inv.Slot[efBoots].MoveMod)/100.;
-  if isPlayer and (Player.FTactic.Current = TacticRunning) then iModifier *= 0.7;
+  if FBonus.Move <> 0         then iModifier *= (100-FBonus.Move)/100.;
   if not ( BF_FLY in FFlags ) then
     with Cells[ TLevel(Parent).getCell(FPosition) ] do
       iModifier *= MoveCost;
@@ -2271,14 +2263,10 @@ begin
 end;
 
 function TBeing.getDodgeMod : LongInt;
-var Modifier : Real;
 begin
-  Modifier := DodgeBonus;
-  if Inv.Slot[efTorso] <> nil then
-    Modifier := 100 - ( 100 - Modifier ) * ( 100 - Inv.Slot[efTorso].DodgeMod ) / 100. ;
-  if Inv.Slot[efBoots] <> nil then
-    Modifier := 100 - ( 100 - Modifier ) * ( 100 - Inv.Slot[efBoots].DodgeMod ) / 100. ;
-  getDodgeMod := Clamp(Round(Modifier), 0, 95);
+  Result := DodgeBonus;
+  if Inv.Slot[efTorso] <> nil    then Result += Inv.Slot[efTorso].DodgeMod;
+  if Inv.Slot[efBoots] <> nil    then Result += Inv.Slot[efBoots].DodgeMod;
 end;
 
 function TBeing.getKnockMod : LongInt;
@@ -2336,20 +2324,18 @@ begin
     and ( Pack.AmmoID = Weapon.AmmoID) );
 end;
 
-function TBeing.getToHitRanged(Item : TItem) : ShortInt;
+function TBeing.getToHitRanged(Item : TItem) : Integer;
 begin
   getToHitRanged := FBonus.ToHit;
   if (Item <> nil) and (Item.isRanged) then getToHitRanged += Item.Acc;
-  if isPlayer and (Player.FTactic.Current = TacticRunning) and (not Player.Flags[ BF_NORUNPENALTY ]) then Dec(getToHitRanged,2);
   if not isPlayer then
     getToHitRanged += TLevel(Parent).ToHitBonus;
 end;
 
-function TBeing.getToHitMelee(Item : TItem) : ShortInt;
+function TBeing.getToHitMelee(Item : TItem) : Integer;
 begin
   getToHitMelee := FBonus.ToHit + FBonus.ToHitMelee;
   if (Item <> nil) and (Item.isMelee) then getToHitMelee += Item.Acc;
-  if isPlayer and (Player.FTactic.Current = TacticRunning) and (not Player.Flags[ BF_NORUNPENALTY ]) then Dec(getToHitMelee,2);
   if not isPlayer then
     getToHitMelee += TLevel(Parent).ToHitBonus;
 end;

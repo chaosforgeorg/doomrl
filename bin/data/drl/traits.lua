@@ -467,7 +467,7 @@ function drl.register_traits()
 		end,
 	}
 
-	register_trait "running"
+	register_trait "runningman"
 	{
 		name   = "Running Man",
 		desc   = "Running time *2, no to hit penalty",
@@ -479,6 +479,9 @@ function drl.register_traits()
 		OnPick = function (being)
 			being.runningtime = being.runningtime * 2
 			being.flags[ BF_NORUNPENALTY ] = true
+			if being:is_affect( "running" ) then
+				being.tohit = being.tohit + 2
+			end
 		end,
 	}
 

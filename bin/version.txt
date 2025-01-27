@@ -1,3 +1,9 @@
+0.9.9.9 BETA 5
+[mod] -- GH#000: cleaned up tactic/running - now running/tired is a regular affect
+[mod] -- GH#000: changed the display of affects to full words
+[mod] -- GH#000: dodge bonus from armor additive, not multiplicative
+[fix] -- GH#000: MAJOR - dodge chance was calculated wrong (too high), fixed
+
 0.9.9.9 BETA 4
 [mod] -- GH#197: G-version - added self-illumination to several sprites
 [mod] -- GH#197: G-version - glow is calculated live and tied to self-illumination

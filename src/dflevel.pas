@@ -130,7 +130,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     FEmpty       : Boolean;
 
     FDangerLevel : Word;
-    FToHitBonus  : ShortInt;
+    FToHitBonus  : Integer;
 
     FActiveBeing : TBeing;
     FNextNode    : TNode;
@@ -148,7 +148,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function getSpriteTop( Index : TCoord2D ): TSprite;
     function getSpriteBottom( Index : TCoord2D ): TSprite;
   public
-    property ToHitBonus : ShortInt                  read FToHitBonus;
+    property ToHitBonus : Integer                   read FToHitBonus;
     property Hooks : TFlags                         read FHooks;
     property FloorCell : Word                       read FFloorCell;
     property FloorStyle : Byte                      read FFloorStyle;

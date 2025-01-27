@@ -787,7 +787,6 @@ begin
     FCharacter.Push( '' );
 
     iDodgeBonus := getDodgeMod;
-    if Player.Running then iDodgeBonus += 20;
     iKnockMod   := getKnockMod;
 
     if iDodgeBonus <> 0

@@ -18,17 +18,6 @@ TRunData = object
   procedure Start( const aDir : TDirection );
 end;
 
-TTacticData = object
-  Current : TTactic;
-  Count   : Word;
-  Max     : Word;
-  procedure Clear;
-  procedure Stop;
-  procedure Tick;
-  procedure Reset;
-  function Change : Boolean;
-end;
-
 TStatistics = object
   Map        : TIntHashMap;
   GameTime   : LongInt;
@@ -69,7 +58,6 @@ TPlayer = class(TBeing)
   FKillCount      : DWord;
   FTraits         : TTraits;
   FRun            : TRunData;
-  FTactic         : TTacticData;
   FAffects        : TAffects;
   FPathRun        : Boolean;
   FQuickSlots     : array[1..9] of TQuickSlotInfo;
@@ -104,22 +92,15 @@ TPlayer = class(TBeing)
   FExp            : LongInt;
   FExpLevel       : Byte;
   private
-  procedure SetTired( Value : Boolean );
-  procedure SetRunning( Value : Boolean );
-  function GetTired : Boolean;
-  function GetRunning : Boolean;
   function GetSkillRank : Word;
   function GetExpRank : Word;
   published
   property KilledBy      : AnsiString read FKilledBy;
   property KilledMelee   : Boolean    read FKilledMelee;
-  property Running       : Boolean    read GetRunning    write SetRunning;
-  property Tired         : Boolean    read GetTired      write SetTired;
   property Exp           : LongInt    read FExp          write FExp;
   property ExpLevel      : Byte       read FExpLevel     write FExpLevel;
   property NukeTime      : Word       read NukeActivated write NukeActivated;
   property Klass         : Byte       read FTraits.Klass write FTraits.Klass;
-  property RunningTime   : Word       read FTactic.Max   write FTactic.Max;
   property ExpFactor     : Real       read FExpFactor    write FExpFactor;
   property SkillRank     : Word       read GetSkillRank;
   property ExpRank       : Word       read GetExpRank;
@@ -173,56 +154,6 @@ begin
   Map['kills_non_damage'] := Max( Map['kills_non_damage'], aCount );
 end;
 
-{ TTacticData }
-
-procedure TTacticData.Clear;
-begin
-  Count   := 30;
-  Current := tacticNormal;
-end;
-
-procedure TTacticData.Stop;
-begin
-  if Current = tacticRunning then Current := TacticTired;
-end;
-
-procedure TTacticData.Tick;
-begin
-  if ( Count > 0 ) and ( Current = TacticRunning ) then
-  begin
-    Dec( Count );
-    if Count = 0 then
-    begin
-      IO.Msg('You stop running.');
-      Current := tacticTired;
-    end;
-  end;
-end;
-
-procedure TTacticData.Reset;
-begin
-  Current := tacticNormal;
-  Count := 0;
-end;
-
-function TTacticData.Change : Boolean;
-begin
-  Change := False;
-  case Current of
-    tacticTired   : IO.Msg('Too tired to do that right now.');
-    tacticRunning : begin
-                      IO.Msg('You stop running.');
-                      Current := tacticTired;
-                    end;
-    tacticNormal  : begin
-                      IO.Msg('You start running!');
-                      Count := Max;
-                      Current := tacticRunning;
-                      Change := True;
-                    end;
-  end;
-end;
-
 { TRunData }
 
 procedure TRunData.Clear;
@@ -253,7 +184,6 @@ begin
   FKillMax        := 0;
   FKillCount      := 0;
   FRun.Clear;
-  FTactic.Clear;
   FAffects.Clear;
 
   CurrentLevel  := 0;
@@ -267,7 +197,6 @@ begin
   FPathRun    := False;
 
   InventorySize := High( TItemSlot );
-  FTactic.Max := 30;
   FExpFactor := 1.0;
 
   Initialize;
@@ -306,13 +235,12 @@ begin
   Stream.WriteDWord( FKillCount );
   Stream.WriteDWord( FBersekerLimit );
 
-  Stream.Write( FExpFactor, SizeOf( FExpFactor ) );
-  Stream.Write( FAffects,   SizeOf( FAffects ) );
-  Stream.Write( FTraits,    SizeOf( FTraits ) );
-  Stream.Write( FRun,       SizeOf( FRun ) );
-  Stream.Write( FTactic,    SizeOf( FTactic ) );
-  Stream.Write( FStatistics,SizeOf( FStatistics ) );
-  Stream.Write( FQuickSlots,SizeOf( FQuickSlots ) );
+  Stream.Write( FExpFactor,  SizeOf( FExpFactor ) );
+  Stream.Write( FAffects,    SizeOf( FAffects ) );
+  Stream.Write( FTraits,     SizeOf( FTraits ) );
+  Stream.Write( FRun,        SizeOf( FRun ) );
+  Stream.Write( FStatistics, SizeOf( FStatistics ) );
+  Stream.Write( FQuickSlots, SizeOf( FQuickSlots ) );
 
   FKills.WriteToStream( Stream );
   FStatistics.Map.WriteToStream( Stream );
@@ -332,13 +260,12 @@ begin
   FKillCount     := Stream.ReadDWord();
   FBersekerLimit := Stream.ReadDWord();
 
-  Stream.Read( FExpFactor, SizeOf( FExpFactor ) );
-  Stream.Read( FAffects,   SizeOf( TAffects ) );
-  Stream.Read( FTraits,    SizeOf( FTraits ) );
-  Stream.Read( FRun,       SizeOf( FRun ) );
-  Stream.Read( FTactic,    SizeOf( FTactic ) );
-  Stream.Read( FStatistics,SizeOf( FStatistics ) );
-  Stream.Read( FQuickSlots,SizeOf( FQuickSlots ) );
+  Stream.Read( FExpFactor,  SizeOf( FExpFactor ) );
+  Stream.Read( FAffects,    SizeOf( TAffects ) );
+  Stream.Read( FTraits,     SizeOf( FTraits ) );
+  Stream.Read( FRun,        SizeOf( FRun ) );
+  Stream.Read( FStatistics, SizeOf( FStatistics ) );
+  Stream.Read( FQuickSlots, SizeOf( FQuickSlots ) );
 
   FKills          := TKillTable.CreateFromStream( Stream );
   FStatistics.Map := TIntHashMap.CreateFromStream( Stream );
@@ -386,7 +313,6 @@ begin
     if BF_BERSERKER in FFlags then
     begin
       IO.Msg('That hurt! You''re going berserk!');
-      FTactic.Stop;
       FAffects.Add(LuaSystem.Defines['berserk'],20);
     end;
   end;
@@ -434,7 +360,6 @@ begin
   MasterDodge := False;
   FAffects.Tick;
   if Doom.State <> DSPlaying then Exit( False );
-  FTactic.Tick;
   Inv.EqTick;
   FLastPos := FPosition;
   FMeleeAttack := False;
@@ -485,7 +410,7 @@ begin
 
 
   if ( iWeapon <> nil ) and ( iWeapon.isRanged ) then
-     if (BF_GUNRUNNER in Self.FFlags) and iWeapon.canFire and (iWeapon.Shots < 3) and GetRunning then
+     if (BF_GUNRUNNER in Self.FFlags) and iWeapon.canFire and (iWeapon.Shots < 3) and FAffects.IsActive( LuaSystem.Defines['running'] ) then
      begin
        iAutoTarget := TAutoTarget.Create( FPosition );
        TLevel(Parent).UpdateAutoTarget( iAutoTarget, Self, Player.Vision );
@@ -604,7 +529,6 @@ begin
   FStatistics.Map['entry_time'] := FStatistics.GameTime;
 
   FTargetPos.Create(0,0);
-  FTactic.Reset;
   FChainFire := 0;
 end;
 
@@ -825,26 +749,6 @@ begin
   Exit('player');
 end;
 
-procedure TPlayer.SetTired(Value: Boolean);
-begin
-  if Value then FTactic.Current := TacticTired   else FTactic.Current := TacticNormal;
-end;
-
-procedure TPlayer.SetRunning(Value: Boolean);
-begin
-  if Value then FTactic.Current := TacticRunning else FTactic.Current := TacticTired;
-end;
-
-function TPlayer.GetTired: Boolean;
-begin
-  Exit( FTactic.Current = TacticTired );
-end;
-
-function TPlayer.GetRunning: Boolean;
-begin
-  Exit( FTactic.Current = TacticRunning );
-end;
-
 function TPlayer.GetSkillRank: Word;
 begin
   Exit( HOF.SkillRank );
@@ -868,7 +772,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  Player.FAffects.Add(State.ToId(2),State.ToInteger(3));
+  Player.FAffects.Add(State.ToId(2),State.ToInteger(3,-1));
   Result := 0;
 end;
 
@@ -890,7 +794,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  Player.FAffects.Remove(State.ToId(2));
+  Player.FAffects.Remove( State.ToId(2), State.ToBoolean( 3, False ) );
   Result := 0;
 end;
 

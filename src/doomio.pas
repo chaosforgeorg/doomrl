@@ -619,7 +619,7 @@ end;
 procedure TDoomIO.DrawHud;
 var iCon        : TUIConsole;
     iWeapon     : TItem;
-    i, iMax     : DWord;
+    i, iP       : Integer;
     iColor      : TUIColor;
     iHPP        : Integer;
     iPos        : TIOPoint;
@@ -728,6 +728,7 @@ begin
       iLevelName += ' Lev '+IntToStr( Doom.Level.Name_Number );
     VTIG_FreeLabel( iLevelName, Point( -2-Length( iLevelName), iBottom ), iColor );
 
+    iP := 0;
     with Player do
     for i := 1 to MAXAFFECT do
       if FAffects.IsActive(i) then
@@ -735,14 +736,9 @@ begin
         if FAffects.IsExpiring(i)
           then iColor := Affects[i].Color_exp
           else iColor := Affects[i].Color;
-        VTIG_FreeLabel( Affects[i].name, Point( iPos.X+((Byte(i)-1)*4)+14, iBottom ), iColor )
+        VTIG_FreeLabel( Affects[i].name, Point( iPos.X+iP+1, iBottom ), iColor );
+        iP += Length( Affects[i].name ) + 1;
       end;
-
-    with Player do
-      if (FTactic.Current = TacticRunning) and (FTactic.Count < 6) then
-        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), Brown )
-      else
-        VTIG_FreeLabel( TacticName[FTactic.Current], Point(iPos.x+1, iBottom ), TacticColor[FTactic.Current] );
   end;
 
   iOffset := -2;

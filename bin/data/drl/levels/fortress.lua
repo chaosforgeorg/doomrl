@@ -40,13 +40,13 @@ register_level "unholy_cathedral"
 			end,
 
 			OnAltFire = function(self,being)
-				if being.tired then
+				if being:is_affect( "tired" ) then
 					ui.msg("You are too tired to invoke the Spear!");
 				else
 					level:explosion( being.position , 3, 50, 10, 10, YELLOW, "soldier.phase", DAMAGE_FIRE, self, { EFSELFSAFE } )
 					ui.blink(YELLOW,50)
 					ui.blink(WHITE,50)
-					being.tired = true
+					being:set_affect( "tired" )
 					being.scount = being.scount - 1000
 				end
 				return false
@@ -79,7 +79,7 @@ register_level "unholy_cathedral"
 			end,
 			
 			OnAltFire = function(self,being)
-				if being.tired then
+				if being:is_affect( "tired" ) then
 					ui.msg("You are too tired to invoke the Scythe!");
 				else
 					ui.blink( RED, 50 )
@@ -91,7 +91,7 @@ register_level "unholy_cathedral"
 					end
 					being.hpmax = math.max(being.hpmax - 5,5)
 					being.hp = math.max(being.hp - 10,1)
-					being.tired = true
+					being:set_affect( "tired" )
 					being.scount = being.scount - 1000
 				end
 				return false

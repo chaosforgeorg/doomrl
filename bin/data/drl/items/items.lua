@@ -150,7 +150,7 @@ function drl.register_regular_items()
 
 		OnPickup = function(self,being)
 			being:msg("You feel better.")
-			being.tired = false
+			being:remove_affect( "tired" )
 			local amount =  10 * diff[DIFFICULTY].powerfactor
 			if being.flags[ BF_MEDPLUS ] then
 				amount = amount * 2
@@ -174,7 +174,7 @@ function drl.register_regular_items()
 			if (not being.flags[ BF_NOHEAL ]) and being.hp < being.hpmax then
 				being.hp = being.hpmax
 			end
-			being.tired = false
+			being:remove_affect( "tired" )
 		end,
 	}
 
@@ -191,7 +191,7 @@ function drl.register_regular_items()
 
 		OnPickup = function(self,being)
 			being:set_affect("inv",core.power_duration(50))
-			being.tired = false
+			being:remove_affect( "tired" )
 		end,
 	}
 
@@ -211,7 +211,7 @@ function drl.register_regular_items()
 			being:msg("SuperCharge!")
 			ui.blink(LIGHTBLUE,100)
 			being.hp = 2 * being.hpmax
-			being.tired = false
+			being:remove_affect( "tired" )
 		end,
 	}
 
@@ -228,7 +228,7 @@ function drl.register_regular_items()
 
 		OnPickup = function(self,being)
 			being:msg("You feel like new!")
-			being.tired = false
+			being:remove_affect( "tired" )
 			local amount =  10 * diff[DIFFICULTY].powerfactor
 			if being.flags[ BF_MEDPLUS ] then
 				amount = amount * 2
@@ -257,7 +257,7 @@ function drl.register_regular_items()
 			if not being.flags[ BF_NOHEAL ] then
 				being.hp = 2*being.hpmax
 			end
-			being.tired = false
+			being:remove_affect( "tired" )
 			if being.eq.armor then being.eq.armor:fix() end
 			if being.eq.boots then being.eq.boots:fix() end
 		end,
@@ -754,7 +754,9 @@ function drl.register_regular_items()
 			if being.flags[ BF_NOHEAL ] then
 				being:msg("Nothing happens.")
 			else
-				if isPlayer then being.tired = false end
+				if isPlayer then 
+					being:remove_affect( "tired" )
+				end
 				if being.hp >= being.hpmax * 2 or ( not being.flags[ BF_MEDPLUS ] and being.hp >= being.hpmax ) then
 					being:msg("Nothing happens.")
 					return true
@@ -789,7 +791,9 @@ function drl.register_regular_items()
 			if being.flags[ BF_NOHEAL ] then
 				being:msg("Nothing happens.")
 			else
-				if isPlayer then being.tired = false end
+				if isPlayer then 
+					being:remove_affect( "tired" )
+				end
 				if being.hp >= being.hpmax * 2 or ( not being.flags[ BF_MEDPLUS ] and being.hp >= being.hpmax ) then
 					being:msg("Nothing happens.")
 					return true
@@ -1595,7 +1599,7 @@ function drl.register_regular_items()
 
 		OnUse = function(self,being)
 			ui.msg("MediTech depot. Proceeding with treatment...")
-			being.tired = false
+			being:remove_affect( "tired" )
 			self.charges = self.charges - 1
 			local heal = (being.hpmax * diff[DIFFICULTY].powerfactor) / 4 + 2
 			being.hp = math.min( being.hp + heal,being.hpmax )

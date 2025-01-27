@@ -400,8 +400,8 @@ function drl.register_cells()
 			if being.flags[ BF_FLY ] then return end
 			if being:get_total_resistance( "acid", TARGET_FEET ) == 100 then return end
 			if being:is_player() then
-				if being.running then damage = damage / 2 end
 				if being:is_affect("enviro") then return end
+				if being:is_affect("running") then damage = damage / 2 end
 				ui.msg("Argh!!! Acid!")
 				if core.game_time() % 3 == 0 then
 					being:play_sound("hit")
@@ -428,8 +428,8 @@ function drl.register_cells()
 			if being.flags[ BF_FLY ] then return end
 			if being:get_total_resistance( "fire", TARGET_FEET ) == 100 then return end
 			if being:is_player() then
-				if being.running then damage = damage / 2 end
 				if being:is_affect("enviro") then return end
+				if being:is_affect("running") then damage = damage / 2 end
 				ui.msg("Argh!!! Lava!")
 				if core.game_time() % 3 == 0 then
 					being:play_sound("hit")
@@ -457,8 +457,8 @@ function drl.register_cells()
 			if being.flags[ BF_FLY ] then return end
 			if being:get_total_resistance( "plasma", TARGET_FEET ) == 100 then return end
 
-			if being.running then damage = damage / 2 end
 			if being:is_affect("enviro") then return end
+			if being:is_affect("running") then damage = damage / 2 end
 			ui.msg("Argh!!! Blood!")
 			if core.game_time() % 3 == 0 then
 				being:play_sound("hit")

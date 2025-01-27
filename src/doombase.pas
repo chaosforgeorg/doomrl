@@ -372,7 +372,7 @@ begin
     INPUT_QUICKKEY_8 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '8' ) ) );
     INPUT_QUICKKEY_9 : Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '9' ) ) );
 
-    INPUT_TACTIC     : Exit( HandleCommand( TCommand.Create( COMMAND_TACTIC ) ) );
+    INPUT_ACTIVE     : Exit( HandleCommand( TCommand.Create( COMMAND_ACTIVE ) ) );
     INPUT_WAIT       : Exit( HandleCommand( TCommand.Create( COMMAND_WAIT ) ) );
     INPUT_RELOAD     : Exit( HandleCommand( TCommand.Create( COMMAND_RELOAD ) ) );
     INPUT_ALTRELOAD  : Exit( HandleCommand( TCommand.Create( COMMAND_ALTRELOAD ) ) );
@@ -865,7 +865,8 @@ begin
 
   // Handle key-repeat
   if aEvent.Key.Repeated then
-    if ( not ( iInput in [ INPUT_WAIT ] + INPUT_MOVE ) ) or ( IO.Time - FLastInputTime < 99 ) or (Player.BeingsInVision > 1) then
+    if ( not ( iInput in [ INPUT_WAIT ] + INPUT_MOVE ) ) or
+       ( IO.Time - FLastInputTime < Player.VisualTime( Player.getMoveCost, 98 ) ) or (Player.BeingsInVision > 1) then
       Exit( False );
   FLastInputTime := IO.Time;
 

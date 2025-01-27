@@ -235,6 +235,8 @@ function drl.register_base_data()
 				self.scount = 4000 --Removes player's start delay on level 1
 				self.expfactor = diff[DIFFICULTY].expfactor
 			end
+
+			self:add_property( "runningtime", 30 )
 		end,
 
 		--These stubs exist so that modders can hijack them properly
@@ -256,8 +258,32 @@ function drl.register_base_data()
 				self:add_found_item( i.id )
 			end
 		end,
+
+		OnUseActive = function( self )
+			if klasses[player.klass].OnUseActive then
+				return klasses[player.klass].OnUseActive( self )
+			end
+			if self:is_affect( "berserk" ) then return false end
+			if self:is_affect( "tired" ) then
+				ui.msg( "Too tired to do that right now.")
+				return false
+			end
+			if self:is_affect( "running" ) then
+				self:remove_affect( "running", false )
+				return false
+			else
+				self:set_affect( "running", self.runningtime )
+				self.scount = self.scount - 100
+				return true
+			end
+		end,
 	}
 
+end
+
+function drl.OnEnter()
+	player:remove_affect( "running", true )
+	player:remove_affect( "tired", true )
 end
 
 function drl.GetDisassembleId( it )

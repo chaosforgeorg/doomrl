@@ -11,15 +11,15 @@ TAffects = object
   List : array[1..MAXAFFECT] of LongInt;
   procedure Clear;
   procedure Add( affnum : Byte; duration : LongInt );
-  function  Remove( affnum : Byte ) : boolean;
+  function  Remove( aAffnum : Byte; aSilent : Boolean ) : boolean;
   procedure Tick;
   function  IsActive( affnum : Byte ) : boolean;
   function  IsExpiring( affnum : Byte ) : boolean;
   function  getEffect : TStatusEffect;
   function  getTime( affnum : Byte ) : longint;
-  private
+private
   procedure Run( affnum : Byte );
-  procedure Expire( affnum : Byte );
+  procedure Expire( aAffnum : Byte; aSilent : Boolean );
 
 end;
 
@@ -60,7 +60,7 @@ begin
       end;
 end;
 
-function TAffects.getTime(affnum : Byte): LongInt;
+function TAffects.getTime(affnum: Byte): longint;
 begin
   Exit(List[affnum]);
 end;
@@ -80,19 +80,20 @@ begin
     then List[affnum] := duration;
 end;
 
-function    TAffects.Remove(affnum : Byte) : boolean;
+function TAffects.Remove( aAffnum: Byte; aSilent: Boolean ): boolean;
 begin
   Remove := True;
-  if List[affnum] = 0 then Exit(false);
-  Expire( affnum );
+  if List[ aAffnum] = 0 then Exit(false);
+  Expire( aAffnum, aSilent );
 end;
 
-procedure    TAffects.Expire(affnum : Byte);
+procedure    TAffects.Expire( aAffnum : Byte; aSilent : Boolean );
 begin
-  List[affnum] := 0;
-  if AffectHookOnRemove in Affects[affnum].Hooks then
-    LuaSystem.ProtectedCall( [ 'affects',affnum,'OnRemove'],[Player]);
-  IO.Msg( LuaSystem.Get([ 'affects', affnum, 'message_done' ],'') );
+  List[ aAffnum ] := 0;
+  if AffectHookOnRemove in Affects[ aAffnum ].Hooks then
+    LuaSystem.ProtectedCall( [ 'affects',aAffnum,'OnRemove'],[Player]);
+  if not aSilent then
+    IO.Msg( LuaSystem.Get([ 'affects', aAffnum, 'message_done' ],'') );
 end;
 
 procedure   TAffects.Tick;
@@ -104,7 +105,7 @@ begin
         if List[cn] > 0  then Dec(List[cn]);
         if List[cn] = 5  then IO.Msg( LuaSystem.Get([ 'affects', cn, 'message_ending' ],'') );
         if List[cn] <> 0 then Run(cn)
-                         else Expire(cn);
+                         else Expire( cn, False );
       end;
 end;
 

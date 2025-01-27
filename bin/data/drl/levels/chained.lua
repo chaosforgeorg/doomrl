@@ -24,10 +24,11 @@ register_level "the_chained_court"
 
 			OnUse = function(self,being)
 				if not being:is_player() then return false end
-				if being.tired then
+				if being:is_affect( "tired" ) then
 					ui.msg("You're too tired to use the staff now.")
 					return false
 				end
+				being:set_affect( "tired" )
 				ui.msg("You raise your arms!")
 				if level.id == "the_vaults" and level.status < 2 then
 					ui.msg("With a sudden inspiration you yell \"OPEN SESAME!\"!")
@@ -41,7 +42,6 @@ register_level "the_chained_court"
 					level.status = 3
 					ui.msg("You hear a loud rumble!")
 					being.scount = being.scount - 1000
-					being.tired = true
 					return true
 				elseif level.id == "house_of_pain" then
 					ui.msg("You brandish the staff. The voice echoes: \"So, it seems that ")
@@ -50,10 +50,8 @@ register_level "the_chained_court"
 					generator.transmute( "ldoor", "odoor" )
 					level:play_sound( "door.open", player.position)
 					being.scount = being.scount - 1000
-					being.tired = true
 					return true
 				else
-					being.tired = true
 					for b in level:beings() do
 						if not b:is_player() and b:is_visible() then
 							level:explosion( b.position, 1, 50, 0, 0, YELLOW, "arch.fire", DAMAGE_FIRE, self, { EFSELFSAFE } )

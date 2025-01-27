@@ -65,14 +65,15 @@ core.register_blueprint "klass_trait"
 
 core.register_blueprint "klass"
 {
-	id         = { true,  core.TSTRING },
-	name       = { true,  core.TSTRING },
-	char       = { true,  core.TSTRING },
-	desc       = { true,  core.TSTRING },
-	hidden     = { false, core.TBOOL, false },
-	traits     = { true,  core.TARRAY("klass_trait") },
+	id          = { true,  core.TSTRING },
+	name        = { true,  core.TSTRING },
+	char        = { true,  core.TSTRING },
+	desc        = { true,  core.TSTRING },
+	hidden      = { false, core.TBOOL, false },
+	traits      = { true,  core.TARRAY("klass_trait") },
 
-	OnPick     = { false,  core.TFUNC },
+	OnPick      = { false,  core.TFUNC },
+	OnUseActive = { false,  core.TFUNC },
 }
 
 core.register_blueprint "medal"
@@ -217,6 +218,7 @@ core.register_blueprint "being"
 	OnDie        = { false, core.TFUNC },
 	OnDieCheck   = { false, core.TFUNC },
 	OnPickupItem = { false, core.TFUNC },
+	OnUseActive  = { false, core.TFUNC },
 }
 
 core.register_blueprint "being_group_entry"

@@ -227,7 +227,6 @@ const
   ActionCostWear   = 1000;
   ActionCostMove   = 1000;
   ActionCostFire   = 1000;
-  ActionCostTactic = 100;
 
   ActSoundChance    = 30;
 
@@ -311,7 +310,7 @@ type TItemProperties = record
            AmmoID      : Byte;
            Ammo        : Word;
            AmmoMax     : Word;
-           Acc         : ShortInt;
+           Acc         : Integer;
            Damage      : TDiceRoll;
            Missile     : Byte;
            BlastRadius : Byte;
@@ -326,12 +325,6 @@ type TItemProperties = record
      end;
 
 const MaxPlayerLevel = 26;
-
-type  TTactic = (tacticNormal,tacticRunning,tacticTired);
-const TacticName : array[TTactic] of string =
-                   ('cautious','running','tired');
-      TacticColor: array[TTactic] of byte =
-                   (lightgray,yellow,darkgray);
 
 const ExpTable : array[1..MaxPlayerLevel] of LongInt =
               (     0,    500,   1500,
@@ -349,7 +342,7 @@ function InputDirection( aInput : TInputKey ) : TDirection;
 function DirectionToInput(Dir : TDirection) : TInputKey;
 function TwoInt(x : integer) : string;
 function ToProperFilename(s : string) : string;
-function toHitPercent(EffSkill : ShortInt) : string;
+function toHitPercent( aEffSkill : Integer ) : string;
 function BonusStr(i : integer) : string;
 function UnitsToPercent(Value : Integer) : string;
 function Percent(Value : Integer) : string;
@@ -560,7 +553,7 @@ function RotateTowards( aSource, aTarget1, aTarget2: TCoord2D; aAmount : Real ):
 var iVector1, iVector2 : TCoord2D;
     iCos, iSin, iAngle : Float;
     iAT1, iAT2         : Float;
-    iSign              : ShortInt;
+    iSign              : Integer;
 begin
   if aTarget1 = aTarget2 then Exit( aTarget2 );
   iVector1  := aTarget1 - aSource;
@@ -706,11 +699,11 @@ begin
     ToProperFilename += IIf( ch in good, ch, '-' );
 end;
 
-function toHitPercent(EffSkill: ShortInt): string;
+function toHitPercent( aEffSkill : Integer ): string;
 begin
-  if EffSkill <= 3  then Exit('1%');
-  if EffSkill >= 16 then Exit('98%');
-  case EffSkill of
+  if aEffSkill <= 3  then Exit('1%');
+  if aEffSkill >= 16 then Exit('98%');
+  case aEffSkill of
     4 : Exit('2%');
     5 : Exit('5%');
     6 : Exit('9%');
