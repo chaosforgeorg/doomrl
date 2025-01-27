@@ -23,15 +23,17 @@ function drl.register_affects()
 
 		OnAdd          = function(being)
 			being:remove_affect( "tired" )
-			being.dodgebonus = being.dodgebonus + 20
-			being.movebonus  = being.movebonus  + 30
+			being.dodgebonus   = being.dodgebonus   + 20
+			being.movebonus    = being.movebonus    + 30
+			being.defencebonus = being.defencebonus + 4
 			if not being.flags[ BF_NORUNPENALTY ] then
 				being.tohit      = being.tohit - 2
 			end
 		end,
 		OnRemove       = function(being)
-			being.dodgebonus = being.dodgebonus - 20
-			being.movebonus  = being.movebonus  - 30
+			being.dodgebonus   = being.dodgebonus   - 20
+			being.movebonus    = being.movebonus    - 30
+			being.defencebonus = being.defencebonus - 4
 			if not being.flags[ BF_NORUNPENALTY ] then
 				being.tohit      = being.tohit + 2
 			end

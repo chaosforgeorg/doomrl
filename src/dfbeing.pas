@@ -25,6 +25,7 @@ type TBonuses = record
   Tech       : Integer;
   Dodge      : Integer;
   Move       : Integer;
+  Defence    : Integer;
 end;
 
 type TBeingTimes = record
@@ -186,20 +187,21 @@ TBeing = class(TThing,IPathQuery)
     property ToDamAll     : Integer    read FBonus.ToDamAll     write FBonus.ToDamAll;
     property ToHitMelee   : Integer    read FBonus.ToHitMelee   write FBonus.ToHitMelee;
 
-    property Speed        : Byte       read FSpeed        write FSpeed;
-    property ExpValue     : Word       read FExpValue     write FExpValue;
+    property Speed        : Byte       read FSpeed         write FSpeed;
+    property ExpValue     : Word       read FExpValue      write FExpValue;
 
-    property TechBonus    : Integer    read FBonus.Tech   write FBonus.Tech;
-    property PistolBonus  : Integer    read FBonus.Pistol write FBonus.Pistol;
-    property RapidBonus   : Integer    read FBonus.Rapid  write FBonus.Rapid;
-    property BodyBonus    : Integer    read FBonus.Body   write FBonus.Body;
-    property DodgeBonus   : Integer    read FBonus.Dodge  write FBonus.Dodge;
-    property MoveBonus    : Integer    read FBonus.Move   write FBonus.Move;
-    property HPDecayMax   : Word       read FHPDecayMax   write FHPDecayMax;
+    property TechBonus    : Integer    read FBonus.Tech    write FBonus.Tech;
+    property PistolBonus  : Integer    read FBonus.Pistol  write FBonus.Pistol;
+    property RapidBonus   : Integer    read FBonus.Rapid   write FBonus.Rapid;
+    property BodyBonus    : Integer    read FBonus.Body    write FBonus.Body;
+    property DodgeBonus   : Integer    read FBonus.Dodge   write FBonus.Dodge;
+    property MoveBonus    : Integer    read FBonus.Move    write FBonus.Move;
+    property DefenceBonus : Integer    read FBonus.Defence write FBonus.Defence;
+    property HPDecayMax   : Word       read FHPDecayMax    write FHPDecayMax;
 
-    property ReloadTime   : Byte       read FTimes.Reload   write FTimes.Reload;
-    property FireTime     : Byte       read FTimes.Fire     write FTimes.Fire;
-    property MoveTime     : Byte       read FTimes.Move     write FTimes.Move;
+    property ReloadTime   : Byte       read FTimes.Reload  write FTimes.Reload;
+    property FireTime     : Byte       read FTimes.Fire    write FTimes.Fire;
+    property MoveTime     : Byte       read FTimes.Move    write FTimes.Move;
   end;
 
 
@@ -362,6 +364,7 @@ begin
   FBonus.Body   := 0;
   FBonus.Dodge  := 0;
   FBonus.Move   := 0;
+  FBonus.Defence:= 0;
   FHPDecayMax   := 100;
 
   if not isPlayer then
@@ -1704,13 +1707,9 @@ begin
   if aTarget.IsPlayer then iDefenderName := 'you';
 
   // Last kill
-  iToHit := getToHitMelee( iWeapon );
+  iToHit := getToHitMelee( iWeapon ) - aTarget.DefenceBonus;
 
-  if (aTarget.isPlayer) and Player.Running
-    then iDefence := 4
-    else iDefence := 0;
-
-  if Roll( 12 + iToHit - iDefence ) < 0 then
+  if Roll( 12 + iToHit ) < 0 then
   begin
     if IsPlayer then iResult := ' miss ' else iResult := ' misses ';
     if isVisible then IO.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
@@ -2072,11 +2071,11 @@ begin
       iBeing := iLevel.Being[ iCoord ];
       if iBeing = iAimedBeing then iDodged := False;
 
-      if iBeing.isPlayer and Player.Running then Dec(iToHit,4);
-      
-	  if aItem.Flags[ IF_FARHIT ]
+      iToHit -= iBeing.DefenceBonus;
+
+      if aItem.Flags[ IF_FARHIT ]
         then iIsHit := Roll( 10 + iToHit) >= 0
-		else iIsHit := Roll( 10 - (distance(FPosition, iCoord ) div 3 ) + iToHit) >= 0;
+	else iIsHit := Roll( 10 - (distance(FPosition, iCoord ) div 3 ) + iToHit) >= 0;
       
       if iIsHit and ( not iLevel.isVisible( iCoord ) ) and ( not aItem.Flags[ IF_UNSEENHIT ] ) then
         iIsHit := (Random(10) > 4);
