@@ -24,6 +24,7 @@ type TBonuses = record
   Body       : Integer;
   Tech       : Integer;
   Dodge      : Integer;
+  Move       : Integer;
 end;
 
 type TBeingTimes = record
@@ -193,6 +194,7 @@ TBeing = class(TThing,IPathQuery)
     property RapidBonus   : Integer    read FBonus.Rapid  write FBonus.Rapid;
     property BodyBonus    : Integer    read FBonus.Body   write FBonus.Body;
     property DodgeBonus   : Integer    read FBonus.Dodge  write FBonus.Dodge;
+    property MoveBonus    : Integer    read FBonus.Move   write FBonus.Move;
     property HPDecayMax   : Word       read FHPDecayMax   write FHPDecayMax;
 
     property ReloadTime   : Byte       read FTimes.Reload   write FTimes.Reload;
@@ -359,6 +361,7 @@ begin
   FBonus.Tech   := 0;
   FBonus.Body   := 0;
   FBonus.Dodge  := 0;
+  FBonus.Move   := 0;
   FHPDecayMax   := 100;
 
   if not isPlayer then
@@ -2240,7 +2243,7 @@ begin
   iModifier := FTimes.Move/100.;
   if Inv.Slot[efTorso] <> nil then iModifier *= (100-Inv.Slot[efTorso].MoveMod)/100.;
   if Inv.Slot[efBoots] <> nil then iModifier *= (100-Inv.Slot[efBoots].MoveMod)/100.;
-  if isPlayer and Player.Running then iModifier *= 0.7;
+  if FBonus.Move <> 0         then iModifier *= (100-FBonus.Move)/100.;
   if not ( BF_FLY in FFlags ) then
     with Cells[ TLevel(Parent).getCell(FPosition) ] do
       iModifier *= MoveCost;
