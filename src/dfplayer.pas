@@ -18,10 +18,6 @@ TRunData = object
   procedure Start( const aDir : TDirection );
 end;
 
-TTacticData = object
-  Max     : Word;
-end;
-
 TStatistics = object
   Map        : TIntHashMap;
   GameTime   : LongInt;
@@ -62,7 +58,7 @@ TPlayer = class(TBeing)
   FKillCount      : DWord;
   FTraits         : TTraits;
   FRun            : TRunData;
-  FTactic         : TTacticData;
+  FRunningTime    : Word;
   FAffects        : TAffects;
   FPathRun        : Boolean;
   FQuickSlots     : array[1..9] of TQuickSlotInfo;
@@ -112,7 +108,7 @@ TPlayer = class(TBeing)
   property ExpLevel      : Byte       read FExpLevel     write FExpLevel;
   property NukeTime      : Word       read NukeActivated write NukeActivated;
   property Klass         : Byte       read FTraits.Klass write FTraits.Klass;
-  property RunningTime   : Word       read FTactic.Max   write FTactic.Max;
+  property RunningTime   : Word       read FRunningTime  write FRunningTime;
   property ExpFactor     : Real       read FExpFactor    write FExpFactor;
   property SkillRank     : Word       read GetSkillRank;
   property ExpRank       : Word       read GetExpRank;
@@ -209,7 +205,7 @@ begin
   FPathRun    := False;
 
   InventorySize := High( TItemSlot );
-  FTactic.Max := 30;
+  FRunningTime := 30;
   FExpFactor := 1.0;
 
   Initialize;
@@ -248,13 +244,13 @@ begin
   Stream.WriteDWord( FKillCount );
   Stream.WriteDWord( FBersekerLimit );
 
-  Stream.Write( FExpFactor, SizeOf( FExpFactor ) );
-  Stream.Write( FAffects,   SizeOf( FAffects ) );
-  Stream.Write( FTraits,    SizeOf( FTraits ) );
-  Stream.Write( FRun,       SizeOf( FRun ) );
-  Stream.Write( FTactic,    SizeOf( FTactic ) );
-  Stream.Write( FStatistics,SizeOf( FStatistics ) );
-  Stream.Write( FQuickSlots,SizeOf( FQuickSlots ) );
+  Stream.Write( FExpFactor,  SizeOf( FExpFactor ) );
+  Stream.Write( FAffects,    SizeOf( FAffects ) );
+  Stream.Write( FTraits,     SizeOf( FTraits ) );
+  Stream.Write( FRun,        SizeOf( FRun ) );
+  Stream.Write( FRunningTime,SizeOf( FRunningTime ) );
+  Stream.Write( FStatistics, SizeOf( FStatistics ) );
+  Stream.Write( FQuickSlots, SizeOf( FQuickSlots ) );
 
   FKills.WriteToStream( Stream );
   FStatistics.Map.WriteToStream( Stream );
@@ -274,13 +270,13 @@ begin
   FKillCount     := Stream.ReadDWord();
   FBersekerLimit := Stream.ReadDWord();
 
-  Stream.Read( FExpFactor, SizeOf( FExpFactor ) );
-  Stream.Read( FAffects,   SizeOf( TAffects ) );
-  Stream.Read( FTraits,    SizeOf( FTraits ) );
-  Stream.Read( FRun,       SizeOf( FRun ) );
-  Stream.Read( FTactic,    SizeOf( FTactic ) );
-  Stream.Read( FStatistics,SizeOf( FStatistics ) );
-  Stream.Read( FQuickSlots,SizeOf( FQuickSlots ) );
+  Stream.Read( FExpFactor,  SizeOf( FExpFactor ) );
+  Stream.Read( FAffects,    SizeOf( TAffects ) );
+  Stream.Read( FTraits,     SizeOf( FTraits ) );
+  Stream.Read( FRun,        SizeOf( FRun ) );
+  Stream.Read( FRunningTime,SizeOf( FRunningTime ) );
+  Stream.Read( FStatistics, SizeOf( FStatistics ) );
+  Stream.Read( FQuickSlots, SizeOf( FQuickSlots ) );
 
   FKills          := TKillTable.CreateFromStream( Stream );
   FStatistics.Map := TIntHashMap.CreateFromStream( Stream );
@@ -774,7 +770,7 @@ end;
 procedure TPlayer.SetRunning(Value: Boolean);
 begin
   if Value
-    then FAffects.Add( LuaSystem.Defines['running'], FTactic.Max )
+    then FAffects.Add( LuaSystem.Defines['running'], FRunningTime )
     else FAffects.Remove( LuaSystem.Defines['running'], True );
 end;
 
