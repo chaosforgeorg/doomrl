@@ -25,7 +25,7 @@ function drl.register_affects()
 			being:remove_affect( "tired" )
 		end,
 		OnRemove       = function(being)
-			being:set_affect( "tired", -1 );
+			being:set_affect( "tired" );
 		end,
 	}
 

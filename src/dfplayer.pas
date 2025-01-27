@@ -93,9 +93,7 @@ TPlayer = class(TBeing)
   FExp            : LongInt;
   FExpLevel       : Byte;
   private
-  procedure SetTired( Value : Boolean );
   procedure SetRunning( Value : Boolean );
-  function GetTired : Boolean;
   function GetRunning : Boolean;
   function GetSkillRank : Word;
   function GetExpRank : Word;
@@ -103,7 +101,6 @@ TPlayer = class(TBeing)
   property KilledBy      : AnsiString read FKilledBy;
   property KilledMelee   : Boolean    read FKilledMelee;
   property Running       : Boolean    read GetRunning    write SetRunning;
-  property Tired         : Boolean    read GetTired      write SetTired;
   property Exp           : LongInt    read FExp          write FExp;
   property ExpLevel      : Byte       read FExpLevel     write FExpLevel;
   property NukeTime      : Word       read NukeActivated write NukeActivated;
@@ -760,23 +757,11 @@ begin
   Exit('player');
 end;
 
-procedure TPlayer.SetTired(Value: Boolean);
-begin
-  if Value
-    then FAffects.Add( LuaSystem.Defines['tired'], -1 )
-    else FAffects.Remove( LuaSystem.Defines['tired'], False );
-end;
-
 procedure TPlayer.SetRunning(Value: Boolean);
 begin
   if Value
     then FAffects.Add( LuaSystem.Defines['running'], FRunningTime )
     else FAffects.Remove( LuaSystem.Defines['running'], True );
-end;
-
-function TPlayer.GetTired: Boolean;
-begin
-  Exit( FAffects.IsActive( LuaSystem.Defines['tired'] ) );
 end;
 
 function TPlayer.GetRunning: Boolean;
@@ -807,7 +792,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  Player.FAffects.Add(State.ToId(2),State.ToInteger(3));
+  Player.FAffects.Add(State.ToId(2),State.ToInteger(3,-1));
   Result := 0;
 end;
 

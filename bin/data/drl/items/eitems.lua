@@ -1034,7 +1034,7 @@ function drl.register_exotic_items()
 					level.map[ c ] = "bloodpool"
 					being:play_sound( "gib" )
 					being.hp = math.min( being.hp + 5, being.hpmax * 2 )
-					being.tired = false
+					being:remove_affect( "tired" )
 				end
 			end
 			return true
@@ -1097,8 +1097,8 @@ function drl.register_exotic_items()
 				end
 			end
 			if count > 0 then
+				being:remove_affect( "tired" )
 				being:set_affect( "berserk", count * 5 )
-				being.tired = false
 			end
 			return true
 		end,
@@ -1130,7 +1130,7 @@ function drl.register_exotic_items()
 			if not being.flags[ BF_NOHEAL ] and being.hp < being.hpmax then
 				being.hp = being.hpmax
 			end
-			being.tired = false
+			being:remove_affect( "tired" )
 			being:quick_weapon("chainsaw")
 			ui.msg("BLOOD! BLOOD FOR ARMOK, GOD OF BLOOD!")
 		end

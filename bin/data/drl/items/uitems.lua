@@ -111,11 +111,11 @@ function drl.register_unique_items()
 
 		OnUse = function(self,being)
 			if not being:is_player() then return false end
-			if being.tired then
+			if being:is_affect( "tired" ) then
 				ui.msg("You're too tired to use it now.")
 				return false
 			end;
-			being.tired = true
+			being:set_affect( "tired" )
 			being:play_sound("phasing")
 			ui.msg("You feel yanked in a non-existing direction!")
 			being:phase()
@@ -195,12 +195,12 @@ function drl.register_unique_items()
 		altfirename = "invoke",
 
 		OnAltFire = function(self,being)
-			if being.tired then
+			if being:is_affect( "tired" ) then
 				ui.msg("You are too tired to invoke the Knife!");
 			else
 				ui.msg("You feel your health drained!");
 				being.hp     = math.max( being.hp - 5, 1 )
-				being.tired  = true
+				being:set_affect( "tired" )
 				being.scount = being.scount - 1000
 				for b in level:beings() do
 					if not b:is_player() and b:is_visible() then
@@ -962,7 +962,7 @@ function drl.register_unique_items()
 		end,
 
 		OnAltFire = function( self, being )
-			if being.tired then
+			if being:is_affect( "tired" ) then
 				ui.msg("You're too tired to do that right now!")
 			else
 				local scount = being.scount
@@ -976,7 +976,7 @@ function drl.register_unique_items()
 					end
 				end
 				self.usetime = use
-				being.tired = true
+				being:set_affect( "tired" )
 				being.scount = scount - math.max( ( self.usetime * being.firetime * 8 - 5000 ), 8 * being.speed )
 			end
 			return false
@@ -987,7 +987,7 @@ function drl.register_unique_items()
 			ui.blink(RED,20)
 			ui.blink(LIGHTRED,20)
 			ui.msg("Release the power of the BERSERKER!")
-			being:set_affect("berserk",-1);
+			being:set_affect( "berserk" )
 		end,
 
 		OnKill = function (self,being,target)
