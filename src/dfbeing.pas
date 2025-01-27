@@ -1115,23 +1115,8 @@ end;
 
 function TBeing.ActionTactic : Boolean;
 begin
-  if ( not isPlayer ) or ( BF_BERSERK in FFlags ) then Exit( False );
-  if Player.FAffects.IsActive( LuaSystem.Defines['tired'] ) then
-  begin
-    IO.Msg('Too tired to do that right now.');
-    Exit( False );
-  end;
-  if Player.FAffects.IsActive( LuaSystem.Defines['running'] ) then
-  begin
-    Player.FAffects.Remove( LuaSystem.Defines['running'], False );
-    Exit( False );
-  end
-  else
-  begin
-    Player.FAffects.Add( LuaSystem.Defines['running'], Player.RunningTime );
-    Dec( FSpeedCount, ActionCostTactic );
-    Exit( True );
-  end;
+  if ( not isPlayer ) then Exit( False );
+  Exit( CallHookCheck( Hook_OnUseActive, [] ) );
 end;
 
 function TBeing.ActionAction( aTarget : TCoord2D ) : Boolean;

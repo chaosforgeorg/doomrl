@@ -256,6 +256,25 @@ function drl.register_base_data()
 				self:add_found_item( i.id )
 			end
 		end,
+
+		OnUseActive = function( self )
+			if klasses[player.klass].OnUseActive then
+				return klasses[player.klass].OnUseActive( self )
+			end
+			if self:is_affect( "berserk" ) then return false end
+			if self:is_affect( "tired" ) then
+				ui.msg( "Too tired to do that right now.")
+				return false
+			end
+			if self:is_affect( "running" ) then
+				self:remove_affect( "running", false )
+				return false
+			else
+				self:set_affect( "running", self.runningtime )
+				self.scount = self.scount - 1000
+				return true
+			end
+		end,
 	}
 
 end
