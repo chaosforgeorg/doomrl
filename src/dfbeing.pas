@@ -1710,7 +1710,7 @@ begin
     then iDefence := 4
     else iDefence := 0;
 
-  if Roll( 12 + iToHit ) < iDefence then
+  if Roll( 12 + iToHit - iDefence ) < 0 then
   begin
     if IsPlayer then iResult := ' miss ' else iResult := ' misses ';
     if isVisible then IO.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
@@ -2344,7 +2344,6 @@ function TBeing.getToHitRanged(Item : TItem) : Integer;
 begin
   getToHitRanged := FBonus.ToHit;
   if (Item <> nil) and (Item.isRanged) then getToHitRanged += Item.Acc;
-  if isPlayer and Player.Running and (not Player.Flags[ BF_NORUNPENALTY ]) then Dec(getToHitRanged,2);
   if not isPlayer then
     getToHitRanged += TLevel(Parent).ToHitBonus;
 end;
@@ -2353,7 +2352,6 @@ function TBeing.getToHitMelee(Item : TItem) : Integer;
 begin
   getToHitMelee := FBonus.ToHit + FBonus.ToHitMelee;
   if (Item <> nil) and (Item.isMelee) then getToHitMelee += Item.Acc;
-  if isPlayer and Player.Running and (not Player.Flags[ BF_NORUNPENALTY ]) then Dec(getToHitMelee,2);
   if not isPlayer then
     getToHitMelee += TLevel(Parent).ToHitBonus;
 end;
