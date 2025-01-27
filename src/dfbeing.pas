@@ -1114,20 +1114,19 @@ end;
 function TBeing.ActionTactic : Boolean;
 begin
   if ( not isPlayer ) or ( BF_BERSERK in FFlags ) then Exit( False );
-  if Player.Tired then
+  if Player.FAffects.IsActive( LuaSystem.Defines['tired'] ) then
   begin
     IO.Msg('Too tired to do that right now.');
     Exit( False );
   end;
-  if Player.Running then
+  if Player.FAffects.IsActive( LuaSystem.Defines['running'] ) then
   begin
-    IO.Msg('You stop running.');
-    Player.Running := False;
+    Player.FAffects.Remove( LuaSystem.Defines['running'], False );
     Exit( False );
   end
   else
   begin
-    Player.Running := True;
+    Player.FAffects.Add( LuaSystem.Defines['running'], Player.RunningTime );
     Dec( FSpeedCount, ActionCostTactic );
     Exit( True );
   end;
@@ -1755,7 +1754,6 @@ begin
           begin
             TLevel(Parent).playSound('bpack','powerup',FPosition);
             IO.Blink(Red,30);
-            if Player.Running then Player.Running := False;
             if Player.FAffects.IsActive(LuaSystem.Defines['berserk']) then
             begin
               iBerserk  := Player.FAffects.List[LuaSystem.Defines['berserk']];

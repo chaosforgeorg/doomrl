@@ -261,8 +261,8 @@ function drl.register_base_data()
 end
 
 function drl.OnEnter()
-	player:remove_affect( "running" )
-	player:remove_affect( "tired" )
+	player:remove_affect( "running", true )
+	player:remove_affect( "tired", true )
 end
 
 function drl.GetDisassembleId( it )
