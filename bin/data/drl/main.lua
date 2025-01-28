@@ -483,6 +483,17 @@ function drl.RunPrintMortem()
 	player:mortem_print()
 	mortem.print_kills()
 	player:mortem_print()
+	local groups = { "weapon-melee", "weapon-pistol", "weapon-shotgun", "weapon-chain", "weapon-rocket", "weapon-plasma", "weapon-bfg" }
+	local names  = { "Melee kills   : ", "Pistol kills  : ", "Shotgun kills : ", "Chaingun kills: ", "Rocket kills  : ", "Plasma kills  : ", "BFG kills     : " }
+	for idx,group in ipairs(groups) do
+		local count = core.kills_count_group( group )
+		if count > 0 then
+			player:mortem_print( "    "..names[ idx ]..count )
+		end
+	end
+	player:mortem_print( "    Unarmed kills : "..kills.get_type( "melee" ) )
+	player:mortem_print( "    Other kills   : "..kills.get_type( "other" ) )
+	player:mortem_print()
 	player:mortem_print( "-- History ---------------------------------------------------" )
 	player:mortem_print()
 	mortem.print_history()
@@ -668,33 +679,31 @@ function drl.GetRandomName()
 	-- TODO Add more names
 	local names =
 	{
-		"John Romero",
-		"Adrian Carmack",
-		"Sandy Peterson",
-		"Bobby Prince",
-		"Joseph Hewitt",
-		"Ilya Bely",
-		"Timo Viitanen",
 		"Adam Ring",
-		"Derek Yu",
-		"Igor Savin",
-		"Ian McTaggart",
+		"Adrian Carmack",
+		"Ashannar",
+		"Bobby Prince",
 		"Charchian",
+		"Derek Yu",
+		"Derrick Sund",
+		"Eol Armok",
+		"Grey",
+		"Ian McTaggart",
+		"Igor Savin",
+		"Ilya Bely",
+		"Jacob Orine",
+		"John Romero",
+		"Joseph Hewitt",
+		"Material Defender",
+		"Moog",
+		"Nils Bloodaxe",
 		"Phwop",
 		"Rahul Chandra",
-		"Material Defender",
-		"Linuxusers Buy Games",
-		"Grey",
-		"Jacob Orine",
-		"Zalminen",
-		"Ashannar",
+		"Sandy Peterson",
 		"Stephen Ward",
-		"Nils Bloodaxe",
 		"Thomas Parasiuk",
-		"Moog",
-		"Total Biscuit",
-		"Eol Armok",
-		"Derrick Sund",
+		"Timo Viitanen",
+		"Zalminen",
 	}
 
 	return names[math.random(#(names))]

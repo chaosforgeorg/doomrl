@@ -153,7 +153,21 @@ register_level "hells_armory"
 			if math.random(10) == 1 then lvl = lvl + 1 end
 			if math.random(10) == 1 then lvl = lvl + 1 end
 
-			local rewards = weight_table.new{ items["umod_sniper"], items["umod_firestorm"], items["umod_nano"], items["umod_onyx"], items["ucarmor"] }
+			local reward1 = table.random_pick{ "umod_sniper","umod_firestorm","umod_nano","umod_onyx" }
+			local reward2 = table.random_pick{ "mod_power","mod_agility","mod_bulk","mod_tech","ucarmor"}
+
+			if player:has_medal("armory2") then
+				if reward1 == "umod_nano" then
+					reward2 = "umod_onyx"
+				else
+					reward2 = "umod_nano"
+				end
+			end
+
+			level:drop_item(reward1,coord.new(4,9))
+			level:drop_item(reward2,coord.new(4,11))
+
+			local rewards = weight_table.new{}
 			for k,ma in ipairs(mod_arrays) do
 				if ma.level <= lvl then
 					if player_data.count('player/assemblies/assembly[@id="'..ma.id..'"]') == 0 and not player:has_assembly(ma.id) then
@@ -163,25 +177,12 @@ register_level "hells_armory"
 				end
 			end
 
-			local special = rewards:roll()
-			local reward1,reward2 = generator.roll_pair{"mod_power","mod_agility","mod_bulk","mod_tech"}
-
-			if player:has_medal("armory2") then
-				if special.id == "umod_nano" then
-					reward2 = "umod_onyx"
-				else
-					reward2 = "umod_nano"
-				end
-			end
-
-			level:drop_item(reward1,coord.new(4,9))
-			local item = level:drop_item(special.id,coord.new(4,10))
-			level:drop_item(reward2,coord.new(4,11))
-			if special.slevel then
+			if rewards:size() > 0 then
+				local special = rewards:roll()
+				local item    = level:drop_item(special.id,coord.new(4,10))
 				item.ammo = table.random_pick(unknown[special.slevel+1])
 				item.name = mod_arrays[ item.ammo ].name.." schematics"
 			end
-
 		end
 	end,
 

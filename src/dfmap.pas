@@ -9,9 +9,9 @@ unit dfmap;
 interface
 uses vutil, vmath, dfdata;
 
-type TCellHook  = (CellHook_OnEnter, CellHook_OnExit, CellHook_OnAct, CellHook_OnDescribe, CellHook_OnDestroy);
+type TCellHook  = (CellHook_OnEnter, CellHook_OnExit, CellHook_OnAct, CellHook_OnDescribe, CellHook_OnHazardQuery, CellHook_OnDestroy);
      TCellHooks = set of TCellHook;
-const CellHooks : array[TCellHook] of string = ('OnEnter', 'OnExit', 'OnAct', 'OnDescribe', 'OnDestroy');
+const CellHooks : array[TCellHook] of string = ('OnEnter', 'OnExit', 'OnAct', 'OnDescribe', 'OnHazardQuery', 'OnDestroy');
 
 type TMap = object
        Overlay  : array[ 1..MaxX, 1..MaxY ] of Byte;
@@ -88,8 +88,8 @@ begin
   try
     iColorID := getString('id');
     if IsString('color_id') then iColorID := getString('color_id');
-    
-   iCell.Hooks := [];
+
+    iCell.Hooks := [];
     for iHook in TCellHooks do
       if isFunction( CellHooks[ iHook ] ) then
         Include( iCell.Hooks,iHook );

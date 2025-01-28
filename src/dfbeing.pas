@@ -162,6 +162,8 @@ TBeing = class(TThing,IPathQuery)
     FBloodBoots    : Byte;
     FChainFire     : Byte;
     FPath          : TPathFinder;
+    FPathHazards   : TFlags;
+    FPathClear     : TFlags;
     FKnockBacked   : Boolean;
     public
     property Inv       : TInventory  read FInv       write FInv;
@@ -2107,13 +2109,9 @@ begin
     end;
     
     if iMisslePath.Done then
-      if (MF_EXACT in Missiles[iMissile].Flags) then Break else
-      begin
-        iOldCoord := iTarget;
-        iTarget += ( aTarget - FPosition );
-        iMisslePath.Init( iLevel, iOldCoord, iTarget );
-      end;
-      
+      if MF_EXACT in Missiles[iMissile].Flags then
+        Break;
+
     if ( iSteps >= iMaxRange ) or (MF_IMMIDATE in Missiles[iMissile].Flags) then
     begin
       if (iAimedBeing = Player) and (iDodged) then IO.Msg('You dodge!');
@@ -2352,6 +2350,20 @@ end;
 function TBeing.MoveCost(const Start, Stop: TCoord2D): Single;
 var iDiff     : TCoord2D;
     iStopCell : TCell;
+    iStopID   : Byte;
+  function isHazard( aID : Byte ) : Boolean;
+  begin
+    if isPlayer and CellHook_OnHazardQuery in Cells[ aID ].Hooks ) then
+    begin
+      if aID in FPathHazards then Exit( True );
+      if aID in FPathClear   then Exit( False );
+      if TLevel(Parent).CallHook( CellHook_OnHazardQuery, aID, Self )
+        then begin Include( FPathHazards, aID ); Exit( True ); end
+        else begin Include( FPathClear, aID );   Exit( False ); end
+    end
+    else Exit( CF_HAZARD in Cells[ aID ].Flags );
+  end;
+
 begin
   iDiff := Start - Stop;
   if iDiff.x * iDiff.y = 0
@@ -2360,13 +2372,14 @@ begin
 
   if TLevel(Parent).Being[ Stop ] <> nil then MoveCost := MoveCost * 5;
 
-  iStopCell := Cells[ TLevel(Parent).getCell(Stop) ];
+  iStopID   := TLevel(Parent).getCell(Stop);
+  iStopCell := Cells[ iStopID ];
   if not ( BF_FLY in FFlags ) then MoveCost := MoveCost * iStopCell.MoveCost;
   if BF_ENVIROSAFE in FFlags then Exit;
-  if CF_HAZARD in iStopCell.Flags then
+  if isHazard( iStopID ) then
   begin
     if FHp = FHpMax then Exit( 30 * MoveCost );
-    if CF_HAZARD in Cells[ TLevel(Parent).getCell(Start) ].Flags then Exit( 3 * MoveCost );
+    if isHazard( TLevel(Parent).getCell(Start) ) then Exit( 3 * MoveCost );
     Exit( 5 * MoveCost );
   end;
 end;
@@ -2382,7 +2395,7 @@ begin
   if not TLevel(Parent).isProperCoord( aCoord ) then Exit( False );
   with Cells[ TLevel(Parent).getCell( aCoord ) ] do
   begin
-    if (CF_HAZARD in Flags) and (not ((BF_ENVIROSAFE in FFlags) or (BF_CHARGE in FFlags))) then Exit( False );
+    if (not isPlayer) and (CF_HAZARD in Flags) and (not ((BF_ENVIROSAFE in FFlags) or (BF_CHARGE in FFlags))) then Exit( False );
     iItem := TLevel(Parent).Item[ aCoord ];
     if Assigned( iItem ) and ( iItem.Flags[ IF_BLOCKMOVE ] ) then Exit( False );
     if (not ( CF_BLOCKMOVE in Flags )) then Exit( True );
@@ -2658,6 +2671,8 @@ begin
   with iBeing do
   begin
     if FPath = nil then FPath := TPathfinder.Create( iBeing );
+    FPathHazards := [];
+    FPathClear   := [];
     iState.Push( FPath.Run( iBeing.FPosition, iState.ToPosition(2), iState.ToInteger(3), iState.ToInteger(4) ) );
     if FPath.Found then FPath.Start := FPath.Start.Child;
   end;

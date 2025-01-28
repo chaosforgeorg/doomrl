@@ -394,13 +394,10 @@ function drl.register_cells()
 		move_cost  = 1.25,
 
 		OnEnter = function(c,being)
+			if not cells.acid.OnHazardQuery( being ) then return end
 			local damage   = 6
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
-			if being.flags[ BF_ENVIROSAFE ] then return end
-			if being.flags[ BF_FLY ] then return end
-			if being:get_total_resistance( "acid", TARGET_FEET ) == 100 then return end
 			if being:is_player() then
-				if being:is_affect("enviro") then return end
 				if being:is_affect("running") then damage = damage / 2 end
 				ui.msg("Argh!!! Acid!")
 				if core.game_time() % 3 == 0 then
@@ -408,7 +405,18 @@ function drl.register_cells()
 				end
 			end
 			being:apply_damage(damage,TARGET_FEET,DAMAGE_ACID)
-		end
+		end,
+
+		OnHazardQuery = function( being )
+			if being.flags[ BF_ENVIROSAFE ] then return false end
+			if being.flags[ BF_FLY ] then return false end
+			if being:get_total_resistance( "acid", TARGET_FEET ) == 100 then return false end
+			if being:is_player() then
+				if being:is_affect("inv") then return false end
+				if being:is_affect("enviro") then return false end
+			end
+			return true
+		end,
 	}
 
 	register_cell "lava"
@@ -422,13 +430,10 @@ function drl.register_cells()
 		move_cost  = 1.25,
 
 		OnEnter = function(c,being)
+			if not cells.lava.OnHazardQuery( being ) then return end
 			local damage = 12
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
-			if being.flags[ BF_ENVIROSAFE ] then return end
-			if being.flags[ BF_FLY ] then return end
-			if being:get_total_resistance( "fire", TARGET_FEET ) == 100 then return end
 			if being:is_player() then
-				if being:is_affect("enviro") then return end
 				if being:is_affect("running") then damage = damage / 2 end
 				ui.msg("Argh!!! Lava!")
 				if core.game_time() % 3 == 0 then
@@ -436,7 +441,19 @@ function drl.register_cells()
 				end
 			end
 			being:apply_damage(damage,TARGET_FEET,DAMAGE_FIRE)
-		end
+		end,
+
+		OnHazardQuery = function( being )
+			if being.flags[ BF_ENVIROSAFE ] then return false end
+			if being.flags[ BF_FLY ] then return false end
+			if being:get_total_resistance( "fire", TARGET_FEET ) == 100 then return false end
+			if being:is_player() then
+				if being:is_affect("inv") then return false end
+				if being:is_affect("enviro") then return false end
+			end
+			return true
+		end,
+
 	}
 
 	register_cell "blood"
@@ -450,21 +467,26 @@ function drl.register_cells()
 		move_cost  = 1.25,
 
 		OnEnter = function(c,being)
-			if not being:is_player() then return end
+			if not cells.blood.OnHazardQuery( being ) then return end
 			local damage = 12
 			if DIFFICULTY == DIFF_EASY then damage = damage / 2 end
-			if being.flags[ BF_ENVIROSAFE ] then return end
-			if being.flags[ BF_FLY ] then return end
-			if being:get_total_resistance( "plasma", TARGET_FEET ) == 100 then return end
-
-			if being:is_affect("enviro") then return end
 			if being:is_affect("running") then damage = damage / 2 end
 			ui.msg("Argh!!! Blood!")
 			if core.game_time() % 3 == 0 then
 				being:play_sound("hit")
 			end
 			being:apply_damage( damage, TARGET_FEET, DAMAGE_PLASMA )
-		end
+		end,
+
+		OnHazardQuery = function( being )
+			if not being:is_player() then return false end
+			if being.flags[ BF_ENVIROSAFE ] then return false end
+			if being.flags[ BF_FLY ] then return false end
+			if being:get_total_resistance( "plasma", TARGET_FEET ) == 100 then return false end
+			if being:is_affect("inv") then return false end
+			if being:is_affect("enviro") then return false end
+			return true
+		end,
 	}
 
 	register_cell "pwater"

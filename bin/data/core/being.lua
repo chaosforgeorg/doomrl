@@ -228,22 +228,24 @@ function being:pick_item_to_mod( mod, filter )
 
 	for i = 0,MAX_EQ_SIZE-1 do
 		local it = player.eq[i]
-		if it and it.itype ~= ITEMTYPE_AMMOPACK and ( ( not filter ) or filter(it) ) then
+		if it and it.itype ~= ITEMTYPE_AMMOPACK then
 			local desc
 			local ma = it:find_mod_array( modletter, techbonus )
-			local cm = it:can_mod( modletter )
-			if (not ma) and ( not cm ) then
-				desc = "Max level of this mod reached!"
-			else
-				if cm and proto.OnModDescribe then
-					desc = "Effect : "..proto.OnModDescribe( mod, it )
+			if ma or ( ( not filter ) or filter(it) ) then
+				local cm = it:can_mod( modletter )
+				if (not ma) and ( not cm ) then
+					desc = "Max level of this mod reached!"
+				else
+					if cm and proto.OnModDescribe then
+						desc = "Effect : "..proto.OnModDescribe( mod, it )
+					end
+					if ma then
+						desc = desc or ""
+						desc = desc.."\nAssembly possible : {!"..ma.name.."}"
+					end
 				end
-				if it:find_mod_array( modletter, techbonus ) then
-					desc = desc or ""
-					desc = desc.."\nAssembly possible : {!"..ma.name.."}"
-				end
+				table.insert( choice.entries, { name = it.desc, value = i, desc = desc } )
 			end
-			table.insert( choice.entries, { name = it.desc, value = i, desc = desc } )
 		end
 	end
 
@@ -257,14 +259,22 @@ function being:pick_item_to_mod( mod, filter )
 	local item = player.eq[slot]
 	local ma   = item:find_mod_array( modletter, techbonus )
 	if ma then
+		local entries = {
+			{ name = "Assemble "..ma.name, value = 2 },
+			{ name = "Apply mod normally", value = 1 },
+			{ name = "Cancel", value = -1 },
+		}
+		if filter and not filter(item) then
+			entries = {
+				{ name = "Assemble "..ma.name, value = 2 },
+				{ name = "Cancel", value = -1 },
+			}
+		end
+
 		local ma_choice = {
 			title = "Special assembly possible!",
 			header = "Do you want to assemble the {!"..ma.name.."}?",
-			entries = {
-				{ name = "Assemble "..ma.name, value = 2 },
-				{ name = "Apply mod normally", value = 1 },
-				{ name = "Cancel", value = -1 },
-			},
+			entries = entries,
 			cancel = -1,
 		}
 		local result = ui.choice( ma_choice )

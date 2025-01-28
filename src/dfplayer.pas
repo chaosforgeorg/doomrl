@@ -303,10 +303,9 @@ end;
 procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageType: TDamageType; aSource : TItem);
 begin
   if aDamage < 0 then Exit;
-
+  if BF_INV in FFlags then Exit;
   FPathRun := False;
   FRun.Stop;
-  if BF_INV in FFlags then Exit;
   if ( aDamage >= Max( FHPNom div 3, 10 ) ) then
   begin
     IO.Blink(Red,100);
@@ -340,6 +339,8 @@ end;
 
 function TPlayer.RunPath( const aCoord : TCoord2D ) : boolean;
 begin
+  FPathHazards := [];
+  FPathClear   := [];
   if FPath.Run( FPosition, aCoord, 200) then
   begin
     FPath.Start := FPath.Start.Child;
@@ -712,17 +713,14 @@ begin
     Color := Inv.Slot[ efTorso ].Color;
   Gray := NewColor( 200,200,200 );
   Include( FSprite.Flags, SF_COSPLAY );
+  FSprite.GlowColor := ColorZero;
+  FSprite.Color     := GRAY;
   if Inv.Slot[ efTorso ] <> nil then
   begin
     if Inv.Slot[ efTorso ].PGlowColor.A > 0 then
       FSprite.GlowColor := Inv.Slot[ efTorso ].PGlowColor;
     FSprite.Color     := Inv.Slot[ efTorso ].PCosColor;
     iSpMod            := Inv.Slot[ efTorso ].SpriteMod;
-  end
-  else
-  begin
-    FSprite.Color     := GRAY;
-    FSprite.GlowColor := ColorZero;
   end;
   FSprite.SpriteID[0] := HARDSPRITE_PLAYER;
   if Inv.Slot[ efWeapon ] <> nil then

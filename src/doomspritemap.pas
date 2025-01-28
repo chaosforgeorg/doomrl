@@ -57,6 +57,7 @@ type
   procedure SetAutoTarget( aTarget : TCoord2D );
   procedure ClearTarget;
   procedure ToggleGrid;
+  function VariableLight( aWhere : TCoord2D; aBonus : ShortInt = 0 ) : Byte;
   function GetGridSize : Word;
   function GetCellRotationMask( cell: TCoord2D ): Byte;
   destructor Destroy; override;
@@ -95,7 +96,6 @@ private
   procedure PushSprite( aPos : TVec2i; const aSprite : TSprite; aLight : Byte; aZ : Integer );
   procedure PushMultiSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
   procedure PushSpriteTerrainPart( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
-  function VariableLight( aWhere : TCoord2D ) : Byte;
   function GetSprite( aSprite : TSprite ) : TSprite;
   function GetSprite( aCell, aStyle : Byte ) : TSprite;
 public
@@ -986,16 +986,17 @@ begin
 end;
 
 procedure TDoomSpriteMap.PushObjects;
-var iDMinX  : Word;
-    iDMaxX  : Word;
-    iY,iX   : DWord;
-    iTop,iL : DWord;
-    iV      : TVec2i;
-    iZ      : Integer;
-    iCoord  : TCoord2D;
-    iBeing  : TBeing;
-    iItem   : TItem;
-    iColor  : TColor;
+var iDMinX   : Word;
+    iDMaxX   : Word;
+    iY,iX    : DWord;
+    iTop, iL : DWord;
+    iV       : TVec2i;
+    iZ       : Integer;
+    iCoord   : TCoord2D;
+    iBeing   : TBeing;
+    iItem    : TItem;
+    iColor   : TColor;
+    iVisible : Boolean;
 begin
   iDMinX := FShift.X div FSpriteEngine.Grid.X + 1;
   iDMaxX := Min(FShift.X div FSpriteEngine.Grid.X + (IO.Driver.GetSizeX div FSpriteEngine.Grid.X + 1),MAXX);
@@ -1014,11 +1015,17 @@ begin
           PushSpriteDoodad( iCoord, GetSprite( iTop, Doom.Level.CStyle[iCoord] ) );
       end;
 
-      iItem := Doom.Level.Item[iCoord];
-      if Doom.Level.ItemVisible(iCoord, iItem) or Doom.Level.ItemExplored(iCoord, iItem) then
+      iItem    := Doom.Level.Item[ iCoord ];
+      iVisible := Doom.Level.ItemVisible( iCoord, iItem );
+      if iVisible or Doom.Level.ItemExplored(iCoord, iItem) then
         if (iItem.AnimCount = 0) then
         begin
-          if Doom.Level.ItemVisible(iCoord, iItem) then iL := 255 else iL := 70;
+          iL := 70;
+          if iVisible then
+          begin
+            iL := 255;
+            if iItem.isFeature then iL := VariableLight( iCoord );
+          end;
           PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iItem.Sprite ), iL, iZ + DRL_Z_ITEMS );
         end;
     end;
@@ -1031,7 +1038,7 @@ begin
       iBeing := Doom.Level.Being[iCoord];
       if (iBeing <> nil) and (iBeing.AnimCount = 0) then
         if Doom.Level.BeingVisible(iCoord, iBeing) then
-          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iBeing.Sprite ), 255, iZ + DRL_Z_BEINGS )
+          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iBeing.Sprite ), VariableLight( iCoord, 30 ), iZ + DRL_Z_BEINGS )
         else if Doom.Level.BeingExplored(iCoord, iBeing) then
           PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iBeing.Sprite ), 40, iZ + DRL_Z_BEINGS )
         else if Doom.Level.BeingIntuited(iCoord, iBeing) then
@@ -1076,10 +1083,10 @@ begin
 
 end;
 
-function TDoomSpriteMap.VariableLight(aWhere: TCoord2D): Byte;
+function TDoomSpriteMap.VariableLight( aWhere: TCoord2D; aBonus : ShortInt = 0 ): Byte;
 begin
   if not Doom.Level.isVisible( aWhere ) then Exit( 70 ); //20
-  Exit( Min( 100+Doom.Level.Vision.getLight(aWhere)*20, 255 ) );
+  Exit( Min( 100+aBonus+Doom.Level.Vision.getLight(aWhere)*20, 255 ) );
 end;
 
 function TDoomSpriteMap.GetSprite( aSprite : TSprite ) : TSprite;

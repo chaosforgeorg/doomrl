@@ -160,9 +160,14 @@ register_level "deimos_lab"
 			local lvl = math.max( DIFFICULTY - 3, 0 )
 			if math.random(10) == 1 then lvl = lvl + 1 end
 			if math.random(10) == 1 then lvl = lvl + 1 end
-			local rewards  = weight_table.new{ items["umod_sniper"], items["umod_firestorm"], items["umod_nano"], items["umod_onyx"] }
-			local special1 = rewards:roll()
-			rewards:add( items["ucarmor"] )
+
+			local reward1,reward2 = generator.roll_pair{ "umod_sniper","umod_firestorm","umod_nano","umod_onyx","ucarmor" }
+			local reward3         = table.random_pick{"mod_power","mod_agility","mod_bulk","mod_tech"}
+			level:drop_item(reward3,coord.new(37,10))
+			level:drop_item(reward2,coord.new(42,11))
+			level:drop_item(reward1,coord.new(37,11))
+
+			local rewards = weight_table.new{}
 			for k,ma in ipairs(mod_arrays) do
 				if ma.level <= lvl then
 					if player_data.count('player/assemblies/assembly[@id="'..ma.id..'"]') == 0 and not player:has_assembly(ma.id) then
@@ -172,15 +177,10 @@ register_level "deimos_lab"
 				end
 			end
 
-			local special2 = rewards:roll()
-			local reward1,reward2 = generator.roll_pair{"mod_power","mod_agility","mod_bulk","mod_tech"}
-
-			level:drop_item(reward1,coord.new(37,10))
-			level:drop_item(reward2,coord.new(42,11))
-			level:drop_item(special1.id,coord.new(37,11))
-			local item = level:drop_item(special2.id,coord.new(42,10))
-			if special2.slevel then
-				item.ammo = table.random_pick(unknown[special2.slevel+1])
+			if rewards:size() > 0 then
+				local special = rewards:roll()
+				local item    = level:drop_item(special.id,coord.new(42,10))
+				item.ammo = table.random_pick(unknown[special.slevel+1])
 				item.name = mod_arrays[ item.ammo ].name.." schematics"
 			end
 		end
