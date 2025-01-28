@@ -4,6 +4,8 @@
 [mod] -- GH#000: dodge bonus from armor additive, not multiplicative
 [mod] -- GH#208: right Vault on UV+ has 4 barons, 4 armors
 [mod] -- GH#212: kill weapon groups displayed in mortem
+[fix] -- GH#201: fixed flickering on Linux ncurses build
+[fix] -- GH#201: fixed explosion refresh issues when running in console mode 
 [fix] -- GH#000: MAJOR - dodge chance was calculated wrong (too high), fixed
 [fix] -- RCFIX : feature items fade light-wise the same as the level
 [fix] -- RCFIX : enemies fade light-wise a bit with distance
