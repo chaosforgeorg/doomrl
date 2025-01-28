@@ -2,6 +2,7 @@
 [mod] -- GH#000: cleaned up tactic/running - now running/tired is a regular affect
 [mod] -- GH#000: changed the display of affects to full words
 [mod] -- GH#000: dodge bonus from armor additive, not multiplicative
+[mod] -- GH#208: right Vault on UV+ has 4 barons, 4 armors
 [fix] -- GH#000: MAJOR - dodge chance was calculated wrong (too high), fixed
 [fix] -- RCFIX : feature items fade light-wise the same as the level
 [fix] -- RCFIX : enemies fade light-wise a bit with distance
@@ -9,6 +10,7 @@
 [fix] -- RCFIX : item reveal state doesn't reveal feature items (trees, barrels, etc)
 [fix] -- RCFIX : fixed lingering glow color on player armor
 [fix] -- RCFIX : emissive on glowing items should be more noticable
+[fix] -- RCFIX : restore explosion color (needs a better solution)
 
 0.9.9.9 BETA 4
 [mod] -- GH#197: G-version - added self-illumination to several sprites
