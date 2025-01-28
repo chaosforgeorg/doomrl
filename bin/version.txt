@@ -4,6 +4,7 @@
 [mod] -- GH#000: dodge bonus from armor additive, not multiplicative
 [fix] -- GH#000: MAJOR - dodge chance was calculated wrong (too high), fixed
 [fix] -- RCFIX : assembly eligibility tested before item filter (fixes demo ammo)
+[fix] -- RCFIX : item reveal state doesn't reveal feature items (trees, barrels, etc)
 
 0.9.9.9 BETA 4
 [mod] -- GH#197: G-version - added self-illumination to several sprites
