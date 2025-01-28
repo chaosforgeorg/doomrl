@@ -2107,13 +2107,9 @@ begin
     end;
     
     if iMisslePath.Done then
-      if (MF_EXACT in Missiles[iMissile].Flags) then Break else
-      begin
-        iOldCoord := iTarget;
-        iTarget += ( aTarget - FPosition );
-        iMisslePath.Init( iLevel, iOldCoord, iTarget );
-      end;
-      
+      if MF_EXACT in Missiles[iMissile].Flags then
+        Break;
+
     if ( iSteps >= iMaxRange ) or (MF_IMMIDATE in Missiles[iMissile].Flags) then
     begin
       if (iAimedBeing = Player) and (iDodged) then IO.Msg('You dodge!');
