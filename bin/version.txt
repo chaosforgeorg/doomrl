@@ -3,6 +3,8 @@
 [mod] -- GH#000: changed the display of affects to full words
 [mod] -- GH#000: dodge bonus from armor additive, not multiplicative
 [fix] -- GH#000: MAJOR - dodge chance was calculated wrong (too high), fixed
+[fix] -- RCFIX : feature items fade light-wise the same as the level
+[fix] -- RCFIX : enemies fade light-wise a bit with distance
 [fix] -- RCFIX : assembly eligibility tested before item filter (fixes demo ammo)
 [fix] -- RCFIX : item reveal state doesn't reveal feature items (trees, barrels, etc)
 

@@ -307,8 +307,8 @@ begin
 
   if aBeing then
   begin
-    FLightStart := Iif( Doom.Level.isVisible(aFrom), 255, 0 );
-    FLightEnd   := Iif( Doom.Level.isVisible(aTo),   255, 0 );
+    FLightStart := Iif( Doom.Level.isVisible(aFrom), SpriteMap.VariableLight( aFrom, 30 ), 0 );
+    FLightEnd   := Iif( Doom.Level.isVisible(aTo),   SpriteMap.VariableLight( aTo, 30 ), 0 );
 
     if Doom.Level.Flags[ LF_BEINGSVISIBLE ] then
     begin
