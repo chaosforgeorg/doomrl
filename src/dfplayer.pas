@@ -303,10 +303,9 @@ end;
 procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageType: TDamageType; aSource : TItem);
 begin
   if aDamage < 0 then Exit;
-
+  if BF_INV in FFlags then Exit;
   FPathRun := False;
   FRun.Stop;
-  if BF_INV in FFlags then Exit;
   if ( aDamage >= Max( FHPNom div 3, 10 ) ) then
   begin
     IO.Blink(Red,100);
