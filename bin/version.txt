@@ -5,6 +5,7 @@
 [mod] -- GH#208: right Vault on UV+ has 4 barons, 4 armors
 [mod] -- GH#212: kill weapon groups displayed in mortem
 [mod] -- GH#118: Deimos/Armory - schematic drop is independent, rare mod/carmor always drops
+[mod] -- GH#020: mouse pathing will be done through hazardous fluids if player is immune/100res
 [fix] -- GH#201: fixed flickering on Linux ncurses build
 [fix] -- GH#201: fixed explosion refresh issues when running in console mode 
 [fix] -- GH#000: MAJOR - dodge chance was calculated wrong (too high), fixed

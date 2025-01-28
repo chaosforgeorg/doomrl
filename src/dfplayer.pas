@@ -339,6 +339,8 @@ end;
 
 function TPlayer.RunPath( const aCoord : TCoord2D ) : boolean;
 begin
+  FPathHazards := [];
+  FPathClear   := [];
   if FPath.Run( FPosition, aCoord, 200) then
   begin
     FPath.Start := FPath.Start.Child;

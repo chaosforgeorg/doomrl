@@ -59,6 +59,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function  Corner( coord : TCoord2D ) : boolean;
     {$ENDIF}
 
+    function CallHook( aHook : TCellHook; aCellID : Word; aWhat : TThing ) : Variant; overload;
     function CallHook( coord : TCoord2D;  Hook : TCellHook ) : Variant; overload;
     function CallHook( coord : TCoord2D; aCellID : Word; Hook : TCellHook ) : Variant; overload;
     function CallHook( coord : TCoord2D; What : TThing; Hook : TCellHook ) : Variant; overload;
@@ -685,6 +686,13 @@ begin
   Exit( LightFlag[ coord, lfCorner ] );
 end;
 {$ENDIF CORNERMAP}
+
+function TLevel.CallHook( aHook: TCellHook; aCellID : Word; aWhat: TThing ) : Variant;
+begin
+  if aHook in Cells[ aCellID ].Hooks
+    then CallHook := LuaSystem.ProtectedCall( [ 'cells', aCellID, CellHooks[ aHook ] ], [aWhat] )
+    else CallHook := False;
+end;
 
 function TLevel.CallHook( coord : TCoord2D; Hook: TCellHook ) : Variant;
 begin
