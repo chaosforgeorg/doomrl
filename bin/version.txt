@@ -8,6 +8,7 @@
 [fix] -- RCFIX : assembly eligibility tested before item filter (fixes demo ammo)
 [fix] -- RCFIX : item reveal state doesn't reveal feature items (trees, barrels, etc)
 [fix] -- RCFIX : fixed lingering glow color on player armor
+[fix] -- RCFIX : emissive on glowing items should be more noticable
 
 0.9.9.9 BETA 4
 [mod] -- GH#197: G-version - added self-illumination to several sprites

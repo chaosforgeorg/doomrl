@@ -1077,7 +1077,7 @@ function drl.register_exotic_items()
 		color    = LIGHTMAGENTA,
 		sprite   = SPRITE_SKULL,
 		sframes  = 2,
-		coscolor = { 1.0,0.7,0.0,1.0 },
+		coscolor = { 0.0,0.0,1.0,1.0 },
 		level    = 9,
 		weight   = 8,
 		desc = "This skull gives you the shivers... as if it were filled with hatred.",
