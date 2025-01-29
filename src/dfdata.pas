@@ -690,6 +690,7 @@ end;
 
 function ApplyMul( aBase, aMul : Integer ) : Integer;
 begin
+  if aMul = 0 then Exit( aBase );
   Result := Round( ( ( 100 + aMul ) / 100.0 ) * aBase );
 end;
 

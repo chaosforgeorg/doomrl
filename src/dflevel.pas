@@ -68,7 +68,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
-    procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False );
+    procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Integer = 0 );
     procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; Shotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
@@ -858,7 +858,7 @@ begin
   end;
 end;
 
-procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False );
+procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Integer = 0 );
 var a     : TCoord2D;
     iDamage : Integer;
     dir   : TDirection;
@@ -885,6 +885,7 @@ begin
         iDamage := Damage.Roll;
         if not (efNoDistanceDrop in aFlags) then
           iDamage := iDamage div Max(1,(Distance(a,coord)+1) div 2);
+        iDamage := ApplyMul( iDamage, aDamageMult );
         DamageTile( a, iDamage, DamageType );
         if Being[a] <> nil then
         with Being[a] do

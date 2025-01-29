@@ -2022,6 +2022,7 @@ begin
     iDamage := aItem.rollDamage;
 
   iDamage += aDamageMod;
+  iDamage := ApplyMul( iDamage, aDamageMult );
 
   iSteps := 0;
   iHit   := MF_EXACT in Missiles[iMissile].Flags;
@@ -2161,7 +2162,7 @@ begin
     iSound := IO.Audio.ResolveSoundID([aItem.ID+'.explode',Missiles[iMissile].soundID+'.explode','explode']);
     with Missiles[iMissile] do
     iLevel.Explosion( iDelay*(iSteps+(aShotCount*2)), iCoord, iRadius, ExplDelay, iRoll, ExplColor,
-                    iSound, aItem.DamageType, aItem, ExplFlags, Content, iDirectHit );
+                    iSound, aItem.DamageType, aItem, ExplFlags, Content, iDirectHit, aDamageMult );
   end;
   if (iAimedBeing = Player) and (iDodged) then Player.LastTurnDodge := True;
   Exit( UIDs[ iThisUID ] <> nil );
