@@ -58,7 +58,7 @@ LMB, MMB, RMB is left/middle/right mouse button:
   {!RMB} on {!self}     -- reload
 
   {!MMB}             -- hold to pan view
-  {!MMB} on {!self}     -- equipment
+  {!MMB} on {!self}     -- swap weapons
 
   {!SCROLLWHEEL}     -- change weapon (enters quick weapon choice)
 
