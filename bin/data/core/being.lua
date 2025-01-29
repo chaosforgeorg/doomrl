@@ -168,6 +168,7 @@ function being:spawn( monster )
 	local b = level:drop_being( monster, self.position )
 	if b then
 		b.flags[ BF_NOEXP ] = true
+		b.scount = 2900 + math.random( 200 )
 	end
 end
 
