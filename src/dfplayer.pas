@@ -115,7 +115,7 @@ var Player     : TPlayer;
 implementation
 
 uses math, vuid, vpath, variants, vioevent, vgenerics,
-     vnode, vcolor, vdebug, vluasystem,
+     vnode, vcolor, vdebug, vluasystem, vtig,
      dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doombase,
      doomlua, doominventory, doomplayerview, doomhudviews;
@@ -670,7 +670,7 @@ begin
   Assign(iMortemText, ModuleUserPath + 'mortem.txt' );
   Rewrite(iMortemText);
   for iString in MortemData do
-    Writeln( iMortemText, iString );
+    Writeln( iMortemText, VTIG_StripTags( iString ) );
   Close(iMortemText);
 
   FScore := -1000;
