@@ -6,29 +6,29 @@
 
   {!Escape}  -- exit menu, or show game menu (Save, Quit, Help, Settings)
   {!Arrows}  -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
-  {!.}(period)- Wait
   {!h}       -- Run on-line help
   {!SPACE}   -- Action - open doors, close doors, use levers/switches or 
             go down stairs (you won't be able to come back!)
   {!g}       -- Pick up item from floor
   {!SHIFT-g} -- Use/wield/wear item from floor/pull lever/switch
-  {!z}       -- Swap weapon (with prepared weapon)
-  {!i}       -- Show inventory
-  {!e}       -- Show or change equipment/show traits
-  {!l}       -- Toggle LookMode (Escape to exit)
   {!f}       -- Fire of equipped weapon
   {!SHIFT-f} -- Alternative Fire of equipped weapon (if available)
   {!t}       -- Manual targeting of equipped weapon
   {!SHIFT-r} -- Alternative manual targeting of equipped weapon (if available)
   {!r}       -- Reload equipped weapon
   {!SHIFT-r} -- Special reload weapon (depending on weapon)
+  {!z}       -- Swap weapon (with prepared weapon)
+  {!w}       -- Wait
+  {!i}       -- Show inventory
+  {!e}       -- Show or change equipment/show traits
+  {!l}       -- Toggle LookMode ({!Escape} to exit)
   {!u}       -- Unload weapon from inventory/from ground
   {!p}       -- Show screen with character info (parameters of player
             and his equipment)
   {!y}       -- Show character traits
   {!a}       -- Show known assemblies
   {!s}       -- Show previous messages
-  {!,}(comma)-- Run command
+  {!,}(comma)-- repeat move command (also, {!SHIFT}-direction, or {!SHIFT}-w)
   {!x}       -- change tactic
   {!1}..{!9} -- weapon quick keys, set them up in the inventory screen
 
@@ -57,7 +57,7 @@ LMB, MMB, RMB is left/middle/right mouse button:
                      magazine empty
   {!RMB} on {!self}     -- reload
 
-  {!MMB}             -- swap weapon
+  {!MMB}             -- hold to pan view
   {!MMB} on {!self}     -- equipment
 
   {!SCROLLWHEEL}     -- change weapon (enters quick weapon choice)

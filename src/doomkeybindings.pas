@@ -123,7 +123,7 @@ const KeyInfo : array[TInputKey] of TKeyInfoEntry = (
     (ID: 'input_walkupright';    Group: 'keybindings_movement';     Default: VKEY_PGUP;             Name: 'Walk up-right';    Description: 'Keybind to walk up and right.'),
     (ID: 'input_walkdownleft';   Group: 'keybindings_movement';     Default: VKEY_END;              Name: 'Walk down-left';   Description: 'Keybind to walk down and left.'),
     (ID: 'input_walkdownright';  Group: 'keybindings_movement';     Default: VKEY_PGDOWN;           Name: 'Walk down-right';  Description: 'Keybind to walk down and right.'),
-    (ID: 'input_wait';           Group: 'keybindings_movement';     Default: VKEY_PERIOD;           Name: 'Wait a turn';      Description: 'Keybind to wait in place.'),
+    (ID: 'input_wait';           Group: 'keybindings_movement';     Default: VKEY_W;                Name: 'Wait a turn';      Description: 'Keybind to wait in place.'),
     (ID: 'input_run';            Group: 'keybindings_movement';     Default: VKEY_COMMA;            Name: 'Repeat move mode'; Description: 'Enter repeat move mode (move until enemy appears or stopped).'),
 
     // Run keybindings
@@ -135,7 +135,7 @@ const KeyInfo : array[TInputKey] of TKeyInfoEntry = (
     (ID: 'input_runupright';    Group: 'keybindings_running';       Default: VKEY_PGUP + IOKeyCodeShiftMask;             Name: 'Multi-move up-right';    Description: 'Keybind to move up and right until blocked or enemy spotted.'),
     (ID: 'input_rundownleft';   Group: 'keybindings_running';       Default: VKEY_END + IOKeyCodeShiftMask;              Name: 'Multi-move down-left';   Description: 'Keybind to move down and left until blocked or enemy spotted.'),
     (ID: 'input_rundownright';  Group: 'keybindings_running';       Default: VKEY_PGDOWN + IOKeyCodeShiftMask;           Name: 'Multi-move down-right';  Description: 'Keybind to move down and right until blocked or enemy spotted.'),
-    (ID: 'input_runwait';       Group: 'keybindings_running';       Default: VKEY_PERIOD + IOKeyCodeShiftMask;           Name: 'Multi-wait';             Description: 'Keybind to wait several turns or until enemy spotted.'),
+    (ID: 'input_runwait';       Group: 'keybindings_running';       Default: VKEY_W + IOKeyCodeShiftMask;           Name: 'Multi-wait';             Description: 'Keybind to wait several turns or until enemy spotted.'),
 
     // Action keybindings
     (ID: 'input_action';         Group: 'keybindings_actions';      Default: VKEY_SPACE;            Name: 'Action';           Description: 'Perform action (open/close door, descend stairs, press button).'),

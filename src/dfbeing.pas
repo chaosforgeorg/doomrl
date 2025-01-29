@@ -2353,7 +2353,7 @@ var iDiff     : TCoord2D;
     iStopID   : Byte;
   function isHazard( aID : Byte ) : Boolean;
   begin
-    if isPlayer and CellHook_OnHazardQuery in Cells[ aID ].Hooks ) then
+    if isPlayer and ( CellHook_OnHazardQuery in Cells[ aID ].Hooks ) then
     begin
       if aID in FPathHazards then Exit( True );
       if aID in FPathClear   then Exit( False );
