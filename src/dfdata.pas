@@ -338,6 +338,7 @@ const ExpTable : array[1..MaxPlayerLevel] of LongInt =
                900000,10000000);
                
 function Roll(stat : Integer) : Integer;
+function ApplyMul( aBase, aMul : Integer ) : Integer;
 function InputDirection( aInput : TInputKey ) : TDirection;
 function DirectionToInput(Dir : TDirection) : TInputKey;
 function TwoInt(x : integer) : string;
@@ -685,6 +686,11 @@ begin
      18 : Exit(-30);
   end;
   Roll := stat - DieRoll;
+end;
+
+function ApplyMul( aBase, aMul : Integer ) : Integer;
+begin
+  Result := Round( ( ( 100 + aMul ) / 100.0 ) * aBase );
 end;
 
 { TStringList }

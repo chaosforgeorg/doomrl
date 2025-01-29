@@ -15,17 +15,20 @@ uses Classes, SysUtils,
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
 
 type TBonuses = record
-  ToHit      : Integer;
-  ToDam      : Integer;
-  ToDamAll   : Integer;
-  ToHitMelee : Integer;
-  Pistol     : Integer;
-  Rapid      : Integer;
-  Body       : Integer;
-  Tech       : Integer;
-  Dodge      : Integer;
-  Move       : Integer;
-  Defence    : Integer;
+  ToHit           : Integer;
+  ToDam           : Integer;
+  ToDamAll        : Integer;
+  ToHitMelee      : Integer;
+  Pistol          : Integer;
+  Rapid           : Integer;
+  Body            : Integer;
+  Tech            : Integer;
+  Dodge           : Integer;
+  Move            : Integer;
+  Defence         : Integer;
+  MulDamage       : Integer;
+  MulDamageMelee  : Integer;
+  MulDamageRanged : Integer;
 end;
 
 type TBeingTimes = record
@@ -61,7 +64,7 @@ TBeing = class(TThing,IPathQuery)
     function meleeWeaponSlot : TEqSlot;
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
     procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); virtual;
-    function SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : Integer = 0; aToHitMod : Integer = 0; aShotCount : Integer = 0 ) : Boolean;
+    function SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod, aToHitMod, aShotCount, aDamageMult : Integer ) : Boolean;
     function  isActive : boolean;
     function  WoundStatus : string;
     function  IsPlayer : Boolean;
@@ -192,13 +195,17 @@ TBeing = class(TThing,IPathQuery)
     property Speed        : Byte       read FSpeed         write FSpeed;
     property ExpValue     : Word       read FExpValue      write FExpValue;
 
-    property TechBonus    : Integer    read FBonus.Tech    write FBonus.Tech;
-    property PistolBonus  : Integer    read FBonus.Pistol  write FBonus.Pistol;
-    property RapidBonus   : Integer    read FBonus.Rapid   write FBonus.Rapid;
-    property BodyBonus    : Integer    read FBonus.Body    write FBonus.Body;
-    property DodgeBonus   : Integer    read FBonus.Dodge   write FBonus.Dodge;
-    property MoveBonus    : Integer    read FBonus.Move    write FBonus.Move;
-    property DefenceBonus : Integer    read FBonus.Defence write FBonus.Defence;
+    property TechBonus       : Integer read FBonus.Tech            write FBonus.Tech;
+    property PistolBonus     : Integer read FBonus.Pistol          write FBonus.Pistol;
+    property RapidBonus      : Integer read FBonus.Rapid           write FBonus.Rapid;
+    property BodyBonus       : Integer read FBonus.Body            write FBonus.Body;
+    property DodgeBonus      : Integer read FBonus.Dodge           write FBonus.Dodge;
+    property MoveBonus       : Integer read FBonus.Move            write FBonus.Move;
+    property DefenceBonus    : Integer read FBonus.Defence         write FBonus.Defence;
+    property MulDamage       : Integer read FBonus.MulDamage       write FBonus.MulDamage;
+    property MulDamageMelee  : Integer read FBonus.MulDamageMelee  write FBonus.MulDamageMelee;
+    property MulDamageRanged : Integer read FBonus.MulDamageRanged write FBonus.MulDamageRanged;
+
     property HPDecayMax   : Word       read FHPDecayMax    write FHPDecayMax;
 
     property ReloadTime   : Byte       read FTimes.Reload  write FTimes.Reload;
@@ -367,6 +374,10 @@ begin
   FBonus.Dodge  := 0;
   FBonus.Move   := 0;
   FBonus.Defence:= 0;
+  FBonus.MulDamage       := 0;
+  FBonus.MulDamageMelee  := 0;
+  FBonus.MulDamageRanged := 0;
+
   FHPDecayMax   := 100;
 
   if not isPlayer then
@@ -417,9 +428,9 @@ begin
   iLevel := TLevel(Parent);
   Assert( aGun <> nil );
   if TLevel(Parent).Being[ aTarget ] <> nil then aTarget := TLevel(Parent).Being[ aTarget ].FLastPos;
-  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x+Sgn(aTarget.y-FPosition.y),aTarget.y-Sgn(aTarget.x-FPosition.x))),aGun,10,0) then Exit( False );
-  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x-Sgn(aTarget.y-FPosition.y),aTarget.y+Sgn(aTarget.x-FPosition.x))),aGun,10,0) then Exit( False );
-  if not SendMissile( aTarget, aGun,10,0) then Exit( False );
+  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x+Sgn(aTarget.y-FPosition.y),aTarget.y-Sgn(aTarget.x-FPosition.x))),aGun,10,FBonus.ToDamAll,0,0,FBonus.MulDamage + FBonus.MulDamageRanged ) then Exit( False );
+  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x-Sgn(aTarget.y-FPosition.y),aTarget.y+Sgn(aTarget.x-FPosition.x))),aGun,10,FBonus.ToDamAll,0,0,FBonus.MulDamage + FBonus.MulDamageRanged ) then Exit( False );
+  if not SendMissile( aTarget, aGun,10,FBonus.ToDamAll,0,0,FBonus.MulDamage + FBonus.MulDamageRanged ) then Exit( False );
   Exit( True );
 end;
 
@@ -462,11 +473,11 @@ begin
     if iChaining then aTarget := RotateTowards( FPosition, aTarget, iChainTarget, PI/6 );
     if aGun.Flags[ IF_SCATTER ] then
        begin
-            if not SendMissile( TLevel(Parent).Area.Clamped(aTarget.RandomShifted( iScatter )), aGun, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, toDam, toHit, iCount-1 ) then Exit( False );
+            if not SendMissile( TLevel(Parent).Area.Clamped(aTarget.RandomShifted( iScatter )), aGun, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, toDam, toHit, iCount-1, FBonus.MulDamage + FBonus.MulDamageRanged ) then Exit( False );
        end
     else
        begin
-            if not SendMissile( aTarget, aGun, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, toDam, toHit, iCount-1 ) then Exit( False );
+            if not SendMissile( aTarget, aGun, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, toDam, toHit, iCount-1, FBonus.MulDamage + FBonus.MulDamageRanged ) then Exit( False );
        end;
   end;
   Exit( True );
@@ -481,8 +492,6 @@ function TBeing.IsPlayer : Boolean;
 begin
   Exit( inheritsFrom( TPlayer ) );
 end;
-
-
 
 function TBeing.isActive: boolean;
 begin
@@ -847,7 +856,8 @@ begin
       case aWeapon.AltFire of
         ALT_THROW  :
         begin
-          SendMissile( aTarget, aWeapon, 0, FBonus.ToDam + FBonus.ToDamAll, FBonus.ToHit + FBonus.ToHitMelee );
+          SendMissile( aTarget, aWeapon, 0, FBonus.ToDam + FBonus.ToDamAll, FBonus.ToHit + FBonus.ToHitMelee, 0,
+            FBonus.MulDamage + FBonus.MulDamageRanged + FBonus.MulDamageMelee );
           Dec( FSpeedCount, 1000 );
           Exit( True );
         end;
@@ -1592,6 +1602,8 @@ begin
     iDamage += FBonus.ToDamAll;
     if BF_BERSERK in FFlags then iDamage *= 2;
   end;
+  iDamage := ApplyMul( iDamage, FBonus.MulDamage + FBonus.MulDamageMelee );
+
   if iDamage < 0 then iDamage := 0;
   rollMeleeDamage := iDamage;
 end;
@@ -1636,7 +1648,6 @@ var iName          : string;
     iDefenderName  : string;
     iResult        : string;
     iDamage        : Integer;
-    iDefence       : Integer;
     iWeaponSlot    : TEqSlot;
     iWeapon        : TItem;
     iDamageType    : TDamageType;
@@ -1930,7 +1941,7 @@ begin
     else CallHook( Hook_OnAttacked, [ TLevel(Parent).ActiveBeing, aSource ] );
 end;
 
-function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod : Integer = 0; aToHitMod : Integer = 0; aShotCount : Integer = 0) : Boolean;
+function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod, aToHitMod, aShotCount, aDamageMult : Integer ) : Boolean;
 var iDirection  : TDirection;
     iMisslePath : TVisionRay;
     iOldCoord   : TCoord2D;
