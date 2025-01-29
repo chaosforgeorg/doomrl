@@ -54,7 +54,7 @@ function drl.register_affects()
 
 		OnAdd          = function(being)
 			being:remove_affect( "running", true )
-			being.flags[ BF_BERSERK ] = true
+			being.muldamagemelee = being.muldamagemelee + 100
 			being.speed = being.speed + 50
 			being.resist.bullet = (being.resist.bullet or 0) + 50
 			being.resist.melee = (being.resist.melee or 0) + 50
@@ -67,8 +67,8 @@ function drl.register_affects()
 			ui.msg("You need to taste blood!")
 		end,
 		OnRemove       = function(being)
-			being.flags[ BF_BERSERK ] = false
 			being.speed = being.speed - 50
+			being.muldamagemelee = being.muldamagemelee - 100
 			being.resist.bullet = (being.resist.bullet or 0) - 50
 			being.resist.melee = (being.resist.melee or 0) - 50
 			being.resist.shrapnel = (being.resist.shrapnel or 0) - 50

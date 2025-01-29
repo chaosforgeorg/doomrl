@@ -1596,12 +1596,7 @@ begin
       iDamage += Byte(Dice(1,3));
   end;
 
-  if IsPlayer then
-  with Player do
-  begin
-    iDamage += FBonus.ToDamAll;
-    if BF_BERSERK in FFlags then iDamage *= 2;
-  end;
+  iDamage += FBonus.ToDamAll;
   iDamage := ApplyMul( iDamage, FBonus.MulDamage + FBonus.MulDamageMelee );
 
   if iDamage < 0 then iDamage := 0;
@@ -1787,10 +1782,7 @@ function TBeing.getTotalResistance(const aResistance: AnsiString; aTarget: TBody
 var iResist : LongInt;
 begin
   iResist := GetLuaProperty( ['resist',aResistance], 0 );
-  // HACK: please remove! currently Ironman(5) + Berserk makes 110 resist!
-  if ( BF_BERSERK  in FFlags ) and ( iResist < 160 ) then
-     iResist := Min( 95, iResist );
-
+  if isPlayer and ( aTarget <> Target_Feet ) then iResist := Min( 95, iResist );
   if iResist >= 100 then Exit( 100 );
   getTotalResistance := iResist;
   if aTarget = Target_Internal then Exit;
