@@ -3,7 +3,7 @@
 unit dfplayer;
 interface
 uses classes, sysutils,
-     vuielement, vutil, vrltools,
+     vuielement, vutil, vrltools, vuitypes,
      dfbeing, dfhof, dfdata, dfitem, dfaffect,
      doomtrait, doomkeybindings;
 
@@ -109,18 +109,16 @@ TPlayer = class(TBeing)
   property BeingsInVision: Word       read FEnemiesInVision;
 end;
 
-var   Player : TPlayer;
+var Player     : TPlayer;
+    MortemData : TUIStringArray = nil;
 
 implementation
 
 uses math, vuid, vpath, variants, vioevent, vgenerics,
-     vnode, vcolor, vdebug, vluasystem,
+     vnode, vcolor, vdebug, vluasystem, vtig,
      dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doombase,
      doomlua, doominventory, doomplayerview, doomhudviews;
-
-var MortemText    : Text;
-    WritingMortem : Boolean = False;
 
 { TStatistics }
 
@@ -626,8 +624,9 @@ begin
 end;
 
 procedure TPlayer.WriteMemorial;
-var iCopyText : Text;
-    iString   : AnsiString;
+var iCopyText   : Text;
+    iMortemText : Text;
+    iString     : AnsiString;
 
 procedure ScoreCRC(var Score : LongInt);
 begin
@@ -661,12 +660,18 @@ begin
 
   HOF.Add(Name,FScore,FKilledBy,FExpLevel,CurrentLevel,Doom.Challenge);
 
-  Assign(MortemText, ModuleUserPath + 'mortem.txt' );
-  Rewrite(MortemText);
-  WritingMortem := True;
+  if Assigned( MortemData ) then
+  begin
+    Log( LOGERROR, 'Mortem data not cleared!');
+    FreeAndNil( MortemData );
+  end;
+  MortemData := TUIStringArray.Create;
   LuaSystem.ProtectedCall([CoreModuleID,'RunPrintMortem'],[]);
-  WritingMortem := False;
-  Close(MortemText);
+  Assign(iMortemText, ModuleUserPath + 'mortem.txt' );
+  Rewrite(iMortemText);
+  for iString in MortemData do
+    Writeln( iMortemText, VTIG_StripTags( iString ) );
+  Close(iMortemText);
 
   FScore := -1000;
 
@@ -676,17 +681,17 @@ begin
     Assign(iCopyText,iString);
     Log('Writing mortem...: '+iString);
     Rewrite(iCopyText);
-    Assign(MortemText, ModuleUserPath + 'mortem.txt');
-    Reset(MortemText);
+    Assign(iMortemText, ModuleUserPath + 'mortem.txt');
+    Reset(iMortemText);
     
-    while not EOF(MortemText) do
+    while not EOF(iMortemText) do
     begin
-      Readln(MortemText,iString);
+      Readln(iMortemText,iString);
       Writeln(iCopyText,iString);
     end;
 
     Close(iCopyText);
-    Close(MortemText);
+    Close(iMortemText);
   end;
 end;
 
@@ -973,8 +978,8 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  if not WritingMortem then raise Exception.Create('player:mortem_print called in wrong place!');
-  Writeln(MortemText, State.ToString(2) );
+  if not Assigned( MortemData ) then raise Exception.Create('player:mortem_print called in wrong place!');
+  MortemData.Push( State.ToString(2) );
   Result := 0;
 end;
 

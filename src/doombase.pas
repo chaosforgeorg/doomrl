@@ -1168,7 +1168,8 @@ repeat
     if Player.FScore >= -1000 then
     begin
       iReport := TPagedReport.Create('Post mortem', False );
-      iReport.Add( TextFileToUIStringArray( ModuleUserPath + 'mortem.txt' ), 'mortem.txt' );
+      iReport.Add( MortemData, 'mortem.txt' );
+      MortemData := nil; // handled by iReport
       IO.PushLayer( TPagedView.Create( iReport ) );
       IO.WaitForLayer( True );
     end;

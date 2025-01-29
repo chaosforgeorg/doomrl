@@ -379,13 +379,13 @@ function drl.RunPrintMortem()
 	local death_reason = drl.GetResultDescription( result_id, false )
 	local game_module    = nil
 
-	player:mortem_print( "--------------------------------------------------------------" )
-	player:mortem_print( " DRL ("..VERSION_STRING..") roguelike post-mortem character dump")
+	player:mortem_print( "{r--------------------------------------------------------------}" )
+	player:mortem_print( " {RDRL} ({!"..VERSION_STRING.."}) roguelike post-mortem character dump")
 --	if game_type ~= GAMESTANDARD then
 --		player:mortem_print( " Module : "..module.name.." ("..mortem.version_string(module.version)..")")
 --		game_module = _G[module.id]
 --	end
-	player:mortem_print( "--------------------------------------------------------------" )
+	player:mortem_print( "{r--------------------------------------------------------------}" )
 	player:mortem_print()
 
 	if game_module and game_module.RunPrintMortem then
@@ -394,28 +394,28 @@ function drl.RunPrintMortem()
 	end
 
 	if not game_module then
-		local player_description = "level "..player.explevel.." "
+		local player_description = "level {!"..player.explevel.." "
 			..exp_ranks[player.exprank + 1].name.." "..skill_ranks[player.skillrank + 1].name
-			.." "..klasses[player.klass].name..","
+			.." "..klasses[player.klass].name.."},"
 		if string.len(player.name) <= 12 then
-			player:mortem_print(" "..player.name..", "..player_description)
+			player:mortem_print(" {!"..player.name.."}, "..player_description)
 		else
-			player:mortem_print(" "..player.name..",")
+			player:mortem_print(" {!"..player.name.."},")
 			player:mortem_print(" "..player_description)
 		end
 		local epi_name = player.episode[player.depth].deathname or player.episode[player.depth].name or "an Unknown Location"
 		local depth    = player.episode[player.depth].number or 0
 		if depth ~= 0 then
-			player:mortem_print( " "..death_reason.." on level "..depth.." of "..epi_name.."." )
+			player:mortem_print( " "..death_reason.." on level {!"..depth.."} of {!"..epi_name.."}." )
 		else
-			player:mortem_print( " "..death_reason.." at "..epi_name.."." )
+			player:mortem_print( " "..death_reason.." at {!"..epi_name.."}." )
 		end
 	else
 		if game_module.OnMortemPrint then
 			game_module.OnMortemPrint(death_reason)
 		else
-			player:mortem_print( " "..player.name..", level "..player.explevel.." "
-		.." "..klasses[player.klass].name..", "..death_reason )
+			player:mortem_print( " {!"..player.name.."}, level {!"..player.explevel.." "
+		.." "..klasses[player.klass].name.."}, "..death_reason )
 			player:mortem_print(" in a custom location...")
 		end
 	end
@@ -446,40 +446,40 @@ function drl.RunPrintMortem()
 	mortem.print_challenge()
 	mortem.print_crash_save()
 	player:mortem_print()
-	player:mortem_print("-- Special levels --------------------------------------------")
+	player:mortem_print("{r-- {ySpecial levels} --------------------------------------------}")
 	player:mortem_print()
 	mortem.print_special_levels()
 	player:mortem_print()
-	player:mortem_print("-- Awards ----------------------------------------------------")
+	player:mortem_print("{r-- {yAwards} ----------------------------------------------------}")
 	player:mortem_print()
 	mortem.print_awards()
 	player:mortem_print()
 
-	player:mortem_print( "-- Graveyard -------------------------------------------------")
+	player:mortem_print( "{r-- {yGraveyard} -------------------------------------------------}")
 	player:mortem_print()
 	mortem.print_graveyard()
 	player:mortem_print()
-	player:mortem_print( "-- Statistics ------------------------------------------------" )
+	player:mortem_print( "{r-- {yStatistics} ------------------------------------------------}" )
 	player:mortem_print()
 	mortem.print_statistics()
 	player:mortem_print()
-	player:mortem_print( "-- Traits ----------------------------------------------------" )
+	player:mortem_print( "{r-- {yTraits} ----------------------------------------------------}" )
 	player:mortem_print()
 	mortem.print_traits()
 	player:mortem_print()
-	player:mortem_print( "-- Equipment -------------------------------------------------" )
+	player:mortem_print( "{r-- {yEquipment} -------------------------------------------------}" )
 	player:mortem_print()
 	mortem.print_equipment()
 	player:mortem_print()
-	player:mortem_print( "-- Inventory -------------------------------------------------" )
+	player:mortem_print( "{r-- {yInventory} -------------------------------------------------}" )
 	player:mortem_print()
 	mortem.print_inventory()
 	player:mortem_print()
-	player:mortem_print( "-- Resistances -----------------------------------------------" )
+	player:mortem_print( "{r-- {yResistances} -----------------------------------------------}" )
 	player:mortem_print()
 	mortem.print_resistances()
 	player:mortem_print()
-	player:mortem_print( "-- Kills -----------------------------------------------------" )
+	player:mortem_print( "{r-- {yKills} -----------------------------------------------------}" )
 	player:mortem_print()
 	mortem.print_kills()
 	player:mortem_print()
@@ -488,30 +488,30 @@ function drl.RunPrintMortem()
 	for idx,group in ipairs(groups) do
 		local count = core.kills_count_group( group )
 		if count > 0 then
-			player:mortem_print( "    "..names[ idx ]..count )
+			player:mortem_print( "    "..names[ idx ].."{!"..count.."}" )
 		end
 	end
-	player:mortem_print( "    Unarmed kills : "..kills.get_type( "melee" ) )
-	player:mortem_print( "    Other kills   : "..kills.get_type( "other" ) )
+	player:mortem_print( "    Unarmed kills : {!"..kills.get_type( "melee" ).."}" )
+	player:mortem_print( "    Other kills   : {!"..kills.get_type( "other" ).."}" )
 	player:mortem_print()
-	player:mortem_print( "-- History ---------------------------------------------------" )
+	player:mortem_print( "{r-- {yHistory} ---------------------------------------------------}" )
 	player:mortem_print()
 	mortem.print_history()
 	if not game_module then
 		if kills.get("jc") > 0 then
 			player:mortem_print( "  Then finally in Hell itself, he killed the final EVIL." )
 		else
-			player:mortem_print( "  On level "..player.depth.." he finally "..death_reason..".")
+			player:mortem_print( "  On level {!"..player.depth.."} he finally "..death_reason..".")
 		end
 	end
 	player:mortem_print()
-	player:mortem_print( "-- Messages -------------------------------------------------- " )
+	player:mortem_print( "{r-- {yMessages} --------------------------------------------------} " )
 	player:mortem_print()
 	mortem.print_messages()
 	player:mortem_print()
 
 	if not game_module then
-		player:mortem_print( "-- General --------------------------------------------------- " )
+		player:mortem_print( "{r-- {yGeneral} ---------------------------------------------------} " )
 		player:mortem_print()
 
 		local deaths = player_data.count('player/deaths')
@@ -527,10 +527,10 @@ function drl.RunPrintMortem()
 				player:mortem_print( desc:gsub( "@1", count.."" ) )
 			end
 			player:mortem_print( " "..deaths.." brave souls have ventured into Phobos:" )
-			reason( "killed" ," @1 of those @was killed.")
-			reason( "unknown"," @1 of those @was killed by something unknown." )
-			reason( "nuke"   ," @1 didn't read the thermonuclear bomb manual." )
-			reason( "suicide"," And @1 couldn't handle the stress and committed a stupid suicide." )
+			reason( "killed" ," {!@1} of those @was killed.")
+			reason( "unknown"," {!@1} of those @was killed by something unknown." )
+			reason( "nuke"   ," {!@1} didn't read the thermonuclear bomb manual." )
+			reason( "suicide"," And {!@1} couldn't handle the stress and committed a stupid suicide." )
 
 			local sacrifice = player_data.count('player/games/win[@id="sacrifice"]')
 			local win       = player_data.count('player/games/win[@id="win"]')
@@ -539,17 +539,17 @@ function drl.RunPrintMortem()
 
 			if wins > 0 then
 				player:mortem_print()
-				player:mortem_print(" "..wins.." souls destroyed the Mastermind...")
-				if sacrifice > 0 then player:mortem_print(" "..sacrifice.." sacrificed itself for the good of mankind." ) end
-				if win       > 0 then player:mortem_print(" "..win.." killed the bitch and survived." ) end
-				if fullwin   > 0 then player:mortem_print(" "..fullwin.." showed that it can outsmart Hell itself." ) end
+				player:mortem_print(" {!"..wins.."} souls destroyed the Mastermind...")
+				if sacrifice > 0 then player:mortem_print(" {!"..sacrifice.."} sacrificed itself for the good of mankind." ) end
+				if win       > 0 then player:mortem_print(" {!"..win.."} killed the bitch and survived." ) end
+				if fullwin   > 0 then player:mortem_print(" {!"..fullwin.."} showed that it can outsmart Hell itself." ) end
 			end
 		else
-			player:mortem_print("  He's the first brave soul to have ventured into Hell...")
+			player:mortem_print("  He's the {!first} brave soul to have ventured into Hell...")
 		end
 		player:mortem_print()
 	end
-	player:mortem_print( "-------------------------------------------------------------- " )
+	player:mortem_print( "{r--------------------------------------------------------------} " )
 end
 
 function drl.OnCreateEpisode()
