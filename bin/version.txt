@@ -1,4 +1,5 @@
 0.9.9.9 BETA 5
+[new] -- GH#129: post mortem view colored and highlighted
 [mod] -- GH#000: cleaned up tactic/running - now running/tired is a regular affect
 [mod] -- GH#000: changed the display of affects to full words
 [mod] -- GH#000: dodge bonus from armor additive, not multiplicative
