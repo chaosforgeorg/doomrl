@@ -104,6 +104,7 @@ function drl.register_challenges()
 		
 		OnFire = function (item,being)
 			if not being:is_player() then return true end
+			if not item then return true end
 			if item.itype == ITEMTYPE_MELEE then return true end
 			ui.msg("You pull the trigger, but nothing happens. You're a berserker, dumbass!")
 			return false
@@ -212,6 +213,7 @@ function drl.register_challenges()
 		
 		OnFire = function (item,being)
 			if not being:is_player() then return true end
+			if not item then return true end
 			if item.flags[IF_PISTOL] then return true end
 			ui.msg("This weapon isn't worthy of a marksman!")
 			return false
@@ -315,6 +317,7 @@ function drl.register_challenges()
 		
 		OnFire = function (item,being)
 			if not being:is_player() then return true end
+			if not item then return true end
 			if item.flags[IF_SHOTGUN] then return true end
 			ui.msg("This is a weapon for wimps, not a true man!")
 			return false

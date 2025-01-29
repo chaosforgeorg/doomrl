@@ -1774,8 +1774,14 @@ begin
      (Inv.Slot[efWeapon2] <> nil) and (Inv.Slot[efWeapon2].isMelee) then
       meleeWeaponSlot := efWeapon2;
   if isPlayer then
+  begin
     if (Inv.Slot[meleeWeaponSlot] <> nil) and Inv.Slot[meleeWeaponSlot].isMelee then
+    begin
       if not Doom.CallHookCheck(Hook_OnFire,[Inv.Slot[meleeWeaponSlot], Self]) then Exit(efTorso);
+    end
+    else
+      if not Doom.CallHookCheck(Hook_OnFire,[nil, Self]) then Exit(efTorso);
+  end;
 end;
 
 function TBeing.getTotalResistance(const aResistance: AnsiString; aTarget: TBodyTarget): Integer;
