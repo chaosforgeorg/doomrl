@@ -852,6 +852,7 @@ begin
   case StatusEffect of
     StatusRed    : FLutTexture := (IO as TDoomGFXIO).Textures['lut_berserk'].GLTexture;
     StatusGreen  : FLutTexture := (IO as TDoomGFXIO).Textures['lut_enviro'].GLTexture;
+    StatusBlue   : FLutTexture := (IO as TDoomGFXIO).Textures['lut_stealth'].GLTexture;
     StatusInvert : FLutTexture := (IO as TDoomGFXIO).Textures['lut_iddqd'].GLTexture;
     else
     begin

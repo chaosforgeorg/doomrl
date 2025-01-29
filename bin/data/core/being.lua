@@ -185,7 +185,7 @@ function being:in_sight( other )
 	local corner_shooting = true
 	if other == player then
 		if corner_shooting then
-			return self:distance_to( other ) <= self.vision and level:eye_contact( self, other )
+			return self:distance_to( other ) <= self.vision and level:eye_contact( self, other ) and ( not player.flags[ BF_INVISIBLE ] )
 		else
 			return self:is_visible() and self:distance_to( other ) <= self.vision
 		end
