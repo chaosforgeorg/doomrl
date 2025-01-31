@@ -829,7 +829,7 @@ function drl.register_beings()
 		sprite       = SPRITE_CACODEMON,
 		sframes      = 2,
 		overlay      = { 0.2, 0.2, 1.0, 0.8 },
-		hp           = 80,
+		hp           = 100,
 		armor        = 2,
 		attackchance = 50,
 		todam        = 8,
@@ -842,13 +842,14 @@ function drl.register_beings()
 		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "ranged_ai",
+		resist       = { acid = 50, fire = 50, plasma = 50 },
 
 		desc            = "Hell's latest improvement on demonic warfare - they're stronger, tougher, and angrier than ever.",
 		kill_desc       = "was fried by a nightmare cacodemon",
 		kill_desc_melee = "was flattened by a nightmare cacodemon",
 
 		weapon = {
-			damage     = "2d7",
+			damage     = "3d7",
 			damagetype = DAMAGE_PLASMA,
 			radius     = 1,
 			missile = {

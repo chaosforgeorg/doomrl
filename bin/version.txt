@@ -4,6 +4,7 @@
 [new] -- GH#218: nightmare lost souls added
 [new] -- GH#218: several new Ao100+ enemy group randomization entries added for levels 30+
 [mod] -- GH#218: several Ao100+only enemies have their min-level reduced
+[mod] -- GH#218: nightmare cacodemons stronger
 [mod] -- GH#161: drop item action continues if no enemy/damage is present
 [mod] -- GH#000: spawned enemies (lever/summon) will now "wake up" faster
 [mod] -- GH#000: cleaned up tactic/running - now running/tired is a regular affect
