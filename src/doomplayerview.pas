@@ -173,10 +173,12 @@ begin
 end;
 
 procedure TPlayerView.Update( aDTime : Integer );
+var iTraitFirst : Boolean;
 begin
   if IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
 
-  if ( Doom.State <> DSPlaying ) and ( not FTraitFirst ) then
+  iTraitFirst := FTraitFirst;
+  if ( Doom.State <> DSPlaying ) and ( not iTraitFirst ) then
   begin
     FState := PLAYERVIEW_DONE;
     Exit;
@@ -189,7 +191,7 @@ begin
     PLAYERVIEW_TRAITS    : UpdateTraits;
   end;
 
-  if (( Doom.State <> DSPlaying ) and ( not FTraitFirst )) or IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
+  if (( Doom.State <> DSPlaying ) and ( not iTraitFirst )) or IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
 
   if ( not FSwapMode ) and ( not FTraitMode ) and ( FCommandMode = 0 ) then
   begin
