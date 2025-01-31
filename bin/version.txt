@@ -1,7 +1,7 @@
 0.9.9.9 BETA 5
 [new] -- GH#129: post mortem view colored and highlighted
 [new] -- GH#128: grappling armor assembly added (BA) - -50 knockback, +30% melee res
-[new] -- GH#218: nightmare lost souls added
+[new] -- GH#218: nightmare souls, nightmare knights and nightmare elementals added
 [new] -- GH#218: several new Ao100+ enemy group randomization entries added for levels 30+
 [mod] -- GH#218: several Ao100+only enemies have their min-level reduced
 [mod] -- GH#218: nightmare cacodemons stronger

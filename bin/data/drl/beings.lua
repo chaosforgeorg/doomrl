@@ -796,7 +796,7 @@ function drl.register_beings()
 
 	register_being "nlostsoul"
 	{
-		name         = "nightmare lost soul",
+		name         = "nightmare soul",
 		ascii        = "s",
 		color        = LIGHTBLUE,
 		sprite       = SPRITE_NLOSTSOUL,
@@ -817,7 +817,7 @@ function drl.register_beings()
 		resist = { fire = 75, bullet = 50 },
 
 		desc            = "The flying bluish skull. Wouldn't be a problem if there weren't so many of these nightmarish things...",
-		kill_desc_melee = "was terrified by a nightmare lost soul",
+		kill_desc_melee = "was terrified by a nightmare soul",
 	}
 
 	register_being "ncacodemon"
@@ -957,6 +957,41 @@ function drl.register_beings()
 			self.inv:add( "cell", { ammo = 20 } )
 		end
 	}
+
+	register_being "npain"
+	{
+		name         = "nightmare elemental",
+		ascii        = "O",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_PAIN,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		sframes      = 2,
+		hp           = 100,
+		armor        = 4,
+		todam        = 10,
+		tohit        = 4,
+		min_lev      = 70,
+		danger       = 16,
+		weight       = 3,
+		bulk         = 100,
+		flags        = { BF_ENVIROSAFE, BF_FLY },
+		ai_type      = "spawnonly_ai",
+
+		desc            = "Pain, pain, pain, nightmare pain. Oh and nightmare souls...",
+
+		OnCreate = function (self)
+			self:add_property("spawnlist",{
+				{name = "nlostsoul", amt = 3},
+			})
+		end,
+
+		OnDie = function (self,overkill)
+			if not overkill then
+				for c=1,3 do self:spawn("nlostsoul") end
+			end
+		end,
+	}
+
 
 	register_being "narch"
 	{
@@ -1682,7 +1717,6 @@ function drl.register_beings()
 		}
 	}
 
-	
 	register_being_group
 	{
 		min_lev = 30,
@@ -1690,6 +1724,16 @@ function drl.register_beings()
 		weight  = 4,
 		beings = {
 			{ being = "nlostsoul", amount = {4,9} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 60,
+		weight  = 4,
+		beings = {
+			{ being = "npain", amount = 2 },
+			{ being = "nlostsoul", amount = {4,6} }
 		}
 	}
 
