@@ -897,7 +897,7 @@ function drl.register_beings()
 		todam        = 8,
 		tohit        = 4,
 		speed        = 180,
-		min_lev      = 90,
+		min_lev      = 80,
 		corpse       = "corpse",
 		danger       = 20,
 		weight       = 3,
@@ -998,7 +998,7 @@ function drl.register_beings()
 		attackchance = 75,
 		todam        = 8,
 		tohit        = 4,
-		min_lev      = 80,
+		min_lev      = 60,
 		corpse       = true,
 		danger       = 14,
 		weight       = 3,
@@ -1197,7 +1197,7 @@ function drl.register_beings()
 		tohit        = 8,
 		speed        = 110,
 		vision       = 1,
-		min_lev      = 80,
+		min_lev      = 70,
 		danger       = 30,
 		weight       = 1,
 		bulk         = 300,
@@ -1512,6 +1512,7 @@ function drl.register_beings()
 	register_being_group
 	{
 		min_lev = 20,
+		max_lev = 60,
 		weight  = 4,
 		beings = {
 			{ being = "baron" },
@@ -1531,6 +1532,7 @@ function drl.register_beings()
 	register_being_group
 	{
 		min_lev = 20,
+		max_lev = 89,
 		weight  = 2,
 		beings = {
 			{ being = "arch",     amount = 2 },
@@ -1543,6 +1545,7 @@ function drl.register_beings()
 	register_being_group
 	{
 		min_lev = 20,
+		max_lev = 69,
 		weight  = 5,
 		beings = {
 			{ being = "baron",    amount = 2 },
@@ -1592,6 +1595,8 @@ function drl.register_beings()
 		}
 	}
 
+  	-- Ao100+ enemy groups ------------------------------------------------
+
 	register_being_group
 	{
 		min_lev = 30,
@@ -1599,6 +1604,140 @@ function drl.register_beings()
 		beings = {
 			{ being = "pain", amount = 2 },
 			{ being = "cacodemon", amount = {2,5} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 35,
+		max_lev = 49,
+		weight  = 4,
+		beings = {
+			{ being = "ndemon", amount = {3,5} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 50,
+		weight  = 4,
+		beings = {
+			{ being = "ndemon", amount = {4,8} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 30,
+		max_lev = 59,
+		weight  = 4,
+		beings = {
+			{ being = "baron", amount = 2 },
+			{ being = "nimp",  amount = {2,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 60,
+		weight  = 4,
+		beings = {
+			{ being = "bruiser", amount = 2 },
+			{ being = "nimp",  amount = {4,8} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 90,
+		weight  = 2,
+		beings = {
+			{ being = "narch",     amount = 1 },
+			{ being = "ecaptain",  amount = {2,3} },
+			{ being = "esergeant", amount = {2,3} },
+			{ being = "eformer",   amount = {3,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 70,
+		weight  = 3,
+		beings = {
+			{ being = "bruiser",   amount = 2 },
+			{ being = "ecaptain",  amount = {2,3} },
+			{ being = "esergeant", amount = {2,3} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 70,
+		weight  = 2,
+		beings = {
+			{ being = "ecommando", amount = 1 },
+			{ being = "ecaptain",  amount = {2,3} },
+			{ being = "esergeant", amount = {2,3} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 70,
+		weight  = 2,
+		beings = {
+			{ being = "narachno", amount = {3,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 75,
+		weight  = 1,
+		beings = {
+			{ being = "lava_elemental", amount = {1,3} },
+			{ being = "shambler",       amount = {2,3} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 80,
+		weight  = 2,
+		beings = {
+			{ being = "cyberdemon", amount = 1 },
+			{ being = "baron", amount = {4,8} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 85,
+		weight  = 2,
+		beings = {
+			{ being = "agony",      amount = 1 },
+			{ being = "ncacodemon", amount = {3,8} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 90,
+		weight  = 1,
+		beings = {
+			{ being = "cyberdemon", amount = 1 },
+			{ being = "bruiser", amount = {3,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 100,
+		weight  = 2,
+		beings = {
+			{ being = "narch",     amount = 2 },
+			{ being = "mancubus",  amount = {2,4} },
+			{ being = "revenant",  amount = {2,4} },
 		}
 	}
 
