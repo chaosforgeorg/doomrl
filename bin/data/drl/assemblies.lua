@@ -582,29 +582,6 @@ function drl.register_assemblies()
 		end,
 	}
 
-	register_mod_array "nsharpnel"
-	{
-		name  = "nano-shrapnel",
-		mods  = { P = 2, N = 1 },
-		level = 1,
-		desc  = "any shotgun",
-
-		Match = function (item)
-			return item.flags[ IF_SHOTGUN ]
-		end,
-
-		OnApply = function (item)
-			item.name         = "nano "..item.name
-			item.damage_dice = item.__proto.damage_dice - 3
-			item.damagetype   = DAMAGE_IGNOREARMOR
-			item.flags[ IF_NOAMMO ] = true
-			if item.flags[ IF_PUMPACTION ] == true then
-				item.flags[ IF_PUMPACTION ] = false
-				item.flags[ IF_CHAMBEREMPTY ] = false
-			end
-		end,
-	}
-
 	register_mod_array "hyperblaster"
 	{
 		name  = "hyperblaster",
@@ -659,6 +636,29 @@ function drl.register_assemblies()
 			item.ammo = math.min( item.ammo, item.ammomax )
 			item.flags[ IF_NOAMMO ]   = true
 			item.flags[ IF_RECHARGE ] = false
+		end,
+	}
+
+	register_mod_array "nsharpnel"
+	{
+		name  = "nano-shrapnel",
+		mods  = { P = 3, N = 1 },
+		level = 2,
+		desc  = "any shotgun",
+
+		Match = function (item)
+			return item.flags[ IF_SHOTGUN ]
+		end,
+
+		OnApply = function (item)
+			item.name         = "nano "..item.name
+			item.damage_dice = item.__proto.damage_dice - 3
+			item.damagetype   = DAMAGE_IGNOREARMOR
+			item.flags[ IF_NOAMMO ] = true
+			if item.flags[ IF_PUMPACTION ] == true then
+				item.flags[ IF_PUMPACTION ] = false
+				item.flags[ IF_CHAMBEREMPTY ] = false
+			end
 		end,
 	}
 
