@@ -1,5 +1,7 @@
 function drl.register_beings()
 
+	-- former humans ------------------------------------------------------
+
 	register_being "former"
 	{
 		name         = "former human",
@@ -82,6 +84,37 @@ function drl.register_beings()
 			self.inv:add( "ammo", { ammo = 100 } )
 		end
 	}
+
+	register_being "commando"
+	{
+		name         = "former commando",
+		ascii        = "h",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_COMMANDO,
+		sframes      = 2,
+		hp           = 20,
+		armor        = 2,
+		todam        = 2,
+		tohit        = 1,
+		min_lev      = 12,
+		max_lev      = 21,
+		corpse       = true,
+		danger       = 7,
+		weight       = 6,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS },
+		ai_type      = "former_ai",
+
+		desc            = "These guys were evil to begin with. Being warped by Hell's power has only made them worse. Wielding a deadly plasma weapon, they should be treated with care... and lead.",
+		kill_desc       = "was melted by former commando's plasma gun",
+		kill_desc_melee = "was killed by a former commando",
+
+		OnCreate = function (self)
+			self.eq.weapon = "plasma"
+		end
+	}
+
+	-- demons -------------------------------------------------------------
 
 	register_being "imp"
 	{
@@ -362,35 +395,6 @@ function drl.register_beings()
 		end
 	}
 
-	register_being "commando"
-	{
-		name         = "former commando",
-		ascii        = "h",
-		color        = LIGHTBLUE,
-		sprite       = SPRITE_COMMANDO,
-		sframes      = 2,
-		hp           = 20,
-		armor        = 2,
-		todam        = 2,
-		tohit        = 1,
-		min_lev      = 12,
-		max_lev      = 21,
-		corpse       = true,
-		danger       = 7,
-		weight       = 6,
-		bulk         = 100,
-		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
-
-		desc            = "These guys were evil to begin with. Being warped by Hell's power has only made them worse. Wielding a deadly plasma weapon, they should be treated with care... and lead.",
-		kill_desc       = "was melted by former commando's plasma gun",
-		kill_desc_melee = "was killed by a former commando",
-
-		OnCreate = function (self)
-			self.eq.weapon = "plasma"
-		end
-	}
-
 	register_being "pain"
 	{
 		name         = "pain elemental",
@@ -562,7 +566,161 @@ function drl.register_beings()
 		},
 	}
 
-	 -- NIGHTMARE LEVEL MONSTERS --
+	-- elite formers ------------------------------------------------------
+
+	register_being "eformer"
+	{
+		name         = "elite former human",
+		sound_id     = "former",
+		ascii        = "h",
+		color        = BROWN,
+		sprite       = SPRITE_FORMER,
+		sframes      = 2,
+		glow         = { 0.0, 0.0, 1.0, 1.0 },
+		todam        = 5,
+		tohit        = -2,
+		speed        = 100,
+		hp           = 20,
+		armor        = 2,
+		min_lev      = 40,
+		max_lev      = 80,
+		corpse       = false,
+		danger       = 6,
+		weight       = 4,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS },
+		ai_type      = "former_ai",
+
+		desc         = "These are the elite among the former humans. As stupid as their regular counterparts, but more resilient and packing quite a punch. Too bad their weapons are set to self-destruct on death.",
+		-- Added to make sure we use the right article
+		kill_desc       = "was killed by an elite former human",
+		kill_desc_melee = "was killed by an elite former human",
+
+		OnCreate = function (self)
+			self.eq.weapon = "ucpistol"
+			self.eq.weapon.flags[ IF_NODROP ] = true
+			self.eq.armor = "garmor"
+			self.inv:add( "ammo", { ammo = 48 } )
+			self.inv:add( "ammo" )
+		end
+	}
+
+	register_being "esergeant"
+	{
+		name         = "elite former sergeant",
+		sound_id     = "sergeant",
+		ascii        = "h",
+		color        = YELLOW,
+		sprite       = SPRITE_SERGEANT,
+		sframes      = 2,
+		glow         = { 0.0, 0.0, 1.0, 1.0 },
+		todam        = 5,
+		speed        = 100,
+		hp           = 25,
+		armor        = 2,
+		min_lev      = 60,
+		max_lev      = 90,
+		corpse       = false,
+		danger       = 8,
+		weight       = 3,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS },
+		ai_type      = "former_ai",
+
+		desc            = "These are the elite among the former sergeants. And they carry firepower to boot! Too bad their weapons are set to self-destruct on death.",
+		kill_desc       = "was shot by an elite sergeant",
+		kill_desc_melee = "was maimed by an elite sergeant",
+
+		OnCreate = function (self)
+			local wpammo = table.random_pick{
+				{"upshotgun", "cell"},
+				{"udshotgun", "shell"},
+				{"uashotgun", "shell"}
+			}
+			self.eq.weapon = wpammo[1]
+			self.inv:add( wpammo[2], { ammo = 60 } )
+			self.eq.weapon.flags[ IF_NODROP ] = true
+			self.eq.armor = "garmor"
+		end
+	}
+
+	register_being "ecaptain"
+	{
+		name         = "elite former captain",
+		sound_id     = "captain",
+		ascii        = "h",
+		color        = LIGHTMAGENTA,
+		sprite       = SPRITE_CAPTAIN,
+		sframes      = 2,
+		glow         = { 0.0, 0.0, 1.0, 1.0 },
+		tohit        = 1,
+		todam        = 5,
+		speed        = 90,
+		hp           = 25,
+		armor        = 2,
+		min_lev      = 70,
+		corpse       = false,
+		danger       = 10,
+		weight       = 3,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS },
+		ai_type      = "former_ai",
+
+		desc            = "These are the elite among the former captains. Beware of the superior firepower! Too bad their weapons are set to self-destruct on death.",
+		kill_desc       = "was perforated by an elite captain",
+		kill_desc_melee = "was maimed by an elite captain",
+
+		OnCreate = function (self)
+			local wpammo = table.random_pick{
+				{"uminigun", "ammo", 200 },
+				{"ulaser",  "cell", 50 },
+			}
+			self.eq.weapon = wpammo[1]
+			self.inv:add( wpammo[2], { ammo = wpammo[3] } )
+			self.eq.weapon.flags[ IF_NODROP ] = true
+			self.eq.armor = "barmor"
+		end
+	}
+
+	register_being "ecommando"
+	{
+		name         = "elite former commando",
+		sound_id     = "commando",
+		ascii        = "h",
+		color        = LIGHTCYAN,
+		sprite       = SPRITE_COMMANDO,
+		sframes      = 2,
+		glow         = { 0.0, 0.0, 1.0, 1.0 },
+		hp           = 40,
+		armor        = 3,
+		todam        = 5,
+		tohit        = 3,
+		min_lev      = 80,
+		corpse       = false,
+		danger       = 14,
+		weight       = 2,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
+		ai_type      = "former_ai",
+
+		desc            = "As expected, these ex-human soldiers are the best of the best! Armored, resilient and with superior firepower! Too bad their weapons are set to self-destruct on death.",
+		kill_desc       = "was melted by an elite commando's gun",
+		kill_desc_melee = "was killed by an elite commando",
+
+		OnCreate = function (self)
+			local wpammo = table.random_pick{
+				{"utristar",  "cell", 60 },
+				{"umbazooka", "rocket", 20 },
+				{"unapalm",  "rocket", 12 },
+			}
+			self.eq.weapon = wpammo[1]
+			self.inv:add( wpammo[2], { ammo = wpammo[3] } )
+			self.eq.weapon.flags[ IF_NODROP ] = true
+			self.eq.armor = "barmor"
+		end
+	}
+
+	-- nightmare demons ---------------------------------------------------
 
 	register_being "nimp"
 	{
@@ -772,159 +930,7 @@ function drl.register_beings()
 
 	}
 
-	register_being "eformer"
-	{
-		name         = "elite former human",
-		sound_id     = "former",
-		ascii        = "h",
-		color        = BROWN,
-		sprite       = SPRITE_FORMER,
-		sframes      = 2,
-		glow         = { 0.0, 0.0, 1.0, 1.0 },
-		todam        = 5,
-		tohit        = -2,
-		speed        = 100,
-		hp           = 20,
-		armor        = 2,
-		min_lev      = 40,
-		max_lev      = 80,
-		corpse       = false,
-		danger       = 6,
-		weight       = 4,
-		bulk         = 100,
-		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
-
-		desc         = "These are the elite among the former humans. As stupid as their regular counterparts, but more resilient and packing quite a punch. Too bad their weapons are set to self-destruct on death.",
-		-- Added to make sure we use the right article
-		kill_desc       = "was killed by an elite former human",
-		kill_desc_melee = "was killed by an elite former human",
-
-		OnCreate = function (self)
-			self.eq.weapon = "ucpistol"
-			self.eq.weapon.flags[ IF_NODROP ] = true
-			self.eq.armor = "garmor"
-			self.inv:add( "ammo", { ammo = 48 } )
-			self.inv:add( "ammo" )
-		end
-	}
-
-	register_being "esergeant"
-	{
-		name         = "elite former sergeant",
-		sound_id     = "sergeant",
-		ascii        = "h",
-		color        = YELLOW,
-		sprite       = SPRITE_SERGEANT,
-		sframes      = 2,
-		glow         = { 0.0, 0.0, 1.0, 1.0 },
-		todam        = 5,
-		speed        = 100,
-		hp           = 25,
-		armor        = 2,
-		min_lev      = 60,
-		max_lev      = 90,
-		corpse       = false,
-		danger       = 8,
-		weight       = 3,
-		bulk         = 100,
-		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
-
-		desc            = "These are the elite among the former sergeants. And they carry firepower to boot! Too bad their weapons are set to self-destruct on death.",
-		kill_desc       = "was shot by an elite sergeant",
-		kill_desc_melee = "was maimed by an elite sergeant",
-
-		OnCreate = function (self)
-			local wpammo = table.random_pick{
-				{"upshotgun", "cell"},
-				{"udshotgun", "shell"},
-				{"uashotgun", "shell"}
-			}
-			self.eq.weapon = wpammo[1]
-			self.inv:add( wpammo[2], { ammo = 60 } )
-			self.eq.weapon.flags[ IF_NODROP ] = true
-			self.eq.armor = "garmor"
-		end
-	}
-
-	register_being "ecaptain"
-	{
-		name         = "elite former captain",
-		sound_id     = "captain",
-		ascii        = "h",
-		color        = LIGHTMAGENTA,
-		sprite       = SPRITE_CAPTAIN,
-		sframes      = 2,
-		glow         = { 0.0, 0.0, 1.0, 1.0 },
-		tohit        = 1,
-		todam        = 5,
-		speed        = 90,
-		hp           = 25,
-		armor        = 2,
-		min_lev      = 70,
-		corpse       = false,
-		danger       = 10,
-		weight       = 3,
-		bulk         = 100,
-		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
-
-		desc            = "These are the elite among the former captains. Beware of the superior firepower! Too bad their weapons are set to self-destruct on death.",
-		kill_desc       = "was perforated by an elite captain",
-		kill_desc_melee = "was maimed by an elite captain",
-
-		OnCreate = function (self)
-			local wpammo = table.random_pick{
-				{"uminigun", "ammo", 200 },
-				{"ulaser",  "cell", 50 },
-			}
-			self.eq.weapon = wpammo[1]
-			self.inv:add( wpammo[2], { ammo = wpammo[3] } )
-			self.eq.weapon.flags[ IF_NODROP ] = true
-			self.eq.armor = "barmor"
-		end
-	}
-
-	register_being "ecommando"
-	{
-		name         = "elite former commando",
-		sound_id     = "commando",
-		ascii        = "h",
-		color        = LIGHTCYAN,
-		sprite       = SPRITE_COMMANDO,
-		sframes      = 2,
-		glow         = { 0.0, 0.0, 1.0, 1.0 },
-		hp           = 40,
-		armor        = 3,
-		todam        = 5,
-		tohit        = 3,
-		min_lev      = 80,
-		corpse       = false,
-		danger       = 14,
-		weight       = 2,
-		bulk         = 100,
-		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
-		ai_type      = "former_ai",
-
-		desc            = "As expected, these ex-human soldiers are the best of the best! Armored, resilient and with superior firepower! Too bad their weapons are set to self-destruct on death.",
-		kill_desc       = "was melted by an elite commando's gun",
-		kill_desc_melee = "was killed by an elite commando",
-
-		OnCreate = function (self)
-			local wpammo = table.random_pick{
-				{"utristar",  "cell", 60 },
-				{"umbazooka", "rocket", 20 },
-				{"unapalm",  "rocket", 12 },
-			}
-			self.eq.weapon = wpammo[1]
-			self.inv:add( wpammo[2], { ammo = wpammo[3] } )
-			self.eq.weapon.flags[ IF_NODROP ] = true
-			self.eq.armor = "barmor"
-		end
-	}
-
-	  -- SPECIAL MONSTERS --
+	-- special enemies ----------------------------------------------------
 
 	register_being "bruiser"
 	{
@@ -1332,9 +1338,101 @@ function drl.register_beings()
 				ui.msg_enter("Congratulations! You defeated John Carmack!")
 			end
 		end,
-	  }
+	}
 
- -- GROUPS --
+	register_medal "dragonslayer2"
+	{
+		name = "Apostle Insignia",
+		desc = "Awarded for killing the Apostle",
+		hidden = true,
+	}
+
+	register_being "apostle"
+	{
+		name         = "Apostle",
+		ascii        = "@",
+		color        = YELLOW,
+		sprite       = SPRITE_APOSTLE,
+		sframes      = 2,
+		sflags       = { SF_LARGE },
+		hp           = 255,
+		armor        = 30,
+		vision       = 2,
+		attackchance = 60,
+		todam        = 12,
+		tohit        = 2,
+		speed        = 160,
+		min_lev      = 200,
+		corpse       = "corpse",
+		danger       = 0,
+		weight       = 0,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
+		ai_type      = "archvile_ai",
+		sound_id     = "arch",
+
+		resist = { bullet = 75, shrapnel = 75, melee = 75, fire = 75, acid = 75, plasma = 75 },
+
+		desc            = "This seems so unreal, as though from another story...",
+		kill_desc       = "was killed by the Apostle",
+
+		weapon = {
+			damage     = "40d1",
+			damagetype = DAMAGE_PLASMA,
+			radius     = 3,
+			flags      = { IF_AUTOHIT },
+			missile = {
+				sound_id   = "arch",
+				hitdesc    = "You are engulfed in flames!",
+				color      = YELLOW,
+				sprite     = 0,
+				delay      = 0,
+				miss_base  = 10,
+				miss_dist  = 10,
+				flags      = { MF_EXACT, MF_IMMIDATE },
+				expl_delay = 50,
+				expl_color = YELLOW,
+				expl_flags = { EFNOKNOCK, EFSELFSAFE },
+			},
+		},
+
+		OnCreate = function (self)
+			level.flags[ LF_NONUKE ] = true
+		end,
+
+		OnAction = function (self)
+			if not core.is_playing() then return end
+			if self.hp < self.hpmax then
+				self.hp = self.hp + 1
+			end
+			if math.random(20) == 1 then
+				self:play_sound("phasing")
+				level:explosion( self.position, 1, 50, 0, 0, LIGHTBLUE )
+				self:phase()
+				level:explosion( self.position, 1, 50, 0, 0, LIGHTBLUE )
+			end
+			if math.random(10) == 1 then
+				self:play_sound("act")
+			end
+		end,
+
+		OnDie = function (self)
+			player:add_medal("dragonslayer2")
+			if CHALLENGE == "challenge_a100" then
+				level.map[ self.position ] = "stairs"
+			elseif self.flags[BF_BOSS] then
+				level:explosion( self.position, 17, 40, 0, 0, RED, "barrel.explode")
+				for b in level:beings() do
+					if not ( b:is_player() ) and b.id ~= "apostle" then
+						b:kill()
+					end
+				end
+				ui.msg_enter("Congratulations! You defeated the Apostle!")
+			end
+		end,
+	}
+
+  	-- enemy groups -------------------------------------------------------
 
 	register_being_group
 	{
@@ -1502,98 +1600,6 @@ function drl.register_beings()
 			{ being = "pain", amount = 2 },
 			{ being = "cacodemon", amount = {2,5} }
 		}
-	}
-
-	register_medal "dragonslayer2"
-	{
-		name = "Apostle Insignia",
-		desc = "Awarded for killing the Apostle",
-		hidden = true,
-	}
-
-	register_being "apostle"
-	{
-		name         = "Apostle",
-		ascii        = "@",
-		color        = YELLOW,
-		sprite       = SPRITE_APOSTLE,
-		sframes      = 2,
-		sflags       = { SF_LARGE },
-		hp           = 255,
-		armor        = 30,
-		vision       = 2,
-		attackchance = 60,
-		todam        = 12,
-		tohit        = 2,
-		speed        = 160,
-		min_lev      = 200,
-		corpse       = "corpse",
-		danger       = 0,
-		weight       = 0,
-		bulk         = 100,
-		flags        = { BF_OPENDOORS, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
-		ai_type      = "archvile_ai",
-		sound_id     = "arch",
-
-		resist = { bullet = 75, shrapnel = 75, melee = 75, fire = 75, acid = 75, plasma = 75 },
-
-		desc            = "This seems so unreal, as though from another story...",
-		kill_desc       = "was killed by the Apostle",
-
-		weapon = {
-			damage     = "40d1",
-			damagetype = DAMAGE_PLASMA,
-			radius     = 3,
-			flags      = { IF_AUTOHIT },
-			missile = {
-				sound_id   = "arch",
-				hitdesc    = "You are engulfed in flames!",
-				color      = YELLOW,
-				sprite     = 0,
-				delay      = 0,
-				miss_base  = 10,
-				miss_dist  = 10,
-				flags      = { MF_EXACT, MF_IMMIDATE },
-				expl_delay = 50,
-				expl_color = YELLOW,
-				expl_flags = { EFNOKNOCK, EFSELFSAFE },
-			},
-		},
-
-		OnCreate = function (self)
-			level.flags[ LF_NONUKE ] = true
-		end,
-
-		OnAction = function (self)
-			if not core.is_playing() then return end
-			if self.hp < self.hpmax then
-				self.hp = self.hp + 1
-			end
-			if math.random(20) == 1 then
-				self:play_sound("phasing")
-				level:explosion( self.position, 1, 50, 0, 0, LIGHTBLUE )
-				self:phase()
-				level:explosion( self.position, 1, 50, 0, 0, LIGHTBLUE )
-			end
-			if math.random(10) == 1 then
-				self:play_sound("act")
-			end
-		end,
-
-		OnDie = function (self)
-			player:add_medal("dragonslayer2")
-			if CHALLENGE == "challenge_a100" then
-				level.map[ self.position ] = "stairs"
-			elseif self.flags[BF_BOSS] then
-				level:explosion( self.position, 17, 40, 0, 0, RED, "barrel.explode")
-				for b in level:beings() do
-					if not ( b:is_player() ) and b.id ~= "apostle" then
-						b:kill()
-					end
-				end
-				ui.msg_enter("Congratulations! You defeated the Apostle!")
-			end
-		end,
 	}
 
 end
