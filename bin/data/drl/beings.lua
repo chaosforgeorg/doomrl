@@ -769,6 +769,31 @@ function drl.register_beings()
 		}
 	}
 
+	register_being "ndemon"
+	{
+		name         = "nightmare demon",
+		ascii        = "c",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_DEMON,
+		sframes      = 2,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		hp           = 80,
+		armor        = 3,
+		todam        = 10,
+		tohit        = 5,
+		speed        = 140,
+		min_lev      = 40,
+		corpse       = true,
+		danger       = 8,
+		weight       = 6,
+		bulk         = 100,
+		flags        = { BF_CHARGE, BF_ENVIROSAFE },
+		ai_type      = "demon_ai",
+
+		desc            = "You liked it better when these guys were pink. Meet the stronger, tougher, more resilient way to meet your death.",
+		kill_desc_melee = "was eaten alive by a nightmare demon",
+	}
+
 	register_being "nlostsoul"
 	{
 		name         = "nightmare lost soul",
@@ -793,32 +818,6 @@ function drl.register_beings()
 
 		desc            = "The flying bluish skull. Wouldn't be a problem if there weren't so many of these nightmarish things...",
 		kill_desc_melee = "was terrified by a nightmare lost soul",
-	}
-
-	register_being "ndemon"
-	{
-		name         = "nightmare demon",
-		ascii        = "c",
-		color        = LIGHTBLUE,
-		sprite       = SPRITE_DEMON,
-		sframes      = 2,
-		overlay      = { 0.2, 0.2, 1.0, 0.8 },
-		hp           = 80,
-		armor        = 3,
-		todam        = 10,
-		tohit        = 5,
-		speed        = 140,
-		min_lev      = 40,
-		corpse       = true,
-		danger       = 8,
-		weight       = 6,
-		bulk         = 100,
-		flags        = { BF_CHARGE, BF_ENVIROSAFE },
-		ai_type      = "demon_ai",
-
-		desc            = "You liked it better when these guys were pink. Meet the stronger, tougher, more resilient way to meet your death.",
-		kill_desc_melee = "was eaten alive by a nightmare demon",
-
 	}
 
 	register_being "ncacodemon"
@@ -857,6 +856,54 @@ function drl.register_beings()
 				ascii      = "*",
 				color      = LIGHTMAGENTA,
 				sprite     = SPRITE_PLASMABALL,
+				delay      = 30,
+				miss_base  = 30,
+				miss_dist  = 4,
+				expl_delay = 40,
+				expl_color = MAGENTA,
+			},
+		},
+	}
+
+	register_being "nknight"
+	{
+		name         = "nightmare knight",
+		ascii        = "B",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_BRUISER,
+		sframes      = 2,
+		sflags       = { SF_LARGE },
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		hp           = 80,
+		armor        = 4,
+		attackchance = 60,
+		todam        = 10,
+		tohit        = 6,
+		speed        = 120,
+		min_lev      = 41,
+		corpse       = true,
+		danger       = 12,
+		weight       = 4,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS },
+		ai_type      = "baron_ai",
+
+		resist = { acid = 75, fire = 25, plasma = 25 },
+
+		desc            = "The nightmare side of the knight and baron strain. You hope it won't get worse than this. You hope...",
+		kill_desc       = "was splayed by a nightmare knight",
+		kill_desc_melee = "was gutted by a nightmare knight",
+
+		weapon = {
+			damage     = "4d6",
+			damagetype = DAMAGE_PLASMA,
+			radius     = 2,
+			missile = {
+				sound_id   = "baron",
+				ascii      = "*",
+				color      = LIGHTMAGENTA,
+				sprite     = SPRITE_PLASMABALL,
+				coscolor   = { 1.0, 0.0, 1.0, 1.0 },
 				delay      = 30,
 				miss_base  = 30,
 				miss_dist  = 4,
@@ -974,7 +1021,7 @@ function drl.register_beings()
 		attackchance = 40,
 		todam        = 8,
 		tohit        = 5,
-		min_lev      = 50,
+		min_lev      = 40,
 		corpse       = true,
 		danger       = 14,
 		weight       = 6,
@@ -1681,7 +1728,7 @@ function drl.register_beings()
 		min_lev = 60,
 		weight  = 4,
 		beings = {
-			{ being = "bruiser", amount = 2 },
+			{ being = "nknight", amount = 2 },
 			{ being = "nimp",  amount = {4,8} }
 		}
 	}
@@ -1703,7 +1750,7 @@ function drl.register_beings()
 		min_lev = 70,
 		weight  = 3,
 		beings = {
-			{ being = "bruiser",   amount = 2 },
+			{ being = "nknight",   amount = 2 },
 			{ being = "ecaptain",  amount = {2,3} },
 			{ being = "esergeant", amount = {2,3} }
 		}
