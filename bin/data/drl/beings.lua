@@ -1,5 +1,7 @@
 function drl.register_beings()
 
+	-- former humans ------------------------------------------------------
+
 	register_being "former"
 	{
 		name         = "former human",
@@ -83,6 +85,37 @@ function drl.register_beings()
 		end
 	}
 
+	register_being "commando"
+	{
+		name         = "former commando",
+		ascii        = "h",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_COMMANDO,
+		sframes      = 2,
+		hp           = 20,
+		armor        = 2,
+		todam        = 2,
+		tohit        = 1,
+		min_lev      = 12,
+		max_lev      = 21,
+		corpse       = true,
+		danger       = 7,
+		weight       = 6,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS },
+		ai_type      = "former_ai",
+
+		desc            = "These guys were evil to begin with. Being warped by Hell's power has only made them worse. Wielding a deadly plasma weapon, they should be treated with care... and lead.",
+		kill_desc       = "was melted by former commando's plasma gun",
+		kill_desc_melee = "was killed by a former commando",
+
+		OnCreate = function (self)
+			self.eq.weapon = "plasma"
+		end
+	}
+
+	-- demons -------------------------------------------------------------
+
 	register_being "imp"
 	{
 		name         = "imp",
@@ -164,6 +197,7 @@ function drl.register_beings()
 		attackchance = 60,
 		todam        = 4,
 		tohit        = 12,
+		hp           = 10,
 		speed        = 100,
 		vision       = 0,
 		min_lev      = 6,
@@ -362,35 +396,6 @@ function drl.register_beings()
 		end
 	}
 
-	register_being "commando"
-	{
-		name         = "former commando",
-		ascii        = "h",
-		color        = LIGHTBLUE,
-		sprite       = SPRITE_COMMANDO,
-		sframes      = 2,
-		hp           = 20,
-		armor        = 2,
-		todam        = 2,
-		tohit        = 1,
-		min_lev      = 12,
-		max_lev      = 21,
-		corpse       = true,
-		danger       = 7,
-		weight       = 6,
-		bulk         = 100,
-		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
-
-		desc            = "These guys were evil to begin with. Being warped by Hell's power has only made them worse. Wielding a deadly plasma weapon, they should be treated with care... and lead.",
-		kill_desc       = "was melted by former commando's plasma gun",
-		kill_desc_melee = "was killed by a former commando",
-
-		OnCreate = function (self)
-			self.eq.weapon = "plasma"
-		end
-	}
-
 	register_being "pain"
 	{
 		name         = "pain elemental",
@@ -562,215 +567,7 @@ function drl.register_beings()
 		},
 	}
 
-	 -- NIGHTMARE LEVEL MONSTERS --
-
-	register_being "nimp"
-	{
-		name         = "nightmare imp",
-		ascii        = "i",
-		color        = LIGHTBLUE,
-		sprite       = SPRITE_IMP,
-		sframes      = 2,
-		overlay      = { 0.2, 0.2, 1.0, 0.8 },
-		hp           = 35,
-		attackchance = 50,
-		todam        = 6,
-		tohit        = 6,
-		min_lev      = 30,
-		max_lev      = 60,
-		corpse       = true,
-		danger       = 6,
-		weight       = 8,
-		bulk         = 100,
-		speed        = 120,
-		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
-		ai_type      = "melee_ranged_ai",
-
-		resist = { fire = 50 },
-
-		desc            = "Are you seeing things? What's with the color change? And why is it taking so much longer to kill these things!?",
-		kill_desc       = "was burned by a nightmare imp",
-		kill_desc_melee = "was eviscerated by a nightmare imp",
-
-		weapon = {
-			damage     = "2d6",
-			damagetype = DAMAGE_PLASMA,
-			radius     = 1,
-			missile = {
-				sound_id   = "imp",
-				ascii      = "*",
-				color      = LIGHTMAGENTA,
-				sprite     = SPRITE_FIREBALL,
-				delay      = 15,
-				miss_base  = 20,
-				miss_dist  = 4,
-				expl_delay = 40,
-				expl_color = MAGENTA,
-			},
-		}
-	}
-
-	register_being "ncacodemon"
-	{
-		name         = "nightmare cacodemon",
-		ascii        = "O",
-		color        = LIGHTBLUE,
-		sprite       = SPRITE_CACODEMON,
-		sframes      = 2,
-		overlay      = { 0.2, 0.2, 1.0, 0.8 },
-		hp           = 80,
-		armor        = 2,
-		attackchance = 50,
-		todam        = 8,
-		tohit        = 6,
-		speed        = 120,
-		min_lev      = 51,
-		corpse       = true,
-		danger       = 10,
-		weight       = 6,
-		bulk         = 100,
-		flags        = { BF_ENVIROSAFE, BF_FLY },
-		ai_type      = "ranged_ai",
-
-		desc            = "Hell's latest improvement on demonic warfare - they're stronger, tougher, and angrier than ever.",
-		kill_desc       = "was fried by a nightmare cacodemon",
-		kill_desc_melee = "was flattened by a nightmare cacodemon",
-
-		weapon = {
-			damage     = "2d7",
-			damagetype = DAMAGE_PLASMA,
-			radius     = 1,
-			missile = {
-				sound_id   = "cacodemon",
-				ascii      = "*",
-				color      = LIGHTMAGENTA,
-				sprite     = SPRITE_PLASMABALL,
-				delay      = 30,
-				miss_base  = 30,
-				miss_dist  = 4,
-				expl_delay = 40,
-				expl_color = MAGENTA,
-			},
-		},
-	}
-
-	register_being "ndemon"
-	{
-		name         = "nightmare demon",
-		ascii        = "c",
-		color        = LIGHTBLUE,
-		sprite       = SPRITE_DEMON,
-		sframes      = 2,
-		overlay      = { 0.2, 0.2, 1.0, 0.8 },
-		hp           = 80,
-		armor        = 3,
-		todam        = 10,
-		tohit        = 5,
-		speed        = 140,
-		min_lev      = 40,
-		corpse       = true,
-		danger       = 8,
-		weight       = 6,
-		bulk         = 100,
-		flags        = { BF_CHARGE, BF_ENVIROSAFE },
-		ai_type      = "demon_ai",
-
-		desc            = "You liked it better when these guys were pink. Meet the stronger, tougher, more resilient way to meet your death.",
-		kill_desc_melee = "was eaten alive by a nightmare demon",
-
-	}
-
-	register_being "narachno"
-	{
-		name         = "nightmare arachnotron",
-		ascii        = "A",
-		color        = LIGHTBLUE,
-		sprite       = SPRITE_ARACHNO,
-		sframes      = 2,
-		overlay      = { 0.2, 0.2, 1.0, 0.8 },
-		hp           = 80,
-		armor        = 2 ,
-		attackchance = 60,
-		todam        = 3,
-		tohit        = 4,
-		speed        = 150,
-		min_lev      = 50,
-		corpse       = true,
-		danger       = 12,
-		weight       = 4,
-		bulk         = 100,
-		ai_type      = "sequential_ai",
-		flags        = { BF_ENVIROSAFE },
-
-		desc            = "Pure nightmare spiders. You'd wish they weren't there...",
-		kill_desc       = "let an nightmare arachnotron get him",
-
-		weapon = {
-			damage     = "1d6",
-			damagetype = DAMAGE_PLASMA,
-			shots      = 6,
-			missile = {
-				sound_id   = "arachno",
-				ascii      = "*",
-				color      = LIGHTBLUE,
-				sprite     = SPRITE_PLASMASHOT,
-				delay      = 10,
-				miss_base  = 20,
-				miss_dist  = 4,
-			},
-		},
-
-		OnCreate = function (self)
-			self.inv:add( "cell", { ammo = 20 } )
-		end
-	}
-
-	register_being "narch"
-	{
-		name         = "nightmare arch-vile",
-		ascii        = "V",
-		color        = LIGHTBLUE,
-		sprite       = SPRITE_ARCHVILE,
-		sframes      = 2,
-		overlay      = { 0.2, 0.2, 1.0, 0.8 },
-		hp           = 150,
-		armor        = 3,
-		attackchance = 60,
-		todam        = 8,
-		tohit        = 4,
-		speed        = 180,
-		min_lev      = 90,
-		corpse       = "corpse",
-		danger       = 20,
-		weight       = 3,
-		bulk         = 100,
-		flags        = { BF_OPENDOORS, BF_SELFIMMUNE, BF_ENVIROSAFE },
-		ai_type      = "archvile_ai",
-
-		desc            = "Oh God... *WHY* do they come in the nightmare variety too?",
-		kill_desc       = "faced a nightmare arch-vile",
-
-		weapon = {
-			damage     = "20d1",
-			damagetype = DAMAGE_PLASMA,
-			radius     = 1,
-			flags      = { IF_AUTOHIT },
-			missile = {
-				sound_id   = "arch",
-				color      = LIGHTBLUE,
-				sprite     = 0,
-				delay      = 0,
-				miss_base  = 10,
-				miss_dist  = 10,
-				hitdesc    = "You are engulfed in flames!",
-				flags      = { MF_EXACT, MF_IMMIDATE },
-				expl_delay = 50,
-				expl_color = BLUE,
-				expl_flags = { EFNOKNOCK, EFSELFSAFE },
-			},
-		},
-
-	}
+	-- elite formers ------------------------------------------------------
 
 	register_being "eformer"
 	{
@@ -924,7 +721,427 @@ function drl.register_beings()
 		end
 	}
 
-	  -- SPECIAL MONSTERS --
+	-- nightmare demons ---------------------------------------------------
+
+	register_being "nimp"
+	{
+		name         = "nightmare imp",
+		ascii        = "i",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_IMP,
+		sframes      = 2,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		hp           = 35,
+		attackchance = 50,
+		todam        = 6,
+		tohit        = 6,
+		min_lev      = 30,
+		max_lev      = 60,
+		corpse       = true,
+		danger       = 6,
+		weight       = 8,
+		bulk         = 100,
+		speed        = 120,
+		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
+		ai_type      = "melee_ranged_ai",
+
+		resist = { fire = 50 },
+
+		desc            = "Are you seeing things? What's with the color change? And why is it taking so much longer to kill these things!?",
+		kill_desc       = "was burned by a nightmare imp",
+		kill_desc_melee = "was eviscerated by a nightmare imp",
+
+		weapon = {
+			damage     = "2d6",
+			damagetype = DAMAGE_PLASMA,
+			radius     = 1,
+			missile = {
+				sound_id   = "imp",
+				ascii      = "*",
+				color      = LIGHTMAGENTA,
+				sprite     = SPRITE_FIREBALL,
+				delay      = 15,
+				miss_base  = 20,
+				miss_dist  = 4,
+				expl_delay = 40,
+				expl_color = MAGENTA,
+			},
+		}
+	}
+
+	register_being "ndemon"
+	{
+		name         = "nightmare demon",
+		ascii        = "c",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_DEMON,
+		sframes      = 2,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		hp           = 80,
+		armor        = 3,
+		todam        = 10,
+		tohit        = 5,
+		speed        = 140,
+		min_lev      = 40,
+		corpse       = true,
+		danger       = 8,
+		weight       = 6,
+		bulk         = 100,
+		flags        = { BF_CHARGE, BF_ENVIROSAFE },
+		ai_type      = "demon_ai",
+
+		desc            = "You liked it better when these guys were pink. Meet the stronger, tougher, more resilient way to meet your death.",
+		kill_desc_melee = "was eaten alive by a nightmare demon",
+	}
+
+	register_being "nlostsoul"
+	{
+		name         = "nightmare soul",
+		ascii        = "s",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_NLOSTSOUL,
+		sframes      = 2,
+		attackchance = 70,
+		todam        = 6,
+		tohit        = 12,
+		speed        = 120,
+		hp           = 20,
+		vision       = 0,
+		danger       = 4,
+		weight       = 0,
+		min_lev      = 200,
+		bulk         = 100,
+		flags        = { BF_ENVIROSAFE, BF_FLY },
+		ai_type      = "lostsoul_ai",
+
+		resist = { fire = 75, bullet = 50 },
+
+		desc            = "The flying bluish skull. Wouldn't be a problem if there weren't so many of these nightmarish things...",
+		kill_desc_melee = "was terrified by a nightmare soul",
+	}
+
+	register_being "ncacodemon"
+	{
+		name         = "nightmare cacodemon",
+		ascii        = "O",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_CACODEMON,
+		sframes      = 2,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		hp           = 100,
+		armor        = 2,
+		attackchance = 50,
+		todam        = 8,
+		tohit        = 6,
+		speed        = 120,
+		min_lev      = 51,
+		corpse       = true,
+		danger       = 10,
+		weight       = 6,
+		bulk         = 100,
+		flags        = { BF_ENVIROSAFE, BF_FLY },
+		ai_type      = "ranged_ai",
+		resist       = { acid = 50, fire = 50, plasma = 50 },
+
+		desc            = "Hell's latest improvement on demonic warfare - they're stronger, tougher, and angrier than ever.",
+		kill_desc       = "was fried by a nightmare cacodemon",
+		kill_desc_melee = "was flattened by a nightmare cacodemon",
+
+		weapon = {
+			damage     = "3d7",
+			damagetype = DAMAGE_PLASMA,
+			radius     = 1,
+			missile = {
+				sound_id   = "cacodemon",
+				ascii      = "*",
+				color      = LIGHTMAGENTA,
+				sprite     = SPRITE_PLASMABALL,
+				delay      = 30,
+				miss_base  = 30,
+				miss_dist  = 4,
+				expl_delay = 40,
+				expl_color = MAGENTA,
+			},
+		},
+	}
+
+	register_being "nknight"
+	{
+		name         = "nightmare knight",
+		ascii        = "B",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_BRUISER,
+		sframes      = 2,
+		sflags       = { SF_LARGE },
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		hp           = 80,
+		armor        = 4,
+		attackchance = 60,
+		todam        = 10,
+		tohit        = 6,
+		speed        = 120,
+		min_lev      = 41,
+		corpse       = true,
+		danger       = 12,
+		weight       = 4,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
+		ai_type      = "baron_ai",
+
+		resist = { acid = 75, fire = 25, plasma = 25 },
+
+		desc            = "The nightmare side of the knight and baron strain. You hope it won't get worse than this. You hope...",
+		kill_desc       = "was splayed by a nightmare knight",
+		kill_desc_melee = "was gutted by a nightmare knight",
+
+		weapon = {
+			damage     = "4d6",
+			damagetype = DAMAGE_PLASMA,
+			radius     = 2,
+			missile = {
+				sound_id   = "baron",
+				ascii      = "*",
+				color      = LIGHTMAGENTA,
+				sprite     = SPRITE_PLASMABALL,
+				coscolor   = { 1.0, 0.0, 1.0, 1.0 },
+				delay      = 30,
+				miss_base  = 30,
+				miss_dist  = 4,
+				expl_delay = 40,
+				expl_color = MAGENTA,
+			},
+		},
+	}
+
+	register_being "narachno"
+	{
+		name         = "nightmare arachnotron",
+		ascii        = "A",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_ARACHNO,
+		sframes      = 2,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		hp           = 80,
+		armor        = 2 ,
+		attackchance = 60,
+		todam        = 3,
+		tohit        = 4,
+		speed        = 150,
+		min_lev      = 50,
+		corpse       = true,
+		danger       = 12,
+		weight       = 4,
+		bulk         = 100,
+		ai_type      = "sequential_ai",
+		flags        = { BF_ENVIROSAFE },
+
+		desc            = "Pure nightmare spiders. You'd wish they weren't there...",
+		kill_desc       = "let an nightmare arachnotron get him",
+
+		weapon = {
+			damage     = "1d6",
+			damagetype = DAMAGE_PLASMA,
+			shots      = 6,
+			missile = {
+				sound_id   = "arachno",
+				ascii      = "*",
+				color      = LIGHTBLUE,
+				sprite     = SPRITE_PLASMASHOT,
+				delay      = 10,
+				miss_base  = 20,
+				miss_dist  = 4,
+			},
+		},
+
+		OnCreate = function (self)
+			self.inv:add( "cell", { ammo = 20 } )
+		end
+	}
+
+	register_being "npain"
+	{
+		name         = "nightmare elemental",
+		ascii        = "O",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_PAIN,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		sframes      = 2,
+		hp           = 100,
+		armor        = 4,
+		todam        = 10,
+		tohit        = 4,
+		min_lev      = 70,
+		danger       = 16,
+		weight       = 3,
+		bulk         = 100,
+		flags        = { BF_ENVIROSAFE, BF_FLY },
+		ai_type      = "spawnonly_ai",
+
+		desc            = "Pain, pain, pain, nightmare pain. Oh and nightmare souls...",
+
+		OnCreate = function (self)
+			self:add_property("spawnlist",{
+				{name = "nlostsoul", amt = 3},
+			})
+		end,
+
+		OnDie = function (self,overkill)
+			if not overkill then
+				for c=1,3 do self:spawn("nlostsoul") end
+			end
+		end,
+	}
+
+	register_being "nrevenant"
+	{
+		name         = "nightmare revenant",
+		ascii        = "R",
+		color        = LIGHTBLUE,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		sprite       = SPRITE_REVENANT,
+		sframes      = 2,
+		hp           = 50,
+		armor        = 3,
+		attackchance = 60,
+		todam        = 10,
+		tohit        = 6,
+		speed        = 160,
+		min_lev      = 60,
+		corpse       = true,
+		danger       = 15,
+		weight       = 6,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
+		ai_type      = "ranged_ai",
+
+		resist = { fire = 25, bullet = 50 },
+
+		desc            = "This revenant has been dusted off and wired up one time too many. And it shows...",
+		kill_desc       = "couldn't evade a nightmare revenant's fireball",
+		kill_desc_melee = "was mauled by a nightmare revenant",
+
+		weapon = {
+			damage     = "6d6",
+			damagetype = DAMAGE_FIRE,
+			radius     = 1,
+			missile = {
+				sound_id   = "bazooka",
+				color      = YELLOW,
+				sprite     = SPRITE_ROCKETSHOT,
+				delay      = 30,
+				miss_base  = 30,
+				miss_dist  = 5,
+				flags = { MF_EXACT },
+				expl_delay = 40,
+				expl_color = RED,
+			},
+		},
+
+		OnCreate = function (self)
+			self.inv:add( "rocket" )
+		end
+	}
+
+	register_being "nmancubus"
+	{
+		name         = "nightmare mancubus",
+		name_plural  = "nightmare mancubi",
+		ascii        = "M",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_MANCUBUS,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		sframes      = 2,
+		hp           = 120,
+		armor        = 4,
+		attackchance = 70,
+		todam        = 12,
+		tohit        = 3,
+		speed        = 80,
+		min_lev      = 75,
+		corpse       = true,
+		danger       = 15,
+		weight       = 4,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS, BF_KNOCKIMMUNE, BF_ENVIROSAFE },
+		ai_type      = "sequential_ai",
+		resist 	     = { melee = 50, acid = 50 },
+
+		desc            = "What's blue and has two rocket launchers? Something worse.",
+		kill_desc       = "rode a nightmare mancubi rocket",
+		kill_desc_melee = "was flattened by a nightmare mancubus",
+
+		weapon = {
+			damage     = "4d7",
+			damagetype = DAMAGE_ACID,
+			radius     = 2,
+			flags      = { IF_SPREAD },
+			missile = {
+				sound_id   = "mancubus",
+				ascii      = "*",
+				color      = GREEN,
+				sprite     = SPRITE_ROCKETSHOT,
+				delay      = 20,
+				miss_base  = 1,
+				miss_dist  = 3,
+				expl_delay = 40,
+				expl_color = GREEN,
+				content    = "acid",
+			},
+		},
+
+		OnCreate = function (self)
+			self.inv:add( "rocket" )
+		end
+	}
+
+	register_being "narch"
+	{
+		name         = "nightmare arch-vile",
+		ascii        = "V",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_ARCHVILE,
+		sframes      = 2,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		hp           = 150,
+		armor        = 3,
+		attackchance = 60,
+		todam        = 8,
+		tohit        = 4,
+		speed        = 180,
+		min_lev      = 80,
+		corpse       = "corpse",
+		danger       = 20,
+		weight       = 3,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS, BF_SELFIMMUNE, BF_ENVIROSAFE },
+		ai_type      = "archvile_ai",
+
+		desc            = "Oh God... *WHY* do they come in the nightmare variety too?",
+		kill_desc       = "faced a nightmare arch-vile",
+
+		weapon = {
+			damage     = "20d1",
+			damagetype = DAMAGE_PLASMA,
+			radius     = 1,
+			flags      = { IF_AUTOHIT },
+			missile = {
+				sound_id   = "arch",
+				color      = LIGHTBLUE,
+				sprite     = 0,
+				delay      = 0,
+				miss_base  = 10,
+				miss_dist  = 10,
+				hitdesc    = "You are engulfed in flames!",
+				flags      = { MF_EXACT, MF_IMMIDATE },
+				expl_delay = 50,
+				expl_color = BLUE,
+				expl_flags = { EFNOKNOCK, EFSELFSAFE },
+			},
+		},
+
+	}
+
+	-- special enemies ----------------------------------------------------
 
 	register_being "bruiser"
 	{
@@ -940,7 +1157,7 @@ function drl.register_beings()
 		attackchance = 40,
 		todam        = 8,
 		tohit        = 5,
-		min_lev      = 50,
+		min_lev      = 40,
 		corpse       = true,
 		danger       = 14,
 		weight       = 6,
@@ -992,7 +1209,7 @@ function drl.register_beings()
 		attackchance = 75,
 		todam        = 8,
 		tohit        = 4,
-		min_lev      = 80,
+		min_lev      = 60,
 		corpse       = true,
 		danger       = 14,
 		weight       = 3,
@@ -1191,7 +1408,7 @@ function drl.register_beings()
 		tohit        = 8,
 		speed        = 110,
 		vision       = 1,
-		min_lev      = 80,
+		min_lev      = 70,
 		danger       = 30,
 		weight       = 1,
 		bulk         = 300,
@@ -1332,176 +1549,6 @@ function drl.register_beings()
 				ui.msg_enter("Congratulations! You defeated John Carmack!")
 			end
 		end,
-	  }
-
- -- GROUPS --
-
-	register_being_group
-	{
-		min_lev = 7,
-		max_lev = 16,
-		weight  = 10,
-		beings = {
-			{ being = "sergeant" },
-			{ being = "former", amount = {2,6} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 5,
-		max_lev = 8,
-		weight  = 10,
-		beings = {
-			{ being = "imp", amount = {3,4} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 9,
-		max_lev = 12,
-		weight  = 10,
-		beings = {
-			{ being = "knight" },
-			{ being = "imp", amount = {2,6} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 13,
-		max_lev = 21,
-		weight  = 10,
-		beings = {
-			{ being = "baron" },
-			{ being = "imp", amount = {4,9} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 15,
-		max_lev = 21,
-		weight  = 10,
-		beings = {
-			{ being = "commando" },
-			{ being = "sergeant", amount = {2,6} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 13,
-		max_lev = 25,
-		weight  = 8,
-		beings = {
-			{ being = "pain" },
-			{ being = "lostsoul", amount = {3,8} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 10,
-		max_lev = 22,
-		weight  = 4,
-		beings = {
-			{ being = "demon", amount = {4,9} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 20,
-		weight  = 4,
-		beings = {
-			{ being = "baron" },
-			{ being = "knight", amount = {2,4} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 20,
-		weight  = 3,
-		beings = {
-			{ being = "arachno", amount = {3,6} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 20,
-		weight  = 2,
-		beings = {
-			{ being = "arch",     amount = 2 },
-			{ being = "captain",  amount = 4 },
-			{ being = "sergeant", amount = 4 },
-			{ being = "former",   amount = {3,6} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 20,
-		weight  = 5,
-		beings = {
-			{ being = "baron",    amount = 2 },
-			{ being = "captain",  amount = {2,3} },
-			{ being = "sergeant", amount = {2,3} }
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 20,
-		weight  = 4,
-		beings = {
-			{ being = "arch",     amount = 2 },
-			{ being = "mancubus", amount = {2,5} },
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 20,
-		weight  = 4,
-		beings = {
-			{ being = "arch",     amount = 2 },
-			{ being = "revenant", amount = {2,5} },
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 25,
-		weight  = 4,
-		beings = {
-			{ being = "arch",     amount = 2 },
-			{ being = "baron",    amount = {3,9} }
-		}
-	}
-
-	register_being_group  -- Mancubi For Added Fun (MFAF, tm by Malek)
-	{
-		min_lev = 25,
-		weight  = 2,
-		beings = {
-			{ being = "arch",     amount = 2 },
-			{ being = "captain",  amount = {2,8} },
-			{ being = "mancubus", amount = {2,3} },
-		}
-	}
-
-	register_being_group
-	{
-		min_lev = 30,
-		weight  = 4,
-		beings = {
-			{ being = "pain", amount = 2 },
-			{ being = "cacodemon", amount = {2,5} }
-		}
 	}
 
 	register_medal "dragonslayer2"
@@ -1594,6 +1641,375 @@ function drl.register_beings()
 				ui.msg_enter("Congratulations! You defeated the Apostle!")
 			end
 		end,
+	}
+
+  	-- enemy groups -------------------------------------------------------
+
+	register_being_group
+	{
+		min_lev = 7,
+		max_lev = 16,
+		weight  = 10,
+		beings = {
+			{ being = "sergeant" },
+			{ being = "former", amount = {2,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 5,
+		max_lev = 8,
+		weight  = 10,
+		beings = {
+			{ being = "imp", amount = {3,4} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 9,
+		max_lev = 12,
+		weight  = 10,
+		beings = {
+			{ being = "knight" },
+			{ being = "imp", amount = {2,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 13,
+		max_lev = 21,
+		weight  = 10,
+		beings = {
+			{ being = "baron" },
+			{ being = "imp", amount = {4,9} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 15,
+		max_lev = 21,
+		weight  = 10,
+		beings = {
+			{ being = "commando" },
+			{ being = "sergeant", amount = {2,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 13,
+		max_lev = 25,
+		weight  = 8,
+		beings = {
+			{ being = "pain" },
+			{ being = "lostsoul", amount = {3,8} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 10,
+		max_lev = 22,
+		weight  = 4,
+		beings = {
+			{ being = "demon", amount = {4,9} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 20,
+		max_lev = 60,
+		weight  = 4,
+		beings = {
+			{ being = "baron" },
+			{ being = "knight", amount = {2,4} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 20,
+		weight  = 3,
+		beings = {
+			{ being = "arachno", amount = {3,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 20,
+		max_lev = 89,
+		weight  = 2,
+		beings = {
+			{ being = "arch",     amount = 2 },
+			{ being = "captain",  amount = 4 },
+			{ being = "sergeant", amount = 4 },
+			{ being = "former",   amount = {3,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 20,
+		max_lev = 69,
+		weight  = 5,
+		beings = {
+			{ being = "baron",    amount = 2 },
+			{ being = "captain",  amount = {2,3} },
+			{ being = "sergeant", amount = {2,3} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 20,
+		weight  = 4,
+		beings = {
+			{ being = "arch",     amount = 2 },
+			{ being = "mancubus", amount = {2,5} },
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 20,
+		weight  = 4,
+		beings = {
+			{ being = "arch",     amount = 2 },
+			{ being = "revenant", amount = {2,5} },
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 25,
+		weight  = 4,
+		beings = {
+			{ being = "arch",     amount = 2 },
+			{ being = "baron",    amount = {3,9} }
+		}
+	}
+
+	register_being_group  -- Mancubi For Added Fun (MFAF, tm by Malek)
+	{
+		min_lev = 25,
+		weight  = 2,
+		beings = {
+			{ being = "arch",     amount = 2 },
+			{ being = "captain",  amount = {2,8} },
+			{ being = "mancubus", amount = {2,3} },
+		}
+	}
+
+  	-- Ao100+ enemy groups ------------------------------------------------
+
+	register_being_group
+	{
+		min_lev = 30,
+		weight  = 4,
+		beings = {
+			{ being = "pain", amount = 2 },
+			{ being = "cacodemon", amount = {2,5} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 30,
+		max_lev = 59,
+		weight  = 4,
+		beings = {
+			{ being = "nlostsoul", amount = {4,9} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 60,
+		weight  = 4,
+		beings = {
+			{ being = "npain", amount = 2 },
+			{ being = "nlostsoul", amount = {4,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 35,
+		max_lev = 49,
+		weight  = 4,
+		beings = {
+			{ being = "ndemon", amount = {3,5} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 50,
+		weight  = 4,
+		beings = {
+			{ being = "ndemon", amount = {4,8} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 30,
+		max_lev = 59,
+		weight  = 4,
+		beings = {
+			{ being = "baron", amount = 2 },
+			{ being = "nimp",  amount = {2,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 60,
+		weight  = 4,
+		beings = {
+			{ being = "nknight", amount = 2 },
+			{ being = "nimp",  amount = {4,8} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 90,
+		weight  = 2,
+		beings = {
+			{ being = "narch",     amount = 1 },
+			{ being = "ecaptain",  amount = {2,3} },
+			{ being = "esergeant", amount = {2,3} },
+			{ being = "eformer",   amount = {3,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 70,
+		weight  = 3,
+		beings = {
+			{ being = "nknight",   amount = 2 },
+			{ being = "ecaptain",  amount = {2,3} },
+			{ being = "esergeant", amount = {2,3} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 70,
+		weight  = 2,
+		beings = {
+			{ being = "ecommando", amount = 1 },
+			{ being = "ecaptain",  amount = {2,3} },
+			{ being = "esergeant", amount = {2,3} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 70,
+		weight  = 2,
+		beings = {
+			{ being = "narachno", amount = {3,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 75,
+		weight  = 1,
+		beings = {
+			{ being = "lava_elemental", amount = {1,3} },
+			{ being = "shambler",       amount = {2,3} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 80,
+		weight  = 2,
+		beings = {
+			{ being = "cyberdemon", amount = 1 },
+			{ being = "baron", amount = {4,8} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 85,
+		weight  = 2,
+		beings = {
+			{ being = "agony",      amount = 1 },
+			{ being = "ncacodemon", amount = {3,8} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 90,
+		weight  = 1,
+		beings = {
+			{ being = "cyberdemon", amount = 1 },
+			{ being = "bruiser", amount = {3,6} }
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 95,
+		max_lev = 149,
+		weight  = 2,
+		beings = {
+			{ being = "nmancubus", amount = {2,4} },
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 95,
+		max_lev = 149,
+		weight  = 2,
+		beings = {
+			{ being = "nrevenant", amount = {2,4} },
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 100,
+		weight  = 2,
+		beings = {
+			{ being = "narch",      amount = 2 },
+			{ being = "nmancubus",  amount = {2,4} },
+			{ being = "nrevenant",  amount = {2,4} },
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 150,
+		weight  = 2,
+		beings = {
+			{ being = "narch",     amount = 2 },
+			{ being = "nmancubus", amount = {2,5} },
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 150,
+		weight  = 2,
+		beings = {
+			{ being = "narch",     amount = 2 },
+			{ being = "nrevenant", amount = {2,5} },
+		}
 	}
 
 end
