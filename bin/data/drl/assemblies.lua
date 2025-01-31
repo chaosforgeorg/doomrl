@@ -759,7 +759,7 @@ function drl.register_assemblies()
 			item:reset_resistances()
 			item.resist.fire   = 100
 			item.resist.acid   = 100
-			item.resist.plasma = 50
+			item.resist.plasma = math.max( (item.resist.plasma or 0), 50 )
 		end,
 	}
 
@@ -776,9 +776,9 @@ function drl.register_assemblies()
 			item.movemod    = -30
 			item.knockmod   = -30
 			item:reset_resistances()
-			item.resist.fire   = 70
-			item.resist.acid   = 70
-			item.resist.plasma = 50
+			item.resist.fire   = math.max( (item.resist.fire or 0),   70 )
+			item.resist.acid   = math.max( (item.resist.acid or 0),   70 )
+			item.resist.plasma = math.max( (item.resist.plasma or 0), 50 )
 		end,
 	}
 
