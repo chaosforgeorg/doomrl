@@ -346,7 +346,9 @@ function generator.generate_caves_dungeon()
 		{ level = { 16, 50 }, weight = 3, list = "arachno"},
 		{ level = { 30, 40 }, weight = 1, list = {"arachno","pain"}, min_diff = 3 },
 		{ level = { 20, 99 }, weight = 1, list = { "lostsoul", "pain" } },
-		{ level = { 20 },     weight = 1, list = "pain", min_diff = 3 },
+		{ level = { 20, 50 }, weight = 1, list = "pain", min_diff = 3 },
+		{ level = { 51, 99 }, weight = 1, list = "pain", },
+		{ level = { 100 },    weight = 1, list = "npain", },
 
 		{ level = { 50, 250}, weight = 2, list = { "lostsoul", "pain", "agony" }, min_diff = 3 },
 		{ level = { 30, 60 }, weight = 2, list = { "ndemon", "demon" } },
@@ -355,9 +357,10 @@ function generator.generate_caves_dungeon()
 
 		{ level = { 30 },     weight = 5, list = "ndemon",         history = "On level @1 he stumbled into a nightmare demon cave!" },
 		{ level = { 40 },     weight = 5, list = "narachno",       history = "On level @1 he stumbled into a nightmare arachnotron cave!" },
-		{ level = { 50 },     weight = 5, list = "ncacodemon",     history = "On level @1 he stumbled into a nightmare cacodemon cave!" },
-		{ level = { 60 },     weight = 1, list = "agony",          history = "On level @1 he stumbled into a agony elemental cave!", min_diff = 3, feeling = "You hear echoing wails of agony!" },
-		{ level = { 70 },     weight = 1, list = "lava_elemental", history = "On level @1 he stumbled into a lava elemental cave!", min_diff = 3, feeling = "The cave temperature is insanely hot!" },
+		{ level = { 50 },     weight = 1, list = "npain",          history = "On level @1 he stumbled into a nightmare elemental cave!" },
+		{ level = { 60 },     weight = 5, list = "ncacodemon",     history = "On level @1 he stumbled into a nightmare cacodemon cave!" },
+		{ level = { 70 },     weight = 1, list = "agony",          history = "On level @1 he stumbled into a agony elemental cave!", min_diff = 3, feeling = "You hear echoing wails of agony!" },
+		{ level = { 80 },     weight = 1, list = "lava_elemental", history = "On level @1 he stumbled into a lava elemental cave!", min_diff = 3, feeling = "The cave temperature is insanely hot!" },
 	}
 
 	local mlevel = math.max( level.danger_level + (DIFFICULTY - 2)*3, 0 )
