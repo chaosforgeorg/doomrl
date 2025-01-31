@@ -338,6 +338,22 @@ function drl.register_assemblies()
 		end,
 	}
 
+	register_mod_array "grarmor"
+	{
+		name  = "grappling armor",
+		mods  = { B = 1, A = 1 },
+		request_type = ITEMTYPE_ARMOR,
+
+		OnApply = function (item)
+			item.name          = "grappling "..item.name
+			item.durability    = 100
+			item.maxdurability = 100
+			item.knockmod      = math.max( -90, item.__proto.knockmod - 50 )
+			item:reset_resistances()
+			item.resist.melee     = (item.resist.melee or 0) + 30
+		end,
+	}
+
 	register_mod_array "lavboots"
 	{
 		name  = "lava boots",
