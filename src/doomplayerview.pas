@@ -189,7 +189,7 @@ begin
     PLAYERVIEW_TRAITS    : UpdateTraits;
   end;
 
-  if IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
+  if (( Doom.State <> DSPlaying ) and ( not FTraitFirst )) or IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
 
   if ( not FSwapMode ) and ( not FTraitMode ) and ( FCommandMode = 0 ) then
   begin
