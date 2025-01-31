@@ -197,6 +197,7 @@ function drl.register_beings()
 		attackchance = 60,
 		todam        = 4,
 		tohit        = 12,
+		hp           = 10,
 		speed        = 100,
 		vision       = 0,
 		min_lev      = 6,
@@ -768,6 +769,58 @@ function drl.register_beings()
 		}
 	}
 
+	register_being "nlostsoul"
+	{
+		name         = "nightmare lost soul",
+		ascii        = "s",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_NLOSTSOUL,
+		sframes      = 2,
+		attackchance = 70,
+		todam        = 6,
+		tohit        = 12,
+		speed        = 120,
+		hp           = 20,
+		vision       = 0,
+		danger       = 4,
+		weight       = 0,
+		min_lev      = 200,
+		bulk         = 100,
+		flags        = { BF_ENVIROSAFE, BF_FLY },
+		ai_type      = "lostsoul_ai",
+
+		resist = { fire = 75, bullet = 50 },
+
+		desc            = "The flying bluish skull. Wouldn't be a problem if there weren't so many of these nightmarish things...",
+		kill_desc_melee = "was terrified by a nightmare lost soul",
+	}
+
+	register_being "ndemon"
+	{
+		name         = "nightmare demon",
+		ascii        = "c",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_DEMON,
+		sframes      = 2,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		hp           = 80,
+		armor        = 3,
+		todam        = 10,
+		tohit        = 5,
+		speed        = 140,
+		min_lev      = 40,
+		corpse       = true,
+		danger       = 8,
+		weight       = 6,
+		bulk         = 100,
+		flags        = { BF_CHARGE, BF_ENVIROSAFE },
+		ai_type      = "demon_ai",
+
+		desc            = "You liked it better when these guys were pink. Meet the stronger, tougher, more resilient way to meet your death.",
+		kill_desc_melee = "was eaten alive by a nightmare demon",
+
+	}
+
 	register_being "ncacodemon"
 	{
 		name         = "nightmare cacodemon",
@@ -810,32 +863,6 @@ function drl.register_beings()
 				expl_color = MAGENTA,
 			},
 		},
-	}
-
-	register_being "ndemon"
-	{
-		name         = "nightmare demon",
-		ascii        = "c",
-		color        = LIGHTBLUE,
-		sprite       = SPRITE_DEMON,
-		sframes      = 2,
-		overlay      = { 0.2, 0.2, 1.0, 0.8 },
-		hp           = 80,
-		armor        = 3,
-		todam        = 10,
-		tohit        = 5,
-		speed        = 140,
-		min_lev      = 40,
-		corpse       = true,
-		danger       = 8,
-		weight       = 6,
-		bulk         = 100,
-		flags        = { BF_CHARGE, BF_ENVIROSAFE },
-		ai_type      = "demon_ai",
-
-		desc            = "You liked it better when these guys were pink. Meet the stronger, tougher, more resilient way to meet your death.",
-		kill_desc_melee = "was eaten alive by a nightmare demon",
-
 	}
 
 	register_being "narachno"
@@ -1604,6 +1631,17 @@ function drl.register_beings()
 		beings = {
 			{ being = "pain", amount = 2 },
 			{ being = "cacodemon", amount = {2,5} }
+		}
+	}
+
+	
+	register_being_group
+	{
+		min_lev = 30,
+		max_lev = 59,
+		weight  = 4,
+		beings = {
+			{ being = "nlostsoul", amount = {4,9} }
 		}
 	}
 
