@@ -885,7 +885,7 @@ function drl.register_beings()
 		danger       = 12,
 		weight       = 4,
 		bulk         = 100,
-		flags        = { BF_OPENDOORS },
+		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
 		ai_type      = "baron_ai",
 
 		resist = { acid = 75, fire = 25, plasma = 25 },
@@ -992,6 +992,107 @@ function drl.register_beings()
 		end,
 	}
 
+	register_being "nrevenant"
+	{
+		name         = "nightmare revenant",
+		ascii        = "R",
+		color        = LIGHTBLUE,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		sprite       = SPRITE_REVENANT,
+		sframes      = 2,
+		hp           = 50,
+		armor        = 3,
+		attackchance = 60,
+		todam        = 10,
+		tohit        = 6,
+		speed        = 160,
+		min_lev      = 60,
+		corpse       = true,
+		danger       = 15,
+		weight       = 6,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
+		ai_type      = "ranged_ai",
+
+		resist = { fire = 25, bullet = 50 },
+
+		desc            = "This revenant has been dusted off and wired up one time too many. And it shows...",
+		kill_desc       = "couldn't evade a nightmare revenant's fireball",
+		kill_desc_melee = "was mauled by a nightmare revenant",
+
+		weapon = {
+			damage     = "6d6",
+			damagetype = DAMAGE_FIRE,
+			radius     = 1,
+			missile = {
+				sound_id   = "bazooka",
+				color      = YELLOW,
+				sprite     = SPRITE_ROCKETSHOT,
+				delay      = 30,
+				miss_base  = 30,
+				miss_dist  = 5,
+				flags = { MF_EXACT },
+				expl_delay = 40,
+				expl_color = RED,
+			},
+		},
+
+		OnCreate = function (self)
+			self.inv:add( "rocket" )
+		end
+	}
+
+	register_being "nmancubus"
+	{
+		name         = "nightmare mancubus",
+		name_plural  = "nightmare mancubi",
+		ascii        = "M",
+		color        = LIGHTBLUE,
+		sprite       = SPRITE_MANCUBUS,
+		overlay      = { 0.2, 0.2, 1.0, 0.8 },
+		sframes      = 2,
+		hp           = 120,
+		armor        = 4,
+		attackchance = 70,
+		todam        = 12,
+		tohit        = 3,
+		speed        = 80,
+		min_lev      = 75,
+		corpse       = true,
+		danger       = 15,
+		weight       = 4,
+		bulk         = 100,
+		flags        = { BF_OPENDOORS, BF_KNOCKIMMUNE, BF_ENVIROSAFE },
+		ai_type      = "sequential_ai",
+		resist 	     = { melee = 50, acid = 50 },
+
+		desc            = "What's blue and has two rocket launchers? Something worse.",
+		kill_desc       = "rode a nightmare mancubi rocket",
+		kill_desc_melee = "was flattened by a nightmare mancubus",
+
+		weapon = {
+			damage     = "4d7",
+			damagetype = DAMAGE_ACID,
+			radius     = 2,
+			flags      = { IF_SPREAD },
+			missile = {
+				sound_id   = "mancubus",
+				ascii      = "*",
+				color      = GREEN,
+				sprite     = SPRITE_ROCKETSHOT,
+				delay      = 20,
+				miss_base  = 1,
+				miss_dist  = 3,
+				expl_delay = 40,
+				expl_color = GREEN,
+				content    = "acid",
+			},
+		},
+
+		OnCreate = function (self)
+			self.inv:add( "rocket" )
+		end
+	}
 
 	register_being "narch"
 	{
@@ -1862,12 +1963,52 @@ function drl.register_beings()
 
 	register_being_group
 	{
+		min_lev = 95,
+		max_lev = 149,
+		weight  = 2,
+		beings = {
+			{ being = "nmancubus", amount = {2,4} },
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 95,
+		max_lev = 149,
+		weight  = 2,
+		beings = {
+			{ being = "nrevenant", amount = {2,4} },
+		}
+	}
+
+	register_being_group
+	{
 		min_lev = 100,
 		weight  = 2,
 		beings = {
+			{ being = "narch",      amount = 2 },
+			{ being = "nmancubus",  amount = {2,4} },
+			{ being = "nrevenant",  amount = {2,4} },
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 150,
+		weight  = 2,
+		beings = {
 			{ being = "narch",     amount = 2 },
-			{ being = "mancubus",  amount = {2,4} },
-			{ being = "revenant",  amount = {2,4} },
+			{ being = "nmancubus", amount = {2,5} },
+		}
+	}
+
+	register_being_group
+	{
+		min_lev = 150,
+		weight  = 2,
+		beings = {
+			{ being = "narch",     amount = 2 },
+			{ being = "nrevenant", amount = {2,5} },
 		}
 	}
 
