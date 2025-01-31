@@ -338,6 +338,22 @@ function drl.register_assemblies()
 		end,
 	}
 
+	register_mod_array "grarmor"
+	{
+		name  = "grappling armor",
+		mods  = { B = 1, A = 1 },
+		request_type = ITEMTYPE_ARMOR,
+
+		OnApply = function (item)
+			item.name          = "grappling "..item.name
+			item.durability    = 100
+			item.maxdurability = 100
+			item.knockmod      = math.max( -90, item.__proto.knockmod - 50 )
+			item:reset_resistances()
+			item.resist.melee     = (item.resist.melee or 0) + 30
+		end,
+	}
+
 	register_mod_array "lavboots"
 	{
 		name  = "lava boots",
@@ -582,29 +598,6 @@ function drl.register_assemblies()
 		end,
 	}
 
-	register_mod_array "nsharpnel"
-	{
-		name  = "nano-shrapnel",
-		mods  = { P = 2, N = 1 },
-		level = 1,
-		desc  = "any shotgun",
-
-		Match = function (item)
-			return item.flags[ IF_SHOTGUN ]
-		end,
-
-		OnApply = function (item)
-			item.name         = "nano "..item.name
-			item.damage_dice = item.__proto.damage_dice - 3
-			item.damagetype   = DAMAGE_IGNOREARMOR
-			item.flags[ IF_NOAMMO ] = true
-			if item.flags[ IF_PUMPACTION ] == true then
-				item.flags[ IF_PUMPACTION ] = false
-				item.flags[ IF_CHAMBEREMPTY ] = false
-			end
-		end,
-	}
-
 	register_mod_array "hyperblaster"
 	{
 		name  = "hyperblaster",
@@ -659,6 +652,29 @@ function drl.register_assemblies()
 			item.ammo = math.min( item.ammo, item.ammomax )
 			item.flags[ IF_NOAMMO ]   = true
 			item.flags[ IF_RECHARGE ] = false
+		end,
+	}
+
+	register_mod_array "nsharpnel"
+	{
+		name  = "nano-shrapnel",
+		mods  = { P = 3, N = 1 },
+		level = 2,
+		desc  = "any shotgun",
+
+		Match = function (item)
+			return item.flags[ IF_SHOTGUN ]
+		end,
+
+		OnApply = function (item)
+			item.name         = "nano "..item.name
+			item.damage_dice = item.__proto.damage_dice - 3
+			item.damagetype   = DAMAGE_IGNOREARMOR
+			item.flags[ IF_NOAMMO ] = true
+			if item.flags[ IF_PUMPACTION ] == true then
+				item.flags[ IF_PUMPACTION ] = false
+				item.flags[ IF_CHAMBEREMPTY ] = false
+			end
 		end,
 	}
 
@@ -759,7 +775,7 @@ function drl.register_assemblies()
 			item:reset_resistances()
 			item.resist.fire   = 100
 			item.resist.acid   = 100
-			item.resist.plasma = 50
+			item.resist.plasma = math.max( (item.resist.plasma or 0), 50 )
 		end,
 	}
 
@@ -776,9 +792,9 @@ function drl.register_assemblies()
 			item.movemod    = -30
 			item.knockmod   = -30
 			item:reset_resistances()
-			item.resist.fire   = 70
-			item.resist.acid   = 70
-			item.resist.plasma = 50
+			item.resist.fire   = math.max( (item.resist.fire or 0),   70 )
+			item.resist.acid   = math.max( (item.resist.acid or 0),   70 )
+			item.resist.plasma = math.max( (item.resist.plasma or 0), 50 )
 		end,
 	}
 

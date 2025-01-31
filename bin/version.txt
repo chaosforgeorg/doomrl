@@ -1,5 +1,6 @@
 0.9.9.9 BETA 5
 [new] -- GH#129: post mortem view colored and highlighted
+[new] -- GH#128: grappling armor assembly added (BA) - -50 knockback, +30% melee res
 [mod] -- GH#161: drop item action continues if no enemy/damage is present
 [mod] -- GH#000: spawned enemies (lever/summon) will now "wake up" faster
 [mod] -- GH#000: cleaned up tactic/running - now running/tired is a regular affect
@@ -9,6 +10,8 @@
 [mod] -- GH#212: kill weapon groups displayed in mortem
 [mod] -- GH#118: Deimos/Armory - schematic drop is independent, rare mod/carmor always drops
 [mod] -- GH#020: mouse pathing will be done through hazardous fluids if player is immune/100res
+[mod] -- GH#128: cerberus boots/armor won't reduce item resistances if base item had better
+[mod] -- GH#128: nano-shrapnel is a master assembly requiring an extra power mod
 [fix] -- GH#000: thrown weapons will respect berserk damage multiplier
 [fix] -- GH#201: fixed flickering on Linux ncurses build
 [fix] -- GH#201: fixed explosion refresh issues when running in console mode 
