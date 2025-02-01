@@ -219,7 +219,7 @@ end;
 
 function TPlayerView.IsFinished : Boolean;
 begin
-  Exit( ( Doom.State <> DSPlaying ) or ( FState = PLAYERVIEW_DONE ) );
+  Exit( FState = PLAYERVIEW_DONE );
 end;
 
 function TPlayerView.IsModal : Boolean;
@@ -291,12 +291,7 @@ begin
         then VTIG_Text( 'No matching items, press <{!Enter}>.' )
         else VTIG_Text( '{!No items in inventory!}' );
     end;
-    if iSelected >= FInv.Size then
-    begin
-      VTIG_ResetSelect();
-      iSelected := VTIG_Selected;
 
-    end;
     VTIG_EndGroup;
 
     VTIG_BeginGroup;
