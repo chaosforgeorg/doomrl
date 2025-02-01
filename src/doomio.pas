@@ -101,7 +101,6 @@ type TDoomIO = class( TIO )
   procedure SetAutoTarget( aTarget : TCoord2D ); virtual;
 protected
   procedure UpdateStyles;
-  procedure ClearFinishedLayers;
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
   procedure DrawHud; virtual;
   procedure ColorQuery(nkey,nvalue : Variant);
@@ -308,24 +307,6 @@ begin
   TIGStyleFrameless.Frame[ VTIG_BORDER_FRAME ] := '';
 end;
 
-procedure TDoomIO.ClearFinishedLayers;
-var i,j : Integer;
-begin
-  i := 0;
-  while i < FLayers.Size do
-    if FLayers[i].IsFinished then
-    begin
-      FLayers[i].Free;
-      if i < FLayers.Size - 1 then
-        for j := i to FLayers.Size - 2 do
-          FLayers[j] := FLayers[j + 1];
-      FLayers.Pop;
-    end
-    else
-      Inc( i );
-end;
-
-
 { TDoomIO }
 
 constructor TDoomIO.Create;
@@ -398,7 +379,6 @@ end;
 
 function TDoomIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
 begin
-  ClearFinishedLayers;
   FHintOverlay := '';
   FConsole.HideCursor;
   FLayers.Push( aLayer );
@@ -870,6 +850,24 @@ end;
 procedure TDoomIO.Update( aMSec : DWord );
 var iLayer  : TInterfaceLayer;
     iMEvent : TIOEvent;
+
+  procedure ClearFinished;
+  var i,j : Integer;
+  begin
+    i := 0;
+    while i < FLayers.Size do
+      if FLayers[i].IsFinished then
+      begin
+        FLayers[i].Free;
+        if i < FLayers.Size - 1 then
+          for j := i to FLayers.Size - 2 do
+            FLayers[j] := FLayers[j + 1];
+        FLayers.Pop;
+      end
+      else
+        Inc( i );
+  end;
+
 begin
   if Assigned( Sound ) then
     Sound.Update;
@@ -882,10 +880,10 @@ begin
     VTIG_GetIOState.MouseState.HandleEvent( iMEvent );
   end;
 
-  ClearFinishedLayers;
+  ClearFinished;
   for iLayer in FLayers do
     iLayer.Update( Integer( aMSec ) );
-  ClearFinishedLayers;
+  ClearFinished;
 
   FTime += aMSec;
   FAudio.Update( aMSec );
