@@ -398,7 +398,6 @@ end;
 
 function TDoomIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
 begin
-  Doom.ClearPlayerView;
   ClearFinishedLayers;
   FHintOverlay := '';
   FConsole.HideCursor;

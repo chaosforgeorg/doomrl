@@ -44,7 +44,6 @@ type TPlayerView = class( TInterfaceLayer )
   constructor CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0 );
   constructor CreateCommand( aCommand : Byte; aScavenger : Boolean = False );
   procedure Update( aDTime : Integer ); override;
-  procedure Finish;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   destructor Destroy; override;
@@ -167,11 +166,6 @@ begin
   FTraitPick   := 255;
 end;
 
-procedure TPlayerView.Finish;
-begin
-  FState := PLAYERVIEW_DONE;
-end;
-
 procedure TPlayerView.Update( aDTime : Integer );
 var iTraitFirst : Boolean;
 begin
@@ -225,7 +219,7 @@ end;
 
 function TPlayerView.IsFinished : Boolean;
 begin
-  Exit( FState = PLAYERVIEW_DONE );
+  Exit( ( Doom.State <> DSPlaying ) or ( FState = PLAYERVIEW_DONE ) );
 end;
 
 function TPlayerView.IsModal : Boolean;
@@ -235,7 +229,6 @@ end;
 
 destructor TPlayerView.Destroy;
 begin
-  Doom.ClearPlayerView;
   FreeAndNil( FEq );
   FreeAndNil( FInv );
   FreeAndNil( FTraits );
@@ -345,13 +338,7 @@ begin
         begin
           FState := PLAYERVIEW_CLOSING;
           Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item ) );
-          if ( Doom.State <> DSPlaying ) or IsFinished then
-          begin
-            FState := PLAYERVIEW_DONE;
-            Exit;
-          end;
-          FState := PLAYERVIEW_INVENTORY;
-          ReadInv;
+          FState := PLAYERVIEW_DONE;
         end
         else
         if VTIG_EventConfirm then

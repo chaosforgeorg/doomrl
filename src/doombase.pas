@@ -67,7 +67,6 @@ TDoom = class(TSystem)
        function  CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
        procedure LoadChallenge;
        procedure SetState( NewState : TDoomState );
-       procedure ClearPlayerView;
      private
        function HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
        function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
@@ -83,7 +82,6 @@ TDoom = class(TSystem)
        FModuleHooks     : TFlags;
        FLastInputTime   : QWord;
        FTargeting       : TTargeting;
-       FPlayerView      : TInterfaceLayer;
      public
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
@@ -195,15 +193,6 @@ begin
     FSChallengeHooks := LoadHooks( ['chal',SChallenge] ) * GlobalHooks;
 end;
 
-procedure TDoom.ClearPlayerView;
-begin
-  if FPlayerView <> nil then
-  begin
-    (FPlayerView as TPlayerView).Finish;
-    FPlayerView := nil;
-  end;
-end;
-
 procedure TDoom.SetState(NewState: TDoomState);
 begin
   FState := NewState;
@@ -289,7 +278,6 @@ begin
   NVersion := ArrayToVersion(VERSION_ARRAY);
   FLastInputTime := 0;
   Log( VersionToString( NVersion ) );
-  FPlayerView := nil;
   Reconfigure;
 end;
 
@@ -347,7 +335,6 @@ end;
 
 procedure TDoom.PreAction;
 begin
-  if Player.BeingsInVision > 1 then ClearPlayerView;
   FLevel.CalculateVision( Player.Position );
   StatusEffect := Player.FAffects.getEffect;
   IO.PreAction;
@@ -807,8 +794,7 @@ begin
       begin
         if iAlt then
         begin
-          ClearPlayerView;
-          FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
+          IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
           Exit( True );
         end
         else
@@ -822,8 +808,7 @@ begin
               Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) )
           else
             begin
-              ClearPlayerView;
-              FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
+              IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
               Exit( True );
             end
       end
@@ -911,12 +896,12 @@ begin
       INPUT_QUIT       : begin IO.PushLayer( TAbandonView.Create ); Exit; end;
       INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
       INPUT_LOOKMODE   : begin IO.PushLayer( TLookModeView.Create ); Exit; end;
-      INPUT_PLAYERINFO : begin ClearPlayerView; FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
-      INPUT_INVENTORY  : begin ClearPlayerView; FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;
-      INPUT_EQUIPMENT  : begin ClearPlayerView; FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) ); Exit; end;
+      INPUT_PLAYERINFO : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
+      INPUT_INVENTORY  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;
+      INPUT_EQUIPMENT  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) ); Exit; end;
       INPUT_ASSEMBLIES : begin IO.PushLayer( TAssemblyView.Create ); Exit; end;
-      INPUT_LEGACYUSE  : begin ClearPlayerView; FPlayerView := IO.PushLayer( TPlayerView.CreateCommand( COMMAND_USE ) ); Exit; end;
-      INPUT_LEGACYDROP : begin ClearPlayerView; FPlayerView := IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
+      INPUT_LEGACYUSE  : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_USE ) ); Exit; end;
+      INPUT_LEGACYDROP : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
       INPUT_UNLOAD     : begin HandleUnloadCommand( nil ); Exit; end;
 
       INPUT_MESSAGES   : begin IO.PushLayer( TMessagesView.Create( IO.MsgGetRecent ) ); Exit; end;
@@ -929,7 +914,7 @@ begin
       end;
 
       INPUT_LEGACYSAVE: begin Doom.SetState( DSSaving ); Exit; end;
-      INPUT_TRAITS    : begin ClearPlayerView; FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
+      INPUT_TRAITS    : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
       INPUT_RUN       : begin
         Player.FPathRun := False;
         if Player.BeingsInVision > 1
