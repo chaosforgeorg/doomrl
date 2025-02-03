@@ -67,6 +67,7 @@ TDoom = class(TSystem)
        function  CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
        procedure LoadChallenge;
        procedure SetState( NewState : TDoomState );
+       procedure ClearPlayerView;
      private
        function HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
        function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
@@ -82,12 +83,15 @@ TDoom = class(TSystem)
        FModuleHooks     : TFlags;
        FLastInputTime   : QWord;
        FTargeting       : TTargeting;
+       FDamagedLastTurn : Boolean;
+       FPlayerView      : TInterfaceLayer;
      public
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
        property ModuleHooks : TFlags read FModuleHooks;
        property State : TDoomState read FState;
        property Targeting : TTargeting read FTargeting;
+       property DamagedLastTurn : Boolean read FDamagedLastTurn write FDamagedLastTurn;
      end;
 
 var Doom : TDoom;
@@ -198,6 +202,11 @@ begin
   FState := NewState;
 end;
 
+procedure TDoom.ClearPlayerView;
+begin
+  FPlayerView := nil;
+end;
+
 procedure TDoom.LoadModule( Base : Boolean );
 begin
 //  if ModuleID <> 'drl' then Lua.LoadModule( Module );
@@ -277,6 +286,7 @@ begin
   FChallengeHooks := [];
   NVersion := ArrayToVersion(VERSION_ARRAY);
   FLastInputTime := 0;
+  FPlayerView := nil;
   Log( VersionToString( NVersion ) );
   Reconfigure;
 end;
@@ -345,6 +355,8 @@ begin
   Player.PreAction;
   FTargeting.Update( Player.Vision );
   IO.SetAutoTarget( FTargeting.List.Current );
+  if ( FPlayerView <> nil ) and (not FDamagedLastTurn) and (Player.BeingsInVision < 2) then
+     (FPlayerView as TPlayerView).Retain;
 end;
 
 function TDoom.Action( aInput : TInputKey ) : Boolean;
@@ -694,7 +706,7 @@ begin
     aItem := Level.Item[ Player.Position ];
   if ( aItem = nil ) or ( not (aItem.IType in iItemTypes) ) then
   begin
-    IO.PushLayer( TPlayerView.CreateCommand( COMMAND_UNLOAD, Player.Flags[ BF_SCAVENGER ] ) );
+    FPlayerView := IO.PushLayer( TPlayerView.CreateCommand( COMMAND_UNLOAD, Player.Flags[ BF_SCAVENGER ] ) );
     Exit( True );
   end;
 
@@ -754,6 +766,7 @@ end;
   if State <> DSPlaying then Exit( False );
   IO.Focus( Player.Position );
   Player.UpdateVisual;
+  FDamagedLastTurn := False;
   while (Player.SCount < 5000) and (State = DSPlaying) do
   begin
     FLevel.CalculateVision( Player.Position );
@@ -784,7 +797,7 @@ begin
       if IO.MTarget = Player.Position
         then Exit( HandleSwapWeaponCommand )
         else begin
-//          IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) );
+//          FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) );
 //          Exit( True );
         end;
 
@@ -794,7 +807,7 @@ begin
       begin
         if iAlt then
         begin
-          IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
+          FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
           Exit( True );
         end
         else
@@ -808,7 +821,7 @@ begin
               Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) )
           else
             begin
-              IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
+              FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
               Exit( True );
             end
       end
@@ -896,12 +909,12 @@ begin
       INPUT_QUIT       : begin IO.PushLayer( TAbandonView.Create ); Exit; end;
       INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
       INPUT_LOOKMODE   : begin IO.PushLayer( TLookModeView.Create ); Exit; end;
-      INPUT_PLAYERINFO : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
-      INPUT_INVENTORY  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;
-      INPUT_EQUIPMENT  : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) ); Exit; end;
+      INPUT_PLAYERINFO : begin FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_CHARACTER ) ); Exit; end;
+      INPUT_INVENTORY  : begin FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) ); Exit; end;
+      INPUT_EQUIPMENT  : begin FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) ); Exit; end;
       INPUT_ASSEMBLIES : begin IO.PushLayer( TAssemblyView.Create ); Exit; end;
-      INPUT_LEGACYUSE  : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_USE ) ); Exit; end;
-      INPUT_LEGACYDROP : begin IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
+      INPUT_LEGACYUSE  : begin FPlayerView := IO.PushLayer( TPlayerView.CreateCommand( COMMAND_USE ) ); Exit; end;
+      INPUT_LEGACYDROP : begin FPlayerView := IO.PushLayer( TPlayerView.CreateCommand( COMMAND_DROP ) ); Exit; end;
       INPUT_UNLOAD     : begin HandleUnloadCommand( nil ); Exit; end;
 
       INPUT_MESSAGES   : begin IO.PushLayer( TMessagesView.Create( IO.MsgGetRecent ) ); Exit; end;
@@ -914,7 +927,7 @@ begin
       end;
 
       INPUT_LEGACYSAVE: begin Doom.SetState( DSSaving ); Exit; end;
-      INPUT_TRAITS    : begin IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
+      INPUT_TRAITS    : begin FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
       INPUT_RUN       : begin
         Player.FPathRun := False;
         if Player.BeingsInVision > 1
