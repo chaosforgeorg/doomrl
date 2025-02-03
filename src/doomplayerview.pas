@@ -11,6 +11,7 @@ type TPlayerViewState = (
   PLAYERVIEW_CHARACTER,
   PLAYERVIEW_TRAITS,
   PLAYERVIEW_CLOSING,
+  PLAYERVIEW_PENDING,
   PLAYERVIEW_DONE
 );
 
@@ -46,6 +47,7 @@ type TPlayerView = class( TInterfaceLayer )
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
+  procedure Retain;
   destructor Destroy; override;
 protected
   procedure Initialize;
@@ -169,7 +171,7 @@ end;
 procedure TPlayerView.Update( aDTime : Integer );
 var iTraitFirst : Boolean;
 begin
-  if IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
+  if IsFinished or (FState = PLAYERVIEW_CLOSING) or (FState = PLAYERVIEW_PENDING) then Exit;
 
   iTraitFirst := FTraitFirst;
   if ( Doom.State <> DSPlaying ) and ( not iTraitFirst ) then
@@ -185,7 +187,7 @@ begin
     PLAYERVIEW_TRAITS    : UpdateTraits;
   end;
 
-  if (( Doom.State <> DSPlaying ) and ( not iTraitFirst )) or IsFinished or (FState = PLAYERVIEW_CLOSING) then Exit;
+  if (( Doom.State <> DSPlaying ) and ( not iTraitFirst )) or IsFinished or (FState = PLAYERVIEW_CLOSING) or (FState = PLAYERVIEW_PENDING) then Exit;
 
   if ( not FSwapMode ) and ( not FTraitMode ) and ( FCommandMode = 0 ) then
   begin
@@ -222,13 +224,19 @@ begin
   Exit( FState = PLAYERVIEW_DONE );
 end;
 
+procedure TPlayerView.Retain;
+begin
+  if FState = PLAYERVIEW_PENDING then FState := PLAYERVIEW_INVENTORY;
+end;
+
 function TPlayerView.IsModal : Boolean;
 begin
-  Exit( FState <> PLAYERVIEW_CLOSING );
+  Exit( ( FState <> PLAYERVIEW_CLOSING ) and ( FState <> PLAYERVIEW_PENDING ) );
 end;
 
 destructor TPlayerView.Destroy;
 begin
+  Doom.ClearPlayerView;
   FreeAndNil( FEq );
   FreeAndNil( FInv );
   FreeAndNil( FTraits );
@@ -291,6 +299,11 @@ begin
         then VTIG_Text( 'No matching items, press <{!Enter}>.' )
         else VTIG_Text( '{!No items in inventory!}' );
     end;
+    if iSelected >= FInv.Size then
+    begin
+      VTIG_ResetSelect();
+      iSelected := VTIG_Selected;
+    end;
 
     VTIG_EndGroup;
 
@@ -331,9 +344,11 @@ begin
       begin
         if VTIG_Event( VTIG_IE_BACKSPACE ) then
         begin
-          FState := PLAYERVIEW_CLOSING;
+          FState := PLAYERVIEW_PENDING;
           Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item ) );
-          FState := PLAYERVIEW_DONE;
+          if FState = PLAYERVIEW_PENDING
+            then FState := PLAYERVIEW_DONE
+            else begin ReadInv; FState := PLAYERVIEW_INVENTORY; end
         end
         else
         if VTIG_EventConfirm then

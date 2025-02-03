@@ -304,6 +304,7 @@ begin
   if BF_INV in FFlags then Exit;
   FPathRun := False;
   FRun.Stop;
+  Doom.DamagedLastTurn := True;
   if ( aDamage >= Max( FHPNom div 3, 10 ) ) then
   begin
     IO.Blink(Red,100);
