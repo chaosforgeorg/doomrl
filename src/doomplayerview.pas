@@ -291,6 +291,11 @@ begin
         then VTIG_Text( 'No matching items, press <{!Enter}>.' )
         else VTIG_Text( '{!No items in inventory!}' );
     end;
+    if iSelected >= FInv.Size then
+    begin
+      VTIG_ResetSelect();
+      iSelected := VTIG_Selected;
+    end;
 
     VTIG_EndGroup;
 
