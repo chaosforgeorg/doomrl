@@ -276,67 +276,18 @@ register_ai "demon_ai"
 {
 
 	OnCreate = function( self )
-		self:add_property( "boredom", 6 ) --idle triggers for boredom > 5
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "assigned", false )
-		self:add_property( "move_to", coord.new(0,0) )
+		aitk.flock_init( self )
 	end,
 
-	OnAttacked = function( self )
-		for b in level:beings_in_range( self, 4 ) do
-			if b.id == self.id then
-				b.boredom = 0
-				b.assigned = false
-			end
-		end
+	OnAttacked = function( self, target )
+		aitk.flock_alert( self, 4, target )
 	end,
 
 	states = {
-		thinking = function( self )
-			local visible = self:in_sight( player )
-			local dist    = self:distance_to( player )
-
-			if visible then
-				self.__proto.OnAttacked( self )
-			end
-
-			if dist == 1 then
-				self.ai_state = "melee"
-			else
-				self.ai_state = "pursue"
-				self.boredom = self.boredom + 1
-				if self.boredom > 5 and not visible then
-					self.ai_state = "idle"
-				end
-			end
-
-			if not self.assigned then
-				local walk
-				if self.ai_state == "idle" then
-					walk = self:flock_target( self.vision, 1, 4 )
-				end
-				if self.ai_state == "pursue" then
-					walk = player.position
-				end
-				if walk then
-					self.move_to = walk
-					self.assigned = true
-				end
-			end
-			return self.ai_state
+		idle = function( self )
+			return aitk.flock_idle( self, 1, 4 )
 		end,
-
-		idle = function( self ) return ai_tools.idle_action_melee( self ) end,
-
-		melee = function( self ) return ai_tools.melee_action( self ) end,
-
-		pursue = function( self )
-			if not aitk.pursue( self, player.position ) then
-				self.scount = self.scount - 500
-			end
-			self.assigned = false
-			return "thinking"
-		end
+		hunt = aitk.flock_hunt,
 	}
 }
 
