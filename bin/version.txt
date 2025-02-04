@@ -1,3 +1,7 @@
+0.9.9.9 BETA 6
+[mod] -- GH#161: drop item action continues if no enemy/damage is present
+[fix] -- GH#000: emergency animation break added
+
 0.9.9.9 BETA 5
 [new] -- GH#129: post mortem view colored and highlighted
 [new] -- GH#128: grappling armor assembly added (BA) - -50 knockback, +30% melee res
@@ -6,7 +10,6 @@
 [new] -- GH#218: several new Ao100+ enemy group randomization entries added for levels 30+
 [mod] -- GH#218: several Ao100+only enemies have their min-level reduced
 [mod] -- GH#218: nightmare cacodemons stronger
-[mod] -- GH#161: drop item action continues if no enemy/damage is present
 [mod] -- GH#000: spawned enemies (lever/summon) will now "wake up" faster
 [mod] -- GH#000: cleaned up tactic/running - now running/tired is a regular affect
 [mod] -- GH#000: changed the display of affects to full words

@@ -72,6 +72,7 @@ type TDoomIO = class( TIO )
 
   procedure WaitForAnimation; virtual;
   function AnimationsRunning : Boolean; virtual; abstract;
+  procedure AnimationWipe; virtual; abstract;
   procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); virtual; abstract;
   procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); virtual; abstract;
   procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single ); virtual;
@@ -195,13 +196,20 @@ begin
 end;
 
 procedure TDoomIO.WaitForAnimation;
+var iTime : DWord;
 begin
   if FWaiting then Exit;
   if Doom.State <> DSPlaying then Exit;
   FWaiting := True;
+  iTime := IO.Driver.GetMs;
   while AnimationsRunning do
   begin
     IO.Delay(5);
+    if ( IO.Driver.GetMs - iTime ) > 2000 then
+      begin
+        Log(LOGWARN, 'Emergency animation break!' );
+        AnimationWipe;
+      end;
   end;
   FWaiting := False;
   Doom.Level.RevealBeings;

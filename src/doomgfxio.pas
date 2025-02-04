@@ -21,6 +21,7 @@ type
 
     procedure WaitForAnimation; override;
     function AnimationsRunning : Boolean; override;
+    procedure AnimationWipe; override;
     procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); override;
     procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); override;
     procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single ); override;
@@ -314,6 +315,11 @@ function TDoomGFXIO.AnimationsRunning : Boolean;
 begin
   if Doom.State <> DSPlaying then Exit(False);
   Exit( not FAnimations.Finished );
+end;
+
+procedure TDoomGFXIO.AnimationWipe;
+begin
+  FAnimations.Clear;
 end;
 
 procedure TDoomGFXIO.Mark( aCoord: TCoord2D; aColor: Byte; aChar: Char; aDuration: DWord; aDelay: DWord );

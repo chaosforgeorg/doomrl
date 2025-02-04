@@ -11,6 +11,7 @@ type TDoomTextIO = class( TDoomIO )
 
     procedure WaitForAnimation; override;
     function AnimationsRunning : Boolean; override;
+    procedure AnimationWipe; override;
     procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); override;
     procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); override;
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
@@ -87,6 +88,11 @@ function TDoomTextIO.AnimationsRunning : Boolean;
 begin
   if Doom.State <> DSPlaying then Exit(False);
   Exit( not FTextMap.AnimationsFinished );
+end;
+
+procedure TDoomTextIO.AnimationWipe;
+begin
+  FTextMap.ClearAnimations;
 end;
 
 procedure TDoomTextIO.Mark(aCoord: TCoord2D; aColor: Byte; aChar: Char; aDuration: DWord; aDelay: DWord);
