@@ -331,21 +331,8 @@ register_ai "demon_ai"
 		melee = function( self ) return ai_tools.melee_action( self ) end,
 
 		pursue = function( self )
-			if self:direct_seek( self.move_to ) ~= MOVEOK then
-				local moves = {}
-				local dist = self:distance_to( player )
-				for c in self.position:around_coords() do
-					if player:distance_to(c) < dist and generator.is_empty(c, { EF_NOBEINGS, EF_NOBLOCK } ) then
-						table.insert(moves,c:clone())
-					end
-				end
-				if #moves > 0 then
-					if self:direct_seek( table.random_pick(moves) ) ~= MOVEOK then
-						self.scount = self.scount - 500
-					end
-				else
-					self.scount = self.scount - 200
-				end
+			if not aitk.pursue( self, player.position ) then
+				self.scount = self.scount - 500
 			end
 			self.assigned = false
 			return "thinking"
