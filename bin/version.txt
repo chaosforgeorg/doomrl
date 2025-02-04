@@ -1,6 +1,7 @@
 0.9.9.9 BETA 6
 [mod] -- GH#161: drop item action continues if no enemy/damage is present
 [fix] -- GH#000: emergency animation break added
+[fix] -- RCFIX : fixed multi-melee animations
 
 0.9.9.9 BETA 5
 [new] -- GH#129: post mortem view colored and highlighted

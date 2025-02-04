@@ -350,7 +350,7 @@ end;
 procedure TDoomGFXIO.addMeleeAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite );
 begin
   if Doom.State <> DSPlaying then Exit;
-  aDelay += FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, True, 0.5));
+  FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, True, 0.5));
   FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aTo, aFrom, aSprite, True, -0.5));
   if Player.UID = aUID then WaitForAnimation;
 end;
