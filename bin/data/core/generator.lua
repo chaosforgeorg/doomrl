@@ -654,6 +654,7 @@ function generator.generate_archi_level( settings )
 	core.log("generator.generate_archi_level()")
 	assert( settings, "no settings for archi level!" )
 	local data = nil
+	local layout = settings.layout
 	if settings.size then
 		data = settings
 	else
@@ -665,7 +666,12 @@ function generator.generate_archi_level( settings )
 			assert( data.size, "malformed data for archi level!" )
 		end
 	end
-		
+
+	layout = layout or data.layout
+	if layout then
+		layout = string.gsub( layout, "%s+", "" )
+	end
+
 	local wall_cell    = generator.styles[ level.style ].wall
 	local translation = {
 		["X"] = wall_cell,
@@ -697,7 +703,17 @@ function generator.generate_archi_level( settings )
 
 	for bx=1,blocks.x do
 		for by=1,blocks.y do
-			local block = table.random_pick( data )
+			local index = nil
+			if layout then
+				index = bx + (by-1) * blocks.x
+				index = string.sub( layout, index, index )
+			end
+			local block
+			if index then
+				block = table.random_pick( data[ index ] )
+			else
+			 	block = table.random_pick( data )
+			end
 			local pos   = coord.new( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
 			local tile  = generator.tile_new( block, pure_translation, true )
 			tile:flip_random()
