@@ -825,6 +825,12 @@ register_ai "archvile_ai"
 
 	states = {
 		thinking = function( self )
+			if math.random(4) == 1 then
+				self:ressurect(6)
+				self.scount = self.scount - 1000
+				return "thinking"
+			end
+
 			local visible = self:in_sight( player )
 
 			if visible then
@@ -834,8 +840,11 @@ register_ai "archvile_ai"
 					self:attack( player )
 					return "thinking"
 				elseif math.random(100) <= self.attackchance then
-					self.assigned = false
-					self.ai_state = "prepare"
+					self.attack_to = player.position
+					self.assigned = true
+					self:msg("", "The " .. self.name .. " raises his arms!" )
+					self.scount = self.scount - 2500
+					return "fire"
 				elseif dist < 4 then
 					self.ai_state = "flee"
 				else
@@ -849,11 +858,6 @@ register_ai "archvile_ai"
 				end
 			end
 
-			if math.random(4) == 1 then
-				-- should be above melee attack!
-				self.ai_state = "ressurect"
-			end
-
 			if not self.assigned then
 				local walk
 				if self.ai_state == "idle" then
@@ -864,9 +868,6 @@ register_ai "archvile_ai"
 					local pos = self.position
 					walk = pos + (pos - player.position)
 					area.FULL:clamp_coord( walk )
-				elseif self.ai_state == "prepare" then
-					self.attack_to = player.position
-					self.assigned = true
 				end
 				if walk then
 					self.move_to = walk
@@ -879,13 +880,6 @@ register_ai "archvile_ai"
 
 		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
 
-		--prepare and fire are a chain of processes before thinking reoccurs
-		prepare = function( self )
-			self:msg("", "The " .. self.name .. " raises his arms!" )
-			self.scount = self.scount - 2500
-			return "fire"
-		end,
-
 		fire = function( self )
 			self.assigned = false
 			if self:in_sight( player ) then
@@ -893,12 +887,6 @@ register_ai "archvile_ai"
 			else
 				self:fire( self.attack_to, self.eq.weapon )
 			end
-			return "thinking"
-		end,
-
-		ressurect = function( self )
-			self:ressurect(6)
-			self.scount = self.scount - 1000
 			return "thinking"
 		end,
 

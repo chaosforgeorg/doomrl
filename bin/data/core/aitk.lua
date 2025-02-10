@@ -154,7 +154,7 @@ end
 -- * has_ammo - entity has a weapon with ammo available
 function aitk.inventory_check( self, can_reload )
     local has_ammo, needs_reload = aitk.ammo_check( self )
-    if not melee_range and can_reload then
+    if needs_reload and can_reload then
         if self:reload() then
             return true, true
         else
