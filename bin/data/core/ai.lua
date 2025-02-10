@@ -16,11 +16,6 @@ function ai_tools.OnAction( self )
 	end
 end
 
--- Looks to see if a weapon is of any use
-function ai_tools.noammo_check( self )
-	return not (self.eq.weapon ~= nil and (self.eq.weapon.flags[ IF_NOAMMO ] or self.eq.weapon.ammo >= math.max( self.eq.weapon.shotcost, 1 ) or self.inv[items[self.eq.weapon.ammoid].id]) )
-end
-
 --
 -- ASSIGNMENT FUNCTIONS
 --
@@ -136,9 +131,6 @@ ai_tools.pursue_action( self, approach, wander )
 ** if an obstacle is found, unassign being, lower energy a bit
 -]]
 function ai_tools.pursue_action( self, approach, wander )
-	if self.eq.weapon ~= nil and not self.eq.weapon.flags[ IF_NOAMMO ] and (self.eq.weapon.ammo < math.max(self.eq.weapon.shotcost,1) or (self.eq.weapon.flags[ IF_PUMPACTION ] == true and self.eq.weapon.flags[ IF_CHAMBEREMPTY ] == true) ) then
-		if self:reload() then return "thinking" end
-	end
 	if self:has_property("boredom") then
 		if self.boredom == 0 then
 			self.assigned = false
@@ -194,11 +186,7 @@ ai_tools.attack_action( self )
 --]]
 function ai_tools.attack_action( self )
 	if self.eq.weapon ~= nil then
-		if not self.eq.weapon.flags[ IF_NOAMMO ] and (self.eq.weapon.ammo < math.max(self.eq.weapon.shotcost,1) or (self.eq.weapon.flags[ IF_PUMPACTION ] == true and self.eq.weapon.flags[ IF_CHAMBEREMPTY ] == true) ) then
-			self:reload()
-		else
-			self:fire( player, self.eq.weapon )
-		end
+		self:fire( player, self.eq.weapon )
 	end
 	return "thinking"
 end

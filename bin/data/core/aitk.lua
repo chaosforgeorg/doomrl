@@ -131,4 +131,16 @@ function aitk.try_heal_item( self )
     end
 	return false
 end
--- Looks to s
+
+function aitk.ammo_check( self )
+    if self.eq.weapon == nil then return false, false end
+    local w = self.eq.weapon
+    if w.flags[ IF_NOAMMO ] then return true, false end
+    if w.ammo >= math.max( w.shotcost, 1 ) then 
+        if w.flags[ IF_PUMPACTION ] and w.flags[ IF_CHAMBEREMPTY ] then return true, true end
+        return true, false 
+    end
+    if self.inv[ items[w.ammoid].id ] then return true, true end
+    return false, false
+end
+

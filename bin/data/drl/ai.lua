@@ -18,13 +18,21 @@ register_ai "former_ai"
 		thinking = function( self )
 			local dist    = self:distance_to( player )
 			local visible = self:in_sight( player )
-			local no_ammo = ai_tools.noammo_check( self )
+			local has_ammo, needs_reload = aitk.ammo_check( self )
+			if dist > 1 and needs_reload then
+				if self:reload() then
+					self.ai_state = "thinking"
+					return "thinking"
+				else
+					has_ammo = false
+				end
+			end
 
 			if visible then
 				self.boredom = 0
 				if dist == 1 then
 					self.ai_state = "melee"
-				elseif math.random(100) <= self.attackchance and not no_ammo then
+				elseif math.random(100) <= self.attackchance and has_ammo then
 					self.ai_state = "attack"
 				else
 					self.ai_state = "evade"
@@ -370,7 +378,15 @@ register_ai "cyberdemon_ai"
 		thinking = function( self )
 			local dist    = self:distance_to( player )
 			local visible = self:in_sight( player )
-			local no_ammo = self.eq.weapon.ammo < math.max( self.eq.weapon.shotcost, 1 ) and not self.inv[items[self.eq.weapon.ammoid].id]
+			local has_ammo, needs_reload = aitk.ammo_check( self )
+			if dist > 1 and needs_reload then
+				if self:reload() then
+					self.ai_state = "thinking"
+					return "thinking"
+				else
+					has_ammo = false
+				end
+			end
 
 			if dist <= self.vision then
 				local shoot = math.random(100)
@@ -381,7 +397,7 @@ register_ai "cyberdemon_ai"
 				end
 				if dist == 1 then
 					self.ai_state = "melee"
-				elseif not no_ammo and ( self.attacked or shoot ) then
+				elseif has_ammo and ( self.attacked or shoot ) then
 					self.ai_state = "attack"
 				else
 					self.assigned = false
@@ -392,7 +408,7 @@ register_ai "cyberdemon_ai"
 				self.ai_state = "pursue"
 			end
 
-			if no_ammo then
+			if not has_ammo then
 				self.ammo_regen = self.ammo_regen + 1
 				if self.ammo_regen > 7 then
 					self.ammo_regen = 0
@@ -507,8 +523,15 @@ register_ai "jc_ai"
 		thinking = function( self )
 			local dist    = self:distance_to( player )
 			local visible = self:in_sight( player )
-			local no_ammo = self.eq.weapon.ammo < math.max( self.eq.weapon.shotcost, 1 ) and not self.inv[items[self.eq.weapon.ammoid].id]
-
+			local has_ammo, needs_reload = aitk.ammo_check( self )
+			if dist > 1 and needs_reload then
+				if self:reload() then
+					self.ai_state = "thinking"
+					return "thinking"
+				else
+					has_ammo = false
+				end
+			end
 			local shoot = math.random(100)
 			if visible then
 				shoot = shoot <= self.attackchance
@@ -518,9 +541,9 @@ register_ai "jc_ai"
 			if self.attacked and math.random(3) == 1 then
 				self.ai_state = "teleport"
 				self.attacked = false
-			elseif no_ammo or (visible and math.random(4) == 1) or (not visible and math.random(8) == 1)then
+			elseif not has_ammo or (visible and math.random(4) == 1) or (not visible and math.random(8) == 1)then
 				self.ai_state = "summon"
-			elseif not no_ammo and ( self.attacked or shoot ) then
+			elseif has_ammo and ( self.attacked or shoot ) then
 				self.ai_state = "attack"
 			else
 				self.ai_state = "pursue"
@@ -598,13 +621,22 @@ register_ai "melee_ranged_ai"
 	states = {
 		thinking = function( self )
 			local visible = self:in_sight( player )
+			local has_ammo, needs_reload = aitk.ammo_check( self )
+			if needs_reload then
+				if self:reload() then
+					self.ai_state = "thinking"
+					return "thinking"
+				else
+					has_ammo = false
+				end
+			end
 
 			if visible then
 				local dist = self:distance_to( player )
 				self.boredom = 0
 				if dist == 1 then
 					self.ai_state = "melee"
-				elseif not ai_tools.noammo_check( self ) and math.random(100) <= self.attackchance then
+				elseif has_ammo and math.random(100) <= self.attackchance then
 					self.ai_state = "attack"
 				else
 					self.ai_state = "pursue"
@@ -662,13 +694,22 @@ register_ai "ranged_ai"
 	states = {
 		thinking = function( self )
 			local visible = self:in_sight( player )
+			local has_ammo, needs_reload = aitk.ammo_check( self )
+			if needs_reload then
+				if self:reload() then
+					self.ai_state = "thinking"
+					return "thinking"
+				else
+					has_ammo = false
+				end
+			end
 
 			if visible then
 				local dist    = self:distance_to( player )
 				self.boredom = 0
 				if dist == 1 then
 					self.ai_state = "melee"
-				elseif not ai_tools.noammo_check( self ) and math.random(100) <= self.attackchance then
+				elseif has_ammo and math.random(100) <= self.attackchance then
 					self.ai_state = "attack"
 				else
 					self.ai_state = "pursue"
@@ -726,13 +767,22 @@ register_ai "flee_ranged_ai"
 	states = {
 		thinking = function( self )
 			local visible = self:in_sight( player )
+			local has_ammo, needs_reload = aitk.ammo_check( self )
+			if needs_reload then
+				if self:reload() then
+					self.ai_state = "thinking"
+					return "thinking"
+				else
+					has_ammo = false
+				end
+			end
 
 			if visible then
 				local dist    = self:distance_to( player )
 				self.boredom = 0
 				if dist == 1 then
 					self.ai_state = "melee"
-				elseif not ai_tools.noammo_check( self ) and math.random(100) <= self.attackchance then
+				elseif has_ammo and math.random(100) <= self.attackchance then
 					self.ai_state = "attack"
 				elseif dist < 4 then
 					self.ai_state = "flee"
