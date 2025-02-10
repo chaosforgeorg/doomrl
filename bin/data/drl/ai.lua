@@ -18,14 +18,10 @@ register_ai "former_ai"
 		thinking = function( self )
 			local dist    = self:distance_to( player )
 			local visible = self:in_sight( player )
-			local has_ammo, needs_reload = aitk.ammo_check( self )
-			if dist > 1 and needs_reload then
-				if self:reload() then
-					self.ai_state = "thinking"
-					return "thinking"
-				else
-					has_ammo = false
-				end
+			local action, has_ammo = aitk.inventory_check( self, dist > 1 )
+			if action then
+				self.ai_state = "thinking"
+				return "thinking"
 			end
 
 			if visible then
@@ -43,11 +39,6 @@ register_ai "former_ai"
 				if self.boredom > 8 then
 					self.ai_state = "idle"
 				end
-			end
-
-			if self.hp < self.hpmax / 2 and aitk.try_heal_item( self ) then
-				self.ai_state = "thinking"
-				return "thinking"
 			end
 
 			if not self.assigned then
@@ -378,14 +369,10 @@ register_ai "cyberdemon_ai"
 		thinking = function( self )
 			local dist    = self:distance_to( player )
 			local visible = self:in_sight( player )
-			local has_ammo, needs_reload = aitk.ammo_check( self )
-			if dist > 1 and needs_reload then
-				if self:reload() then
-					self.ai_state = "thinking"
-					return "thinking"
-				else
-					has_ammo = false
-				end
+			local action, has_ammo = aitk.inventory_check( self, dist > 1 )
+			if action then
+				self.ai_state = "thinking"
+				return "thinking"
 			end
 
 			if dist <= self.vision then
@@ -415,11 +402,6 @@ register_ai "cyberdemon_ai"
 					self.inv:add("rocket")
 					self.inv:add("rocket")
 				end
-			end
-
-			if self.hp < self.hpmax / 2 and aitk.try_heal_item( self ) then
-				self.ai_state = "thinking"
-				return "thinking"
 			end
 
 			local walk
@@ -467,10 +449,6 @@ register_ai "cyberdemon_ai"
 				end
 				self.assigned = false
 			else
-				if self.eq.weapon.ammo < math.max( self.eq.weapon.shotcost ) then
-					self:reload()
-					return "thinking"
-				end
 				local move_check,move_coord = self:path_next()
 				if move_check ~= MOVEOK then
 					if move_check == MOVEDOOR then
@@ -523,15 +501,12 @@ register_ai "jc_ai"
 		thinking = function( self )
 			local dist    = self:distance_to( player )
 			local visible = self:in_sight( player )
-			local has_ammo, needs_reload = aitk.ammo_check( self )
-			if dist > 1 and needs_reload then
-				if self:reload() then
-					self.ai_state = "thinking"
-					return "thinking"
-				else
-					has_ammo = false
-				end
+			local action, has_ammo = aitk.inventory_check( self, dist > 1 )
+			if action then
+				self.ai_state = "thinking"
+				return "thinking"
 			end
+
 			local shoot = math.random(100)
 			if visible then
 				shoot = shoot <= self.attackchance

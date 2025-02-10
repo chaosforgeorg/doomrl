@@ -132,6 +132,10 @@ function aitk.try_heal_item( self )
 	return false
 end
 
+-- aitk.ammo_check( self )
+-- returns has_ammo, needs reload
+-- * has_ammo - entity has a weapon with ammo available
+-- * needs_reload - entity needs to reload to fire
 function aitk.ammo_check( self )
     if self.eq.weapon == nil then return false, false end
     local w = self.eq.weapon
@@ -144,3 +148,23 @@ function aitk.ammo_check( self )
     return false, false
 end
 
+-- aitk.inventory_check( self, can_reload )
+-- returns action_performed, has_ammo
+-- * action_performed - entity has performed an action
+-- * has_ammo - entity has a weapon with ammo available
+function aitk.inventory_check( self, can_reload )
+    local has_ammo, needs_reload = aitk.ammo_check( self )
+    if not melee_range and can_reload then
+        if self:reload() then
+            return true, true
+        else
+            has_ammo = false
+        end
+    end
+
+    if self.hp < self.hpmax / 2 and aitk.try_heal_item( self ) then
+        return true, has_ammo
+    end    
+
+    return false, has_ammo
+end
