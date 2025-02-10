@@ -171,15 +171,6 @@ function ai_tools.pursue_action( self, approach, wander )
 end
 
 --[[
-ai_tools.melee_action( self )
-* use melee attack on player
---]]
-function ai_tools.melee_action( self )
-	self:attack( player )
-	return "thinking"
-end
-
---[[
 ai_tools.attack_action( self )
 * if being has an ammo-carrying weapon with zero ammo, reload
 * otherwise, use ranged attack on player
