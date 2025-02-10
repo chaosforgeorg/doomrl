@@ -37,8 +37,9 @@ register_ai "former_ai"
 				end
 			end
 
-			if self.hp < self.hpmax / 2 and ai_tools.use_item_check( self ) then
-				self.ai_state = "use_item"
+			if self.hp < self.hpmax / 2 and aitk.try_heal_item( self ) then
+				self.ai_state = "thinking"
+				return "thinking"
 			end
 
 			if not self.assigned then
@@ -76,8 +77,6 @@ register_ai "former_ai"
 		melee = function( self ) return ai_tools.melee_action( self ) end,
 
 		attack = function( self ) return ai_tools.attack_action( self ) end,
-
-		use_item = function( self ) return ai_tools.use_item_action( self ) end,
 
 		pursue = function( self ) return ai_tools.pursue_action( self, false, false ) end,
 
@@ -140,8 +139,9 @@ register_ai "baron_ai"
 				end
 			end
 
-			if self.hp < self.hpmax / 2 and ai_tools.use_item_check( self ) then
-				self.ai_state = "use_item"
+			if self.hp < self.hpmax / 2 and aitk.try_heal_item( self ) then
+				self.ai_state = "thinking"
+				return "thinking"
 			end
 
 			if not self.assigned then
@@ -165,8 +165,6 @@ register_ai "baron_ai"
 		melee = function( self ) return ai_tools.melee_action( self ) end,
 
 		attack = function( self ) return ai_tools.attack_action( self ) end,
-
-		use_item = function( self ) return ai_tools.use_item_action( self ) end,
 
 		pursue = function( self ) return ai_tools.pursue_action( self, false, false ) end,
 	}
@@ -403,8 +401,9 @@ register_ai "cyberdemon_ai"
 				end
 			end
 
-			if self.hp < self.hpmax / 2 and ai_tools.use_item_check( self ) then
-				self.ai_state = "use_item"
+			if self.hp < self.hpmax / 2 and aitk.try_heal_item( self ) then
+				self.ai_state = "thinking"
+				return "thinking"
 			end
 
 			local walk
@@ -438,8 +437,6 @@ register_ai "cyberdemon_ai"
 		melee = function( self ) return ai_tools.melee_action( self )	end,
 
 		attack = function( self ) return ai_tools.attack_action( self ) end,
-
-		use_item = function( self ) return ai_tools.use_item_action( self ) end,
 
 		pursue = function( self )
 			if math.random(30) == 1 then

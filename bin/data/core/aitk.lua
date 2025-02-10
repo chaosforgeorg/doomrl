@@ -116,3 +116,19 @@ function aitk.flock_hunt( self )
     return "hunt"
 end
 
+function aitk.try_heal_item( self )
+    local item
+    for i in self.inv:items() do
+		if i and i.flags[ IF_AIHEALPACK ] then
+            item = i
+			break
+		end
+	end
+    if item then
+        self:use( item )
+        self.scount = self.scount - 1000
+        return true
+    end
+	return false
+end
+-- Looks to s

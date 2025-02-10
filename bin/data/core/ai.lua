@@ -16,15 +16,6 @@ function ai_tools.OnAction( self )
 	end
 end
 
--- Returns an item with IF_AIHEALPACK or nil
-function ai_tools.use_item_check( self )
-	for item in self.inv:items() do
-		if item and item.flags[ IF_AIHEALPACK ] then
-			return item
-		end
-	end
-	return nil
-end
 -- Looks to see if a weapon is of any use
 function ai_tools.noammo_check( self )
 	return not (self.eq.weapon ~= nil and (self.eq.weapon.flags[ IF_NOAMMO ] or self.eq.weapon.ammo >= math.max( self.eq.weapon.shotcost, 1 ) or self.inv[items[self.eq.weapon.ammoid].id]) )
@@ -209,17 +200,5 @@ function ai_tools.attack_action( self )
 			self:fire( player, self.eq.weapon )
 		end
 	end
-	return "thinking"
-end
-
---[[
-ai_tools.use_item_action( self )
-* check for first useable item in inventory
-* use item, lower energy
---]]
-function ai_tools.use_item_action( self )
-	local item = ai_tools.use_item_check( self )
-	self:use( item )
-	self.scount = self.scount - 1000
 	return "thinking"
 end
