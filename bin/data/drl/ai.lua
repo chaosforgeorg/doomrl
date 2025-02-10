@@ -19,10 +19,7 @@ register_ai "former_ai"
 			local dist    = self:distance_to( player )
 			local visible = self:in_sight( player )
 			local action, has_ammo = aitk.inventory_check( self, dist > 1 )
-			if action then
-				self.ai_state = "thinking"
-				return "thinking"
-			end
+			if action then return "thinking" end
 
 			if visible then
 				self.boredom = 0
@@ -139,7 +136,6 @@ register_ai "baron_ai"
 			end
 
 			if self.hp < self.hpmax / 2 and aitk.try_heal_item( self ) then
-				self.ai_state = "thinking"
 				return "thinking"
 			end
 
@@ -368,7 +364,6 @@ register_ai "cyberdemon_ai"
 			local visible = self:in_sight( player )
 			local action, has_ammo = aitk.inventory_check( self, dist > 1 )
 			if action then
-				self.ai_state = "thinking"
 				return "thinking"
 			end
 
@@ -500,7 +495,6 @@ register_ai "jc_ai"
 			local visible = self:in_sight( player )
 			local action, has_ammo = aitk.inventory_check( self, dist > 1 )
 			if action then
-				self.ai_state = "thinking"
 				return "thinking"
 			end
 
@@ -596,7 +590,6 @@ register_ai "melee_ranged_ai"
 			local has_ammo, needs_reload = aitk.ammo_check( self )
 			if needs_reload then
 				if self:reload() then
-					self.ai_state = "thinking"
 					return "thinking"
 				else
 					has_ammo = false
@@ -668,7 +661,6 @@ register_ai "ranged_ai"
 			local has_ammo, needs_reload = aitk.ammo_check( self )
 			if needs_reload then
 				if self:reload() then
-					self.ai_state = "thinking"
 					return "thinking"
 				else
 					has_ammo = false
@@ -740,7 +732,6 @@ register_ai "flee_ranged_ai"
 			local has_ammo, needs_reload = aitk.ammo_check( self )
 			if needs_reload then
 				if self:reload() then
-					self.ai_state = "thinking"
 					return "thinking"
 				else
 					has_ammo = false
