@@ -27,7 +27,8 @@ register_ai "former_ai"
 					self:attack( player )
 					return "thinking"
 				elseif math.random(100) <= self.attackchance and has_ammo then
-					self.ai_state = "attack"
+					self:fire( player, self.eq.weapon )
+					return "thinking"
 				else
 					self.ai_state = "evade"
 				end
@@ -70,8 +71,6 @@ register_ai "former_ai"
 		end,
 
 		idle = function( self ) return ai_tools.idle_action_ranged( self, true ) end,
-
-		attack = function( self ) return ai_tools.attack_action( self ) end,
 
 		pursue = function( self ) return ai_tools.pursue_action( self, false, false ) end,
 
@@ -117,13 +116,18 @@ register_ai "baron_ai"
 		thinking = function( self )
 			local visible = self:in_sight( player )
 
+			if self.hp < self.hpmax / 2 and aitk.try_heal_item( self ) then
+				return "thinking"
+			end
+
 			if visible then
 				self.boredom = 0
 				if self:distance_to( player ) == 1 then
 					self:attack( player )
 					return "thinking"
 				elseif math.random(100) <= self.attackchance then
-					self.ai_state = "attack"
+					self:fire( player, self.eq.weapon )
+					return "thinking"
 				else
 					self.ai_state = "pursue"
 				end
@@ -133,10 +137,6 @@ register_ai "baron_ai"
 				if self.boredom > 8 and not self.flags[BF_HUNTING] then
 					self.ai_state = "idle"
 				end
-			end
-
-			if self.hp < self.hpmax / 2 and aitk.try_heal_item( self ) then
-				return "thinking"
 			end
 
 			if not self.assigned then
@@ -156,8 +156,6 @@ register_ai "baron_ai"
 		end,
 
 		idle = function( self ) return ai_tools.idle_action_ranged( self, true ) end,
-
-		attack = function( self ) return ai_tools.attack_action( self ) end,
 
 		pursue = function( self ) return ai_tools.pursue_action( self, false, false ) end,
 	}
@@ -387,7 +385,8 @@ register_ai "cyberdemon_ai"
 					self:attack( player )
 					return "thinking"
 				elseif has_ammo and ( self.attacked or shoot ) then
-					self.ai_state = "attack"
+					self:fire( player, self.eq.weapon )
+					return "thinking"
 				else
 					self.assigned = false
 					self.ai_state = "pursue"
@@ -425,8 +424,6 @@ register_ai "cyberdemon_ai"
 			end
 			return self.ai_state
 		end,
-
-		attack = function( self ) return ai_tools.attack_action( self ) end,
 
 		pursue = function( self )
 			if math.random(30) == 1 then
@@ -510,7 +507,8 @@ register_ai "jc_ai"
 			elseif not has_ammo or (visible and math.random(4) == 1) or (not visible and math.random(8) == 1)then
 				self.ai_state = "summon"
 			elseif has_ammo and ( self.attacked or shoot ) then
-				self.ai_state = "attack"
+				self:fire( player, self.eq.weapon )
+				return "thinking"
 			else
 				self.ai_state = "pursue"
 			end
@@ -530,8 +528,6 @@ register_ai "jc_ai"
 			end
 			return self.ai_state
 		end,
-
-		attack = function( self ) return ai_tools.attack_action( self ) end,
 
 		pursue = function( self ) return ai_tools.pursue_action( self, false, false ) end,
 
@@ -603,7 +599,8 @@ register_ai "melee_ranged_ai"
 					self:attack( player )
 					return "thinking"
 				elseif has_ammo and math.random(100) <= self.attackchance then
-					self.ai_state = "attack"
+					self:fire( player, self.eq.weapon )
+					return "thinking"
 				else
 					self.ai_state = "pursue"
 				end
@@ -632,8 +629,6 @@ register_ai "melee_ranged_ai"
 		end,
 
 		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
-
-		attack = function( self ) return ai_tools.attack_action( self ) end,
 
 		pursue = function( self ) return ai_tools.pursue_action( self, true, false ) end,
 	}
@@ -674,7 +669,8 @@ register_ai "ranged_ai"
 					self:attack( player )
 					return "thinking"
 				elseif has_ammo and math.random(100) <= self.attackchance then
-					self.ai_state = "attack"
+					self:fire( player, self.eq.weapon )
+					return "thinking"
 				else
 					self.ai_state = "pursue"
 				end
@@ -703,8 +699,6 @@ register_ai "ranged_ai"
 		end,
 
 		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
-
-		attack = function( self ) return ai_tools.attack_action( self ) end,
 
 		pursue = function( self ) return ai_tools.pursue_action( self, true, true) end,
 	}
@@ -745,7 +739,8 @@ register_ai "flee_ranged_ai"
 					self:attack( player )
 					return "thinking"
 				elseif has_ammo and math.random(100) <= self.attackchance then
-					self.ai_state = "attack"
+					self:fire( player, self.eq.weapon )
+					return "thinking"
 				elseif dist < 4 then
 					self.ai_state = "flee"
 				else
@@ -780,8 +775,6 @@ register_ai "flee_ranged_ai"
 		end,
 
 		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
-
-		attack = function( self ) return ai_tools.attack_action( self ) end,
 
 		flee = function( self )
 			if self:distance_to( self.move_to ) == 0 then
@@ -1018,7 +1011,8 @@ register_ai "teleboss_ai"
 					self:attack( player )
 					return "thinking"
 				elseif math.random(100) <= self.attackchance then
-					self.ai_state = "attack"
+					self:fire( player, self.eq.weapon )
+					return "thinking"
 				end
 			end
 			no_melee = false
@@ -1058,8 +1052,6 @@ register_ai "teleboss_ai"
 			end
 			return(self.ai_state)
 		end,
-
-		attack = function( self ) return ai_tools.attack_action( self ) end,
 
 		hunt = function( self )
 			if math.random(30) == 1 then
@@ -1250,7 +1242,8 @@ register_ai "mastermind_ai"
 					end
 					return "thinking"
 				elseif dist < 4 then
-					self.ai_state = "attack_line"
+					self:fire( player, self.eq.weapon )
+					return "thinking"
 				else
 					self.ai_state = "attack_spray"
 				end
@@ -1319,8 +1312,6 @@ register_ai "mastermind_ai"
 
 			return self.ai_state
 		end,
-
-		attack_line = function( self ) return ai_tools.attack_action( self ) end,
 
 		attack_spray = function( self )
 			local dist = self:distance_to( player )
