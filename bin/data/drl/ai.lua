@@ -2,97 +2,14 @@ register_ai "former_ai"
 {
 
 	OnCreate = function( self )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "assigned", false )
-		self:add_property( "boredom", 9 ) --idle triggers for boredom > 8
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+		aitk.basic_init( self, true, true )
 	end,
 
-	OnAttacked = function( self )
-		self.boredom = 0
-		self.assigned = false
-	end,
-
+	OnAttacked = aitk.basic_on_attacked, 
 	states = {
-		thinking = function( self )
-			local dist    = self:distance_to( player )
-			local visible = self:in_sight( player )
-			local action, has_ammo = aitk.inventory_check( self, dist > 1 )
-			if action then return "thinking" end
-
-			if visible then
-				self.boredom = 0
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				elseif math.random(100) <= self.attackchance and has_ammo then
-					self:fire( player, self.eq.weapon )
-					return "thinking"
-				else
-					self.ai_state = "evade"
-				end
-			else
-				self.ai_state = "pursue"
-				self.boredom = self.boredom + 1
-				if self.boredom > 8 then
-					self.ai_state = "idle"
-				end
-			end
-
-			if not self.assigned then
-				local walk
-				if self.ai_state == "idle" then
-					walk = ai_tools.idle_assignment( self, true )
-				elseif self.ai_state == "pursue" then
-					walk = player.position
-				elseif self.ai_state == "evade" then
-					local s = self.position
-					local p = player.position
-					if dist < 4 then
-						walk = s + (s - p)
-						area.FULL:clamp_coord( walk )
-						if coord.distance( p, s ) >= coord.distance( p, walk ) then
-							walk = area.around( s, 1 ):random_edge_coord()
-						end
-					else
-						local v = s - p
-						walk = table.random_pick{ p+coord.new( -v.y, v.x ), p+coord.new( v.y, -v.x ) }
-					end
-					area.FULL:clamp_coord( walk )
-				end
-				if walk then
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40 )
-					self.assigned = true
-				end
-			end
-			return self.ai_state
-		end,
-
-		idle = function( self ) return ai_tools.idle_action_ranged( self, true ) end,
-
-		pursue = function( self ) return ai_tools.pursue_action( self, false, false ) end,
-
-		evade = function( self )
-			if self:distance_to( self.move_to ) == 0 then
-				self.assigned = false
-			else
-				local move_check = self:path_next()
-				if move_check ~= MOVEOK then
-					if not self:path_find( self.move_to, 10, 40 ) then
-						self.assigned = false
-						self.scount = self.scount - 200
-					else
-						if self:path_next() ~= MOVEOK then
-							self.assigned = false
-							self.scount = self.scount - 200
-						end
-					end
-				end
-			end
-			return "thinking"
-		end,
+		idle   = aitk.basic_smart_idle,
+		pursue = aitk.basic_pursue,
+		hunt   = aitk.evade_hunt,
 	}
 }
 
