@@ -351,6 +351,9 @@ begin
   FBonus.ToHit      := Table.getInteger('tohit');
   FBonus.ToHitMelee := Table.getInteger('tohitmelee');
   FBonus.ToDam      := Table.getInteger('todam');
+  FBonus.Move       := Table.getInteger('movetime',100);
+  FBonus.Fire       := Table.getInteger('firetime',100);
+  FBonus.Reload     := Table.getInteger('reloadtime',100);
   FExpValue         := Table.getInteger('xp');
 
   FSpeed      := Table.getInteger('speed');
@@ -363,10 +366,6 @@ begin
   FHPNom := FHP;
   FSpeedCount := 900+Random(90);
 
-  FTimes.Reload := 100;
-  FTimes.Move   := 100;
-  FTimes.Fire   := 100;
-  
   FBonus.Pistol := 0;
   FBonus.Rapid  := 0;
   FBonus.Tech   := 0;
