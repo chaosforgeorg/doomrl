@@ -324,7 +324,7 @@ function aitk.basic_smart_idle( self )
 	return "idle"
 end
 
-function aitk.evade_hunt( self )
+function aitk.try_hunt( self )
     if not self.target then return "idle" end
     local target = uids.get( self.target )
     if not target then
@@ -349,6 +349,15 @@ function aitk.evade_hunt( self )
         self:fire( target, self.eq.weapon )
         return "hunt"
     end
+
+    if math.random(30) == 1 then self:play_sound( "act" ) end
+
+    return false, dist, target
+end
+
+function aitk.evade_hunt( self )
+    local action, dist, target = aitk.try_hunt( self )
+    if action then return action end
 
     if self.move_to then
         if self:distance_to( self.move_to ) == 0 then
@@ -386,6 +395,26 @@ function aitk.evade_hunt( self )
         self.scount  = self.scount - 500
         self.move_to = false
         core.log('path fail')
+    end
+    return "hunt"
+end
+
+function aitk.pursue_hunt( self )
+    local action, dist, target = aitk.try_hunt( self )
+    if action then return action end
+
+    if self.move_to == target.position then
+        if aitk.move_path( self ) then
+            return "hunt"
+        end
+    end
+    self.move_to = target.position
+
+    if not self:path_find( self.move_to, 10, 40 ) or ( not aitk.move_path( self ) ) then
+        self.move_to = false
+        if not aitk.flock_seek( self, target.position ) then
+            self.scount = self.scount - 1000
+        end
     end
     return "hunt"
 end
