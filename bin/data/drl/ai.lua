@@ -131,21 +131,15 @@ register_ai "demon_ai"
 {
 
 	OnCreate = function( self )
-		aitk.flock_init( self )
+		aitk.flock_init( self, 1, 4 )
 	end,
 
-	OnAttacked = function( self, target )
-		aitk.flock_alert( self, 4, target )
-	end,
-
+	OnAttacked = aitk.flock_on_attacked,
 	states = {
-		idle = function( self )
-			return aitk.flock_idle( self, 1, 4 )
-		end,
+		idle = aitk.flock_idle,
 		hunt = aitk.flock_hunt,
 	}
 }
-
 
 register_ai "melee_seek_ai"
 {
@@ -432,141 +426,29 @@ register_ai "jc_ai"
 
 register_ai "melee_ranged_ai"
 {
-
 	OnCreate = function( self )
-		self:add_property( "boredom", 9 ) --idle triggers for boredom > 8
-		self:add_property( "assigned", false )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+		aitk.basic_init( self, false, false )
 	end,
 
-	OnAttacked = function( self )
-		self.boredom = 0
-		self.assigned = false
-	end,
-
+	OnAttacked = aitk.basic_on_attacked,
 	states = {
-		thinking = function( self )
-			local visible = self:in_sight( player )
-			local has_ammo, needs_reload = aitk.ammo_check( self )
-			if needs_reload then
-				if self:reload() then
-					return "thinking"
-				else
-					has_ammo = false
-				end
-			end
-
-			if visible then
-				local dist = self:distance_to( player )
-				self.boredom = 0
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				elseif has_ammo and math.random(100) <= self.attackchance then
-					self:fire( player, self.eq.weapon )
-					return "thinking"
-				else
-					self.ai_state = "pursue"
-				end
-			else
-				self.ai_state = "pursue"
-				self.boredom = self.boredom + 1
-				if self.boredom > 8 then
-					self.ai_state = "idle"
-				end
-			end
-
-			if not self.assigned then
-				local walk
-				if self.ai_state == "idle" then
-					walk = ai_tools.idle_assignment( self, false )
-				elseif self.ai_state == "pursue" then
-					walk = player.position
-				end
-				if walk then
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40)
-					self.assigned = true
-				end
-			end
-			return self.ai_state
-		end,
-
-		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
-
-		pursue = function( self ) return ai_tools.pursue_action( self, true, false ) end,
+		idle   = aitk.basic_smart_idle,
+		pursue = aitk.basic_pursue,
+		hunt   = aitk.pursue_hunt,
 	}
 }
 
 register_ai "ranged_ai"
 {
-
 	OnCreate = function( self )
-		self:add_property( "boredom", 9 ) --idle triggers for boredom > 8
-		self:add_property( "assigned", false )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+		aitk.basic_init( self, false, false )
 	end,
 
-	OnAttacked = function( self )
-		self.boredom = 0
-		self.assigned = false
-	end,
-
+	OnAttacked = aitk.basic_on_attacked,
 	states = {
-		thinking = function( self )
-			local visible = self:in_sight( player )
-			local has_ammo, needs_reload = aitk.ammo_check( self )
-			if needs_reload then
-				if self:reload() then
-					return "thinking"
-				else
-					has_ammo = false
-				end
-			end
-
-			if visible then
-				local dist    = self:distance_to( player )
-				self.boredom = 0
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				elseif has_ammo and math.random(100) <= self.attackchance then
-					self:fire( player, self.eq.weapon )
-					return "thinking"
-				else
-					self.ai_state = "pursue"
-				end
-			else
-				self.ai_state = "pursue"
-				self.boredom = self.boredom + 1
-				if self.boredom > 8 then
-					self.ai_state = "idle"
-				end
-			end
-
-			if not self.assigned then
-				local walk
-				if self.ai_state == "idle" then
-					walk = ai_tools.idle_assignment( self, false )
-				elseif self.ai_state == "pursue" then
-					walk = player.position
-				end
-				if walk then
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40)
-					self.assigned = true
-				end
-			end
-			return self.ai_state
-		end,
-
-		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
-
-		pursue = function( self ) return ai_tools.pursue_action( self, true, true) end,
+		idle   = aitk.basic_smart_idle,
+		pursue = aitk.basic_pursue,
+		hunt   = aitk.ranged_hunt,
 	}
 }
 

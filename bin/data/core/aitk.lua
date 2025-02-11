@@ -48,16 +48,18 @@ function aitk.flock_seek( self, target )
     return false
 end
 
-function aitk.flock_init( self )
+function aitk.flock_init( self, flock_min, flock_max )
     self:add_property( "ai_state", "idle" )
     self:add_property( "boredom", 6 )
+    self:add_property( "flock_min", flock_min or 1 )
+    self:add_property( "flock_max", flock_max or 4 )
     self:add_property( "move_to", false )
     self:add_property( "target", false )
 end
 
-function aitk.flock_alert( self, range, target )
+function aitk.flock_on_attacked( self, target )
     local target = target or self.target
-    for b in level:beings_in_range( self, range ) do
+    for b in level:beings_in_range( self, self.flock_max or 4 ) do
         if b.id == self.id then
             b.target   = self.target
             b.boredom  = 0
@@ -69,13 +71,13 @@ end
 function aitk.flock_scan( self )
     self.target = aitk.scan( self )
     if self.target then
-        aitk.flock_alert( self, 4 )
+        aitk.flock_on_attacked( self )
         return true
     end
     return false
 end
 
-function aitk.flock_idle( self, dmin, dmax )
+function aitk.flock_idle( self )
     if aitk.flock_scan( self ) then
         return "hunt"
     end
@@ -83,7 +85,7 @@ function aitk.flock_idle( self, dmin, dmax )
         self:play_sound( "act" )
     end
     if not self.move_to then
-        self.move_to = self:flock_target( self.vision, dmin or 1, dmax or 4 )
+        self.move_to = self:flock_target( self.vision, self.flock_min or 1, self.flock_max or 4 )
     end
 
     if not cells[ level.map[self.move_to] ].flags[ CF_HAZARD ] or self.flags[ BF_ENVIROSAFE ] == true then
@@ -415,6 +417,34 @@ function aitk.pursue_hunt( self )
         if not aitk.flock_seek( self, target.position ) then
             self.scount = self.scount - 1000
         end
+    end
+    return "hunt"
+end
+
+function aitk.ranged_hunt( self )
+    local action, dist, target = aitk.try_hunt( self )
+    if action then return action end
+
+    local target = target.position
+    if dist < 6 and math.random(3) > 1 then
+        for _=1,3 do
+            local c = area.around( self.position, 1 ):random_coord() 
+            if level:is_passable( c ) then
+                target = c
+                break
+            end
+        end
+    end
+
+    if self.move_to == target then
+        if aitk.move_path( self ) then
+            return "hunt"
+        end
+    end
+    self.move_to = target
+    if not self:path_find( self.move_to, 10, 40 ) or ( not aitk.move_path( self ) ) then
+        self.move_to = false
+        self.scount  = self.scount - 1000
     end
     return "hunt"
 end
