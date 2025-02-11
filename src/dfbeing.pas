@@ -351,9 +351,9 @@ begin
   FBonus.ToHit      := Table.getInteger('tohit');
   FBonus.ToHitMelee := Table.getInteger('tohitmelee');
   FBonus.ToDam      := Table.getInteger('todam');
-  FBonus.Move       := Table.getInteger('movetime',100);
-  FBonus.Fire       := Table.getInteger('firetime',100);
-  FBonus.Reload     := Table.getInteger('reloadtime',100);
+  FTimes.Move       := Table.getInteger('movetime',100);
+  FTimes.Fire       := Table.getInteger('firetime',100);
+  FTimes.Reload     := Table.getInteger('reloadtime',100);
   FExpValue         := Table.getInteger('xp');
 
   FSpeed      := Table.getInteger('speed');
