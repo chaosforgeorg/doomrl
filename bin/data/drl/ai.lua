@@ -1,4 +1,4 @@
-register_ai "former_ai"
+register_ai "smart_evasive_ai"
 {
 
 	OnCreate = function( self )
@@ -13,7 +13,7 @@ register_ai "former_ai"
 	}
 }
 
-register_ai "baron_ai"
+register_ai "smart_hybrid_ai"
 {
 	OnCreate = function( self )
 		aitk.basic_init( self, true, true )
@@ -26,7 +26,7 @@ register_ai "baron_ai"
 		hunt   = aitk.pursue_hunt,
 	}
 }
-register_ai "lostsoul_ai"
+register_ai "charger_ai"
 {
 	OnCreate = function( self )
 		aitk.charge_init( self, 30 )
@@ -41,7 +41,7 @@ register_ai "lostsoul_ai"
 	}
 }
 
-register_ai "demon_ai"
+register_ai "flock_ai"
 {
 
 	OnCreate = function( self )
@@ -55,7 +55,334 @@ register_ai "demon_ai"
 	}
 }
 
-register_ai "melee_seek_ai"
+register_ai "melee_ranged_ai"
+{
+	OnCreate = function( self )
+		aitk.basic_init( self, false, false )
+	end,
+
+	OnAttacked = aitk.basic_on_attacked,
+	states = {
+		idle   = aitk.basic_smart_idle,
+		pursue = aitk.basic_pursue,
+		hunt   = aitk.pursue_hunt,
+	}
+}
+
+register_ai "ranged_ai"
+{
+	OnCreate = function( self )
+		aitk.basic_init( self, false, false )
+	end,
+
+	OnAttacked = aitk.basic_on_attacked,
+	states = {
+		idle   = aitk.basic_smart_idle,
+		pursue = aitk.basic_pursue,
+		hunt   = aitk.ranged_hunt,
+	}
+}
+
+register_ai "sequential_ai"
+{
+
+	OnCreate = function( self )
+		self:add_property( "boredom", 10 ) --idle triggers for boredom > 9
+		self:add_property( "assigned", false )
+		self:add_property( "shots", 0 )
+		self:add_property( "move_to", coord.new(0,0) )
+		self:add_property( "attack_to", coord.new(0,0) )
+		self:add_property( "ai_state", "thinking" )
+		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+	end,
+
+	OnAttacked = function( self )
+		self.boredom = 0
+		self.shots = 0
+		self.assigned = false
+		self.ai_state = "thinking"
+	end,
+
+	states = {
+		thinking = function( self )
+			local dist    = self:distance_to( player )
+			local visible = self:in_sight( player )
+
+			if visible then
+				self.boredom = 0
+				if dist == 1 then
+					self:attack( player )
+					return "thinking"
+				elseif math.random(100) <= self.attackchance and self.shots == 0 then
+					self.assigned = false
+					self.ai_state = "fire"
+				else
+					self.ai_state = "pursue"
+				end
+			else
+				self.ai_state = "pursue"
+				self.boredom = self.boredom + 1
+				if self.boredom > 8 then
+					self.ai_state = "idle"
+				end
+			end
+
+			if self.shots > 0 then self.shots = self.shots - 1 end
+
+			if not self.assigned then
+				local walk
+				if self.ai_state == "idle" then
+					walk = ai_tools.idle_assignment( self, false )
+				elseif self.ai_state == "pursue" then
+					walk = player.position
+				elseif self.ai_state == "fire" then
+					self:play_sound( "attack" )
+					self.attack_to = player.position
+					self.shots = 2 + math.random(3)
+					self.assigned = true
+				end
+				if walk then
+					self.move_to = walk
+					self:path_find( self.move_to, 10, 40)
+					self.assigned = true
+				end
+			end
+			return self.ai_state
+		end,
+
+		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
+
+		--has potential loop uninterrupted by thinking
+		fire = function( self )
+			local next_state = ""
+			if self.shots > 0 then self.shots = self.shots - 1 end
+			if not self:in_sight( player ) or self.shots == 0 then
+				self.shots = 3 -- cooldown
+				next_state = "thinking"
+			else
+				self.attack_to = player.position
+				next_state = "fire"
+			end
+			self:fire( self.attack_to, self.eq.weapon )
+			return next_state
+		end,
+
+		pursue = function( self ) return ai_tools.pursue_action( self, true, true ) end,
+	}
+}
+
+register_ai "archvile_ai"
+{
+
+	OnCreate = function( self )
+		self:add_property( "boredom", 9 ) --idle triggers for boredom > 8
+		self:add_property( "move_to", coord.new(0,0) )
+		self:add_property( "attack_to", coord.new(0,0) )
+		self:add_property( "assigned", false )
+		self:add_property( "ai_state", "thinking" )
+		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+	end,
+
+	OnAttacked = function( self )
+		self.boredom = 0
+		self.assigned = false
+	end,
+
+	states = {
+		thinking = function( self )
+			if math.random(4) == 1 then
+				self:ressurect(6)
+				self.scount = self.scount - 1000
+				return "thinking"
+			end
+
+			local visible = self:in_sight( player )
+
+			if visible then
+				local dist    = self:distance_to( player )
+				self.boredom = 0
+				if dist == 1 then
+					self:attack( player )
+					return "thinking"
+				elseif math.random(100) <= self.attackchance then
+					self.attack_to = player.position
+					self.assigned = true
+					self:msg("", "The " .. self.name .. " raises his arms!" )
+					self.scount = self.scount - 2500
+					return "fire"
+				elseif dist < 4 then
+					self.ai_state = "flee"
+				else
+					self.ai_state = "pursue"
+				end
+			else
+				self.ai_state = "pursue"
+				self.boredom = self.boredom + 1
+				if self.boredom > 8 then
+					self.ai_state = "idle"
+				end
+			end
+
+			if not self.assigned then
+				local walk
+				if self.ai_state == "idle" then
+					walk = ai_tools.idle_assignment( self, false )
+				elseif self.ai_state == "pursue" then
+					walk = player.position
+				elseif self.ai_state == "flee" then
+					local pos = self.position
+					walk = pos + (pos - player.position)
+					area.FULL:clamp_coord( walk )
+				end
+				if walk then
+					self.move_to = walk
+					self:path_find( self.move_to, 10, 40)
+					self.assigned = true
+				end
+			end
+			return self.ai_state
+		end,
+
+		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
+
+		fire = function( self )
+			self.assigned = false
+			if self:in_sight( player ) then
+				self:fire( player.position, self.eq.weapon )
+			else
+				self:fire( self.attack_to, self.eq.weapon )
+			end
+			return "thinking"
+		end,
+
+		pursue = function( self ) return ai_tools.pursue_action( self, false, false ) end,
+
+		flee = function( self )
+			if self:distance_to( self.move_to ) == 0 then
+				self.assigned = false
+			elseif self:direct_seek( self.move_to ) ~= MOVEOK then
+				self.scount = self.scount - 500
+				self.assigned = false
+			end
+			return "thinking"
+		end,
+	}
+}
+
+register_ai "spawner_ai"
+{
+
+	OnCreate = function( self )
+		self:add_property( "ai_state", "thinking" )
+		self:add_property( "assigned", false )
+		self:add_property( "boredom", 5 )
+		self:add_property( "move_to", coord.new(0,0) )
+	end,
+
+	OnAttacked = function( self )
+		self.boredom = 0
+		self.assigned = false
+	end,
+
+	states = {
+		thinking = function( self )
+			local dist    = self:distance_to( player )
+			local visible = self:in_sight( player )
+
+			self.boredom = self.boredom + 1
+			if visible or self.boredom < 4 then
+				if (self:has_property("spawnchance") and math.random(self.spawnchance) == 1) or (not self:has_property("spawnchance") and math.random(4) == 1) then
+					self.ai_state = "spawn"
+				else
+					self.ai_state = "pursue"
+				end
+				if dist == 1 then
+					self:attack( player )
+					return "thinking"
+				end
+			else
+				self.ai_state = "idle"
+			end
+
+			if not self.assigned then
+				local p = player.position
+				local s = self.position
+				local walk
+				if self.ai_state == "pursue" then
+					if dist < 4 then
+						walk = s + (p - s)
+					else
+						walk = p
+					end
+					self.move_to = walk
+					self:path_find( self.move_to, 10, 40 )
+					self.assigned = true
+				elseif self.ai_state == "idle" then
+					walk = area.around( s, 3 ):clamped( area.FULL ):random_coord()
+					self.move_to = walk
+					self:path_find( self.move_to, 10, 40 )
+					self.assigned = true
+				end
+			end
+
+			return self.ai_state
+		end,
+
+		idle = function( self )
+			if math.random(30) == 1 then
+				self:play_sound( "act" )
+			end
+
+			if self:distance_to( self.move_to ) == 0 or self:in_sight(player) then
+				self.assigned = false
+			else
+				local move_check = self:path_next()
+				if move_check ~= MOVEOK then
+					self.assigned = false
+					self.scount = self.scount - 200
+				end
+			end
+			return "thinking"
+		end,
+
+		pursue = function( self )
+			if self:distance_to( self.move_to ) == 0 then
+				self.assigned = false
+				return "thinking"
+			end
+			local move_check = self:path_next()
+			if move_check ~= MOVEOK then
+				self.assigned = false
+				self.scount = self.scount - 1000
+			end
+			return "thinking"
+		end,
+
+		spawn = function( self )
+			local whom = "lostsoul"
+			local num = 3
+			if self:has_property("spawnlist") then
+				local rand = math.random(#self.spawnlist)
+				whom = self.spawnlist[rand].name
+				num = self.spawnlist[rand].amt
+			end
+			for c=1,num do
+				self:spawn(whom)
+			end
+			local spawnname = "a "..beings[whom].name
+			if num > 1 then
+				spawnname = beings[whom].name_plural
+			end
+			self:msg("", "The "..self.name.." spawns "..spawnname.."!")
+			self.scount = self.scount - 1000
+			return "thinking"
+		end,
+	}
+}
+
+-- BOSS AIs -------------------------------------------------------------
+
+register_ai "angel_ai"
 {
 
 	OnCreate = function( self )
@@ -338,307 +665,6 @@ register_ai "jc_ai"
 	}
 }
 
-register_ai "melee_ranged_ai"
-{
-	OnCreate = function( self )
-		aitk.basic_init( self, false, false )
-	end,
-
-	OnAttacked = aitk.basic_on_attacked,
-	states = {
-		idle   = aitk.basic_smart_idle,
-		pursue = aitk.basic_pursue,
-		hunt   = aitk.pursue_hunt,
-	}
-}
-
-register_ai "ranged_ai"
-{
-	OnCreate = function( self )
-		aitk.basic_init( self, false, false )
-	end,
-
-	OnAttacked = aitk.basic_on_attacked,
-	states = {
-		idle   = aitk.basic_smart_idle,
-		pursue = aitk.basic_pursue,
-		hunt   = aitk.ranged_hunt,
-	}
-}
-
-register_ai "flee_ranged_ai"
-{
-
-	OnCreate = function( self )
-		self:add_property( "boredom", 9 ) --idle triggers for boredom > 8
-		self:add_property( "assigned", false )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
-	end,
-
-	OnAttacked = function( self )
-		self.boredom = 0
-		self.assigned = false
-	end,
-
-	states = {
-		thinking = function( self )
-			local visible = self:in_sight( player )
-			local has_ammo, needs_reload = aitk.ammo_check( self )
-			if needs_reload then
-				if self:reload() then
-					return "thinking"
-				else
-					has_ammo = false
-				end
-			end
-
-			if visible then
-				local dist    = self:distance_to( player )
-				self.boredom = 0
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				elseif has_ammo and math.random(100) <= self.attackchance then
-					self:fire( player, self.eq.weapon )
-					return "thinking"
-				elseif dist < 4 then
-					self.ai_state = "flee"
-				else
-					self.ai_state = "pursue"
-				end
-			else
-				self.ai_state = "pursue"
-				self.boredom = self.boredom + 1
-				if self.boredom > 8 then
-					self.ai_state = "idle"
-				end
-			end
-
-			if not self.assigned then
-				local walk
-				if self.ai_state == "idle" then
-					walk = ai_tools.idle_assignment( self, false )
-				elseif self.ai_state == "pursue" then
-					walk = player.position
-				elseif self.ai_state == "flee" then
-					local pos = self.position
-					walk = pos + (pos - player.position)
-					area.FULL:clamp_coord( walk )
-				end
-				if walk then
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40)
-					self.assigned = true
-				end
-			end
-			return self.ai_state
-		end,
-
-		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
-
-		flee = function( self )
-			if self:distance_to( self.move_to ) == 0 then
-				self.assigned = false
-			elseif self:direct_seek( self.move_to ) ~= MOVEOK then
-				self.scount = self.scount - 500
-				self.assigned = false
-			end
-			return "thinking"
-		end,
-
-		pursue = function( self ) return ai_tools.pursue_action( self, true, true) end,
-	}
-}
-
-register_ai "archvile_ai"
-{
-
-	OnCreate = function( self )
-		self:add_property( "boredom", 9 ) --idle triggers for boredom > 8
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "attack_to", coord.new(0,0) )
-		self:add_property( "assigned", false )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
-	end,
-
-	OnAttacked = function( self )
-		self.boredom = 0
-		self.assigned = false
-	end,
-
-	states = {
-		thinking = function( self )
-			if math.random(4) == 1 then
-				self:ressurect(6)
-				self.scount = self.scount - 1000
-				return "thinking"
-			end
-
-			local visible = self:in_sight( player )
-
-			if visible then
-				local dist    = self:distance_to( player )
-				self.boredom = 0
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				elseif math.random(100) <= self.attackchance then
-					self.attack_to = player.position
-					self.assigned = true
-					self:msg("", "The " .. self.name .. " raises his arms!" )
-					self.scount = self.scount - 2500
-					return "fire"
-				elseif dist < 4 then
-					self.ai_state = "flee"
-				else
-					self.ai_state = "pursue"
-				end
-			else
-				self.ai_state = "pursue"
-				self.boredom = self.boredom + 1
-				if self.boredom > 8 then
-					self.ai_state = "idle"
-				end
-			end
-
-			if not self.assigned then
-				local walk
-				if self.ai_state == "idle" then
-					walk = ai_tools.idle_assignment( self, false )
-				elseif self.ai_state == "pursue" then
-					walk = player.position
-				elseif self.ai_state == "flee" then
-					local pos = self.position
-					walk = pos + (pos - player.position)
-					area.FULL:clamp_coord( walk )
-				end
-				if walk then
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40)
-					self.assigned = true
-				end
-			end
-			return self.ai_state
-		end,
-
-		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
-
-		fire = function( self )
-			self.assigned = false
-			if self:in_sight( player ) then
-				self:fire( player.position, self.eq.weapon )
-			else
-				self:fire( self.attack_to, self.eq.weapon )
-			end
-			return "thinking"
-		end,
-
-		pursue = function( self ) return ai_tools.pursue_action( self, false, false ) end,
-
-		flee = function( self )
-			if self:distance_to( self.move_to ) == 0 then
-				self.assigned = false
-			elseif self:direct_seek( self.move_to ) ~= MOVEOK then
-				self.scount = self.scount - 500
-				self.assigned = false
-			end
-			return "thinking"
-		end,
-	}
-}
-
-register_ai "sequential_ai"
-{
-
-	OnCreate = function( self )
-		self:add_property( "boredom", 10 ) --idle triggers for boredom > 9
-		self:add_property( "assigned", false )
-		self:add_property( "shots", 0 )
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "attack_to", coord.new(0,0) )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
-	end,
-
-	OnAttacked = function( self )
-		self.boredom = 0
-		self.shots = 0
-		self.assigned = false
-		self.ai_state = "thinking"
-	end,
-
-	states = {
-		thinking = function( self )
-			local dist    = self:distance_to( player )
-			local visible = self:in_sight( player )
-
-			if visible then
-				self.boredom = 0
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				elseif math.random(100) <= self.attackchance and self.shots == 0 then
-					self.assigned = false
-					self.ai_state = "fire"
-				else
-					self.ai_state = "pursue"
-				end
-			else
-				self.ai_state = "pursue"
-				self.boredom = self.boredom + 1
-				if self.boredom > 8 then
-					self.ai_state = "idle"
-				end
-			end
-
-			if self.shots > 0 then self.shots = self.shots - 1 end
-
-			if not self.assigned then
-				local walk
-				if self.ai_state == "idle" then
-					walk = ai_tools.idle_assignment( self, false )
-				elseif self.ai_state == "pursue" then
-					walk = player.position
-				elseif self.ai_state == "fire" then
-					self:play_sound( "attack" )
-					self.attack_to = player.position
-					self.shots = 2 + math.random(3)
-					self.assigned = true
-				end
-				if walk then
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40)
-					self.assigned = true
-				end
-			end
-			return self.ai_state
-		end,
-
-		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
-
-		--has potential loop uninterrupted by thinking
-		fire = function( self )
-			local next_state = ""
-			if self.shots > 0 then self.shots = self.shots - 1 end
-			if not self:in_sight( player ) or self.shots == 0 then
-				self.shots = 3 -- cooldown
-				next_state = "thinking"
-			else
-				self.attack_to = player.position
-				next_state = "fire"
-			end
-			self:fire( self.attack_to, self.eq.weapon )
-			return next_state
-		end,
-
-		pursue = function( self ) return ai_tools.pursue_action( self, true, true ) end,
-	}
-}
-
-
 register_ai "teleboss_ai"
 {
 
@@ -747,117 +773,6 @@ register_ai "teleboss_ai"
 			local target = generator.drop_coord( self.move_to, {EF_NOBEINGS,EF_NOBLOCK} )
 			self:relocate( target )
 			level:explosion( self, 1, 50, 0, 0, YELLOW )
-			self.scount = self.scount - 1000
-			return "thinking"
-		end,
-	}
-}
-
-register_ai "spawnonly_ai"
-{
-
-	OnCreate = function( self )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "assigned", false )
-		self:add_property( "boredom", 5 )
-		self:add_property( "move_to", coord.new(0,0) )
-	end,
-
-	OnAttacked = function( self )
-		self.boredom = 0
-		self.assigned = false
-	end,
-
-	states = {
-		thinking = function( self )
-			local dist    = self:distance_to( player )
-			local visible = self:in_sight( player )
-
-			self.boredom = self.boredom + 1
-			if visible or self.boredom < 4 then
-				if (self:has_property("spawnchance") and math.random(self.spawnchance) == 1) or (not self:has_property("spawnchance") and math.random(4) == 1) then
-					self.ai_state = "spawn"
-				else
-					self.ai_state = "pursue"
-				end
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				end
-			else
-				self.ai_state = "idle"
-			end
-
-			if not self.assigned then
-				local p = player.position
-				local s = self.position
-				local walk
-				if self.ai_state == "pursue" then
-					if dist < 4 then
-						walk = s + (p - s)
-					else
-						walk = p
-					end
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40 )
-					self.assigned = true
-				elseif self.ai_state == "idle" then
-					walk = area.around( s, 3 ):clamped( area.FULL ):random_coord()
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40 )
-					self.assigned = true
-				end
-			end
-
-			return self.ai_state
-		end,
-
-		idle = function( self )
-			if math.random(30) == 1 then
-				self:play_sound( "act" )
-			end
-
-			if self:distance_to( self.move_to ) == 0 or self:in_sight(player) then
-				self.assigned = false
-			else
-				local move_check = self:path_next()
-				if move_check ~= MOVEOK then
-					self.assigned = false
-					self.scount = self.scount - 200
-				end
-			end
-			return "thinking"
-		end,
-
-		pursue = function( self )
-			if self:distance_to( self.move_to ) == 0 then
-				self.assigned = false
-				return "thinking"
-			end
-			local move_check = self:path_next()
-			if move_check ~= MOVEOK then
-				self.assigned = false
-				self.scount = self.scount - 1000
-			end
-			return "thinking"
-		end,
-
-		spawn = function( self )
-			local whom = "lostsoul"
-			local num = 3
-			if self:has_property("spawnlist") then
-				local rand = math.random(#self.spawnlist)
-				whom = self.spawnlist[rand].name
-				num = self.spawnlist[rand].amt
-			end
-			for c=1,num do
-				self:spawn(whom)
-			end
-			local spawnname = "a "..beings[whom].name
-			if num > 1 then
-				spawnname = beings[whom].name_plural
-			end
-			self:msg("", "The "..self.name.." spawns "..spawnname.."!")
 			self.scount = self.scount - 1000
 			return "thinking"
 		end,
