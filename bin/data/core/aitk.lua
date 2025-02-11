@@ -204,7 +204,7 @@ function aitk.basic_scan( self )
     return target 
 end
 
--- aitk.basic_idle( self )
+-- aitk.basic_pursue( self )
 -- returns next_state
 -- needs a valid set self.move_to
 function aitk.basic_pursue( self )
@@ -233,6 +233,28 @@ function aitk.basic_pursue( self )
         end
     end
     return "pursue"
+end
+
+-- aitk.basic_idle( self )
+-- returns next_state
+function aitk.basic_idle( self )
+    if aitk.basic_scan( self ) then
+        self.move_to = false
+        return "hunt"
+    end
+	if math.random(30) == 1 then
+		self:play_sound( "act" )
+	end
+    if self.move_to then
+        if self:distance_to( self.move_to ) > 0 then
+            if self:direct_seek( self.move_to ) == MOVEOK then
+                return "idle"
+            end
+        end
+        self.scount = self.scount - 500
+    end
+    self.move_to = area.around( self.position, 3 ):clamped( area.FULL ):random_coord()
+	return "idle"
 end
 
 function aitk.basic_on_attacked( self, target )
@@ -294,7 +316,6 @@ function aitk.basic_smart_idle( self )
         end
         local move_dist = self.vision+1
         local next_move
-        local step
         local use_armor = self.use_armor
         local use_packs = self.use_packs
         if use_armor or use_packs then
@@ -447,4 +468,92 @@ function aitk.ranged_hunt( self )
         self.scount  = self.scount - 1000
     end
     return "hunt"
+end
+
+function aitk.charge_init( self, charge_time )
+    self:add_property( "ai_state", "idle" )
+    self:add_property( "move_to_target", false )
+    self:add_property( "move_to", false )
+    self:add_property( "target", false )
+    self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+    self:add_property( "chargetime", charge_time or 30 )
+    self:add_property( "basetime", self.movetime )
+end
+
+function aitk.charge_on_attacked( self, target )
+    if self.ai_state == "idle" then
+        self.move_to  = target.position
+        self.ai_state = "pursue"
+    elseif self.ai_state == "post_charge" then
+        self.movetime = self.basetime
+        self.ai_state = "idle"
+    end
+end
+
+function aitk.charge_idle( self )
+    if aitk.basic_scan( self ) and self.attackchance <= math.random(100) then
+        self.movetime = self.chargetime
+        self.move_to_target = player.position
+        local v  = player.position - self.position
+        local mt = player.position + v
+        if self:distance_to( player.position ) < 6  then
+            mt = mt + v
+        end
+        self.move_to        = mt
+        return "charge"
+    end
+	if math.random(30) == 1 then
+		self:play_sound( "act" )
+	end
+    if self.move_to then
+        if self:distance_to( self.move_to ) > 0 then
+            if self:direct_seek( self.move_to ) == MOVEOK then
+                return "idle"
+            end
+        end
+        self.scount = self.scount - 500
+    end
+    self.move_to = area.around( self.position, 3 ):clamped( area.FULL ):random_coord()
+	return "idle"
+end
+
+function aitk.charge_charge( self )
+    local move_check,move_coord = self:direct_seek( self.move_to_target, 1.5 )
+    if move_check ~= MOVEOK then
+        if player.position == move_coord then
+            self:attack(move_coord)
+        else
+            self.scount = self.scount - 500
+        end
+        self.move_to = false
+        self.movetime = self.basetime
+        return "idle"
+    else
+        if move_coord == self.move_to_target then
+            return "post_charge"
+        end
+    end
+    return "charge"
+end
+
+function aitk.charge_post_charge( self )
+    local move_check,move_coord = self:direct_seek( self.move_to, 2.0 )
+    if move_check ~= MOVEOK then
+        if player.position == move_coord then
+            self:attack( move_coord )
+        else
+            self.scount = self.scount - 500
+        end
+        self.move_to = false
+        self.movetime = self.basetime
+        return "idle"
+    else
+        if move_coord == self.move_to then
+            self.scount = self.scount - 500
+            self.move_to = false
+            self.movetime = self.basetime
+            return "idle"
+        end
+    end
+    return "post_charge"
 end

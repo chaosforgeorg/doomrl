@@ -26,104 +26,18 @@ register_ai "baron_ai"
 		hunt   = aitk.pursue_hunt,
 	}
 }
-
 register_ai "lostsoul_ai"
 {
-
 	OnCreate = function( self )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "assigned", false )
-		self:add_property( "attacked", false )
-		self:add_property( "move_to_player", coord.new(0,0) )
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
-		self:add_property( "move_count", 0 )
+		aitk.charge_init( self, 30 )
 	end,
-
-	OnAttacked = function( self )
-		self.attacked = true
-		if self.ai_state ~= "thinking" then
-			self.scount = self.scount - 500
-		end
-	end,
-
+	OnAttacked = aitk.charge_on_attacked,
 	states = {
-		thinking = function( self )
-			local visible = self:in_sight( player )
-			local dist    = self:distance_to( player )
-
-			if self.attacked or (visible and self.attackchance <= math.random(100)) then
-				self.ai_state = "charge"
-				self.attacked = false
-				self.assigned = false
-			else
-				self.ai_state = "idle"
-			end
-
-			if not self.assigned then
-				local s = self.position
-				local p = player.position
-				local walk
-				if self.ai_state == "idle" then
-					walk = area.around( self.position, 3 ):clamped( area.FULL ):random_edge_coord()
-				end
-				if self.ai_state == "charge" then
-					local v = p - s
-					walk = p
-					repeat
-						walk = walk + v
-					until not area.FULL:contains( walk )
-					self.move_to_player = p
-				end
-				if walk then
-					self.move_to = walk
-					self.assigned = true
-				end
-			end
-			return self.ai_state
-		end,
-
-		idle = function( self ) return ai_tools.idle_action_melee( self ) end,
-
-		charge = function( self )
-			local move_check,move_coord = self:direct_seek( self.move_to_player, 0.5 )
-			if move_check ~= MOVEOK then
-				if player:distance_to(move_coord) == 0 then
-					self:attack(move_coord)
-				end
-				self.move_count = 0
-				self.assigned = false
-				return "thinking"
-			else
-				self.scount = self.scount + 750
-				self.move_count = self.move_count + 1
-				if move_coord == self.move_to_player then
-					return "charge2"
-				end
-			end
-		end,
-
-		charge2 = function( self )
-			if self.move_count > 15 or self.attacked then
-				self.move_count = 0
-				self.assigned = false
-				self.attacked = false
-				return "thinking"
-			else
-				local move_check,move_coord = self:direct_seek( self.move_to, 0.5 )
-				if move_check ~= MOVEOK then
-					if player:distance_to(move_coord) == 0 then
-						self:attack(move_coord)
-					end
-					self.move_count = 0
-					self.assigned = false
-					return "thinking"
-				else
-					self.scount = self.scount + 750
-					self.move_count = self.move_count + 1
-				end
-			end
-		end,
+		idle        = aitk.charge_idle,
+		hunt        = aitk.charge_idle,
+		pursue      = aitk.basic_pursue,
+		charge      = aitk.charge_charge,
+		post_charge = aitk.charge_post_charge,
 	}
 }
 

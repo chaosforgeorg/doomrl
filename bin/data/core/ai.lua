@@ -94,27 +94,6 @@ function ai_tools.idle_action_ranged( self, use_item )
 	return "thinking"
 end
 
-function ai_tools.idle_action_melee( self )
-	if math.random(30) == 1 then
-		self:play_sound( "act" )
-	end
-	if self:distance_to(self.move_to) == 0 then
-		self.scount = self.scount - 500
-		self.assigned = false
-		return "thinking"
-	end
-	if not cells[ level.map[self.move_to] ].flags[ CF_HAZARD ] or self.flags[ BF_ENVIROSAFE ] == true then
-		if self:direct_seek( self.move_to ) ~= MOVEOK then
-			self.scount = self.scount - 500
-			self.assigned = false
-		end
-	else
-		self.scount = self.scount - 500
-		self.assigned = false
-	end
-	return "thinking"
-end
-
 --[[
 ai_tools.pursue_action( self, approach, wander )
 * if being has ammo property on its weapon:
