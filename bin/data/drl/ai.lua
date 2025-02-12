@@ -101,98 +101,74 @@ register_ai "sequential_ai"
 
 register_ai "archvile_ai"
 {
-
 	OnCreate = function( self )
-		self:add_property( "boredom", 9 ) --idle triggers for boredom > 8
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "attack_to", coord.new(0,0) )
-		self:add_property( "assigned", false )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+		aitk.basic_init( self, false, false )
+		self:add_property( "attack_to", false )
+		self:add_property( "on_fire", "on_fire" )
 	end,
 
-	OnAttacked = function( self )
-		self.boredom = 0
-		self.assigned = false
-	end,
-
+	OnAttacked = aitk.basic_on_attacked,
 	states = {
-		thinking = function( self )
+		idle   = function ( self )
 			if math.random(4) == 1 then
 				self:ressurect(6)
 				self.scount = self.scount - 1000
-				return "thinking"
+				return "idle"
 			end
-
-			local visible = self:in_sight( player )
-
-			if visible then
-				local dist    = self:distance_to( player )
-				self.boredom = 0
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				elseif math.random(100) <= self.attackchance then
-					self.attack_to = player.position
-					self.assigned = true
-					self:msg("", "The " .. self.name .. " raises his arms!" )
-					self.scount = self.scount - 2500
-					return "fire"
-				elseif dist < 4 then
-					self.ai_state = "flee"
-				else
-					self.ai_state = "pursue"
-				end
-			else
-				self.ai_state = "pursue"
-				self.boredom = self.boredom + 1
-				if self.boredom > 8 then
-					self.ai_state = "idle"
-				end
-			end
-
-			if not self.assigned then
-				local walk
-				if self.ai_state == "idle" then
-					walk = ai_tools.idle_assignment( self, false )
-				elseif self.ai_state == "pursue" then
-					walk = player.position
-				elseif self.ai_state == "flee" then
-					local pos = self.position
-					walk = pos + (pos - player.position)
-					area.FULL:clamp_coord( walk )
-				end
-				if walk then
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40)
-					self.assigned = true
-				end
-			end
-			return self.ai_state
+			return aitk.basic_smart_idle( self )
 		end,
-
-		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
-
+		pursue = function ( self )
+			if math.random(4) == 1 then
+				self:ressurect(6)
+				self.scount = self.scount - 1000
+				return "pursue"
+			end
+			return aitk.basic_pursue( self )
+		end,
+		hunt   = function( self )
+			if math.random(4) == 1 then
+				self:ressurect(6)
+				self.scount = self.scount - 1000
+				return "hunt"
+			end
+			local action, dist, target = aitk.try_hunt( self )
+			if action then return action end
+		
+			local target = target.position
+			if dist < 4  then
+				local pos = self.position
+				target = pos + (pos - target)
+				area.FULL:clamp_coord( target )
+			end
+		
+			if self.move_to == target then
+				if aitk.move_path( self ) then
+					return "hunt"
+				end
+			end
+			self.move_to = target
+			if not self:path_find( self.move_to, 10, 40 ) or ( not aitk.move_path( self ) ) then
+				self.move_to = false
+				self.scount  = self.scount - 1000
+			end
+			return "hunt"
+		end,
+		on_fire = function( self )
+			local target = uids.get( self.target )
+			if not target then return "idle" end
+			self.attack_to = target.position
+			self:msg("", "The " .. self.name .. " raises his arms!" )
+			self.scount = self.scount - 2500
+			return "fire"
+		end,
 		fire = function( self )
-			self.assigned = false
-			if self:in_sight( player ) then
-				self:fire( player.position, self.eq.weapon )
+			local target = uids.get( self.target )
+			if target and self:in_sight( target ) then
+				self:fire( target.position, self.eq.weapon )
 			else
 				self:fire( self.attack_to, self.eq.weapon )
 			end
-			return "thinking"
-		end,
-
-		pursue = function( self ) return ai_tools.pursue_action( self, false, false ) end,
-
-		flee = function( self )
-			if self:distance_to( self.move_to ) == 0 then
-				self.assigned = false
-			elseif self:direct_seek( self.move_to ) ~= MOVEOK then
-				self.scount = self.scount - 500
-				self.assigned = false
-			end
-			return "thinking"
+			return "hunt"
 		end,
 	}
 }

@@ -388,6 +388,9 @@ function aitk.try_hunt( self )
         if sequential then self.sequence = 0 end
         return "hunt"
     elseif has_ammo and sequence >= 0 and ( sequence > 0 or ( math.random(100) <= self.attackchance ) ) then
+        if self:has_property("on_fire") then
+            return self.on_fire
+        end
         self:fire( target, self.eq.weapon )
         if sequence == 0 and sequential then
             self.sequence = core.resolve_range( sequential )
