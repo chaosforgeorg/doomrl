@@ -604,7 +604,7 @@ end
 
 function aitk.wait( self )
     self.scount = self.scount - 1000
-    if aitk.basic_scan( self ) then
+    if aitk.basic_scan( self ) or self.flags[BF_HUNTING] then
         return "hunt"
     end
 	return "wait"

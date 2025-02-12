@@ -241,57 +241,47 @@ register_ai "angel_ai"
 {
 
 	OnCreate = function( self )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "attacked", false )
-		self:add_property( "assigned", false )
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "steps", 0 )
+		self:add_property( "ai_state", "wait" )
+		self:add_property( "move_to", false )
 	end,
 
 	OnAttacked = function( self )
-		self.attacked = true
+		self.flags[BF_HUNTING] = true
 	end,
 
 	states = {
-		thinking = function( self )
-			local dist    = self:distance_to( player )
-			local visible = self:in_sight( player )
-
-			if dist == 1 then
-				self:attack( player )
-				return "thinking"
-			elseif visible or dist <= 5 or self.flags[BF_HUNTING] then
-				self.ai_state = "pursue"
-			else
-				self.ai_state = "idle"
-			end
-
-			if not self.assigned then
-				if self.ai_state == "pursue" then
-					self.move_to = self:path_find( player, 40, 100 )
-					self.assigned = true
-				end
-			end
-			return self.ai_state
+		wait = function( self )
+			if self:in_sight( player ) or self.flags[BF_HUNTING] then return "hunt" end
+			self.scount = self.scount - 1000
+			return "wait"
 		end,
+		hunt = function( self )
+			local target  = player
+			local dist    = self:distance_to( target )
+			local visible = self:in_sight( target )
 
-		idle = function( self )
-			self.scount = self.scount - 500
-			return "thinking"
-		end,
-
-		pursue = function( self )
 			if math.random(30) == 1 then
 				self:play_sound( "act" )
 			end
-			self.steps = self.steps + 1
-			local step = self:path_next()
-			if self.steps == 5 or self.steps > self:distance_to( player ) or step == MOVEBLOCK or step == MOVEBEING then
-				self.steps = 0
-				self.assigned = false
-				self.scount = self.scount - 500
+
+			if dist == 1 then
+				self:attack( player )
+				return "hunt"
 			end
-			return "thinking"
+
+			if self.move_to == target.position then
+				if aitk.move_path( self ) then
+					return "hunt"
+				end
+			end
+			self.move_to = target.position
+			if not self:path_find( self.move_to, 20, 50 ) or ( not aitk.move_path( self ) ) then
+				self.move_to = false
+				if not aitk.flock_seek( self, target.position ) then
+					self.scount = self.scount - 1000
+				end
+			end
+			return "hunt"
 		end,
 	}
 }
@@ -630,11 +620,9 @@ register_ai "mastermind_ai"
 		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
 		self:add_property( "stun_time", 0 )
 		self:add_property( "previous_hp", self.hpmax )
-		self:add_property( "attacked", false )
 	end,
 
 	OnAttacked = function( self )
-		self.attacked = true
 		local damage_taken = self.previous_hp - self.hp
 		if damage_taken >= 20 then
 			self.stun_time = math.floor(damage_taken/20)
@@ -648,8 +636,6 @@ register_ai "mastermind_ai"
 			local dist       = self:distance_to( player )
 			local visible    = self:in_sight( player )
 			self.previous_hp = self.hp
-
-			self.attacked = false
 
 			if visible and self.stun_time == 0 then
 				if dist == 1 then
@@ -668,13 +654,6 @@ register_ai "mastermind_ai"
 			else
 				if self.stun_time > 0 then
 					self.ai_state = "stagger"
-				elseif self.attacked then
-					if level:eye_contact(self.position, player.position) then
-						self.ai_state = "attack_line"
-						self.attacked = false
-					else
-						self.ai_state = "maneuver"
-					end
 				else
 					self.ai_state = "pursue"
 				end
@@ -702,26 +681,6 @@ register_ai "mastermind_ai"
 							self.move_to = generator.random_empty_coord({ EF_NOBEINGS, EF_NOBLOCK }, area.around( self.position ))
 							self:path_find( self.move_to, 1, 1 ) --hopefully these settings don't make it expensive
 						end
-					end
-				elseif self.ai_state == "maneuver" then
-					for itr = 1,5 do
-						for c in area.around( self.position, itr ):corners() do
-							if player:in_sight(c) then
-								walk = c
-								break
-							end
-						end
-						if walk then
-							break
-						end
-					end
-					if walk then
-						self.move_to = walk
-						self:path_find( self.move_to, 40, 200 )
-						self.assigned = true
-					else
-						self.move_to = generator.random_empty_coord({ EF_NOBEINGS, EF_NOBLOCK }, area.around( self.position, 5 ))
-						self:path_find( self.move_to, 40, 200 ) --hopefully these settings don't make it expensive
 					end
 				elseif self.ai_state == "stagger" then
 					self.move_to = generator.random_empty_coord( { EF_NOBEINGS, EF_NOBLOCK }, area.around( self.position ) )
@@ -778,23 +737,6 @@ register_ai "mastermind_ai"
 
 			if not move_check or self:distance_to( player ) <= self.vision then
 				self.assigned = false
-			end
-			return "thinking"
-		end,
-
-		maneuver = function( self )
-			if self:distance_to( self.move_to ) == 0 then
-				self.assigned = false
-				self.attacked = false
-				return "thinking"
-			end
-			if math.random(30) == 1 then
-				self:play_sound( "act" )
-			end
-			local move_check, move_coord = self:path_next()
-			if not move_check or self:in_sight(player) then
-				self.assigned = false
-				self.attacked = false
 			end
 			return "thinking"
 		end,
