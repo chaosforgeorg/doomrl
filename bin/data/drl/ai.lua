@@ -26,6 +26,7 @@ register_ai "smart_hybrid_ai"
 		hunt   = aitk.pursue_hunt,
 	}
 }
+
 register_ai "charger_ai"
 {
 	OnCreate = function( self )
@@ -288,30 +289,44 @@ register_ai "angel_ai"
 
 register_ai "cyberdemon_ai"
 {
-
 	OnCreate = function( self )
-		self:add_property( "attacked", false )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "assigned", false )
-		self:add_property( "move_to", coord.new(0,0) )
+		aitk.basic_init( self, true, true )
+		self:add_property( "sneakshot", true )
 		self:add_property( "ammo_regen", 0 )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+		self:add_property( "timer", 0 )
 	end,
 
-	OnAttacked = function( self )
-		self.attacked = true
+	OnAttacked = function( self ) 
+		aitk.basic_on_attacked( self )
+		self.retaliate = true
 	end,
 
 	states = {
-		thinking = function( self )
-			local dist    = self:distance_to( player )
-			local visible = self:in_sight( player )
-			local action, has_ammo = aitk.inventory_check( self, dist > 1 )
-			if action then
-				return "thinking"
+		idle   = function( self ) 
+			if level.flags[ LF_BOSS ] then
+				self.timer = self.timer + 1
+				if self.timer % 20 == 0 then self:play_sound( "act" ) end
+				if self.timer > 20 then
+					self.flags[ BF_HUNTING ] = true
+					self.target  = player.uid
+					self.move_to = player.position
+					self:path_find( self.move_to, 40, 100 )
+					return "pursue"
+				end
 			end
-
-			if not has_ammo then
+			ais[ self.ai_type ].states.tick( self )
+			return aitk.basic_smart_idle( self )
+		end,
+		pursue = function( self ) 
+			ais[ self.ai_type ].states.tick( self )
+			return aitk.basic_pursue( self ) 
+		end,
+		hunt   = function( self ) 
+			ais[ self.ai_type ].states.tick( self )
+			return aitk.pursue_hunt( self )
+		end,
+		tick   = function( self )
+			if not self.inv[ "rocket" ] then
 				self.ammo_regen = self.ammo_regen + 1
 				if self.ammo_regen > 7 then
 					self.ammo_regen = 0
@@ -319,84 +334,9 @@ register_ai "cyberdemon_ai"
 					self.inv:add("rocket")
 				end
 			end
-
-			if dist <= self.vision then
-				local shoot = math.random(100)
-				if visible then
-					shoot = shoot <= self.attackchance
-				else
-					shoot = shoot <= math.floor(self.attackchance / 2)
-				end
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				elseif has_ammo and ( self.attacked or shoot ) then
-					self:fire( player, self.eq.weapon )
-					return "thinking"
-				else
-					self.assigned = false
-					self.ai_state = "pursue"
-				end
-				self.attacked = false
-			else
-				self.ai_state = "pursue"
-			end
-
-
-			local walk
-			if not self.assigned then
-				if self.ai_state == "pursue" then
-					local move_dist = self.vision+1
-					if self:has_property( "has_item" ) and not visible then
-						for item in level:items_in_range( self, self.vision ) do
-							if ( item.flags[ IF_AIHEALPACK ] or ( item.itype == ITEMTYPE_ARMOR and not self.eq.armor ) ) and self:in_sight( item ) then
-								local item_dist = self:distance_to( item )
-								if item_dist < move_dist then
-									move_dist = item_dist
-									walk = item.position
-								end
-							end
-						end
-					end
-					if move_dist > self.vision then
-						walk = player.position
-					end
-				end
-				if walk then
-					self.move_to = walk
-					self:path_find( self.move_to, 40, 200 )
-					self.assigned = true
-				end
-			end
-			return self.ai_state
-		end,
-
-		pursue = function( self )
-			if math.random(30) == 1 then
-				self:play_sound( "act" )
-			end
-
-			if self:distance_to( self.move_to ) == 0 then
-				local item = level:get_item( self.move_to )
-				if item and ( item.flags[ IF_AIHEALPACK ] or ( item.itype == ITEMTYPE_ARMOR and not self.eq.armor ) ) then
-					self:pickup( self.move_to )
-					self:wear( item )
-				end
-				self.assigned = false
-			else
-				local move_check,move_coord = self:path_next()
-				if move_check ~= MOVEOK then
-					if move_check == MOVEDOOR then
-		--					being:open( move_coord )
-					else
-						self.assigned = false
-						self.scount = self.scount - 200
-					end
-				end
-			end
-			return "thinking"
 		end,
 	}
+
 }
 
 register_ai "jc_ai"

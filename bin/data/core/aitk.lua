@@ -211,6 +211,7 @@ function aitk.basic_init( self, use_packs, use_armor )
     self:add_property( "use_packs", use_packs or false )
     self:add_property( "use_armor", use_armor or false )
     self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+    self:add_property( "retaliate", false )
 end
 
 function aitk.basic_scan( self )
@@ -378,12 +379,17 @@ function aitk.try_hunt( self )
     local visible = self:in_sight( target )
     local action, has_ammo = aitk.inventory_check( self, dist > 1 )
     if action then return "hunt" end
+    local attackchance = self.attackchance
     if not visible then
-        if self:has_property("boredom")  then self.boredom = 0 end
-        if self:has_property("sequence") then self.sequence = 0 end
-        self.move_to = target.position
-		self:path_find( self.move_to, 10, 40 )
-        return "pursue"
+        if self:has_property("sneakshot") and dist <= self.vision then 
+            attackchance = math.floor( attackchance / 2 )
+        else
+            if self:has_property("boredom")    then self.boredom = 0 end
+            if self:has_property("sequence")   then self.sequence = 0 end
+            self.move_to = target.position
+            self:path_find( self.move_to, 10, 40 )
+            return "pursue"
+        end
     end
 
     local sequence   = 0
@@ -401,11 +407,13 @@ function aitk.try_hunt( self )
             end
         end
     end
+    if self.retaliate then attackchance = 100 end
     if dist == 1 then
         self:attack( target )
         if sequential then self.sequence = 0 end
         return "hunt"
     elseif has_ammo and sequence >= 0 and ( sequence > 0 or ( math.random(100) <= self.attackchance ) ) then
+        self.retaliate = false
         if self:has_property("on_fire") then
             return self.on_fire
         end
