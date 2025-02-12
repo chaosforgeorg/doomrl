@@ -19,7 +19,7 @@ function drl.register_beings()
 		weight       = 10,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
+		ai_type      = "smart_evasive_ai",
 
 		desc            = "Your fellow soldiers who went crazy because of the demonic influence. There's no hope for them anymore... only lead can heal their corrupted souls...",
 
@@ -46,7 +46,7 @@ function drl.register_beings()
 		weight       = 10,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
+		ai_type      = "smart_evasive_ai",
 
 		desc            = "Same as former human soldiers, but meaner and tougher. They'll provide you with an extra hole if you're not careful. They always carry a shotgun, so be on your guard!",
 		kill_desc       = "was shot by a former sergeant",
@@ -73,7 +73,7 @@ function drl.register_beings()
 		weight       = 10,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
+		ai_type      = "smart_evasive_ai",
 
 		desc            = "Those were once really hardened marines, the tough fighting force of Earth. Now they're on the demonic side. They're really eager to make Swiss cheese out of you with their rapid fire chainguns...",
 		kill_desc       = "was perforated by a former captain",
@@ -103,7 +103,7 @@ function drl.register_beings()
 		weight       = 6,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
+		ai_type      = "smart_evasive_ai",
 
 		desc            = "These guys were evil to begin with. Being warped by Hell's power has only made them worse. Wielding a deadly plasma weapon, they should be treated with care... and lead.",
 		kill_desc       = "was melted by former commando's plasma gun",
@@ -181,7 +181,7 @@ function drl.register_beings()
 		weight       = 6,
 		bulk         = 100,
 		flags        = { BF_CHARGE },
-		ai_type      = "demon_ai",
+		ai_type      = "flock_ai",
 
 		desc            = "You thought pink is cute? You won't anymore after meeting one of these bastards -- they are strong, tough and eager to rip your head off...",
 		kill_desc_melee = "was bitten by a demon",
@@ -206,7 +206,7 @@ function drl.register_beings()
 		weight       = 10,
 		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
-		ai_type      = "lostsoul_ai",
+		ai_type      = "charger_ai",
 
 		resist = { fire = 75, bullet = 50 },
 
@@ -277,7 +277,7 @@ function drl.register_beings()
 		weight       = 6,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS },
-		ai_type      = "baron_ai",
+		ai_type      = "smart_hybrid_ai",
 
 		resist = { acid = 50 },
 
@@ -323,7 +323,7 @@ function drl.register_beings()
 		weight       = 6,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS },
-		ai_type      = "baron_ai",
+		ai_type      = "smart_hybrid_ai",
 
 		resist = { acid = 50 },
 
@@ -413,9 +413,14 @@ function drl.register_beings()
 		weight       = 4,
 		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
-		ai_type      = "spawnonly_ai",
+		ai_type      = "spawner_ai",
 
 		desc            = "Pain, pain, pain - this is the only thing these monsters live by, and the only thing they deliver. Wait, look again - they also deliver lost souls!",
+
+		OnCreate = function (self)
+			self.spawnlist = { name = "lostsoul", count = 3 }
+		end,
+
 
 		OnDie = function (self,overkill)
 			if not overkill then
@@ -590,7 +595,7 @@ function drl.register_beings()
 		weight       = 4,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
+		ai_type      = "smart_evasive_ai",
 
 		desc         = "These are the elite among the former humans. As stupid as their regular counterparts, but more resilient and packing quite a punch. Too bad their weapons are set to self-destruct on death.",
 		-- Added to make sure we use the right article
@@ -626,7 +631,7 @@ function drl.register_beings()
 		weight       = 3,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
+		ai_type      = "smart_evasive_ai",
 
 		desc            = "These are the elite among the former sergeants. And they carry firepower to boot! Too bad their weapons are set to self-destruct on death.",
 		kill_desc       = "was shot by an elite sergeant",
@@ -665,7 +670,7 @@ function drl.register_beings()
 		weight       = 3,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS },
-		ai_type      = "former_ai",
+		ai_type      = "smart_evasive_ai",
 
 		desc            = "These are the elite among the former captains. Beware of the superior firepower! Too bad their weapons are set to self-destruct on death.",
 		kill_desc       = "was perforated by an elite captain",
@@ -702,7 +707,7 @@ function drl.register_beings()
 		weight       = 2,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
-		ai_type      = "former_ai",
+		ai_type      = "smart_evasive_ai",
 
 		desc            = "As expected, these ex-human soldiers are the best of the best! Armored, resilient and with superior firepower! Too bad their weapons are set to self-destruct on death.",
 		kill_desc       = "was melted by an elite commando's gun",
@@ -788,7 +793,7 @@ function drl.register_beings()
 		weight       = 6,
 		bulk         = 100,
 		flags        = { BF_CHARGE, BF_ENVIROSAFE },
-		ai_type      = "demon_ai",
+		ai_type      = "flock_ai",
 
 		desc            = "You liked it better when these guys were pink. Meet the stronger, tougher, more resilient way to meet your death.",
 		kill_desc_melee = "was eaten alive by a nightmare demon",
@@ -812,7 +817,7 @@ function drl.register_beings()
 		min_lev      = 200,
 		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
-		ai_type      = "lostsoul_ai",
+		ai_type      = "charger_ai",
 
 		resist = { fire = 75, bullet = 50 },
 
@@ -886,7 +891,7 @@ function drl.register_beings()
 		weight       = 4,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
-		ai_type      = "baron_ai",
+		ai_type      = "smart_hybrid_ai",
 
 		resist = { acid = 75, fire = 25, plasma = 25 },
 
@@ -975,14 +980,12 @@ function drl.register_beings()
 		weight       = 3,
 		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
-		ai_type      = "spawnonly_ai",
+		ai_type      = "spawner_ai",
 
 		desc            = "Pain, pain, pain, nightmare pain. Oh and nightmare souls...",
 
 		OnCreate = function (self)
-			self:add_property("spawnlist",{
-				{name = "nlostsoul", amt = 3},
-			})
+			self.spawnlist = { name = "nlostsoul", count = 3 }
 		end,
 
 		OnDie = function (self,overkill)
@@ -1163,7 +1166,7 @@ function drl.register_beings()
 		weight       = 6,
 		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE, BF_HUNTING},
-		ai_type      = "baron_ai",
+		ai_type      = "smart_hybrid_ai",
 
 		resist = { acid = 50 },
 
@@ -1237,8 +1240,8 @@ function drl.register_beings()
 		OnCreate = function (self)
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 5
 			self.hp = self.hpmax
-			self:add_property("telechance",6)
-			self:add_property("teleradius",8)
+			self.telechance = 15
+			self.teleradius = 8
 		end,
 
 		OnAction = function (self)
@@ -1304,8 +1307,8 @@ function drl.register_beings()
 		OnCreate = function (self)
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 5
 			self.hp = self.hpmax
-			self:add_property("telechance",20)
-			self:add_property("teleradius",5)
+			self.telechance = 5
+			self.teleradius = 5
 		end,
 
 		OnAction = function (self)
@@ -1333,19 +1336,17 @@ function drl.register_beings()
 		weight       = 1,
 		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
-		ai_type      = "spawnonly_ai",
+		ai_type      = "spawner_ai",
 
 		desc            = "Seems like the pain elementals' big momma!",
 
 		OnCreate = function (self)
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 5
 			self.hp = self.hpmax
-			self:add_property("spawnchance",4)
-			--sets up what can spawn: each have equal probability
-			self:add_property("spawnlist",{
-				{name = "lostsoul", amt = 3},
-				{name = "pain",     amt = 1},
-			})
+			self.spawnlist = {
+				{name = "lostsoul", count = 3},
+				{name = "pain",     count = 1},
+			}
 		end,
 
 		OnDie = function (self,overkill)
@@ -1376,7 +1377,7 @@ function drl.register_beings()
 		xp           = 1000,
 		bulk         = 100,
 		flags        = { BF_CHARGE, BF_ENVIROSAFE ,BF_HUNTING },
-		ai_type      = "melee_seek_ai",
+		ai_type      = "angel_ai",
 
 		desc            = "Why doesn't a BFG work when you really need it? As if from a half-forgotten nightmare, you encounter the harbinger of death...",
 		kill_desc_melee = "was ripped apart by the Angel of Death",

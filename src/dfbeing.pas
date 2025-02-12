@@ -168,6 +168,7 @@ TBeing = class(TThing,IPathQuery)
     FPathHazards   : TFlags;
     FPathClear     : TFlags;
     FKnockBacked   : Boolean;
+    FAnimSeq       : Integer;
     public
     property Inv       : TInventory  read FInv       write FInv;
     property TargetPos : TCoord2D    read FTargetPos write FTargetPos;
@@ -186,6 +187,7 @@ TBeing = class(TThing,IPathQuery)
 
     property Vision       : Byte       read FVisionRadius write FVisionRadius;
     property SCount       : LongInt    read FSpeedCount   write FSpeedCount;
+    property AnimSeq      : Integer    read FAnimSeq      write FAnimSeq;
 
     property ToHit        : Integer    read FBonus.ToHit        write FBonus.ToHit;
     property ToDam        : Integer    read FBonus.ToDam        write FBonus.ToDam;
@@ -335,6 +337,7 @@ begin
 
   FBloodBoots   := 0;
   FChainFire    := 0;
+  FAnimSeq      := 0;
 
   FSilentAction := False;
   FKnockBacked  := False;
@@ -351,6 +354,9 @@ begin
   FBonus.ToHit      := Table.getInteger('tohit');
   FBonus.ToHitMelee := Table.getInteger('tohitmelee');
   FBonus.ToDam      := Table.getInteger('todam');
+  FTimes.Move       := Table.getInteger('movetime',100);
+  FTimes.Fire       := Table.getInteger('firetime',100);
+  FTimes.Reload     := Table.getInteger('reloadtime',100);
   FExpValue         := Table.getInteger('xp');
 
   FSpeed      := Table.getInteger('speed');
@@ -363,10 +369,6 @@ begin
   FHPNom := FHP;
   FSpeedCount := 900+Random(90);
 
-  FTimes.Reload := 100;
-  FTimes.Move   := 100;
-  FTimes.Fire   := 100;
-  
   FBonus.Pistol := 0;
   FBonus.Rapid  := 0;
   FBonus.Tech   := 0;
@@ -446,6 +448,7 @@ begin
   Assert( aGun <> nil );
   iSeqBase := 0;
   if not isPlayer then iSeqBase := 100;
+  iSeqBase += FAnimSeq;
   iMissileRange := Missiles[aGun.Missile].MaxRange;
 
   if aGun.Flags[ IF_SCATTER ] then

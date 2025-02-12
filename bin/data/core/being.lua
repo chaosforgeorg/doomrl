@@ -93,7 +93,7 @@ setmetatable(being.eq, {
 	end,
 })
 
-function being:flock_target( range, mind, maxd )
+function being:flock_target( range, mind, maxd, parea )
 	local pos     = self.position
 	local id      = self.id
 	local flock   = {}
@@ -129,7 +129,7 @@ function being:flock_target( range, mind, maxd )
 		end
 	end
 
-	local scan = area.around( pos, range ):clamped( area.FULL )
+	local scan = parea or area.around( pos, range ):clamped( area.FULL )
 	return scan:random_coord()
 end
 
