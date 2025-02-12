@@ -417,6 +417,11 @@ function drl.register_beings()
 
 		desc            = "Pain, pain, pain - this is the only thing these monsters live by, and the only thing they deliver. Wait, look again - they also deliver lost souls!",
 
+		OnCreate = function (self)
+			self.spawnlist = { name = "lostsoul", count = 3 }
+		end,
+
+
 		OnDie = function (self,overkill)
 			if not overkill then
 				for c=1,3 do self:spawn("lostsoul") end
@@ -980,9 +985,7 @@ function drl.register_beings()
 		desc            = "Pain, pain, pain, nightmare pain. Oh and nightmare souls...",
 
 		OnCreate = function (self)
-			self:add_property("spawnlist",{
-				{name = "nlostsoul", amt = 3},
-			})
+			self.spawnlist = { name = "nlostsoul", count = 3 }
 		end,
 
 		OnDie = function (self,overkill)
@@ -1340,12 +1343,10 @@ function drl.register_beings()
 		OnCreate = function (self)
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 5
 			self.hp = self.hpmax
-			self:add_property("spawnchance",4)
-			--sets up what can spawn: each have equal probability
-			self:add_property("spawnlist",{
-				{name = "lostsoul", amt = 3},
-				{name = "pain",     amt = 1},
-			})
+			self.spawnlist = {
+				{name = "lostsoul", count = 3},
+				{name = "pain",     count = 1},
+			}
 		end,
 
 		OnDie = function (self,overkill)

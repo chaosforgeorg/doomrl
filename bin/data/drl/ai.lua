@@ -140,7 +140,6 @@ register_ai "archvile_ai"
 				target = pos + (pos - target)
 				area.FULL:clamp_coord( target )
 			end
-		
 			if self.move_to == target then
 				if aitk.move_path( self ) then
 					return "hunt"
@@ -175,111 +174,63 @@ register_ai "archvile_ai"
 
 register_ai "spawner_ai"
 {
-
 	OnCreate = function( self )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "assigned", false )
-		self:add_property( "boredom", 5 )
-		self:add_property( "move_to", coord.new(0,0) )
+		aitk.basic_init( self, false, false )
+		self:add_property( "sequential", {3,5,3} )
+		self:add_property( "sequence", 0 )
+		self:add_property( "spawnchance", 25 )
+		self:add_property( "spawnlist", false )
 	end,
 
-	OnAttacked = function( self )
+	OnAttacked = function( self, target )
 		self.boredom = 0
-		self.assigned = false
 	end,
 
 	states = {
-		thinking = function( self )
-			local dist    = self:distance_to( player )
-			local visible = self:in_sight( player )
-
-			self.boredom = self.boredom + 1
-			if visible or self.boredom < 4 then
-				if (self:has_property("spawnchance") and math.random(self.spawnchance) == 1) or (not self:has_property("spawnchance") and math.random(4) == 1) then
-					self.ai_state = "spawn"
-				else
-					self.ai_state = "pursue"
-				end
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				end
-			else
-				self.ai_state = "idle"
-			end
-
-			if not self.assigned then
-				local p = player.position
-				local s = self.position
-				local walk
-				if self.ai_state == "pursue" then
-					if dist < 4 then
-						walk = s + (p - s)
-					else
-						walk = p
-					end
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40 )
-					self.assigned = true
-				elseif self.ai_state == "idle" then
-					walk = area.around( s, 3 ):clamped( area.FULL ):random_coord()
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40 )
-					self.assigned = true
-				end
-			end
-
-			return self.ai_state
-		end,
-
-		idle = function( self )
-			if math.random(30) == 1 then
-				self:play_sound( "act" )
-			end
-
-			if self:distance_to( self.move_to ) == 0 or self:in_sight(player) then
-				self.assigned = false
-			else
-				local move_check = self:path_next()
-				if move_check ~= MOVEOK then
-					self.assigned = false
-					self.scount = self.scount - 200
-				end
-			end
-			return "thinking"
-		end,
-
+		idle   = aitk.basic_idle,
 		pursue = function( self )
-			if self:distance_to( self.move_to ) == 0 then
-				self.assigned = false
-				return "thinking"
+			if ais[ self.ai_type ].states.try_spawn( self ) then 
+				return "pursue"
 			end
-			local move_check = self:path_next()
-			if move_check ~= MOVEOK then
-				self.assigned = false
-				self.scount = self.scount - 1000
-			end
-			return "thinking"
+			return aitk.basic_pursue( self )
 		end,
-
-		spawn = function( self )
-			local whom = "lostsoul"
-			local num = 3
-			if self:has_property("spawnlist") then
-				local rand = math.random(#self.spawnlist)
-				whom = self.spawnlist[rand].name
-				num = self.spawnlist[rand].amt
+		hunt   = function( self )
+			if ais[ self.ai_type ].states.try_spawn( self ) then 
+				return "hunt"
 			end
-			for c=1,num do
-				self:spawn(whom)
+			local target = player.position
+			local dist   = self:distance_to( player )
+			if dist < 4  then
+				local pos = self.position
+				target = pos + (pos - target)
+				area.FULL:clamp_coord( target )
 			end
-			local spawnname = "a "..beings[whom].name
-			if num > 1 then
-				spawnname = beings[whom].name_plural
+			if self:direct_seek( target ) ~= MOVEOK then
+				self.scount  = self.scount - 1000
 			end
-			self:msg("", "The "..self.name.." spawns "..spawnname.."!")
-			self.scount = self.scount - 1000
-			return "thinking"
+			return "hunt"
+		end,
+		try_spawn = function( self )
+			if self.spawnlist and self.boredom < 4 and math.random(100) <= self.spawnchance then
+				local list = self.spawnlist
+				if not list.name then
+					list = list[ math.random(#list) ]
+				end
+				local whom = list.name
+				local num  = list.count
+				for c=1,num do
+					self:spawn(whom)
+				end
+				local spawnname = "a "..beings[whom].name
+				if num > 1 then
+					spawnname = beings[whom].name_plural
+				end
+				self:msg("", "The "..self.name.." spawns "..spawnname.."!")
+				self.scount  = self.scount - 1000
+				self.boredom = self.boredom + 1
+				return true
+			end
+			return false
 		end,
 	}
 }
