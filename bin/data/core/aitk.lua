@@ -71,6 +71,7 @@ function aitk.flock_init( self, flock_min, flock_max )
     self:add_property( "flock_max", flock_max or 4 )
     self:add_property( "move_to", false )
     self:add_property( "target", false )
+    self:add_property( "patrol_area", false )
 end
 
 function aitk.flock_on_attacked( self, target )
@@ -103,7 +104,10 @@ function aitk.flock_idle( self )
         self:play_sound( "act" )
     end
     if not self.move_to then
-        self.move_to = self:flock_target( self.vision, self.flock_min or 1, self.flock_max or 4 )
+        if not self.patrol_area then
+            self.patrol_area = area.around( self.position, 9 ):clamped( area.FULL )
+        end
+        self.move_to = self:flock_target( self.vision, self.flock_min or 1, self.flock_max or 4, self.patrol_area )
     end
 
     if not cells[ level.map[self.move_to] ].flags[ CF_HAZARD ] or self.flags[ BF_ENVIROSAFE ] == true then
@@ -212,6 +216,7 @@ function aitk.basic_init( self, use_packs, use_armor )
     self:add_property( "use_armor", use_armor or false )
     self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
     self:add_property( "retaliate", false )
+    self:add_property( "patrol_area", false )
 end
 
 function aitk.basic_scan( self )
@@ -272,7 +277,10 @@ function aitk.basic_idle( self )
         end
         self.scount = self.scount - 500
     end
-    self.move_to = area.around( self.position, 3 ):clamped( area.FULL ):random_coord()
+    if not self.patrol_area then
+        self.patrol_area = area.around( self.position, 5 ):clamped( area.FULL )
+    end
+    self.move_to = self.patrol_area:random_coord()
 	return "idle"
 end
 
@@ -355,7 +363,10 @@ function aitk.basic_smart_idle( self )
             end
         end
         if not next_move then
-            next_move = area.around( self.position, 3 ):clamped( area.FULL ):random_coord()
+            if not self.patrol_area then
+                self.patrol_area = area.around( self.position, 5 ):clamped( area.FULL )
+            end
+            next_move = self.patrol_area:random_coord()
         end
         if next_move then
             self.move_to = next_move
@@ -529,6 +540,7 @@ function aitk.charge_init( self, charge_time )
     self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
     self:add_property( "chargetime", charge_time or 30 )
     self:add_property( "basetime", self.movetime )
+    self:add_property( "patrol_area", false )
 end
 
 function aitk.charge_on_attacked( self, target )
@@ -565,7 +577,10 @@ function aitk.charge_idle( self )
         end
         self.scount = self.scount - 500
     end
-    self.move_to = area.around( self.position, 3 ):clamped( area.FULL ):random_coord()
+    if not self.patrol_area then
+        self.patrol_area = area.around( self.position, 7 ):clamped( area.FULL )
+    end
+    self.move_to = self.patrol_area:random_coord()
 	return "idle"
 end
 
