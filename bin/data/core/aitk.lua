@@ -58,6 +58,7 @@ function aitk.flock_init( self, flock_min, flock_max )
 end
 
 function aitk.flock_on_attacked( self, target )
+    if self == target then return end
     local target = target or self.target
     for b in level:beings_in_range( self, self.flock_max or 4 ) do
         if b.id == self.id then
@@ -258,6 +259,7 @@ function aitk.basic_idle( self )
 end
 
 function aitk.basic_on_attacked( self, target )
+    if self == target then return end
     if self:has_property("boredom") then self.boredom = 0 end
     if target then 
         self.target = target.uid
@@ -481,6 +483,7 @@ function aitk.charge_init( self, charge_time )
 end
 
 function aitk.charge_on_attacked( self, target )
+    if self == target then return end
     if self.ai_state == "idle" then
         self.move_to  = target.position
         self.ai_state = "pursue"
