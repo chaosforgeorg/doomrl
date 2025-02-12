@@ -59,6 +59,7 @@ end
 
 function aitk.flock_on_attacked( self, target )
     if self == target then return end
+    if target and target:has_property("master") then return end
     local target = target or self.target
     for b in level:beings_in_range( self, self.flock_max or 4 ) do
         if b.id == self.id then
@@ -262,6 +263,7 @@ function aitk.basic_on_attacked( self, target )
     if self == target then return end
     if self:has_property("boredom") then self.boredom = 0 end
     if target then 
+        if target:has_property("master") then return end
         self.target = target.uid
         if self.ai_state == "idle" then
             self.move_to  = target.position
@@ -582,4 +584,12 @@ function aitk.charge_post_charge( self )
         end
     end
     return "post_charge"
+end
+
+function aitk.wait( self )
+    self.scount = self.scount - 1000
+    if aitk.basic_scan( self ) then
+        return "hunt"
+    end
+	return "wait"
 end

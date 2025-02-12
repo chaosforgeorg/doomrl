@@ -413,11 +413,10 @@ register_ai "jc_ai"
 {
 
 	OnCreate = function( self )
+		aitk.basic_init( self, false, false )
 		self:add_property( "attacked", false )
-		self:add_property( "ai_state", "wait" )
-		self:add_property( "assigned", false )
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+		self:add_property( "master", true )
+		self.ai_state = "wait"
 	end,
 
 	OnAttacked = function( self )
@@ -428,94 +427,81 @@ register_ai "jc_ai"
 				level:summon{ "baron", 6, area = surround }
 				ui.msg("A voice bellows: \"Don't think you can surprise me!\"")
 			end
-			self.ai_state = "thinking"
+			self.ai_state = "hunt"
 		end
 	end,
 
 	states = {
-		--pre-active state
-		wait = function( self )
-			self.scount = self.scount - 1000
-			if self:in_sight( player ) then
-				return "thinking"
-			else
-				return "wait"
-			end
-		end,
-
-		thinking = function( self )
-			local dist    = self:distance_to( player )
-			local visible = self:in_sight( player )
+		wait = aitk.wait,
+		hunt = function( self )
+			self.target = player.uid
+			local target  = player
+			local dist    = self:distance_to( target )
+			local visible = self:in_sight( target )
 			local action, has_ammo = aitk.inventory_check( self, dist > 1 )
-			if action then
-				return "thinking"
-			end
-
-			local shoot = math.random(100)
-			if visible then
-				shoot = shoot <= self.attackchance
-			else
-				shoot = shoot <= math.floor(self.attackchance / 2)
-			end
+			if action then return "hunt" end
+		
 			if self.attacked and math.random(3) == 1 then
-				self.ai_state = "teleport"
 				self.attacked = false
-			elseif not has_ammo or (visible and math.random(4) == 1) or (not visible and math.random(8) == 1)then
-				self.ai_state = "summon"
-			elseif has_ammo and ( self.attacked or shoot ) then
-				self:fire( player, self.eq.weapon )
-				return "thinking"
-			else
-				self.ai_state = "pursue"
+				local tp  = area.around( self.position, 10 ):clamped( area.FULL_SHRINKED ):random_coord()
+				local mob = level:get_being( tp )
+				if mob then
+					if mob:is_player() or mob == self then
+						return "hunt"
+					else
+						mob:kill()
+					end
+				end
+				self:play_sound("phasing")
+				level:explosion( self.position, 2, 50, 0, 0, LIGHTBLUE )
+				self:relocate( tp )
+				level:explosion( self.position, 4, 50, 0, 0, LIGHTBLUE )
+				self.scount = self.scount - 1000
+				return "hunt"
+			end
+	
+			if (not has_ammo) or (visible and math.random(4) == 1) or (not visible and math.random(8) == 1) then
+				local idx = math.max( math.min( 5 - math.floor((self.hp / self.hpmax) * 5), 5 ), 1 )
+				if self.hp > self.hpmax then idx = 6 end
+				local whom = { "lostsoul", "cacodemon", "knight", "baron", "revenant" , "mancubus" }
+				for c=1,8 do self:spawn( whom[idx] ) end
+				if self:is_visible() then
+					self:msg("","Carmack raises his hands and summons hellspawn!")
+				end
+				self.scount = self.scount - 2000
+				return "hunt"
 			end
 
-			local walk
-			if not self.assigned then
-				if self.ai_state == "teleport" then
-					walk = area.around( self.position, 10 ):clamped( area.FULL_SHRINKED ):random_coord()
-				elseif self.ai_state == "pursue" then
-					walk = player.position
-				end
-				if walk then
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40 )
-					self.assigned = true
-				end
-			end
-			return self.ai_state
-		end,
-
-		pursue = function( self ) return ai_tools.pursue_action( self, false, false ) end,
-
-		teleport = function( self )
-			self.assigned = false
-			local mob = level:get_being( self.move_to )
-			if mob then
-				if mob:is_player() or mob == self then
-					return "thinking"
-				else
-					mob:kill()
+			if has_ammo then
+				local shoot = true
+				if not self.attacked then
+					if visible then
+						shoot = math.random(100) <= self.attackchance
+					else
+						shoot = math.random(100) <= math.floor(self.attackchance / 2)
+					end
+				end	
+				if dist < 3 then shoot = true end			
+				if shoot then
+					self:fire( player, self.eq.weapon )
+					return "hunt"
 				end
 			end
-			self:play_sound("phasing")
-			level:explosion( self.position, 2, 50, 0, 0, LIGHTBLUE )
-			self:relocate( self.move_to )
-			level:explosion( self.position, 4, 50, 0, 0, LIGHTBLUE )
+
+			if dist > 3 then
+                if self:path_find( target.position, 10, 40 ) or ( not aitk.move_path( self ) ) then
+					return "hunt"
+				end
+			end
+
+			local mt = area.around( self.position, 3 ):clamped( area.FULL ):random_coord()
+			if self:distance_to( mt ) > 0 then
+				if self:direct_seek( mt ) == MOVEOK then
+					return "hunt"
+				end
+			end
 			self.scount = self.scount - 1000
-			return "thinking"
-		end,
-
-		summon = function (self)
-			local idx = math.max( math.min( 5 - math.floor((self.hp / self.hpmax) * 5), 5 ), 1 )
-			if self.hp > self.hpmax then idx = 6 end
-			-- White Rider requested this.  I had no part to play.
-			local whom = { "lostsoul", "cacodemon", "knight", "baron", "revenant" , "mancubus" }
-			for c=1,8 do self:spawn(whom[idx]) end
-			if self:is_visible() then
-				self:msg("","Carmack raises his hands and summons hellspawn!")
-			end
-			self.scount = self.scount - 2000
-			return "thinking"
+			return "hunt"
 		end,
 	}
 }
