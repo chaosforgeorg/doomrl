@@ -1,5 +1,8 @@
 0.9.9.9 BETA 6
+[new] -- GH#217: infighting is back, baby!
 [mod] -- GH#161: drop item action continues if no enemy/damage is present
+[mod] -- GH#217: all AI's got a refactor, might behave differently
+[fix] -- GH#098: fixes Mastermind AI getting stuck
 [fix] -- GH#000: emergency animation break added
 [fix] -- RCFIX : fixed multi-melee animations
 
