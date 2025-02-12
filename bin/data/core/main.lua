@@ -7,7 +7,6 @@ require( "core:thing" )
 require( "core:being" )
 require( "core:item" )
 require( "core:player" )
-require( "core:ai" )
 require( "core:aitk" )
 require( "core:blueprints" )
 require( "core:ui" )
@@ -147,7 +146,7 @@ register_being         = core.register_storage( "beings", "being", function( bp 
 			end
 
 			bp.OnCreate   = core.create_seq_function( OnCreate, bp.OnCreate )
-			bp.OnAction   = core.create_seq_function( ai_tools.OnAction, bp.OnAction )
+			bp.OnAction   = core.create_seq_function( aitk.OnAction, bp.OnAction )
 			bp.OnAttacked = core.create_seq_function( bp.OnAttacked, ai_proto.OnAttacked )
 		end
 

@@ -5,6 +5,22 @@
 
 aitk = {}
 
+function aitk.OnAction( self )
+	local safe = 0
+	repeat
+		local ai        = ais[ self.ai_type ]
+		local old_state = self.ai_state
+		local new_state = ai.states[ old_state ]( self ) or old_state
+		if not core.is_playing() then return end -- gracefully exit if being kills player
+		if not self.__ptr then return end -- gracefully exit if being dies
+		self.ai_state = new_state
+		safe = safe + 1
+	until self.scount < 5000 or safe > 1000
+	if safe > 1000 then
+		error( "AI : "..ais[ self.ai_type ].id.." entered infinite loop!" )
+	end
+end
+
 function aitk.scan( self )
     local visible = self:in_sight( player )
     if visible then
