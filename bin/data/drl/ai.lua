@@ -438,6 +438,63 @@ register_ai "jc_ai"
 
 register_ai "teleboss_ai"
 {
+	OnCreate = function( self )
+		aitk.basic_init( self, false, false )
+		self:add_property( "telechance", 10 )
+		self:add_property( "teleradius", 5 )
+	end,
+
+	OnAttacked = aitk.basic_on_attacked,
+
+	states = {
+		idle     = function( self )
+			if ais[ self.ai_type ].states.teleport( self ) then return "idle" end
+			return aitk.basic_smart_idle( self )
+		end,
+		pursue    = function( self )
+			if ais[ self.ai_type ].states.teleport( self ) then return "idle" end
+			return aitk.basic_pursue( self )
+		end,
+		hunt     = function( self )
+			if ais[ self.ai_type ].states.teleport( self ) then return "idle" end
+			return aitk.pursue_hunt( self )
+		end,
+		teleport = function( self )
+			if math.random( 100 ) > self.telechance then return false end
+			local dist  = self:distance_to( player )
+			local p     = player.position
+			local phase 
+			if dist <= self.teleradius then
+				local flee = coord.new( 2*(s.x-p.x), 2*(s.y-p.y))
+				phase = table.random_pick{ p + flee, p - flee }
+				area.FULL_SHRINKED:clamp_coord( phase )
+				phase = generator.drop_coord( phase, { EF_NOBEINGS, EF_NOBLOCK } )
+			end
+
+			if not phase then
+				local parea = area.around( p, self.teleradius ):clamped( area.FULL_SHRINKED )
+				local limit = 0
+				repeat
+					limit = limit + 1
+					if limit > 25 then return false end
+					phase = generator.random_empty_coord( { EF_NOBEINGS, EF_NOBLOCK }, parea )
+				until phase and level:eye_contact( p, phase )
+			end
+
+			self:play_sound("phasing")
+			level:explosion( self, 2, 50, 0, 0, YELLOW )
+			local target = generator.drop_coord( phase, { EF_NOBEINGS, EF_NOBLOCK } )
+			self:relocate( target )
+			level:explosion( self, 1, 50, 0, 0, YELLOW )
+			self.scount = self.scount - 1000
+			return true
+		end,
+	}
+}
+--[[
+
+register_ai "teleboss_ai"
+{
 
 	OnCreate = function( self )
 		self:add_property( "ai_state", "thinking" )
@@ -445,6 +502,9 @@ register_ai "teleboss_ai"
 		self:add_property( "boredom", 0 )
 		self:add_property( "move_to", coord.new(0,0) )
 		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+
+		self:add_property("telechance",10)
+		self:add_property("teleradius",5)
 	end,
 
 	OnAttacked = function( self )
@@ -458,7 +518,7 @@ register_ai "teleboss_ai"
 			local visible = self:in_sight( player )
 			local no_melee = false
 
-			if (self:has_property("telechance") and math.random(self.telechance) == 1) or (not self:has_property("telechance") and math.random(10) == 1) then
+			if math.random(self.telechance) == 1 then
 				self.assigned = false
 				self.ai_state = "teleport"
 				no_melee = true
@@ -486,9 +546,8 @@ register_ai "teleboss_ai"
 				elseif self.ai_state == "teleport" then
 					local phase = nil
 					local phase_check = 0
-					local phase_rad = self.teleradius or 5
 
-					if dist <= phase_rad then
+					if dist <= self.teleradius then
 						local flee = coord.new(2*(s.x-p.x), 2*(s.y-p.y))
 						phase = table.random_pick{ p + flee, p - flee }
 						area.FULL_SHRINKED:clamp_coord( phase )
@@ -496,7 +555,7 @@ register_ai "teleboss_ai"
 					end
 
 					if not phase then
-						local parea = area.around( p, phase_rad ):clamped( area.FULL_SHRINKED )
+						local parea = area.around( p, self.teleradius ):clamped( area.FULL_SHRINKED )
 						repeat
 							phase = generator.random_empty_coord( { EF_NOBEINGS, EF_NOBLOCK }, parea )
 							phase_check = phase_check + 1
@@ -549,7 +608,7 @@ register_ai "teleboss_ai"
 		end,
 	}
 }
-
+--]]
 register_ai "mastermind_ai"
 {
 

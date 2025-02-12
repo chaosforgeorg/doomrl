@@ -1240,8 +1240,8 @@ function drl.register_beings()
 		OnCreate = function (self)
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 5
 			self.hp = self.hpmax
-			self:add_property("telechance",6)
-			self:add_property("teleradius",8)
+			self.telechance = 15
+			self.teleradius = 8
 		end,
 
 		OnAction = function (self)
@@ -1307,8 +1307,8 @@ function drl.register_beings()
 		OnCreate = function (self)
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 5
 			self.hp = self.hpmax
-			self:add_property("telechance",20)
-			self:add_property("teleradius",5)
+			self.telechance = 5
+			self.teleradius = 5
 		end,
 
 		OnAction = function (self)
