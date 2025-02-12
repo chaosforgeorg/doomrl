@@ -85,89 +85,17 @@ register_ai "ranged_ai"
 
 register_ai "sequential_ai"
 {
-
 	OnCreate = function( self )
-		self:add_property( "boredom", 10 ) --idle triggers for boredom > 9
-		self:add_property( "assigned", false )
-		self:add_property( "shots", 0 )
-		self:add_property( "move_to", coord.new(0,0) )
-		self:add_property( "attack_to", coord.new(0,0) )
-		self:add_property( "ai_state", "thinking" )
-		self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
+		aitk.basic_init( self, false, false )
+		self:add_property( "sequential", {3,5,3} )
+		self:add_property( "sequence", 0 )
 	end,
 
-	OnAttacked = function( self )
-		self.boredom = 0
-		self.shots = 0
-		self.assigned = false
-		self.ai_state = "thinking"
-	end,
-
+	OnAttacked = aitk.basic_on_attacked,
 	states = {
-		thinking = function( self )
-			local dist    = self:distance_to( player )
-			local visible = self:in_sight( player )
-
-			if visible then
-				self.boredom = 0
-				if dist == 1 then
-					self:attack( player )
-					return "thinking"
-				elseif math.random(100) <= self.attackchance and self.shots == 0 then
-					self.assigned = false
-					self.ai_state = "fire"
-				else
-					self.ai_state = "pursue"
-				end
-			else
-				self.ai_state = "pursue"
-				self.boredom = self.boredom + 1
-				if self.boredom > 8 then
-					self.ai_state = "idle"
-				end
-			end
-
-			if self.shots > 0 then self.shots = self.shots - 1 end
-
-			if not self.assigned then
-				local walk
-				if self.ai_state == "idle" then
-					walk = ai_tools.idle_assignment( self, false )
-				elseif self.ai_state == "pursue" then
-					walk = player.position
-				elseif self.ai_state == "fire" then
-					self:play_sound( "attack" )
-					self.attack_to = player.position
-					self.shots = 2 + math.random(3)
-					self.assigned = true
-				end
-				if walk then
-					self.move_to = walk
-					self:path_find( self.move_to, 10, 40)
-					self.assigned = true
-				end
-			end
-			return self.ai_state
-		end,
-
-		idle = function( self ) return ai_tools.idle_action_ranged( self, false ) end,
-
-		--has potential loop uninterrupted by thinking
-		fire = function( self )
-			local next_state = ""
-			if self.shots > 0 then self.shots = self.shots - 1 end
-			if not self:in_sight( player ) or self.shots == 0 then
-				self.shots = 3 -- cooldown
-				next_state = "thinking"
-			else
-				self.attack_to = player.position
-				next_state = "fire"
-			end
-			self:fire( self.attack_to, self.eq.weapon )
-			return next_state
-		end,
-
-		pursue = function( self ) return ai_tools.pursue_action( self, true, true ) end,
+		idle   = aitk.basic_smart_idle,
+		pursue = aitk.basic_pursue,
+		hunt   = aitk.ranged_hunt,
 	}
 }
 

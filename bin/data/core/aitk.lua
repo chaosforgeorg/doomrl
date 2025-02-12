@@ -361,17 +361,37 @@ function aitk.try_hunt( self )
     local action, has_ammo = aitk.inventory_check( self, dist > 1 )
     if action then return "hunt" end
     if not visible then
-        if self:has_property("boredom") then self.boredom = 0 end
-		self.move_to = target.position
+        if self:has_property("boredom")  then self.boredom = 0 end
+        if self:has_property("sequence") then self.sequence = 0 end
+        self.move_to = target.position
 		self:path_find( self.move_to, 10, 40 )
         return "pursue"
     end
 
+    local sequence   = 0
+    local sequential = nil
+    if self:has_property("sequential") then
+        sequential = self.sequential
+        sequence   = self.sequence
+        if sequence == 1 then
+            self.sequence = -1
+        elseif sequence > 1 or sequence < 0 then
+            self.sequence = sequence - 1
+            if sequence < -sequential[3] then
+                self.sequence = 0
+                sequence = 0
+            end
+        end
+    end
     if dist == 1 then
         self:attack( target )
+        if sequential then self.sequence = 0 end
         return "hunt"
-    elseif math.random(100) <= self.attackchance and has_ammo then
+    elseif has_ammo and sequence >= 0 and ( sequence > 0 or ( math.random(100) <= self.attackchance ) ) then
         self:fire( target, self.eq.weapon )
+        if sequence == 0 and sequential then
+            self.sequence = core.resolve_range( sequential )
+        end 
         return "hunt"
     end
 
