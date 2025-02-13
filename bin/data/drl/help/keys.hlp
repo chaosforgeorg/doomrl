@@ -4,8 +4,11 @@
   following set describes the standard layout, and does not reflect
   any changes you may have made to your keybindings.
 
-  {!Escape}  -- exit menu, or show game menu (Save, Quit, Help, Settings)
-  {!Arrows}  -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
+  {!Escape}      -- Exit menu, or show game menu (Save/Quit/Help/etc)
+  {!Arrows}      -- Walking around (PgUp, PgDn, Home, End diagonally!)
+  {!Arrows+Ctrl} -- Manually move target reticule
+  {!TAB}         -- Switch between targets
+  
   {!h}       -- Run on-line help
   {!SPACE}   -- Action - open doors, close doors, use levers/switches or 
             go down stairs (you won't be able to come back!)
@@ -13,8 +16,6 @@
   {!SHIFT-g} -- Use/wield/wear item from floor/pull lever/switch
   {!f}       -- Fire of equipped weapon
   {!SHIFT-f} -- Alternative Fire of equipped weapon (if available)
-  {!t}       -- Manual targeting of equipped weapon
-  {!SHIFT-r} -- Alternative manual targeting of equipped weapon (if available)
   {!r}       -- Reload equipped weapon
   {!SHIFT-r} -- Special reload weapon (depending on weapon)
   {!z}       -- Swap weapon (with prepared weapon)
@@ -32,7 +33,13 @@
   {!x}       -- change tactic
   {!1}..{!9} -- weapon quick keys, set them up in the inventory screen
 
-{rKeys while targeting}
+
+{rManual targeting (legacy option)}
+
+  {!t}       -- Manual targeting of equipped weapon
+  {!SHIFT-r} -- Alternative manual targeting of equipped weapon (if available)
+
+{rKeys while manual targeting}
    
   {!Arrows}      -- move target line
   {!TAB}         -- toggle target

@@ -1,4 +1,5 @@
 0.9.9.9 BETA 6
+[new] -- GH#227: Ctrl+Arrows will manually move the auto-target reticule!
 [new] -- GH#217: infighting is back, baby!
 [mod] -- GH#217: all AI's got a refactor, might behave differently
 [mod] -- GH#161: drop item action continues if no enemy/damage is present

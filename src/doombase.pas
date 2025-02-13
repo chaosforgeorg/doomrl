@@ -69,6 +69,7 @@ TDoom = class(TSystem)
        procedure SetState( NewState : TDoomState );
        procedure ClearPlayerView;
      private
+       procedure ResetAutoTarget;
        function HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
        function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
        procedure PreAction;
@@ -686,6 +687,7 @@ begin
     if FTargeting.List.Current = Player.Position then
     begin
       IO.Msg( 'No valid target.' );
+      ResetAutoTarget;
       Exit( False );
     end;
     FTargeting.OnTarget( iTarget );
@@ -779,6 +781,12 @@ end;
   Exit( True );
 end;
 
+procedure TDoom.ResetAutoTarget;
+begin
+  FTargeting.Clear;
+  FTargeting.Update( Player.Vision );
+  IO.SetAutoTarget( FTargeting.List.Current );
+end;
 
 function TDoom.HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
 var iAlt     : Boolean;
@@ -871,6 +879,7 @@ end;
 
 function TDoom.HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
 var iInput : TInputKey;
+    iCoord : TCoord2D;
 begin
   if aEvent.Key.Code = 0 then Exit( False );
   IO.KeyCode := IOKeyEventToIOKeyCode( aEvent.Key );
@@ -902,10 +911,23 @@ begin
       Exit;
     end;
 
+    if iInput in INPUT_TARGETMOVE then
+    begin
+      iCoord := FTargeting.List.Current + InputDirection( iInput );
+      if FLevel.isProperCoord( iCoord ) then
+      begin
+        Player.TargetPos := iCoord;
+        FTargeting.OnTarget( iCoord );
+        FTargeting.Update( Player.Vision );
+        IO.SetAutoTarget( FTargeting.List.Current );
+      end;
+      Exit;
+    end;
+
     case iInput of
 //      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
       INPUT_TARGETNEXT : begin IO.SetAutoTarget( FTargeting.List.Next ); Exit; end;
-      INPUT_ESCAPE     : begin IO.PushLayer( TInGameMenuView.Create ); Exit; end;
+      INPUT_ESCAPE     : begin ResetAutoTarget; IO.PushLayer( TInGameMenuView.Create ); Exit; end;
       INPUT_QUIT       : begin IO.PushLayer( TAbandonView.Create ); Exit; end;
       INPUT_HELP       : begin IO.PushLayer( THelpView.Create ); Exit; end;
       INPUT_LOOKMODE   : begin IO.PushLayer( TLookModeView.Create ); Exit; end;

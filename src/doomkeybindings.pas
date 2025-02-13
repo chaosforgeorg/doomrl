@@ -34,6 +34,16 @@ type TInputKey = (
   INPUT_RUNDOWNRIGHT,
   INPUT_RUNWAIT,
 
+  // Target keybindings
+  INPUT_TARGETLEFT,
+  INPUT_TARGETRIGHT,
+  INPUT_TARGETUP,
+  INPUT_TARGETDOWN,
+  INPUT_TARGETUPLEFT,
+  INPUT_TARGETUPRIGHT,
+  INPUT_TARGETDOWNLEFT,
+  INPUT_TARGETDOWNRIGHT,
+
   // Action keybindings
   INPUT_ACTION,
   INPUT_FIRE,
@@ -136,6 +146,16 @@ const KeyInfo : array[TInputKey] of TKeyInfoEntry = (
     (ID: 'input_rundownleft';   Group: 'keybindings_running';       Default: VKEY_END + IOKeyCodeShiftMask;              Name: 'Multi-move down-left';   Description: 'Keybind to move down and left until blocked or enemy spotted.'),
     (ID: 'input_rundownright';  Group: 'keybindings_running';       Default: VKEY_PGDOWN + IOKeyCodeShiftMask;           Name: 'Multi-move down-right';  Description: 'Keybind to move down and right until blocked or enemy spotted.'),
     (ID: 'input_runwait';       Group: 'keybindings_running';       Default: VKEY_W + IOKeyCodeShiftMask;           Name: 'Multi-wait';             Description: 'Keybind to wait several turns or until enemy spotted.'),
+
+    // Target keybindings (autoset)
+    (ID: 'input_targetleft';       Group: 'keybindings_target';       Default: VKEY_LEFT + IOKeyCodeCtrlMask;             Name: 'Move target left';        Description: 'Keybind to move target left.'),
+    (ID: 'input_targetright';      Group: 'keybindings_target';       Default: VKEY_RIGHT + IOKeyCodeCtrlMask;            Name: 'Move target right';       Description: 'Keybind to move target right.'),
+    (ID: 'input_targetup';         Group: 'keybindings_target';       Default: VKEY_UP + IOKeyCodeCtrlMask;               Name: 'Move target up';          Description: 'Keybind to move target up.'),
+    (ID: 'input_targetdown';       Group: 'keybindings_target';       Default: VKEY_DOWN + IOKeyCodeCtrlMask;             Name: 'Move target down';        Description: 'Keybind to move target down.'),
+    (ID: 'input_targetupleft';     Group: 'keybindings_target';       Default: VKEY_HOME + IOKeyCodeCtrlMask;             Name: 'Move target up-left';     Description: 'Keybind to move target up and left.'),
+    (ID: 'input_targetupright';    Group: 'keybindings_target';       Default: VKEY_PGUP + IOKeyCodeCtrlMask;             Name: 'Move target up-right';    Description: 'Keybind to move target up and right.'),
+    (ID: 'input_targetdownleft';   Group: 'keybindings_target';       Default: VKEY_END + IOKeyCodeCtrlMask;              Name: 'Move target down-left';   Description: 'Keybind to move target down and left.'),
+    (ID: 'input_targetdownright';  Group: 'keybindings_target';       Default: VKEY_PGDOWN + IOKeyCodeCtrlMask;           Name: 'Move target down-right';  Description: 'Keybind to move target down and right.'),
 
     // Action keybindings
     (ID: 'input_action';         Group: 'keybindings_actions';      Default: VKEY_SPACE;            Name: 'Action';           Description: 'Perform action (open/close door, descend stairs, press button).'),

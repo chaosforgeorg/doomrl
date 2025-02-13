@@ -203,6 +203,10 @@ const
                        INPUT_RUNRIGHT,  INPUT_RUNLEFT,
                        INPUT_RUNUPRIGHT,INPUT_RUNDOWNRIGHT,
                        INPUT_RUNUPLEFT, INPUT_RUNDOWNLEFT];
+  INPUT_TARGETMOVE  = [INPUT_TARGETUP,     INPUT_TARGETDOWN,
+                       INPUT_TARGETRIGHT,  INPUT_TARGETLEFT,
+                       INPUT_TARGETUPRIGHT,INPUT_TARGETDOWNRIGHT,
+                       INPUT_TARGETUPLEFT, INPUT_TARGETDOWNLEFT];
 
 type TCellSet = set of Byte;
      TExplosionFlags = set of TExplosionFlag;
@@ -620,24 +624,32 @@ end;
 function InputDirection(aInput : TInputKey) : TDirection;
 begin
   case aInput of
-    INPUT_WALKLEFT      : InputDirection.Create(4);
-    INPUT_WALKRIGHT     : InputDirection.Create(6);
-    INPUT_WALKUP        : InputDirection.Create(8);
-    INPUT_WALKDOWN      : InputDirection.Create(2);
-    INPUT_WALKUPLEFT    : InputDirection.Create(7);
-    INPUT_WALKUPRIGHT   : InputDirection.Create(9);
-    INPUT_WALKDOWNLEFT  : InputDirection.Create(1);
-    INPUT_WALKDOWNRIGHT : InputDirection.Create(3);
-    INPUT_WAIT          : InputDirection.Create(5);
-    INPUT_RUNLEFT       : InputDirection.Create(4);
-    INPUT_RUNRIGHT      : InputDirection.Create(6);
-    INPUT_RUNUP         : InputDirection.Create(8);
-    INPUT_RUNDOWN       : InputDirection.Create(2);
-    INPUT_RUNUPLEFT     : InputDirection.Create(7);
-    INPUT_RUNUPRIGHT    : InputDirection.Create(9);
-    INPUT_RUNDOWNLEFT   : InputDirection.Create(1);
-    INPUT_RUNDOWNRIGHT  : InputDirection.Create(3);
-    INPUT_RUNWAIT       : InputDirection.Create(5);
+    INPUT_WALKLEFT        : InputDirection.Create(4);
+    INPUT_WALKRIGHT       : InputDirection.Create(6);
+    INPUT_WALKUP          : InputDirection.Create(8);
+    INPUT_WALKDOWN        : InputDirection.Create(2);
+    INPUT_WALKUPLEFT      : InputDirection.Create(7);
+    INPUT_WALKUPRIGHT     : InputDirection.Create(9);
+    INPUT_WALKDOWNLEFT    : InputDirection.Create(1);
+    INPUT_WALKDOWNRIGHT   : InputDirection.Create(3);
+    INPUT_WAIT            : InputDirection.Create(5);
+    INPUT_RUNLEFT         : InputDirection.Create(4);
+    INPUT_RUNRIGHT        : InputDirection.Create(6);
+    INPUT_RUNUP           : InputDirection.Create(8);
+    INPUT_RUNDOWN         : InputDirection.Create(2);
+    INPUT_RUNUPLEFT       : InputDirection.Create(7);
+    INPUT_RUNUPRIGHT      : InputDirection.Create(9);
+    INPUT_RUNDOWNLEFT     : InputDirection.Create(1);
+    INPUT_RUNDOWNRIGHT    : InputDirection.Create(3);
+    INPUT_RUNWAIT         : InputDirection.Create(5);
+    INPUT_TARGETLEFT      : InputDirection.Create(4);
+    INPUT_TARGETRIGHT     : InputDirection.Create(6);
+    INPUT_TARGETUP        : InputDirection.Create(8);
+    INPUT_TARGETDOWN      : InputDirection.Create(2);
+    INPUT_TARGETUPLEFT    : InputDirection.Create(7);
+    INPUT_TARGETUPRIGHT   : InputDirection.Create(9);
+    INPUT_TARGETDOWNLEFT  : InputDirection.Create(1);
+    INPUT_TARGETDOWNRIGHT : InputDirection.Create(3);
     else InputDirection.Create(0);
   end;
 end;

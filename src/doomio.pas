@@ -522,6 +522,14 @@ end;
 
 procedure TDoomIO.Reconfigure( aConfig : TLuaConfig );
 var iInput : TInputKey;
+    procedure CtrlAssign( aWhat : TInputKey; aFrom : TInputKey );
+    var iKey : TIOKeyCode;
+    begin
+      iKey := aConfig.Commands[ Configuration.GetInteger(KeyInfo[aFrom].ID) ];
+      if ( iKey and IOKeyCodeCtrlMask ) = 0
+        then aConfig.Commands[ iKey + IOKeyCodeCtrlMask ] := Word(aWhat)
+        else Log( LogWarn, 'Movement key assigned with Ctrl prevents targeting move assignemnt!' );
+    end;
 begin
   FAudio.Reconfigure;
   aConfig.ResetCommands;
@@ -531,6 +539,15 @@ begin
   for iInput in TInputKey do
     if KeyInfo[iInput].ID <> '' then
       aConfig.Commands[ Configuration.GetInteger(KeyInfo[iInput].ID) ] := Word(iInput);
+
+  CtrlAssign( INPUT_TARGETLEFT,      INPUT_WALKLEFT );
+  CtrlAssign( INPUT_TARGETRIGHT,     INPUT_WALKRIGHT );
+  CtrlAssign( INPUT_TARGETUP,        INPUT_WALKUP );
+  CtrlAssign( INPUT_TARGETDOWN,      INPUT_WALKDOWN );
+  CtrlAssign( INPUT_TARGETUPLEFT,    INPUT_WALKUPLEFT );
+  CtrlAssign( INPUT_TARGETUPRIGHT,   INPUT_WALKUPRIGHT );
+  CtrlAssign( INPUT_TARGETDOWNLEFT,  INPUT_WALKDOWNLEFT );
+  CtrlAssign( INPUT_TARGETDOWNRIGHT, INPUT_WALKDOWNRIGHT );
 end;
 
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;

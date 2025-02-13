@@ -17,11 +17,12 @@ constructor TDoomConfiguration.Create;
 var iGroup : TConfigurationGroup;
     iInput : TInputKey;
     iID    : Ansistring;
-const CInputGroups : array[1..6] of Ansistring = (
+const CInputGroups : array[1..7] of Ansistring = (
   'keybindings_movement',
   'keybindings_actions',
   'keybindings_ui',
   'keybindings_running',
+  'keybindings_target',
   'keybindings_helper',
   'keybindings_legacy'
 );

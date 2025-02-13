@@ -156,13 +156,10 @@ are used as soon as you pick them up, and several contain powerful effect,
 so use them wisely.
 
 Oh, I almost forgot! To shoot, just press "f" to fire at the currently 
-selected target! Alternatively press "t" and you'll be asked for a
-target (if you have a gun and proper ammo, that is...). Use the arrow keys
-to choose a target, and press "f/t" again to fire. Or, you can press "m" to
-see an ASCII image and description of what you are aiming at. You can also
-press TAB (when targeting) to toggle between the targets. Some weapons
-allow an alternative fire mode, such as the chainfiring mode of the
-chaingun.
+selected target! You can swap between visible targets using "TAB", or 
+hold "Ctrl" to move the target reticule manually with the arrow keys.
+Some weapons allow an alternative fire mode, such as the chainfiring 
+mode of the chaingun - to use it, press "SHIFT-f".
 
 Ok, I hear you cry -- "Out of ammo!" Don't panic. Press "r" to reload your
 weapon (Some weapons allow you an alternative reload by pressing SHIFT-r).
