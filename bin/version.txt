@@ -6,6 +6,8 @@
 [mod] -- GH#226: enemies keep to their patrol area (spawn area)
 [fix] -- GH#098: fixes Mastermind AI getting stuck
 [fix] -- GH#000: emergency animation break added
+[fix] -- GH#228: explode wall levers leave debris
+[fix] -- GH#229: explode wall levers destroy doors
 [fix] -- RCFIX : fixed multi-melee animations
 
 0.9.9.9 BETA 5

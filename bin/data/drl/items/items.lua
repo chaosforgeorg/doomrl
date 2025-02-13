@@ -1461,12 +1461,11 @@ function drl.register_regular_items()
 			level:play_sound( "barrel.explode", being.position )
 			for c in room() do
 				local tile = cells[level.map[c]]
-				if tile.set == CELLSET_WALLS then
+				if tile.set == CELLSET_WALLS or tile.set == CELLSET_DOORS then
 					if math.random(10) == 1 then
 						level:play_sound( "barrel.explode", c, math.random(500) + 500 )
 					end
-					level.map[c] = generator.styles[ level.style ].floor
-					level.light[c][LFPERMANENT] = false
+					generator.destroy_cell( c )
 				end
 			end
 			ui.msg("The walls explode!")

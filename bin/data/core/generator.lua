@@ -730,3 +730,14 @@ function generator.generate_archi_level( settings )
 	generator.restore_walls( wall_cell )
 	generator.generate_fluids(area.new(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
 end
+
+function generator.destroy_cell( c )
+	local cell = cells[ level.map[c] ]
+	local dto  = cell.destroyto
+	if dto ~= "" then
+		level.map[c] = dto
+	else
+		level.map[c] = generator.styles[ level.style ].floor
+	end
+	level.light[c][LFPERMANENT] = false
+end
