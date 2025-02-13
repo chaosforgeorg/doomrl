@@ -220,8 +220,15 @@ function aitk.basic_init( self, use_packs, use_armor )
 end
 
 function aitk.basic_scan( self )
-    if self.target and self:in_sight( uids.get( self.target ) ) then
-        return self.target
+    if self.target then
+        local being = uids.get( self.target )
+        if being then
+            if self:in_sight( being ) then
+                return self.target
+            end
+        else
+            self.target = false
+        end
     end
     local target = aitk.scan( self )
     if target then self.target = target end
