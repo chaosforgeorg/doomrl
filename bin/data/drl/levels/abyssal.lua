@@ -98,8 +98,8 @@ register_level "abyssal_plains"
 			ui.msg("Suddenly you're trapped in!")
 			level:play_sound( "door.close", player.position )
 			generator.transmute( "gwall", "floor" )
-			generator.transmute( "floor", "rwall", area.new( 28, 9, 28, 12 ) )
-			generator.transmute( "floor", "rwall", area.new( 50, 9, 50, 12 ) )
+			for c in area.new( 28, 9, 28, 12 )() do generator.wallin_cell( c, "rwall" ) end
+			for c in area.new( 50, 9, 50, 12 )() do generator.wallin_cell( c, "rwall" ) end
 			generator.set_permanence( area.FULL )
 
 			ui.msg("You hear a howl of agony!")

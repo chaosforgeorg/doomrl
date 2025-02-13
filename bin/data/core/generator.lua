@@ -741,3 +741,17 @@ function generator.destroy_cell( c )
 	end
 	level.light[c][LFPERMANENT] = false
 end
+
+function generator.wallin_cell( c, cell_id )
+	local cell = cells[ level.map[c] ]
+	local target = level:get_being(c)
+	if target then
+		if target:is_player() then return false end
+		target:kill()
+	end
+	local item = level:get_item(c)
+	if item then item:destroy() end
+	level.map[c] = cell_id
+	level.light[c][LFPERMANENT] = true
+	return true
+end
