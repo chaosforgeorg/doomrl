@@ -728,7 +728,6 @@ begin
     FSprite.Color     := Inv.Slot[ efTorso ].PCosColor;
     iSpMod            := Inv.Slot[ efTorso ].SpriteMod;
   end;
-  FSprite.SpriteID[0] := HARDSPRITE_PLAYER;
   if Inv.Slot[ efWeapon ] <> nil then
   begin
     FSprite.SpriteID[0] := LuaSystem.Get( ['items', Inv.Slot[ efWeapon ].ID, 'psprite'], 0 );
@@ -743,7 +742,9 @@ begin
       FSprite.SpriteID[0] := Spr
     else
       if Inv.Slot[ efWeapon ].isMelee then FSprite.SpriteID[0] := 2 else FSprite.SpriteID[0] := 11;
-  end;
+  end
+  else
+    FSprite.SpriteID[0] := LuaSystem.Get( ['beings', ID, 'sprite'], 0 );
 end;
 
 function TPlayer.ASCIIMoreCode : AnsiString;

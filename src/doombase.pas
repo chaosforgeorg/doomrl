@@ -251,7 +251,6 @@ begin
   if not GraphicsVersion then
     (IO as TDoomTextIO).SetTextMap( FLevel );
 
-  HARDSPRITE_PLAYER := Lua.Get( 'HARDSPRITE_PLAYER' );
   HARDSPRITE_HIT    := Lua.Get( 'HARDSPRITE_HIT' );
   HARDSPRITE_EXPL   := Lua.Get( 'HARDSPRITE_EXPL' );
   HARDSPRITE_SELECT := Lua.Get( 'HARDSPRITE_SELECT' );
