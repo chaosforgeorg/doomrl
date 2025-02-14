@@ -150,6 +150,7 @@ TBeing = class(TThing,IPathQuery)
 
     FBonus         : TBonuses;
     FTimes         : TBeingTimes;
+    FLastCommand   : TCommand;
 
     FVisionRadius  : Byte;
     FSpeedCount    : LongInt;
@@ -278,8 +279,9 @@ begin
   FHPNom      := Stream.ReadWord();
   FHPDecayMax := Stream.ReadWord();
 
-  Stream.Read( FBonus,  SizeOf( FBonus ) );
-  Stream.Read( FTimes,  SizeOf( FTimes ) );
+  Stream.Read( FBonus,       SizeOf( FBonus ) );
+  Stream.Read( FTimes,       SizeOf( FTimes ) );
+  Stream.Read( FLastCommand, SizeOf( FLastCommand ) );
 
   FVisionRadius := Stream.ReadByte();
   FSpeedCount   := Stream.ReadWord();
@@ -304,8 +306,9 @@ begin
   Stream.WriteWord( FHPNom );
   Stream.WriteWord( FHPDecayMax );
 
-  Stream.Write( FBonus,  SizeOf( FBonus ) );
-  Stream.Write( FTimes,  SizeOf( FTimes ) );
+  Stream.Write( FBonus,       SizeOf( FBonus ) );
+  Stream.Write( FTimes,       SizeOf( FTimes ) );
+  Stream.Write( FLastCommand, SizeOf( FLastCommand ) );
 
   Stream.WriteByte( FVisionRadius );
   Stream.WriteWord( FSpeedCount );
@@ -334,6 +337,7 @@ begin
   FTargetPos.Create(1,1);
   FLastPos.Create(1,1);
   FMovePos.Create(1,1);
+  FLastCommand.Command := 0;
 
   FBloodBoots   := 0;
   FChainFire    := 0;
@@ -913,10 +917,16 @@ begin
 
   iFireCost := getFireCost( iAltFire );
   // Gun Kata -- fire effect
-  if iGunKata and isPlayer and Player.LastTurnDodge and (iAltFire = ALT_NONE) then
+  if iGunKata and isPlayer and (iAltFire = ALT_NONE) then
   begin
-    iFireCost := iFireCost div 10;
-    Player.LastTurnDodge := False;
+    if Player.LastTurnDodge then
+    begin
+      iFireCost := iFireCost div 10;
+      Player.LastTurnDodge := False;
+    end
+    else if ( FLastCommand.Command = COMMAND_MOVE ) then
+      iFireCost := iFireCost div 5;
+    Log( 'firecost = %d (last = %d)', [iFireCost, FLastCommand.Command] );
   end;
   Dec(FSpeedCount,iFireCost);
 
@@ -1113,6 +1123,7 @@ function TBeing.ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0
 var iVisualTime : Integer;
     iMoveCost   : Integer;
 begin
+  Log('move');
   iMoveCost := getMoveCost;
   if GraphicsVersion then
   begin
@@ -1425,29 +1436,30 @@ end;
 
 function TBeing.HandleCommand( aCommand : TCommand ) : Boolean; 
 begin
+  Result := True;
   case aCommand.Command of
-    COMMAND_MOVE      : Exit( ActionMove( aCommand.Target ) );
-    COMMAND_USE       : Exit( ActionUse( aCommand.Item ) );
-    COMMAND_DROP      : Exit( ActionDrop( aCommand.Item ) );
-    COMMAND_WEAR      : Exit( ActionWear( aCommand.Item ) );
-    COMMAND_TAKEOFF   : Exit( ActionTakeOff( aCommand.Slot ) );
-    COMMAND_SWAP      : Exit( ActionSwap( aCommand.Item, aCommand.Slot ) );
+    COMMAND_MOVE      : Result := ActionMove( aCommand.Target );
+    COMMAND_USE       : Result := ActionUse( aCommand.Item );
+    COMMAND_DROP      : Result := ActionDrop( aCommand.Item );
+    COMMAND_WEAR      : Result := ActionWear( aCommand.Item );
+    COMMAND_TAKEOFF   : Result := ActionTakeOff( aCommand.Slot );
+    COMMAND_SWAP      : Result := ActionSwap( aCommand.Item, aCommand.Slot );
     COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
-    COMMAND_ACTION    : Exit( ActionAction( aCommand.Target ) );
+    COMMAND_ACTION    : Result := ActionAction( aCommand.Target );
     COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
     COMMAND_MELEE     : Attack( aCommand.Target );
-    COMMAND_RELOAD    : Exit( ActionReload );
-    COMMAND_ALTRELOAD : Exit( ActionAltReload );
-    COMMAND_FIRE      : Exit( ActionFire( aCommand.Target, aCommand.Item ) );
-    COMMAND_ALTFIRE   : Exit( ActionFire( aCommand.Target, aCommand.Item, True ) );
-    COMMAND_PICKUP    : Exit( ActionPickup );
-    COMMAND_UNLOAD    : Exit( ActionUnLoad( aCommand.Item, aCommand.ID ) );
-    COMMAND_SWAPWEAPON: Exit( ActionSwapWeapon );
-    COMMAND_QUICKKEY  : Exit( ActionQuickKey( Ord( aCommand.ID[1] ) - Ord( '0' ) ) );
-    COMMAND_ACTIVE    : Exit( ActionActive );
+    COMMAND_RELOAD    : Result := ActionReload;
+    COMMAND_ALTRELOAD : Result := ActionAltReload;
+    COMMAND_FIRE      : Result := ActionFire( aCommand.Target, aCommand.Item );
+    COMMAND_ALTFIRE   : Result := ActionFire( aCommand.Target, aCommand.Item, True );
+    COMMAND_PICKUP    : Result := ActionPickup;
+    COMMAND_UNLOAD    : Result := ActionUnLoad( aCommand.Item, aCommand.ID );
+    COMMAND_SWAPWEAPON: Result := ActionSwapWeapon;
+    COMMAND_QUICKKEY  : Result := ActionQuickKey( Ord( aCommand.ID[1] ) - Ord( '0' ) );
+    COMMAND_ACTIVE    : Result := ActionActive;
   else Exit( False );
   end;
-  Exit( True );
+  if Result then FLastCommand := aCommand;
 end;
 
 procedure TBeing.Tick;

@@ -4,6 +4,7 @@
 [mod] -- GH#217: all AI's got a refactor, might behave differently
 [mod] -- GH#161: drop item action continues if no enemy/damage is present
 [mod] -- GH#226: enemies keep to their patrol area (spawn area)
+[mod] -- GH#230: Gun Kata - 1/5th time to fire after any move!
 [mod] -- GH#230: finesse bonus 15%->10%, dualgunner penalty 20%->0%
 [fix] -- GH#098: fixes Mastermind AI getting stuck
 [fix] -- GH#000: emergency animation break added

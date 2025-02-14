@@ -322,9 +322,9 @@ function drl.register_traits()
 	register_trait "gunkata"
 	{
 		name   = "Gun Kata",
-		desc   = "Free action after pistol kill.",
+		desc   = "Super fast shots after dodge or move, reload after kill",
 		quote  = "\"Not without incident.\"",
-		full   = "You've mastered the martial art of pistol combat. After each successful dodge you can fire your pistols in almost no time. Also, each time you finish off an opponent, you immediately reload your guns!",
+		full   = "You've mastered the martial art of pistol combat. After each successful dodge you can fire your pistols in 1/10th of normal time, or, if your last action was a move, in 1/5th of the time! Finally, each time you finish off an opponent, you immediately reload your guns!",
 		author = "Kornel",
 		abbr   = "MGK",
 		master = true,
