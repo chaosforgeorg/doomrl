@@ -22,13 +22,13 @@ function drl.register_traits()
 	register_trait "finesse"
 	{
 		name   = "Finesse",
-		desc   = "Attack time by -15%/lv.",
+		desc   = "Attack time by -10%/lv.",
 		quote  = "\"Dance! Dance, bonedaddy!\"",
-		full   = "Have you heard of an itchy trigger finger? Yours are itchier than the chicken pox, and because of that you can fire rounds and attack 15% faster with every level of this trait.",
+		full   = "Have you heard of an itchy trigger finger? Yours are itchier than the chicken pox, and because of that you can fire rounds and attack 10% faster with every level of this trait.",
 		abbr   = "Fin",
 
 		OnPick = function (being)
-			being.firetime = being.firetime - 15
+			being.firetime = being.firetime - 10
 		end,
 	}
 
@@ -159,7 +159,7 @@ function drl.register_traits()
 		name   = "Dualgunner",
 		desc   = "Allows dual pistol firing.",
 		quote  = "\"The only thing I believe is I need another gun.\"",
-		full   = "You're the kind of guy for whom one is never enough. When you and your buddies cruised bars Earthside, you always had a beer in each hand and when you left, you left with two girls. Where you're going now there aren't beer or girls, but there are guns! This trait lets you wield two pistols at once, firing them almost as fast as one (120% time taken).",
+		full   = "You're the kind of guy for whom one is never enough. When you and your buddies cruised bars Earthside, you always had a beer in each hand and when you left, you left with two girls. Where you're going now there aren't beer or girls, but there are guns! This trait lets you wield two pistols at once, firing them as fast as one.",
 		abbr   = "DG",
 
 		OnPick = function (being)

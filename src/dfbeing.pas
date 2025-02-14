@@ -2251,7 +2251,7 @@ begin
   if (Inv.Slot[ efWeapon ] = nil) then Exit(10*FTimes.Fire);
   if (Inv.Slot[ efWeapon ].isMelee) then Exit(Inv.Slot[ efWeapon ].UseTime * FTimes.Fire);
   if canDualGun then
-    iModifier := 1.2 * ( Inv.Slot[ efWeapon ].UseTime + Inv.Slot[ efWeapon2 ].UseTime) / 2
+    iModifier := ( Inv.Slot[ efWeapon ].UseTime + Inv.Slot[ efWeapon2 ].UseTime ) / 2
   else
     iModifier := Inv.Slot[ efWeapon ].UseTime;
   iModifier *= FTimes.Fire/1000.;
