@@ -1,3 +1,8 @@
+0.9.9.9 BETA 6b
+[fix] -- RCFIX : fixed crash in shambler/lavael AI
+[fix] -- RCFIX : demon ai properly resets boredom on player disappearing
+[fix] -- RCFIX : retaliation engages pathfinding properly
+
 0.9.9.9 BETA 6
 [new] -- GH#227: Ctrl+Arrows will manually move the auto-target reticule!
 [new] -- GH#217: infighting is back, baby!

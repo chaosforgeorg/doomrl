@@ -138,11 +138,12 @@ function aitk.flock_hunt( self )
     local visible = self:in_sight( target )
     if not visible then
         self.boredom = self.boredom + 1
-        if self.boredom > 5 then
+        if self.boredom > 7 then
             self.target = false
             return "idle"
         end
     end
+    self.boredom = 0
     local dist = self:distance_to( target )
     if dist == 1 then
         self:attack( target )
@@ -297,8 +298,9 @@ function aitk.basic_on_attacked( self, target )
     if target then 
         if target:has_property("master") then return end
         self.target = target.uid
-        if self.ai_state == "idle" then
-            self.move_to  = target.position
+        if self.ai_state == "idle" or ( self.ai_state == "pursue" and self.move_to ~= target.position ) then
+            self.move_to = target.position
+            self:path_find( self.move_to, 10, 40 )
             self.ai_state = "pursue"
         end
     end

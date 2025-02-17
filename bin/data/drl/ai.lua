@@ -463,6 +463,7 @@ register_ai "teleboss_ai"
 			if math.random( 100 ) > self.telechance then return false end
 			local dist  = self:distance_to( player )
 			local p     = player.position
+			local s     = self.position
 			local phase 
 			if dist <= self.teleradius then
 				local flee = coord.new( 2*(s.x-p.x), 2*(s.y-p.y))

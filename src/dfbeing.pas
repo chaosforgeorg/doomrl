@@ -1123,7 +1123,6 @@ function TBeing.ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0
 var iVisualTime : Integer;
     iMoveCost   : Integer;
 begin
-  Log('move');
   iMoveCost := getMoveCost;
   if GraphicsVersion then
   begin
