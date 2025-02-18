@@ -1,5 +1,6 @@
 0.9.9.9 BETA 6c
 [fix] -- RCFIX : flock AI on_attacked fixed
+[fix] -- RCFIX : potential fix for charge AI aggressiveness
 
 0.9.9.9 BETA 6b
 [fix] -- RCFIX : fixed crash in shambler/lavael AI

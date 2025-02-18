@@ -558,6 +558,7 @@ end
 function aitk.charge_on_attacked( self, target )
     if self == target then return end
     if self.ai_state == "idle" then
+        self.target   = target.uid
         self.move_to  = target.position
         self.ai_state = "pursue"
     elseif self.ai_state == "post_charge" then
