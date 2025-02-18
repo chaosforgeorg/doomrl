@@ -1,4 +1,5 @@
 0.9.9.9 BETA 6c
+[fix] -- RCFIX : fix pursuing AI after knockback
 [fix] -- RCFIX : flock AI on_attacked fixed
 [fix] -- RCFIX : potential fix for charge AI aggressiveness
 

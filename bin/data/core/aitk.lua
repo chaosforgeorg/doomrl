@@ -29,9 +29,16 @@ function aitk.scan( self )
     return false
 end
 
-function aitk.move_path( self )
+function aitk.move_path( self, reattempt )
     local move_check, move_coord = self:path_next()
     if move_check ~= MOVEOK and (move_check ~= MOVEDOOR or (not self.flags[BF_OPENDOORS])) then
+        -- try another attempt
+        if reattempt and self:path_find( reattempt, 10, 40 ) then
+            move_check, move_coord = aitk.move_path( self )
+            if move_check then
+                return true, move_coord
+            end
+        end
         return false, nil
     end
     return true, move_coord
@@ -251,7 +258,7 @@ function aitk.basic_pursue( self )
         self.scount = self.scount - 200
         return "idle"
     end
-    local move_check = aitk.move_path( self )
+    local move_check = aitk.move_path( self, self.move_to )
     if aitk.basic_scan( self ) then
         self.move_to = false
         return "hunt"
@@ -344,7 +351,7 @@ function aitk.basic_smart_idle( self )
             end
             self.move_to = false
         else
-            if not aitk.move_path( self ) then
+            if not aitk.move_path( self, self.move_to ) then
                 self.move_to = false
                 self.scount = self.scount - 500
             end
@@ -460,11 +467,8 @@ function aitk.evade_hunt( self )
         if self:distance_to( self.move_to ) == 0 then
             self.move_to = false
         else
-            if not aitk.move_path( self ) then
-                -- try another attempt
-                if not self:path_find( self.move_to, 10, 40 ) or ( not aitk.move_path( self ) ) then
-                    self.move_to = false
-                end
+            if not aitk.move_path( self, self.move_to ) then
+                self.move_to = false
             end
             if self.move_to then
                 return "hunt"
@@ -501,7 +505,7 @@ function aitk.pursue_hunt( self )
     if action then return action end
 
     if self.move_to == target.position then
-        if aitk.move_path( self ) then
+        if aitk.move_path( self, self.move_to ) then
             return "hunt"
         end
     end
@@ -532,7 +536,7 @@ function aitk.ranged_hunt( self )
     end
 
     if self.move_to == target then
-        if aitk.move_path( self ) then
+        if aitk.move_path( self, self.move_to ) then
             return "hunt"
         end
     end
