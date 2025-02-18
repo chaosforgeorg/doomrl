@@ -2191,6 +2191,7 @@ end;
 procedure TBeing.BloodFloor;
 var iLevel : TLevel;
 begin
+  if BF_FLY in FFlags then Exit;
   iLevel := TLevel(Parent);
        if iLevel.cellFlagSet( FPosition, CF_VBLOODY ) then Inc(FBloodBoots,1)
   else if iLevel.LightFlag[ FPosition, LFBLOOD ] then Inc(FBloodBoots,0)
