@@ -80,7 +80,9 @@ function aitk.flock_on_attacked( self, target )
     local target = target or self.target
     for b in level:beings_in_range( self, self.flock_max or 4 ) do
         if b.id == self.id then
-            b.target   = self.target
+            if target then
+                b.target   = target.uid
+            end
             b.boredom  = 0
             b.ai_state = "hunt"
         end
@@ -90,7 +92,7 @@ end
 function aitk.flock_scan( self )
     self.target = aitk.scan( self )
     if self.target then
-        aitk.flock_on_attacked( self )
+        aitk.flock_on_attacked( self, self.target )
         return true
     end
     return false
@@ -138,12 +140,13 @@ function aitk.flock_hunt( self )
     local visible = self:in_sight( target )
     if not visible then
         self.boredom = self.boredom + 1
-        if self.boredom > 7 then
+        if self.boredom > 8 then
             self.target = false
             return "idle"
         end
+    else
+        self.boredom = 0
     end
-    self.boredom = 0
     local dist = self:distance_to( target )
     if dist == 1 then
         self:attack( target )

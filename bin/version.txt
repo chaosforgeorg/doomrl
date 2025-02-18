@@ -1,3 +1,6 @@
+0.9.9.9 BETA 6c
+[fix] -- RCFIX : flock AI on_attacked fixed
+
 0.9.9.9 BETA 6b
 [fix] -- RCFIX : fixed crash in shambler/lavael AI
 [fix] -- RCFIX : demon ai properly resets boredom on player disappearing
