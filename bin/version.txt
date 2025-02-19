@@ -2,6 +2,7 @@
 [mod] -- RCMOD : gun kata move firetime bonus is now 50%
 [fix] -- RCFIX : fix pinkie AI crash
 [fix] -- RCFIX : clear message for abyssal plains added
+[fix] -- RCFIX : fix gun kata firetime bonus sometimes persisting
 
 0.9.9.9 BETA 6c
 [fix] -- GH#233: flying enemies will not drag blood
