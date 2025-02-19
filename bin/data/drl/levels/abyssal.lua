@@ -80,7 +80,10 @@ register_level "abyssal_plains"
 
 	OnKillAll = function ()
 		if level.status > 0 then
-			level.data.kill_all  = true
+			if not level.data.kill_add then
+				level.data.kill_all  = true
+				ui.msg("\"Ugly motherfuckers.\"")
+			end
 		end
 		--on the off-chance the player nuke/invulns through the level
 		generator.transmute( "gwall", "floor" )
