@@ -1634,7 +1634,32 @@ begin
   Exit( 0 );
 end;
 
-const lua_level_lib : array[0..16] of luaL_Reg = (
+function lua_level_reset(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Level : TLevel;
+begin
+  State.Init(L);
+  Level := State.ToObject(1) as TLevel;
+  Level.Clear;
+  Level.FullClear;
+  Exit( 0 );
+end;
+
+function lua_level_post_generate(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+    Level : TLevel;
+begin
+  State.Init(L);
+  IO.MsgUpDate;
+  Level := State.ToObject(1) as TLevel;
+  Level.AfterGeneration( False );
+  Level.PreEnter;
+  Level.CalculateVision( Player.Position );
+  Player.PreAction;
+  Exit( 0 );
+end;
+
+const lua_level_lib : array[0..18] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1651,6 +1676,8 @@ const lua_level_lib : array[0..16] of luaL_Reg = (
       ( name : 'get_raw_deco';      func : @lua_level_get_raw_deco),
       ( name : 'damage_tile';func : @lua_level_damage_tile),
       ( name : 'push_item';  func : @lua_level_push_item),
+      ( name : 'reset';         func : @lua_level_reset),
+      ( name : 'post_generate'; func : @lua_level_post_generate),
       ( name : nil;          func : nil; )
 );
 

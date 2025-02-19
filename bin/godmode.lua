@@ -57,6 +57,11 @@ Keytable["SHIFT+5"]        = function()
 	end
 end
 
+Keytable["F2"] = function() 
+	ui.msg('Regenerate!')
+	generator.regenerate( true )
+end
+
 Keytable["F3"] = function() 
 	ui.msg('Next level!')
 	player:exit()
