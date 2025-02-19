@@ -925,7 +925,7 @@ begin
       Player.LastTurnDodge := False;
     end
     else if ( FLastCommand.Command = COMMAND_MOVE ) then
-      iFireCost := iFireCost div 5;
+      iFireCost := iFireCost div 2;
     Log( 'firecost = %d (last = %d)', [iFireCost, FLastCommand.Command] );
   end;
   Dec(FSpeedCount,iFireCost);
