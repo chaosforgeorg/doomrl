@@ -99,7 +99,7 @@ end
 function aitk.flock_scan( self )
     self.target = aitk.scan( self )
     if self.target then
-        aitk.flock_on_attacked( self, self.target )
+        aitk.flock_on_attacked( self, uids.get( self.target ) )
         return true
     end
     return false

@@ -1,3 +1,6 @@
+0.9.9.9 BETA 6d
+[fix] -- RCFIX : fix pinkie AI crash
+
 0.9.9.9 BETA 6c
 [fix] -- GH#233: flying enemies will not drag blood
 [fix] -- RCFIX : fix pursuing AI after knockback
