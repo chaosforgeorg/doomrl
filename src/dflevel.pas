@@ -9,7 +9,7 @@ unit dflevel;
 interface
 uses SysUtils, Classes,
      vluaentitynode, vutil, vvision, vmath, viotypes, vrltools, vnode,
-     vluamapnode, vmaparea, vtextmap,
+     vluamapnode, vtextmap,
      dfdata, dfmap, dfthing, dfbeing, dfitem,
      doomhooks;
 
@@ -201,7 +201,7 @@ begin
     FName   := GetString( 'name' );
     FLNum   := 0;
     Call('Create',[]);
-    Place( Player, FMapArea.Drop( NewCoord2D(LuaPlayerX,LuaPlayerY), [ EF_NOBEINGS ] ) );
+    Place( Player, DropCoord( NewCoord2D(LuaPlayerX,LuaPlayerY), [ EF_NOBEINGS ] ) );
     Include( FFlags, LF_SCRIPT );
   finally
     Free;
@@ -218,7 +218,7 @@ begin
   LuaPlayerY := 2;
 
   LuaSystem.ProtectedCall([ModuleID,'run'],[]);
-  Place( Player, FMapArea.Drop( NewCoord2D(LuaPlayerX,LuaPlayerY), [ EF_NOBEINGS ] ) );
+  Place( Player, DropCoord( NewCoord2D(LuaPlayerX,LuaPlayerY), [ EF_NOBEINGS ] ) );
 
   AfterGeneration( False );
 end;
@@ -810,7 +810,7 @@ function TLevel.DropItem( aItem : TItem; aCoord : TCoord2D ) : boolean;
 begin
   DropItem := true;
   if aItem = nil then Exit;
-  aCoord := FMapArea.Drop( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS ] );
+  aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS ] );
   Add( aItem, aCoord );
 
   if cellFlagSet(aCoord,CF_HAZARD) then
@@ -823,7 +823,7 @@ end;
 procedure TLevel.DropBeing( aBeing : TBeing; aCoord : TCoord2D );
 begin
   if aBeing = nil then Exit;
-  aCoord := FMapArea.Drop( aCoord, [ EF_NOTELE,EF_NOBEINGS,EF_NOBLOCK,EF_NOSTAIRS ] );
+  aCoord := DropCoord( aCoord, [ EF_NOTELE,EF_NOBEINGS,EF_NOBLOCK,EF_NOSTAIRS ] );
   Add( aBeing, aCoord );
   if not aBeing.IsPlayer then
   begin

@@ -219,7 +219,7 @@ TBeing = class(TThing,IPathQuery)
 
 implementation
 
-uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vmaparea, vluasystem, vluatools,
+uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vluasystem, vluatools,
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio;
 
