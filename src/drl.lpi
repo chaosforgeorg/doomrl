@@ -242,7 +242,7 @@
       <Filename Value="..\bin\drl"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="..\bin;..\bin\lua;..\..\fpcvalkyrie\libs;..\..\fpcvalkyrie\src;$(ProjOutDir)"/>
+      <IncludeFiles Value="..\bin;..\..\fpcvalkyrie\libs;..\..\fpcvalkyrie\src;$(ProjOutDir)"/>
       <OtherUnitFiles Value="..\..\fpcvalkyrie\libs;..\..\fpcvalkyrie\src"/>
       <UnitOutputDirectory Value="..\tmp"/>
     </SearchPaths>

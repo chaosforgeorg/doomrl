@@ -14,7 +14,7 @@ fpcpackage=n
 
 [compiler]
 unitdir=$(VALKYRIEPATH) $(LUAPATH) $(LIBSPATH)
-unittargetdir=../temp
+unittargetdir=../tmp
 includedir=../bin
 options=-O2 -S2
 targetdir=../bin
@@ -28,4 +28,4 @@ ziptarget=all
 
 [clean]
 files=$(wildcard *$(OEXT)) $(wildcard *$(PPUEXT)) $(wildcard *$(RSTEXT)) \
-	  $(wildcard ../temp/*$(OEXT)) $(wildcard ../temp/*$(PPUEXT)) $(wildcard ../temp/*$(RSTEXT)) \
+	  $(wildcard ../tmp/*$(OEXT)) $(wildcard ../tmp/*$(PPUEXT)) $(wildcard ../tmp/*$(RSTEXT)) \
