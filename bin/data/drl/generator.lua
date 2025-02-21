@@ -399,9 +399,9 @@ function generator.place_blob( start, size, cell )
 		local n   = visit[ idx ]
 		table.remove( visit, idx )
 		if generator.around( n, cells ) == 8 then
-			level:raw_set_cell( n, cell ) 
+			level:set_cell( n, cell ) 
 			for c in n:cross_coords() do 
-				if level:raw_get_cell( c ) == floor_cell then
+				if level:get_cell( c ) == floor_cell then
 					table.insert( visit, c:clone() )
 				end
 			end
@@ -443,15 +443,15 @@ function generator.generate_caves_2_dungeon()
 	drunk( 50, math.random(10)+20, floor_cell )
 
 	for c in level_area:shrinked()() do
-		if level:raw_get_cell(c) == cave_cell and generator.around( c, cave_cell ) < 4 then
-			level:raw_set_cell( c, floor_cell )
+		if level:get_cell(c) == cave_cell and generator.around( c, cave_cell ) < 4 then
+			level:set_cell( c, floor_cell )
 		end
 	end
 
 	for c in level_area:shrinked(2)() do
-		if level:raw_get_cell(c) == floor_cell and generator.cross_around( c, cave_cell ) > 2 then
+		if level:get_cell(c) == floor_cell and generator.cross_around( c, cave_cell ) > 2 then
 			for k in c:cross_coords() do
-				level:raw_set_cell( k, marker )
+				level:set_cell( k, marker )
 			end
 		end
 	end
@@ -497,8 +497,8 @@ function generator.generate_caves_2_dungeon()
 	generator.transmute( marker, floor_cell )
 
 	for c in level_area:shrinked()() do
-		if level:raw_get_cell(c) == fluid and generator.around( c, fluid ) < 4 then
-			level:raw_set_cell( c, floor_cell )
+		if level:get_cell(c) == fluid and generator.around( c, fluid ) < 4 then
+			level:set_cell( c, floor_cell )
 		end
 	end
 end
