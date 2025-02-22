@@ -39,29 +39,42 @@ There are two IDEs available: Visual Studio Code and Lazarus. You should only ne
   * (if referencing v0.9.9.9 or higher) data\\drlhq\sounds\\* to (bin\\)data\\drlhq\\sounds
 4. Download fpcvalkyrie from https://github.com/ChaosForge/fpcvalkyrie/ to a folder at the same level as the DRL source
 5. Ensure doomrl and fpcvalkyrie are on the same release branch (e.g. master or development)
-6. Download lua 5.1 (e.g. 5.1.5) from https://sourceforge.net/projects/luabinaries/files/5.1.5/Tools%20Executables/. Unzip it
-7. Add lua5.1 in your path (the location will be referred to as %lua%)
-8. Download and install Lazarus 64-bit (the location will be referred to as %lazarus%)
-9. Add %lazarus%\\fpc\\3.2.2\\bin\\x86_64-win64 to your path (to support the release package build)
 
-#### Lua5.1 notes
-v5.1 is compulsory. DoomRL references the dll by name, and the dynamic headers are written against 5.1. I don't even think it will work due to the changes in env-tables. DRL uses a few sophisticated Lua tricks. Initially the reason to keep being 5.1 compatible for both DRL and JH was due to LuaJIT compatibility, but I guess that point is moot now.
+#### Dependency notes
+DRL uses a few sophisticated Lua tricks however v5.1 specifically is compulsory:
+* DRL references the dll by name, and the dynamic headers are written against 5.1.
+* Upgrading probably won't work simply due to the changes in env-tables.
+* Initially the reason to keep being 5.1 compatible for both DRL and JH was due to LuaJIT compatibility, but that point is moot now.
+
+### Updating Lua (no specific IDE required)
+#### Configuration
+1. Download lua 5.1 (e.g. 5.1.5) from https://sourceforge.net/projects/luabinaries/files/5.1.5/Tools%20Executables/. Unzip it
+2. Add lua5.1 in your path
+3. Download fpc (e.g. 3.2.2) from https://sourceforge.net/projects/freepascal/ and install it
+4. Add fpc to your path
+
+#### Build
+1. To build the packages, open a command prompt at the drl root folder and run "lua5.1 makefile.lua". There are also options for lq and hq if you want to change the asset quality.
 
 ### Visual Studio Code IDE
 #### Configuration
 [Instructions appropriated from https://stephan-bester.medium.com/free-pascal-in-visual-studio-code-e1e0a240a430]
-1. Add %lazarus%\\mingw\\x86_64-win64\\bin to your path (required for gdb, integrated via the Native Debug extension)
-2. Install Visual Studio Code
-3. Open drl.code-workspace
-4. Install the lua extension (by sumneko)
-5. Install the OmniPascal - Open Preview (by Wosi)
-6. Install the Native Debug extension (from WebFreak)
-7. Manage (the cog)/Settings/User/Extensions/OmniPascal configuration
+1. Download lua 5.1 (e.g. 5.1.5) from https://sourceforge.net/projects/luabinaries/files/5.1.5/Tools%20Executables/. Unzip it
+2. Add lua5.1 in your path (the location will be referred to as %lua%)
+3. Download and install Lazarus 64-bit (the location will be referred to as %lazarus%)
+4. Add %lazarus%\\fpc\\3.2.2\\bin\\x86_64-win64 to your path (to support the release package build)
+5. Add %lazarus%\\mingw\\x86_64-win64\\bin to your path (required for gdb, integrated via the Native Debug extension)
+6. Install Visual Studio Code
+7. Open drl.code-workspace
+8. Install the lua extension (by sumneko)
+9. Install the OmniPascal - Open Preview (by Wosi)
+10. Install the Native Debug extension (from WebFreak)
+11. Manage (the cog)/Settings/User/Extensions/OmniPascal configuration
 * Default Development Environment: FreePascal
-* Free Pascal Source Path: %lazarus%\fpc\3.2.2
+* Free Pascal Source Path: %lazarus%\\fpc\\3.2.2
 * Lazbuild path: %lazarus%
-8. In the 'drl' (source) folder, open .vscode/settings.json and update the folders to your locations
-9. In the status bar you'll see "OmniPascal: Select project". Click and choose drl.lpi (appears to improve the linking experience, although you'll need to do this each time you load the workspace)
+12. In the 'drl' (source) folder, open .vscode/settings.json and update the folders to your locations
+13. In the status bar you'll see "OmniPascal: Select project". Click and choose drl.lpi (appears to improve the linking experience, although you'll need to do this each time you load the workspace)
 
 #### Build
 0. Open drl.code-workspace
@@ -73,11 +86,14 @@ v5.1 is compulsory. DoomRL references the dll by name, and the dynamic headers a
 You can test all these steps with Terminal/Run Task/Unit test build scripts (noting the release build step may fail).
 
 #### Lazarus notes
-The Lazarus installation is preferred to the simpler fpc installation because using fpc triggers an error when the debugger is used.
+The Lazarus installation is preferred (compared with the simpler fpc installation) because using fpc in Windows triggers an error when the debugger is used.
 
 ### The Lazarus IDE
 #### Configuration
-Nothing further to do!
+1. Download lua 5.1 (e.g. 5.1.5) from https://sourceforge.net/projects/luabinaries/files/5.1.5/Tools%20Executables/. Unzip it
+2. Add lua5.1 in your path (the location will be referred to as %lua%)
+3. Download and install Lazarus 64-bit (the location will be referred to as %lazarus%)
+4. Add %lazarus%\\fpc\\3.2.2\\bin\\x86_64-win64 to your path (to support the release package build)
 
 #### Build
 1. Open src/makewad.lpi (with Lazarus). Build. You should receive '...bin\makewad.exe: Success'
