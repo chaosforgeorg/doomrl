@@ -196,7 +196,7 @@ core.register_blueprint "being"
 	reloadtime  = { false, core.TNUMBER , 100 },
 	speed       = { false, core.TNUMBER , 100 },
 	vision      = { false, core.TNUMBER , 0 },
-	min_lev     = { true,  core.TNUMBER },
+	min_lev     = { false, core.TNUMBER , 0 },
 	max_lev     = { false, core.TNUMBER , 10000 },
 	corpse      = { false, core.TANY, 0 },
 	danger      = { true,  core.TNUMBER },

@@ -22,11 +22,28 @@ function aitk.OnAction( self )
 end
 
 function aitk.scan( self )
-    local visible = self:in_sight( player )
-    if visible then
-        return player.uid
+    if self.friendly then
+        local dist   = self.vision+1
+        local target = nil
+        for b in level:beings_in_range( self, self.vision ) do
+            if b ~= player and ( not b:has_property("friendly") or ( not b.friendly ) ) then
+                local d = self:distance_to( b )
+                if self:in_sight( b ) and d < dist then
+                    target = b
+                    dist   = d
+                end
+            end
+        end
+        if target then
+            return target.uid
+        end            
+    else
+        local visible = self:in_sight( player )
+        if visible then
+            return player.uid
+        end
+        return false
     end
-    return false
 end
 
 function aitk.move_path( self, reattempt )
@@ -228,6 +245,8 @@ function aitk.basic_init( self, use_packs, use_armor )
     self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
     self:add_property( "retaliate", false )
     self:add_property( "patrol_area", false )
+    self:add_property( "friendly", false )
+    self:add_property( "nomelee", false )
 end
 
 function aitk.basic_scan( self )
@@ -307,6 +326,7 @@ function aitk.basic_on_attacked( self, target )
     if self:has_property("boredom") then self.boredom = 0 end
     if target then 
         if target:has_property("master") then return end
+        if self.friendly and target == player then return end
         self.target = target.uid
         if self.ai_state == "idle" or ( self.ai_state == "pursue" and self.move_to ~= target.position ) then
             self.move_to = target.position
@@ -438,7 +458,7 @@ function aitk.try_hunt( self )
         end
     end
     if self.retaliate then attackchance = 100 end
-    if dist == 1 then
+    if dist == 1 and (not self.nomelee) then
         self:attack( target )
         if sequential then self.sequence = 0 end
         return "hunt"
