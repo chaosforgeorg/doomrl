@@ -151,7 +151,7 @@ function being:phase( cell )
 		cell = cells[ cell ].nid
 		local targets = {}
 		for c in area.FULL_SHRINKED() do
-			if generator.get_cell( c ) == cell then
+			if level:get_cell( c ) == cell then
 				table.insert( targets, c:clone() )
 			end
 		end

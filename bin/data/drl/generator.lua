@@ -135,7 +135,7 @@ function generator.horiz_river( cell, width, bridge )
 	for x = 1,MAXX do
 		if x == bridge or x == bridge + 1 then fill = "bridge" else fill = cell end
 		for w = 1,width do
-			generator.set_cell( coord.new( x, w + y ), fill )
+			level:set_cell( x, w + y, fill )
 		end
 		if math.random(6) == 1 then y = math.min( math.max( y + math.random(3) - 2, 3 ), MAXY - width - 2 ) end
 	end
@@ -160,7 +160,7 @@ function generator.vert_river( cell, width, bridge, pos )
 	local function iteration(y)
 		if y == bridge or y == bridge + 1 then fill = "bridge" else fill = cell end
 		for w = 1,width do
-			generator.set_cell( coord.new( w + x, y ), fill )
+			level:set_cell( w + x, y, fill )
 		end
 		if math.random(3) == 1 then x = math.min( math.max( x + math.random(3) - 2, 3 ), MAXX - width - 3 ) end
 	end
@@ -244,8 +244,8 @@ function generator.generate_lava_dungeon()
 		end
 
 		for c in quad:edges() do
-			if generator.get_cell(c) == lava_nid then
-				generator.set_cell(c, "bridge")			
+			if level:get_cell(c) == lava_nid then
+				level:set_cell(c, "bridge")			
 			end
 		end
 
@@ -262,7 +262,7 @@ function generator.generate_lava_dungeon()
 		local quad = area.random_subarea( a, coord.random( dim_min, dim_max ) ):clamped( a )
 		local good = true
 		for c in quad() do 
-			if generator.get_cell(c) == wall_nid then 
+			if level:get_cell(c) == wall_nid then 
 				good = false
 				break
 			end
@@ -271,7 +271,7 @@ function generator.generate_lava_dungeon()
 			generator.fill( floor_cell, quad )
 			quad:shrink(1)
 			generator.fill( wall_cell, quad )
-			generator.set_cell( area.random_inner_edge_coord( quad ), door_cell )
+			level:set_cell( area.random_inner_edge_coord( quad ), door_cell )
 			quad:shrink(1)
 			generator.fill( "crate", quad )
 			generator.add_room( quad:expanded() )
@@ -398,7 +398,7 @@ function generator.place_blob( start, size, cell )
 		local idx = math.random( #visit )
 		local n   = visit[ idx ]
 		table.remove( visit, idx )
-		if generator.around( n, cells ) == 8 then
+		if level:around( n, cells ) == 8 then
 			level:set_cell( n, cell ) 
 			for c in n:cross_coords() do 
 				if level:get_cell( c ) == floor_cell then
@@ -443,13 +443,13 @@ function generator.generate_caves_2_dungeon()
 	drunk( 50, math.random(10)+20, floor_cell )
 
 	for c in level_area:shrinked()() do
-		if level:get_cell(c) == cave_cell and generator.around( c, cave_cell ) < 4 then
+		if level:get_cell(c) == cave_cell and level:around( c, cave_cell ) < 4 then
 			level:set_cell( c, floor_cell )
 		end
 	end
 
 	for c in level_area:shrinked(2)() do
-		if level:get_cell(c) == floor_cell and generator.cross_around( c, cave_cell ) > 2 then
+		if level:get_cell(c) == floor_cell and level:cross_around( c, cave_cell ) > 2 then
 			for k in c:cross_coords() do
 				level:set_cell( k, marker )
 			end
@@ -479,7 +479,7 @@ function generator.generate_caves_2_dungeon()
 		if generator.scan( a, floor_cell ) then
 			a:shrink()
 			generator.fill( wall_cell, a )
-			generator.set_cell( a:random_inner_edge_coord(), door_cell )
+			level:set_cell( a:random_inner_edge_coord(), door_cell )
 			a:shrink()
 			generator.fill( marker, a )
 			count = count + 1
@@ -497,7 +497,7 @@ function generator.generate_caves_2_dungeon()
 	generator.transmute( marker, floor_cell )
 
 	for c in level_area:shrinked()() do
-		if level:get_cell(c) == fluid and generator.around( c, fluid ) < 4 then
+		if level:get_cell(c) == fluid and level:around( c, fluid ) < 4 then
 			level:set_cell( c, floor_cell )
 		end
 	end

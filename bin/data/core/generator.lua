@@ -37,7 +37,7 @@ end
 function generator.scan(scan_area,good)
 	if type(good) == "string" then good = cells[good].nid end
 	for c in scan_area() do
-		if generator.get_cell(c) ~= good then
+		if level:get_cell(c) ~= good then
 			return false
 		end
 	end
@@ -49,7 +49,7 @@ function generator.scatter(scatter_area,good,fill,count)
 	if type(fill) == "string" then fill = cells[fill].nid end
 	for _ = 1, count do
 		local c = scatter_area:random_coord()
-		if generator.get_cell(c) == good then generator.set_cell(c, fill) end
+		if level:get_cell(c) == good then level:set_cell(c, fill) end
 	end
 end
 
@@ -57,7 +57,7 @@ function generator.scatter_item(scatter_area,good,item_id,count)
 	if type(good) == "string" then good = cells[good].nid end
 	for _ = 1, count do
 		local c = generator.random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
-		if generator.get_cell(c) == good then
+		if level:get_cell(c) == good then
 			level:drop_item( item_id, c, true )
 		end
 	end
@@ -68,8 +68,8 @@ function generator.scatter_cross(scatter_area,good,fill,count)
 	if type(fill) == "string" then fill = cells[fill].nid end
 	for _ = 1, count do
 		local c = scatter_area:random_coord()
-		if generator.get_cell(c) == good and generator.cross_around( c, good ) == 4 then 
-			generator.set_cell(c, fill)
+		if level:get_cell(c) == good and level:cross_around( c, good ) == 4 then 
+			level:set_cell(c, fill)
 		end
 	end
 end
@@ -82,7 +82,7 @@ function generator.scatter_cross_item(scatter_area,good,item_id,count)
 	for _ = 1, count do
 		local c = generator.random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
 		if c then
-			if generator.get_cell( c ) == good then
+			if level:get_cell( c ) == good then
 				if test( coord.new( c.x-1, c.y ) ) and test( coord.new( c.x+1, c.y ) ) and
 					test( coord.new( c.x, c.y-1 ) ) and test( coord.new( c.x, c.y+1 ) ) then
 					level:drop_item( item_id, c, true )
@@ -118,7 +118,7 @@ function generator.scatter_blood(scatter_area,good,count)
 	if type(good) == "string" then good = cells[good].nid end
 	for c = 1, count do
 		local c = scatter_area:random_coord()
-		if not good or generator.get_cell(c) == good then level.light[ c ][ LFBLOOD ] = true end
+		if not good or level:get_cell(c) == good then level.light[ c ][ LFBLOOD ] = true end
 	end
 end
 
@@ -259,7 +259,7 @@ function generator.set_permanence( ar, val, tile )
 		end
 	else
 		for c in ar:coords() do
-			local id = generator.get_cell( c )
+			local id = level:get_cell( c )
 			if generator.cell_sets[ CELLSET_WALLS ][ id ] then
 				level.light[ c ][ LFPERMANENT ] = val
 			end
@@ -296,8 +296,8 @@ function generator.contd_drunkard_walks( amount, steps, cell, edges1, edges2, ig
 	for i=1,amount do
 		repeat
 			c = drunk_area:random_coord()
-		until generator.cross_around( c, edges1 ) > 0 and
-			generator.cross_around( c, edges2 ) > 0
+		until level:cross_around( c, edges1 ) > 0 and
+		level:cross_around( c, edges2 ) > 0
 		generator.run_drunkard_walk( drunk_area, c, steps, cell, ignore, break_on_edge )
 	end
 end
@@ -308,10 +308,10 @@ function generator.plot_lines( where, larea, horiz, cell, block )
 	local step = function( point, px, py )
 		point.x = point.x + px
 		point.y = point.y + py
-		if block[ generator.get_cell( point ) ] then
+		if block[ level:get_cell( point ) ] then
 			return true
 		else
-			generator.set_cell( point, cell )
+			level:set_cell( point, cell )
 			return false
 		end
 	end
@@ -343,7 +343,7 @@ function generator.maze_dungeon( floor_cell, wall_cell, granularity, tries, minl
 			granularity * math.random( rx ) + maze_area.a.x,
 			granularity * math.random( ry ) + maze_area.a.y
 		)
-		if generator.get_cell( c ) == floor_cell and generator.cross_around( c, floor_cell ) == 4 then
+		if level:get_cell( c ) == floor_cell and level:cross_around( c, floor_cell ) == 4 then
 			local step = coord.new( 0, 0 )
 			local length = minl + granularity * ( math.random( rl ) - 1 )
 			if math.random( 2 ) == 1 then
@@ -351,12 +351,12 @@ function generator.maze_dungeon( floor_cell, wall_cell, granularity, tries, minl
 			else
 				step.y = math.random(2)*2-3
 			end
-			while maze_area:contains( c + step ) and generator.get_cell( c + step ) == floor_cell and length > 0 do
-				generator.set_cell( c, wall_cell )
+			while maze_area:contains( c + step ) and level:get_cell( c + step ) == floor_cell and length > 0 do
+				level:set_cell( c, wall_cell )
 				c = c + step
 				length = length - 1
 			end
-			generator.set_cell( c, wall_cell )
+			level:set_cell( c, wall_cell )
 		end
 	end
 end
@@ -390,13 +390,13 @@ function generator.read_rooms()
 	local cell_meta_list = generator.merge_cell_lists( generator.cell_lists[ CELLSET_WALLS ], generator.cell_lists[ CELLSET_DOORS ] )
 	local room_begin = function(c)
 		if c.x == MAXX or c.y == MAXY then return false end
-		if c.x == 1 then return cell_meta[ generator.get_cell( coord.new(2, c.y) ) ] end
-		if c.y == 1 then return cell_meta[ generator.get_cell( coord.new(c.x, 2) ) ] end
-		local meta_count = generator.cross_around( c, cell_meta_list )
+		if c.x == 1 then return cell_meta[ level:get_cell( 2, c.y ) ] end
+		if c.y == 1 then return cell_meta[ level:get_cell( c.x, 2 ) ] end
+		local meta_count = level:cross_around( c, cell_meta_list )
 		if meta_count == 4 then return true end
 		if meta_count == 3
-			and cell_meta[ generator.get_cell( coord.new( c.x + 1, c.y ) ) ]
-			and cell_meta[ generator.get_cell( coord.new( c.x, c.y + 1 ) ) ]
+			and cell_meta[ level:get_cell( c.x + 1, c.y ) ]
+			and cell_meta[ level:get_cell( c.x, c.y + 1 ) ]
 			then return true end
 		return false
 	end
@@ -406,10 +406,10 @@ function generator.read_rooms()
 			local ec = coord.clone( start )
 			repeat
 				ec.x = ec.x + 1
-			until ec.x == MAXX or cell_meta[ generator.get_cell( coord.new( ec.x, start.y + 1 ) ) ]
+			until ec.x == MAXX or cell_meta[ level:get_cell( ec.x, start.y + 1 ) ]
 			repeat
 				ec.y = ec.y + 1
-			until ec.y == MAXY or cell_meta[ generator.get_cell( coord.new( start.x + 1, ec.y ) ) ]
+			until ec.y == MAXY or cell_meta[ level:get_cell( start.x + 1, ec.y ) ]
 			table.insert( room_list, area.new( start, ec ) )
 		end
 	end
@@ -456,8 +456,8 @@ function generator.restore_walls( wall_cell, fluid_to_perm )
 	core.log("generator.restore_walls("..wall_cell..")")
 	if fluid_to_perm then
 		for c in area.edges( area.FULL ) do
-			local sub = fluid_to_perm[ cells[generator.get_cell( c )].id ] or wall_cell
-			generator.set_cell( c, sub )
+			local sub = fluid_to_perm[ cells[level:get_cell( c )].id ] or wall_cell
+			level:set_cell( c, sub )
 		end
 	else
 		generator.fill_edges( wall_cell )
@@ -547,7 +547,7 @@ end
 function generator.generate_stairs( stairs_id )
 	core.log("generator.generate_stairs()")
 	local pos = generator.standard_empty_coord()
-	generator.set_cell( pos, stairs_id )
+	level:set_cell( pos, stairs_id )
 	return pos
 end
 
@@ -575,7 +575,7 @@ function generator.generate_tiled_level( settings )
 
 	local plot = function( horiz, where )
 		generator.plot_lines( where, area.FULL, horiz, wall_cell, block )
-		generator.set_cell( where, door_cell )
+		level:set_cell( where, door_cell )
 	end
 
 	local div_point = function( x, yrange, ymult, ymod )
@@ -614,15 +614,15 @@ function generator.generate_tiled_level( settings )
 	local priority_doors = {}
 	
 	for c in area.coords( area.FULL_SHRINKED ) do
-		if generator.get_cell( c ) == wall_cell
-		and generator.around( c, door_cell ) == 0 
-		and generator.cross_around( c, wall_cell ) == 2
-		and generator.cross_around( c, floor_cell ) == 2
+		if level:get_cell( c ) == wall_cell
+		and level:around( c, door_cell ) == 0 
+		and level:cross_around( c, wall_cell ) == 2
+		and level:cross_around( c, floor_cell ) == 2
 		then
-			local walls = generator.around( c, wall_cell )
+			local walls = level:around( c, wall_cell )
 			if walls > 4 then
-				if generator.around( c, door_cell ) == 0 then
-					generator.set_cell( c, door_cell )
+				if level:around( c, door_cell ) == 0 then
+					level:set_cell( c, door_cell )
 				end
 			elseif walls > 3 then
 				table.insert( priority_doors, c:clone() )
@@ -634,15 +634,15 @@ function generator.generate_tiled_level( settings )
 
 	for i = 1,pdoors do
 		local pos = table.random_remove( priority_doors )
-		if pos and generator.around( pos, door_cell ) == 0 then
-			generator.set_cell( pos, door_cell )
+		if pos and level:around( pos, door_cell ) == 0 then
+			level:set_cell( pos, door_cell )
 		end
 	end
 
 	for i = 1,ndoors do
 		local pos = table.random_remove( door_positions )
-		if pos and generator.around( pos, door_cell ) == 0 then
-			generator.set_cell( pos, door_cell )
+		if pos and level:around( pos, door_cell ) == 0 then
+			level:set_cell( pos, door_cell )
 		end
 	end
 
@@ -722,8 +722,8 @@ function generator.generate_archi_level( settings )
 	end
 
 	for c in generator.each( generator.styles[ level.style ].door ) do
-		if generator.cross_around( c, wall_cell ) > 2 then
-			generator.set_cell( c, wall_cell )
+		if level:cross_around( c, wall_cell ) > 2 then
+			level:set_cell( c, wall_cell )
 		end
 	end
 

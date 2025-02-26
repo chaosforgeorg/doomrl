@@ -11,9 +11,9 @@ function drl.register_events()
 			generator.wall_to_ice[ generator.styles[ level.style ].wall ] = "iwall"
 
 			for c in area.FULL:coords() do
-				local cell = generator.wall_to_ice[ cells[generator.get_cell( c )].id ]
+				local cell = generator.wall_to_ice[ cells[level:get_cell( c )].id ]
 				if cell then
-					generator.set_cell( c, cell )
+					level:set_cell( c, cell )
 				end
 			end
 		end,
@@ -291,11 +291,11 @@ end
 function generator.events_flood_tick()
 	local flood_tile = function( pos, cell )
 		if area.FULL:is_edge( pos ) then
-			generator.set_cell( pos, generator.fluid_to_perm[ cell ] )
+			level:set_cell( pos, generator.fluid_to_perm[ cell ] )
 		else
-			local cell_data = cells[ generator.get_cell( pos ) ]
+			local cell_data = cells[ level:get_cell( pos ) ]
 			if not cell_data.flags[ CF_CRITICAL ] then
-				generator.set_cell( pos, cell )
+				level:set_cell( pos, cell )
 			end
 			if cell_data.OnDestroy then cell_data.OnDestroy(pos) end
 			level:try_destroy_item( pos )

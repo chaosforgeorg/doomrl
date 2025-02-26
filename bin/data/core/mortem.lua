@@ -110,7 +110,7 @@ function mortem.print_graveyard()
 		if item then
 			return string.char(item.picture)
 		end
-		local cell = generator.get_cell( c )
+		local cell = level:get_cell( c )
 		return cells[ cell ].asciilow
 	end
 

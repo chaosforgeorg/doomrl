@@ -52,7 +52,7 @@ function drl.register_rooms()
 				tries = tries - 1
 				if tries == 0 then return false end
 				pos = floors:random_coord()
-			until generator.cross_around( pos, generator.styles[ level.style ].floor ) > 2
+			until level:cross_around( pos, generator.styles[ level.style ].floor ) > 2
 			level:drop_item( "teleport", pos )
 			return true
 		end,
@@ -167,7 +167,7 @@ function drl.register_rooms()
 				generator.set_permanence( vault )
 			else
 				generator.fill( "wall", vault )
-				generator.set_cell( vault:random_inner_edge_coord(), generator.styles[ level.style ].door )
+				level:set_cell( vault:random_inner_edge_coord(), generator.styles[ level.style ].door )
 			end
 			vault:shrink()
 			generator.fill( "floor", vault )

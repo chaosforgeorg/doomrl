@@ -278,9 +278,9 @@ function level:flood( tile, flood_area )
 	local hazard = cells[tile].flags[ CF_HAZARD ]
 	local nid    = cells[tile].nid
 	for c in flood_area() do
-		local cell_proto = cells[generator.get_cell(c)]
+		local cell_proto = cells[self:get_cell(c)]
 		if cell_proto.set == CELLSET_FLOORS or cell_proto.flags[ CF_LIQUID ] then
-			generator.set_cell(c,nid)
+			self:set_cell(c,nid)
 		end
 		if hazard then
 			self:try_destroy_item(c)

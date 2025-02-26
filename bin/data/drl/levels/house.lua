@@ -127,7 +127,7 @@ register_level "house_of_pain"
 					level:area_drop( room_1, level:roll_item{ level = 20, type = ITEMTYPE_RANGED, unique_mod = 5 } )
 					level:area_drop( room_1, level:roll_item{ level = 20, type = {ITEMTYPE_ARMOR,ITEMTYPE_BOOTS}, unique_mod = 5 } )
 				end
-				generator.set_cell( coord.new(14,11), "stairs" )
+				level:set_cell( 14, 11, "stairs" )
 				level.status = 6
 			else return
 			end
@@ -149,7 +149,7 @@ register_level "house_of_pain"
 			generator.transmute( "iwall", "floor", area.new(13,9,15,12) )
 		else
 			ui.msg("No? All right, I'll see you out then.")
-			generator.set_cell( coord.new(14,11), "stairs" )
+			level:set_cell( 14, 11, "stairs" )
 		end
 		level.flags[ LF_NORESPAWN ] = true
 	end,

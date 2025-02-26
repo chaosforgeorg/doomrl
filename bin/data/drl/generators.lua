@@ -57,7 +57,7 @@ function drl.register_generators()
 				{granularity = 3, tries = 100, minl = 4, maxl = 12},
 			}
 			local style = table.random_pick( maze_styles )
-			for x=1,MAXX do generator.set_cell( coord.new(x,MAXY-1), wall_cell ) end
+			for x=1,MAXX do level:set_cell( x, MAXY-1, wall_cell ) end
 			generator.maze_dungeon( floor_cell, wall_cell, style.granularity, style.tries, style.minl, style.maxl )
 
 			ui.msg_feel( "Where the hell is the way out of here!?!" )
@@ -165,7 +165,7 @@ function drl.register_generators()
 				local newdiv = math.floor( MAXX / (divs+1) )*i + math.random(16)-8
 				local where = coord.new( newdiv, math.random(12)+4 )
 				generator.plot_lines( where, area.FULL, false, wall_cell, generator.cell_set{ wall_cell } )
-				generator.set_cell( where, generator.styles[ level.style ].door )
+				level:set_cell( where, generator.styles[ level.style ].door )
 				table.insert( areas, area.new( divpoint+1, 2, newdiv-1, MAXY-1 ) )
 				divpoint = newdiv
 			end
@@ -220,7 +220,7 @@ function drl.register_generators()
 				if generator.scan(room,floor_cell) then
 					room:shrink(1)
 					generator.fill( wall_cell, room )
-					generator.set_cell( area.random_inner_edge_coord( room ), door_cell )
+					level:set_cell( area.random_inner_edge_coord( room ), door_cell )
 					room:shrink(1)
 					generator.fill( "crate", room )
 					generator.add_room( room:expanded() )
