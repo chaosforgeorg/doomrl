@@ -355,7 +355,7 @@ begin
   Player.PreAction;
   FTargeting.Update( Player.Vision );
   IO.SetAutoTarget( FTargeting.List.Current );
-  if ( FPlayerView <> nil ) and (not FDamagedLastTurn) and (Player.BeingsInVision < 2) then
+  if ( FPlayerView <> nil ) and (not FDamagedLastTurn) and (Player.EnemiesInVision < 1) then
      (FPlayerView as TPlayerView).Retain;
 end;
 
@@ -503,6 +503,7 @@ var iDir        : TDirection;
     iTarget     : TCoord2D;
     iMoveResult : TMoveResult;
     iItem       : TItem;
+    iBeing      : TBeing;
 begin
   if Player.Flags[ BF_SESSILE ] then
   begin
@@ -536,7 +537,14 @@ begin
          if Option_Blindmode then IO.Msg( 'You bump into a wall.' );
          Exit( False );
        end;
-     MoveBeing : Exit( HandleCommand( TCommand.Create( COMMAND_MELEE, iTarget ) ) );
+     MoveBeing :
+       begin
+         if not Level.isProperCoord( iTarget ) then Exit( False );
+         iBeing := Level.Being[ iTarget ];
+         if iBeing.Flags[ BF_FRIENDLY ]
+           then Exit( HandleCommand( TCommand.Create( COMMAND_SWAPPOSITION, iTarget ) ) )
+           else Exit( HandleCommand( TCommand.Create( COMMAND_MELEE, iTarget ) ) );
+       end;
      MoveDoor  : Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
      MoveOk    : Exit( HandleCommand( TCommand.Create( COMMAND_MOVE, iTarget ) ) );
   end;
@@ -887,7 +895,7 @@ begin
   // Handle key-repeat
   if aEvent.Key.Repeated then
     if ( not ( iInput in [ INPUT_WAIT ] + INPUT_MOVE ) ) or
-       ( IO.Time - FLastInputTime < Player.VisualTime( Player.getMoveCost, 98 ) ) or (Player.BeingsInVision > 1) then
+       ( IO.Time - FLastInputTime < Player.VisualTime( Player.getMoveCost, 98 ) ) or (Player.EnemiesInVision > 0) then
       Exit( False );
   FLastInputTime := IO.Time;
 
@@ -904,7 +912,7 @@ begin
     if iInput in [INPUT_RUNWAIT]+INPUT_MULTIMOVE then
     begin
       Player.FPathRun := False;
-      if Player.BeingsInVision > 1
+      if Player.EnemiesInVision > 0
         then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
         else Player.FRun.Start( InputDirection( iInput ) );
       Exit;
@@ -951,7 +959,7 @@ begin
       INPUT_TRAITS    : begin FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
       INPUT_RUN       : begin
         Player.FPathRun := False;
-        if Player.BeingsInVision > 1
+        if Player.EnemiesInVision > 0
           then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
           else IO.PushLayer( TRunModeView.create );
         Exit;

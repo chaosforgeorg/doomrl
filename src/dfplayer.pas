@@ -95,18 +95,18 @@ TPlayer = class(TBeing)
   function GetSkillRank : Word;
   function GetExpRank : Word;
   published
-  property KilledBy      : AnsiString read FKilledBy;
-  property KilledMelee   : Boolean    read FKilledMelee;
-  property Exp           : LongInt    read FExp          write FExp;
-  property ExpLevel      : Byte       read FExpLevel     write FExpLevel;
-  property NukeTime      : Word       read NukeActivated write NukeActivated;
-  property Klass         : Byte       read FTraits.Klass write FTraits.Klass;
-  property ExpFactor     : Real       read FExpFactor    write FExpFactor;
-  property SkillRank     : Word       read GetSkillRank;
-  property ExpRank       : Word       read GetExpRank;
-  property Score         : LongInt    read FScore        write FScore;
-  property Depth         : Word       read CurrentLevel;
-  property BeingsInVision: Word       read FEnemiesInVision;
+  property KilledBy        : AnsiString read FKilledBy;
+  property KilledMelee     : Boolean    read FKilledMelee;
+  property Exp             : LongInt    read FExp          write FExp;
+  property ExpLevel        : Byte       read FExpLevel     write FExpLevel;
+  property NukeTime        : Word       read NukeActivated write NukeActivated;
+  property Klass           : Byte       read FTraits.Klass write FTraits.Klass;
+  property ExpFactor       : Real       read FExpFactor    write FExpFactor;
+  property SkillRank       : Word       read GetSkillRank;
+  property ExpRank         : Word       read GetExpRank;
+  property Score           : LongInt    read FScore        write FScore;
+  property Depth           : Word       read CurrentLevel;
+  property EnemiesInVision : Word       read FEnemiesInVision;
 end;
 
 var Player     : TPlayer;
@@ -208,7 +208,7 @@ begin
   FKilledBy       := '';
   FKilledMelee    := False;
 
-  FEnemiesInVision:= 1;
+  FEnemiesInVision:= 0;
   FPathRun := False;
   FPath           := TPathFinder.Create(Self);
   MemorialWritten := False;
@@ -490,14 +490,14 @@ begin
             else IO.Msg('There is %s lying here.', [ GetName( False ) ] );
   end;
 
-  FEnemiesInVision := iLevel.BeingsVisible;
-  if FEnemiesInVision < 2 then
+  FEnemiesInVision := iLevel.EnemiesVisible;
+  if FEnemiesInVision < 1 then
   begin
     FChainFire := 0;
     if FBersekerLimit > 0 then Dec( FBersekerLimit );
   end;
 
-  if FEnemiesInVision > 1 then
+  if FEnemiesInVision > 0 then
   begin
     FPathRun := False;
     FRun.Stop;

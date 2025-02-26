@@ -22,11 +22,11 @@ function aitk.OnAction( self )
 end
 
 function aitk.scan( self )
-    if self.friendly then
+    if self.flags[ BF_FRIENDLY ] then
         local dist   = self.vision+1
         local target = nil
         for b in level:beings_in_range( self, self.vision ) do
-            if b ~= player and ( not b:has_property("friendly") or ( not b.friendly ) ) then
+            if b ~= player and ( not b.flags[ BF_FRIENDLY ] ) then
                 local d = self:distance_to( b )
                 if self:in_sight( b ) and d < dist then
                     target = b
@@ -245,7 +245,6 @@ function aitk.basic_init( self, use_packs, use_armor )
     self:add_property( "attackchance", math.min( self.__proto.attackchance * diff[DIFFICULTY].speed, 90 ) )
     self:add_property( "retaliate", false )
     self:add_property( "patrol_area", false )
-    self:add_property( "friendly", false )
     self:add_property( "nomelee", false )
 end
 
@@ -326,7 +325,7 @@ function aitk.basic_on_attacked( self, target )
     if self:has_property("boredom") then self.boredom = 0 end
     if target then 
         if target:has_property("master") then return end
-        if self.friendly and target == player then return end
+        if self.flags[ BF_FRIENDLY ] and target == player then return end
         self.target = target.uid
         if self.ai_state == "idle" or ( self.ai_state == "pursue" and self.move_to ~= target.position ) then
             self.move_to = target.position
@@ -668,4 +667,37 @@ function aitk.wait( self )
         return "hunt"
     end
 	return "wait"
+end
+
+function aitk.follow_player_idle( self )
+    if aitk.basic_scan( self ) then
+        self.move_to = false
+        return "hunt"
+    end
+	if math.random(30) == 1 then
+		self:play_sound( "act" )
+	end
+    if self.move_to then
+        if self:distance_to( self.move_to ) == 0 then
+            self.move_to = false
+        else
+            if not aitk.move_path( self, self.move_to ) then
+                self.move_to = false
+                self.scount  = self.scount - 500
+            end
+        end
+    end
+
+    if not self.move_to then
+        local patrol_area = area.around( player.position, 3 ):clamped( area.FULL )
+        local next_move   = patrol_area:random_coord()
+        if next_move then
+            self.move_to = next_move
+            if not self:path_find( self.move_to, 10, 40 ) then
+                self.scount  = self.scount - 1000
+                self.move_to = false
+            end
+        end
+    end
+	return "idle"
 end

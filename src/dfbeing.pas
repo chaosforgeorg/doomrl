@@ -108,6 +108,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionUse( aItem : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
     function ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0 ) : Boolean;
+    function ActionSwapPosition( aTarget : TCoord2D ) : Boolean;
     function ActionActive : boolean;
     function ActionAction( aTarget : TCoord2D ) : Boolean;
 
@@ -1138,6 +1139,15 @@ begin
   Exit( True );
 end;
 
+function TBeing.ActionSwapPosition( aTarget : TCoord2D ) : Boolean;
+var iLevel  : TLevel;
+begin
+  iLevel  := TLevel(Parent);
+  if not iLevel.SwapBeings( Position, aTarget ) then Exit( False );
+  Dec( FSpeedCount, getMoveCost );
+  Exit( True );
+end;
+
 function TBeing.ActionActive : Boolean;
 begin
   if ( not isPlayer ) then Exit( False );
@@ -1437,25 +1447,26 @@ function TBeing.HandleCommand( aCommand : TCommand ) : Boolean;
 begin
   Result := True;
   case aCommand.Command of
-    COMMAND_MOVE      : Result := ActionMove( aCommand.Target );
-    COMMAND_USE       : Result := ActionUse( aCommand.Item );
-    COMMAND_DROP      : Result := ActionDrop( aCommand.Item );
-    COMMAND_WEAR      : Result := ActionWear( aCommand.Item );
-    COMMAND_TAKEOFF   : Result := ActionTakeOff( aCommand.Slot );
-    COMMAND_SWAP      : Result := ActionSwap( aCommand.Item, aCommand.Slot );
-    COMMAND_WAIT      : Dec( FSpeedCount, 1000 );
-    COMMAND_ACTION    : Result := ActionAction( aCommand.Target );
-    COMMAND_ENTER     : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
-    COMMAND_MELEE     : Attack( aCommand.Target );
-    COMMAND_RELOAD    : Result := ActionReload;
-    COMMAND_ALTRELOAD : Result := ActionAltReload;
-    COMMAND_FIRE      : Result := ActionFire( aCommand.Target, aCommand.Item );
-    COMMAND_ALTFIRE   : Result := ActionFire( aCommand.Target, aCommand.Item, True );
-    COMMAND_PICKUP    : Result := ActionPickup;
-    COMMAND_UNLOAD    : Result := ActionUnLoad( aCommand.Item, aCommand.ID );
-    COMMAND_SWAPWEAPON: Result := ActionSwapWeapon;
-    COMMAND_QUICKKEY  : Result := ActionQuickKey( Ord( aCommand.ID[1] ) - Ord( '0' ) );
-    COMMAND_ACTIVE    : Result := ActionActive;
+    COMMAND_MOVE         : Result := ActionMove( aCommand.Target );
+    COMMAND_USE          : Result := ActionUse( aCommand.Item );
+    COMMAND_DROP         : Result := ActionDrop( aCommand.Item );
+    COMMAND_WEAR         : Result := ActionWear( aCommand.Item );
+    COMMAND_TAKEOFF      : Result := ActionTakeOff( aCommand.Slot );
+    COMMAND_SWAP         : Result := ActionSwap( aCommand.Item, aCommand.Slot );
+    COMMAND_WAIT         : Dec( FSpeedCount, 1000 );
+    COMMAND_ACTION       : Result := ActionAction( aCommand.Target );
+    COMMAND_ENTER        : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
+    COMMAND_MELEE        : Attack( aCommand.Target );
+    COMMAND_RELOAD       : Result := ActionReload;
+    COMMAND_ALTRELOAD    : Result := ActionAltReload;
+    COMMAND_FIRE         : Result := ActionFire( aCommand.Target, aCommand.Item );
+    COMMAND_ALTFIRE      : Result := ActionFire( aCommand.Target, aCommand.Item, True );
+    COMMAND_PICKUP       : Result := ActionPickup;
+    COMMAND_UNLOAD       : Result := ActionUnLoad( aCommand.Item, aCommand.ID );
+    COMMAND_SWAPWEAPON   : Result := ActionSwapWeapon;
+    COMMAND_QUICKKEY     : Result := ActionQuickKey( Ord( aCommand.ID[1] ) - Ord( '0' ) );
+    COMMAND_ACTIVE       : Result := ActionActive;
+    COMMAND_SWAPPOSITION : Result := ActionSwapPosition( aCommand.Target );
   else Exit( False );
   end;
   if Result then FLastCommand := aCommand;
@@ -1511,6 +1522,7 @@ var iCount : byte;
     iCoord : TCoord2D;
     iLevel : TLevel;
 begin
+  if BF_NOBLEED in FFlags then Exit;
   iLevel := TLevel(Parent);
   for iCount := 1 to Min( aAmount, 20 ) do
   begin
@@ -1540,7 +1552,8 @@ begin
   end;
 
   // TODO: Change to Player.RegisterKill(kill)
-  Player.RegisterKill( FID, aKiller, aWeapon, not Flags[ BF_RESPAWN ] );
+  if not ( BF_FRIENDLY in FFlags ) then
+    Player.RegisterKill( FID, aKiller, aWeapon, not Flags[ BF_RESPAWN ] );
 
   if (aKiller <> nil) and (aWeapon <> nil) then
     aWeapon.CallHook(Hook_OnKill, [ aKiller, Self ]);
@@ -1751,11 +1764,11 @@ begin
 
 
     // Berserker roll
-    if (Player.FEnemiesInVision > 1) then
+    if (Player.EnemiesInVision > 0) then
       if (BF_BERSERKER in FFlags) and ( iDamage >= 10 ) then
       begin
         Player.FBersekerLimit += 1;
-        if Player.FBersekerLimit > 4 - Min(Player.FEnemiesInVision div 2, 3) then
+        if Player.FBersekerLimit > 4 - Min((Player.EnemiesInVision + 1) div 2, 3) then
           begin
             TLevel(Parent).playSound('bpack','powerup',FPosition);
             IO.Blink(Red,30);
@@ -2080,7 +2093,8 @@ begin
     if iLevel.Being[ iCoord ] <> nil then
     begin
       iBeing := iLevel.Being[ iCoord ];
-      if iBeing = iAimedBeing then iDodged := False;
+      if iBeing = iAimedBeing then
+        iDodged := False;
 
       iToHit -= iBeing.DefenceBonus;
 
@@ -2092,7 +2106,13 @@ begin
         iIsHit := (Random(10) > 4);
       
       if aItem.Flags[ IF_AUTOHIT ] then iIsHit := True;
-      
+
+      if iIsHit and ( iBeing <> iAimedBeing ) then
+        if ( isPlayer and iBeing.Flags[ BF_FRIENDLY ] ) or
+          ( Flags[ BF_FRIENDLY ] and iBeing.IsPlayer ) then
+           if Random( 3 ) > 0 then
+             iIsHit := False;
+
       if iIsHit then
       begin
         if iLevel.Being[ iCoord ] = Player

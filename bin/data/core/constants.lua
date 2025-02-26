@@ -106,6 +106,8 @@ BF_RESPAWN      = 53;
 BF_WALKSOUND    = 54;
 BF_FLY          = 55;
 BF_BLADEBONUS   = 56;
+BF_FRIENDLY     = 57;
+BF_NOBLEED      = 58;
 
 IF_UNIQUE         = 21;
 IF_EXOTIC         = 22;

@@ -224,7 +224,7 @@ register_level "intro"
 			elseif p.x < 25 then
 				ui.set_hint("Hint : you can turn off hints in the Settings menu!")
 			end
-			if player.exp < 30  and player.beingsinvision > 1 then
+			if player.exp < 30  and player.enemiesinvision > 0 then
 				ui.set_hint("Hint : press \"f\" to fire your weapon!")
 			end
 			if player.eq.weapon and player.eq.weapon.ammo == 0 then

@@ -19,5 +19,6 @@ COMMAND_WEAR              = 49;
 COMMAND_SWAP              = 50;
 COMMAND_TAKEOFF           = 51;
 COMMAND_QUICKKEY          = 52;
+COMMAND_SWAPPOSITION      = 53;
 
 

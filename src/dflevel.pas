@@ -77,7 +77,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure playSound( const aSoundID : DWord; aCoord : TCoord2D; aDelay : DWord = 0 ); overload;
     procedure playSound( const SoundID : string; coord : TCoord2D ); overload;
     procedure playSound( const BaseID,SoundID : string; coord : TCoord2D ); overload;
-    function BeingsVisible : Word;
+    function EnemiesVisible : Word;
 
     function DropItem ( aItem  : TItem;  aCoord : TCoord2D ) : boolean;  // raises EPlacementException
     procedure DropBeing( aBeing : TBeing; aCoord : TCoord2D ); // raises EPlacementException
@@ -110,6 +110,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function GetLookDescription( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : Ansistring;
     procedure UpdateAutoTarget( aAutoTarget : TAutoTarget; aBeing : TBeing; aRange : Integer );
     function PushItem( aWho : TBeing; aWhat : TItem; aFrom, aTo : TCoord2D ) : Boolean;
+    function SwapBeings( aA, aB : TCoord2D ) : Boolean;
 
     class procedure RegisterLuaAPI();
 
@@ -269,14 +270,16 @@ begin
   IO.Audio.PlaySound(IO.Audio.ResolveSoundID([BaseID+'.'+SoundID,SoundID]), coord );
 end;
 
-function TLevel.BeingsVisible : Word;
+function TLevel.EnemiesVisible : Word;
 var iNode  : TNode;
 begin
-  BeingsVisible := 0;
+  EnemiesVisible := 0;
   for iNode in Self do
     if iNode is TBeing then
       if TBeing(iNode).isVisible then
-        Inc(BeingsVisible);
+        if not TBeing(iNode).isPlayer then
+          if not TBeing(iNode).Flags[ BF_FRIENDLY ] then
+            Inc(EnemiesVisible);
 end;
 
 function TLevel.isAlive ( aUID : TUID ) : boolean;
@@ -462,14 +465,15 @@ end;
 
 function TLevel.EnemiesLeft( aUnique : Boolean = False ) : DWord;
 var iEnemies : DWord;
-    iNode : TNode;
+    iNode    : TNode;
 begin
   iEnemies := 0;
   for iNode in Self do
     if iNode is TBeing then
-      if ( not aUnique ) or ( not iNode.Flags[ BF_RESPAWN ] ) then
-        Inc( iEnemies );
-  Exit( iEnemies - 1 );
+      if ( not TBeing(iNode).isPlayer ) and ( not iNode.Flags[ BF_FRIENDLY ] ) then
+        if ( not aUnique ) or ( not iNode.Flags[ BF_RESPAWN ] ) then
+          Inc( iEnemies );
+  Exit( iEnemies );
 end;
 
 constructor TLevel.Create;
@@ -825,7 +829,7 @@ begin
   if aBeing = nil then Exit;
   aCoord := DropCoord( aCoord, [ EF_NOTELE,EF_NOBEINGS,EF_NOBLOCK,EF_NOSTAIRS ] );
   Add( aBeing, aCoord );
-  if not aBeing.IsPlayer then
+  if ( not aBeing.IsPlayer ) and ( not aBeing.Flags[ BF_FRIENDLY ] ) then
   begin
     Player.FKills.MaxCount := Player.FKills.MaxCount + 1;
     if not aBeing.Flags[ BF_RESPAWN ] then Player.FKillMax := Player.FKillMax + 1;
@@ -1326,11 +1330,22 @@ end;
 
 procedure TLevel.UpdateAutoTarget( aAutoTarget : TAutoTarget; aBeing : TBeing; aRange : Integer );
 var iCoord : TCoord2D;
+    iBeing : TBeing;
 begin
   aAutoTarget.Clear( aBeing.Position );
   for iCoord in NewArea( aBeing.Position, aRange ).Clamped( Area ) do
-    if ( Being[ iCoord ] <> nil ) and ( Being[ iCoord ] <> aBeing ) and ( Being[ iCoord ].isVisible or (aBeing <> Player) ) then
+  begin
+    iBeing := Being[ iCoord ];
+    if ( iBeing <> nil ) and ( iBeing <> aBeing ) then
+    begin
+      if ( aBeing = Player ) then
+      begin
+        if not iBeing.isVisible then Continue;
+        if iBeing.Flags[ BF_FRIENDLY ] then Continue;
+      end;
       aAutoTarget.AddTarget( iCoord );
+    end;
+  end;
 end;
 
 function TLevel.PushItem( aWho : TBeing; aWhat : TItem; aFrom, aTo : TCoord2D ) : Boolean;
@@ -1348,6 +1363,23 @@ begin
     iItemOld.Position := aFrom;
   end;
   aWho.ActionMove( aFrom, 1.5 );
+end;
+
+function TLevel.SwapBeings( aA, aB : TCoord2D ) : Boolean;
+var iAB, iBB : TBeing;
+    iAS, iBS : LongInt;
+begin
+  iAB := GetBeing( aA );
+  iBB := GetBeing( aB );
+  if ( not Assigned( iAB ) ) or ( not Assigned( iBB ) ) then Exit( False );
+  iAS := iAB.SCount;
+  iBS := iBB.SCount;
+  SetBeing( aB, nil );
+  iAB.ActionMove( aB );
+  iBB.ActionMove( aA );
+  iAB.SCount := iAS;
+  iBB.SCount := iBS;
+  Exit( True );
 end;
 
 function TLevel.GetLookDescription ( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : AnsiString;
