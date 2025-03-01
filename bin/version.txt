@@ -1,3 +1,6 @@
+0.9.9.9 BETA 7
+[fix] -- GH#241: clearing of level feeling on death/restart [brisbang] 
+
 0.9.9.9 BETA 6d
 [mod] -- RCMOD : gun kata move firetime bonus is now 50%
 [fix] -- RCFIX : fix pinkie AI crash
