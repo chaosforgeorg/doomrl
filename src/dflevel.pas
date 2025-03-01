@@ -502,6 +502,7 @@ begin
   FFlags := [];
   FEmpty := False;
   FHooks := [];
+  FFeeling := '';
 
   FFloorCell  := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
   FFloorStyle := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
