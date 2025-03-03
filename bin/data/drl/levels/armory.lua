@@ -54,7 +54,7 @@ register_level "hells_armory"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		generator.fill( "plava", area.FULL )
+		level:fill( "plava" )
 
 		local special = drl.get_special_item( player.name )
 		if not special then 

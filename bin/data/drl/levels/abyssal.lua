@@ -10,7 +10,7 @@ register_level "abyssal_plains"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		generator.fill( "wall", area.FULL )
+		level:fill( "wall" )
 
 		local roll_mod = function ()
 			return table.random_pick{"mod_power","mod_agility","mod_bulk","mod_tech"}
@@ -86,7 +86,7 @@ register_level "abyssal_plains"
 			end
 		end
 		--on the off-chance the player nuke/invulns through the level
-		generator.transmute( "gwall", "floor" )
+		level:transmute( "gwall", "floor" )
 	end,
 
 	OnEnter = function ()
@@ -100,7 +100,7 @@ register_level "abyssal_plains"
 		if res == 0 and player.x > 29 and player.x < 49 and player.y > 8 and player.y < 13 then
 			ui.msg("Suddenly you're trapped in!")
 			level:play_sound( "door.close", player.position )
-			generator.transmute( "gwall", "floor" )
+			level:transmute( "gwall", "floor" )
 			for c in area.new( 28, 9, 28, 12 )() do generator.wallin_cell( c, "rwall" ) end
 			for c in area.new( 50, 9, 50, 12 )() do generator.wallin_cell( c, "rwall" ) end
 			generator.set_permanence( area.FULL )
@@ -116,7 +116,7 @@ register_level "abyssal_plains"
 		end
 		if res == 1 and (time - 400 > level.data.drop_time or level.data.kill_all) then
 			ui.msg("Finally, the walls retract into the ground.")
-			generator.transmute( "rwall", "floor", area.new( 28, 9, 50, 12 ) )
+			level:transmute( "rwall", "floor", area.new( 28, 9, 50, 12 ) )
 			generator.set_permanence( area.FULL )
 			level.status = 2
 		end

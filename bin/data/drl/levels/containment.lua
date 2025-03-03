@@ -9,7 +9,7 @@ register_level "containment_area"
 
 	Create = function ()
 		level:set_generator_style( 2 )
-		generator.fill( "wall", area.FULL )
+		level:fill( "wall" )
 
 		local translation = {
 			['.'] = "floor",
@@ -85,7 +85,7 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 		end
 		if level.data.right:contains( player.position ) then
 			ui.msg( "\"It's a trap!\"" )
-			generator.transmute("ldoor","door")
+			level:transmute("ldoor","door")
 			res = 3
 			level:play_sound( "phasing", player.position )
 			

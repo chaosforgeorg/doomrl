@@ -9,7 +9,7 @@ register_level "the_wall"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		generator.fill( "wall", area.FULL )
+		level:fill( "wall" )
 
 		local translation = {
 			['.'] = "floor",

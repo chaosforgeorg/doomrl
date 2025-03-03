@@ -217,16 +217,16 @@ function drl.register_generators()
 		
 			for i=1,tries do
 				local room = area.random_subarea( city, coord.random( dim_min, dim_max ) )
-				if generator.scan(room,floor_cell) then
+				if level:scan(room,floor_cell) then
 					room:shrink(1)
-					generator.fill( wall_cell, room )
+					level:fill( wall_cell, room )
 					level:set_cell( area.random_inner_edge_coord( room ), door_cell )
 					room:shrink(1)
-					generator.fill( "crate", room )
+					level:fill( "crate", room )
 					generator.add_room( room:expanded() )
 				end
 			end
-			generator.transmute( "crate", floor_cell )
+			level:transmute( "crate", floor_cell )
 		end
 	}
 

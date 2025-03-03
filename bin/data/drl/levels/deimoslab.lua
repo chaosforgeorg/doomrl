@@ -37,14 +37,14 @@ register_level "deimos_lab"
 				level.status = level.status + 1
 				if level.status == 2 then
 					ui.msg("The walls rise!")
-					generator.transmute( "rwall", "acid" )
-					generator.transmute( "acid", "bridge", level.data.bridge )
+					level:transmute( "rwall", "acid" )
+					level:transmute( "acid", "bridge", level.data.bridge )
 					level:recalc_fluids()
 				elseif level.status == 6 then
 					ui.msg("The vault opens!")
 					level:play_sound( "shambler.act", player.position, 100 )
 					ui.msg("You hear a loud wail!")
-					generator.transmute( "gwall", "floor", level.data.vault1 )
+					level:transmute( "gwall", "floor", level.data.vault1 )
 					level:drop_being("shambler",coord.new(39,10))
 					level:drop_being("shambler",coord.new(40,11))
 					level:recalc_fluids()
@@ -57,7 +57,7 @@ register_level "deimos_lab"
 
 	Create = function ()
 		level:set_generator_style( 2 )
-		generator.fill( "wall", area.FULL )
+		level:fill( "wall" )
 		level.data.vault1 = area.new(38,9,41,12)
 		level.data.vault2 = area.new(37,10,42,11)
 		level.data.bridge = area.new(47,10,51,11)
@@ -152,7 +152,7 @@ register_level "deimos_lab"
 				end
 			end
 
-			generator.transmute( "gwall", "floor", level.data.vault2 )
+			level:transmute( "gwall", "floor", level.data.vault2 )
 			ui.msg("The lab caches open.")
 
 			local unknown = { {}, {}, {} }

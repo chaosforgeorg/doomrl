@@ -113,10 +113,10 @@ function drl.register_rooms()
 			local roll = math.random(3)
 			local big  = room:dim().x >= 6 and room:dim().y >= 6 
 			if roll < 3 and big then
-				generator.fill( "bridge", room:shrinked() )
-				generator.fill( fill, room:shrinked(2) )
+				level:fill( "bridge", room:shrinked() )
+				level:fill( fill, room:shrinked(2) )
 			else
-				generator.fill( fill, room:shrinked() )
+				level:fill( fill, room:shrinked() )
 			end
 			return true
 		end,
@@ -163,14 +163,14 @@ function drl.register_rooms()
 			local vault = room:shrinked(2)
 
 			if locked then
-				generator.fill( "rwall", vault )
+				level:fill( "rwall", vault )
 				generator.set_permanence( vault )
 			else
-				generator.fill( "wall", vault )
+				level:fill( "wall", vault )
 				level:set_cell( vault:random_inner_edge_coord(), generator.styles[ level.style ].door )
 			end
 			vault:shrink()
-			generator.fill( "floor", vault )
+			level:fill( "floor", vault )
 
 			local roll = math.max( math.random( 5 ) + level.danger_level + (DIFFICULTY-2)*3, 1 )
 			local diffmod = (DIFFICULTY - 2)*2

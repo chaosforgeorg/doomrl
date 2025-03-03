@@ -583,7 +583,7 @@ register_ai "mastermind_ai"
 
 			local moves = {}
 			for c in self.position:around_coords() do
-				if player:distance_to(c) == dist and generator.is_empty(c, { EF_NOBEINGS, EF_NOBLOCK } ) then
+				if player:distance_to(c) == dist and level:is_empty(c, { EF_NOBEINGS, EF_NOBLOCK } ) then
 					table.insert(moves,c:clone())
 				end
 			end

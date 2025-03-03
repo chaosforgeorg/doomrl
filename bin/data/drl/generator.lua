@@ -213,8 +213,8 @@ function generator.generate_lava_dungeon()
 	if level.danger_level > 40 then range = 4 end
 	local fluid = fluids[ math.random( range ) ]
 
-	generator.fill( fluid[1] )
-	generator.fill_edges( fluid[2] )
+	level:fill( fluid[1] )
+	level:fill_edges( fluid[2] )
 	local wall_cell    = generator.styles[ level.style ].wall
 	local floor_cell   = generator.styles[ level.style ].floor
 	local door_cell    = generator.styles[ level.style ].door
@@ -239,7 +239,7 @@ function generator.generate_lava_dungeon()
 
 		if math.random(2) == 1 then
 			quad:shrink(1)
-			generator.fill( fluid[1], quad )
+			level:fill( fluid[1], quad )
 			quad:expand(1)
 		end
 
@@ -250,7 +250,7 @@ function generator.generate_lava_dungeon()
 		end
 
 		for c in quad:corners() do
-			generator.fill( floor_cell, area.around(c,1) )
+			level:fill( floor_cell, area.around(c,1) )
 		end
 	end
 
@@ -268,16 +268,16 @@ function generator.generate_lava_dungeon()
 			end
 		end
 		if good then
-			generator.fill( floor_cell, quad )
+			level:fill( floor_cell, quad )
 			quad:shrink(1)
-			generator.fill( wall_cell, quad )
+			level:fill( wall_cell, quad )
 			level:set_cell( area.random_inner_edge_coord( quad ), door_cell )
 			quad:shrink(1)
-			generator.fill( "crate", quad )
+			level:fill( "crate", quad )
 			generator.add_room( quad:expanded() )
 		end
 	end
-	generator.transmute( "crate", floor_cell )
+	level:transmute( "crate", floor_cell )
 end
 
 function generator.generate_caves_dungeon()
@@ -310,7 +310,7 @@ function generator.generate_caves_dungeon()
 		generator.contd_drunkard_walks( amount, step, cell, { floor_cell, fluid }, {wall_cell}, nil, true )
 	end
 
-	generator.fill( wall_cell )
+	level:fill( wall_cell )
 
 	generator.run_drunkard_walk( area.FULL_SHRINKED, coord.new( 38, 10 ), math.random(40)+100, floor_cell, nil, true )
 	drunk( 5,  math.random(40)+35, floor_cell )
@@ -433,11 +433,11 @@ function generator.generate_caves_2_dungeon()
 		generator.contd_drunkard_walks( amount, step, cell, { floor_cell, fluid }, {cave_cell}, nil, true )
 	end
 
-	generator.fill( cave_cell )
+	level:fill( cave_cell )
 	local sub_area = level_area:shrinked( 7 )
-	generator.fill( floor_cell, sub_area )
+	level:fill( floor_cell, sub_area )
 	sub_area:shrink( 4 )
-	generator.fill( cave_cell, sub_area )
+	level:fill( cave_cell, sub_area )
 
 	drunk( 10, math.random(10)+40, floor_cell )
 	drunk( 50, math.random(10)+20, floor_cell )
@@ -456,7 +456,7 @@ function generator.generate_caves_2_dungeon()
 		end
 	end
 
-	generator.transmute( marker, floor_cell )
+	level:transmute( marker, floor_cell )
 
 	-- rest of the level will be destructible
 	generator.set_permanence( area.FULL, true, cave_cell )
@@ -469,19 +469,19 @@ function generator.generate_caves_2_dungeon()
 		generator.place_blob( start, count, marker )
 	end
 
-	generator.transmute( marker, cave_cell )
+	level:transmute( marker, cave_cell )
 
 	local cmax  = math.random( 5, 7 )
 	local count = 0
 	for i = 1,1000 do
 		local dim = coord.new( math.random( 7,9 ), math.random( 6,9 ) )
 		local a = area.FULL_SHRINKED:random_subarea( dim )
-		if generator.scan( a, floor_cell ) then
+		if level:scan( a, floor_cell ) then
 			a:shrink()
-			generator.fill( wall_cell, a )
+			level:fill( wall_cell, a )
 			level:set_cell( a:random_inner_edge_coord(), door_cell )
 			a:shrink()
-			generator.fill( marker, a )
+			level:fill( marker, a )
 			count = count + 1
 			if count == cmax then break end
 		end
@@ -494,7 +494,7 @@ function generator.generate_caves_2_dungeon()
 		generator.place_blob( start, count, fluid )
 	end
 
-	generator.transmute( marker, floor_cell )
+	level:transmute( marker, floor_cell )
 
 	for c in level_area:shrinked()() do
 		if level:get_cell(c) == fluid and level:around( c, fluid ) < 4 then

@@ -52,7 +52,7 @@ register_level "the_vaults"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		generator.fill( "rwall", area.FULL )
+		level:fill( "rwall" )
 
 		local vault_weapon = { level = 20, type = ITEMTYPE_RANGED, unique_mod = 5 }
 		local vault_armor  = { level = 20, type = {ITEMTYPE_ARMOR,ITEMTYPE_BOOTS}, unique_mod = 5 }

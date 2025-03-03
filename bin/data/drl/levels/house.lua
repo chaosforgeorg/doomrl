@@ -26,7 +26,7 @@ register_level "house_of_pain"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		generator.fill("rwall")
+		level:fill( "rwall" )
 		level.data.is_staff = false
 
 		local translation = {
@@ -89,7 +89,7 @@ register_level "house_of_pain"
 		if res < 5 then
 			if not level.data.is_staff then
 				ui.msg("The doors unlock.")
-				generator.transmute("ldoor","door")
+				level:transmute("ldoor","door")
 				generator.set_permanence(area.FULL, true, "door")
 			end
 			if res == 0 then
@@ -98,7 +98,7 @@ register_level "house_of_pain"
 				level.status = 3
 			elseif res == 4 then
 				ui.continue("The voice wails:\n{R\"I'm impressed! Why don't you come back to the first room and we'll see if I can't give you a just reward.\"}")
-				generator.transmute( { "iwall", "gwall" }, "rwall")
+				level:transmute( { "iwall", "gwall" }, "rwall")
 				level.status = 5
 			end
 		end
@@ -133,7 +133,7 @@ register_level "house_of_pain"
 			end
 			if not level.data.is_staff then
 				level:play_sound( "door.close", player.position )
-				generator.transmute({"door","odoor"},"ldoor")
+				level:transmute({"door","odoor"},"ldoor")
 				generator.set_permanence(area.FULL, true, "ldoor")
 				ui.msg("The doors shut violently!")
 			end
@@ -146,7 +146,7 @@ register_level "house_of_pain"
 		local choice = ui.query("A deathly high-pitched voice cackles!\n{R\"Well, who do we have here?\"} it begins. {R\"It seems that you've stumbled into my luxurious home. Would you care to have access?\"}")
 		if choice then
 			ui.msg("Well then, enjoy yourself. Just be wary of my other guests!")
-			generator.transmute( "iwall", "floor", area.new(13,9,15,12) )
+			level:transmute( "iwall", "floor", area.new(13,9,15,12) )
 		else
 			ui.msg("No? All right, I'll see you out then.")
 			level:set_cell( 14, 11, "stairs" )

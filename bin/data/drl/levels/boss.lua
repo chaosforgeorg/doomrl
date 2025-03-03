@@ -66,8 +66,8 @@ register_level "hellgate"
 	end,
 
 	Create = function ()
-		generator.fill( "wall", area.FULL )
-		generator.fill( "floor", area.FULL_SHRINKED )
+		level:fill( "wall" )
+		level:fill( "floor", area.FULL_SHRINKED )
 
 		local translation = {
 			['.'] = "floor",
@@ -156,15 +156,15 @@ register_level "hellgate"
 			if DIFFICULTY > DIFF_EASY then
 				ui.msg("Suddenly the walls lower!")
 				level:play_sound( "door.close", player.position )
-				generator.transmute( "wall", "floor", area.new( 9, 4, 29, 16 ) )
+				level:transmute( "wall", "floor", area.new( 9, 4, 29, 16 ) )
 			end
 			level.status = 2
 		end
 		if res == 2 and player.x > 50 then
 			ui.msg("Suddenly the walls disappear!")
 			level:play_sound( "barrel.explode", player.position )
-			generator.transmute( "rwall", "floor", area.new( 53, 7, 60, 13 ) )
-			generator.transmute( "wall", "floor",  area.new( 60, 7, 74, 13 ) )
+			level:transmute( "rwall", "floor", area.new( 53, 7, 60, 13 ) )
+			level:transmute( "wall", "floor",  area.new( 60, 7, 74, 13 ) )
 			level.status = 3
 		end
 	end,
@@ -184,8 +184,8 @@ register_level "tower_of_babel"
 	welcome = "You reach the Tower of Babel.",
 
 	Create = function ()
-		generator.fill( "wall", area.FULL )
-		generator.fill( "floor", area.FULL_SHRINKED )
+		level:fill( "wall" )
+		level:fill( "floor", area.FULL_SHRINKED )
 		local scatter_area = area.new( 5,3,68,15 )
 		local translation = {
 			['.'] = { "floor", flags = { LFBLOOD } },
@@ -247,7 +247,7 @@ register_level "dis"
 			desc = "woah!",
 
 			OnUse = function(self,being)
-				generator.transmute( "wall", "floor" )
+				level:transmute( "wall", "floor" )
 				return true
 			end,
 		}
@@ -255,8 +255,8 @@ register_level "dis"
 	end,
 
 	Create = function ()
-		generator.fill( "rwall", area.FULL )
-		generator.fill( "floor", area.FULL_SHRINKED )
+		level:fill( "rwall" )
+		level:fill( "floor", area.FULL_SHRINKED )
 		local translation = {
 			['.'] = "floor",
 			[','] = { "floor", flags = { LFBLOOD } },
@@ -325,8 +325,8 @@ register_level "hell_fortress"
 	welcome = "This is it. This is the lair of all evil! What will you meet here?",
 
 	Create = function ()
-		generator.fill( "rwall", area.FULL )
-		generator.fill( "floor", area.FULL_SHRINKED )
+		level:fill( "rwall" )
+		level:fill( "floor", area.FULL_SHRINKED )
 		local translation = {
 			[','] = { "floor", flags = { LFBLOOD } },
 			['.'] = "floor",

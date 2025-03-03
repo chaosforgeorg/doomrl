@@ -34,16 +34,6 @@ function generator.merge_cell_lists( list1, list2 )
 	return s
 end
 
-function generator.scan(scan_area,good)
-	if type(good) == "string" then good = cells[good].nid end
-	for c in scan_area() do
-		if level:get_cell(c) ~= good then
-			return false
-		end
-	end
-	return true
-end
-
 function generator.scatter(scatter_area,good,fill,count)
 	if type(good) == "string" then good = cells[good].nid end
 	if type(fill) == "string" then fill = cells[fill].nid end
@@ -77,7 +67,7 @@ end
 function generator.scatter_cross_item(scatter_area,good,item_id,count)
 	if type(good) == "string" then good = cells[good].nid end
 	local test = function( c )
-		return generator.is_empty( c, { EF_NOBLOCK } )
+		return level:is_empty( c, { EF_NOBLOCK } )
 	end
 	for _ = 1, count do
 		local c = generator.random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
@@ -224,7 +214,7 @@ function generator.scatter_put(scatter_area,code,tile,good,count)
 	repeat
 		local c = scatter_area:random_coord()
 
-		if generator.scan( area.new( c, c + tile_size - coord.UNIT ),good ) then
+		if level:scan( area.new( c, c + tile_size - coord.UNIT ),good ) then
 			generator.place_dungen_tile(code,tile_object,c)
 			count = count - 1
 		end
@@ -254,7 +244,7 @@ function generator.set_permanence( ar, val, tile )
 	if type(val) ~= "boolean" then val = true end
 	if tile then
 		tile = cells[ tile ].nid
-		for c in generator.each( tile, ar ) do
+		for c in level:each( tile, ar ) do
 			level.light[ c ][ LFPERMANENT ] = val
 		end
 	else
@@ -271,7 +261,7 @@ function generator.set_blood( ar, val, tile )
 	if type(val) ~= "boolean" then val = true end
 	if tile then
 		tile = cells[ tile ].nid
-		for c in generator.each( tile, ar ) do
+		for c in level:each( tile, ar ) do
 			level.light[ c ][ LFBLOOD ] = val
 		end
 	else
@@ -369,7 +359,7 @@ function generator.warehouse_fill( wall_cell, fill_area, boxsize, amount, specia
 	local dim = coord.new( boxsize+2, boxsize+2 )
 	for i = 1, amount do
 		local ar = fill_area:random_subarea( dim )
-		if generator.scan( ar, floor_cell ) then
+		if level:scan( ar, floor_cell ) then
 			ar:shrink(1)
 			local fill_cell = wall_cell
 			if special_chance and special_fill and boxsize < 4 then
@@ -378,7 +368,7 @@ function generator.warehouse_fill( wall_cell, fill_area, boxsize, amount, specia
 				if roll <= special_chance then fill_cell = special_fill end
 			end
 			if type(fill_cell) == "table" then fill_cell = table.random_pick( fill_cell ) end
-			generator.fill( fill_cell, ar )
+			level:fill( fill_cell, ar )
 		end
 	end
 end
@@ -460,7 +450,7 @@ function generator.restore_walls( wall_cell, fluid_to_perm )
 			level:set_cell( c, sub )
 		end
 	else
-		generator.fill_edges( wall_cell )
+		level:fill_edges( wall_cell )
 	end
 end
 
@@ -533,8 +523,8 @@ function generator.reset()
 	generator.room_meta = {}
 
 	level:set_generator_style( level.style )
-	generator.fill( generator.styles[ level.style ].floor )
-	generator.fill_edges( generator.styles[ level.style ].wall )
+	level:fill( generator.styles[ level.style ].floor )
+	level:fill_edges( generator.styles[ level.style ].wall )
 end
 
 function generator.place_player()
@@ -679,7 +669,7 @@ function generator.generate_archi_level( settings )
 		["+"] = generator.styles[ level.style ].door,
 	}
 
-	generator.fill( wall_cell )
+	level:fill( wall_cell )
 
 	local blocks = data.blocks
 	local bsize  = data.size
@@ -721,7 +711,7 @@ function generator.generate_archi_level( settings )
 		end
 	end
 
-	for c in generator.each( generator.styles[ level.style ].door ) do
+	for c in level:each( generator.styles[ level.style ].door ) do
 		if level:cross_around( c, wall_cell ) > 2 then
 			level:set_cell( c, wall_cell )
 		end

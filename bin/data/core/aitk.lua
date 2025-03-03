@@ -75,7 +75,7 @@ function aitk.flock_seek( self, target )
     local moves = {}
     local dist = self:distance_to( target )
     for c in self.position:around_coords() do
-        if coord.distance(c,target) < dist and generator.is_empty(c, { EF_NOBEINGS, EF_NOBLOCK } ) then
+        if coord.distance(c,target) < dist and level:is_empty( c, { EF_NOBEINGS, EF_NOBLOCK } ) then
             table.insert( moves,c:clone() )
         end
     end

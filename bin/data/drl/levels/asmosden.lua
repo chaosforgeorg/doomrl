@@ -114,7 +114,7 @@ register_level "the_asmos_den"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		generator.fill( "rwall", area.FULL )
+		level:fill( "rwall" )
 		local asmosden_armor = {
 			level = 25,
 			type = {ITEMTYPE_ARMOR,ITEMTYPE_BOOTS},

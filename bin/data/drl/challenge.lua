@@ -1160,7 +1160,7 @@ function drl.register_challenges()
 					end
 				end
 				local apostle = level:summon("apostle")
-				generator.transmute("stairs", "floor")
+				level:transmute("stairs", "floor")
 			end
 		end,
 

@@ -13,8 +13,8 @@ register_level "the_mortuary"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		generator.fill( "rwall", area.FULL )
-		generator.fill( "floor", area.FULL_SHRINKED )
+		level:fill( "rwall" )
+		level:fill( "floor", area.FULL_SHRINKED )
 		generator.set_blood( area.FULL_SHRINKED, true )
 
 		local translation = {

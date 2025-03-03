@@ -33,7 +33,7 @@ register_level "the_chained_court"
 				if level.id == "the_vaults" and level.status < 2 then
 					ui.msg("With a sudden inspiration you yell \"OPEN SESAME!\"!")
 					player:play_sound( "lever.use" )
-					for c in generator.each( "rwall", area.FULL_SHRINKED ) do
+					for c in level:each( "rwall", area.FULL_SHRINKED ) do
 						if level.light[ c ][ LFBLOOD ] then
 							level.light[ c ][ LFPERMANENT ] = false
 							level.map[ c ] = "floor"
@@ -47,7 +47,7 @@ register_level "the_chained_court"
 					ui.msg("You brandish the staff. The voice echoes: \"So, it seems that ")
 					ui.msg("you have bested one of my offspring. Very well, you are allowed ")
 					ui.msg("full access to my domain as you traverse through it.\"")
-					generator.transmute( "ldoor", "odoor" )
+					level:transmute( "ldoor", "odoor" )
 					level:play_sound( "door.open", player.position)
 					being.scount = being.scount - 1000
 					return true
@@ -79,12 +79,12 @@ register_level "the_chained_court"
 			color_id = false,
 
 			OnUse = function(self,being)
-				generator.transmute( "wall", "floor", level.data.cage1 )
+				level:transmute( "wall", "floor", level.data.cage1 )
 				ui.msg("The cage rises!")
 				level.status = level.status + 1
 				if level.status == 4 then
-					generator.transmute( "wall", "floor", level.data.prize1 )
-					generator.transmute( "wall", "floor", level.data.prize2 )
+					level:transmute( "wall", "floor", level.data.prize1 )
+					level:transmute( "wall", "floor", level.data.prize2 )
 				end
 				return true
 			end,
@@ -105,12 +105,12 @@ register_level "the_chained_court"
 			color_id = false,
 
 			OnUse = function(self,being)
-				generator.transmute( "wall", "floor", level.data.cage2 )
+				level:transmute( "wall", "floor", level.data.cage2 )
 				ui.msg("The cage rises!")
 				level.status = level.status + 1
 				if level.status == 4 then
-					generator.transmute( "wall", "floor", level.data.prize1 )
-					generator.transmute( "wall", "floor", level.data.prize2 )
+					level:transmute( "wall", "floor", level.data.prize1 )
+					level:transmute( "wall", "floor", level.data.prize2 )
 				end
 				return true
 			end,
@@ -132,12 +132,12 @@ register_level "the_chained_court"
 			color_id = false,
 
 			OnUse = function(self,being)
-				generator.transmute( "wall", "floor", level.data.cage3 )
+				level:transmute( "wall", "floor", level.data.cage3 )
 				ui.msg("The cage rises!")
 				level.status = level.status + 1
 				if level.status == 4 then
-					generator.transmute( "wall", "floor", level.data.prize1 )
-					generator.transmute( "wall", "floor", level.data.prize2 )
+					level:transmute( "wall", "floor", level.data.prize1 )
+					level:transmute( "wall", "floor", level.data.prize2 )
 				end
 				return true
 			end,
@@ -207,7 +207,7 @@ register_level "the_chained_court"
 			level.status = 1
 		end
 
-		generator.fill( "wall", area.FULL )
+		level:fill( "wall" )
 		local mod1,mod2 = generator.roll_pair{"mod_power","mod_agility","mod_bulk","mod_tech"}
 		local translation = {
 			['.'] = "floor",
@@ -298,7 +298,7 @@ register_level "the_chained_court"
 	OnKillAll = function ()
 		if level.status == 0 then
 			ui.msg("So much for hellish fair-play.")
-			generator.transmute( "wall", "floor", area.new(7,5,11,16) )
+			level:transmute( "wall", "floor", area.new(7,5,11,16) )
 			player:add_history("He defeated the Hell Arena Master!")
 			level.status = 3
 		end

@@ -63,7 +63,7 @@ var Cells : TCells;
 
 implementation
 
-uses SysUtils, vluasystem, vcolor, vdebug;
+uses SysUtils, vluasystem, vdebug;
 
 procedure TCells.RegisterCell( aCellNum : byte );
 var iColorID : AnsiString;

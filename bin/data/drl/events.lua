@@ -114,7 +114,7 @@ function drl.register_events()
 			local left  = generator.safe_empty_coord( area.new(2,2,20,19) )
 			local right = generator.safe_empty_coord( area.new(60,2,78,19) )
 
-			for c in generator.each("stairs") do
+			for c in level:each("stairs") do
 				level.map[ c ] = generator.styles[ level.style ].floor
 			end
 
@@ -153,7 +153,7 @@ function drl.register_events()
 			local left  = generator.safe_empty_coord( area.new(2,2,20,19) )
 			local right = generator.safe_empty_coord( area.new(60,2,78,19) )
 
-			for c in generator.each("stairs") do
+			for c in level:each("stairs") do
 				level.map[ c ] = generator.styles[ level.style ].floor
 			end
 

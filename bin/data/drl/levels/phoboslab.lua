@@ -24,8 +24,8 @@ register_level "phobos_lab"
 			sound_id = "lever",
 
 			OnUse = function(self,being)
-				generator.transmute( "ldoor", "floor", level.data.door1 )
-				generator.transmute( "floor", "door",  level.data.door1 )
+				level:transmute( "ldoor", "floor", level.data.door1 )
+				level:transmute( "floor", "door",  level.data.door1 )
 				ui.msg("Green access granted, west doors unlocked.")
 				return true
 			end,
@@ -46,11 +46,11 @@ register_level "phobos_lab"
 			sound_id = "lever",
 
 			OnUse = function(self,being)
-				generator.transmute( "ldoor", "floor", level.data.door1 )
-				generator.transmute( "floor", "door",  level.data.door1 )
-				generator.transmute( "ldoor", "floor", level.data.door2 )
-				generator.transmute( "floor", "door",  level.data.door2 )
-				generator.transmute( "acid",  "bridge",level.data.bridge )
+				level:transmute( "ldoor", "floor", level.data.door1 )
+				level:transmute( "floor", "door",  level.data.door1 )
+				level:transmute( "ldoor", "floor", level.data.door2 )
+				level:transmute( "floor", "door",  level.data.door2 )
+				level:transmute( "acid",  "bridge",level.data.bridge )
 				ui.msg("Blue access granted, east doors unlocked.")
 				level.status = 1
 				return true
@@ -60,7 +60,7 @@ register_level "phobos_lab"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		generator.fill( "floor", area.FULL )
+		level:fill( "floor" )
 		level.data.bridge = area.new(50,10,60,11)
 		level.data.door1  = area.new(45,10,45,11)
 		level.data.door2  = area.new(61,10,61,11)
@@ -145,8 +145,8 @@ register_level "phobos_lab"
 		if level.status == 1 then
 			if player.x < 12 then
 				ui.msg("The walls lower!")
-				generator.transmute( "wall", "floor", level.data.trap11 )
-				generator.transmute( "wall", "floor", level.data.trap12 )
+				level:transmute( "wall", "floor", level.data.trap11 )
+				level:transmute( "wall", "floor", level.data.trap12 )
 				player:remove_affect("enviro")
 				level:play_sound( "door.open", player.position )
 				level.status = 2
@@ -154,8 +154,8 @@ register_level "phobos_lab"
 		elseif level.status == 2 then
 			if player.x > 30 then
 				ui.msg("The walls lower!")
-				generator.transmute( "wall", "floor", level.data.trap21 )
-				generator.transmute( "wall", "floor", level.data.trap22 )
+				level:transmute( "wall", "floor", level.data.trap21 )
+				level:transmute( "wall", "floor", level.data.trap22 )
 				player:remove_affect("enviro")
 				level:play_sound( "door.open", player.position )
 				level.status = 3

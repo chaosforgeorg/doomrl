@@ -6,7 +6,7 @@ register_level "intro"
 	entry = "He started his journey on the surface of Phobos.",
 
 	Create = function ()
-		generator.fill("rock",area.FULL)
+		level:fill( "rock" )
 
 
 		local translation = {

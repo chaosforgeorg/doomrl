@@ -40,7 +40,7 @@ register_level "mt_erebus"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		generator.fill( "plava", area.FULL )
+		level:fill( "plava" )
 
 		local lavapits_armor = {
 			level      = 25,
@@ -114,7 +114,7 @@ register_level "mt_erebus"
 		local result = level.status
 		if result < 4 then
 			ui.msg("That seems to be all of them... wait! Something is moving there, or is it just lava glow?")
-			generator.transmute( "cwall", "floor" )
+			level:transmute( "cwall", "floor" )
 			level.status = 4
 			local element = level:summon("lava_elemental")
 			element.inv:add( item.new("lava_element") )

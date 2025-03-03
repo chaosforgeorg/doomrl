@@ -317,7 +317,7 @@ function level:push_feature( who, what, c, target, quiet )
 		return false
 	end
 	local item = level:get_item( target )
-	if ( not generator.is_empty( target, { EF_NOBLOCK, EF_NOBEINGS } ) ) or 
+	if ( not level:is_empty( target, { EF_NOBLOCK, EF_NOBEINGS } ) ) or 
 	( item and ( item.itype == ITEMTYPE_LEVER or item.itype == ITEMTYPE_TELE or item.itype == ITEMTYPE_FEATURE ) ) then
 		if not quiet then ui.msg( "Something's blocking the "..name.."." ) end
 		self:play_sound( item_id .. ".movefail", c )
