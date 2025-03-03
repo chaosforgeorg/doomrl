@@ -9,13 +9,13 @@
 			"name": "modules"
 		},
 		{
-			"path": "bin\\data",
-			"name": "data"
+			"path": "bin",
+			"name": "bin"
 		},
 		{
 			"path": "..\\fpcvalkyrie\\src",
 			"name": "fpcValkyrie"
-		}
+		},
 	],
 	"settings": {}
 }
