@@ -80,7 +80,7 @@ function level:flood_monsters( params )
 
 	while (dtotal > 0) and (count > 0) do
 		local bp    = list:roll()
-		local where = generator.random_empty_coord( flags, params.area )
+		local where = level:random_empty_coord( flags, params.area )
 		if not where then break end
 		if bp.is_group then
 			for _,group in ipairs(bp.beings) do
@@ -108,7 +108,7 @@ function level:flood_monster( params )
 	local dtotal = params.danger or 100000000
 	local count  = params.amount or 100000000 
 	while (dtotal > 0) and (count > 0) do
-		local being = self:drop_being( id, generator.random_empty_coord( flags, params.area ) )
+		local being = self:drop_being( id, level:random_empty_coord( flags, params.area ) )
 		if not being then return end
 		dtotal = dtotal - beings[id].danger
 		count  = count - 1
@@ -126,7 +126,7 @@ function level:flood_items( params )
 			if ip.is_unique then
 				self.flags[ LF_UNIQUEITEM ] = true
 			end
-			local where = generator.random_empty_coord{ EF_NOITEMS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
+			local where = level:random_empty_coord{ EF_NOITEMS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
 			self:drop_item( ip.id, where, true )
 			amount = amount - 1
 		end
@@ -207,9 +207,9 @@ function level:summon(t,opt)
 	local c
 	for i=1,count or 1 do
 		if cid then
-			c = generator.random_empty_coord(empty, cid, where)
+			c = level:random_empty_coord(empty, cid, where)
 		else
-			c = generator.random_empty_coord(empty, where)
+			c = level:random_empty_coord(empty, where)
 		end
 		last_being = self:drop_being( bid, c )
 	end
@@ -221,7 +221,7 @@ function level:drop(iid,count)
 	if type(iid) == "string" then iid = items[iid].nid end
 	local last_item = nil
 	for i=1,count or 1 do
-		last_item = self:drop_item(iid,generator.random_empty_coord{ EF_NOITEMS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN })
+		last_item = self:drop_item(iid,level:random_empty_coord{ EF_NOITEMS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN })
 	end
 	return last_item
 end
@@ -231,7 +231,7 @@ function level:area_drop(where,iid,count,onfloor)
 	onfloor = onfloor or false
 	local last_item = nil
 	for i=1,count or 1 do
-		local pos = generator.random_empty_coord( { EF_NOITEMS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }, where )
+		local pos = level:random_empty_coord( { EF_NOITEMS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }, where )
 		if not pos then break end
 		last_item = self:drop_item(iid,pos,onfloor)
 	end

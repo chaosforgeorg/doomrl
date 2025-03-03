@@ -7,7 +7,7 @@ function drl.register_rooms()
 		max_size_y  = 15,
 
 		setup       = function ( room )
-			local pos = generator.random_empty_coord( { EF_NOBLOCK, EF_NOSTAIRS, EF_NOITEMS, EF_NOHARM, EF_NOSPAWN }, room )
+			local pos = level:random_empty_coord( { EF_NOBLOCK, EF_NOSTAIRS, EF_NOITEMS, EF_NOHARM, EF_NOSPAWN }, room )
 			if not pos then return false end
 
 			local lid = weight_table.new{
@@ -150,7 +150,7 @@ function drl.register_rooms()
 				space = 2
 			end
 			if room2 then
-				keypos = generator.random_empty_coord( { EF_NOBLOCK, EF_NOSTAIRS, EF_NOITEMS, EF_NOHARM, EF_NOSPAWN }, room2 )
+				keypos = level:random_empty_coord( { EF_NOBLOCK, EF_NOSTAIRS, EF_NOITEMS, EF_NOHARM, EF_NOSPAWN }, room2 )
 			end
 			local locked = (keypos ~= nil) and (math.random(25) < level.danger_level) and (math.random(4) == 1)
 			if locked then
@@ -200,7 +200,7 @@ function drl.register_rooms()
 
 			local amount = math.random(3)+2
 			for i=1,amount do
-				local pos = generator.random_empty_coord( { EF_NOBLOCK, EF_NOSTAIRS, EF_NOITEMS, EF_NOHARM, EF_NOSPAWN }, vault )
+				local pos = level:random_empty_coord( { EF_NOBLOCK, EF_NOSTAIRS, EF_NOITEMS, EF_NOHARM, EF_NOSPAWN }, vault )
 				if not pos then break end
 				local item = level:roll_item{
 					level = roll+3,

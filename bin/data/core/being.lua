@@ -146,7 +146,7 @@ function being:msg( msg_player, msg_being )
 end
 
 function being:phase( cell )
-	local target = generator.random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
+	local target = level:random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
 	if cell then
 		cell = cells[ cell ].nid
 		local targets = {}

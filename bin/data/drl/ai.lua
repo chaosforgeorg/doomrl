@@ -478,7 +478,7 @@ register_ai "teleboss_ai"
 				repeat
 					limit = limit + 1
 					if limit > 25 then return false end
-					phase = generator.random_empty_coord( { EF_NOBEINGS, EF_NOBLOCK }, parea )
+					phase = level:random_empty_coord( { EF_NOBEINGS, EF_NOBLOCK }, parea )
 				until phase and level:eye_contact( p, phase )
 			end
 
@@ -517,7 +517,7 @@ register_ai "mastermind_ai"
 
 	states = {
 		stagger = function( self )
-			local direction = generator.random_empty_coord( { EF_NOBEINGS, EF_NOBLOCK }, area.around( self.position ) )
+			local direction = level:random_empty_coord( { EF_NOBEINGS, EF_NOBLOCK }, area.around( self.position ) )
 			self:direct_seek( direction )
 			self.previous_hp = self.hp
 			self.stun_time = self.stun_time - 1
@@ -597,7 +597,7 @@ register_ai "mastermind_ai"
 				moves = best_moves
 			end
 			if #moves == 0 then
-				move = generator.random_empty_coord({ EF_NOBEINGS, EF_NOBLOCK }, area.around( self.position ))
+				move = level:random_empty_coord({ EF_NOBEINGS, EF_NOBLOCK }, area.around( self.position ))
 			end
 
 			local move = table.random_pick( moves )

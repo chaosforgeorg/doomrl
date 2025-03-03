@@ -46,7 +46,7 @@ end
 function generator.scatter_item(scatter_area,good,item_id,count)
 	if type(good) == "string" then good = cells[good].nid end
 	for _ = 1, count do
-		local c = generator.random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
+		local c = level:random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
 		if level:get_cell(c) == good then
 			level:drop_item( item_id, c, true )
 		end
@@ -70,7 +70,7 @@ function generator.scatter_cross_item(scatter_area,good,item_id,count)
 		return level:is_empty( c, { EF_NOBLOCK } )
 	end
 	for _ = 1, count do
-		local c = generator.random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
+		local c = level:random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
 		if c then
 			if level:get_cell( c ) == good then
 				if test( coord.new( c.x-1, c.y ) ) and test( coord.new( c.x+1, c.y ) ) and
@@ -223,12 +223,12 @@ function generator.scatter_put(scatter_area,code,tile,good,count)
 end
 
 function generator.safe_empty_coord( a )
-	local result = generator.random_empty_coord({ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_NOLIQUID, EF_NOSAFE }, area )
+	local result = level:random_empty_coord({ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_NOLIQUID, EF_NOSAFE }, area )
 	if not result then
-		result = generator.random_empty_coord({ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_NOLIQUID }, a )
+		result = level:random_empty_coord({ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_NOLIQUID }, a )
 	end
 	if not result then
-		result = generator.random_empty_coord({ EF_NOBEINGS, EF_NOITEMS, EF_NOBLOCK, EF_NOSPAWN }, a )
+		result = level:random_empty_coord({ EF_NOBEINGS, EF_NOITEMS, EF_NOBLOCK, EF_NOSPAWN }, a )
 	end
 	if not result and a then 
 		return generator.safe_empty_coord()
@@ -237,7 +237,7 @@ function generator.safe_empty_coord( a )
 end
 
 function generator.standard_empty_coord( param1, param2 )
-	return generator.random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }, param1, param2 )
+	return level:random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }, param1, param2 )
 end
 
 function generator.set_permanence( ar, val, tile )

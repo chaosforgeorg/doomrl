@@ -193,7 +193,7 @@ function drl.register_events()
 				local count = 0
 				repeat
 					if count > 50 then return end
-					c = generator.random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }, near_area )
+					c = level:random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }, near_area )
 					if c == nil then return end -- If the random coordinate selector didn't find a space, just dump.  No need to call it 50 times.
 					count = count + 1
 				until c:distance( cp ) > 2 and level:eye_contact( c, cp )
@@ -277,7 +277,7 @@ function generator.events_explosion_tick()
 	data.enext = data.enext - 1
 	if data.enext == 0 then
 		data.enext = data.hstep + math.random( data.hstep * 2 )
-		local c = generator.random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK } )
+		local c = level:random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK } )
 		if not c then return end
 		local range = data.size
 		if type( data.size ) == "table" then

@@ -173,7 +173,7 @@ function drl.register_base_data()
 
 		OnEnter = function( self, being )
 			if not self.target then
-				self.target = generator.random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
+				self.target = level:random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
 			end
 			-- Explosions can have sounds, but by the time the sound plays, the player has already moved
 			level:play_sound( "teleport.use", being.position )
@@ -184,14 +184,14 @@ function drl.register_base_data()
 			if cells[ level.map[ target ] ].flags[ CF_BLOCKMOVE ] then
 				being:msg("You feel out of place!")
 				being:apply_damage(15, TARGET_INTERNAL, DAMAGE_FIRE )
-				target = generator.random_empty_coord( empty )
+				target = level:random_empty_coord( empty )
 			end
 			if level:get_being( target ) then
 				local tgt = level:get_being( target )
 				being:msg("Suddenly you feel weird!")
 				tgt:msg("Argh! You feel like someone is trying to implode you!")
 				tgt:apply_damage(15, TARGET_INTERNAL, DAMAGE_FIRE )
-				target = generator.random_empty_coord( empty )
+				target = level:random_empty_coord( empty )
 			end
 			if being.__ptr then
 				being:relocate( target )

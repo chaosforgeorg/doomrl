@@ -464,7 +464,7 @@ function generator.generate_caves_2_dungeon()
 
 	local bcount = math.random(3) + 2
 	for i = 1,bcount do
-		local start = generator.random_square( floor_cell )
+		local start = level:random_square( floor_cell )
 		local count = math.random( 5 ) + 5
 		generator.place_blob( start, count, marker )
 	end
@@ -489,7 +489,7 @@ function generator.generate_caves_2_dungeon()
 
 	local bcount = math.random(5) + 10
 	for i = 1,bcount do
-		local start = generator.random_square( floor_cell )
+		local start = level:random_square( floor_cell )
 		local count = math.random( 40 ) + 20
 		generator.place_blob( start, count, fluid )
 	end
@@ -538,7 +538,7 @@ function generator.generate_barrels()
 	end
 
 	local function barrel_coord()
-		return generator.random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_NOLIQUID } )
+		return level:random_empty_coord( { EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_NOLIQUID } )
 	end
 	
 
