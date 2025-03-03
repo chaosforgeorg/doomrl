@@ -223,7 +223,7 @@ function generator.scatter_put(scatter_area,code,tile,good,count)
 end
 
 function generator.safe_empty_coord( a )
-	local result = level:random_empty_coord({ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_NOLIQUID, EF_NOSAFE }, area )
+	local result = level:random_empty_coord({ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_NOLIQUID, EF_NOSAFE }, a )
 	if not result then
 		result = level:random_empty_coord({ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_NOLIQUID }, a )
 	end
