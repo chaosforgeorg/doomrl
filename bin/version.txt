@@ -1,5 +1,6 @@
 0.9.9.9 BETA 7
 [fix] -- GH#241: clearing of level feeling on death/restart [brisbang] 
+[mod] -- GH#106: apostle is buffed and teleports on hit [brisbang]
 
 0.9.9.9 BETA 6d
 [mod] -- RCMOD : gun kata move firetime bonus is now 50%

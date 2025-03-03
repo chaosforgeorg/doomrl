@@ -1567,7 +1567,7 @@ function drl.register_beings()
 		sprite       = SPRITE_APOSTLE,
 		sframes      = 2,
 		sflags       = { SF_LARGE },
-		hp           = 255,
+		hp           = 500,
 		armor        = 30,
 		vision       = 2,
 		attackchance = 60,
@@ -1627,6 +1627,13 @@ function drl.register_beings()
 				self:play_sound("act")
 			end
 		end,
+
+		OnAttacked = function (self)
+			self:play_sound("phasing")
+			level:explosion( self.position, 1, 50, 0, 0, LIGHTBLUE )
+			self:phase()
+			level:explosion( self.position, 1, 50, 0, 0, LIGHTBLUE )
+    	end,
 
 		OnDie = function (self)
 			player:add_medal("dragonslayer2")
