@@ -418,7 +418,6 @@ end;
 constructor TLevel.CreateFromStream( Stream: TStream );
 begin
   inherited CreateFromStream( Stream );
-  RegisterDungen( Self );
 
   Stream.Read( FMap, SizeOf( FMap ) );
   FStatus := Stream.ReadWord();
@@ -479,7 +478,6 @@ end;
 constructor TLevel.Create;
 begin
   inherited Create('default',MaxX, MaxY, 15);
-  RegisterDungen( Self );
 
   Assert( dfdata.EF_NOBLOCK  = vluamapnode.EF_NOBLOCK );
   Assert( dfdata.EF_NOITEMS  = vluamapnode.EF_NOITEMS );

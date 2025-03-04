@@ -129,10 +129,10 @@ function drl.register_generators()
 			local min  = math.min( math.ceil( level.danger_level / 10 ), 4 )
 			local max  = math.min( math.ceil( level.danger_level / 4 ), #(generator.arena_data) ) 
 			local scheme = math.random( min, max )
-			local tile = generator.tile_new( generator.arena_data[scheme], translation )
+			local tile = generator.tile_new( level, generator.arena_data[scheme], translation )
 			local tdim = tile:get_size_coord()
 			local hdim = coord.new( math.floor( tdim.x / 2 ), math.floor( tdim.y / 2 ) )
-			generator.tile_place( center - hdim, tile )
+			generator.tile_place( level, center - hdim, tile )
 			level.light[ area.new( center - hdim, center + hdim ) ][ LFNOSPAWN ] = true
 			generator.generate_special_stairs( "rstairs", "You shiver from cold..." )
 		end,

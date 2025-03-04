@@ -312,7 +312,7 @@ function generator.generate_caves_dungeon()
 
 	level:fill( wall_cell )
 
-	generator.run_drunkard_walk( area.FULL_SHRINKED, coord.new( 38, 10 ), math.random(40)+100, floor_cell, nil, true )
+	generator.run_drunkard_walk( level, area.FULL_SHRINKED, coord.new( 38, 10 ), math.random(40)+100, floor_cell, nil, true )
 	drunk( 5,  math.random(40)+35, floor_cell )
 	drunk( amount, step,   fluid )
 	drunk( 40, math.random(40)+25, floor_cell )

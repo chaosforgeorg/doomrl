@@ -124,7 +124,7 @@ end
 
 function generator.place_dungen_tile( code, tile_object, tile_pos )
 	local tile_area   = tile_object:get_area()
-	generator.tile_place( tile_pos, tile_object )
+	generator.tile_place( level, tile_pos, tile_object )
 
 	for c in tile_area() do
 		local char       = string.char( tile_object:get_ascii(c) )
@@ -162,13 +162,13 @@ end
 function generator.place_tile( code, tile, x, y )
 	local translation = generator.create_translation( code )
 	local tile_pos  = coord.new( x, y )
-	local tile_object = generator.tile_new( tile, translation, true )
+	local tile_object = generator.tile_new( level, tile, translation, true )
 	generator.place_dungen_tile( code, tile_object, tile_pos )
 end
 
 function generator.place_symmetry_quad( tile, trans )
 	local translation = generator.create_translation( trans )
-	local tile_object = generator.tile_new( tile, translation, true )
+	local tile_object = generator.tile_new( level, tile, translation, true )
 	local tile_size   = tile_object:get_size_coord()
 	generator.place_dungen_tile( trans, tile_object, coord.new( 2, 2 ) )
 	tile_object:flip_x()
@@ -181,7 +181,7 @@ end
 
 function generator.place_proto_map( where, proto_map, proto_key, code )
 	local trans = generator.create_translation( code )
-	local proto = generator.tile_new( proto_map, {}, true )
+	local proto = generator.tile_new( level, proto_map, {}, true )
 	local pdim  = proto:get_size_coord()
 	local tpos  = where:clone()
 	for py = 1, pdim.y do
@@ -193,7 +193,7 @@ function generator.place_proto_map( where, proto_map, proto_key, code )
 			if type(map) == "table" then
 				map = table.random_pick(map)
 			end
-			local mobj = generator.tile_new( map, trans, true )
+			local mobj = generator.tile_new( level, map, trans, true )
 			mdim = mobj:get_size_coord()
 			generator.place_dungen_tile( code, mobj, where + tpos )
 			tpos.x = tpos.x + mdim.x
@@ -207,7 +207,7 @@ function generator.scatter_put(scatter_area,code,tile,good,count)
 	if type(good) == "string" then good = cells[good].nid end
 
 	local translation = generator.create_translation( code )
-	local tile_object = generator.tile_new( tile, translation, true )
+	local tile_object = generator.tile_new( level, tile, translation, true )
 	local tile_size   = tile_object:get_size_coord()
 	local tries       = 10000
 
@@ -274,7 +274,7 @@ function generator.drunkard_walks( amount, steps, cell, ignore, break_on_edge, d
 	if amount <= 0 then return end
 	drunk_area = drunk_area or area.FULL_SHRINKED
 	for i=1,amount do
-		generator.run_drunkard_walk( drunk_area, drunk_area:random_coord(), steps, cell, ignore, break_on_edge )
+		generator.run_drunkard_walk( level, drunk_area, drunk_area:random_coord(), steps, cell, ignore, break_on_edge )
 	end
 end
 
@@ -288,7 +288,7 @@ function generator.contd_drunkard_walks( amount, steps, cell, edges1, edges2, ig
 			c = drunk_area:random_coord()
 		until level:cross_around( c, edges1 ) > 0 and
 		level:cross_around( c, edges2 ) > 0
-		generator.run_drunkard_walk( drunk_area, c, steps, cell, ignore, break_on_edge )
+		generator.run_drunkard_walk( level, drunk_area, c, steps, cell, ignore, break_on_edge )
 	end
 end
 
@@ -705,7 +705,7 @@ function generator.generate_archi_level( settings )
 			 	block = table.random_pick( data )
 			end
 			local pos   = coord.new( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
-			local tile  = generator.tile_new( block, pure_translation, true )
+			local tile  = generator.tile_new( level, block, pure_translation, true )
 			tile:flip_random()
 			generator.place_dungen_tile( translation, tile, pos )
 		end
