@@ -50,7 +50,7 @@ register_level "the_wall"
 ]]
 		generator.place_tile( translation, map, 2, 2 )
 
-		local left    = area.new( 12, 4, 27, 17 ) 
+		local left    = area( 12, 4, 27, 17 ) 
 		local total   = 11 + DIFFICULTY
 		local knights = math.max( 12 - (6 *( DIFFICULTY - 1 ) ), 0 )
 

@@ -101,12 +101,12 @@ register_level "abyssal_plains"
 			ui.msg("Suddenly you're trapped in!")
 			level:play_sound( "door.close", player.position )
 			level:transmute( "gwall", "floor" )
-			for c in area.new( 28, 9, 28, 12 )() do generator.wallin_cell( c, "rwall" ) end
-			for c in area.new( 50, 9, 50, 12 )() do generator.wallin_cell( c, "rwall" ) end
+			for c in area( 28, 9, 28, 12 )() do generator.wallin_cell( c, "rwall" ) end
+			for c in area( 50, 9, 50, 12 )() do generator.wallin_cell( c, "rwall" ) end
 			generator.set_permanence( area.FULL )
 
 			ui.msg("You hear a howl of agony!")
-			local agony = level:drop_being("agony",coord.new(42,11))
+			local agony = level:drop_being("agony",coord(42,11))
 			for i = 1,3 do
 				agony.inv:add( item.new(table.random_pick{"ufskull","ubskull","uhskull"}) )
 			end
@@ -116,7 +116,7 @@ register_level "abyssal_plains"
 		end
 		if res == 1 and (time - 400 > level.data.drop_time or level.data.kill_all) then
 			ui.msg("Finally, the walls retract into the ground.")
-			level:transmute( "rwall", "floor", area.new( 28, 9, 50, 12 ) )
+			level:transmute( "rwall", "floor", area( 28, 9, 50, 12 ) )
 			generator.set_permanence( area.FULL )
 			level.status = 2
 		end

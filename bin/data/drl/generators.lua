@@ -114,7 +114,7 @@ function drl.register_generators()
 			generator.generate_fluids()
 			generator.generate_fluids()
 
-			local center  = coord.new( 38,10 )
+			local center  = coord( 38,10 )
 
 			local translation = {
 				['.'] = generator.styles[ level.style ].floor,
@@ -131,14 +131,14 @@ function drl.register_generators()
 			local scheme = math.random( min, max )
 			local tile = generator.tile_new( level, generator.arena_data[scheme], translation )
 			local tdim = tile:get_size_coord()
-			local hdim = coord.new( math.floor( tdim.x / 2 ), math.floor( tdim.y / 2 ) )
+			local hdim = coord( math.floor( tdim.x / 2 ), math.floor( tdim.y / 2 ) )
 			generator.tile_place( level, center - hdim, tile )
-			level.light[ area.new( center - hdim, center + hdim ) ][ LFNOSPAWN ] = true
+			level.light[ area( center - hdim, center + hdim ) ][ LFNOSPAWN ] = true
 			generator.generate_special_stairs( "rstairs", "You shiver from cold..." )
 		end,
 
 		post_run   = function()
-			level:drop_being( player, coord.new( 38,10 ) )
+			level:drop_being( player, coord( 38,10 ) )
 		  	ui.msg_feel( "Suddenly monsters come from everywhere!" )
 			for b in level:beings() do
 				if math.random(2) == 1 then
@@ -163,13 +163,13 @@ function drl.register_generators()
 
 			for i=1,divs do
 				local newdiv = math.floor( MAXX / (divs+1) )*i + math.random(16)-8
-				local where = coord.new( newdiv, math.random(12)+4 )
+				local where = coord( newdiv, math.random(12)+4 )
 				generator.plot_lines( where, area.FULL, false, wall_cell, generator.cell_set{ wall_cell } )
 				level:set_cell( where, generator.styles[ level.style ].door )
-				table.insert( areas, area.new( divpoint+1, 2, newdiv-1, MAXY-1 ) )
+				table.insert( areas, area( divpoint+1, 2, newdiv-1, MAXY-1 ) )
 				divpoint = newdiv
 			end
-			table.insert( areas, area.new( divpoint+1, 2, MAXX-1, MAXY-1 ) )
+			table.insert( areas, area( divpoint+1, 2, MAXX-1, MAXY-1 ) )
 
 			for _,ar in ipairs(areas) do
 				local size = table.random_pick{ 2, 3, 3, 3, 3, 4 }
@@ -209,8 +209,8 @@ function drl.register_generators()
 			local door_cell    = generator.styles[ level.style ].door
 
 			local tries = 100
-			local dim_max = coord.new( 16, 12 )
-			local dim_min = coord.new( 7, 6 )
+			local dim_max = coord( 16, 12 )
+			local dim_min = coord( 7, 6 )
 			local city = area.shrinked( area.FULL, 2 )
 
 			if math.random(3) == 1 then	generator.generate_rivers( false, true ) end

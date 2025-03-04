@@ -52,10 +52,10 @@ register_level "spiders_lair"
 			['m'] = { "floor", being = core.ifdiff( 3, "arachno" ) },
 			['h'] = { "floor", being = core.ifdiff( 4, "arachno" ) },
 
-			['1'] = { "floor", item = { "teleport", target = coord.new(8,7)   } },
-			['2'] = { "floor", item = { "teleport", target = coord.new(70,7)  } },
-			['3'] = { "floor", item = { "teleport", target = coord.new(8,13)  } },
-			['4'] = { "floor", item = { "teleport", target = coord.new(70,13) } },
+			['1'] = { "floor", item = { "teleport", target = coord(8,7)   } },
+			['2'] = { "floor", item = { "teleport", target = coord(70,7)  } },
+			['3'] = { "floor", item = { "teleport", target = coord(8,13)  } },
+			['4'] = { "floor", item = { "teleport", target = coord(70,13) } },
 		}
 
 		local map = [[
@@ -92,7 +92,7 @@ register_level "spiders_lair"
 			level:drop("scglobe")
 			level:drop("pcell")
 
-			level:drop_item("bfg9000", coord.new(41,10) )
+			level:drop_item("bfg9000", coord(41,10) )
 			level.status = 1
 			if CHALLENGE == "challenge_aohu" then
 				player:add_medal("everyspider")

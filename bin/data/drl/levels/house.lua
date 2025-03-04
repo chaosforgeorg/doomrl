@@ -108,19 +108,19 @@ register_level "house_of_pain"
 		local res = level.status
 		if res < 6 then
 			if res == 1 and player.x > 33 then
-				local room_2 = area.new( 31, 2, 50, 19 )
+				local room_2 = area( 31, 2, 50, 19 )
 				level:summon{ core.ifdiff( 4, "ncacodemon", "cacodemon" ), core.ifdiff( 5, 6, 4 ), area = room_2 }
 				level:summon{ core.ifdiff( 3, "baron", "knight" ), core.bydiff{ 0, 4, 4, 4, 6 }, area = room_2 }
 				level.status = 2
 			elseif res == 3 and player.x > 55 then
-				local room_3 = area.new( 55, 2, 77, 19 )
+				local room_3 = area( 55, 2, 77, 19 )
 				level:summon{ "mancubus", core.bydiff{ 2,2,3,4,6 }, area = room_3 }
 				if DIFFICULTY > 1 then level:summon{ "revenant" , core.bydiff{ 2,2,3,4,6 }, area = room_3 } end
 				if DIFFICULTY > 2 then level:summon{ "arch" , core.bydiff{ 0,0,1,2,3 }, area = room_3 } end
 				level.status = 4
 			elseif res == 5 and player.x < 27 then
 				ui.msg("The voice laughs: \"Allow me to present you your just reward!\"")
-				local room_1 = area.new( 7, 7, 21, 14 )
+				local room_1 = area( 7, 7, 21, 14 )
 				level:summon{ core.ifdiff( 3, "narch", "arch" ), core.bydiff{ 0, 2, 1, 2, 2 }, area = room_1 }
 				if DIFFICULTY > 4 then level:summon{ "baron" , 4, area = room_1 } end
 				for i=1,8 do
@@ -146,7 +146,7 @@ register_level "house_of_pain"
 		local choice = ui.query("A deathly high-pitched voice cackles!\n{R\"Well, who do we have here?\"} it begins. {R\"It seems that you've stumbled into my luxurious home. Would you care to have access?\"}")
 		if choice then
 			ui.msg("Well then, enjoy yourself. Just be wary of my other guests!")
-			level:transmute( "iwall", "floor", area.new(13,9,15,12) )
+			level:transmute( "iwall", "floor", area(13,9,15,12) )
 		else
 			ui.msg("No? All right, I'll see you out then.")
 			level:set_cell( 14, 11, "stairs" )

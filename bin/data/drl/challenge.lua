@@ -779,7 +779,7 @@ function drl.register_challenges()
 				ui.msg_feel("\"Thermonuclear bomb deployed. 5 minutes till explosion.\"")
 			end
 			if lid == "hells_arena" then
-				level.data.drop_zone = area.new(3,8,7,12)
+				level.data.drop_zone = area(3,8,7,12)
 			end
 		end,
 
@@ -1292,7 +1292,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 				player:level_up()
 			end
 			if lid == "tower_of_babel" then
-				level.map[coord.new(77,19)] = "stairs"
+				level.map[coord(77,19)] = "stairs"
 			end
 		end,
 

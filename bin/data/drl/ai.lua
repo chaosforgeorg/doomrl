@@ -466,7 +466,7 @@ register_ai "teleboss_ai"
 			local s     = self.position
 			local phase 
 			if dist <= self.teleradius then
-				local flee = coord.new( 2*(s.x-p.x), 2*(s.y-p.y))
+				local flee = coord( 2*(s.x-p.x), 2*(s.y-p.y))
 				phase = table.random_pick{ p + flee, p - flee }
 				area.FULL_SHRINKED:clamp_coord( phase )
 				phase = level:drop_coord( phase, { EF_NOBEINGS, EF_NOBLOCK } )

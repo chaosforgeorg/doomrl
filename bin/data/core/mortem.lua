@@ -117,7 +117,7 @@ function mortem.print_graveyard()
 	for vy = 1,MAXY do
 		local line = "  "
 		for vx = math.min( 20, math.max( 1,player.x - 30 ) ), math.min( 20, math.max(1,player.x - 30 ) ) + MAXX - 20 do
-			line = line..get_pic( coord.new( vx, vy ) )
+			line = line..get_pic( coord( vx, vy ) )
 		end
 		player:mortem_print( line )
 	end

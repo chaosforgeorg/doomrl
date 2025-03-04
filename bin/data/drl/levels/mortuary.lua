@@ -47,10 +47,10 @@ XX.XX
 		generator.place_tile( translation, tile, 73, 2 )
 		generator.place_tile( translation, tile, 73, 15 )
 
-		level:drop_item( "mod_power", coord.new(3, 3) )
-		level:drop_item( "mod_bulk",  coord.new(76, 18) )
-		level:drop_item( "unbfg9000", coord.new(76, 3) )
-		level:drop_item( "uashotgun", coord.new(3, 18) )
+		level:drop_item( "mod_power", coord(3, 3) )
+		level:drop_item( "mod_bulk",  coord(76, 18) )
+		level:drop_item( "unbfg9000", coord(76, 3) )
+		level:drop_item( "uashotgun", coord(3, 18) )
 
 		generator.place_tile( translation, center, 36,8 )
 

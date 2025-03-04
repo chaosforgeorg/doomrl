@@ -1,7 +1,7 @@
 generator.archi_data = {
-	shift  = coord.new( 3, 1 ),
-	size   = coord.new( 19, 7 ),
-	blocks = coord.new( 4, 3 ),
+	shift  = coord( 3, 1 ),
+	size   = coord( 19, 7 ),
+	blocks = coord( 4, 3 ),
 	trans  = {},
 [[
 XXXX+XXXX+XXXX+XXXX
@@ -103,9 +103,9 @@ XXXX+XXXX+XXXX+XXXX
 }
 
 generator.archi_data_2 = {
-	shift  = coord.new( 3, 1 ),
-	size   = coord.new( 19, 10 ),
-	blocks = coord.new( 4, 2 ),
+	shift  = coord( 3, 1 ),
+	size   = coord( 19, 10 ),
+	blocks = coord( 4, 2 ),
 	trans  = {
 		["C"] = "crate",
 		["Y"] = "ycrate",

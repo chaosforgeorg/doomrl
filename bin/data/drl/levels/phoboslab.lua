@@ -61,13 +61,13 @@ register_level "phobos_lab"
 	Create = function ()
 		level:set_generator_style( 1 )
 		level:fill( "floor" )
-		level.data.bridge = area.new(50,10,60,11)
-		level.data.door1  = area.new(45,10,45,11)
-		level.data.door2  = area.new(61,10,61,11)
-		level.data.trap11 = area.new(8,4,8,7)
-		level.data.trap12 = area.new(8,14,8,17)
-		level.data.trap21 = area.new(34,2,35,3)
-		level.data.trap22 = area.new(34,18,35,19)
+		level.data.bridge = area(50,10,60,11)
+		level.data.door1  = area(45,10,45,11)
+		level.data.door2  = area(61,10,61,11)
+		level.data.trap11 = area(8,4,8,7)
+		level.data.trap12 = area(8,14,8,17)
+		level.data.trap21 = area(34,2,35,3)
+		level.data.trap22 = area(34,18,35,19)
 
 		local mod1,mod2 = generator.roll_pair{"mod_power","mod_agility","mod_bulk","mod_tech"}
 

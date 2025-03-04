@@ -178,7 +178,7 @@ register_level "hells_arena"
 		generator.place_symmetry_quad( table.random_pick( corners ), translation )
 		generator.set_permanence( area.FULL )
 
-		generator.scatter_put( area.new( 5,3,68,15 ), translation, table.random_pick( column ), "floor",8+math.random(8))
+		generator.scatter_put( area( 5,3,68,15 ), translation, table.random_pick( column ), "floor",8+math.random(8))
 		level:transmute("water", "floor")
 		generator.scatter_blood(area.FULL_SHRINKED,"floor",100)
 		level.data.drop_zone = area.FULL_SHRINKED

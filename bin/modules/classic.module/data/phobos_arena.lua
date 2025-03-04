@@ -7,7 +7,7 @@ register_level "phobos_arena"
   Create = function ()
     level:fill( "wall" )
     level:fill( "floor", area.FULL_SHRINKED )
-    local scatter_area = area.new( 5,3,68,15 )
+    local scatter_area = area( 5,3,68,15 )
     local translation = {
         ['.'] = { "floor", flags = { LFBLOOD } },
         ['#'] = "gwall",

@@ -123,9 +123,9 @@ register_level "hellgate"
 ]=]
 
 		generator.place_tile( translation, map, 2, 2 )
-		generator.set_permanence( area.new( 1, 1, 50, 6 ) )
-		generator.set_permanence( area.new( 1, 14, 50, MAXY ) )
-		generator.set_permanence( area.new( 51, 1, MAXX, MAXY ) )
+		generator.set_permanence( area( 1, 1, 50, 6 ) )
+		generator.set_permanence( area( 1, 14, 50, MAXY ) )
+		generator.set_permanence( area( 51, 1, MAXX, MAXY ) )
 
 		level:player(2,10)
 		level.flags[ LF_NOHOMING ] = true
@@ -156,15 +156,15 @@ register_level "hellgate"
 			if DIFFICULTY > DIFF_EASY then
 				ui.msg("Suddenly the walls lower!")
 				level:play_sound( "door.close", player.position )
-				level:transmute( "wall", "floor", area.new( 9, 4, 29, 16 ) )
+				level:transmute( "wall", "floor", area( 9, 4, 29, 16 ) )
 			end
 			level.status = 2
 		end
 		if res == 2 and player.x > 50 then
 			ui.msg("Suddenly the walls disappear!")
 			level:play_sound( "barrel.explode", player.position )
-			level:transmute( "rwall", "floor", area.new( 53, 7, 60, 13 ) )
-			level:transmute( "wall", "floor",  area.new( 60, 7, 74, 13 ) )
+			level:transmute( "rwall", "floor", area( 53, 7, 60, 13 ) )
+			level:transmute( "wall", "floor",  area( 60, 7, 74, 13 ) )
 			level.status = 3
 		end
 	end,
@@ -186,7 +186,7 @@ register_level "tower_of_babel"
 	Create = function ()
 		level:fill( "wall" )
 		level:fill( "floor", area.FULL_SHRINKED )
-		local scatter_area = area.new( 5,3,68,15 )
+		local scatter_area = area( 5,3,68,15 )
 		local translation = {
 			['.'] = { "floor", flags = { LFBLOOD } },
 			['#'] = "gwall", 
@@ -288,8 +288,8 @@ WWWWWWWWWWWWWWWWWWWWW...............####...............WWWWWWWWWWWWWWWWWWWWW
 >WWWWWWWWWWWWWWWWWWWWW................................WWWWWWWWWWWWWWWWWWWWW>
 ]]
 		, 2,2 )
-		generator.set_permanence( area.new( 1, 1, 10, MAXY ) )
-		generator.set_permanence( area.new( MAXX-10, 1, MAXX, MAXY ) )
+		generator.set_permanence( area( 1, 1, 10, MAXY ) )
+		generator.set_permanence( area( MAXX-10, 1, MAXX, MAXY ) )
 
 		level.flags[ LF_NOHOMING ] = true
 		level.flags[ LF_BOSS     ] = true
@@ -313,7 +313,7 @@ WWWWWWWWWWWWWWWWWWWWW...............####...............WWWWWWWWWWWWWWWWWWWWW
 	end,
 
 	OnEnter = function ()
-		local boss = level:drop_being("mastermind",coord.new(39,19))
+		local boss = level:drop_being("mastermind",coord(39,19))
 		boss.flags[ BF_BOSS ] = true
 	end
 }
@@ -360,9 +360,9 @@ register_level "hell_fortress"
 
 		local boss
 		if player.eq.armor and player.eq.armor.id == "uberarmor" then
-			boss = level:drop_being("apostle",coord.new(76,11))
+			boss = level:drop_being("apostle",coord(76,11))
 		else
-			boss = level:drop_being("jc",coord.new(76,11))
+			boss = level:drop_being("jc",coord(76,11))
 		end
 		boss.flags[ BF_BOSS ] = true
 	end,

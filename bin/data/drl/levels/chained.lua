@@ -232,11 +232,11 @@ register_level "the_chained_court"
 			['3'] = { "floor", item = "lever_chain3" },
 		}
 
-		level.data.cage1 = area.new(16,4,23,9)
-		level.data.cage2 = area.new(16,12,23,17)
-		level.data.cage3 = area.new(59,6,66,15)
-		level.data.prize1 = area.new(35,7,44,8)
-		level.data.prize2 = area.new(35,13,44,14)
+		level.data.cage1 = area(16,4,23,9)
+		level.data.cage2 = area(16,12,23,17)
+		level.data.cage3 = area(59,6,66,15)
+		level.data.prize1 = area(35,7,44,8)
+		level.data.prize2 = area(35,13,44,14)
 
 		local map = [[
 
@@ -289,16 +289,16 @@ register_level "the_chained_court"
 		generator.set_permanence( area.FULL )
 		if level.status == 0 then
 			level:player(52,10)
-			generator.set_permanence( area.new(50,7,59,14), false )
+			generator.set_permanence( area(50,7,59,14), false )
 		else
 			level:player(38,10)
-			generator.set_permanence( area.new(34,4,43,17), false )
+			generator.set_permanence( area(34,4,43,17), false )
 		end
 	end,
 	OnKillAll = function ()
 		if level.status == 0 then
 			ui.msg("So much for hellish fair-play.")
-			level:transmute( "wall", "floor", area.new(7,5,11,16) )
+			level:transmute( "wall", "floor", area(7,5,11,16) )
 			player:add_history("He defeated the Hell Arena Master!")
 			level.status = 3
 		end

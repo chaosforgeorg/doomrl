@@ -99,7 +99,7 @@ register_level "the_vaults"
 			['9'] = { "floor", item = level:roll_item( vault_armor ) },
 			['0'] = { "floor", item = level:roll_item( vault_armor ) },
 
-			['*'] = { "floor", item = { "teleport", target = coord.new(4,11) } },
+			['*'] = { "floor", item = { "teleport", target = coord(4,11) } },
 		}
 
 		local map = [[

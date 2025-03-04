@@ -222,8 +222,8 @@ function generator.generate_lava_dungeon()
 	local wall_nid     = cells[ wall_cell ].nid
 
 	local tries = 3
-	local dim_max = coord.new( 70, 18 )
-	local dim_min = coord.new( 10, 8 )
+	local dim_max = coord( 70, 18 )
+	local dim_min = coord( 10, 8 )
 	local a = area.shrinked( area.FULL, 2 )
 	local even_coord = function ( c )
 		local result = c:clone()
@@ -255,8 +255,8 @@ function generator.generate_lava_dungeon()
 	end
 
 	local tries = 8
-	local dim_max = coord.new( 20, 16 )
-	local dim_min = coord.new( 12, 10 )
+	local dim_max = coord( 20, 16 )
+	local dim_min = coord( 12, 10 )
 	local a = area.shrinked( area.FULL, 2 )
 	for i=1,tries do
 		local quad = area.random_subarea( a, coord.random( dim_min, dim_max ) ):clamped( a )
@@ -312,7 +312,7 @@ function generator.generate_caves_dungeon()
 
 	level:fill( wall_cell )
 
-	generator.run_drunkard_walk( level, area.FULL_SHRINKED, coord.new( 38, 10 ), math.random(40)+100, floor_cell, nil, true )
+	generator.run_drunkard_walk( level, area.FULL_SHRINKED, coord( 38, 10 ), math.random(40)+100, floor_cell, nil, true )
 	drunk( 5,  math.random(40)+35, floor_cell )
 	drunk( amount, step,   fluid )
 	drunk( 40, math.random(40)+25, floor_cell )
@@ -474,7 +474,7 @@ function generator.generate_caves_2_dungeon()
 	local cmax  = math.random( 5, 7 )
 	local count = 0
 	for i = 1,1000 do
-		local dim = coord.new( math.random( 7,9 ), math.random( 6,9 ) )
+		local dim = coord( math.random( 7,9 ), math.random( 6,9 ) )
 		local a = area.FULL_SHRINKED:random_subarea( dim )
 		if level:scan( a, floor_cell ) then
 			a:shrink()

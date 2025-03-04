@@ -188,7 +188,7 @@ register_level "the_asmos_den"
 		if level.status == 0 and item.id == "uhellwrap" then
 			ui.msg("A deafening voice speaks: \"So you think you can steal Hell's riches? ")
 			ui.msg("Then try to best that which guards it!\"")
-			hell = level:drop_being( "hellmaster", coord.new(43,9) )
+			hell = level:drop_being( "hellmaster", coord(43,9) )
 			level.flags[ LF_NOHOMING ] = true
 			statistics.kills = statistics.kills - 1
 			level.status = 1

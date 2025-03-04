@@ -56,9 +56,9 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 ]]
 		generator.place_tile( translation, map, 2, 2 )
 
-		level.data.left   = area.new( 19, 2, 48, 14 ) 
-		level.data.middle = area.new( 50, 2, 66, 14 ) 
-		level.data.right  = area.new( 68, 2, 78, 14 ) 
+		level.data.left   = area( 19, 2, 48, 14 ) 
+		level.data.middle = area( 50, 2, 66, 14 ) 
+		level.data.right  = area( 68, 2, 78, 14 ) 
 
 		local total   = 5 + 2*DIFFICULTY
 		level:summon{ "imp", total, area = level.data.left }

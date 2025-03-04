@@ -201,10 +201,10 @@ register_level "intro"
 		if math.random(2) == 1 then
 			generator.place_tile( translation, tilesets[math.random(#tilesets)], 9, 3 )
 		else
-			generator.place_proto_map( coord.new( 12, 3 ), proto_map, proto_key, translation )
+			generator.place_proto_map( coord( 12, 3 ), proto_map, proto_key, translation )
 		end
 		generator.scatter_item( area.FULL:shrinked(3),"rock","tree", 20)
-		for c in area.around( coord.new( 4, 10 ), 3 )() do
+		for c in area.around( coord( 4, 10 ), 3 )() do
 			level:try_destroy_item( c )
 		end
 

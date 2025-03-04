@@ -45,8 +45,8 @@ register_level "deimos_lab"
 					level:play_sound( "shambler.act", player.position, 100 )
 					ui.msg("You hear a loud wail!")
 					level:transmute( "gwall", "floor", level.data.vault1 )
-					level:drop_being("shambler",coord.new(39,10))
-					level:drop_being("shambler",coord.new(40,11))
+					level:drop_being("shambler",coord(39,10))
+					level:drop_being("shambler",coord(40,11))
 					level:recalc_fluids()
 				end
 				return true
@@ -58,9 +58,9 @@ register_level "deimos_lab"
 	Create = function ()
 		level:set_generator_style( 2 )
 		level:fill( "wall" )
-		level.data.vault1 = area.new(38,9,41,12)
-		level.data.vault2 = area.new(37,10,42,11)
-		level.data.bridge = area.new(47,10,51,11)
+		level.data.vault1 = area(38,9,41,12)
+		level.data.vault2 = area(37,10,42,11)
+		level.data.bridge = area(47,10,51,11)
 
 		local special = drl.get_special_item( player.name )
 		if not special then 
@@ -83,10 +83,10 @@ register_level "deimos_lab"
 			['X'] = "crate_ammo",
 			['Y'] = "crate_armor",
 
-			['7'] = { "floor", item = { "teleport", target = coord.new(MAXX-1,5)       } },
-			['8'] = { "floor", item = { "teleport", target = coord.new(MAXX-1,MAXY-4)  } },
-			['9'] = { "floor", item = { "teleport", target = coord.new(8,10)  } },
-			['0'] = { "floor", item = { "teleport", target = coord.new(8,11) } },
+			['7'] = { "floor", item = { "teleport", target = coord(MAXX-1,5)       } },
+			['8'] = { "floor", item = { "teleport", target = coord(MAXX-1,MAXY-4)  } },
+			['9'] = { "floor", item = { "teleport", target = coord(8,10)  } },
+			['0'] = { "floor", item = { "teleport", target = coord(8,11) } },
 
 
 			['h'] = { "floor", being = core.bydiff{"former", "former", "sergeant", "captain"} },
@@ -163,9 +163,9 @@ register_level "deimos_lab"
 
 			local reward1,reward2 = generator.roll_pair{ "umod_sniper","umod_firestorm","umod_nano","umod_onyx","ucarmor" }
 			local reward3         = table.random_pick{"mod_power","mod_agility","mod_bulk","mod_tech"}
-			level:drop_item(reward3,coord.new(37,10))
-			level:drop_item(reward2,coord.new(42,11))
-			level:drop_item(reward1,coord.new(37,11))
+			level:drop_item(reward3,coord(37,10))
+			level:drop_item(reward2,coord(42,11))
+			level:drop_item(reward1,coord(37,11))
 
 			local rewards = weight_table.new{}
 			for k,ma in ipairs(mod_arrays) do
@@ -179,7 +179,7 @@ register_level "deimos_lab"
 
 			if rewards:size() > 0 then
 				local special = rewards:roll()
-				local item    = level:drop_item(special.id,coord.new(42,10))
+				local item    = level:drop_item(special.id,coord(42,10))
 				item.ammo = table.random_pick(unknown[special.slevel+1])
 				item.name = mod_arrays[ item.ammo ].name.." schematics"
 			end

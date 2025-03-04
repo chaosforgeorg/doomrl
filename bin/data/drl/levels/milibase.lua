@@ -79,8 +79,8 @@ register_level "military_base"
 		if res == 0 and player.x < 6 and player.y > 7 and player.y < 14 then
 			local y
 			for _, y in ipairs { 9, 10, 11, 12 } do
-				level.map[coord.new(6,y)] = "floor"
-				level.map[coord.new(6,y)] = "door"
+				level.map[coord(6,y)] = "floor"
+				level.map[coord(6,y)] = "door"
 			end
 			level.status = 1
 		end

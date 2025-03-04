@@ -111,8 +111,8 @@ function drl.register_events()
 				data.direction = 1
 			end
 		
-			local left  = generator.safe_empty_coord( area.new(2,2,20,19) )
-			local right = generator.safe_empty_coord( area.new(60,2,78,19) )
+			local left  = generator.safe_empty_coord( area(2,2,20,19) )
+			local right = generator.safe_empty_coord( area(60,2,78,19) )
 
 			for c in level:each("stairs") do
 				level.map[ c ] = generator.styles[ level.style ].floor
@@ -150,8 +150,8 @@ function drl.register_events()
 				data.step = 25
 			end
 
-			local left  = generator.safe_empty_coord( area.new(2,2,20,19) )
-			local right = generator.safe_empty_coord( area.new(60,2,78,19) )
+			local left  = generator.safe_empty_coord( area(2,2,20,19) )
+			local right = generator.safe_empty_coord( area(60,2,78,19) )
 
 			for c in level:each("stairs") do
 				level.map[ c ] = generator.styles[ level.style ].floor
@@ -308,14 +308,14 @@ function generator.events_flood_tick()
 		data.flood_min = data.flood_min + data.direction
 		if data.flood_min >= 1 and data.flood_min <= MAXX then
 			for y = 1,MAXY do
-				flood_tile( coord.new( data.flood_min, y ), data.cell )
+				flood_tile( coord( data.flood_min, y ), data.cell )
 			end
 		end
 		if data.flood_min + data.direction >= 1 and data.flood_min + data.direction  <= MAXX then
 			local switch = false
 			for y = 1,MAXY do
 				if switch then
-					flood_tile( coord.new( data.flood_min + data.direction, y ), data.cell )
+					flood_tile( coord( data.flood_min + data.direction, y ), data.cell )
 				end
 				if math.random(4) == 1 then switch = not switch end
 			end

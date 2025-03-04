@@ -36,11 +36,11 @@ register_level "hells_armory"
 				if level.status > 0 then return true end
 				for x = 6,7 do
 					for y = 9,11 do
-						level.map[ coord.new(x,y) ] = "floor"
-						level.light[ coord.new(x,y) ][ LFBLOOD ] = true
+						level.map[ coord(x,y) ] = "floor"
+						level.light[ coord(x,y) ][ LFBLOOD ] = true
 					end
 				end
-				local b = level:drop_being("shambler",coord.new(6,10))
+				local b = level:drop_being("shambler",coord(6,10))
 				level.status = 1
 				if b then
 					b:play_sound("act")
@@ -116,7 +116,7 @@ register_level "hells_armory"
 ============================================================================
 ]=]
 		generator.place_tile( translation, map, 2, 2 )
-		generator.set_permanence( area.new( 3,8,7,12 ) )
+		generator.set_permanence( area( 3,8,7,12 ) )
 
 		if DIFFICULTY > 3 then
 			level:summon{ "cacodemon", 6 + DIFFICULTY, cell = "lava" }
@@ -142,7 +142,7 @@ register_level "hells_armory"
 			ui.msg("The lab cache opens.")
 			for x = 4,5 do
 				for y = 9,11 do
-					level.map[ coord.new(x,y) ] = "floor"
+					level.map[ coord(x,y) ] = "floor"
 				end
 			end
 			player:play_sound("lever.use")
@@ -164,8 +164,8 @@ register_level "hells_armory"
 				end
 			end
 
-			level:drop_item(reward1,coord.new(4,9))
-			level:drop_item(reward2,coord.new(4,11))
+			level:drop_item(reward1,coord(4,9))
+			level:drop_item(reward2,coord(4,11))
 
 			local rewards = weight_table.new{}
 			for k,ma in ipairs(mod_arrays) do
@@ -179,7 +179,7 @@ register_level "hells_armory"
 
 			if rewards:size() > 0 then
 				local special = rewards:roll()
-				local item    = level:drop_item(special.id,coord.new(4,10))
+				local item    = level:drop_item(special.id,coord(4,10))
 				item.ammo = table.random_pick(unknown[special.slevel+1])
 				item.name = mod_arrays[ item.ammo ].name.." schematics"
 			end

@@ -507,7 +507,7 @@ function aitk.evade_hunt( self )
         end
     else
         local v = s - t
-        walk = table.random_pick{ t+coord.new( -v.y, v.x ), t+coord.new( v.y, -v.x ) }
+        walk = table.random_pick{ t+coord( -v.y, v.x ), t+coord( v.y, -v.x ) }
     end
     area.FULL:clamp_coord( walk )
     self.move_to = walk

@@ -73,8 +73,8 @@ function generator.scatter_cross_item(scatter_area,good,item_id,count)
 		local c = level:random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
 		if c then
 			if level:get_cell( c ) == good then
-				if test( coord.new( c.x-1, c.y ) ) and test( coord.new( c.x+1, c.y ) ) and
-					test( coord.new( c.x, c.y-1 ) ) and test( coord.new( c.x, c.y+1 ) ) then
+				if test( coord( c.x-1, c.y ) ) and test( coord( c.x+1, c.y ) ) and
+					test( coord( c.x, c.y-1 ) ) and test( coord( c.x, c.y+1 ) ) then
 					level:drop_item( item_id, c, true )
 				end
 			end
@@ -161,7 +161,7 @@ end
 
 function generator.place_tile( code, tile, x, y )
 	local translation = generator.create_translation( code )
-	local tile_pos  = coord.new( x, y )
+	local tile_pos  = coord( x, y )
 	local tile_object = generator.tile_new( level, tile, translation, true )
 	generator.place_dungen_tile( code, tile_object, tile_pos )
 end
@@ -170,13 +170,13 @@ function generator.place_symmetry_quad( tile, trans )
 	local translation = generator.create_translation( trans )
 	local tile_object = generator.tile_new( level, tile, translation, true )
 	local tile_size   = tile_object:get_size_coord()
-	generator.place_dungen_tile( trans, tile_object, coord.new( 2, 2 ) )
+	generator.place_dungen_tile( trans, tile_object, coord( 2, 2 ) )
 	tile_object:flip_x()
-	generator.place_dungen_tile( trans, tile_object, coord.new( 78 - tile_size.x , 2 ) )
+	generator.place_dungen_tile( trans, tile_object, coord( 78 - tile_size.x , 2 ) )
 	tile_object:flip_y()
-	generator.place_dungen_tile( trans, tile_object, coord.new( 78 - tile_size.x , 20 - tile_size.y ) )
+	generator.place_dungen_tile( trans, tile_object, coord( 78 - tile_size.x , 20 - tile_size.y ) )
 	tile_object:flip_x()
-	generator.place_dungen_tile( trans, tile_object, coord.new( 2 , 20 - tile_size.y ) )
+	generator.place_dungen_tile( trans, tile_object, coord( 2 , 20 - tile_size.y ) )
 end
 
 function generator.place_proto_map( where, proto_map, proto_key, code )
@@ -188,7 +188,7 @@ function generator.place_proto_map( where, proto_map, proto_key, code )
 		tpos.x = where.x
 		local mdim
 		for px = 1, pdim.x do
-			local map  = proto_key[ string.char( proto:get_ascii( coord.new(px,py) ) ) ]
+			local map  = proto_key[ string.char( proto:get_ascii( coord(px,py) ) ) ]
 			assert( map, "Key has no map!" )
 			if type(map) == "table" then
 				map = table.random_pick(map)
@@ -214,7 +214,7 @@ function generator.scatter_put(scatter_area,code,tile,good,count)
 	repeat
 		local c = scatter_area:random_coord()
 
-		if level:scan( area.new( c, c + tile_size - coord.UNIT ),good ) then
+		if level:scan( area( c, c + tile_size - coord.UNIT ),good ) then
 			generator.place_dungen_tile(code,tile_object,c)
 			count = count - 1
 		end
@@ -329,12 +329,12 @@ function generator.maze_dungeon( floor_cell, wall_cell, granularity, tries, minl
 	local ry = math.floor( ( maze_area.b.y - maze_area.a.y ) / granularity )
 	local rl = math.floor( ( maxl - minl ) / granularity + 1 )
 	for i=1,tries do
-		local c = coord.new(
+		local c = coord(
 			granularity * math.random( rx ) + maze_area.a.x,
 			granularity * math.random( ry ) + maze_area.a.y
 		)
 		if level:get_cell( c ) == floor_cell and level:cross_around( c, floor_cell ) == 4 then
-			local step = coord.new( 0, 0 )
+			local step = coord( 0, 0 )
 			local length = minl + granularity * ( math.random( rl ) - 1 )
 			if math.random( 2 ) == 1 then
 				step.x = math.random(2)*2-3
@@ -356,7 +356,7 @@ function generator.warehouse_fill( wall_cell, fill_area, boxsize, amount, specia
 
 	boxsize = boxsize or 2
 	amount  = amount or 50
-	local dim = coord.new( boxsize+2, boxsize+2 )
+	local dim = coord( boxsize+2, boxsize+2 )
 	for i = 1, amount do
 		local ar = fill_area:random_subarea( dim )
 		if level:scan( ar, floor_cell ) then
@@ -400,7 +400,7 @@ function generator.read_rooms()
 			repeat
 				ec.y = ec.y + 1
 			until ec.y == MAXY or cell_meta[ level:get_cell( start.x + 1, ec.y ) ]
-			table.insert( room_list, area.new( start, ec ) )
+			table.insert( room_list, area( start, ec ) )
 		end
 	end
 	return room_list
@@ -569,7 +569,7 @@ function generator.generate_tiled_level( settings )
 	end
 
 	local div_point = function( x, yrange, ymult, ymod )
-		return coord.new( x, math.random(yrange)*ymult+ymod )
+		return coord( x, math.random(yrange)*ymult+ymod )
 	end
 
 	local MAX2 = math.floor(MAXX / 2)
@@ -675,10 +675,10 @@ function generator.generate_archi_level( settings )
 	local bsize  = data.size
 	local shift  = data.shift 
 	if not blocks then
-		blocks = coord.new( math.floor( (MAXX-1) / (bsize.x-1) ), math.floor( (MAXY-1) / (bsize.y-1) ) )
+		blocks = coord( math.floor( (MAXX-1) / (bsize.x-1) ), math.floor( (MAXY-1) / (bsize.y-1) ) )
 	end
 	if not shift then
-		shift = coord.new( MAXX, MAXY ) - blocks * (bsize - coord.UNIT)
+		shift = coord( MAXX, MAXY ) - blocks * (bsize - coord.UNIT)
 		shift.x = math.max( 1, math.floor( shift.x / 2 ) )
 		shift.y = math.max( 1, math.floor( shift.y / 2 ) )
 	end
@@ -704,7 +704,7 @@ function generator.generate_archi_level( settings )
 			else
 			 	block = table.random_pick( data )
 			end
-			local pos   = coord.new( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
+			local pos   = coord( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
 			local tile  = generator.tile_new( level, block, pure_translation, true )
 			tile:flip_random()
 			generator.place_dungen_tile( translation, tile, pos )
@@ -718,7 +718,7 @@ function generator.generate_archi_level( settings )
 	end
 
 	generator.restore_walls( wall_cell )
-	generator.generate_fluids(area.new(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
+	generator.generate_fluids(area(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
 end
 
 function generator.destroy_cell( c )

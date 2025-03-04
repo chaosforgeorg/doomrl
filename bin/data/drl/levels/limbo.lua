@@ -103,10 +103,10 @@ register_level "limbo"
 ]=]
 		generator.place_tile( translation, map, 2, 2 )
 
-		level:drop_item( "mod_power", coord.new(3, 3) )
-		level:drop_item( "mod_bulk",  coord.new(76, 18) )
-		level:drop_item( "unbfg9000", coord.new(76, 3) )
-		level:drop_item( "uashotgun", coord.new(3, 18) )
+		level:drop_item( "mod_power", coord(3, 3) )
+		level:drop_item( "mod_bulk",  coord(76, 18) )
+		level:drop_item( "unbfg9000", coord(76, 3) )
+		level:drop_item( "uashotgun", coord(3, 18) )
 
 		local corpses = {
 			"imp", "cacodemon", "baron", "knight", "arachno", "mancubus",
