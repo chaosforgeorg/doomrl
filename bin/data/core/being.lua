@@ -156,7 +156,7 @@ function being:phase( cell )
 			end
 		end
 		if #targets ~= 0 then
-			target = generator.drop_coord( table.random_pick( targets ), {EF_NOITEMS,EF_NOBEINGS,EF_NOBLOCK}  )
+			target = level:drop_coord( table.random_pick( targets ), {EF_NOITEMS,EF_NOBEINGS,EF_NOBLOCK}  )
 		end
 	end
 	if target then

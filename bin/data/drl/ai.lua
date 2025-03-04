@@ -469,7 +469,7 @@ register_ai "teleboss_ai"
 				local flee = coord.new( 2*(s.x-p.x), 2*(s.y-p.y))
 				phase = table.random_pick{ p + flee, p - flee }
 				area.FULL_SHRINKED:clamp_coord( phase )
-				phase = generator.drop_coord( phase, { EF_NOBEINGS, EF_NOBLOCK } )
+				phase = level:drop_coord( phase, { EF_NOBEINGS, EF_NOBLOCK } )
 			end
 
 			if not phase then
@@ -484,7 +484,7 @@ register_ai "teleboss_ai"
 
 			self:play_sound("phasing")
 			level:explosion( self, 2, 50, 0, 0, YELLOW )
-			local target = generator.drop_coord( phase, { EF_NOBEINGS, EF_NOBLOCK } )
+			local target = level:drop_coord( phase, { EF_NOBEINGS, EF_NOBLOCK } )
 			self:relocate( target )
 			level:explosion( self, 1, 50, 0, 0, YELLOW )
 			self.scount = self.scount - 1000

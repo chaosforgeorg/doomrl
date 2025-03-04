@@ -64,7 +64,7 @@ function drl.register_generators()
 		end,
 
 		post_run   = function()
-			local s = generator.find_coord("stairs")
+			local s = level:find_coord("stairs")
 			local p = player.position
 			if s and p:distance( s ) <= player.vision and level:eye_contact( p, s ) then
 				ui.msg_feel( "...Oh, there it is. D'oh.")
