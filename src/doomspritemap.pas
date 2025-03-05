@@ -450,7 +450,8 @@ end;
 
 procedure TDoomSpriteMap.PushSpriteFXRotated ( aPos : TVec2i;
   const aSprite : TSprite; aRotation : Single ) ;
-var iCoord    : TGLRawQCoord;
+var iSprite   : TSprite;
+    iCoord    : TGLRawQCoord;
     iTex      : TGLRawQTexCoord;
     iColor    : TGLRawQColor;
     iTP       : TGLVec2f;
@@ -463,8 +464,9 @@ var iCoord    : TGLRawQCoord;
     Rotated.y := Round( pY * cos( aRotation ) + pX * sin( aRotation ) + aPos.Y );
   end;
 begin
-  iLayer    := FSpriteEngine.Layers[ aSprite.SpriteID[0] div 100000 ];
-  iSpriteID := aSprite.SpriteID[0] mod 100000;
+  iSprite   := GetSprite( aSprite );
+  iLayer    := FSpriteEngine.Layers[ iSprite.SpriteID[0] div 100000 ];
+  iSpriteID := iSprite.SpriteID[0] mod 100000;
 
   iSizeH := FSpriteEngine.Grid.X div 2;
 
@@ -483,8 +485,8 @@ begin
   with iLayer do
   begin
     iColor.FillAll( 255 );
-    if SF_OVERLAY in aSprite.Flags then iColor.SetAll( ColorToGL( aSprite.Color ) );
-    Push( @iCoord, @iTex, @iColor, aSprite.Color, aSprite.GlowColor, DRL_Z_FX );
+    if SF_OVERLAY in iSprite.Flags then iColor.SetAll( ColorToGL( iSprite.Color ) );
+    Push( @iCoord, @iTex, @iColor, iSprite.Color, iSprite.GlowColor, DRL_Z_FX );
   end;
 end;
 

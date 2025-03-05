@@ -110,36 +110,38 @@ begin
 end;
 
 function lua_core_register_missile(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    mID : Integer;
+var iState : TDoomLuaState;
+    iTable : TLuaTable;
+    iMID   : Integer;
 begin
-  State.Init(L);
+  iState.Init(L);
   if High(Missiles) = -1 then SetLength(Missiles,20);
-  mID := State.ToInteger(1);
-  if mID > High(Missiles) then
+  iMID := iState.ToInteger(1);
+  if iMID > High(Missiles) then
     SetLength(Missiles,High(Missiles)*2);
-  with Missiles[mID] do
-  with LuaSystem.GetTable(['missiles', mID]) do
-  try
-    SoundID   := getString('sound_id');
-    if isTable('coscolor')
-      then Sprite := NewSprite( getInteger( 'sprite', 0 ), NewColor( getVec4f( 'coscolor' ) ) )
-      else Sprite := NewSprite( getInteger( 'sprite', 0 ) );
-    Picture   := getChar('ascii');
-    Color     := getInteger('color');
-    Delay     := getInteger('delay');
-    Flags     := getFlags('flags');
-    Range     := getInteger('range');
-    MaxRange  := getInteger('maxrange');
-    MissBase  := getInteger('miss_base');
-    MissDist  := getInteger('miss_dist');
-    ExplDelay := getInteger('expl_delay');
-    ExplColor := getInteger('expl_color');
-    ExplFlags := ExplosionFlagsFromFlags( getFlags('expl_flags') );
-    RayDelay  := getInteger('ray_delay');
-    Content   := getInteger('content');
-  finally
-    Free;
+  with Missiles[iMID] do
+  begin
+    iTable := LuaSystem.GetTable(['missiles', iMID]);
+    with iTable do
+    try
+      SoundID   := getString('sound_id');
+      ReadSprite( iTable, Sprite );
+      Picture   := getChar('ascii');
+      Color     := getInteger('color');
+      Delay     := getInteger('delay');
+      Flags     := getFlags('flags');
+      Range     := getInteger('range');
+      MaxRange  := getInteger('maxrange');
+      MissBase  := getInteger('miss_base');
+      MissDist  := getInteger('miss_dist');
+      ExplDelay := getInteger('expl_delay');
+      ExplColor := getInteger('expl_color');
+      ExplFlags := ExplosionFlagsFromFlags( getFlags('expl_flags') );
+      RayDelay  := getInteger('ray_delay');
+      Content   := getInteger('content');
+    finally
+      Free;
+    end;
   end;
   Result := 0;
 end;
