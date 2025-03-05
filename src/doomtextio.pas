@@ -12,10 +12,9 @@ type TDoomTextIO = class( TDoomIO )
     procedure WaitForAnimation; override;
     function AnimationsRunning : Boolean; override;
     procedure AnimationWipe; override;
-    procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); override;
     procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); override;
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
-    procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte; aPic : Char ); override;
+    procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); override;
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
     procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word; aFlags : TExplosionFlags = [] ); override;
 
@@ -95,11 +94,6 @@ begin
   FTextMap.ClearAnimations;
 end;
 
-procedure TDoomTextIO.Mark(aCoord: TCoord2D; aColor: Byte; aChar: Char; aDuration: DWord; aDelay: DWord);
-begin
-  FTextMap.AddAnimation( TTextMarkAnimation.Create( aCoord, IOGylph( aChar, aColor ), aDuration, aDelay ) );
-end;
-
 procedure TDoomTextIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0 );
 var iChr : Char;
 begin
@@ -119,7 +113,7 @@ begin
 end;
 
 procedure TDoomTextIO.addMarkAnimation(aDuration: DWord; aDelay: DWord;
-  aCoord: TCoord2D; aColor: Byte; aPic: Char);
+  aCoord: TCoord2D; aSprite : TSprite; aColor: Byte; aPic: Char);
 begin
   if Doom.State <> DSPlaying then Exit;
   FTextMap.AddAnimation( TTextMarkAnimation.Create( aCoord, IOGylph( aPic, aColor ), aDuration, aDelay ) );

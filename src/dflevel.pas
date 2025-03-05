@@ -935,6 +935,7 @@ var a,b,tc  : TCoord2D;
     Dir     : TDirection;
     iNode   : TNode;
     iItemUID: TUID;
+    iSprite : TSprite;
     procedure SendShotgunBeam( s : TCoord2D; tcc : TCoord2D );
     var shb : TVisionRay;
         cnt : byte;
@@ -957,6 +958,9 @@ begin
 
   iItemUID := 0;
   if aItem <> nil then iItemUID := aItem.uid;
+
+  FillChar(iSprite, SizeOf(iSprite), 0);
+  iSprite.SpriteID[0] := HARDSPRITE_HIT;
 
   d   := Distance( source, target );
   if d = 0 then Exit;
@@ -985,9 +989,9 @@ begin
           if KnockBacked then Continue;
           if isVisible then
           begin
-            if dmg > 10 then IO.Mark( tc, Red, '*', 200 )
-              else if dmg > 4 then IO.Mark( tc, LightRed, '*', 100 )
-                else IO.Mark( tc, LightGray, '*', 50 );
+            if dmg > 10 then IO.addMarkAnimation( 200, 0, tc, iSprite, Red, '*' )
+              else if dmg > 4 then IO.addMarkAnimation( 100, 0, tc, iSprite, LightRed, '*' )
+                else IO.addMarkAnimation( 50, 0, tc, iSprite, LightGray, '*' );
           end;
           if dmg >= KnockBackValue then
           begin
@@ -1002,7 +1006,7 @@ begin
         
         DamageTile( tc, dmg, Shotgun.DamageType );
         if isVisible( tc ) and ( not isPassable( tc ) ) then
-          IO.Mark(tc,LightGray,'*',100);
+          IO.addMarkAnimation( 100, 0, tc, iSprite, LightGray,'*' );
       end;
   ClearLightMapBits([lfDamage]);
 end;

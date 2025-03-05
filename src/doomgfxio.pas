@@ -22,7 +22,6 @@ type
     procedure WaitForAnimation; override;
     function AnimationsRunning : Boolean; override;
     procedure AnimationWipe; override;
-    procedure Mark( aCoord : TCoord2D; aColor : Byte; aChar : Char; aDuration : DWord; aDelay : DWord = 0 ); override;
     procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); override;
     procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single ); override;
     procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean ); override;
@@ -30,7 +29,7 @@ type
     procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); override;
     procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); override;
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
-    procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte; aPic : Char ); override;
+    procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); override;
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
     function getUIDPosition( aUID : TUID; var aPosition : TVec2i ) : Boolean;
 
@@ -322,11 +321,6 @@ begin
   FAnimations.Clear;
 end;
 
-procedure TDoomGFXIO.Mark( aCoord: TCoord2D; aColor: Byte; aChar: Char; aDuration: DWord; aDelay: DWord );
-begin
-  FAnimations.AddAnimation( TDoomMark.Create( aDuration, aDelay, aCoord ) );
-end;
-
 procedure TDoomGFXIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
 begin
   if Setting_Flash then
@@ -392,10 +386,10 @@ begin
 end;
 
 procedure TDoomGFXIO.addMarkAnimation(aDuration: DWord; aDelay: DWord;
-  aCoord: TCoord2D; aColor: Byte; aPic: Char);
+  aCoord: TCoord2D; aSprite : TSprite; aColor: Byte; aPic: Char);
 begin
   if Doom.State <> DSPlaying then Exit;
-  FAnimations.addAnimation( TDoomMark.Create(aDuration, aDelay, aCoord ) )
+  FAnimations.addAnimation( TDoomMark.Create(aDuration, aDelay, aCoord, aSprite ) )
 end;
 
 procedure TDoomGFXIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);

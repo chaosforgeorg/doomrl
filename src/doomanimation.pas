@@ -40,10 +40,11 @@ end;}
 { TDoomMark }
 
 TDoomMark = class(TAnimation)
-  constructor Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D );
+  constructor Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite );
   procedure OnDraw; override;
 private
-  FCoord : TCoord2D;
+  FSprite : TSprite;
+  FCoord  : TCoord2D;
 end;
 
 { TDoomExplodeMark }
@@ -214,18 +215,16 @@ end;}
 
 { TDoomMark }
 
-constructor TDoomMark.Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D );
+constructor TDoomMark.Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite );
 begin
   inherited Create( aDuration, aDelay, 0 );
-  FCoord    := aCoord;
+  FCoord  := aCoord;
+  FSprite := aSprite;
 end;
 
 procedure TDoomMark.OnDraw;
-var iMarkSprite : TSprite;
 begin
-  iMarkSprite.Flags       := [];
-  iMarkSprite.SpriteID[0] := HARDSPRITE_HIT;
-  SpriteMap.PushSpriteFX( FCoord, iMarkSprite )
+  SpriteMap.PushSpriteFX( FCoord, FSprite )
 end;
 
 { TDoomExplodeMark }
