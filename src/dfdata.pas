@@ -180,7 +180,6 @@ const
   Option_IntuitionChar    : Char = '.';
 
 var
-  HARDSPRITE_HIT     : DWord = 0;
   HARDSPRITE_EXPL    : DWord = 0;
   HARDSPRITE_SELECT  : DWord = 0;
   HARDSPRITE_MARK    : DWord = 0;
@@ -239,12 +238,14 @@ type
     MaxRange   : Byte;
     Spread     : Byte;
     Reduce     : Real;
-    DamageType : TDamageType
+    DamageType : TDamageType;
+    HitSprite  : TSprite;
   end;
 
   TMissileData = record
     SoundID    : string[20];
     Sprite     : TSprite;
+    HitSprite  : TSprite;
     Picture    : Char;
     Color      : Byte;
     Delay      : Byte;
@@ -359,6 +360,7 @@ function DurationString( aSeconds : int64 ) : Ansistring;
 function BlindCoord( const where : TCoord2D ) : string;
 function SlotName(slot : TEqSlot) : string;
 function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
+function ReadSprite( aTable : TLuaTable; aName : Ansistring; var aSprite : TSprite ) : Boolean;
 function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
 function ReadFileString( const aFileName : Ansistring ) : Ansistring;
 function WriteFileString( const aFileName, aText : Ansistring ) : Boolean;
@@ -746,7 +748,6 @@ end;
 function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
 var iTable : TLuaTable;
     iPair  : TLuaIndexValue;
-    i      : Word;
 begin
   ReadSprite := False;
   if aTable.IsNumber( 'sprite' ) then
@@ -791,6 +792,24 @@ begin
   if aTable.IsTable( 'sprite' ) then
   begin
     iTable := aTable.GetTable( 'sprite' );
+    Result := ReadSprite( iTable, aSprite );
+    iTable.Free;
+  end;
+end;
+
+function ReadSprite( aTable : TLuaTable; aName : Ansistring; var aSprite : TSprite ) : Boolean;
+var iTable : TLuaTable;
+begin
+  ReadSprite := False;
+  if aTable.IsNumber( aName ) then
+  begin
+    aSprite.SCount      := 1;
+    aSprite.SpriteID[0] := aTable.getInteger( aName , 0 );
+    ReadSprite          := True;
+  end
+  else if aTable.IsTable( aName ) then
+  begin
+    iTable := aTable.GetTable( aName );
     Result := ReadSprite( iTable, aSprite );
     iTable.Free;
   end;

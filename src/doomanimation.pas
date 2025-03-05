@@ -224,7 +224,7 @@ end;
 
 procedure TDoomMark.OnDraw;
 begin
-  SpriteMap.PushSpriteFX( FCoord, FSprite )
+  SpriteMap.PushSpriteFX( FCoord, FSprite, FTime )
 end;
 
 { TDoomExplodeMark }

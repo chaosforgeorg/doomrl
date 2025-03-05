@@ -126,6 +126,7 @@ begin
     try
       SoundID   := getString('sound_id');
       ReadSprite( iTable, Sprite );
+      ReadSprite( iTable, 'hitsprite', HitSprite );
       Picture   := getChar('ascii');
       Color     := getInteger('color');
       Delay     := getInteger('delay');
@@ -147,24 +148,29 @@ begin
 end;
 
 function lua_core_register_shotgun(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    mID : Integer;
+var iState : TDoomLuaState;
+    iTable : TLuaTable;
+    iMID   : Integer;
 begin
-  State.Init(L);
+  iState.Init(L);
   if High(Shotguns) = -1 then SetLength(Shotguns,20);
-  mID := State.ToInteger(1);
-  if mID > High(Shotguns) then
+  iMID := iState.ToInteger(1);
+  if iMID > High(Shotguns) then
     SetLength(Shotguns,High(Shotguns)*2);
-  with Shotguns[mID] do
-  with LuaSystem.GetTable(['shotguns',mID]) do
-  try
-    Range      := getInteger('range');
-    MaxRange   := getInteger('maxrange');
-    Spread     := getInteger('spread');
-    Reduce     := getFloat ('reduce');
-    DamageType := TDamageType( getInteger('damage') );
-  finally
-    Free;
+  with Shotguns[iMID] do
+  begin
+    iTable := LuaSystem.GetTable(['shotguns', iMID]);
+    with iTable do
+    try
+      Range      := getInteger('range');
+      MaxRange   := getInteger('maxrange');
+      Spread     := getInteger('spread');
+      Reduce     := getFloat ('reduce');
+      DamageType := TDamageType( getInteger('damage') );
+      ReadSprite( iTable, 'hitsprite', HitSprite );
+    finally
+      Free;
+    end;
   end;
   Result := 0;
 end;

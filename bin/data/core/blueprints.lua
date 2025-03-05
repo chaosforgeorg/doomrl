@@ -134,10 +134,8 @@ core.register_blueprint "missile"
 	ascii       = { false, core.TSTRING, "-" },
 	color       = { true,  core.TNUMBER },
 	coscolor    = { false, core.TTABLE },
-	sprite      = { true,  core.TNUMBER },
-	sflags      = { false, core.TFLAGS, {} },
-	sframes     = { false, core.TNUMBER, 0 },
-	sftime      = { false, core.TNUMBER, FRAME_TIME },
+	sprite      = { true,  core.TANY },
+	hitsprite   = { true,  core.TANY },
 	delay       = { true,  core.TNUMBER },
 	miss_base   = { true,  core.TNUMBER },
 	miss_dist   = { true,  core.TNUMBER },
@@ -161,8 +159,8 @@ core.register_blueprint "shotgun"
 	spread      = { true,  core.TNUMBER },
 	reduce      = { true,  core.TNUMBER },
 	damage      = { false, core.TNUMBER, 0 },
+	hitsprite   = { true,  core.TANY },
 }
-
 
 core.register_blueprint "ai"
 {
@@ -349,7 +347,7 @@ core.register_blueprint "item"
 	overlay        = { false, core.TTABLE },
 	color          = { false, core.TNUMBER, LIGHTGRAY },
 	color_id       = { false, core.TANY },
-	sprite         = { true, core.TNUMBER },
+	sprite         = { true, core.TANY },
 	coscolor       = { false, core.TTABLE },
 	glow           = { false, core.TTABLE },
 	sflags         = { false, core.TFLAGS, {} },

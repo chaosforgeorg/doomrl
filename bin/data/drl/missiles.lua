@@ -5,6 +5,7 @@ function drl.register_missiles()
 		sound_id   = "pistol",
 		color      = LIGHTGRAY,
 		sprite     = SPRITE_SHOT,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 15,
 		miss_base  = 10,
 		miss_dist  = 3,
@@ -15,6 +16,7 @@ function drl.register_missiles()
 		sound_id   = "chaingun",
 		color      = WHITE,
 		sprite     = SPRITE_SHOT,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 10,
 		miss_base  = 10,
 		miss_dist  = 3,
@@ -26,6 +28,7 @@ function drl.register_missiles()
 		ascii      = "*",
 		color      = MULTIBLUE,
 		sprite     = SPRITE_PLASMASHOT,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 10,
 		miss_base  = 30,
 		miss_dist  = 3,
@@ -36,6 +39,7 @@ function drl.register_missiles()
 		sound_id   = "bazooka",
 		color      = BROWN,
 		sprite     = SPRITE_ROCKETSHOT,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 30,
 		miss_base  = 30,
 		miss_dist  = 5,
@@ -48,6 +52,7 @@ function drl.register_missiles()
 		sound_id   = "bazooka",
 		color      = BROWN,
 		sprite     = SPRITE_ROCKETSHOT,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 30,
 		miss_base  = 30,
 		miss_dist  = 5,
@@ -63,6 +68,7 @@ function drl.register_missiles()
 		sound_id   = "pistol",
 		color      = LIGHTGRAY,
 		sprite     = SPRITE_SHOT,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 15,
 		miss_base  = 10,
 		miss_dist  = 3,
@@ -75,6 +81,7 @@ function drl.register_missiles()
 		sound_id   = "pistol",
 		color      = LIGHTGRAY,
 		sprite     = SPRITE_SHOT,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 15,
 		miss_base  = 10,
 		miss_dist  = 3,
@@ -88,6 +95,7 @@ function drl.register_missiles()
 		ascii      = "*",
 		color      = WHITE,
 		sprite     = SPRITE_BFGSHOT,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 100,
 		miss_base  = 50,
 		miss_dist  = 10,
@@ -103,6 +111,7 @@ function drl.register_missiles()
 		ascii      = "*",
 		color      = WHITE,
 		sprite     = SPRITE_BFGSHOT,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 200,
 		miss_base  = 50,
 		miss_dist  = 10,
@@ -117,6 +126,7 @@ function drl.register_missiles()
 		sound_id   = "plasma",
 		color      = MULTIYELLOW,
 		sprite     = SPRITE_SHOT,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 10,
 		miss_base  = 30,
 		miss_dist  = 5,
@@ -127,6 +137,7 @@ function drl.register_missiles()
 		sound_id   = "knife",
 		color      = LIGHTGRAY,
 		sprite     = SPRITE_KNIFE,
+		hitsprite  = SPRITE_BLAST,
 		delay      = 50,
 		miss_base  = 10,
 		miss_dist  = 3,
@@ -139,6 +150,7 @@ function drl.register_missiles()
 		maxrange   = 15,
 		spread     = 3,
 		reduce     = 0.07,
+		hitsprite  = SPRITE_BLAST,
 	}
 
 	register_shotgun "swide"
@@ -146,6 +158,7 @@ function drl.register_missiles()
 		maxrange   = 8,
 		spread     = 3,
 		reduce     = 0.1,
+		hitsprite  = SPRITE_BLAST,
 	}
 
 	register_shotgun "sfocused"
@@ -153,6 +166,7 @@ function drl.register_missiles()
 		maxrange   = 15,
 		spread     = 2,
 		reduce     = 0.05,
+		hitsprite  = SPRITE_BLAST,
 	}
 
 	register_shotgun "splasma"
@@ -160,5 +174,6 @@ function drl.register_missiles()
 		maxrange   = 15,
 		spread     = 3,
 		reduce     = 0.05,
+		hitsprite  = SPRITE_BLAST,
 	}
 end

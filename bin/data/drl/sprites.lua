@@ -211,7 +211,6 @@ function drl.register_sprites()
     core.declare( "SPRITE_DECO_SKULL_3", DRL_SENVIRO + DRL_COLS * 14 + 16 )
     core.declare( "SPRITE_DECO_SKULL_4", DRL_SENVIRO + DRL_COLS * 15 + 16 )
 
-	core.declare( "HARDSPRITE_HIT",    SPRITE_BLAST )
 	core.declare( "HARDSPRITE_EXPL",   SPRITE_EXPLOSION )
 	core.declare( "HARDSPRITE_SELECT", SPRITE_SELECT )
 	core.declare( "HARDSPRITE_MARK",   SPRITE_MARK )

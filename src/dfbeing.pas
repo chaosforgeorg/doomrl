@@ -1987,7 +1987,6 @@ var iDirection  : TDirection;
     iDodged     : Boolean;
     iFireDesc   : Ansistring;
     iSprite     : TSprite;
-    iHitSprite  : TSprite;
     iDuration   : DWord;
     iSteps      : DWord;
     iDelay      : DWord;
@@ -2183,11 +2182,7 @@ begin
   begin
     IO.addMissileAnimation( iDuration, aSequence,iSource,iMisslePath.GetC,iColor,Missiles[iMissile].Picture,iDelay,iSprite,MF_RAY in Missiles[iMissile].Flags);
     if iHit and iLevel.isVisible( iMisslePath.GetC ) then
-    begin
-      FillChar( iHitSprite, SizeOf(iHitSprite), 0);
-      iHitSprite.SpriteID[0] := HARDSPRITE_HIT;
-      IO.addMarkAnimation(100, aSequence + iDuration, iMisslePath.GetC, iHitSprite, Iif( iIsHit, LightRed, LightGray ), '*' );
-    end;
+      IO.addMarkAnimation(199, aSequence + iDuration, iMisslePath.GetC, Missiles[iMissile].HitSprite, Iif( iIsHit, LightRed, LightGray ), '*' );
   end;
 
   if aItem.Flags[ IF_THROWDROP ] then

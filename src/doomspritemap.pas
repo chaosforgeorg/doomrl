@@ -49,7 +49,7 @@ type
   procedure PushSpriteBeing( aPos : TVec2i; const aSprite : TSprite; aLight : Byte );
   procedure PushSpriteItem( aPos : TVec2i; const aSprite : TSprite; aLight : Byte );
   procedure PushSpriteDoodad( aCoord : TCoord2D; const aSprite : TSprite; aLight : Integer = -1 );
-  procedure PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite );
+  procedure PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite; aTime : Integer = -1 );
   procedure PushSpriteFXRotated( aPos : TVec2i; const aSprite : TSprite; aRotation : Single );
   procedure PushSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aTSX : Single = 0; aTSY : Single = 0 );
   function ShiftValue( aFocus : TCoord2D ) : TVec2i;
@@ -96,7 +96,7 @@ private
   procedure PushSprite( aPos : TVec2i; const aSprite : TSprite; aLight : Byte; aZ : Integer );
   procedure PushMultiSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
   procedure PushSpriteTerrainPart( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
-  function GetSprite( aSprite : TSprite ) : TSprite;
+  function GetSprite( aSprite : TSprite; aTime : Integer = -1 ) : TSprite;
   function GetSprite( aCell, aStyle : Byte ) : TSprite;
 public
   property Engine : TSpriteEngine read FSpriteEngine;
@@ -743,9 +743,9 @@ begin
   end;
 end;
 
-procedure TDoomSpriteMap.PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite ) ;
+procedure TDoomSpriteMap.PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite; aTime : Integer = -1 ) ;
 begin
-  PushSprite( Vec2i( (aCoord.X-1) * FSpriteEngine.Grid.X, (aCoord.Y-1) * FSpriteEngine.Grid.Y ), aSprite, 255, DRL_Z_FX );
+  PushSprite( Vec2i( (aCoord.X-1) * FSpriteEngine.Grid.X, (aCoord.Y-1) * FSpriteEngine.Grid.Y ), GetSprite( aSprite, aTime ), 255, DRL_Z_FX );
 end;
 
 procedure TDoomSpriteMap.PushSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aTSX : Single; aTSY : Single ) ;
@@ -1092,13 +1092,17 @@ begin
   Exit( Min( 100+aBonus+Doom.Level.Vision.getLight(aWhere)*20, 255 ) );
 end;
 
-function TDoomSpriteMap.GetSprite( aSprite : TSprite ) : TSprite;
+function TDoomSpriteMap.GetSprite( aSprite : TSprite; aTime : Integer = -1 ) : TSprite;
 var iFrame : DWord;
+    iTime  : DWord;
 begin
   Result := aSprite;
-  if Result.Frames > 0 then
+  if ( Result.Frames > 0 ) and ( Result.FrameTime > 0 ) then
   begin
-    iFrame := ( ( FTimer div Result.Frametime ) mod Result.Frames );
+    if aTime >= 0
+      then iTime := aTime
+      else iTime := FTimer;
+    iFrame := ( ( iTime div Result.Frametime ) mod Result.Frames );
     if SF_LARGE in Result.Flags then
       Result.SpriteID[0] += DRL_COLS * 2 * iFrame
     else

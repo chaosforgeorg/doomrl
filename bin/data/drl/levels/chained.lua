@@ -177,6 +177,7 @@ register_level "the_chained_court"
 					sound_id   = "arch",
 					color      = YELLOW,
 					sprite     = 0,
+					hitsprite  = SPRITE_BLAST,
 					delay      = 0,
 					miss_base  = 10,
 					miss_dist  = 10,
