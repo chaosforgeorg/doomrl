@@ -97,7 +97,7 @@ register_level "abyssal_plains"
 		local time = core.game_time()
 		local res = level.status
 		if res > 1 then return end
-		if res == 0 and player.x > 29 and player.x < 49 and player.y > 8 and player.y < 13 then
+		if res == 0 and player.x > 29 and player.x < 49 and player.y > 7 and player.y < 14 then
 			ui.msg("Suddenly you're trapped in!")
 			level:play_sound( "door.close", player.position )
 			level:transmute( "gwall", "floor" )
