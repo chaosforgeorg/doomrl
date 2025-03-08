@@ -290,11 +290,13 @@ core.register_blueprint "challenge"
 	win_mortem    = { false, core.TSTRING },
 	win_highscore = { false, core.TSTRING },
 
-	secondary        = { false, core.TTABLE },
-	arch_name        = { false, core.TSTRING },
-	arch_description = { false, core.TSTRING },
-	arch_rating      = { false, core.TSTRING },
-	arch_rank        = { false, core.TNUMBER },
+	secondary          = { false, core.TTABLE },
+	arch_name          = { false, core.TSTRING },
+	arch_description   = { false, core.TSTRING },
+	arch_rating        = { false, core.TSTRING },
+	arch_rank          = { false, core.TNUMBER },
+	arch_win_mortem    = { false, core.TSTRING },
+    arch_win_highscore = { false, core.TSTRING },
 
 	OnCreate         = { false, core.TFUNC },
 	OnDie            = { false, core.TFUNC },
