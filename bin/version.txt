@@ -1,6 +1,7 @@
 0.9.9.9 BETA 7
 [fix] -- GH#241: clearing of level feeling on death/restart [brisbang]
 [fix] -- GH#232: fixed Abyssal Plains trap not always triggering [brisbang]
+[fix] -- GH#100: completion of Ao666 reports 666 levels completed [brisbang]
 
 0.9.9.9 BETA 6d
 [mod] -- RCMOD : gun kata move firetime bonus is now 50%

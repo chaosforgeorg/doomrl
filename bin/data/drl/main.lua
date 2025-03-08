@@ -362,8 +362,20 @@ function drl.GetResultDescription( result, highscore )
 	end
 
 	if player:has_won() then
-		local chal_idx  = "win_mortem"
-		if highscore then chal_idx = "win_highscore" end
+		local chal_idx
+		if highscore then
+			if ARCHANGEL then
+				chal_idx = "arch_win_highscore"
+			else
+				chal_idx = "win_highscore"
+			end
+		else
+			if ARCHANGEL then
+				chal_idx = "arch_win_mortem"
+			else
+				chal_idx = "win_mortem"
+			end
+		end
 		if SCHALLENGE ~= '' and chal[ SCHALLENGE ][ chal_idx ] then
 			killed_by = chal[ SCHALLENGE ][ chal_idx ]
 		elseif CHALLENGE ~= '' and chal[ CHALLENGE ][ chal_idx ] then
