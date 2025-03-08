@@ -2,6 +2,7 @@
 [fix] -- GH#241: clearing of level feeling on death/restart [brisbang]
 [fix] -- GH#232: fixed Abyssal Plains trap not always triggering [brisbang]
 [fix] -- GH#100: completion of Ao666 reports 666 levels completed [brisbang]
+[mod] -- GH#104: remove soft locking for Containment Area and The Wall [brisbang]
 
 0.9.9.9 BETA 6d
 [mod] -- RCMOD : gun kata move firetime bonus is now 50%
@@ -33,7 +34,7 @@
 [fix] -- GH#228: explode wall levers leave debris
 [fix] -- GH#229: explode wall levers destroy doors
 [fix] -- GH#229: City of Skulls - lever can't be destroyed
-[fix] -- GH#223: Abbysal Plains raising walls will clear tiles and destroy items
+[fix] -- GH#223: Abyssal Plains raising walls will clear tiles and destroy items
 [fix] -- RCFIX : fixed multi-melee animations
 
 0.9.9.9 BETA 5

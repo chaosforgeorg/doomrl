@@ -59,6 +59,7 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 		level.data.left   = area( 19, 2, 48, 14 ) 
 		level.data.middle = area( 50, 2, 66, 14 ) 
 		level.data.right  = area( 68, 2, 78, 14 ) 
+		level.data.bridge = area( 13, 7, 18, 9 ) 
 
 		local total   = 5 + 2*DIFFICULTY
 		level:summon{ "imp", total, area = level.data.left }
@@ -69,7 +70,8 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 
 	OnKillAll = function ()
 		if level.status ~= 3 then return end
-		ui.msg("I guess I prefered the Wall.")
+		level:transmute( "wall", "floor", level.data.bridge)
+		ui.msg("I guess I prefered the Wall. The air seems less claustrophic now.")
 		level.status = 4
 		if CHALLENGE == "challenge_aohu" then
 			player:add_medal("everysoldier")
