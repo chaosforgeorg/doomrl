@@ -63,8 +63,9 @@ register_level "the_wall"
 
 	OnKillAll = function ()
 		if level.status == 2 then return end
-		ui.msg("Peace comes back to this evil place. Cracks begin to appear as if in deference to your achievement.")
 		level:transmute( "rwall", "floor")
+		level:play_sound( "revenant.die", coord(28, 10))
+		ui.msg("Peace comes back to this evil place. Cracks begin to appear as if in deference to your achievement.")
 		level.status = 2
 		if CHALLENGE == "challenge_aohu" then
 			player:add_medal("everysoldier")

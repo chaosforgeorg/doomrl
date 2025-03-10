@@ -71,6 +71,7 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 	OnKillAll = function ()
 		if level.status ~= 3 then return end
 		level:transmute( "wall", "floor", level.data.bridge)
+		level:play_sound( "door.close", coord(15, 8))
 		ui.msg("I guess I prefered the Wall. The air seems less claustrophic now.")
 		level.status = 4
 		if CHALLENGE == "challenge_aohu" then
