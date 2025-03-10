@@ -34,9 +34,11 @@ There are two IDEs available: Visual Studio Code and Lazarus. You should only ne
   * SDL_image.dll (true source: https://github.com/libsdl-org/SDL_image/releases/tag/release-2.8.5)
   * fmod64.dll (true source: www.fmod.com/download)
   * (if referencing v0.9.9.8 or less) mp3\\* to (bin\\)data\\drlhq\\music
-  * (if referencing v0.9.9.8 or less) wavhq\\* to (bin\\)data\\drlhq\\sounds
+  * (if referencing v0.9.9.8 or less) wavhq\\* to (bin\\)data\\drlhq\\sound
+  * (if referencing v0.9.9.8 or less) wavhq\\* to (bin\\)data\\drllq\\sound
   * (if referencing v0.9.9.9 or higher) data\\drlhq\music\\* to (bin\\)data\\drlhq\\music
-  * (if referencing v0.9.9.9 or higher) data\\drlhq\sounds\\* to (bin\\)data\\drlhq\\sounds
+  * (if referencing v0.9.9.9 or higher) data\\drlhq\sounds\\* to (bin\\)data\\drlhq\\sound
+  * (if referencing v0.9.9.9 or higher) data\\drlhq\sounds\\* to (bin\\)data\\drllq\\sound
 4. Download fpcvalkyrie from https://github.com/ChaosForge/fpcvalkyrie/ to a folder at the same level as the DRL source
 5. Ensure doomrl and fpcvalkyrie are on the same release branch (e.g. master or development)
 
@@ -79,11 +81,15 @@ DRL uses a few sophisticated Lua tricks however v5.1 specifically is compulsory:
 #### Build
 0. Open drl.code-workspace
 1. Terminal/Run Task/Build makewad.exe (debug)
-2. Terminal/Run Task/Build drl.wad, core.wad
-3. Terminal/Run Task/Build drl.exe (debug)
+2. Terminal/Run Task/Build drl.exe (debug)
+3. Terminal/Run Task/Build drl.wad, core.wad
 4. To debug, Run/Start Debugging. For example, open drl.pas, press F9 at the first line of code, and then start debugging.
 5. Terminal/Run Task/Build the release package (all). This won't work on a windows machine without some adjustments to the build script.
 You can test all these steps with Terminal/Run Task/Unit test build scripts (noting the release build step may fail).
+
+#### Build errors
+1. Terminal/Run Task/Clean Build Folders
+2. Repeat the Build tasks from step 1.
 
 #### Lazarus notes
 The Lazarus installation is preferred (compared with the simpler fpc installation) because using fpc in Windows triggers an error when the debugger is used.
