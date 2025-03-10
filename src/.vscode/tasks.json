@@ -231,6 +231,21 @@
             "problemMatcher": []
         },
         {
+            "label": "Clean Build Folders",
+            "type": "shell",
+            "command": "del",
+            "args": [
+                "-ErrorAction",
+                "SilentlyContinue",
+                "-Force",
+                "${config:drlBasePath}\\${config:tmpPath}\\*"
+            ],
+            "presentation": {
+                "focus": "true"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Build makewad.exe (debug)",
             "type": "shell",
             "group": {
