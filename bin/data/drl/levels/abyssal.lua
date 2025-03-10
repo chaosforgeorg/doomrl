@@ -89,6 +89,15 @@ register_level "abyssal_plains"
 		level:transmute( "gwall", "floor" )
 	end,
 
+	OnNuked = function()
+		for b in level:beings() do
+			if not b:is_player() then return end
+		end
+		level.data.kill_all = true
+		--Skip the wall trap sequence if required
+		level.status = 2
+	end,
+
 	OnEnter = function ()
 		level.status = 0
 	end,

@@ -71,9 +71,14 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 		if level.status ~= 3 then return end
 		ui.msg("I guess I prefered the Wall.")
 		level.status = 4
-		if CHALLENGE == "challenge_aohu" then
-			player:add_medal("everysoldier")
+	end,
+
+	OnNuked = function ()
+		for b in level:beings() do
+			if not b:is_player() then return end
 		end
+		--Skip the wall trap sequence if required
+		level.status = 4
 	end,
 
 	OnTick = function ()
@@ -120,6 +125,9 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 			ui.msg("Luckily it's not as bad as tricks and traps...")
 			player:add_history("He emerged from the Containment Area victorious!")
 			player:add_badge("wall1")
+			if CHALLENGE == "challenge_aohu" then
+				player:add_medal("everysoldier")
+			end
 			if core.is_challenge("challenge_aomr") or core.is_challenge("challenge_aob") or core.is_challenge("challenge_aosh") then
 				player:add_badge("wall2")
 			end
