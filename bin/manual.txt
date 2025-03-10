@@ -310,7 +310,7 @@ Controls
   SPACE   -- Action - open doors, close doors, use levers/switches or 
             go down stairs (you won't be able to come back!)
   g       -- Pick up item from floor
-  SHIFT-g -- Use/wield/wear item from floor/pull lever/switch
+  SHIFT-g -- Use/wield/wear item from floor
   z       -- Swap weapon (with prepared weapon)
   i       -- Show inventory
   e       -- Show or change equipment/show traits
