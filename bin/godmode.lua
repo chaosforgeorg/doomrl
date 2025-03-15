@@ -97,6 +97,7 @@ Keytable["F8"]        = function()
 	player.inv:add( 'utrigun')
 	player.inv:add( 'urailgun')
 	player.inv:add( 'udragon')
+	player.inv:add( 'nuke' )
 	for i = 1,5 do
 		player.inv:add( 'cell', { ammo = 50 } )
 	end

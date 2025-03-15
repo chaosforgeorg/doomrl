@@ -74,9 +74,14 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 		level:play_sound( "door.close", coord(15, 8))
 		ui.msg("I guess I prefered the Wall. The air seems less claustrophic now.")
 		level.status = 4
-		if CHALLENGE == "challenge_aohu" then
-			player:add_medal("everysoldier")
+	end,
+
+	OnNuked = function ()
+		for b in level:beings() do
+			if not b:is_player() then return end
 		end
+		--Skip the wall trap sequence if required
+		level.status = 4
 	end,
 
 	OnTick = function ()
@@ -123,6 +128,9 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 			ui.msg("Luckily it's not as bad as tricks and traps...")
 			player:add_history("He emerged from the Containment Area victorious!")
 			player:add_badge("wall1")
+			if CHALLENGE == "challenge_aohu" then
+				player:add_medal("everysoldier")
+			end
 			if core.is_challenge("challenge_aomr") or core.is_challenge("challenge_aob") or core.is_challenge("challenge_aosh") then
 				player:add_badge("wall2")
 			end
