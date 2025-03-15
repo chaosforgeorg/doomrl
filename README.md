@@ -92,10 +92,11 @@ There seems to be an error when attempting to rebuilding drl.exe after the wads 
 2. Repeat the Build tasks from step 1.
 
 #### Debugging
-<b>Pascal</b>
+##### Pascal
 1. Set a breakpoint (F9). For example at the first line of code in drl.pas.
 2. Run/Start Debugging.
-<b>Lua</b>
+
+##### Lua
 Because the lua code is packaged into the wad file, inline debugging is more difficult. Instead the lua console provides an interface to run commands.
 1. Run/Start Debugging
 2. Launch a game
@@ -104,7 +105,8 @@ Because the lua code is packaged into the wad file, inline debugging is more dif
    * player:exit("the_wall")
    * player.inv:add("nuke")
    * ui.msg(<i>your test lua method that returns a string</i>)
-<b>Gameplay</b>
+
+##### Gameplay
 1. Run/Start Debugging
 2. Start a new game
 3. There are a myriad of game keys defined in godmode.lua to accelerate the character.
