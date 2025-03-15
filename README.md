@@ -83,16 +83,34 @@ DRL uses a few sophisticated Lua tricks however v5.1 specifically is compulsory:
 1. Terminal/Run Task/Build makewad.exe (debug)
 2. Terminal/Run Task/Build drl.exe (debug)
 3. Terminal/Run Task/Build drl.wad, core.wad
-4. To debug, Run/Start Debugging. For example, open drl.pas, press F9 at the first line of code, and then start debugging.
-5. Terminal/Run Task/Build the release package (all). This won't work on a windows machine without some adjustments to the build script.
+4. Terminal/Run Task/Build the release package (all). This won't work on a windows machine without some adjustments to the build script.
 You can test all these steps with Terminal/Run Task/Unit test build scripts (noting the release build step may fail).
 
 #### Build errors
+There seems to be an error when attempting to rebuilding drl.exe after the wads exist. Some further analysis might understand this better and possibly remove the wads prior to recompiling drl.exe. The easiest approach to recover from the situation:
 1. Terminal/Run Task/Clean Build Folders
 2. Repeat the Build tasks from step 1.
 
+#### Debugging
+<b>Pascal</b>
+1. Set a breakpoint (F9). For example at the first line of code in drl.pas.
+2. Run/Start Debugging.
+<b>Lua</b>
+Because the lua code is packaged into the wad file, inline debugging is more difficult. Instead the lua console provides an interface to run commands.
+1. Run/Start Debugging
+2. Launch a game
+3. F1
+4. You can run lua commands from the console. Some examples of useful commands are:
+   * player:exit("the_wall")
+   * player.inv:add("nuke")
+   * ui.msg(<i>your test lua method that returns a string</i>)
+<b>Gameplay</b>
+1. Run/Start Debugging
+2. Start a new game
+3. There are a myriad of game keys defined in godmode.lua to accelerate the character.
+
 #### Lazarus notes
-The Lazarus installation is preferred (compared with the simpler fpc installation) because using fpc in Windows triggers an error when the debugger is used.
+The Lazarus installation is preferred for VS Code (compared with the simpler fpc installation) because using fpc in Windows triggers an error when the debugger is used.
 
 ### The Lazarus IDE
 #### Configuration
