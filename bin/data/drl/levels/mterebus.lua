@@ -114,6 +114,9 @@ register_level "mt_erebus"
 		local result = level.status
 		if result < 4 then
 			ui.msg("That seems to be all of them... wait! Something is moving there, or is it just lava glow?")
+			--Unlike Limbo, in the event of a nuke disable the need to open up the walls.
+			--This inconsistency is partly due to historical reasons but also because the spawning of the elemental shouldn't be behind a wall.
+			--However the elemental is killed immediately in practice because it appears at the end of the monster list.
 			level:transmute( "cwall", "floor" )
 			level.status = 4
 			local element = level:summon("lava_elemental")
