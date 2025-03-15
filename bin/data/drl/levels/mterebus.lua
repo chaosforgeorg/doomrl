@@ -24,14 +24,14 @@ register_level "mt_erebus"
 
 			OnUse = function(self,being)
 				if level.status > 2 then return true end
-				local raise = 0
-				if level.status == 1 then 
-					raise = 1
-				elseif level.status == 2 then 
-					raise = 2
-				end
 				player:play_sound("lever.use")
-				generator.transmute_style( "cwall", "floor", raise, 0 )
+				local raise = LFMARKER1
+				if level.status == 1 then 
+					raise = LFMARKER2
+				elseif level.status == 2 then 
+					raise = LFMARKER3
+				end
+				level:transmute_by_flag( "cwall", "floor", raise, area.FULL)
 				level.status = level.status + 1
 				return true
 			end,
@@ -53,9 +53,9 @@ register_level "mt_erebus"
 			['='] = "lava",
 			['>'] = "stairs",
 			[','] = "bridge",
-			['X'] = { "cwall", flags = { LFPERMANENT }, style = 1, },
-			['%'] = { "cwall", flags = { LFPERMANENT }, style = 2, },
-			['#'] = { "cwall", flags = { LFPERMANENT }, style = 3, },
+			['X'] = { "cwall", flags = { LFPERMANENT, LFMARKER1 }, style = 1, },
+			['%'] = { "cwall", flags = { LFPERMANENT, LFMARKER2 }, style = 2, },
+			['#'] = { "cwall", flags = { LFPERMANENT, LFMARKER3 }, style = 3, },
 			['&'] = { "floor", item = "lever_erebus" },
 
 			['/'] = { "floor", item = "shell" },

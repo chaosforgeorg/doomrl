@@ -14,7 +14,7 @@ register_level "the_wall"
 		local translation = {
 			['.'] = "floor",
 			['#'] = "wall",
-			['X'] = "rwall",
+			['X'] = { "wall", flags = { LFMARKER1 }},
 			['%'] = { "wall", flags = { LFBLOOD } },
 			['*'] = "bloodpool",
 			[','] = { "floor", flags = { LFBLOOD } },
@@ -63,7 +63,7 @@ register_level "the_wall"
 
 	OnKillAll = function ()
 		if level.status == 2 then return end
-		level:transmute( "rwall", "floor")
+		level:transmute_by_flag("wall", "floor", LFMARKER1, area.FULL)
 		level:play_sound( "revenant.die", coord(28, 10))
 		ui.msg("Peace comes back to this evil place. Cracks begin to appear as if in deference to your achievement.")
 		level.status = 2
