@@ -130,6 +130,7 @@ register_level "limbo"
 	end,
 
 	OnKillAll = function ()
+		--Unlike Erebus, if you nuke this level you still need to pull the levers to raise the bridges
 		if level.status == 0 then
 			ui.msg("Suddenly everything is peaceful. Rest in peace, damned souls...")
 
