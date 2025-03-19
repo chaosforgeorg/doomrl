@@ -24,7 +24,7 @@ end;
 
 implementation
 
-uses vdebug, vluasystem, dfbeing, dfplayer, doomio;
+uses vdebug, vluasystem, vuid, dfbeing, dfplayer, doomio;
 
 constructor TAffects.Create( aOwner : TThing );
 var iAff : Word;
@@ -110,8 +110,10 @@ begin
 end;
 
 procedure   TAffects.OnUpdate;
-var iCount : DWord;
+var iCount   : DWord;
+    iThisUID : DWord;
 begin
+  iThisUID := FOwner.UID;
   for iCount := 1 to MAXAFFECT do
     if FList[iCount] <> 0 then
       begin
@@ -119,6 +121,7 @@ begin
         if FList[iCount] = 5  then if FOwner is TPlayer then IO.Msg( LuaSystem.Get([ 'affects', iCount, 'message_ending' ],'') );
         if FList[iCount] <> 0 then Run( iCount )
                               else Expire( iCount, False );
+        if UIDs[ iThisUID ] = nil then Exit;
       end;
 end;
 
