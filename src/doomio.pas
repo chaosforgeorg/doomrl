@@ -753,11 +753,10 @@ begin
     VTIG_FreeLabel( iLevelName, Point( -2-Length( iLevelName), iBottom ), iColor );
 
     iP := 0;
-    with Player do
     for i := 1 to MAXAFFECT do
-      if FAffects.IsActive(i) then
+      if Player.Affects.IsActive(i) then
       begin
-        if FAffects.IsExpiring(i)
+        if Player.Affects.IsExpiring(i)
           then iColor := Affects[i].Color_exp
           else iColor := Affects[i].Color;
         VTIG_FreeLabel( Affects[i].name, Point( iPos.X+iP+1, iBottom ), iColor );

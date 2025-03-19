@@ -24,7 +24,6 @@ type TPlayer = class(TBeing)
   InventorySize   : Byte;
   MasterDodge     : Boolean;
   LastTurnDodge   : Boolean;
-  FAffects        : TAffects;
   FKills          : TKillTable;
   FKillMax        : DWord;
   FKillCount      : DWord;
@@ -57,7 +56,7 @@ type TPlayer = class(TBeing)
   function RunPath( const aCoord : TCoord2D ) : Boolean;
   procedure ExamineNPC;
   procedure ExamineItem;
-  private
+private
   FExp            : LongInt;
   FExpLevel       : Byte;
   FScore          : LongInt;
@@ -110,7 +109,6 @@ begin
   FKills := TKillTable.Create;
   FKillMax        := 0;
   FKillCount      := 0;
-  FAffects.Clear;
 
   CurrentLevel  := 0;
   StatusEffect  := StatusNormal;
@@ -161,7 +159,6 @@ begin
   Stream.WriteDWord( FBerserkerLimit );
 
   Stream.Write( FExpFactor,  SizeOf( FExpFactor ) );
-  Stream.Write( FAffects,    SizeOf( FAffects ) );
   Stream.Write( FTraits,     SizeOf( FTraits ) );
   Stream.Write( FQuickSlots, SizeOf( FQuickSlots ) );
 
@@ -184,13 +181,12 @@ begin
   FBerserkerLimit:= Stream.ReadDWord();
 
   Stream.Read( FExpFactor,  SizeOf( FExpFactor ) );
-  Stream.Read( FAffects,    SizeOf( TAffects ) );
   Stream.Read( FTraits,     SizeOf( FTraits ) );
   Stream.Read( FQuickSlots, SizeOf( FQuickSlots ) );
 
   FKills          := TKillTable.CreateFromStream( Stream );
   FStatistics     := TStatistics.CreateFromStream( Stream );
-  
+
   Initialize;
 end;
 
@@ -274,7 +270,7 @@ begin
   if UIDs[ iThisUID ] = nil then Exit( False );
 
   MasterDodge := False;
-  FAffects.Tick;
+  FAffects.OnUpdate;
   if Doom.State <> DSPlaying then Exit( False );
   Inv.EqTick;
   FLastPos := FPosition;
@@ -656,49 +652,6 @@ begin
   IO.WaitForLayer( True );
 end;
 
-function lua_player_set_affect(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
-    Being   : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  if not (Being is TPlayer) then Exit(0);
-  Player.FAffects.Add(State.ToId(2),State.ToInteger(3,-1));
-  Result := 0;
-end;
-
-function lua_player_get_affect_time(L: Plua_State): Integer; cdecl;
-var State    : TDoomLuaState;
-    Being    : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  if not (Being is TPlayer) then Exit(0);
-  State.Push(Player.FAffects.getTime(State.ToId(2)));
-  Result := 1;
-end;
-
-function lua_player_remove_affect(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
-    Being   : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  if not (Being is TPlayer) then Exit(0);
-  Player.FAffects.Remove( State.ToId(2), State.ToBoolean( 3, False ) );
-  Result := 0;
-end;
-
-function lua_player_is_affect(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
-    Being   : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  State.Push( ( Being is TPlayer ) and Player.FAffects.IsActive(State.ToId(2)));
-  Result := 1;
-end;
-
 function lua_player_add_exp(L: Plua_State): Integer; cdecl;
 var State   : TDoomLuaState;
     Being   : TBeing;
@@ -893,11 +846,7 @@ begin
   Result := 1;
 end;
 
-const lua_player_lib : array[0..17] of luaL_Reg = (
-      ( name : 'set_affect';      func : @lua_player_set_affect),
-      ( name : 'get_affect_time'; func : @lua_player_get_affect_time),
-      ( name : 'remove_affect';   func : @lua_player_remove_affect),
-      ( name : 'is_affect';       func : @lua_player_is_affect),
+const lua_player_lib : array[0..13] of luaL_Reg = (
       ( name : 'add_exp';         func : @lua_player_add_exp),
       ( name : 'has_won';         func : @lua_player_has_won),
       ( name : 'get_trait';       func : @lua_player_get_trait),

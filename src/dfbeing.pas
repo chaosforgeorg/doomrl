@@ -9,7 +9,7 @@ unit dfbeing;
 interface
 uses Classes, SysUtils,
      vluatable, vnode, vpath, vmath, vutil, vrltools,
-     dfdata, dfthing, dfitem,
+     dfdata, dfthing, dfitem, dfaffect,
      doominventory, doomcommand;
 
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
@@ -136,7 +136,7 @@ TBeing = class(TThing,IPathQuery)
 
     class procedure RegisterLuaAPI();
 
-    protected
+  protected
     procedure LuaLoad( Table : TLuaTable ); override;
     // private
     function FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire = ALT_NONE ) : Boolean;
@@ -144,7 +144,8 @@ TBeing = class(TThing,IPathQuery)
     function HandleShotgunFire( aTarget : TCoord2D; aShotGun : TItem; aShots : DWord ) : Boolean;
     function HandleSpreadShots( aTarget : TCoord2D; aGun : TItem ) : Boolean;
     function HandleShots( aTarget : TCoord2D; aGun : TItem; aShots : DWord; toHit, toDam : Integer; iChaining : Boolean ) : Boolean;
-    protected
+
+  protected
     FHPNom         : Word;
     FHPMax         : Word;
     FHPDecayMax    : Word;
@@ -171,7 +172,9 @@ TBeing = class(TThing,IPathQuery)
     FPathClear     : TFlags;
     FKnockBacked   : Boolean;
     FAnimSeq       : Integer;
-    public
+    FAffects       : TAffects;
+  public
+    property Affects   : TAffects    read FAffects;
     property Inv       : TInventory  read FInv       write FInv;
     property TargetPos : TCoord2D    read FTargetPos write FTargetPos;
     property LastPos   : TCoord2D    read FLastPos   write FLastPos;
@@ -181,7 +184,7 @@ TBeing = class(TThing,IPathQuery)
     property SilentAction : Boolean read FSilentAction write FSilentAction;
     property MeleeAttack  : Boolean read FMeleeAttack;
     property ChainFire    : Byte    read FChainFire    write FChainFire;
-    published
+  published
 
     property can_dual_reload : Boolean read canDualReload;
     property HPMax        : Word       read FHPMax        write FHPMax;
@@ -289,6 +292,8 @@ begin
   FSpeed        := Stream.ReadByte();
   FExpValue     := Stream.ReadWord();
 
+  FAffects := TAffects.CreateFromStream( Stream, Self );
+
   Amount := Stream.ReadByte;
   for c := 1 to Amount do
     FInv.Add( TItem.CreateFromStream( Stream ) );
@@ -315,6 +320,8 @@ begin
   Stream.WriteWord( FSpeedCount );
   Stream.WriteByte( FSpeed );
   Stream.WriteWord( FExpValue );
+
+  FAffects.WriteToStream( Stream );
 
   Stream.WriteByte( FInv.Size );
   for Item in FInv do
@@ -353,6 +360,7 @@ procedure TBeing.LuaLoad( Table : TLuaTable );
 begin
   inherited LuaLoad( Table );
   Initialize;
+  FAffects := TAffects.Create( Self );
 
   FHooks := FHooks * BeingHooks;
 
@@ -1423,6 +1431,8 @@ begin
   TLevel(Parent).CallHook( FPosition, Self, CellHook_OnEnter );
   if UIDs[ iThisUID ] = nil then Exit;
   LastPos := FPosition;
+  FAffects.OnUpdate;
+  if UIDs[ iThisUID ] = nil then Exit;
   CallHook(Hook_OnAction,[]);
   if UIDs[ iThisUID ] = nil then Exit;
   while FSpeedCount >= 5000 do Dec( FSpeedCount, 1000 );
@@ -1774,7 +1784,7 @@ begin
             IO.Blink(Red,30);
             if Player.FAffects.IsActive(LuaSystem.Defines['berserk']) then
             begin
-              iBerserk  := Player.FAffects.List[LuaSystem.Defines['berserk']];
+              iBerserk  := Player.FAffects.GetTime(LuaSystem.Defines['berserk']);
               if iBerserk > 0 then
               begin
                 iIncrease := 10 - Min( iBerserk div 10, 9 );
@@ -2383,6 +2393,7 @@ destructor TBeing.Destroy;
 begin
   FreeAndNil( FInv );
   FreeAndNil( FPath );
+  FreeAndNil( FAffects );
   inherited Destroy;
 end;
 
@@ -2836,7 +2847,48 @@ begin
   Result := 0;
 end;
 
-const lua_being_lib : array[0..25] of luaL_Reg = (
+
+function lua_being_set_affect(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  iBeing.Affects.Add( iState.ToId(2), iState.ToInteger(3,-1) );
+  Result := 0;
+end;
+
+function lua_being_get_affect_time(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  iState.Push( iBeing.Affects.getTime( iState.ToId(2) ) );
+  Result := 1;
+end;
+
+function lua_being_remove_affect(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  iBeing.Affects.Remove( iState.ToId(2), iState.ToBoolean( 3, False ) );
+  Result := 0;
+end;
+
+function lua_being_is_affect(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  iState.Push( iBeing.Affects.IsActive( iState.ToId( 2 ) ) );
+  Result := 1;
+end;
+
+const lua_being_lib : array[0..29] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -2864,6 +2916,12 @@ const lua_being_lib : array[0..25] of luaL_Reg = (
 
       ( name : 'path_find';     func : @lua_being_path_find),
       ( name : 'path_next';     func : @lua_being_path_next),
+
+      ( name : 'set_affect';      func : @lua_being_set_affect),
+      ( name : 'get_affect_time'; func : @lua_being_get_affect_time),
+      ( name : 'remove_affect';   func : @lua_being_remove_affect),
+      ( name : 'is_affect';       func : @lua_being_is_affect),
+
       ( name : nil;             func : nil; )
 );
 

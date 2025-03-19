@@ -345,7 +345,7 @@ end;
 procedure TDoom.PreAction;
 begin
   FLevel.CalculateVision( Player.Position );
-  StatusEffect := Player.FAffects.getEffect;
+  StatusEffect := Player.Affects.getEffect;
   IO.PreAction;
   IO.Focus( Player.Position );
   Player.UpdateVisual;
