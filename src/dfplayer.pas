@@ -44,22 +44,13 @@ TPlayer = class(TBeing)
   InventorySize   : Byte;
   MasterDodge     : Boolean;
   LastTurnDodge   : Boolean;
-
-  FScore          : LongInt;
-  FExpFactor      : Real;
-  FBersekerLimit  : LongInt;
-  FEnemiesInVision: Word;
-  FKilledBy       : AnsiString;
-  FKilledMelee    : Boolean;
-
+  FRun            : TRunData;
+  FPathRun        : Boolean;
+  FAffects        : TAffects;
   FStatistics     : TStatistics;
   FKills          : TKillTable;
   FKillMax        : DWord;
-  FKillCount      : DWord;
   FTraits         : TTraits;
-  FRun            : TRunData;
-  FAffects        : TAffects;
-  FPathRun        : Boolean;
   FQuickSlots     : array[1..9] of TQuickSlotInfo;
 
   constructor Create; reintroduce;
@@ -91,7 +82,15 @@ TPlayer = class(TBeing)
   private
   FExp            : LongInt;
   FExpLevel       : Byte;
-  private
+  FScore          : LongInt;
+  FExpFactor      : Real;
+  FBerserkerLimit : LongInt;
+  FEnemiesInVision: Word;
+  FKilledBy       : AnsiString;
+  FKilledMelee    : Boolean;
+
+  FKillCount      : DWord;
+private
   function GetSkillRank : Word;
   function GetExpRank : Word;
   published
@@ -102,6 +101,7 @@ TPlayer = class(TBeing)
   property NukeTime        : Word       read NukeActivated write NukeActivated;
   property Klass           : Byte       read FTraits.Klass write FTraits.Klass;
   property ExpFactor       : Real       read FExpFactor    write FExpFactor;
+  property BerserkerLimit  : LongInt    read FBerserkerLimit write FBerserkerLimit;
   property SkillRank       : Word       read GetSkillRank;
   property ExpRank         : Word       read GetExpRank;
   property Score           : LongInt    read FScore        write FScore;
@@ -231,7 +231,7 @@ begin
   Stream.WriteDWord( FScore );
   Stream.WriteDWord( FKillMax );
   Stream.WriteDWord( FKillCount );
-  Stream.WriteDWord( FBersekerLimit );
+  Stream.WriteDWord( FBerserkerLimit );
 
   Stream.Write( FExpFactor,  SizeOf( FExpFactor ) );
   Stream.Write( FAffects,    SizeOf( FAffects ) );
@@ -256,7 +256,7 @@ begin
   FScore         := Stream.ReadDWord();
   FKillMax       := Stream.ReadDWord();
   FKillCount     := Stream.ReadDWord();
-  FBersekerLimit := Stream.ReadDWord();
+  FBerserkerLimit:= Stream.ReadDWord();
 
   Stream.Read( FExpFactor,  SizeOf( FExpFactor ) );
   Stream.Read( FAffects,    SizeOf( TAffects ) );
@@ -494,7 +494,7 @@ begin
   if FEnemiesInVision < 1 then
   begin
     FChainFire := 0;
-    if FBersekerLimit > 0 then Dec( FBersekerLimit );
+    if FBerserkerLimit > 0 then Dec( FBerserkerLimit );
   end;
 
   if FEnemiesInVision > 0 then

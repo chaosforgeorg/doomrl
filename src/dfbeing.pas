@@ -1767,8 +1767,8 @@ begin
     if (Player.EnemiesInVision > 0) then
       if (BF_BERSERKER in FFlags) and ( iDamage >= 10 ) then
       begin
-        Player.FBersekerLimit += 1;
-        if Player.FBersekerLimit > 4 - Min((Player.EnemiesInVision + 1) div 2, 3) then
+        Player.BerserkerLimit := Player.BerserkerLimit + 1;
+        if Player.BerserkerLimit > 4 - Min((Player.EnemiesInVision + 1) div 2, 3) then
           begin
             TLevel(Parent).playSound('bpack','powerup',FPosition);
             IO.Blink(Red,30);
@@ -1784,7 +1784,7 @@ begin
             else
               Player.FAffects.Add(LuaSystem.Defines['berserk'],20);
             IO.Msg('You''re going berserk!');
-            Player.FBersekerLimit := 0;
+            Player.BerserkerLimit := 0;
           end;
       end;
   end;

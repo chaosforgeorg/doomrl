@@ -1060,7 +1060,7 @@ repeat
       if (Player.NukeActivated > 0) then
       begin
         IO.Msg('You hear a gigantic explosion above!');
-        Inc(Player.FScore,1000);
+        Player.Score := Player.Score + 1000;
         Player.IncStatistic('levels_nuked');
         Player.NukeActivated := 0;
       end;
@@ -1165,7 +1165,7 @@ repeat
 
     if State <> DSSaving then
     begin
-      Inc(Player.FScore,100);
+      Player.Score := Player.Score + 1000;
       if GameWon and (State <> DSNextLevel) then Player.WriteMemorial;
       FLevel.Clear;
     end;
@@ -1206,7 +1206,7 @@ repeat
       IO.PushLayer( TRankUpView.Create( iRank ) );
       IO.WaitForLayer( True );
     end;
-    if Player.FScore >= -1000 then
+    if Player.Score >= -1000 then
     begin
       iReport := TPagedReport.Create('Post mortem', False );
       iReport.Add( MortemData, 'mortem.txt' );
