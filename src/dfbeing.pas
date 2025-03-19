@@ -223,7 +223,7 @@ TBeing = class(TThing,IPathQuery)
 
 implementation
 
-uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vluasystem, vluatools,
+uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vluasystem, vluatools, vcolor,
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio;
 
@@ -2888,7 +2888,27 @@ begin
   Result := 1;
 end;
 
-const lua_being_lib : array[0..29] of luaL_Reg = (
+function lua_being_set_overlay(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  if iState.IsNil(2) then
+  begin
+    iBeing.FSprite.Color := ColorBlack;
+    Exclude( iBeing.FSprite.Flags, SF_OVERLAY );
+  end
+  else
+  begin
+    iBeing.FSprite.Color := NewColor( iState.ToVec4f(2) );
+    Include( iBeing.FSprite.Flags, SF_OVERLAY );
+  end;
+  Result := 0;
+end;
+
+
+const lua_being_lib : array[0..30] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -2921,6 +2941,8 @@ const lua_being_lib : array[0..29] of luaL_Reg = (
       ( name : 'get_affect_time'; func : @lua_being_get_affect_time),
       ( name : 'remove_affect';   func : @lua_being_remove_affect),
       ( name : 'is_affect';       func : @lua_being_is_affect),
+
+      ( name : 'set_overlay';   func : @lua_being_set_overlay),
 
       ( name : nil;             func : nil; )
 );
