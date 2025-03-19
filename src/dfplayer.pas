@@ -5,7 +5,7 @@ interface
 uses classes, sysutils,
      vuielement, vutil, vrltools, vuitypes,
      dfbeing, dfhof, dfdata, dfitem, dfaffect,
-     doomtrait, doomkeybindings;
+     doomtrait, doomkeybindings, drlstatistics;
 
 type
 
@@ -16,16 +16,6 @@ TRunData = object
   procedure Clear;
   procedure Stop;
   procedure Start( const aDir : TDirection );
-end;
-
-TStatistics = object
-  Map        : TIntHashMap;
-  GameTime   : LongInt;
-  RealTime   : Comp;
-  procedure Clear;
-  procedure Destroy;
-  procedure Update;
-  procedure UpdateNDCount( aCount : DWord );
 end;
 
 TQuickSlotInfo = record
@@ -47,9 +37,10 @@ TPlayer = class(TBeing)
   FRun            : TRunData;
   FPathRun        : Boolean;
   FAffects        : TAffects;
-  FStatistics     : TStatistics;
   FKills          : TKillTable;
   FKillMax        : DWord;
+  FKillCount      : DWord;
+
   FTraits         : TTraits;
   FQuickSlots     : array[1..9] of TQuickSlotInfo;
 
@@ -69,7 +60,6 @@ TPlayer = class(TBeing)
   procedure AddExp( aAmount : LongInt );
   procedure WriteMemorial;
   destructor Destroy; override;
-  procedure IncStatistic( const aStatisticID : AnsiString; aAmount : Integer = 1 );
   procedure Kill( BloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem ); override;
   function DescribeLever( aItem : TItem ) : string;
   procedure AddHistory( const aHistory : Ansistring );
@@ -89,11 +79,13 @@ TPlayer = class(TBeing)
   FKilledBy       : AnsiString;
   FKilledMelee    : Boolean;
 
-  FKillCount      : DWord;
+  FStatistics     : TStatistics;
 private
   function GetSkillRank : Word;
   function GetExpRank : Word;
-  published
+public
+  property Statistics      : TStatistics read FStatistics;
+published
   property KilledBy        : AnsiString read FKilledBy;
   property KilledMelee     : Boolean    read FKilledMelee;
   property Exp             : LongInt    read FExp          write FExp;
@@ -119,38 +111,6 @@ uses math, vuid, vpath, variants, vioevent, vgenerics,
      dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doombase,
      doomlua, doominventory, doomplayerview, doomhudviews;
-
-{ TStatistics }
-
-procedure TStatistics.Clear;
-begin
-  Map        := TIntHashMap.Create( HashMap_NoRaise );
-  GameTime   := 0;
-  RealTime   := 0;
-end;
-
-procedure TStatistics.Destroy;
-begin
-  FreeAndNil( Map );
-end;
-
-procedure TStatistics.Update;
-var iRealTime : Comp;
-begin
-  iRealTime := RealTime + MSecNow() - GameRealTime;
-  Map['real_time']       := Round(iRealTime / 1000);
-  Map['real_time_ms']    := Round(iRealTime);
-  Map['game_time']       := GameTime;
-  Map['kills']           := Player.FKills.Count;
-  Map['max_kills']       := Player.FKills.MaxCount;
-  Map['unique_kills']    := Player.FKillCount;
-  Map['max_unique_kills']:= Player.FKillMax;
-end;
-
-procedure TStatistics.UpdateNDCount( aCount : DWord );
-begin
-  Map['kills_non_damage'] := Max( Map['kills_non_damage'], aCount );
-end;
 
 { TRunData }
 
@@ -186,7 +146,7 @@ begin
 
   CurrentLevel  := 0;
   StatusEffect  := StatusNormal;
-  FStatistics.Clear;
+  FStatistics   := TStatistics.Create;
   FScore        := 0;
   SpecExit      := '';
   NukeActivated := 0;
@@ -237,11 +197,10 @@ begin
   Stream.Write( FAffects,    SizeOf( FAffects ) );
   Stream.Write( FTraits,     SizeOf( FTraits ) );
   Stream.Write( FRun,        SizeOf( FRun ) );
-  Stream.Write( FStatistics, SizeOf( FStatistics ) );
   Stream.Write( FQuickSlots, SizeOf( FQuickSlots ) );
 
   FKills.WriteToStream( Stream );
-  FStatistics.Map.WriteToStream( Stream );
+  FStatistics.WriteToStream( Stream );
 end;
 
 constructor TPlayer.CreateFromStream ( Stream : TStream ) ;
@@ -262,11 +221,10 @@ begin
   Stream.Read( FAffects,    SizeOf( TAffects ) );
   Stream.Read( FTraits,     SizeOf( FTraits ) );
   Stream.Read( FRun,        SizeOf( FRun ) );
-  Stream.Read( FStatistics, SizeOf( FStatistics ) );
   Stream.Read( FQuickSlots, SizeOf( FQuickSlots ) );
 
   FKills          := TKillTable.CreateFromStream( Stream );
-  FStatistics.Map := TIntHashMap.CreateFromStream( Stream );
+  FStatistics     := TStatistics.CreateFromStream( Stream );
   
   Initialize;
 end;
@@ -315,11 +273,7 @@ begin
     end;
   end;
 
-  if aDamage > 0 then
-  begin
-    FKills.DamageTaken;
-    FStatistics.UpdateNDCount( FKills.BestNoDamageSequence );
-  end;
+  if aDamage > 0 then FKills.DamageTaken;
   inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource );
 end;
 
@@ -525,8 +479,7 @@ begin
   if FHP < (FHPMax div 10) then
     AddHistory('Entering level '+IntToStr(CurrentLevel)+' he was almost dead...');
 
-  FStatistics.Map['damage_on_level'] := 0;
-  FStatistics.Map['entry_time'] := FStatistics.GameTime;
+  FStatistics.OnLevelEnter;
 
   FTargetPos.Create(0,0);
   FChainFire := 0;
@@ -535,7 +488,7 @@ end;
 procedure TPlayer.ExamineNPC;
 var iLevel : TLevel;
     iWhere : TCoord2D;
-    iCount  : Word;
+    iCount : Word;
 begin
   iLevel := TLevel(Parent);
   iCount := 0;
@@ -571,14 +524,9 @@ end;
 
 destructor TPlayer.Destroy;
 begin
-  FStatistics.Destroy;
+  FreeAndNil( FStatistics );
   FreeAndNil( FKills );
   inherited Destroy;
-end;
-
-procedure TPlayer.IncStatistic(const aStatisticID: AnsiString; aAmount: Integer);
-begin
-  FStatistics.Map[ aStatisticID ] := FStatistics.Map[ aStatisticID ] + aAmount;
 end;
 
 procedure TPlayer.Kill( BloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem );

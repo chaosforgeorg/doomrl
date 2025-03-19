@@ -781,19 +781,19 @@ begin
 
   with Player do
   begin
-    FStatistics.Update();
-    iKillRecord := FStatistics.Map['kills_non_damage'];
+    Statistics.Update();
+    iKillRecord := Statistics['kills_non_damage'];
     if FKills.NoDamageSequence > iKillRecord then iKillRecord := FKills.NoDamageSequence;
 
     FCharacter.Push( Format( '{!%s}, level {!%d} {!%s},',[ Name, ExpLevel, AnsiString(LuaSystem.Get(['klasses',Klass,'name']))] ) );
     if Doom.Level.Name_Number > 0
       then FCharacter.Push( Format( 'currently on level {!%d} of {!%s}. ', [ Doom.Level.Name_Number, Doom.Level.Name ] ) )
       else FCharacter.Push( Format( 'currently at {!%s}. ', [ Doom.Level.Name ] ) );
-    FCharacter.Push( Format( 'He survived {!%d} turns, which took him {!%d} seconds. ', [ FStatistics.Map['game_time'], FStatistics.Map['real_time'] ] ) );
-    FCharacter.Push( Format( 'He took {!%d} damage, {!%d} on this floor alone. ', [ FStatistics.Map['damage_taken'], FStatistics.Map['damage_on_level'] ] ) );
-    FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemies ({!%d%%}). ', [ FStatistics.Map['unique_kills'], FStatistics.Map['max_unique_kills'], Percent( FStatistics.Map['unique_kills'], FStatistics.Map['max_unique_kills'] ) ] ) );
-    if FStatistics.Map['kills'] <> FStatistics.Map['unique_kills'] then
-      FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemy spawns total. ', [ FStatistics.Map['kills'], FStatistics.Map['max_kills'] ] ) );
+    FCharacter.Push( Format( 'He survived {!%d} turns, which took him {!%d} seconds. ', [ Statistics['game_time'], Statistics['real_time'] ] ) );
+    FCharacter.Push( Format( 'He took {!%d} damage, {!%d} on this floor alone. ', [ Statistics['damage_taken'], Statistics['damage_on_level'] ] ) );
+    FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemies ({!%d%%}). ', [ Statistics['unique_kills'], Statistics['max_unique_kills'], Percent( Statistics['unique_kills'], Statistics['max_unique_kills'] ) ] ) );
+    if Statistics['kills'] <> Statistics['unique_kills'] then
+      FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemy spawns total. ', [ Statistics['kills'], Statistics['max_kills'] ] ) );
     FCharacter.Push( Format( 'His current killing spree is {!%d}, with a record of {!%d}. ', [ FKills.NoDamageSequence, iKillRecord ] ) );
     FCharacter.Push( '' );
     FCharacter.Push( Format( 'Current movement speed is {!%.2f} second/move.', [getMoveCost/(Speed*10.0)] ) );

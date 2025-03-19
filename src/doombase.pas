@@ -1061,19 +1061,16 @@ repeat
       begin
         IO.Msg('You hear a gigantic explosion above!');
         Player.Score := Player.Score + 1000;
-        Player.IncStatistic('levels_nuked');
+        Player.Statistics.Increase('levels_nuked');
         Player.NukeActivated := 0;
       end;
 
-      with Player do
-      begin
-        FStatistics.Update;
-      end;
+      Player.Statistics.Update;
 
       if Player.SpecExit = '' then
         Inc(Player.CurrentLevel)
       else
-        Player.IncStatistic('bonus_levels_visited');
+        Player.Statistics.Increase('bonus_levels_visited');
 
       with LuaSystem.GetTable(['player','episode',Player.CurrentLevel]) do
       try
@@ -1175,10 +1172,10 @@ repeat
   begin
     EmitCrashInfo( e.Message, True );
     EXCEPTEMMITED := True;
-    if Option_SaveOnCrash and ((Player.FStatistics.Map['crash_count'] = 0) or{thelaptop: Vengeance is MINE} (Doom.Difficulty < DIFF_NIGHTMARE)) then
+    if Option_SaveOnCrash and ((Player.Statistics['crash_count'] = 0) or{thelaptop: Vengeance is MINE} (Doom.Difficulty < DIFF_NIGHTMARE)) then
     begin
       if Player.CurrentLevel <> 1 then Dec(Player.CurrentLevel);
-      Player.IncStatistic('crash_count');
+      Player.Statistics.Increase('crash_count');
       Player.SpecExit := '';
       WriteSaveFile( True );
     end;
@@ -1302,8 +1299,7 @@ var Stream : TStream;
 begin
   LuaSystem.ProtectedCall( [ 'generator', 'on_save' ], [] );
 
-  Player.FStatistics.RealTime += MSecNow() - GameRealTime;
-  Player.IncStatistic('save_count');
+  Player.Statistics.OnSaveFile;
 
   Stream := TGZFileStream.Create( ModuleUserPath + 'save',gzOpenWrite );
   //      Stream := TDebugStream.Create( Stream );

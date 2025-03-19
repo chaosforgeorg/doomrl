@@ -315,7 +315,7 @@ function TLevel.getGylph(const aCoord: TCoord2D): TIOGylph;
         COLOR_LAVA  : if Mod2 then aAtr := YELLOW   else aAtr := RED;
         COLOR_BLOOD : if Mod2 then aAtr := LIGHTRED else aAtr := RED;
         COLOR_MUD   : if Mod2 then aAtr := YELLOW   else aAtr := BROWN;
-        MULTIPORTAL : case (( Player.FStatistics.GameTime div 10 ) mod 3) of
+        MULTIPORTAL : case (( Player.Statistics.GameTime div 10 ) mod 3) of
                         0 : aAtr := LIGHTMAGENTA;
                         1 : aAtr := MAGENTA;
                         2 : aAtr := WHITE;
@@ -597,15 +597,15 @@ begin
   if LF_BONUS in FFlags then
     if Hook_OnCompletedCheck in FHooks then
     begin
-      if RawCallHookCheck( Hook_OnCompletedCheck,[] ) then Player.IncStatistic('bonus_levels_completed');
+      if RawCallHookCheck( Hook_OnCompletedCheck,[] ) then Player.Statistics.Increase('bonus_levels_completed');
     end
     else
-      if EnemiesLeft() = 0 then Player.IncStatistic('bonus_levels_completed');
+      if EnemiesLeft() = 0 then Player.Statistics.Increase('bonus_levels_completed');
 
 
   if (not (LF_BONUS in FFlags)) and (Player.HP > 0) then
   begin
-    TimeDiff :=  Player.FStatistics.GameTime - Player.FStatistics.Map['entry_time'];
+    TimeDiff :=  Player.Statistics.GameTime - Player.Statistics['entry_time'];
     if TimeDiff < 100 then
       Player.AddHistory(Format('He left level %d as soon as possible.',[Player.CurrentLevel]));
   end;
@@ -1127,7 +1127,7 @@ begin
   repeat
 
     Inc(FLTime);
-    Inc(Player.FStatistics.GameTime);
+    Player.Statistics.OnTick;
 
     CallHook( Hook_OnTick,[] );
 
@@ -1191,7 +1191,7 @@ begin
     end
     else
     begin
-      Player.IncStatistic('levels_nuked');
+      Player.Statistics.Increase('levels_nuked');
       if Doom.State in [DSNextLevel,DSSaving] then
       begin
         IO.Msg('Right in the nick of time!');

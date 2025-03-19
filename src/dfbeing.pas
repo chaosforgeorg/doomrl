@@ -1033,7 +1033,7 @@ begin
       if isLever then
         begin
           Emote( 'You pull the lever...', 'pulls the lever...',[] );
-          if isPlayer then Player.IncStatistic( 'levers_pulled' );
+          if isPlayer then Player.Statistics.Increase( 'levers_pulled' );
         end
 	  else if isPack then
 	    begin
@@ -1476,11 +1476,11 @@ procedure TBeing.Tick;
 begin
   if ( FHP * 100 ) > Integer( FHPMax * FHPDecayMax ) then
     if FHP > 1 then
-      if ( Player.FStatistics.GameTime mod 50 = 0 ) then
+      if ( Player.Statistics.GameTime mod 50 = 0 ) then
         Dec( FHP );
   if BF_REGENERATE in FFlags then
     if FHP < 20 then
-      if ( Player.FStatistics.GameTime mod 10 = 0 ) then
+      if ( Player.Statistics.GameTime mod 10 = 0 ) then
         Inc( FHP );
   FSpeedCount := Min( FSpeedCount + FSpeed, 10000 );
 end;
@@ -1951,11 +1951,7 @@ begin
     iOverKillValue := FHPMax * 4;
   end;
 
-  if IsPlayer then
-  begin
-    Player.IncStatistic( 'damage_taken', Min( aDamage, 200 ) );
-    Player.IncStatistic( 'damage_on_level', Min( aDamage, 200 ) );
-  end;
+  if IsPlayer then Player.Statistics.OnDamage( aDamage );
 
   FHP := Max( FHP - aDamage, 0 );
   if Dead and (not IsPlayer) then
