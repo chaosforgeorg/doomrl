@@ -293,5 +293,16 @@ function being:pick_item_to_mod( mod, filter )
 	return item, true
 end
 
+function being:apply_affect( id, max_duration )
+	local current = self:get_affect_time( id )
+	if current > 0 then
+		if current < max_duration then
+			self:set_affect( id, max_duration - current )
+		end
+	else
+		self:set_affect( id, max_duration )
+	end
+end
+
 
 setmetatable(being,getmetatable(thing))
