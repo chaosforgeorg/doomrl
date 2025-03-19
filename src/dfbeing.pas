@@ -1391,7 +1391,7 @@ begin
       aGun.Ammo := aGun.Ammo - iShots * iShotCost;
   end;
 
-  if FTargetPos = Player.Position then begin Player.FPathRun := False; Player.FRun.Stop; end;
+  if FTargetPos = Player.Position then Player.MultiMove.Stop;
 
   if aGun.Flags[ IF_SHOTGUN ] then
     iResult := HandleShotgunFire( aTarget, aGun, iShots )

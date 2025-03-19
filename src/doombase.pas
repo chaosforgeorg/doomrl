@@ -514,15 +514,13 @@ begin
   iTarget := Player.Position + iDir;
   iMoveResult := Player.TryMove( iTarget );
 
-  if (not Player.FPathRun) and Player.FRun.Active and (
-       ( Player.FRun.Count >= Option_MaxRun ) or
+  if Player.MultiMove.IsRepeat and (
        ( iMoveResult <> MoveOk ) or
        Level.cellFlagSet( iTarget, CF_NORUN ) or
        (not Level.isEmpty(iTarget,[EF_NOTELE]))
      ) then
   begin
-    Player.FPathRun := False;
-    Player.FRun.Stop;
+    Player.MultiMove.Stop;
     Exit( False );
   end;
 
@@ -779,7 +777,7 @@ end;
   begin
     FLevel.CalculateVision( Player.Position );
     FLevel.Tick;
-    if Player.FRun.Active then
+    if Player.MultiMove.Active then
       IO.WaitForAnimation;
     if not Player.PlayerTick then Exit( True );
   end;
@@ -910,10 +908,10 @@ begin
     // TODO: Fix
     if iInput in [INPUT_RUNWAIT]+INPUT_MULTIMOVE then
     begin
-      Player.FPathRun := False;
+      Player.MultiMove.Stop;
       if Player.EnemiesInVision > 0
         then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
-        else Player.FRun.Start( InputDirection( iInput ) );
+        else Player.MultiMove.Start( InputDirection( iInput ) );
       Exit;
     end;
 
@@ -957,7 +955,7 @@ begin
       INPUT_LEGACYSAVE: begin Doom.SetState( DSSaving ); Exit; end;
       INPUT_TRAITS    : begin FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
       INPUT_RUN       : begin
-        Player.FPathRun := False;
+        Player.MultiMove.Stop;
         if Player.EnemiesInVision > 0
           then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
           else IO.PushLayer( TRunModeView.create );
@@ -1123,9 +1121,9 @@ repeat
         Continue;
       end;
 
-      if ( Player.FRun.Active ) then
+      if ( Player.MultiMove.Active ) then
       begin
-        iInput := Player.GetRunInput;
+        iInput := Player.GetMultiMoveInput;
         if iInput <> INPUT_NONE then
           Action( iInput );
         Continue;

@@ -3,29 +3,19 @@
 unit dfplayer;
 interface
 uses classes, sysutils,
-     vuielement, vutil, vrltools, vuitypes,
+     vuielement,vpath, vutil, vrltools, vuitypes,
      dfbeing, dfhof, dfdata, dfitem, dfaffect,
-     doomtrait, doomkeybindings, drlstatistics;
+     doomtrait, doomkeybindings, drlstatistics, drlmultimove;
 
-type
 
-TRunData = object
-  Dir    : TDirection;
-  Active : Boolean;
-  Count  : Word;
-  procedure Clear;
-  procedure Stop;
-  procedure Start( const aDir : TDirection );
-end;
-
-TQuickSlotInfo = record
+type TQuickSlotInfo = record
   UID : TUID;
   ID  : string[32];
 end;
 
 { TPlayer }
 
-TPlayer = class(TBeing)
+type TPlayer = class(TBeing)
   CurrentLevel    : Word;
 
   SpecExit        : string[20];
@@ -34,8 +24,6 @@ TPlayer = class(TBeing)
   InventorySize   : Byte;
   MasterDodge     : Boolean;
   LastTurnDodge   : Boolean;
-  FRun            : TRunData;
-  FPathRun        : Boolean;
   FAffects        : TAffects;
   FKills          : TKillTable;
   FKillMax        : DWord;
@@ -51,7 +39,7 @@ TPlayer = class(TBeing)
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
   procedure PreAction;
-  function GetRunInput : TInputKey;
+  function GetMultiMoveInput : TInputKey;
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem; aUnique : Boolean );
@@ -80,10 +68,12 @@ TPlayer = class(TBeing)
   FKilledMelee    : Boolean;
 
   FStatistics     : TStatistics;
+  FMultiMove      : TMultiMove;
 private
   function GetSkillRank : Word;
   function GetExpRank : Word;
 public
+  property MultiMove       : TMultiMove  read FMultiMove;
   property Statistics      : TStatistics read FStatistics;
 published
   property KilledBy        : AnsiString read FKilledBy;
@@ -106,32 +96,11 @@ var Player     : TPlayer;
 
 implementation
 
-uses math, vuid, vpath, variants, vioevent, vgenerics,
+uses math, vuid, variants, vioevent, vgenerics,
      vnode, vcolor, vdebug, vluasystem, vtig,
      dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doombase,
      doomlua, doominventory, doomplayerview, doomhudviews;
-
-{ TRunData }
-
-procedure TRunData.Clear;
-begin
-  Active := False;
-  Count  := 0;
-end;
-
-procedure TRunData.Stop;
-begin
-  Active := False;
-  Count := 0;
-end;
-
-procedure TRunData.Start ( const aDir : TDirection ) ;
-begin
-  Active := True;
-  Count  := 0;
-  Dir    := aDir;
-end;
 
 constructor TPlayer.Create;
 begin
@@ -141,7 +110,6 @@ begin
   FKills := TKillTable.Create;
   FKillMax        := 0;
   FKillCount      := 0;
-  FRun.Clear;
   FAffects.Clear;
 
   CurrentLevel  := 0;
@@ -152,7 +120,6 @@ begin
   NukeActivated := 0;
   FExpLevel   := 1;
   FExp        := ExpTable[ FExpLevel ];
-  FPathRun    := False;
 
   InventorySize := High( TItemSlot );
   FExpFactor := 1.0;
@@ -169,7 +136,7 @@ begin
   FKilledMelee    := False;
 
   FEnemiesInVision:= 0;
-  FPathRun := False;
+  FMultiMove      := TMultiMove.Create;
   FPath           := TPathFinder.Create(Self);
   MemorialWritten := False;
   MasterDodge     := False;
@@ -196,7 +163,6 @@ begin
   Stream.Write( FExpFactor,  SizeOf( FExpFactor ) );
   Stream.Write( FAffects,    SizeOf( FAffects ) );
   Stream.Write( FTraits,     SizeOf( FTraits ) );
-  Stream.Write( FRun,        SizeOf( FRun ) );
   Stream.Write( FQuickSlots, SizeOf( FQuickSlots ) );
 
   FKills.WriteToStream( Stream );
@@ -220,7 +186,6 @@ begin
   Stream.Read( FExpFactor,  SizeOf( FExpFactor ) );
   Stream.Read( FAffects,    SizeOf( TAffects ) );
   Stream.Read( FTraits,     SizeOf( FTraits ) );
-  Stream.Read( FRun,        SizeOf( FRun ) );
   Stream.Read( FQuickSlots, SizeOf( FQuickSlots ) );
 
   FKills          := TKillTable.CreateFromStream( Stream );
@@ -260,8 +225,7 @@ procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageTyp
 begin
   if aDamage < 0 then Exit;
   if BF_INV in FFlags then Exit;
-  FPathRun := False;
-  FRun.Stop;
+  FMultiMove.Stop;
   Doom.DamagedLastTurn := True;
   if ( aDamage >= Max( FHPNom div 3, 10 ) ) then
   begin
@@ -296,9 +260,7 @@ begin
   FPathClear   := [];
   if FPath.Run( FPosition, aCoord, 200) then
   begin
-    FPath.Start := FPath.Start.Child;
-    FRun.Active := True;
-    FPathRun := True;
+    FMultiMove.Start( FPath );
     Exit( True );
   end;
   Exit( False );
@@ -383,47 +345,26 @@ begin
      end;
   FSpeedCount := iTempSC;
 
-  if FRun.Active and (not FPathRun) then
+  if FMultiMove.IsRepeat then
     if RunStopNear or ((not Setting_RunOverItems) and (TLevel( Parent ).Item[ FPosition ] <> nil)) then
     begin
-      FPathRun := False;
-      FRun.Stop;
+      FMultiMove.Stop;
     end;
 end;
 
-function TPlayer.GetRunInput : TInputKey;
-var iDir : TDirection;
+function TPlayer.GetMultiMoveInput : TInputKey;
 begin
-  GetRunInput := INPUT_NONE;
-  if FRun.Active then
+  GetMultiMoveInput := INPUT_NONE;
+  if FMultiMove.Active then
   begin
-    Inc( FRun.Count );
     if BF_SESSILE in FFlags then
     begin
-      FPathRun := False;
-      FRun.Stop;
+      FMultiMove.Stop;
       Fail('You can''t!',[] );
       Exit( INPUT_NONE );
     end;
 
-    if FPathRun then
-    begin
-      if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
-      begin
-        FPathRun := False;
-        FRun.Stop;
-        Exit( INPUT_NONE );
-      end;
-      iDir := NewDirection( FPosition, FPath.Start.Coord );
-      FPath.Start := FPath.Start.Child;
-    end
-    else iDir := FRun.Dir;
-
-    if iDir.code = 5 then
-    begin
-      if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
-    end;
-    Exit( DirectionToInput( iDir ) );
+    Exit( FMultiMove.CalculateInput( FPosition ) );
   end;
 end;
 
@@ -434,7 +375,7 @@ begin
 
   if iLevel.Item[ FPosition ] <> nil then
   begin
-    if not FPathRun then
+    if not FMultiMove.IsPath then
       with iLevel.Item[ FPosition ] do
         if isLever then
            IO.Msg('There is a %s here.', [ DescribeLever( iLevel.Item[ FPosition ] ) ] )
@@ -452,18 +393,14 @@ begin
   end;
 
   if FEnemiesInVision > 0 then
-  begin
-    FPathRun := False;
-    FRun.Stop;
-  end;
+    FMultiMove.Stop;
 
-  if FRun.Active then
+  if FMultiMove.Active then
   begin
     if IO.CommandEventPending then
     begin
       IO.Msg('Stop.');
-      FPathRun := False;
-      FRun.Stop;
+      FMultiMove.Stop;
       IO.ClearEventBuffer;
     end
     else
@@ -526,6 +463,7 @@ destructor TPlayer.Destroy;
 begin
   FreeAndNil( FStatistics );
   FreeAndNil( FKills );
+  FreeAndNil( FMultiMove );
   inherited Destroy;
 end;
 
