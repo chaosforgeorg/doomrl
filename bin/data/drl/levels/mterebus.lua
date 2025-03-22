@@ -26,9 +26,9 @@ register_level "mt_erebus"
 				if level.status > 2 then return true end
 				player:play_sound("lever.use")
 				local raise = LFMARKER1
-				if level.status == 1 then 
+				if level.status == 1 then
 					raise = LFMARKER2
-				elseif level.status == 2 then 
+				elseif level.status == 2 then
 					raise = LFMARKER3
 				end
 				level:transmute_by_flag( "cwall", "floor", raise, area.FULL)
@@ -105,6 +105,10 @@ register_level "mt_erebus"
 		local second = core.bydiff{ "lostsoul", "cacodemon", "cacodemon", "pain" }		
 		level:summon{ "lostsoul", 10 + 2*DIFFICULTY, cell = "lava" }
 		level:summon{ second,     4  +   DIFFICULTY, cell = "lava" }
+		level.data.zone1a = area(50,  5, 64, 16)
+		level.data.zone1b = area(55,  4, 59, 17)
+		level.data.zone2  = area(53,  7, 61, 14)
+		level.data.zone3  = area(55,  9, 59, 12)
 
 		level:player(4,11)
 		level.status = 0
@@ -142,4 +146,31 @@ register_level "mt_erebus"
 			player:add_history("He managed to raise Mt. Erebus completely!")
 		end
 	end,
+
+	OnTick = function ()
+		local status = level.status
+		local raise
+		local msg
+		if status > 2 then return end
+		if status < 3 and level.data.zone3:contains( player.position ) then
+			msg = "The molten cliffs give way leaving you exposed"
+			status = 3
+			raise = LFMARKER3
+		end
+		if status < 2 and level.data.zone2:contains( player.position ) then
+			msg = "The ground slips around you"
+			status = 2
+			raise = LFMARKER2
+		end
+		if status < 1 and (level.data.zone1a:contains( player.position ) or level.data.zone1b:contains( player.position )) then
+			msg = "A sudden grinding sound catches you by surprise"
+			status = 1
+			raise = LFMARKER1
+		end
+		if status == 0 then return false end
+		ui.msg( msg )
+		level.status = status
+		level:transmute_by_flag( "cwall", "floor", raise, area.FULL)
+		return true
+	end
 }
