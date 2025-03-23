@@ -50,12 +50,13 @@ register_level "the_wall"
 ]]
 		generator.place_tile( translation, map, 2, 2 )
 
-		local left    = area( 12, 4, 27, 17 ) 
+		local left    = area( 12, 4, 27, 17 )
 		local total   = 11 + DIFFICULTY
 		local knights = math.max( 12 - (6 *( DIFFICULTY - 1 ) ), 0 )
 
 		level:summon{ "knight", knights,         area = left }
 		level:summon{ "baron",  total - knights, area = left }
+		level.data.sound_crack = coord(28, 10)
 		
 		level:player(70,5)
 		level.status = 0
@@ -64,7 +65,7 @@ register_level "the_wall"
 	OnKillAll = function ()
 		if level.status == 2 then return end
 		level:transmute_by_flag("wall", "floor", LFMARKER1, area.FULL)
-		level:play_sound( "revenant.die", coord(28, 10))
+		level:play_sound( "revenant.die", level.data.sound_crack)
 		ui.msg("Peace comes back to this evil place. Cracks begin to appear as if in deference to your achievement.")
 		level.status = 2
 		if CHALLENGE == "challenge_aohu" then
