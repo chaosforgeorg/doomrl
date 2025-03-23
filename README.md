@@ -101,11 +101,16 @@ Because the lua code is packaged into the wad file, inline debugging is more dif
 1. Run/Start Debugging
 2. Launch a game
 3. F1
-4. You can run lua commands from the console. Some examples of useful commands are:
+4. Some examples of useful commands are:
    * player:exit("the_wall")
    * player.inv:add("nuke")
-   * self:relocate(coord(10,10))
-   * ui.msg(<i>your test lua method that returns a string</i>)
+   * player:relocate(coord(10,10))
+   You can also use = to print values for classes, methods or properties:
+   * =player (<i>class</i>)
+   * =player:get_id() (<i>method</i>)
+   * =player.id (<i>property</i>)
+   * =player.eq.weapon.ammo
+   * =player.eq.weapon:is_damaged()
 
 ##### Gameplay
 1. Run/Start Debugging
