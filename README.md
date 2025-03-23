@@ -104,6 +104,7 @@ Because the lua code is packaged into the wad file, inline debugging is more dif
 4. You can run lua commands from the console. Some examples of useful commands are:
    * player:exit("the_wall")
    * player.inv:add("nuke")
+   * self:relocate(coord(10,10))
    * ui.msg(<i>your test lua method that returns a string</i>)
 
 ##### Gameplay
