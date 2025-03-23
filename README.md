@@ -115,7 +115,7 @@ Because the lua code is packaged into the wad file, inline debugging is more dif
 ##### Gameplay
 1. Run/Start Debugging
 2. Start a new game
-3. There are a myriad of game keys defined in godmode.lua to accelerate the character.
+3. There is a myriad of game keys defined in godmode.lua to accelerate the character.
 
 #### Lazarus notes
 The Lazarus installation is preferred for VS Code (compared with the simpler fpc installation) because using fpc in Windows triggers an error when the debugger is used.
