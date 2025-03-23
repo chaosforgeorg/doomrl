@@ -23,6 +23,9 @@ register_level "mt_erebus"
 			color_id = false,
 
 			OnUse = function(self,being)
+				--Levers will always trigger the next status.
+				--So if someone relocates to a mountain phase 2 square, the next lever will open phase 3.
+				--The player does not need to activate all levers, repaying them for the risk they took.
 				if level.status > 2 then return true end
 				player:play_sound("lever.use")
 				local raise = LFMARKER1
@@ -31,7 +34,7 @@ register_level "mt_erebus"
 				elseif level.status == 2 then
 					raise = LFMARKER3
 				end
-				level:transmute_by_flag( "cwall", "floor", raise, area.FULL)
+				level:transmute_by_flag( "cwall", "floor", raise, level.data.mountain)
 				level.status = level.status + 1
 				return true
 			end,
@@ -100,15 +103,16 @@ register_level "mt_erebus"
 ====================================================XXXXXXX===========.|/.==
 ============================================================================
 ]=]
+
 		generator.place_tile( translation, map, 2, 2 )
 
 		local second = core.bydiff{ "lostsoul", "cacodemon", "cacodemon", "pain" }		
-		level:summon{ "lostsoul", 10 + 2*DIFFICULTY, cell = "lava" }
-		level:summon{ second,     4  +   DIFFICULTY, cell = "lava" }
+
 		level.data.zone1a = area(50,  5, 64, 16)
 		level.data.zone1b = area(55,  4, 59, 17)
 		level.data.zone2  = area(53,  7, 61, 14)
 		level.data.zone3  = area(55,  9, 59, 12)
+		level.data.mountain = area(49, 3, 65, 18)
 
 		level:player(4,11)
 		level.status = 0
@@ -118,10 +122,10 @@ register_level "mt_erebus"
 		local result = level.status
 		if result < 4 then
 			ui.msg("That seems to be all of them... wait! Something is moving there, or is it just lava glow?")
-			--Unlike Limbo, in the event of a nuke disable the need to open up the walls.
-			--This inconsistency is partly due to historical reasons but also because the spawning of the elemental shouldn't be behind a wall.
+			--In the event of a nuke disable the need to open up the walls (unlike Limbo).
+			--This inconsistency is partly due to historical reasons but also because the spawning of the elemental shouldn'can't be behind a wall.
 			--However the elemental is killed immediately in practice because it appears at the end of the monster list.
-			level:transmute( "cwall", "floor" )
+			level:transmute( "cwall", "floor", level.data.mountain )
 			level.status = 4
 			local element = level:summon("lava_elemental")
 			element.inv:add( item.new("lava_element") )
@@ -148,29 +152,39 @@ register_level "mt_erebus"
 	end,
 
 	OnTick = function ()
-		local status = level.status
-		local raise
+		local newStatus = 0
 		local msg
-		if status > 2 then return end
-		if status < 3 and level.data.zone3:contains( player.position ) then
-			msg = "The molten cliffs give way leaving you exposed"
-			status = 3
-			raise = LFMARKER3
+--		ui.msg( level.status )
+--		if level.data.zoneReset:contains( player.position ) then level:transmute("floor", "cwall", level.data.zoneOfEffect)
+--		    level.status = 0
+--			return
+--		end
+		if level.status > 2 then return end
+		if level.status < 3 and level.data.zone3:contains( player.position ) then
+			if newStatus == 0 then
+				msg = "The molten cliffs give way leaving you tremendously exposed."
+				newStatus = 3
+			end
+			level:transmute_by_flag( "cwall", "floor", LFMARKER3, level.data.mountain)
 		end
-		if status < 2 and level.data.zone2:contains( player.position ) then
-			msg = "The ground slips around you"
-			status = 2
-			raise = LFMARKER2
+		if level.status < 2 and level.data.zone2:contains( player.position ) then
+			if newStatus == 0 then
+				msg = "A violent earthquake shakes your being."
+				newStatus = 2
+			end
+			level:transmute_by_flag( "cwall", "floor", LFMARKER2, level.data.mountain)
+			newStatus = 2
 		end
-		if status < 1 and (level.data.zone1a:contains( player.position ) or level.data.zone1b:contains( player.position )) then
-			msg = "A sudden grinding sound catches you by surprise"
-			status = 1
-			raise = LFMARKER1
+		if level.status < 1 and (level.data.zone1a:contains( player.position ) or level.data.zone1b:contains( player.position )) then
+			if newStatus == 0 then
+				msg = "The safety of the earth dissolves in front of you."
+				newStatus = 1
+			end
+			level:transmute_by_flag( "cwall", "floor", LFMARKER1, level.data.mountain)
 		end
-		if status == 0 then return false end
+		if newStatus == 0 then return false end
 		ui.msg( msg )
-		level.status = status
-		level:transmute_by_flag( "cwall", "floor", raise, area.FULL)
+		level.status = newStatus
 		return true
 	end
 }
