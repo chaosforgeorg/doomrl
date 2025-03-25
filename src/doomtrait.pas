@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomtrait;
 interface
-uses classes, sysutils, vnode, dfdata;
+uses classes, sysutils, vutil, vnode, dfdata, doomhooks;
 
 const   MAXTRAITS  = 50;
         MAXKLASS   = 10;
@@ -10,7 +10,8 @@ type TTraits = class( TVObject )
   constructor Create;
   constructor CreateFromStream( aStream : TStream ); override;
   procedure WriteToStream( aStream : TStream ); override;
-
+  procedure CallHook( aHook : Byte; const aParams : array of Const );
+  function CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean;
   function GetHistory : AnsiString;
   procedure Upgrade ( aKlass : Byte; aTrait : Byte ) ;
   function CanPick( aKlass : Byte; aTrait : Byte; aCharLevel : Byte ): Boolean;
@@ -21,6 +22,8 @@ protected
   FBlocked  : array[1..MAXTRAITS]      of Boolean;
   FOrder    : array[1..MaxPlayerLevel] of Byte;
   FValues   : array[1..MAXTRAITS]      of Byte;
+  FHooks    : array[1..MAXTRAITS]      of TFlags;
+  FHookMask : TFlags;
   FCount    : Byte;
   FMastered : Boolean;
 protected
@@ -29,7 +32,7 @@ end;
 
 implementation
 
-uses vluasystem, vutil, dfplayer;
+uses vluasystem, dfplayer;
 
 function TTraits.CanPick( aKlass : Byte; aTrait : Byte; aCharLevel : Byte ): Boolean;
 var iOther, iValue : DWord;
@@ -73,6 +76,7 @@ var i            : Byte;
     iMax, iMax12 : DWord;
     iMaster      : Boolean;
     iVariant     : Variant;
+    iHooks       : TFlags;
 begin
   Inc( FValues[ aTrait ] );
   Inc( FCount );
@@ -85,6 +89,9 @@ begin
   finally
     Free;
   end;
+
+  FHooks[ aTrait ] := LoadHooks( ['klasses',aKlass,'trait',aTrait] );
+  FHookMask += FHooks[ aTrait ];
 
   if FValues[ aTrait ] >= iMax12 then
     FBlocked[ aTrait ] := True;
@@ -139,18 +146,22 @@ begin
   for iCount := 1 to High(FBlocked) do FBlocked[iCount] := False;
   for iCount := 1 to High(FValues)  do FValues[iCount] := 0;
   for iCount := 1 to High(FOrder)   do FOrder[iCount] := 0;
+  for iCount := 1 to High(FHooks)   do FHooks[iCount] := [];
   FCount := 0;
   FMastered := False;
+  FHookMask := [];
 end;
 
 constructor TTraits.CreateFromStream( aStream : TStream );
 begin
   inherited CreateFromStream( aStream );
-  aStream.Read( FValues, SizeOf( FValues ) );
-  aStream.Read( FBlocked, SizeOf( FBlocked ) );
-  aStream.Read( FOrder, SizeOf( FOrder ) );
-  aStream.Read( FCount, SizeOf( FCount ) );
+  aStream.Read( FValues,   SizeOf( FValues ) );
+  aStream.Read( FBlocked,  SizeOf( FBlocked ) );
+  aStream.Read( FOrder,    SizeOf( FOrder ) );
+  aStream.Read( FCount,    SizeOf( FCount ) );
   aStream.Read( FMastered, SizeOf( FMastered ) );
+  aStream.Read( FHooks,    SizeOf( FHooks ) );
+  aStream.Read( FHookMask, SizeOf( FHookMask ) );
 end;
 
 procedure TTraits.WriteToStream( aStream : TStream );
@@ -161,6 +172,29 @@ begin
   aStream.Write( FOrder,    SizeOf( FOrder ) );
   aStream.Write( FCount,    SizeOf( FCount ) );
   aStream.Write( FMastered, SizeOf( FMastered ) );
+  aStream.Write( FHooks,    SizeOf( FHooks ) );
+  aStream.Write( FHookMask, SizeOf( FHookMask ) );
+end;
+
+procedure TTraits.CallHook( aHook : Byte; const aParams : array of Const );
+var i : Integer;
+begin
+  if not ( aHook in FHookMask ) then Exit;
+  for i := 1 to High(FHooks) do
+    if aHook in FHooks[i] then
+      LuaSystem.ProtectedCall( [ 'traits', i, HookNames[aHook] ], ConcatConstArray( [Player], aParams ) )
+end;
+
+
+function TTraits.CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean;
+var i : Integer;
+begin
+  if not ( aHook in FHookMask ) then Exit( True );
+  for i := 1 to High(FHooks) do
+    if aHook in FHooks[i] then
+      if not LuaSystem.ProtectedCall( [ 'traits', i, HookNames[aHook] ], ConcatConstArray( [Player], aParams ) ) then
+        Exit( False );
+  Exit( True );
 end;
 
 function TTraits.GetHistory: AnsiString;
