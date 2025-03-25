@@ -90,7 +90,7 @@ begin
     Free;
   end;
 
-  FHooks[ aTrait ] := LoadHooks( ['klasses',aKlass,'trait',aTrait] );
+  FHooks[ aTrait ] := LoadHooks( ['traits',aTrait] );
   FHookMask += FHooks[ aTrait ];
 
   if FValues[ aTrait ] >= iMax12 then

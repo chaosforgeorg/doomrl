@@ -6,11 +6,11 @@ uses vutil, dfdata;
 const
   Hook_OnCreate        = 0;   // Being and Item -> Level, Module, Challenge, Core (Chained)
   Hook_OnAction        = 1;   // Being
-  Hook_OnAttacked      = 2;   // Being
-  Hook_OnUseActive     = 3;   // Being
-  Hook_OnDie           = 4;   // Being, Level, Module, Challenge, Core (Chained)
-  Hook_OnDieCheck      = 5;   // Being, Level, Module, Challenge, Core (Chained)
-  Hook_OnPickupItem    = 6;   // Being, Level, Module, Challenge, Core (Chained)
+  Hook_OnAttacked      = 2;   // Trait, Being
+  Hook_OnUseActive     = 3;   // Trait, Being
+  Hook_OnDie           = 4;   // Trait, Being, Level, Module, Challenge, Core (Chained)
+  Hook_OnDieCheck      = 5;   // Trait, Being, Level, Module, Challenge, Core (Chained)
+  Hook_OnPickupItem    = 6;   // Trait, Being, Level, Module, Challenge, Core (Chained)
   Hook_OnPickup        = 7;   // Item, Level, Module, Challenge, Core (Chained)
   Hook_OnPickupCheck   = 8;   // Item, Level, Module, Challenge, Core (Chained)
   Hook_OnFirstPickup   = 9;   // Item

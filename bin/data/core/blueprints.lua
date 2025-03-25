@@ -49,6 +49,10 @@ core.register_blueprint "trait"
 	abbr           = { true,  core.TSTRING },
 
 	OnPick         = { false, core.TFUNC },
+	OnAttacked     = { false, core.TFUNC },
+	OnDie          = { false, core.TFUNC },
+	OnDieCheck     = { false, core.TFUNC },
+	OnUseActive    = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
