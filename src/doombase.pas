@@ -1240,7 +1240,7 @@ begin
 
   LuaSystem.ProtectedCall(['klasses',Player.Klass,'OnPick'], [ Player ] );
   CallHook(Hook_OnCreatePlayer,[]);
-  Player.FTraits.Upgrade( aResult.Trait );
+  Player.Traits.Upgrade( Player.Klass, aResult.Trait );
   Player.UpdateVisual;
 end;
 

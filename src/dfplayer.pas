@@ -28,7 +28,6 @@ type TPlayer = class(TBeing)
   FKillMax        : DWord;
   FKillCount      : DWord;
 
-  FTraits         : TTraits;
   FQuickSlots     : array[1..9] of TQuickSlotInfo;
 
   constructor Create; reintroduce;
@@ -59,6 +58,7 @@ type TPlayer = class(TBeing)
 private
   FExp            : LongInt;
   FExpLevel       : Byte;
+  FKlass          : Byte;
   FScore          : LongInt;
   FExpFactor      : Real;
   FBerserkerLimit : LongInt;
@@ -66,6 +66,7 @@ private
   FKilledBy       : AnsiString;
   FKilledMelee    : Boolean;
 
+  FTraits         : TTraits;
   FStatistics     : TStatistics;
   FMultiMove      : TMultiMove;
 private
@@ -74,13 +75,14 @@ private
 public
   property MultiMove       : TMultiMove  read FMultiMove;
   property Statistics      : TStatistics read FStatistics;
+  property Traits          : TTraits     read FTraits;
 published
   property KilledBy        : AnsiString read FKilledBy;
   property KilledMelee     : Boolean    read FKilledMelee;
   property Exp             : LongInt    read FExp          write FExp;
   property ExpLevel        : Byte       read FExpLevel     write FExpLevel;
   property NukeTime        : Word       read NukeActivated write NukeActivated;
-  property Klass           : Byte       read FTraits.Klass write FTraits.Klass;
+  property Klass           : Byte       read FKlass        write FKlass;
   property ExpFactor       : Real       read FExpFactor    write FExpFactor;
   property BerserkerLimit  : LongInt    read FBerserkerLimit write FBerserkerLimit;
   property SkillRank       : Word       read GetSkillRank;
@@ -105,10 +107,10 @@ constructor TPlayer.Create;
 begin
   inherited Create('soldier');
 
-  FTraits.Clear;
-  FKills := TKillTable.Create;
-  FKillMax        := 0;
-  FKillCount      := 0;
+  FTraits    := TTraits.Create;
+  FKills     := TKillTable.Create;
+  FKillMax   := 0;
+  FKillCount := 0;
 
   CurrentLevel  := 0;
   StatusEffect  := StatusNormal;
@@ -117,6 +119,7 @@ begin
   SpecExit      := '';
   NukeActivated := 0;
   FExpLevel   := 1;
+  FKlass      := 1;
   FExp        := ExpTable[ FExpLevel ];
 
   InventorySize := High( TItemSlot );
@@ -152,6 +155,7 @@ begin
   Stream.WriteWord( NukeActivated );
   Stream.WriteByte( InventorySize );
   Stream.WriteByte( FExpLevel );
+  Stream.WriteByte( FKlass );
   Stream.WriteDWord( FExp );
   Stream.WriteDWord( FScore );
   Stream.WriteDWord( FKillMax );
@@ -159,9 +163,9 @@ begin
   Stream.WriteDWord( FBerserkerLimit );
 
   Stream.Write( FExpFactor,  SizeOf( FExpFactor ) );
-  Stream.Write( FTraits,     SizeOf( FTraits ) );
   Stream.Write( FQuickSlots, SizeOf( FQuickSlots ) );
 
+  FTraits.WriteToStream( Stream );
   FKills.WriteToStream( Stream );
   FStatistics.WriteToStream( Stream );
 end;
@@ -174,6 +178,7 @@ begin
   NukeActivated  := Stream.ReadWord();
   InventorySize  := Stream.ReadByte();
   FExpLevel      := Stream.ReadByte();
+  FKlass         := Stream.ReadByte();
   FExp           := Stream.ReadDWord();
   FScore         := Stream.ReadDWord();
   FKillMax       := Stream.ReadDWord();
@@ -181,9 +186,9 @@ begin
   FBerserkerLimit:= Stream.ReadDWord();
 
   Stream.Read( FExpFactor,  SizeOf( FExpFactor ) );
-  Stream.Read( FTraits,     SizeOf( FTraits ) );
   Stream.Read( FQuickSlots, SizeOf( FQuickSlots ) );
 
+  FTraits         := TTraits.CreateFromStream( Stream );
   FKills          := TKillTable.CreateFromStream( Stream );
   FStatistics     := TStatistics.CreateFromStream( Stream );
 
@@ -831,7 +836,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  State.Push( Player.FTraits.Values[ State.ToInteger( 2 ) ] );
+  State.Push( Player.Traits[ State.ToInteger( 2 ) ] );
   Result := 1;
 end;
 
@@ -842,7 +847,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  State.Push( Player.FTraits.GetHistory );
+  State.Push( Player.Traits.GetHistory );
   Result := 1;
 end;
 

@@ -453,18 +453,18 @@ begin
     VTIG_FreeLabel( 'Resistances',     Point(iR,iY) );
 
     for iCount := 1 to MAXTRAITS do
-      if Player.FTraits.Values[iCount] > 0 then
+      if Player.Traits[iCount] > 0 then
       begin
         iName := LuaSystem.Get(['traits',iCount,'name']);
         if iCount < 10 then
         begin
           Inc( iB );
-          VTIG_FreeLabel( '{d'+Padded(iName,16) + '({!' + IntToStr(Player.FTraits.Values[iCount])+ '})}', Point(0, iY+iB) );
+          VTIG_FreeLabel( '{d'+Padded(iName,16) + '({!' + IntToStr(Player.Traits[iCount])+ '})}', Point(0, iY+iB) );
         end
         else
         begin
           Inc( iA );
-          VTIG_FreeLabel( '{d'+Padded(iName,16) + '({!' + IntToStr(Player.FTraits.Values[iCount])+ '})}', Point(20, iY+iA) );
+          VTIG_FreeLabel( '{d'+Padded(iName,16) + '({!' + IntToStr(Player.Traits[iCount])+ '})}', Point(20, iY+iA) );
         end;
       end;
 
@@ -603,7 +603,7 @@ begin
       FState := PLAYERVIEW_CLOSING;
       if FTraitFirst
         then FTraitPick := FTraits[iSelected].Index
-        else Player.FTraits.Upgrade( FTraits[iSelected].Index );
+        else Player.Traits.Upgrade( Player.Klass, FTraits[iSelected].Index );
       FState := PLAYERVIEW_DONE;
     end;
 end;
@@ -672,7 +672,6 @@ var iEntry    : TTraitViewEntry;
     iLevel    : Byte;
     iTrait, i : byte;
     iTraits   : Variant;
-    iTData    : PTraits;
     iName     : AnsiString;
     iNID      : Word;
     iValue    : Word;
@@ -684,7 +683,7 @@ const RG : array[Boolean] of Char = ('G','R');
   function Value( aTrait : Byte ) : Byte;
   begin
     if FTraitFirst then Exit(0);
-    Exit( iTData^.Values[aTrait] );
+    Exit( Player.Traits[aTrait] );
   end;
 
 begin
@@ -693,12 +692,8 @@ begin
 
   iKlass := aKlass;
   iLevel := 0;
-  iTData := nil;
   if not FTraitFirst then
-  begin
     iLevel := Player.ExpLevel;
-    iTData := @(Player.FTraits);
-  end;
 
   iTraits := LuaSystem.Get(['klasses',iKlass,'traitlist']);
   for i := VarArrayLowBound(iTraits, 1) to VarArrayHighBound(iTraits, 1) do
@@ -756,7 +751,7 @@ begin
     iEntry.Index     := iTrait;
     if FTraitFirst
       then iEntry.Available := TTraits.CanPickInitially( iTrait, iKlass )
-      else iEntry.Available := iTData^.CanPick( iTrait, iLevel );
+      else iEntry.Available := Player.Traits.CanPick( iKlass, iTrait, iLevel );
     FTraits.Push( iEntry );
   end;
 end;

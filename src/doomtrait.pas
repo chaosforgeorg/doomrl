@@ -1,45 +1,47 @@
 {$INCLUDE doomrl.inc}
-unit doomtrait;interface
-uses Classes, SysUtils, dfdata;
+unit doomtrait;
+interface
+uses classes, sysutils, vnode, dfdata;
 
 const   MAXTRAITS  = 50;
         MAXKLASS   = 10;
 
-type
+type TTraits = class( TVObject )
+  constructor Create;
+  constructor CreateFromStream( aStream : TStream ); override;
+  procedure WriteToStream( aStream : TStream ); override;
 
-{ TTraits }
-
-TTraits = object
-  Values   : array[1..MAXTRAITS]      of Byte;
-  Blocked  : array[1..MAXTRAITS]      of Boolean;
-  Order    : array[1..MaxPlayerLevel] of Byte;
-  Count    : Byte;
-  Klass    : Byte;
-  Mastered : Boolean;
-  procedure Clear;
   function GetHistory : AnsiString;
-  procedure Upgrade ( aTrait : Byte ) ;
-  function CanPick( aTrait : Byte; aCharLevel : Byte ): Boolean;
+  procedure Upgrade ( aKlass : Byte; aTrait : Byte ) ;
+  function CanPick( aKlass : Byte; aTrait : Byte; aCharLevel : Byte ): Boolean;
   class function CanPickInitially( aTrait : Byte; aKlassID : Byte ) : Boolean; static;
+protected
+  function Get( aTrait : Byte ) : Byte;
+protected
+  FBlocked  : array[1..MAXTRAITS]      of Boolean;
+  FOrder    : array[1..MaxPlayerLevel] of Byte;
+  FValues   : array[1..MAXTRAITS]      of Byte;
+  FCount    : Byte;
+  FMastered : Boolean;
+protected
+  property Values[ aIndex : Byte ] : Byte read Get; default;
 end;
-PTraits = ^TTraits;
-
 
 implementation
 
 uses vluasystem, vutil, dfplayer;
 
-function TTraits.CanPick( aTrait : Byte; aCharLevel : Byte ): Boolean;
+function TTraits.CanPick( aKlass : Byte; aTrait : Byte; aCharLevel : Byte ): Boolean;
 var iOther, iValue : DWord;
     iVariant : Variant;
     iTable   : TLuaTable;
 begin
-  if Blocked[ aTrait ] then Exit( False );
+  if FBlocked[ aTrait ] then Exit( False );
   if not LuaSystem.Defined(['traits',aTrait,'OnPick']) then Exit( False );
 
-  with LuaSystem.GetTable(['klasses',Klass,'trait',aTrait]) do
+  with LuaSystem.GetTable(['klasses',aKlass,'trait',aTrait]) do
   try
-    if (aCharLevel < 12) and (Self.Values[ aTrait ] >= getInteger( 'max', 1 )) then Exit( False );
+    if (aCharLevel < 12) and (FValues[ aTrait ] >= getInteger( 'max', 1 )) then Exit( False );
     if aCharLevel < getInteger( 'reqlevel', 0 ) then Exit( False );
 	
     if IsTable('blocks') then
@@ -47,7 +49,7 @@ begin
       with GetTable('blocks') do
       try
         for iVariant in VariantValues do
-          if Self.Values[ Word(iVariant) ] >= 1 then Exit( False );
+          if FValues[ Word(iVariant) ] >= 1 then Exit( False );
       finally
         Free;
       end;
@@ -58,7 +60,7 @@ begin
     begin
       iOther := iTable.GetValue( 1 );
       iValue := iTable.GetValue( 2 );
-      if Self.Values[ iOther ] < iValue then Exit( False );
+      if FValues[ iOther ] < iValue then Exit( False );
     end;
   finally
     Free;
@@ -66,16 +68,16 @@ begin
   Exit( True );
 end;
 
-procedure TTraits.Upgrade ( aTrait : Byte ) ;
+procedure TTraits.Upgrade ( aKlass : Byte; aTrait : Byte ) ;
 var i            : Byte;
     iMax, iMax12 : DWord;
     iMaster      : Boolean;
     iVariant     : Variant;
 begin
-  Inc( Values[ aTrait ] );
-  Inc( Count );
+  Inc( FValues[ aTrait ] );
+  Inc( FCount );
 
-  with LuaSystem.GetTable(['klasses',Klass,'trait',aTrait]) do
+  with LuaSystem.GetTable(['klasses',aKlass,'trait',aTrait]) do
   try
     iMax    := getInteger( 'max', 1 );
     iMax12  := getInteger( 'max_12', iMax );
@@ -84,31 +86,31 @@ begin
     Free;
   end;
 
-  if Values[ aTrait ] >= iMax12 then
-    Blocked[ aTrait ] := True;
+  if FValues[ aTrait ] >= iMax12 then
+    FBlocked[ aTrait ] := True;
 
   if iMaster then
   begin
-    Mastered := True;
+    FMastered := True;
     for i := 1 to MAXTRAITS do
-      if LuaSystem.Get(['klasses',Klass,'trait',i,'master'], False ) then
-        Blocked[ i ] := True;
+      if LuaSystem.Get(['klasses',aKlass,'trait',i,'master'], False ) then
+        FBlocked[ i ] := True;
   end;
 
-  LuaSystem.ProtectedCall( [ 'traits',aTrait,'OnPick' ], [ Player, Values[ aTrait ] ] );
+  LuaSystem.ProtectedCall( [ 'traits',aTrait,'OnPick' ], [ Player, FValues[ aTrait ] ] );
 
-  if (Values[ aTrait ] = 1) and LuaSystem.Defined(['klasses',Klass,'trait',aTrait,'blocks']) then
+  if (FValues[ aTrait ] = 1) and LuaSystem.Defined(['klasses',aKlass,'trait',aTrait,'blocks']) then
   begin
-    with LuaSystem.GetTable(['klasses',Klass,'trait',aTrait,'blocks']) do
+    with LuaSystem.GetTable(['klasses',aKlass,'trait',aTrait,'blocks']) do
     try
       for iVariant in VariantValues do
-        Blocked[ Word(iVariant) ] := True;
+        FBlocked[ Word(iVariant) ] := True;
     finally
       Free;
     end;
   end;
 
-  Order[ Count ] := aTrait;
+  FOrder[ FCount ] := aTrait;
 end;
 
 class function TTraits.CanPickInitially(aTrait: Byte; aKlassID: Byte): Boolean;
@@ -125,24 +127,49 @@ begin
   end;
 end;
 
-procedure TTraits.Clear;
+function TTraits.Get( aTrait : Byte ) : Byte;
+begin
+  Exit( FValues[ aTrait ] );
+end;
+
+constructor TTraits.Create;
 var iCount : Byte;
 begin
-  for iCount := 1 to High(Blocked) do Blocked[iCount] := False;
-  for iCount := 1 to High(Values)  do Values[iCount] := 0;
-  for iCount := 1 to High(Order)   do Order[iCount] := 0;
-  Count := 0;
-  Mastered := False;
-  Klass := 1;
+  inherited Create;
+  for iCount := 1 to High(FBlocked) do FBlocked[iCount] := False;
+  for iCount := 1 to High(FValues)  do FValues[iCount] := 0;
+  for iCount := 1 to High(FOrder)   do FOrder[iCount] := 0;
+  FCount := 0;
+  FMastered := False;
+end;
+
+constructor TTraits.CreateFromStream( aStream : TStream );
+begin
+  inherited CreateFromStream( aStream );
+  aStream.Read( FValues, SizeOf( FValues ) );
+  aStream.Read( FBlocked, SizeOf( FBlocked ) );
+  aStream.Read( FOrder, SizeOf( FOrder ) );
+  aStream.Read( FCount, SizeOf( FCount ) );
+  aStream.Read( FMastered, SizeOf( FMastered ) );
+end;
+
+procedure TTraits.WriteToStream( aStream : TStream );
+begin
+  inherited WriteToStream( aStream );
+  aStream.Write( FValues,   SizeOf( FValues ) );
+  aStream.Write( FBlocked,  SizeOf( FBlocked ) );
+  aStream.Write( FOrder,    SizeOf( FOrder ) );
+  aStream.Write( FCount,    SizeOf( FCount ) );
+  aStream.Write( FMastered, SizeOf( FMastered ) );
 end;
 
 function TTraits.GetHistory: AnsiString;
 var iCount : Byte;
 begin
   GetHistory := '';
-  for iCount := 1 to High(Order) do
-    if (Order[iCount] > 0) and (Order[iCount] <= High(Values)) then
-      GetHistory += LuaSystem.Get(['traits',Order[iCount],'abbr'], False )+'->';
+  for iCount := 1 to High(FOrder) do
+    if (FOrder[iCount] > 0) and (FOrder[iCount] <= High(FValues)) then
+      GetHistory += LuaSystem.Get(['traits',FOrder[iCount],'abbr'], False )+'->';
 end;
 
 end.
