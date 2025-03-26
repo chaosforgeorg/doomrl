@@ -2634,6 +2634,7 @@ var iState  : TDoomLuaState;
     iWeapon : TItem;
     iItem   : TItem;
     iSingle : Boolean;
+    iSCount : LongInt;
 begin
   iState.Init(L);
   iBeing  := iState.ToObject(1) as TBeing;
@@ -2649,7 +2650,9 @@ begin
       if iItem <> nil then
       begin
         iSingle := iState.ToBoolean( 3, iWeapon.Flags[IF_SINGLERELOAD] );
+        iSCount := iBeing.SCount;
         iBeing.Reload( iItem, iSingle );
+        iBeing.SCount := iSCount;
         iState.Push( True );
         Exit( 1 );
       end;
