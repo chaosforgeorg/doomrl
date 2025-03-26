@@ -55,7 +55,7 @@ TBeing = class(TThing,IPathQuery)
     function HandleCommand( aCommand : TCommand ) : Boolean;
     function  TryMove( aWhere : TCoord2D ) : TMoveResult;
     function  MoveTowards( aWhere : TCoord2D; aVisualMultiplier : Single = 1.0 ) : TMoveResult;
-    procedure Reload( AmmoItem : TItem; Single : Boolean );
+    procedure Reload( aAmmoItem : TItem; aSingle : Boolean );
     procedure Ressurect( RRange : Byte );
     procedure Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem ); virtual;
     procedure Blood( aFrom : TDirection; aAmount : LongInt );
@@ -725,50 +725,40 @@ begin
 end;
 
 function TBeing.ActionReload : Boolean;
-var Weapon   : TItem;
-    AItem    : TItem;
-    iAmmoUID : TUID;
-    iPack    : Boolean;
-    AmmoName : AnsiString;
+var iSCount   : LongInt;
+    iWeapon   : TItem;
+    iItem     : TItem;
+    iAmmoUID  : TUID;
+    iPack     : Boolean;
+    iAmmoName : AnsiString;
 begin
-  Weapon := Inv.Slot[ efWeapon ];
-  if ( Weapon = nil ) or ( not Weapon.isRanged ) then Exit( Fail( 'You have no weapon to reload.',[] ) );
-  if (Weapon.Flags[ IF_RECHARGE ]) and ((not Weapon.Flags[ IF_CHAMBEREMPTY ]) or (Weapon.Ammo = 0)) then Exit( Fail( 'The weapon cannot be manually reloaded!', [] ) );
-  if (Weapon.Flags[ IF_NOAMMO ]) and (not Weapon.Flags[ IF_CHAMBEREMPTY ])then Exit( Fail( 'The weapon doesn''t need to be reloaded!', [] ) );
-  if ( Weapon.Ammo = Weapon.AmmoMax ) then Exit( Fail( 'Your %s is already loaded.', [ Weapon.Name ] ) );
+  iSCount := SCount;
+  iWeapon := Inv.Slot[ efWeapon ];
+  if ( iWeapon = nil ) or ( not iWeapon.isRanged ) then Exit( Fail( 'You have no weapon to reload.',[] ) );
+  if not iWeapon.CallHookCheck( Hook_OnPreReload, [ Self ] ) then Exit( iSCount > SCount );
+  if ( iWeapon.Flags[ IF_RECHARGE ]) then Exit( Fail( 'The weapon cannot be manually reloaded!', [] ) );
+  if ( iWeapon.Flags[ IF_NOAMMO ])   then Exit( Fail( 'The weapon doesn''t need to be reloaded!', [] ) );
+  if ( iWeapon.Ammo = iWeapon.AmmoMax ) then Exit( Fail( 'Your %s is already loaded.', [ iWeapon.Name ] ) );
 
-  if not Weapon.CallHookCheck( Hook_OnReload, [ Self ] ) then Exit( False );
+  iItem := getAmmoItem( iWeapon );
 
-  if Weapon.Flags[ IF_CHAMBEREMPTY ] and ((Weapon.Ammo <> 0) or Weapon.Flags[ IF_NOAMMO ]) then
+  if iItem = nil then Exit( Fail( 'You have no more ammo for the %s!',[iWeapon.Name] ) );
+
+  iAmmoUID  := iItem.UID;
+  iAmmoName := iItem.Name;
+  
+  iPack := iItem.isAmmoPack;
+
+  if not iWeapon.CallHookCheck( Hook_OnReload, [ Self, iItem, iPack ] ) then Exit( iSCount > SCount );
+
+  if iSCount = SCount then
   begin
-    Weapon.Flags[ IF_CHAMBEREMPTY ] := False;
-    TLevel(Parent).playSound( Weapon.ID, 'pump', FPosition );
-    Exit( Success( 'You pump a shell into the %s chamber.',[Weapon.Name],200 ) );
+    Reload( iItem, iWeapon.Flags[ IF_SINGLERELOAD ] );
+    Emote( 'You '+IIf(iPack,'quickly ')+'reload the %s.', 'reloads his %s.', [iWeapon.Name] );
   end;
 
-  AItem := getAmmoItem( Weapon );
-
-  if AItem = nil then Exit( Fail( 'You have no more ammo for the %s!',[Weapon.Name] ) );
-
-  iAmmoUID := AItem.UID;
-  AmmoName := AItem.Name;
-  
-  iPack := AItem.isAmmoPack;
-
-  if Weapon.Flags[ IF_PUMPACTION ] then
-  begin
-    Weapon.Flags[ IF_CHAMBEREMPTY ] := False;
-    Reload( AItem, Weapon.Flags[ IF_SINGLERELOAD ] );
-    Emote( 'You '+IIf(iPack,'quickly ')+'load a shell into the %s.', 'loads a shell into his %s.', [Weapon.Name] );
-  end
-  else
-  begin
-    Reload( AItem, Weapon.Flags[ IF_SINGLERELOAD ] );
-    Emote( 'You '+IIf(iPack,'quickly ')+'reload the %s.', 'reloads his %s.', [Weapon.Name] );
-  end;
-  
   if iPack and ( UIDs[ iAmmoUID ] = nil ) and IsPlayer then
-    IO.Msg( 'Your %s is depleted.', [AmmoName] );
+    IO.Msg( 'Your %s is depleted.', [iAmmoName] );
   
   Exit( True );
 end;
@@ -1293,28 +1283,28 @@ begin
   Exit( iMoveResult );
 end;
 
-procedure TBeing.Reload( AmmoItem : TItem; Single : Boolean );
+procedure TBeing.Reload( aAmmoItem : TItem; aSingle : Boolean );
 var iAmmo  : Byte;
     iPack  : Boolean;
 begin
   Inv.Slot[efWeapon].PlaySound( 'reload', FPosition );
 
   repeat
-    if Single then iAmmo := Min(AmmoItem.Ammo,1)
-              else iAmmo := Min(AmmoItem.Ammo,Inv.Slot[efWeapon].AmmoMax-Inv.Slot[efWeapon].Ammo);
+    if aSingle then iAmmo := Min(aAmmoItem.Ammo,1)
+               else iAmmo := Min(aAmmoItem.Ammo,Inv.Slot[efWeapon].AmmoMax-Inv.Slot[efWeapon].Ammo);
 
-    AmmoItem.Ammo := AmmoItem.Ammo - iAmmo;
+    aAmmoItem.Ammo := aAmmoItem.Ammo - iAmmo;
     Inv.Slot[efWeapon].Ammo := Inv.Slot[efWeapon].Ammo + iAmmo;
-    iPack := AmmoItem.isAmmoPack;
-    if AmmoItem.Ammo = 0 then
+    iPack := aAmmoItem.isAmmoPack;
+    if aAmmoItem.Ammo = 0 then
     begin
-      FreeAndNil( AmmoItem );
+      FreeAndNil( aAmmoItem );
       if not iPack then
       begin
-        if ( not Single ) and ( Inv.Slot[efWeapon].AmmoMax <> Inv.Slot[efWeapon].Ammo ) then
+        if ( not aSingle ) and ( Inv.Slot[efWeapon].AmmoMax <> Inv.Slot[efWeapon].Ammo ) then
         begin
-          AmmoItem := FInv.SeekAmmo(Inv.Slot[efWeapon].AmmoID);
-          if AmmoItem <> nil then Continue;
+          aAmmoItem := FInv.SeekAmmo(Inv.Slot[efWeapon].AmmoID);
+          if aAmmoItem <> nil then Continue;
         end;
       end;
     end;
@@ -1324,7 +1314,7 @@ begin
     else
       Dec(FSpeedCount,getReloadCost);
     Break;
-  until AmmoItem = nil;
+  until aAmmoItem = nil;
 end;
 
 function TBeing.FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire ) : Boolean;
@@ -1412,9 +1402,6 @@ begin
 
   FTargetPos := aTarget;
 
-  if aGun.Flags[ IF_PUMPACTION ] then
-    aGun.Flags[ IF_CHAMBEREMPTY ] := True;
-
   aGun.CallHook( Hook_OnFired, [ Self ] );
 
   if aGun.Flags[ IF_DESTROY ] then
@@ -1439,8 +1426,12 @@ begin
 end;
 
 procedure TBeing.HandlePostMove;
+var iSlot : TEqSlot;
 begin
   CallHook( Hook_OnPostMove, [] );
+  for iSlot in TEqSlot do
+    if FInv.Slot[ iSlot ] <> nil then
+      FInv.Slot[ iSlot ].CallHook( Hook_OnPostMove, [Self]  );
 end;
 
 procedure TBeing.HandlePostDisplace;
@@ -2652,7 +2643,8 @@ begin
         iSingle := iState.ToBoolean( 3, iWeapon.Flags[IF_SINGLERELOAD] );
         iSCount := iBeing.SCount;
         iBeing.Reload( iItem, iSingle );
-        iBeing.SCount := iSCount;
+        if not iState.ToBoolean( 4 ) then
+          iBeing.SCount := iSCount;
         iState.Push( True );
         Exit( 1 );
       end;

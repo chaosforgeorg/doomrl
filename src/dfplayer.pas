@@ -317,19 +317,6 @@ begin
   inherited HandlePostMove;
   iTempSC := FSpeedCount;
   iWeapon := Inv.Slot[ efWeapon ];
-  if iWeapon <> nil then
-  with iWeapon do
-    if isRanged then
-    begin // Autoreloading
-     if IF_PUMPACTION in FFlags then
-       if (IF_CHAMBEREMPTY in FFlags) and (Ammo <> 0) then
-       begin
-         TLevel( Parent ).playSound( ID, 'pump', Player.FPosition );
-         Exclude( FFlags, IF_CHAMBEREMPTY );
-         IO.Msg( 'You pump a shell into the shotgun chamber.' );
-       end;
-    end;
-
 
   if ( iWeapon <> nil ) and ( iWeapon.isRanged ) then
      if (BF_GUNRUNNER in Self.FFlags) and iWeapon.canFire and (iWeapon.Shots < 3) and FAffects.IsActive( LuaSystem.Defines['running'] ) then

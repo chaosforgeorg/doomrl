@@ -50,8 +50,9 @@ const
 
   // TODO: merge with above
   Hook_OnPostMove      = 43;   // Trait, Being
+  Hook_OnPreReload     = 44;
 
-  HookAmount           = 44;
+  HookAmount           = 45;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
 
@@ -70,7 +71,7 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnLoad','OnLoaded','OnUnLoad', 'OnCreatePlayer', 'OnLevelUp','OnPreLevelUp',
       'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro', 'OnGenerate',
 
-      'OnPostMove'
+      'OnPostMove', 'OnPreReload'
       );
 
 function LoadHooks( const Table : array of Const ) : TFlags;
@@ -102,7 +103,7 @@ ItemHooks    := [ Hook_OnCreate, Hook_OnPickup, Hook_OnPickupCheck, Hook_OnFirst
   Hook_OnUse, Hook_OnUseCheck, Hook_OnAltFire, Hook_OnAltReload, Hook_OnEquip,
   Hook_OnRemove, Hook_OnKill, Hook_OnKillAll, Hook_OnHitBeing, Hook_OnReload,
   Hook_OnEquipTick, Hook_OnEquipCheck, Hook_OnEnter, Hook_OnFire, Hook_OnFired,
-  Hook_OnAct, Hook_OnDestroy ];
+  Hook_OnAct, Hook_OnDestroy, Hook_OnPostMove, Hook_OnPreReload ];
 ChainedHooks := [ Hook_OnCreate, Hook_OnDie, Hook_OnDieCheck, Hook_OnPickup,
   Hook_OnPickUpItem, Hook_OnKillAll, Hook_OnPickupCheck, Hook_OnUse, Hook_OnUseCheck,
   Hook_OnFire, Hook_OnFired ];

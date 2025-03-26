@@ -119,7 +119,7 @@ IF_RECHARGE       = 28;
 IF_CLEAVE         = 29;
 IF_NOAMMO         = 30;
 IF_NECROCHARGE    = 31;
-IF_PUMPACTION     = 32;
+
 IF_SINGLERELOAD   = 33;
 IF_PISTOL         = 34;
 IF_SHOTGUN        = 35;

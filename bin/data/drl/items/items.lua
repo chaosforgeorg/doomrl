@@ -619,7 +619,7 @@ function drl.register_regular_items()
 		group    = "weapon-shotgun",
 		desc     = "Nothing beats the sound of pumping a combat shotgun.",
 		firstmsg = "Pump'n'roll!",
-		flags    = { IF_SHOTGUN, IF_PUMPACTION, IF_SINGLERELOAD },
+		flags    = { IF_SHOTGUN, IF_SINGLERELOAD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -630,6 +630,52 @@ function drl.register_regular_items()
 		reload        = 10,
 		altreload     = RELOAD_FULL,
 		missile       = "sfocused",
+
+		OnCreate = function(self)
+			self:add_property( "pump_action", true )
+		end,
+
+		OnPostMove = function( self, being )
+			if not self.pump_action then return end
+			if self.flags[ IF_CHAMBEREMPTY ] and self.ammo > 0 then
+				level:play_sound( self.id, "pump", being.position )
+				self.flags[ IF_CHAMBEREMPTY ] = false
+				if being:is_player() then
+					ui.msg( "You pump a shell into the shotgun chamber." )
+				end
+			end
+		end,
+
+		OnFired = function( self, being )
+			if not self.pump_action then return end
+			self.flags[ IF_CHAMBEREMPTY ] = true
+		end,
+
+		OnPreReload = function( self, being )
+			if not self.pump_action then return true end
+			if self.flags[ IF_NOAMMO ] or self.ammo > 0 then
+				if self.flags[ IF_CHAMBEREMPTY ] then
+					self.flags[ IF_CHAMBEREMPTY ] = false
+					level:play_sound( self.id, "pump", being.position )
+					if being:is_player() then
+						ui.msg( "You pump a shell into the "..self.name.." chamber." )
+					end
+					being.scount = being.scount - 200
+					return false
+				end
+			end
+			return true
+		end,
+
+		OnReload = function( self, being, ammo, is_pack )
+			if not self.pump_action then return true end
+			being:reload( ammo, true, true ) -- reduces scount
+			local pack = ""
+			if is_pack then pack = "quickly " end
+			being:msg("You "..pack.."load a shell into the "..self.name..".", being:get_name(true,true).." loads a shell into his "..self.name.."." )
+			return true
+		end,
+		
 	}
 
 	register_item "bazooka"

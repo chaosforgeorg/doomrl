@@ -227,8 +227,10 @@ function drl.register_assemblies()
 			item.damage_sides = 3
 			item.usetime      = 10
 			item.ammomax      = 5
-			item.flags[ IF_PUMPACTION ] = false
-			item.flags[ IF_CHAMBEREMPTY ] = false
+			if item:has_property("pump_action") then
+				item.pump_action = false
+				item.flags[ IF_CHAMBEREMPTY ] = false
+			end
 		end,
 	}
 
@@ -671,8 +673,8 @@ function drl.register_assemblies()
 			item.damage_dice = item.__proto.damage_dice - 3
 			item.damagetype   = DAMAGE_IGNOREARMOR
 			item.flags[ IF_NOAMMO ] = true
-			if item.flags[ IF_PUMPACTION ] == true then
-				item.flags[ IF_PUMPACTION ] = false
+			if item:has_property("pump_action") then
+				item.pump_action = false
 				item.flags[ IF_CHAMBEREMPTY ] = false
 			end
 		end,

@@ -504,6 +504,7 @@ core.register_blueprint "item"
 	OnPickupCheck = { false, core.TFUNC },
 	OnUse         = { false, core.TFUNC },
 	OnUseCheck    = { false, core.TFUNC },
+	OnPreReload   = { false, core.TFUNC },
 	OnReload      = { false, core.TFUNC },
 	OnAltFire     = { false, core.TFUNC },
 	OnAltReload   = { false, core.TFUNC },
@@ -516,7 +517,8 @@ core.register_blueprint "item"
 	OnEnter       = { false, core.TFUNC },
 	OnFired       = { false, core.TFUNC },
 	OnFire        = { false, core.TFUNC },
-
+	OnPostMove    = { false, core.TFUNC },
+	
 	OnModDescribe = { false, core.TFUNC },
 
 }

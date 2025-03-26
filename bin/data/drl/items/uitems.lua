@@ -560,7 +560,11 @@ function drl.register_unique_items()
 			self.ammo = 0
 		end,
 
-		OnReload = function( self, being )
+		OnPreReload = function( self, being )
+			if self.ammo == self.ammomax  then 
+				ui.msg("Your weapon is already loaded!")
+				return false
+			end
 			local pos  = being.position
 			if level.map[ pos ] == "acid" then
 				ui.msg("Slurp!")
