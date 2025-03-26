@@ -240,8 +240,17 @@ function drl.register_traits()
 		abbr   = "SM",
 
 		OnPick = function (being)
-			being.flags[ BF_SHOTTYMAN ] = true
-			being.flags[ BF_ROCKETMAN ] = true
+		end,
+
+		OnPostMove = function( being )
+			local weapon = being.eq.weapon
+			if weapon and weapon.itype == ITEMTYPE_RANGED then
+				if weapon.ammo < weapon.ammomax then
+					if ( weapon.flags[ IF_SHOTGUN ] or weapon.flags[ IF_ROCKET ] ) then
+						being:reload()
+					end
+				end
+			end
 		end,
 	}
 

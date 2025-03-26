@@ -221,7 +221,7 @@ end
 function aitk.inventory_check( self, can_reload )
     local has_ammo, needs_reload = aitk.ammo_check( self )
     if needs_reload and can_reload then
-        if self:reload() then
+        if self:action_reload() then
             return true, true
         else
             has_ammo = false

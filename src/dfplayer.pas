@@ -321,17 +321,6 @@ begin
   with iWeapon do
     if isRanged then
     begin // Autoreloading
-     if Ammo < AmmoMax then
-       if ( ( ( IF_SHOTGUN in FFlags ) and ( BF_SHOTTYMAN in Self.FFlags ) ) or
-          ( ( IF_ROCKET  in FFlags ) and ( BF_ROCKETMAN in Self.FFlags ) ) )
-          and (not (IF_RECHARGE in FFlags)) then
-       begin
-         iItem := Inv.SeekAmmo(AmmoID);
-         if iItem <> nil then
-           Reload( iItem, IF_SINGLERELOAD in FFlags )
-         else if canPackReload then
-           Reload( FInv.Slot[ efWeapon2 ], IF_SINGLERELOAD in FFlags );
-       end;
      if IF_PUMPACTION in FFlags then
        if (IF_CHAMBEREMPTY in FFlags) and (Ammo <> 0) then
        begin

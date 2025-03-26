@@ -2629,22 +2629,53 @@ begin
 end;
 
 function lua_being_reload(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
-    Being  : TBeing;
+var iState  : TDoomLuaState;
+    iBeing  : TBeing;
+    iWeapon : TItem;
+    iItem   : TItem;
+    iSingle : Boolean;
 begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionReload );
+  iState.Init(L);
+  iBeing  := iState.ToObject(1) as TBeing;
+  if iBeing <> nil then
+  begin
+    iWeapon := iBeing.Inv.Slot[ efWeapon ];
+    if ( iWeapon <> nil ) and ( not iWeapon.Flags[ IF_RECHARGE ] ) then
+    begin
+      iItem := iState.ToObjectOrNil(2) as TItem;
+      if iItem = nil then iItem := iBeing.Inv.SeekAmmo( iWeapon.AmmoID );
+      if (iItem = nil) and iBeing.canPackReload then
+        iItem := iBeing.Inv.Slot[ efWeapon2 ];
+      if iItem <> nil then
+      begin
+        iSingle := iState.ToBoolean( 3, iWeapon.Flags[IF_SINGLERELOAD] );
+        iBeing.Reload( iItem, iSingle );
+        iState.Push( True );
+        Exit( 1 );
+      end;
+    end;
+  end;
+  iState.Push( False );
   Result := 1;
 end;
 
-function lua_being_alt_reload(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
-    Being  : TBeing;
+function lua_being_action_reload(L: Plua_State): Integer; cdecl;
+var iState  : TDoomLuaState;
+    iBeing  : TBeing;
 begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionAltReload );
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  iState.Push( iBeing.ActionReload );
+  Result := 1;
+end;
+
+function lua_being_action_alt_reload(L: Plua_State): Integer; cdecl;
+var iState  : TDoomLuaState;
+    iBeing  : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  iState.Push( iBeing.ActionAltReload );
   Result := 1;
 end;
 
@@ -2909,7 +2940,7 @@ begin
 end;
 
 
-const lua_being_lib : array[0..30] of luaL_Reg = (
+const lua_being_lib : array[0..31] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -2930,8 +2961,9 @@ const lua_being_lib : array[0..30] of luaL_Reg = (
       ( name : 'wear';          func : @lua_being_wear),
       ( name : 'attack';        func : @lua_being_attack),
       ( name : 'fire';          func : @lua_being_fire),
-      ( name : 'reload';        func : @lua_being_reload),
-      ( name : 'alt_reload';    func : @lua_being_alt_reload),
+      ( name : 'reload';           func : @lua_being_reload),
+      ( name : 'action_reload';    func : @lua_being_action_reload),
+      ( name : 'action_alt_reload';func : @lua_being_action_alt_reload),
       ( name : 'direct_seek';   func : @lua_being_direct_seek),
       ( name : 'relocate';      func : @lua_being_relocate),
 

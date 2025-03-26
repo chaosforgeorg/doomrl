@@ -31,6 +31,21 @@ being.inv = {
 		end
 		return true
 	end,
+	seek_ammo = function( self, ammo_nid )
+		local ammo
+		local acount = 65000
+		for i in being.inv.items(self) do
+			if i.itype == ITEMTYPE_AMMO then
+				if i.nid == ammo_nid then
+					if i.ammo <= acount then
+						ammo   = i
+						acount = i.ammo
+					end
+				end
+			end
+		end
+		return i
+	end,
 }
 
 setmetatable(being.inv, {
