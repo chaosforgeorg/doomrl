@@ -1471,12 +1471,14 @@ begin
 end;
 
 function lua_level_play_sound(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Level : TLevel;
+var iState : TDoomLuaState;
+    iLevel : TLevel;
 begin
-  State.Init(L);
-  Level := State.ToObject(1) as TLevel;
-  Level.playSound( IO.Audio.ResolveSoundID( [State.ToString(2)] ), State.ToPosition(3), State.ToInteger(4,0) );
+  iState.Init(L);
+  iLevel := iState.ToObject(1) as TLevel;
+  if iState.IsString(3)
+    then iLevel.playSound( iState.ToString(2), iState.ToString(3), iState.ToPosition(4) )
+    else iLevel.playSound( IO.Audio.ResolveSoundID( [iState.ToString(2)] ), iState.ToPosition(3), iState.ToInteger(4,0) );
   Result := 0;
 end;
 
