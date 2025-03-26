@@ -314,6 +314,7 @@ var iTempSC     : LongInt;
   end;
 
 begin
+  inherited HandlePostMove;
   iTempSC := FSpeedCount;
   iWeapon := Inv.Slot[ efWeapon ];
   if iWeapon <> nil then

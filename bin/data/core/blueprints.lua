@@ -53,6 +53,8 @@ core.register_blueprint "trait"
 	OnDie          = { false, core.TFUNC },
 	OnDieCheck     = { false, core.TFUNC },
 	OnUseActive    = { false, core.TFUNC },
+	OnPickupItem   = { false, core.TFUNC },
+	OnPostMove     = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
@@ -227,6 +229,7 @@ core.register_blueprint "being"
 	OnDieCheck   = { false, core.TFUNC },
 	OnPickupItem = { false, core.TFUNC },
 	OnUseActive  = { false, core.TFUNC },
+	OnPostMove   = { false, core.TFUNC },
 }
 
 core.register_blueprint "being_group_entry"

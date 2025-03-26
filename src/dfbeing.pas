@@ -1440,6 +1440,7 @@ end;
 
 procedure TBeing.HandlePostMove;
 begin
+  CallHook( Hook_OnPostMove, [] );
 end;
 
 procedure TBeing.HandlePostDisplace;

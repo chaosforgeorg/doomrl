@@ -47,7 +47,11 @@ const
   Hook_OnCreateEpisode = 40;  // Module, Challenge, Core (Chained)
   Hook_OnIntro         = 41;  // Module, Challenge, Core (Chained)
   Hook_OnGenerate      = 42;  // Module, Challenge, Core (Chained)
-  HookAmount           = 43;
+
+  // TODO: merge with above
+  Hook_OnPostMove      = 43;   // Trait, Being
+
+  HookAmount           = 44;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
 
@@ -64,7 +68,9 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnHitBeing', 'OnReload', 'OnEquipTick', 'OnEquipCheck', 'OnAct', 'OnDestroy', 'OnEnter',
       'OnFire', 'OnFired', 'OnExit', 'OnTick', 'OnCompletedCheck', 'OnNuked',
       'OnLoad','OnLoaded','OnUnLoad', 'OnCreatePlayer', 'OnLevelUp','OnPreLevelUp',
-      'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro', 'OnGenerate'
+      'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro', 'OnGenerate',
+
+      'OnPostMove'
       );
 
 function LoadHooks( const Table : array of Const ) : TFlags;
@@ -90,16 +96,20 @@ end;
 initialization
 
 AllHooks     := [ 0..HookAmount-1 ];
-BeingHooks   := [ Hook_OnCreate, Hook_OnAction, Hook_OnAttacked, Hook_OnUseActive, Hook_OnDie, Hook_OnDieCheck, Hook_OnPickUpItem ];
+BeingHooks   := [ Hook_OnCreate, Hook_OnAction, Hook_OnAttacked, Hook_OnUseActive,
+  Hook_OnDie, Hook_OnDieCheck, Hook_OnPickUpItem, Hook_OnPostMove ];
 ItemHooks    := [ Hook_OnCreate, Hook_OnPickup, Hook_OnPickupCheck, Hook_OnFirstPickup,
   Hook_OnUse, Hook_OnUseCheck, Hook_OnAltFire, Hook_OnAltReload, Hook_OnEquip,
   Hook_OnRemove, Hook_OnKill, Hook_OnKillAll, Hook_OnHitBeing, Hook_OnReload,
-  Hook_OnEquipTick, Hook_OnEquipCheck, Hook_OnEnter, Hook_OnFire, Hook_OnFired, Hook_OnAct, Hook_OnDestroy ];
-ChainedHooks := [ Hook_OnCreate, Hook_OnDie, Hook_OnDieCheck, Hook_OnPickup, Hook_OnPickUpItem, Hook_OnKillAll,
-  Hook_OnPickupCheck, Hook_OnUse, Hook_OnUseCheck,
+  Hook_OnEquipTick, Hook_OnEquipCheck, Hook_OnEnter, Hook_OnFire, Hook_OnFired,
+  Hook_OnAct, Hook_OnDestroy ];
+ChainedHooks := [ Hook_OnCreate, Hook_OnDie, Hook_OnDieCheck, Hook_OnPickup,
+  Hook_OnPickUpItem, Hook_OnKillAll, Hook_OnPickupCheck, Hook_OnUse, Hook_OnUseCheck,
   Hook_OnFire, Hook_OnFired ];
-LevelHooks   := ChainedHooks + [ Hook_OnEnter, Hook_OnKill, Hook_OnExit, Hook_OnTick, Hook_OnCompletedCheck, Hook_OnNuked ];
-GlobalHooks  := LevelHooks + [ Hook_OnEnter, Hook_OnKill, Hook_OnExit, Hook_OnTick, Hook_OnLoad, Hook_OnLoaded, Hook_OnUnLoad, Hook_OnCreatePlayer, Hook_OnLevelUp,
+LevelHooks   := ChainedHooks + [ Hook_OnEnter, Hook_OnKill, Hook_OnExit, Hook_OnTick,
+  Hook_OnCompletedCheck, Hook_OnNuked ];
+GlobalHooks  := LevelHooks + [ Hook_OnEnter, Hook_OnKill, Hook_OnExit, Hook_OnTick,
+  Hook_OnLoad, Hook_OnLoaded, Hook_OnUnLoad, Hook_OnCreatePlayer, Hook_OnLevelUp,
   Hook_OnPreLevelUp, Hook_OnWinGame, Hook_OnMortem, Hook_OnMortemPrint, Hook_OnCreateEpisode,
   Hook_OnIntro, Hook_OnGenerate ];
 
