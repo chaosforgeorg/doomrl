@@ -63,7 +63,6 @@ private
   FKlass          : Byte;
   FScore          : LongInt;
   FExpFactor      : Real;
-  FBerserkerLimit : LongInt;
   FEnemiesInVision: Word;
   FKilledBy       : AnsiString;
   FKilledMelee    : Boolean;
@@ -86,7 +85,6 @@ published
   property NukeTime        : Word       read NukeActivated write NukeActivated;
   property Klass           : Byte       read FKlass        write FKlass;
   property ExpFactor       : Real       read FExpFactor    write FExpFactor;
-  property BerserkerLimit  : LongInt    read FBerserkerLimit write FBerserkerLimit;
   property SkillRank       : Word       read GetSkillRank;
   property ExpRank         : Word       read GetExpRank;
   property Score           : LongInt    read FScore        write FScore;
@@ -162,7 +160,6 @@ begin
   Stream.WriteDWord( FScore );
   Stream.WriteDWord( FKillMax );
   Stream.WriteDWord( FKillCount );
-  Stream.WriteDWord( FBerserkerLimit );
 
   Stream.Write( FExpFactor,  SizeOf( FExpFactor ) );
   Stream.Write( FQuickSlots, SizeOf( FQuickSlots ) );
@@ -185,7 +182,6 @@ begin
   FScore         := Stream.ReadDWord();
   FKillMax       := Stream.ReadDWord();
   FKillCount     := Stream.ReadDWord();
-  FBerserkerLimit:= Stream.ReadDWord();
 
   Stream.Read( FExpFactor,  SizeOf( FExpFactor ) );
   Stream.Read( FQuickSlots, SizeOf( FQuickSlots ) );
@@ -244,14 +240,7 @@ begin
   FMultiMove.Stop;
   Doom.DamagedLastTurn := True;
   if ( aDamage >= Max( FHPNom div 3, 10 ) ) then
-  begin
     IO.Blink(Red,100);
-    if BF_BERSERKER in FFlags then
-    begin
-      IO.Msg('That hurt! You''re going berserk!');
-      FAffects.Add(LuaSystem.Defines['berserk'],20);
-    end;
-  end;
 
   if aDamage > 0 then FKills.DamageTaken;
   inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource );
@@ -350,14 +339,9 @@ begin
   end;
 
   FEnemiesInVision := iLevel.EnemiesVisible;
-  if FEnemiesInVision < 1 then
-  begin
-    FChainFire := 0;
-    if FBerserkerLimit > 0 then Dec( FBerserkerLimit );
-  end;
-
-  if FEnemiesInVision > 0 then
-    FMultiMove.Stop;
+  if FEnemiesInVision > 0
+    then FMultiMove.Stop
+    else FChainFire := 0;
 
   if FMultiMove.Active then
   begin
@@ -373,6 +357,8 @@ begin
         IO.Delay( Option_RunDelay );
     end;
   end;
+
+  CallHook(Hook_OnPreAction,[]);
 end;
 
 procedure TPlayer.LevelEnter;

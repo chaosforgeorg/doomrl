@@ -1400,6 +1400,8 @@ begin
   LastPos := FPosition;
   FAffects.OnUpdate;
   if UIDs[ iThisUID ] = nil then Exit;
+  CallHook(Hook_OnPreAction,[]);
+  if UIDs[ iThisUID ] = nil then Exit;
   CallHook(Hook_OnAction,[]);
   if UIDs[ iThisUID ] = nil then Exit;
   while FSpeedCount >= 5000 do Dec( FSpeedCount, 1000 );
@@ -1732,31 +1734,6 @@ begin
 
     // Apply damage
     aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon );
-
-    // Berserker roll
-    if (Player.EnemiesInVision > 0) then
-      if (BF_BERSERKER in FFlags) and ( iDamage >= 10 ) then
-      begin
-        Player.BerserkerLimit := Player.BerserkerLimit + 1;
-        if Player.BerserkerLimit > 4 - Min((Player.EnemiesInVision + 1) div 2, 3) then
-          begin
-            TLevel(Parent).playSound('bpack','powerup',FPosition);
-            IO.Blink(Red,30);
-            if Player.FAffects.IsActive(LuaSystem.Defines['berserk']) then
-            begin
-              iBerserk  := Player.FAffects.GetTime(LuaSystem.Defines['berserk']);
-              if iBerserk > 0 then
-              begin
-                iIncrease := 10 - Min( iBerserk div 10, 9 );
-                Player.FAffects.Add(LuaSystem.Defines['berserk'],iIncrease);
-              end;
-            end
-            else
-              Player.FAffects.Add(LuaSystem.Defines['berserk'],20);
-            IO.Msg('You''re going berserk!');
-            Player.BerserkerLimit := 0;
-          end;
-      end;
   end;
   // Dualblade attack
   if iDualAttack and (not Second) and TLevel(Parent).isAlive( iTargetUID ) then
@@ -1822,6 +1799,7 @@ end;
 procedure TBeing.ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem );
 var iDirection     : TDirection;
     iArmor         : TItem;
+    iActive        : TBeing;
     iSlot          : TEqSlot;
     iArmorDamage   : LongInt;
     iProtection    : LongInt;
@@ -1835,6 +1813,20 @@ begin
   
   if BF_SELFIMMUNE in FFlags then
     if ( ( aSource <> nil ) and Self.Inv.Equipped( aSource ) ) then Exit;
+
+  iActive := TLevel(Parent).ActiveBeing;
+  if iActive <> nil then
+  begin
+     if ( ( aSource <> nil ) and ( iActive.Inv.Equipped( aSource ) ) ) then
+     begin
+       iActive.CallHook( Hook_OnDamage, [ Self, aDamage, aSource, aSource.isMelee ] );
+       aSource.CallHook( Hook_OnDamage, [ Self, aDamage, iActive ] );
+     end
+     else if iActive.MeleeAttack then
+       iActive.CallHook( Hook_OnDamage, [ Self, aDamage, aSource, True ] );
+  end;
+
+  CallHook( Hook_OnReceiveDamage, [ aDamage, aSource, iActive ] );
 
   if aDamageType <> Damage_IgnoreArmor then
   begin
@@ -1906,8 +1898,8 @@ begin
 
   if aDamage > 8 then
   begin
-    if TLevel(Parent).ActiveBeing <> nil then
-      iDirection.Create( TLevel(Parent).ActiveBeing.FPosition, FPosition )
+    if iActive <> nil then
+      iDirection.Create( iActive.FPosition, FPosition )
     else iDirection.code := 5;
     Blood( iDirection, aDamage div 6 );
   end;
@@ -1928,8 +1920,8 @@ begin
     if isVisible then IO.Msg(Capitalized(GetName(true))+' dies.')
                  else IO.Msg('You hear the scream of a freed soul!');
   if Dead
-    then Kill( Min( aDamage div 2, 15), aDamage >= iOverKillValue, TLevel(Parent).ActiveBeing, aSource )
-    else CallHook( Hook_OnAttacked, [ TLevel(Parent).ActiveBeing, aSource ] );
+    then Kill( Min( aDamage div 2, 15), aDamage >= iOverKillValue, iActive, aSource )
+    else CallHook( Hook_OnAttacked, [ iActive, aSource ] );
 end;
 
 function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod, aToHitMod, aShotCount, aDamageMult : Integer ) : Boolean;

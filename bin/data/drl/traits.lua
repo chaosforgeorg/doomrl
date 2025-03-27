@@ -149,8 +149,46 @@ function drl.register_traits()
 		full   = "You hate this place, you hate these stupid monsters, and you HATE that this is all happening to you. In fact you hate it so much that there's a chance that you'll fly into a berserk rage when you repeatedly smack someone in melee, or get hit hard enough. (NOTE: You do NOT get the healing effect of a Berserk Pack.)",
 		abbr   = "Ber",
 
-		OnPick = function (being)
-			being.flags[ BF_BERSERKER ] = true
+		OnPick = function (self)
+			self:add_property( "berserkerlimit", 0 )
+		end,
+
+		OnDamage = function ( self, target, damage, source, is_melee )
+			if is_melee then
+				if player.enemiesinvision > 0 then
+					if damage >= 10 then
+						self.berserkerlimit = self.berserkerlimit + 1
+						if self.berserkerlimit > 4 - math.min( math.floor( (player.enemiesinvision + 1) / 2), 3 ) then
+							level:play_sound( "bpack", "powerup", self.position )
+							ui.blink( RED, 30 )
+							if self:is_affect( "berserk" ) then
+								local berserk = self:get_affect_time( "berserk" )
+								if berserk > 0 then
+									local increase = 10 - math.min( math.floor( berserk / 10 ), 9 )
+									self:set_affect( "berserk", increase )
+								end
+							else
+								self:set_affect( "berserk", 20 )
+							end
+							ui.msg("You're going berserk!")
+							self.berserkerlimit = 0
+						end
+					end
+				end
+			end
+		end,
+
+		OnPreAction = function ( self )
+			if player.enemiesinvision < 1 and self.berserkerlimit > 0 then
+				self.berserkerlimit = self.berserkerlimit - 1
+			end
+		end,
+
+		OnReceiveDamage = function ( self, damage, weapon, active )
+			if damage >= math.max( math.floor( self.hpmax / 3 ), 10 ) then
+				ui.msg("That hurt! You're going berserk!")
+				self:set_affect( "berserk", 20 )
+			end
 		end,
 	}
 

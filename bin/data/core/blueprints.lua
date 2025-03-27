@@ -39,23 +39,26 @@ core.register_blueprint "difficulty"
 
 core.register_blueprint "trait"
 {
-	id             = { true,  core.TSTRING },
-	name           = { true,  core.TSTRING },
-	desc           = { false, core.TSTRING, "" },
-	quote          = { false, core.TSTRING, "" },
-	full           = { false, core.TSTRING, "" },
-	author         = { false, core.TSTRING },
-	master         = { false, core.TBOOL,   false },
-	abbr           = { true,  core.TSTRING },
+	id              = { true,  core.TSTRING },
+	name            = { true,  core.TSTRING },
+	desc            = { false, core.TSTRING, "" },
+	quote           = { false, core.TSTRING, "" },
+	full            = { false, core.TSTRING, "" },
+	author          = { false, core.TSTRING },
+	master          = { false, core.TBOOL,   false },
+	abbr            = { true,  core.TSTRING },
 
-	OnPick         = { false, core.TFUNC },
-	OnAttacked     = { false, core.TFUNC },
-	OnDie          = { false, core.TFUNC },
-	OnDieCheck     = { false, core.TFUNC },
-	OnUseActive    = { false, core.TFUNC },
-	OnPickupItem   = { false, core.TFUNC },
-	OnPostMove     = { false, core.TFUNC },
-	OnKill         = { false, core.TFUNC },
+	OnPick          = { false, core.TFUNC },
+	OnAttacked      = { false, core.TFUNC },
+	OnPreAction     = { false, core.TFUNC },
+	OnDie           = { false, core.TFUNC },
+	OnDieCheck      = { false, core.TFUNC },
+	OnUseActive     = { false, core.TFUNC },
+	OnPickupItem    = { false, core.TFUNC },
+	OnPostMove      = { false, core.TFUNC },
+	OnKill          = { false, core.TFUNC },
+	OnDamage        = { false, core.TFUNC },
+	OnReceiveDamage = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
@@ -223,15 +226,18 @@ core.register_blueprint "being"
 
 	weapon = { false, core.TANY },
 
-	OnCreate     = { false, core.TFUNC },
-	OnAction     = { false, core.TFUNC },
-	OnAttacked   = { false, core.TFUNC },
-	OnKill       = { false, core.TFUNC },
-	OnDie        = { false, core.TFUNC },
-	OnDieCheck   = { false, core.TFUNC },
-	OnPickupItem = { false, core.TFUNC },
-	OnUseActive  = { false, core.TFUNC },
-	OnPostMove   = { false, core.TFUNC },
+	OnCreate        = { false, core.TFUNC },
+	OnPreAction     = { false, core.TFUNC },
+	OnAction        = { false, core.TFUNC },
+	OnAttacked      = { false, core.TFUNC },
+	OnKill          = { false, core.TFUNC },
+	OnDie           = { false, core.TFUNC },
+	OnDieCheck      = { false, core.TFUNC },
+	OnPickupItem    = { false, core.TFUNC },
+	OnUseActive     = { false, core.TFUNC },
+	OnPostMove      = { false, core.TFUNC },
+	OnDamage        = { false, core.TFUNC },
+	OnReceiveDamage = { false, core.TFUNC },
 }
 
 core.register_blueprint "being_group_entry"
@@ -520,9 +526,9 @@ core.register_blueprint "item"
 	OnFired       = { false, core.TFUNC },
 	OnFire        = { false, core.TFUNC },
 	OnPostMove    = { false, core.TFUNC },
+	OnDamage      = { false, core.TFUNC },
 	
 	OnModDescribe = { false, core.TFUNC },
-
 }
 
 core.register_blueprint "itemset"
