@@ -505,7 +505,22 @@ function drl.register_traits()
 
 		OnPick = function (being)
 			being.runningtime = math.floor( being.runningtime * 1.5 )
-			being.flags[ BF_GUNRUNNER ] = true
+		end,
+
+		OnPostMove = function( being )
+			local weapon = being.eq.weapon
+			if weapon and weapon.itype == ITEMTYPE_RANGED then
+				if weapon.flags[ IF_NOAMMO ] or ( weapon.ammo > 0 and weapon.ammo > weapon.shotcost ) and (weapon.shots < 3) then
+					if being:is_affect( "running" ) then
+						local target = being:get_auto_target()
+						if target then
+							local scount = being.scount
+							being:action_fire( target, weapon )
+							being.scount = scount
+						end
+					end
+				end
+			end
 		end,
 	}
 

@@ -299,10 +299,6 @@ begin
 end;
 
 procedure TPlayer.HandlePostMove;
-var iTempSC     : LongInt;
-    iItem       : TItem;
-    iWeapon     : TItem;
-    iAutoTarget : TAutoTarget;
 
   function RunStopNear : boolean;
   begin
@@ -315,34 +311,9 @@ var iTempSC     : LongInt;
 
 begin
   inherited HandlePostMove;
-  iTempSC := FSpeedCount;
-  iWeapon := Inv.Slot[ efWeapon ];
-
-  if ( iWeapon <> nil ) and ( iWeapon.isRanged ) then
-     if (BF_GUNRUNNER in Self.FFlags) and iWeapon.canFire and (iWeapon.Shots < 3) and FAffects.IsActive( LuaSystem.Defines['running'] ) then
-     begin
-       iAutoTarget := TAutoTarget.Create( FPosition );
-       TLevel(Parent).UpdateAutoTarget( iAutoTarget, Self, Player.Vision );
-       with iAutoTarget do
-       try
-         FTargetPos := Current;
-         if FTargetPos <> FPosition then
-         begin
-           // TODO: fix?
-           if iWeapon.CallHookCheck( Hook_OnFire, [ Self, false ] ) then
-             ActionFire( FTargetPos, iWeapon );
-         end;
-       finally
-         Free;
-       end;
-     end;
-  FSpeedCount := iTempSC;
-
   if FMultiMove.IsRepeat then
     if RunStopNear or ((not Setting_RunOverItems) and (TLevel( Parent ).Item[ FPosition ] <> nil)) then
-    begin
       FMultiMove.Stop;
-    end;
 end;
 
 function TPlayer.GetMultiMoveInput : TInputKey;

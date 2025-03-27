@@ -2920,8 +2920,28 @@ begin
   Result := 0;
 end;
 
+function lua_being_get_auto_target(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
+    iAuto  : TAutoTarget;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject( 1 ) as TBeing;
+  if iBeing = nil then Exit( 0 );
+  Result := 0;
+  iAuto := TAutoTarget.Create( iBeing.Position );
+  TLevel(iBeing.Parent).UpdateAutoTarget( iAuto, iBeing, iState.ToInteger( 2, iBeing.Vision ) );
+  if iAuto.Current <> iBeing.Position then
+  begin
+    iBeing.FTargetPos := iAuto.Current;
+    iState.PushCoord( iAuto.Current );
+    Result := 1;
+  end;
+  FreeAndNil( iAuto );
+end;
 
-const lua_being_lib : array[0..31] of luaL_Reg = (
+
+const lua_being_lib : array[0..32] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -2956,7 +2976,8 @@ const lua_being_lib : array[0..31] of luaL_Reg = (
       ( name : 'remove_affect';   func : @lua_being_remove_affect),
       ( name : 'is_affect';       func : @lua_being_is_affect),
 
-      ( name : 'set_overlay';   func : @lua_being_set_overlay),
+      ( name : 'set_overlay';     func : @lua_being_set_overlay),
+      ( name : 'get_auto_target'; func : @lua_being_get_auto_target),
 
       ( name : nil;             func : nil; )
 );
