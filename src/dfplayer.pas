@@ -36,6 +36,7 @@ type TPlayer = class(TBeing)
   procedure WriteToStream( Stream: TStream ); override;
   procedure CallHook( aHook : Byte; const aParams : array of Const ); override;
   function CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean; override;
+  function GetBonus( aHook : Byte; const aParams : array of Const ) : Integer; override;
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
   procedure PreAction;
@@ -203,6 +204,12 @@ function TPlayer.CallHookCheck( aHook : Byte; const aParams : array of Const ) :
 begin
   if not ( inherited CallHookCheck( aHook, aParams ) ) then Exit ( False );
   Exit( FTraits.CallHookCheck( aHook, aParams ) );
+end;
+
+function TPlayer.GetBonus( aHook : Byte; const aParams : array of Const ) : Integer;
+begin
+  GetBonus := inherited GetBonus( aHook, aParams );
+  GetBonus += FTraits.GetBonus( aHook, aParams );
 end;
 
 

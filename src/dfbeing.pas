@@ -68,7 +68,7 @@ TBeing = class(TThing,IPathQuery)
     function  isActive : boolean;
     function  WoundStatus : string;
     function  IsPlayer : Boolean;
-
+    function GetBonus( aHook : Byte; const aParams : array of Const ) : Integer; virtual;
     procedure BloodFloor;
     procedure Knockback( dir : TDirection; Strength : Integer );
     destructor Destroy; override;
@@ -507,6 +507,13 @@ end;
 function TBeing.IsPlayer : Boolean;
 begin
   Exit( inheritsFrom( TPlayer ) );
+end;
+
+function TBeing.GetBonus( aHook : Byte; const aParams : array of Const ) : Integer;
+begin
+  if aHook in FHooks then
+    Exit( LuaSystem.ProtectedRunHook( Self, HookNames[ aHook ], aParams ) );
+  Exit( 0 );
 end;
 
 function TBeing.isActive: boolean;
