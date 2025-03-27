@@ -628,7 +628,8 @@ function drl.register_regular_items()
 		damagetype    = DAMAGE_SHARPNEL,
 		fire          = 10,
 		reload        = 10,
-		altreload     = RELOAD_FULL,
+		altreload     = RELOAD_SCRIPT,
+		altreloadname = "full",
 		missile       = "sfocused",
 
 		OnCreate = function(self)
@@ -676,6 +677,9 @@ function drl.register_regular_items()
 			return true
 		end,
 		
+		OnAltReload = function( self, being )
+			return being:full_reload( self )
+		end,
 	}
 
 	register_item "bazooka"

@@ -65,10 +65,10 @@ TItem  = class( TThing )
     FMods     : array[Ord('A')..Ord('Z')] of Byte;
     procedure LuaLoad( Table : TLuaTable; onFloor: boolean ); reintroduce;
     public
-    property NID            : Byte        read FNID;
     property PGlowColor     : TColor      read FProps.PGlowColor     write FProps.PGlowColor;
     property PCosColor      : TColor      read FProps.PCosColor      write FProps.PCosColor;
     published
+    property NID            : Byte        read FNID;
     property RechargeDelay  : Byte        read FRecharge.Delay       write FRecharge.Delay;
     property RechargeAmount : Byte        read FRecharge.Amount      write FRecharge.Amount;
     property RechargeLimit  : Byte        read FRecharge.Limit       write FRecharge.Limit;
@@ -386,7 +386,6 @@ function TItem.DescriptionBox( aNewFormat : Boolean = False ): Ansistring;
     AltReloadName := LuaSystem.Get([ 'items', ID, 'altreloadname' ], '');
     if AltReloadName <> '' then Exit;
     case aValue of
-      RELOAD_FULL        : Exit('full');
       RELOAD_DUAL        : Exit('dual');
       RELOAD_SINGLE      : Exit('single');
     end;

@@ -120,8 +120,13 @@ function drl.register_exotic_items()
 		damagetype    = DAMAGE_SHARPNEL,
 		fire          = 10,
 		reload        = 10,
-		altreload     = RELOAD_FULL,
 		missile       = "sfocused",
+		altreload     = RELOAD_SCRIPT,
+		altreloadname = "full",
+
+		OnAltReload = function( self, being )
+			return being:full_reload( self )
+		end,
 	}
 
 	register_item "upshotgun"
@@ -146,8 +151,6 @@ function drl.register_exotic_items()
 		damagetype    = DAMAGE_PLASMA,
 		fire          = 10,
 		reload        = 20,
-		-- TODO Confirm if plasma shotgun does not use alt-reload
-		--altreload     = RELOAD_FULL,
 		missile       = "splasma",
 	}
 
@@ -298,8 +301,13 @@ function drl.register_exotic_items()
 		fire          = 8,
 		radius        = 3,
 		reload        = 12,
-		altreload     = RELOAD_FULL,
 		missile       = "mrocket",
+		altreload     = RELOAD_SCRIPT,
+		altreloadname = "full",
+
+		OnAltReload = function( self, being )
+			return being:full_reload( self )
+		end,
 	}
 
 	register_item "unplasma"

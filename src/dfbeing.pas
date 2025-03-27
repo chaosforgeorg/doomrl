@@ -798,24 +798,6 @@ begin
   case Weapon.AltReload of
     RELOAD_SCRIPT : Exit( Weapon.CallHookCheck( Hook_OnAltReload, [Self] ) );
     RELOAD_DUAL   : Exit( ActionDualReload );
-    RELOAD_FULL   :
-      begin
-        if Weapon.Ammo = Weapon.AmmoMax then Exit( Fail( 'Your %s is already fully loaded.', [ Weapon.Name ] ) );
-        Weapon.Flags[ IF_CHAMBEREMPTY ] := False;
-        AmmoItem := getAmmoItem( Weapon );
-        if AmmoItem = nil then Exit( Fail('You have no ammo for the %s!',[ Weapon.Name ] ) );
-        Pack := AmmoItem.isAmmoPack;
-        while (Weapon.Ammo <> Weapon.AmmoMax) do
-        begin
-          if AmmoItem = nil then AmmoItem := getAmmoItem( Weapon );
-          if AmmoItem = nil then Exit( Success('You have no more ammo for the %s!',[ Weapon.Name ], 200 ) );
-          FSilentAction := True;
-          Reload( AmmoItem, True );
-          FSilentAction := SAStore;
-          AmmoItem := nil;
-        end;
-        Exit( Success('You%s fully load the %s.', [ IIf( Pack, ' quickly'), Weapon.Name ], 200 ) );
-      end;
     RELOAD_SINGLE :
       begin
         if Weapon.Ammo = Weapon.AmmoMax then Exit( Fail( 'Your %s is already fully loaded.', [ Weapon.Name ] ) );
