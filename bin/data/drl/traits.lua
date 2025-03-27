@@ -279,7 +279,12 @@ function drl.register_traits()
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_CLEAVE ] = true
+		end,
+
+		OnKill = function ( being, target, weapon, melee )
+			if ( not being ) or ( not melee ) then return end
+			ui.msg("Next!")
+			being.scount = 5001
 		end,
 	}
 

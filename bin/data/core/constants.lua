@@ -70,7 +70,7 @@ BF_BEINGSENSE   = 18;
 BF_LEVERSENSE1  = 19;
 BF_LEVERSENSE2  = 20;
 BF_NOMELEE      = 21;
-BF_CLEAVE       = 22;
+
 BF_MAXDAMAGE    = 23;
 BF_SESSILE      = 24;
 BF_VAMPYRE      = 25;
@@ -116,7 +116,7 @@ IF_CURSED         = 24;
 IF_HALFKNOCK      = 26;
 IF_GLOBE          = 27;
 IF_RECHARGE       = 28;
-IF_CLEAVE         = 29;
+
 IF_NOAMMO         = 30;
 IF_NECROCHARGE    = 31;
 

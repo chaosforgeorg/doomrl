@@ -55,6 +55,7 @@ core.register_blueprint "trait"
 	OnUseActive    = { false, core.TFUNC },
 	OnPickupItem   = { false, core.TFUNC },
 	OnPostMove     = { false, core.TFUNC },
+	OnKill         = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
@@ -225,6 +226,7 @@ core.register_blueprint "being"
 	OnCreate     = { false, core.TFUNC },
 	OnAction     = { false, core.TFUNC },
 	OnAttacked   = { false, core.TFUNC },
+	OnKill       = { false, core.TFUNC },
 	OnDie        = { false, core.TFUNC },
 	OnDieCheck   = { false, core.TFUNC },
 	OnPickupItem = { false, core.TFUNC },

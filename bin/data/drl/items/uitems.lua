@@ -134,12 +134,21 @@ function drl.register_unique_items()
 		weight   = 2,
 		desc     = "Now that is a BIG cleaver. Butcher them!",
 		firstmsg = "Aaaah, fresh meat!",
-		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_CLEAVE, IF_BLADE, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_BLADE, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "5d6",
 		damagetype  = DAMAGE_MELEE,
 		group       = "weapon-melee",
+
+		OnKill = function ( self, being, target )
+			if not being then return end
+			if being:is_player() then
+				if player:get_trait( traits["blademaster"].nid ) > 0 then return end
+				ui.msg("Next!")
+			end
+			being.scount = 5001
+		end,
 	}
 
 	register_item "umjoll"

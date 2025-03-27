@@ -20,7 +20,7 @@ const
   Hook_OnAltReload     = 13;  // Item
   Hook_OnEquip         = 14;  // Item
   Hook_OnRemove        = 15;  // Item
-  Hook_OnKill          = 16;  // Item (separate), Level, Module, Challenge, Core (Chained)
+  Hook_OnKill          = 16;  // Item (separate), Trait, Being (separate), Level, Module, Challenge, Core (Chained)
   Hook_OnKillAll       = 17;  // Level, Module, Challenge, Core (Chained)
   Hook_OnHitBeing      = 18;  // Item
   Hook_OnReload        = 19;  // Item
@@ -98,7 +98,7 @@ initialization
 
 AllHooks     := [ 0..HookAmount-1 ];
 BeingHooks   := [ Hook_OnCreate, Hook_OnAction, Hook_OnAttacked, Hook_OnUseActive,
-  Hook_OnDie, Hook_OnDieCheck, Hook_OnPickUpItem, Hook_OnPostMove ];
+  Hook_OnDie, Hook_OnDieCheck, Hook_OnPickUpItem, Hook_OnPostMove, Hook_OnKill ];
 ItemHooks    := [ Hook_OnCreate, Hook_OnPickup, Hook_OnPickupCheck, Hook_OnFirstPickup,
   Hook_OnUse, Hook_OnUseCheck, Hook_OnAltFire, Hook_OnAltReload, Hook_OnEquip,
   Hook_OnRemove, Hook_OnKill, Hook_OnKillAll, Hook_OnHitBeing, Hook_OnReload,

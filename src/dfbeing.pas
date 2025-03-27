@@ -1540,6 +1540,9 @@ begin
   if (aKiller <> nil) and (aWeapon <> nil) then
     aWeapon.CallHook(Hook_OnKill, [ aKiller, Self ]);
 
+  if (aKiller <> nil) then
+     aKiller.CallHook( Hook_OnKill, [ Self, aWeapon, aKiller.MeleeAttack ] );
+
   if not aOverkill then
   try
     for iItem in FInv do
@@ -1729,14 +1732,6 @@ begin
 
     // Apply damage
     aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon );
-  
-    // Cleave
-    if ( ( iWeapon <> nil ) and ( iWeapon.Flags[IF_CLEAVE] ) or ( BF_CLEAVE in FFlags ) ) and
-      ( not TLevel(Parent).isAlive( iTargetUID ) ) then
-      begin
-        IO.Msg('Next!');
-        FSpeedCount := 5001;
-      end;
 
     // Vampyre
     if ( BF_VAMPYRE in FFlags ) and
