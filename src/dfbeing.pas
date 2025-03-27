@@ -862,8 +862,6 @@ begin
     if aWeapon.Ammo < aWeapon.ShotCost then Exit( False );
   end;
   
-  if aWeapon.Flags[ IF_CHAMBEREMPTY ] then Exit( False );
-
   if aWeapon.Flags[ IF_SHOTGUN ] then
       iRange := Shotguns[ aWeapon.Missile ].Range
   else

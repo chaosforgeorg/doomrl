@@ -624,9 +624,6 @@ begin
       else if iItem.Ammo < iItem.ShotCost then begin IO.Msg( 'You don''t have enough ammo to fire the %s!', [iItem.Name] ); iEmpty := True; end;
     end;
 
-    if not iEmpty then
-      if iItem.Flags[ IF_CHAMBEREMPTY ] then
-      begin IO.Msg( 'Shell chamber empty - move or reload.' ); iEmpty := True; end;
     if iEmpty then
     begin
       if Setting_EmptyConfirm then

@@ -631,32 +631,44 @@ function drl.register_regular_items()
 		altreload     = RELOAD_SCRIPT,
 		altreloadname = "full",
 		missile       = "sfocused",
-
+		
 		OnCreate = function(self)
 			self:add_property( "pump_action", true )
+			self:add_property( "chamber_empty", false )
 		end,
 
 		OnPostMove = function( self, being )
 			if not self.pump_action then return end
-			if self.flags[ IF_CHAMBEREMPTY ] and self.ammo > 0 then
+			if self.chamber_empty and self.ammo > 0 then
 				level:play_sound( self.id, "pump", being.position )
-				self.flags[ IF_CHAMBEREMPTY ] = false
+				self.chamber_empty = false
 				if being:is_player() then
 					ui.msg( "You pump a shell into the shotgun chamber." )
 				end
 			end
 		end,
 
+		OnFire = function( self, being )
+			if not self.pump_action then return true end
+			if self.chamber_empty and self.ammo > 0 then
+				if being:is_player() then
+					ui.msg( "Shell chamber empty - move or reload!" )
+				end
+				return false
+			end
+			return true
+		end,
+
 		OnFired = function( self, being )
 			if not self.pump_action then return end
-			self.flags[ IF_CHAMBEREMPTY ] = true
+			self.chamber_empty = true
 		end,
 
 		OnPreReload = function( self, being )
 			if not self.pump_action then return true end
 			if self.flags[ IF_NOAMMO ] or self.ammo > 0 then
-				if self.flags[ IF_CHAMBEREMPTY ] then
-					self.flags[ IF_CHAMBEREMPTY ] = false
+				if self.chamber_empty then
+					self.chamber_empty = false
 					level:play_sound( self.id, "pump", being.position )
 					if being:is_player() then
 						ui.msg( "You pump a shell into the "..self.name.." chamber." )

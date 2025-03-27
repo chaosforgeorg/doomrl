@@ -339,7 +339,7 @@ function being:full_reload( weapon )
 		end
 		return false
 	end
-	weapon.flags[ IF_CHAMBEREMPTY ] = false
+	if weapon:has_property( "chamber_empty" ) then weapon.chamber_empty = false end
 	local ammo = self:get_ammo_item( weapon )
 	if not ammo then
 		if is_player then

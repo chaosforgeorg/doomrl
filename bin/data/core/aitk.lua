@@ -207,7 +207,7 @@ function aitk.ammo_check( self )
     local w = self.eq.weapon
     if w.flags[ IF_NOAMMO ] then return true, false end
     if w.ammo >= math.max( w.shotcost, 1 ) then 
-        if w:has_property("pump_action") and w.flags[ IF_CHAMBEREMPTY ] then return true, true end
+        if w:has_property("pump_action") and w.chamber_empty then return true, true end
         return true, false 
     end
     if self.inv[ items[w.ammoid].id ] then return true, true end

@@ -229,7 +229,7 @@ function drl.register_assemblies()
 			item.ammomax      = 5
 			if item:has_property("pump_action") then
 				item.pump_action = false
-				item.flags[ IF_CHAMBEREMPTY ] = false
+				item.chamber_empty = false
 			end
 		end,
 	}
@@ -675,7 +675,7 @@ function drl.register_assemblies()
 			item.flags[ IF_NOAMMO ] = true
 			if item:has_property("pump_action") then
 				item.pump_action = false
-				item.flags[ IF_CHAMBEREMPTY ] = false
+				item.chamber_empty = false
 			end
 		end,
 	}

@@ -608,7 +608,6 @@ begin
     if Ammo = 0        then Exit( False );
     if Ammo < ShotCost then Exit( False );
   end;
-  if Flags[ IF_CHAMBEREMPTY ] then Exit( False );
   Exit( True );
 end;
 

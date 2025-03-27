@@ -112,7 +112,7 @@ IF_UNIQUE         = 21;
 IF_EXOTIC         = 22;
 IF_MODIFIED       = 23;
 IF_CURSED         = 24;
-IF_CHAMBEREMPTY   = 25;
+
 IF_HALFKNOCK      = 26;
 IF_GLOBE          = 27;
 IF_RECHARGE       = 28;
