@@ -19,7 +19,6 @@ type TBonuses = record
   ToDam           : Integer;
   ToDamAll        : Integer;
   ToHitMelee      : Integer;
-  Pistol          : Integer;
   Rapid           : Integer;
   Body            : Integer;
   Tech            : Integer;
@@ -203,7 +202,6 @@ TBeing = class(TThing,IPathQuery)
     property ExpValue     : Word       read FExpValue      write FExpValue;
 
     property TechBonus       : Integer read FBonus.Tech            write FBonus.Tech;
-    property PistolBonus     : Integer read FBonus.Pistol          write FBonus.Pistol;
     property RapidBonus      : Integer read FBonus.Rapid           write FBonus.Rapid;
     property BodyBonus       : Integer read FBonus.Body            write FBonus.Body;
     property DodgeBonus      : Integer read FBonus.Dodge           write FBonus.Dodge;
@@ -382,7 +380,6 @@ begin
   FHPNom := FHP;
   FSpeedCount := 900+Random(90);
 
-  FBonus.Pistol := 0;
   FBonus.Rapid  := 0;
   FBonus.Tech   := 0;
   FBonus.Body   := 0;
@@ -1308,6 +1305,7 @@ function TBeing.FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire ) 
 var iShots       : Integer;
     iDamageBonus : Integer;
     iToHitBonus  : Integer;
+    iShotsBonus  : Integer;
     iShotCost    : Byte;
     iChaining    : Boolean;
     iBulletDance : Boolean;
@@ -1319,11 +1317,13 @@ begin
   if aTarget = FPosition then Exit( False );
   if aGun = nil then Exit( False );
 
-  iDamageBonus := FBonus.ToDamAll;
-  iToHitBonus  := 0;
-  if aGun.Flags[ IF_PISTOL ] then iDamageBonus += 3 * FBonus.Pistol;
+  iDamageBonus := GetBonus( Hook_getDamageBonus, [ aGun, Integer( aAlt ) ] );
+  iToHitBonus  := GetBonus( Hook_getToHitBonus,  [ aGun, Integer( aAlt ) ] );
+  iShotsBonus  := GetBonus( Hook_getShotsBonus,  [ aGun, Integer( aAlt ) ] );
 
-  iShots       := Max( aGun.Shots, 1 );
+  iDamageBonus += FBonus.ToDamAll;
+
+  iShots       := Max( aGun.Shots, 1 ) + iShotsBonus;
   iChaining    := ( aAlt = ALT_CHAIN ) and ( iShots > 1 );
   iBulletDance := ( BF_BULLETDANCE in FFlags ) and aGun.Flags[ IF_PISTOL ] and ( aAlt = ALT_NONE );
 
@@ -2244,6 +2244,7 @@ end;
 
 function TBeing.getFireCost( aAltFire : TAltFire ) : LongInt;
 var iModifier : Single;
+    iBonus    : Integer;
 begin
   if (Inv.Slot[ efWeapon ] = nil) then Exit(10*FTimes.Fire);
   if (Inv.Slot[ efWeapon ].isMelee) then Exit(Inv.Slot[ efWeapon ].UseTime * FTimes.Fire);
@@ -2253,7 +2254,9 @@ begin
     iModifier := Inv.Slot[ efWeapon ].UseTime;
   iModifier *= FTimes.Fire/1000.;
 
-  if (FBonus.Pistol > 0) and Inv.Slot[ efWeapon ].Flags[ IF_PISTOL ] then iModifier *= Max( (10.-FBonus.Pistol)/10, 0.1 );
+  iBonus := GetBonus( Hook_getFireCostBonus, [ Inv.Slot[ efWeapon ], Integer( aAltFire ) ] );
+  if iBonus > 0 then iModifier *= Max( (100.-iBonus)/100, 0.1 );
+
   if (BF_BULLETDANCE in FFlags) and Inv.Slot[ efWeapon ].Flags[ IF_PISTOL ] and (aAltFire = ALT_NONE) then iModifier *= ( 1 + 0.5 * FBonus.Rapid );
   if (aAltFire = ALT_AIMED) then iModifier *= 2;
   if (BF_SHOTTYHEAD in FFlags) and Inv.Slot[efWeapon].Flags[ IF_SHOTGUN ] then iModifier *= 0.33;

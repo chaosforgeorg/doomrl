@@ -76,5 +76,14 @@ function player:add_history( history )
 	end
 end
 
+function player:upgrade_trait( id )
+	if self:has_property( id ) then
+		self[id] = self[id] + 1
+	else
+		self:add_property( id, 1 )
+	end
+	return self[id]
+end
+
 table.merge( player, being )
 setmetatable(player,getmetatable(being))

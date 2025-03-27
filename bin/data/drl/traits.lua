@@ -84,7 +84,19 @@ function drl.register_traits()
 		abbr   = "SoG",
 
 		OnPick = function (being)
-			being.pistolbonus = being.pistolbonus + 1
+			player:upgrade_trait( "trait_gun" )
+		end,
+
+		getDamageBonus = function ( self, weapon, alt )
+			if weapon and weapon.flags[ IF_PISTOL ] then
+				return self.trait_gun * 3
+			end
+		end,
+
+		getFireCostBonus = function ( self, weapon, alt )
+			if weapon and weapon.flags[ IF_PISTOL ] then
+				return self.trait_gun * 10
+			end
 		end,
 	}
 

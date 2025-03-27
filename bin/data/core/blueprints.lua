@@ -59,6 +59,11 @@ core.register_blueprint "trait"
 	OnKill          = { false, core.TFUNC },
 	OnDamage        = { false, core.TFUNC },
 	OnReceiveDamage = { false, core.TFUNC },
+
+	getDamageBonus   = { false, core.TFUNC },
+	getToHitBonus    = { false, core.TFUNC },
+	getShotsBonus    = { false, core.TFUNC },
+	getFireCostBonus = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
@@ -238,6 +243,11 @@ core.register_blueprint "being"
 	OnPostMove      = { false, core.TFUNC },
 	OnDamage        = { false, core.TFUNC },
 	OnReceiveDamage = { false, core.TFUNC },
+
+	getDamageBonus   = { false, core.TFUNC },
+	getToHitBonus    = { false, core.TFUNC },
+	getShotsBonus    = { false, core.TFUNC },
+	getFireCostBonus = { false, core.TFUNC },
 }
 
 core.register_blueprint "being_group_entry"

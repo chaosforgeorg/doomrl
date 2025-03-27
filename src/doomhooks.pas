@@ -55,7 +55,12 @@ const
   Hook_OnReceiveDamage = 46;   // Trait, Being
   Hook_OnPreAction     = 47;   // Trait, Being
 
-  HookAmount           = 48;
+  Hook_getDamageBonus  = 48; // Trait, Being
+  Hook_getToHitBonus   = 49; // Trait, Being
+  Hook_getShotsBonus   = 50; // Trait, Being
+  Hook_getFireCostBonus= 51; // Trait, Being
+
+  HookAmount           = 52;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
 
@@ -74,7 +79,8 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnLoad','OnLoaded','OnUnLoad', 'OnCreatePlayer', 'OnLevelUp','OnPreLevelUp',
       'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro', 'OnGenerate',
 
-      'OnPostMove', 'OnPreReload', 'OnDamage', 'OnReceiveDamage', 'OnPreAction'
+      'OnPostMove', 'OnPreReload', 'OnDamage', 'OnReceiveDamage', 'OnPreAction',
+      'getDamageBonus', 'getToHitBonus', 'getShotsBonus', 'getFireCostBonus'
       );
 
 function LoadHooks( const Table : array of Const ) : TFlags;
@@ -102,7 +108,8 @@ initialization
 AllHooks     := [ 0..HookAmount-1 ];
 BeingHooks   := [ Hook_OnCreate, Hook_OnAction, Hook_OnAttacked, Hook_OnUseActive,
   Hook_OnDie, Hook_OnDieCheck, Hook_OnPickUpItem, Hook_OnPostMove, Hook_OnKill,
-  Hook_OnDamage, Hook_OnReceiveDamage, Hook_OnPreAction ];
+  Hook_OnDamage, Hook_OnReceiveDamage, Hook_OnPreAction,
+  Hook_getDamageBonus, Hook_getToHitBonus, Hook_getShotsBonus, Hook_getFireCostBonus];
 ItemHooks    := [ Hook_OnCreate, Hook_OnPickup, Hook_OnPickupCheck, Hook_OnFirstPickup,
   Hook_OnUse, Hook_OnUseCheck, Hook_OnAltFire, Hook_OnAltReload, Hook_OnEquip,
   Hook_OnRemove, Hook_OnKill, Hook_OnKillAll, Hook_OnHitBeing, Hook_OnReload,
