@@ -73,7 +73,7 @@ BF_NOMELEE      = 21;
 
 BF_MAXDAMAGE    = 23;
 BF_SESSILE      = 24;
-BF_VAMPYRE      = 25;
+
 BF_REGENERATE   = 26;
 BF_ARMYDEAD     = 27;
 BF_FIREANGEL    = 28;

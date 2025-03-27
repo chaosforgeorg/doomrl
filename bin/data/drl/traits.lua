@@ -299,7 +299,13 @@ function drl.register_traits()
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_VAMPYRE ] = true
+		end,
+
+		OnKill = function ( being, target, weapon, melee )
+			if ( not being ) or ( not melee ) or ( not target ) then return end
+			if being.hp < being.hpmax then
+				being.hp = math.min( being.hp + math.ceil(target.hpmax / 10), being.hpmax )
+			end
 		end,
 	}
 

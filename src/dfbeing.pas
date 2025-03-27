@@ -1733,13 +1733,6 @@ begin
     // Apply damage
     aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon );
 
-    // Vampyre
-    if ( BF_VAMPYRE in FFlags ) and
-      ( FHP < FHPMax ) and
-      ( not TLevel(Parent).isAlive( iTargetUID ) ) then
-       FHP := Min( FHP + Ceil(aTarget.FHPMax / 10), FHPMax );
-
-
     // Berserker roll
     if (Player.EnemiesInVision > 0) then
       if (BF_BERSERKER in FFlags) and ( iDamage >= 10 ) then
