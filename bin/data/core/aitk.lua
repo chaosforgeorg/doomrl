@@ -466,7 +466,7 @@ function aitk.try_hunt( self )
         if self:has_property("on_fire") then
             return self.on_fire
         end
-        self:fire( target, self.eq.weapon )
+        self:action_fire( target, self.eq.weapon )
         if sequence == 0 and sequential then
             self.sequence = core.resolve_range( sequential )
         end 

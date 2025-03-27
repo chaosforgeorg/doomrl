@@ -164,9 +164,9 @@ register_ai "archvile_ai"
 		fire = function( self )
 			local target = uids.get( self.target )
 			if target and self:in_sight( target ) then
-				self:fire( target.position, self.eq.weapon )
+				self:action_fire( target.position, self.eq.weapon )
 			else
-				self:fire( self.attack_to, self.eq.weapon )
+				self:action_fire( self.attack_to, self.eq.weapon )
 			end
 			return "hunt"
 		end,
@@ -413,7 +413,7 @@ register_ai "jc_ai"
 				end	
 				if dist < 3 then shoot = true end			
 				if shoot then
-					self:fire( player, self.eq.weapon )
+					self:action_fire( player, self.eq.weapon )
 					return "hunt"
 				end
 			end
@@ -540,13 +540,13 @@ register_ai "mastermind_ai"
 			if visible then
 				if dist == 1 then
 					if math.random(100) <= self.attackchance then
-						self:fire( player, self.eq.weapon )
+						self:action_fire( player, self.eq.weapon )
 					else
 						self:attack( player )
 					end
 					self.irritated = 0
 				elseif dist < 4 then
-					self:fire( player, self.eq.weapon )
+					self:action_fire( player, self.eq.weapon )
 					self.irritated = 0
 				else
 					local spray = area.around( player.position, math.floor(dist/3) )
@@ -556,11 +556,11 @@ register_ai "mastermind_ai"
 					for shot = 1,num_fire do
 						local energy = self.scount
 						if math.random(2) == 1 then
-							self:fire( player, self.eq.weapon )
+							self:action_fire( player, self.eq.weapon )
 						else
 							local hit = spray:random_coord()
 							area.FULL:clamp_coord(hit)
-							self:fire( hit, self.eq.weapon )
+							self:action_fire( hit, self.eq.weapon )
 						end
 						if shot ~= 1 then
 							self.scount = energy

@@ -1408,10 +1408,10 @@ end;
 procedure TBeing.HandlePostMove;
 var iSlot : TEqSlot;
 begin
-  CallHook( Hook_OnPostMove, [] );
   for iSlot in TEqSlot do
     if FInv.Slot[ iSlot ] <> nil then
       FInv.Slot[ iSlot ].CallHook( Hook_OnPostMove, [Self]  );
+  CallHook( Hook_OnPostMove, [] );
 end;
 
 procedure TBeing.HandlePostDisplace;
@@ -2588,14 +2588,20 @@ begin
   Result := 1;
 end;
 
-function lua_being_fire(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
-    Being  : TBeing;
+function lua_being_action_fire(L: Plua_State): Integer; cdecl;
+var iState  : TDoomLuaState;
+    iBeing  : TBeing;
+    iWeapon : TItem;
+    iTarget : TCoord2D;
 begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  // TODO: add Hook_OnFire ?
-  State.Push( Being.ActionFire( State.ToPosition(2), State.ToObject(3) as TItem ) );
+  iState.Init(L);
+  iBeing  := iState.ToObject( 1 ) as TBeing;
+  iTarget := iState.ToPosition( 2 );
+  iWeapon := iState.ToObject( 3 ) as TItem;
+  if ( iBeing = nil ) or ( iWeapon = nil ) then Exit( 0 );
+  if iWeapon.CallHookCheck( Hook_OnFire, [ iBeing ] )
+    then iState.Push( iBeing.ActionFire( iTarget, iWeapon ) )
+    else iState.Push( False );
   Result := 1;
 end;
 
@@ -2935,7 +2941,7 @@ const lua_being_lib : array[0..31] of luaL_Reg = (
       ( name : 'use';           func : @lua_being_use),
       ( name : 'wear';          func : @lua_being_wear),
       ( name : 'attack';        func : @lua_being_attack),
-      ( name : 'fire';          func : @lua_being_fire),
+      ( name : 'action_fire';   func : @lua_being_action_fire),
       ( name : 'reload';           func : @lua_being_reload),
       ( name : 'action_reload';    func : @lua_being_action_reload),
       ( name : 'action_alt_reload';func : @lua_being_action_alt_reload),
