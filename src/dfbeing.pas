@@ -19,7 +19,6 @@ type TBonuses = record
   ToDam           : Integer;
   ToDamAll        : Integer;
   ToHitMelee      : Integer;
-  Rapid           : Integer;
   Body            : Integer;
   Tech            : Integer;
   Dodge           : Integer;
@@ -202,7 +201,6 @@ TBeing = class(TThing,IPathQuery)
     property ExpValue     : Word       read FExpValue      write FExpValue;
 
     property TechBonus       : Integer read FBonus.Tech            write FBonus.Tech;
-    property RapidBonus      : Integer read FBonus.Rapid           write FBonus.Rapid;
     property BodyBonus       : Integer read FBonus.Body            write FBonus.Body;
     property DodgeBonus      : Integer read FBonus.Dodge           write FBonus.Dodge;
     property MoveBonus       : Integer read FBonus.Move            write FBonus.Move;
@@ -380,7 +378,6 @@ begin
   FHPNom := FHP;
   FSpeedCount := 900+Random(90);
 
-  FBonus.Rapid  := 0;
   FBonus.Tech   := 0;
   FBonus.Body   := 0;
   FBonus.Dodge  := 0;
@@ -1308,7 +1305,6 @@ var iShots       : Integer;
     iShotsBonus  : Integer;
     iShotCost    : Byte;
     iChaining    : Boolean;
-    iBulletDance : Boolean;
     iAmmochaining: Boolean;
     iFreeShot    : Boolean;
     iResult      : Boolean;
@@ -1323,21 +1319,9 @@ begin
 
   iDamageBonus += FBonus.ToDamAll;
 
-  iShots       := Max( aGun.Shots, 1 ) + iShotsBonus;
+  iShots       := Max( aGun.Shots, 1 );
   iChaining    := ( aAlt = ALT_CHAIN ) and ( iShots > 1 );
-  iBulletDance := ( BF_BULLETDANCE in FFlags ) and aGun.Flags[ IF_PISTOL ] and ( aAlt = ALT_NONE );
-
-  // thelaptop: The problem is there's no flag for "rapid fire" weapons.  There are 3 proposals here.
-  //            Here, I explicitly verify that if the weapon fires more than one "shot" per firing action, it is a rapid fire if it's not a shotgun or pistol.
-  // Actually, another alternative would be to compare with aGun.AltFire = ALT_CHAIN
-  // 1. Original: Anything with 3 or more shots per firing action counts as "rapid shot", if 2, then it has to be not shotgun and not pistol.
-  //if (iShots > 2) or (iBulletDance) or ( ( iShots > 1 ) and ( not aGun.Flags[ IF_SHOTGUN ]  and not aGun.Flags[ IF_PISTOL ] ) ) then
-  // 2. Alt #1: 2 or more shots that are not shotguns nor pistols are considered "rapid shots".
-  //if (iBulletDance) or ( ( iShots > 1 ) and ( not aGun.Flags[ IF_SHOTGUN ] and not aGun.Flags[ IF_PISTOL ] ) ) then
-  // 3. Alt #2: Only chain-fire capable weapons are "rapid shots".
-  //if (iBulletDance) or ( aGun.AltFire = ALT_CHAIN ) then
-  if (iShots > 2) or (iBulletDance) or ( ( iShots > 1 ) and ( not aGun.Flags[ IF_SHOTGUN ]  and not aGun.Flags[ IF_PISTOL ] ) ) then
-    iShots += FBonus.Rapid;
+  iShots       += iShotsBonus;
 
   if ( aAlt = ALT_AIMED ) then iToHitBonus += 3;
 
@@ -2255,9 +2239,8 @@ begin
   iModifier *= FTimes.Fire/1000.;
 
   iBonus := GetBonus( Hook_getFireCostBonus, [ Inv.Slot[ efWeapon ], Integer( aAltFire ) ] );
-  if iBonus > 0 then iModifier *= Max( (100.-iBonus)/100, 0.1 );
+  if iBonus <> 0 then iModifier *= Max( (100.-iBonus)/100, 0.1 );
 
-  if (BF_BULLETDANCE in FFlags) and Inv.Slot[ efWeapon ].Flags[ IF_PISTOL ] and (aAltFire = ALT_NONE) then iModifier *= ( 1 + 0.5 * FBonus.Rapid );
   if (aAltFire = ALT_AIMED) then iModifier *= 2;
   if (BF_SHOTTYHEAD in FFlags) and Inv.Slot[efWeapon].Flags[ IF_SHOTGUN ] then iModifier *= 0.33;
 

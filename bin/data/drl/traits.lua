@@ -91,12 +91,14 @@ function drl.register_traits()
 			if weapon and weapon.flags[ IF_PISTOL ] then
 				return self.trait_gun * 3
 			end
+			return 0
 		end,
 
 		getFireCostBonus = function ( self, weapon, alt )
 			if weapon and weapon.flags[ IF_PISTOL ] then
 				return self.trait_gun * 10
 			end
+			return 0
 		end,
 	}
 
@@ -309,13 +311,21 @@ function drl.register_traits()
 		name   = "Triggerhappy",
 		desc   = "+1 rapid weapon shots per weapon.",
 		quote  = "\"Ooh, I like it! The sugar-sweet kiss of heavy ordinance!\"",
-		full   = "\"Shoot first and shoot fast\" has always been your motto. And nobody shoots faster than you. With each weapon you get an extra rapid shot per level of this trait.",
+		full   = "\"Shoot first and shoot fast\" has always been your motto. And nobody shoots faster than you. With each rapid-fire weapon you get an extra rapid shot per level of this trait.",
 		author = "Kornel",
 		abbr   = "TH",
 
 		OnPick = function (being)
-			being.rapidbonus = being.rapidbonus + 1
+			player:upgrade_trait( "trait_triggerhappy" )
 		end,
+
+		getShotsBonus = function ( self, weapon, alt )
+			if weapon and ( weapon.shots > 2 or (weapon.shots > 1 and (not weapon.flags[ IF_PISTOL ] ) and (not weapon.flags[ IF_SHOTGUN ] ))) then
+				return self.trait_triggerhappy
+			end
+			return 0
+		end,
+
 	}
 
 	register_trait "blademaster"
@@ -384,9 +394,24 @@ function drl.register_traits()
 		abbr   = "MBD",
 		master = true,
 
-		OnPick = function (being)
-			being.flags[ BF_BULLETDANCE ] = true
+		OnPick = function (self)
+			assert( self:has_trait( "trait_triggerhappy" ), "bulletdance can be picked without triggerhappy?" )
 		end,
+
+		getShotsBonus = function ( self, weapon, alt )
+			if weapon and weapon.flags[ IF_PISTOL ] and alt == ALT_NONE and weapon.shots < 2 then
+				return self.trait_triggerhappy
+			end
+			return 0
+		end,
+
+		getFireCostBonus = function ( self, weapon, alt )
+			if weapon and weapon.flags[ IF_PISTOL ] and alt == ALT_NONE and weapon.shots < 2 then
+				return -self.trait_triggerhappy * 50
+			end
+			return 0
+		end,
+
 	}
 
 	register_trait "gunkata"
