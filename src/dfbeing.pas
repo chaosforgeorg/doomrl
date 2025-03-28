@@ -2231,18 +2231,13 @@ var iModifier : Single;
     iBonus    : Integer;
 begin
   if (Inv.Slot[ efWeapon ] = nil) then Exit(10*FTimes.Fire);
-  if (Inv.Slot[ efWeapon ].isMelee) then Exit(Inv.Slot[ efWeapon ].UseTime * FTimes.Fire);
-  if canDualGun then
-    iModifier := ( Inv.Slot[ efWeapon ].UseTime + Inv.Slot[ efWeapon2 ].UseTime ) / 2
-  else
-    iModifier := Inv.Slot[ efWeapon ].UseTime;
+  if canDualGun
+    then iModifier := ( Inv.Slot[ efWeapon ].UseTime + Inv.Slot[ efWeapon2 ].UseTime ) / 2
+    else iModifier := Inv.Slot[ efWeapon ].UseTime;
   iModifier *= FTimes.Fire/1000.;
-
-  iBonus := GetBonus( Hook_getFireCostBonus, [ Inv.Slot[ efWeapon ], Integer( aAltFire ) ] );
+  iBonus    := GetBonus( Hook_getFireCostBonus, [ Inv.Slot[ efWeapon ], Integer( aAltFire ) ] );
   if iBonus <> 0 then iModifier *= Max( (100.-iBonus)/100, 0.1 );
-
   if (aAltFire = ALT_AIMED) then iModifier *= 2;
-
   getFireCost := Max( Round( ActionCostFire*iModifier ), 100 );
 end;
 
