@@ -18,7 +18,6 @@ type TBonuses = record
   ToHit           : Integer;
   ToDam           : Integer;
   ToDamAll        : Integer;
-  ToHitMelee      : Integer;
   Body            : Integer;
   Tech            : Integer;
   Dodge           : Integer;
@@ -195,7 +194,6 @@ TBeing = class(TThing,IPathQuery)
     property ToHit        : Integer    read FBonus.ToHit        write FBonus.ToHit;
     property ToDam        : Integer    read FBonus.ToDam        write FBonus.ToDam;
     property ToDamAll     : Integer    read FBonus.ToDamAll     write FBonus.ToDamAll;
-    property ToHitMelee   : Integer    read FBonus.ToHitMelee   write FBonus.ToHitMelee;
 
     property Speed        : Byte       read FSpeed         write FSpeed;
     property ExpValue     : Word       read FExpValue      write FExpValue;
@@ -361,7 +359,6 @@ begin
   FHooks := FHooks * BeingHooks;
 
   FBonus.ToHit      := Table.getInteger('tohit');
-  FBonus.ToHitMelee := Table.getInteger('tohitmelee');
   FBonus.ToDam      := Table.getInteger('todam');
   FTimes.Move       := Table.getInteger('movetime',100);
   FTimes.Fire       := Table.getInteger('firetime',100);
@@ -2315,7 +2312,6 @@ end;
 function TBeing.getToHit(aItem : TItem; aIsMelee : Boolean) : Integer;
 begin
   getToHit := FBonus.ToHit + GetBonus( Hook_getToHitBonus,  [ aItem, aIsMelee{, Integer( aAlt )} ] );
-  if aIsMelee then getToHit += FBonus.ToHitMelee;
   if (aItem <> nil) and ( aItem.isMelee = aIsMelee ) then getToHit += aItem.Acc;
   if not isPlayer then
     getToHit += TLevel(Parent).ToHitBonus;

@@ -206,7 +206,6 @@ core.register_blueprint "being"
 	attackchance= { false, core.TNUMBER , 75 },
 	todam       = { false, core.TNUMBER , 0 },
 	tohit       = { false, core.TNUMBER , 0 },
-	tohitmelee  = { false, core.TNUMBER , 0 },
 	movetime    = { false, core.TNUMBER , 100 },
 	firetime    = { false, core.TNUMBER , 100 },
 	reloadtime  = { false, core.TNUMBER , 100 },

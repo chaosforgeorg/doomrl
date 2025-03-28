@@ -137,8 +137,15 @@ function drl.register_traits()
 		abbr   = "Bru",
 
 		OnPick = function (being)
+			player:upgrade_trait( "trait_brute" )
 			being.todam = being.todam + 3
-			being.tohitmelee = being.tohitmelee + 2
+		end,
+
+		getToHitBonus = function ( self, weapon, is_melee, alt )
+			if ( weapon and weapon.is_melee ) or is_melee then
+				return self.trait_brute * 2
+			end
+			return 0
 		end,
 	}
 
@@ -579,6 +586,8 @@ function drl.register_traits()
 		OnPick = function (being)
 			being.runningtime = being.runningtime * 2
 			being.flags[ BF_NORUNPENALTY ] = true
+			-- offsets the run penalty if running is active
+			-- precisely when trait is picked
 			if being:is_affect( "running" ) then
 				being.tohit = being.tohit + 2
 			end
