@@ -45,7 +45,7 @@ begin
 
   with LuaSystem.GetTable(['klasses',aKlass,'trait',aTrait]) do
   try
-    if (aCharLevel < 12) and (FValues[ aTrait ] >= getInteger( 'max', 1 )) then Exit( False );
+    if (aCharLevel < 12) and (Self.FValues[ aTrait ] >= getInteger( 'max', 1 )) then Exit( False );
     if aCharLevel < getInteger( 'reqlevel', 0 ) then Exit( False );
 	
     if IsTable('blocks') then
@@ -53,7 +53,7 @@ begin
       with GetTable('blocks') do
       try
         for iVariant in VariantValues do
-          if FValues[ Word(iVariant) ] >= 1 then Exit( False );
+          if Self.FValues[ Word(iVariant) ] >= 1 then Exit( False );
       finally
         Free;
       end;
@@ -64,7 +64,7 @@ begin
     begin
       iOther := iTable.GetValue( 1 );
       iValue := iTable.GetValue( 2 );
-      if FValues[ iOther ] < iValue then Exit( False );
+      if Self.FValues[ iOther ] < iValue then Exit( False );
     end;
   finally
     Free;

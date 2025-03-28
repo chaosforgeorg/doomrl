@@ -478,14 +478,19 @@ function drl.register_traits()
 	register_trait "shottyhead"
 	{
 		name   = "Shottyhead",
-		desc   = "Shotgun fire time is %20",
+		desc   = "Shotgun fire time is %33",
 		quote  = "\"Groovy.\"",
 		full   = "Shotgun is the gun on the move! While you can already reload on the move, this trait allows you to cut firetime to 1/3rd of the original!",
 		abbr   = "MSh",
 		master = true,
 
-		OnPick = function (being)
-			being.flags[ BF_SHOTTYHEAD ] = true
+		OnPick = function (being) end,
+
+		getFireCostBonus = function ( self, weapon, alt )
+			if weapon and weapon.flags[ IF_SHOTGUN ] then
+				return 67
+			end
+			return 0
 		end,
 	}
 
