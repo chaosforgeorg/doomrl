@@ -794,8 +794,8 @@ begin
     FCharacter.Push( Format( 'Current movement speed is {!%.2f} second/move.', [getMoveCost/(Speed*10.0)] ) );
     FCharacter.Push( Format( 'Current fire speed is {!%.2f} second/%s.', [getFireCost/(Speed*10.0),IIf(canDualGun,'dualshot','shot')] ) );
     FCharacter.Push( Format( 'Current reload speed is {!%.2f} second/reload.', [getReloadCost/(Speed*10.0)] ) );
-    FCharacter.Push( Format( 'Current to hit chance (point blank) is {!%s}.',[toHitPercent(10+getToHitRanged(Inv.Slot[efWeapon]))]));
-    FCharacter.Push( Format( 'Current melee hit chance is {!%s}.',[toHitPercent(10+getToHitMelee(Inv.Slot[efWeapon]))]));
+    FCharacter.Push( Format( 'Current to hit chance (point blank) is {!%s}.',[toHitPercent(10+getToHit(Inv.Slot[efWeapon], False))]));
+    FCharacter.Push( Format( 'Current melee hit chance is {!%s}.',[toHitPercent(10+getToHit(Inv.Slot[efWeapon], True))]));
     FCharacter.Push( '' );
 
     iDodgeBonus := getDodgeMod;

@@ -76,8 +76,8 @@ TBeing = class(TThing,IPathQuery)
     function getReloadCost : LongInt;
     function getDodgeMod : LongInt;
     function getKnockMod : LongInt;
-    function getToHitMelee( Item : TItem ) : Integer;
-    function getToHitRanged( Item : TItem ) : Integer;
+    function getToHit( aItem : TItem; aIsMelee : Boolean ) : Integer;
+    function getToDam( aItem : TItem; aIsMelee : Boolean ) : Integer;
     function canDualGun : boolean;
     function canDualBlade : boolean;
     function canDualReload : Boolean;
@@ -845,7 +845,7 @@ begin
       case aWeapon.AltFire of
         ALT_THROW  :
         begin
-          SendMissile( aTarget, aWeapon, 0, FBonus.ToDam + FBonus.ToDamAll, FBonus.ToHit + FBonus.ToHitMelee, 0,
+          SendMissile( aTarget, aWeapon, 0, FBonus.ToDam + FBonus.ToDamAll, getToHit( nil, True ), 0,
             FBonus.MulDamage + FBonus.MulDamageRanged + FBonus.MulDamageMelee );
           Dec( FSpeedCount, 1000 );
           Exit( True );
@@ -1314,7 +1314,7 @@ begin
   if aGun = nil then Exit( False );
 
   iDamageBonus := GetBonus( Hook_getDamageBonus, [ aGun, Integer( aAlt ) ] );
-  iToHitBonus  := GetBonus( Hook_getToHitBonus,  [ aGun, Integer( aAlt ) ] );
+  iToHitBonus  := 0;
   iShotsBonus  := GetBonus( Hook_getShotsBonus,  [ aGun, Integer( aAlt ) ] );
 
   iDamageBonus += FBonus.ToDamAll;
@@ -1705,7 +1705,7 @@ begin
   if aTarget.IsPlayer then iDefenderName := 'you';
 
   // Last kill
-  iToHit := getToHitMelee( iWeapon ) - aTarget.DefenceBonus;
+  iToHit := getToHit( iWeapon, True ) - aTarget.DefenceBonus;
 
   if Roll( 12 + iToHit ) < 0 then
   begin
@@ -1987,7 +1987,7 @@ begin
   
   if iRange = 0 then iRange := 30;
   
-  iToHit := getToHitRanged( aItem ) + aToHitMod;
+  iToHit := getToHit( aItem, False ) + aToHitMod;
 
   iTarget := aTarget;
   iSource := FPosition;
@@ -2312,20 +2312,20 @@ begin
     and ( Pack.AmmoID = Weapon.AmmoID) );
 end;
 
-function TBeing.getToHitRanged(Item : TItem) : Integer;
+function TBeing.getToHit(aItem : TItem; aIsMelee : Boolean) : Integer;
 begin
-  getToHitRanged := FBonus.ToHit;
-  if (Item <> nil) and (Item.isRanged) then getToHitRanged += Item.Acc;
+  getToHit := FBonus.ToHit + GetBonus( Hook_getToHitBonus,  [ aItem, aIsMelee{, Integer( aAlt )} ] );
+  if aIsMelee then getToHit += FBonus.ToHitMelee;
+  if (aItem <> nil) and ( aItem.isMelee = aIsMelee ) then getToHit += aItem.Acc;
   if not isPlayer then
-    getToHitRanged += TLevel(Parent).ToHitBonus;
+    getToHit += TLevel(Parent).ToHitBonus;
 end;
 
-function TBeing.getToHitMelee(Item : TItem) : Integer;
+function TBeing.getToDam(aItem : TItem; aIsMelee : Boolean) : Integer;
 begin
-  getToHitMelee := FBonus.ToHit + FBonus.ToHitMelee;
-  if (Item <> nil) and (Item.isMelee) then getToHitMelee += Item.Acc;
-  if not isPlayer then
-    getToHitMelee += TLevel(Parent).ToHitBonus;
+  getToDam := FBonus.ToDamAll;
+  if aIsMelee then getToDam += FBonus.ToDam;
+//  if (aItem <> nil) and ( aItem.isMelee = aIsMelee ) then getToHitRanged += Item.Acc;
 end;
 
 destructor TBeing.Destroy;
@@ -2907,8 +2907,29 @@ begin
   FreeAndNil( iAuto );
 end;
 
+function lua_being_get_tohit(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject( 1 ) as TBeing;
+  if iBeing = nil then Exit( 0 );
+  iState.Push( iBeing.getToHit( iState.ToObjectOrNil( 3 ) as TItem, iState.ToBoolean( 2, False ) ) );
+  Result := 1;
+end;
 
-const lua_being_lib : array[0..32] of luaL_Reg = (
+function lua_being_get_todam(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject( 1 ) as TBeing;
+  if iBeing = nil then Exit( 0 );
+  iState.Push( iBeing.getToDam( iState.ToObjectOrNil( 3 ) as TItem, iState.ToBoolean( 2, False ) ) );
+  Result := 1;
+end;
+
+const lua_being_lib : array[0..34] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -2945,6 +2966,8 @@ const lua_being_lib : array[0..32] of luaL_Reg = (
 
       ( name : 'set_overlay';     func : @lua_being_set_overlay),
       ( name : 'get_auto_target'; func : @lua_being_get_auto_target),
+      ( name : 'get_tohit';       func : @lua_being_get_tohit),
+      ( name : 'get_todam';       func : @lua_being_get_todam),
 
       ( name : nil;             func : nil; )
 );
