@@ -2242,7 +2242,6 @@ begin
   if iBonus <> 0 then iModifier *= Max( (100.-iBonus)/100, 0.1 );
 
   if (aAltFire = ALT_AIMED) then iModifier *= 2;
-  if (BF_SHOTTYHEAD in FFlags) and Inv.Slot[efWeapon].Flags[ IF_SHOTGUN ] then iModifier *= 0.33;
 
   getFireCost := Max( Round( ActionCostFire*iModifier ), 100 );
 end;
