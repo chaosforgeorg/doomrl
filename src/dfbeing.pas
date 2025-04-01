@@ -24,7 +24,6 @@ type TBonuses = record
   Defence         : Integer;
   MulDamage       : Integer;
   MulDamageMelee  : Integer;
-  MulDamageRanged : Integer;
 end;
 
 type TBeingTimes = record
@@ -203,7 +202,6 @@ TBeing = class(TThing,IPathQuery)
     property DefenceBonus    : Integer read FBonus.Defence         write FBonus.Defence;
     property MulDamage       : Integer read FBonus.MulDamage       write FBonus.MulDamage;
     property MulDamageMelee  : Integer read FBonus.MulDamageMelee  write FBonus.MulDamageMelee;
-    property MulDamageRanged : Integer read FBonus.MulDamageRanged write FBonus.MulDamageRanged;
 
     property HPDecayMax   : Word       read FHPDecayMax    write FHPDecayMax;
 
@@ -380,7 +378,6 @@ begin
   FBonus.Defence:= 0;
   FBonus.MulDamage       := 0;
   FBonus.MulDamageMelee  := 0;
-  FBonus.MulDamageRanged := 0;
 
   FHPDecayMax   := 100;
 
@@ -431,9 +428,9 @@ begin
   iLevel := TLevel(Parent);
   Assert( aGun <> nil );
   if TLevel(Parent).Being[ aTarget ] <> nil then aTarget := TLevel(Parent).Being[ aTarget ].FLastPos;
-  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x+Sgn(aTarget.y-FPosition.y),aTarget.y-Sgn(aTarget.x-FPosition.x))),aGun,aAltFire,0,0,FBonus.MulDamage + FBonus.MulDamageRanged ) then Exit( False );
-  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x-Sgn(aTarget.y-FPosition.y),aTarget.y+Sgn(aTarget.x-FPosition.x))),aGun,aAltFire,0,0,FBonus.MulDamage + FBonus.MulDamageRanged ) then Exit( False );
-  if not SendMissile( aTarget, aGun,aAltFire,0,0,FBonus.MulDamage + FBonus.MulDamageRanged ) then Exit( False );
+  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x+Sgn(aTarget.y-FPosition.y),aTarget.y-Sgn(aTarget.x-FPosition.x))),aGun,aAltFire,0,0,FBonus.MulDamage ) then Exit( False );
+  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x-Sgn(aTarget.y-FPosition.y),aTarget.y+Sgn(aTarget.x-FPosition.x))),aGun,aAltFire,0,0,FBonus.MulDamage ) then Exit( False );
+  if not SendMissile( aTarget, aGun,aAltFire,0,0,FBonus.MulDamage ) then Exit( False );
   Exit( True );
 end;
 
@@ -479,11 +476,11 @@ begin
     if iChaining then aTarget := RotateTowards( FPosition, aTarget, iChainTarget, PI/6 );
     if aGun.Flags[ IF_SCATTER ] then
        begin
-            if not SendMissile( TLevel(Parent).Area.Clamped(aTarget.RandomShifted( iScatter )), aGun, aAltFire, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, iCount-1, FBonus.MulDamage + FBonus.MulDamageRanged ) then Exit( False );
+            if not SendMissile( TLevel(Parent).Area.Clamped(aTarget.RandomShifted( iScatter )), aGun, aAltFire, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, iCount-1, FBonus.MulDamage ) then Exit( False );
        end
     else
        begin
-            if not SendMissile( aTarget, aGun, aAltFire, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, iCount-1, FBonus.MulDamage + FBonus.MulDamageRanged ) then Exit( False );
+            if not SendMissile( aTarget, aGun, aAltFire, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, iCount-1, FBonus.MulDamage ) then Exit( False );
        end;
   end;
   Exit( True );
@@ -784,26 +781,21 @@ begin
 end;
 
 function TBeing.ActionAltReload : Boolean;
-var SAStore : Boolean;
-    AmmoItem : TItem;
-    Pack     : Boolean;
-    Weapon   : TItem;
+var iAmmoItem : TItem;
+    iWeapon   : TItem;
 begin
-  Weapon := Inv.Slot[ efWeapon ];
-  if ( Weapon = nil ) or ( not Weapon.isRanged ) then Exit( Fail( 'You have no weapon to reload.',[] ) );
-  SAStore := FSilentAction;
-  case Weapon.AltReload of
-    RELOAD_SCRIPT : Exit( Weapon.CallHookCheck( Hook_OnAltReload, [Self] ) );
+  iWeapon := Inv.Slot[ efWeapon ];
+  if ( iWeapon = nil ) or ( not iWeapon.isRanged ) then Exit( Fail( 'You have no weapon to reload.',[] ) );
+  case iWeapon.AltReload of
+    RELOAD_SCRIPT : Exit( iWeapon.CallHookCheck( Hook_OnAltReload, [Self] ) );
     RELOAD_DUAL   : Exit( ActionDualReload );
     RELOAD_SINGLE :
       begin
-        if Weapon.Ammo = Weapon.AmmoMax then Exit( Fail( 'Your %s is already fully loaded.', [ Weapon.Name ] ) );
-        AmmoItem := getAmmoItem( Weapon );
-        if AmmoItem = nil then Exit( Fail('You have no ammo for the %s!',[ Weapon.Name ] ) );
-        FSilentAction := True;
-        Reload( AmmoItem, True );
-        FSilentAction := SAStore;
-        Exit( Success('You%s single-load the %s.', [ IIf( Pack, ' quickly'), Weapon.Name ] ) );
+        if iWeapon.Ammo = iWeapon.AmmoMax then Exit( Fail( 'Your %s is already fully loaded.', [ iWeapon.Name ] ) );
+        iAmmoItem := getAmmoItem( iWeapon );
+        if iAmmoItem = nil then Exit( Fail('You have no ammo for the %s!',[ iWeapon.Name ] ) );
+        Reload( iAmmoItem, True );
+        Exit( Success('You%s single-load the %s.', [ IIf( iAmmoItem.isAmmoPack, ' quickly'), iWeapon.Name ] ) );
       end;
     else
       Exit( Fail('This weapon has no special reload mode.', [] ) );
@@ -841,8 +833,7 @@ begin
       case aWeapon.AltFire of
         ALT_THROW  :
         begin
-          SendMissile( aTarget, aWeapon, ALT_THROW,  0, getToHit( nil, ALT_THROW, True ),
-            FBonus.MulDamage + FBonus.MulDamageRanged + FBonus.MulDamageMelee );
+          SendMissile( aTarget, aWeapon, ALT_THROW, 0, 0, FBonus.MulDamage + FBonus.MulDamageMelee );
           Dec( FSpeedCount, 1000 );
           Exit( True );
         end;
