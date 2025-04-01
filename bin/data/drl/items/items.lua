@@ -1064,7 +1064,7 @@ function drl.register_regular_items()
 			elseif item.itype == ITEMTYPE_BOOTS then
 				item.armor = item.armor * 2
 			end
-			item:add_mod('P')
+			item:add_mod( 'P', being.techbonus )
 			return true
 		end,
 	}
@@ -1119,7 +1119,7 @@ function drl.register_regular_items()
 				item.resist.fire     = (item.resist.fire or 0)     + 10
 				item.resist.plasma   = (item.resist.plasma or 0)   + 10
 			end
-			item:add_mod('T')
+			item:add_mod( 'T', being.techbonus )
 			return true
 		end,
 	}
@@ -1178,7 +1178,7 @@ function drl.register_regular_items()
 			elseif item.itype == ITEMTYPE_BOOTS then
 				item.movemod = item.movemod + 10
 			end
-			item:add_mod('A')
+			item:add_mod( 'A', being.techbonus )
 			-- A little easter egg for applying A-mod on shotgun
 			if item.flags[ IF_SHOTGUN ] then
 				ui.msg( "You suddenly feel a little silly." )
@@ -1250,7 +1250,7 @@ function drl.register_regular_items()
 				item.maxdurability = item.maxdurability + 100
 				item.movemod = item.movemod - 10
 			end
-			item:add_mod('B')
+			item:add_mod( 'B', being.techbonus )
 			return true
 		end,
 	}

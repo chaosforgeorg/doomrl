@@ -18,9 +18,6 @@ type TBonuses = record
   ToHit           : Integer;
   ToDam           : Integer;
   Body            : Integer;
-  Tech            : Integer;
-  Dodge           : Integer;
-  Move            : Integer;
 end;
 
 type TBeingTimes = record
@@ -192,10 +189,7 @@ TBeing = class(TThing,IPathQuery)
     property Speed        : Byte       read FSpeed         write FSpeed;
     property ExpValue     : Word       read FExpValue      write FExpValue;
 
-    property TechBonus       : Integer read FBonus.Tech            write FBonus.Tech;
     property BodyBonus       : Integer read FBonus.Body            write FBonus.Body;
-    property DodgeBonus      : Integer read FBonus.Dodge           write FBonus.Dodge;
-    property MoveBonus       : Integer read FBonus.Move            write FBonus.Move;
 
     property HPDecayMax   : Word       read FHPDecayMax    write FHPDecayMax;
 
@@ -365,10 +359,7 @@ begin
   FHPNom := FHP;
   FSpeedCount := 900+Random(90);
 
-  FBonus.Tech   := 0;
   FBonus.Body   := 0;
-  FBonus.Dodge  := 0;
-  FBonus.Move   := 0;
 
   FHPDecayMax   := 100;
 
@@ -2186,12 +2177,14 @@ begin
 end;
 
 function TBeing.getMoveCost: LongInt;
-var iModifier : Single;
+var iModifier  : Single;
+    iMoveBonus : Integer;
 begin
   iModifier := FTimes.Move/100.;
   if Inv.Slot[efTorso] <> nil then iModifier *= (100-Inv.Slot[efTorso].MoveMod)/100.;
   if Inv.Slot[efBoots] <> nil then iModifier *= (100-Inv.Slot[efBoots].MoveMod)/100.;
-  if FBonus.Move <> 0         then iModifier *= (100-FBonus.Move)/100.;
+  iMoveBonus := GetBonus( Hook_getMoveBonus, [] );
+  if iMoveBonus <> 0 then iModifier *= (100-iMoveBonus)/100.;
   if not ( BF_FLY in FFlags ) then
     with Cells[ TLevel(Parent).getCell(FPosition) ] do
       iModifier *= MoveCost;
@@ -2230,7 +2223,7 @@ end;
 
 function TBeing.getDodgeMod : LongInt;
 begin
-  Result := DodgeBonus;
+  Result := GetBonus( Hook_getDodgeBonus, [] );
   if Inv.Slot[efTorso] <> nil    then Result += Inv.Slot[efTorso].DodgeMod;
   if Inv.Slot[efBoots] <> nil    then Result += Inv.Slot[efBoots].DodgeMod;
 end;

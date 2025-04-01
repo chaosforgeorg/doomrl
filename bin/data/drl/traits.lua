@@ -40,11 +40,15 @@ function drl.register_traits()
 		full   = "You're like a train on legs - not only do you move 15% faster for every level of this trait but you also get an extra 10% chance to dodge those pesky bullets coming your way.",
 		abbr = "HR",
 
-		OnPick = function (being)
-			being.movetime   = being.movetime - 15
-			being.dodgebonus = being.dodgebonus + 10
+		OnPick = function (self)
+			player:upgrade_trait( "trait_hellrunner" )
+			self.movetime   = self.movetime - 15
+		end,
+		getDodgeBonus = function( self )
+			return self.trait_hellrunner * 10
 		end,
 	}
+
 
 	register_trait "nails"
 	{

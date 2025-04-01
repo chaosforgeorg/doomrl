@@ -831,7 +831,7 @@ function drl.register_exotic_items()
 				item.blastradius = item.blastradius + 2
 			end
 			ui.msg( "You upgrade your weapon!" )
-			item:add_mod( 'F' )
+			item:add_mod( 'F', being.techbonus )
 			return true
 		end,
 	}
@@ -885,7 +885,7 @@ function drl.register_exotic_items()
 			else
 				item.flags[IF_FARHIT] = true
 			end
-			item:add_mod( 'S' )
+			item:add_mod( 'S', being.techbonus )
 			return true
 		end,
 	}
@@ -939,7 +939,7 @@ function drl.register_exotic_items()
 			if not self:has_property( "chosen_item" ) then return true end
 			local item = self.chosen_item
 			ui.msg( "You upgrade your gear!" )
-			item:add_mod( 'N' )
+			item:add_mod( 'N', being.techbonus )
 			if item.flags[ IF_RECHARGE ] then
 				if item.rechargedelay == 0 then
 					item.rechargeamount = item.rechargeamount + 1
@@ -995,7 +995,7 @@ function drl.register_exotic_items()
 			ui.msg( "You upgrade your gear!" )
 			item.durability = 100
 			item.flags[ IF_NODURABILITY ] = true
-			item:add_mod( 'O' )
+			item:add_mod( 'O', being.techbonus )
 			return true
 		end,
 	}

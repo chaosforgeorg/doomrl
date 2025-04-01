@@ -23,13 +23,15 @@ function drl.register_affects()
 
 		OnAdd          = function(self)
 			self:remove_affect( "tired" )
-			self.dodgebonus   = self.dodgebonus   + 20
-			self.movebonus    = self.movebonus    + 30
 		end,
 		OnRemove       = function(self)
-			self.dodgebonus   = self.dodgebonus   - 20
-			self.movebonus    = self.movebonus    - 30
 			self:set_affect( "tired" );
+		end,
+		getDodgeBonus = function( self )
+			return 20
+		end,
+		getMoveBonus = function( self )
+			return 30
 		end,
 		getDefenceBonus = function( self, is_melee )
 			return 4

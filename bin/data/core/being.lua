@@ -259,7 +259,7 @@ function being:pick_item_to_mod( mod, filter )
 			local desc
 			local ma = it:find_mod_array( modletter, techbonus )
 			if ma or ( ( not filter ) or filter(it) ) then
-				local cm = it:can_mod( modletter )
+				local cm = it:can_mod( modletter, techbonus )
 				if (not ma) and ( not cm ) then
 					desc = "Max level of this mod reached!"
 				else
@@ -312,7 +312,7 @@ function being:pick_item_to_mod( mod, filter )
 			return nil, true
 		end
 	end
-	if not item:can_mod( modletter ) then
+	if not item:can_mod( modletter, techbonus ) then
 		ui.msg( "This item can't be modified anymore with this mod!" )
 		return nil, false
 	end

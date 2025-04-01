@@ -146,6 +146,8 @@ core.register_blueprint "affect"
 	getShotsBonus    = { false, core.TFUNC },
 	getFireCostBonus = { false, core.TFUNC },
 	getDefenceBonus  = { false, core.TFUNC },
+	getDodgeBonus    = { false, core.TFUNC },
+	getMoveBonus     = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
 }
 
@@ -255,6 +257,8 @@ core.register_blueprint "being"
 	getShotsBonus    = { false, core.TFUNC },
 	getFireCostBonus = { false, core.TFUNC },
 	getDefenceBonus  = { false, core.TFUNC },
+	getDodgeBonus    = { false, core.TFUNC },
+	getMoveBonus     = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
 }
 

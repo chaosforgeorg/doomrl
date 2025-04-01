@@ -36,8 +36,8 @@ TItem  = class( TThing )
     function    DescriptionBox( aNewFormat : Boolean = False ) : Ansistring;
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
-    function    CanMod(aModChar : char) : Boolean;
-    function    AddMod(aModChar : char) : Boolean;
+    function    CanMod( aModChar : Char; aTechBonus : Integer ) : Boolean;
+    function    AddMod( aModChar : Char; aTechBonus : Integer ) : Boolean;
     function    eqSlot : TEqSlot;
     function    isAmmo : Boolean;
     function    isMelee : Boolean;
@@ -474,7 +474,7 @@ begin
   if ResistDescriptionShort = '' then Exit('') else Exit(' {'+ResistDescriptionShort+'}')
 end;
 
-function TItem.CanMod(aModChar: char): Boolean;
+function TItem.CanMod( aModChar : Char; aTechBonus : Integer ): Boolean;
 var iSum   : Word;
     iCount : Byte;
     iMax   : Byte;
@@ -488,14 +488,14 @@ begin
   for iCount := Ord('A') to Ord('Z') do iSum += FMods[iCount];
 
   if (IF_ASSEMBLED in FFlags) then
-    if Player.TechBonus < (iSum + 2) then
+    if aTechBonus < (iSum + 2) then
       Exit( False );
 
   if (IF_SINGLEMOD in FFlags) and (iSum > 0) then Exit(False);
 
   if FProps.IType = ITEMTYPE_RANGED
-    then iMax := 1 + 2* Player.TechBonus
-    else iMax := 1 + Player.TechBonus;
+    then iMax := 1 + 2* aTechBonus
+    else iMax := 1 + aTechBonus;
 
   if iSum >= iMax then Exit(false);
 
@@ -509,9 +509,9 @@ begin
   Exit(True);
 end;
 
-function TItem.AddMod(aModChar: char): Boolean;
+function TItem.AddMod( aModChar: char; aTechBonus : Integer ): Boolean;
 begin
-  if not (CanMod(aModChar)) then Exit( false );
+  if not (CanMod(aModChar,aTechBonus)) then Exit( false );
   Include(FFlags,IF_MODIFIED);
   Inc(FMods[Ord(aModChar)]);
   Exit(True);
@@ -653,22 +653,22 @@ begin
 end;
 
 function lua_item_add_mod(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
+var iState : TDoomLuaState;
+    iItem  : TItem;
 begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  State.Push( Item.AddMod( State.ToChar(2) ));
+  iState.Init(L);
+  iItem := iState.ToObject(1) as TItem;
+  iState.Push( iItem.AddMod( iState.ToChar(2), iState.ToInteger(3) ));
   Result := 1;
 end;
 
 function lua_item_can_mod(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
+var iState : TDoomLuaState;
+    iItem  : TItem;
 begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  State.Push( Item.CanMod( State.ToChar(2) ));
+  iState.Init(L);
+  iItem := iState.ToObject(1) as TItem;
+  iState.Push( iItem.CanMod( iState.ToChar(2), iState.ToInteger(3) ));
   Result := 1;
 end;
 
