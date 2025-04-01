@@ -595,12 +595,7 @@ function drl.register_traits()
 
 		OnPick = function (being)
 			being.runningtime = being.runningtime * 2
-			being.flags[ BF_NORUNPENALTY ] = true
-			-- offsets the run penalty if running is active
-			-- precisely when trait is picked
-			if being:is_affect( "running" ) then
-				being.tohit = being.tohit + 2
-			end
+			being:add_property( "NO_RUN_PENALTY" )
 		end,
 	}
 
