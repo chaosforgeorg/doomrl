@@ -21,7 +21,6 @@ type TBonuses = record
   Tech            : Integer;
   Dodge           : Integer;
   Move            : Integer;
-  Defence         : Integer;
 end;
 
 type TBeingTimes = record
@@ -197,7 +196,6 @@ TBeing = class(TThing,IPathQuery)
     property BodyBonus       : Integer read FBonus.Body            write FBonus.Body;
     property DodgeBonus      : Integer read FBonus.Dodge           write FBonus.Dodge;
     property MoveBonus       : Integer read FBonus.Move            write FBonus.Move;
-    property DefenceBonus    : Integer read FBonus.Defence         write FBonus.Defence;
 
     property HPDecayMax   : Word       read FHPDecayMax    write FHPDecayMax;
 
@@ -371,7 +369,6 @@ begin
   FBonus.Body   := 0;
   FBonus.Dodge  := 0;
   FBonus.Move   := 0;
-  FBonus.Defence:= 0;
 
   FHPDecayMax   := 100;
 
@@ -1674,7 +1671,7 @@ begin
   if aTarget.IsPlayer then iDefenderName := 'you';
 
   // Last kill
-  iToHit := getToHit( iWeapon, ALT_NONE, True ) - aTarget.DefenceBonus;
+  iToHit := getToHit( iWeapon, ALT_NONE, True ) - aTarget.GetBonus( Hook_getDefenceBonus, [True] );
 
   if Roll( 12 + iToHit ) < 0 then
   begin
@@ -2020,7 +2017,7 @@ begin
       if iBeing = iAimedBeing then
         iDodged := False;
 
-      iToHit -= iBeing.DefenceBonus;
+      iToHit -= iBeing.GetBonus( Hook_getDefenceBonus, [False] );
 
       if aItem.Flags[ IF_FARHIT ]
         then iIsHit := Roll( 10 + iToHit) >= 0

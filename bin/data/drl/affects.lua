@@ -25,13 +25,14 @@ function drl.register_affects()
 			self:remove_affect( "tired" )
 			self.dodgebonus   = self.dodgebonus   + 20
 			self.movebonus    = self.movebonus    + 30
-			self.defencebonus = self.defencebonus + 4
 		end,
 		OnRemove       = function(self)
 			self.dodgebonus   = self.dodgebonus   - 20
 			self.movebonus    = self.movebonus    - 30
-			self.defencebonus = self.defencebonus - 4
 			self:set_affect( "tired" );
+		end,
+		getDefenceBonus = function( self, is_melee )
+			return 4
 		end,
 		getToHitBonus = function( self, weapon, is_melee, alt )
 			if not self:has_property( "NO_RUN_PENALTY" ) then

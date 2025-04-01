@@ -59,9 +59,10 @@ const
   Hook_getToHitBonus   = 49; // Trait, Being, Affects
   Hook_getShotsBonus   = 50; // Trait, Being, Affects
   Hook_getFireCostBonus= 51; // Trait, Being, Affects
-  Hook_getDamageMul    = 52; // Trait, Being, Affects
+  Hook_getDefenceBonus = 52; // Trait, Being, Affects
+  Hook_getDamageMul    = 53; // Trait, Being, Affects
 
-  HookAmount           = 53;
+  HookAmount           = 54;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
 
@@ -81,7 +82,7 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro', 'OnGenerate',
 
       'OnPostMove', 'OnPreReload', 'OnDamage', 'OnReceiveDamage', 'OnPreAction',
-      'getDamageBonus', 'getToHitBonus', 'getShotsBonus', 'getFireCostBonus', 'getDamageMul'
+      'getDamageBonus', 'getToHitBonus', 'getShotsBonus', 'getFireCostBonus', 'getDefenceBonus', 'getDamageMul'
       );
 
 function LoadHooks( const Table : array of Const ) : TFlags;
