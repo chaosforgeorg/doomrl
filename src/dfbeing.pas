@@ -1556,9 +1556,9 @@ begin
   else
   begin
     if BF_MAXDAMAGE in FFlags then
-      iDamage += Max( FStrength * 3, 1 )
+      iDamage += Max( (FStrength + 1) * 3, 1 )
     else
-      iDamage += Max( Dice( FStrength, 3 ), 1 );
+      iDamage += Max( Dice( FStrength + 1, 3 ), 1 );
   end;
 
   iDamage := ApplyMul( iDamage, GetBonus( Hook_getDamageMul, [ iWeapon, True, ALT_NONE ] ) );
