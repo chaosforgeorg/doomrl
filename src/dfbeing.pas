@@ -498,9 +498,9 @@ end;
 
 function TBeing.GetBonus( aHook : Byte; const aParams : array of Const ) : Integer;
 begin
+  GetBonus := FAffects.GetBonus( aHook, aParams );
   if aHook in FHooks then
-    Exit( LuaSystem.ProtectedRunHook( Self, HookNames[ aHook ], aParams ) );
-  Exit( 0 );
+    GetBonus += LuaSystem.ProtectedRunHook( Self, HookNames[ aHook ], aParams );
 end;
 
 function TBeing.isActive: boolean;

@@ -55,10 +55,10 @@ const
   Hook_OnReceiveDamage = 46;   // Trait, Being
   Hook_OnPreAction     = 47;   // Trait, Being
 
-  Hook_getDamageBonus  = 48; // Trait, Being
-  Hook_getToHitBonus   = 49; // Trait, Being
-  Hook_getShotsBonus   = 50; // Trait, Being
-  Hook_getFireCostBonus= 51; // Trait, Being
+  Hook_getDamageBonus  = 48; // Trait, Being, Affects
+  Hook_getToHitBonus   = 49; // Trait, Being, Affects
+  Hook_getShotsBonus   = 50; // Trait, Being, Affects
+  Hook_getFireCostBonus= 51; // Trait, Being, Affects
 
   HookAmount           = 52;
 

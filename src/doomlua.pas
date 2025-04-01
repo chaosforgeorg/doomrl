@@ -190,15 +190,16 @@ begin
     Name       := getString('name');
     Color      := getInteger('color');
     Color_exp  := getInteger('color_expire');
-    Hooks      := [];
+    AffHooks      := [];
     StatusEff  := TStatusEffect( getInteger('status_effect',0) );
     StatusStr  := getInteger('status_strength',0);
-    if isFunction('OnTick')   then Include(Hooks, AffectHookOnTick);
-    if isFunction('OnAdd')    then Include(Hooks, AffectHookOnAdd);
-    if isFunction('OnRemove') then Include(Hooks, AffectHookOnRemove);
+    if isFunction('OnTick')   then Include(AffHooks, AffectHookOnTick);
+    if isFunction('OnAdd')    then Include(AffHooks, AffectHookOnAdd);
+    if isFunction('OnRemove') then Include(AffHooks, AffectHookOnRemove);
   finally
     Free;
   end;
+  Affects[mID].Hooks := LoadHooks( ['affects',mID] );
   Result := 0;
 end;
 

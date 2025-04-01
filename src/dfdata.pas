@@ -265,7 +265,8 @@ type
     Name       : Ansistring;
     Color      : Byte;
     Color_exp  : Byte;
-    Hooks      : set of (AffectHookOnAdd,AffectHookOnTick,AffectHookOnRemove);
+    AffHooks   : set of (AffectHookOnAdd,AffectHookOnTick,AffectHookOnRemove);
+    Hooks      : TFlags;
     StatusEff  : TStatusEffect;
     StatusStr  : DWord;
   end;
