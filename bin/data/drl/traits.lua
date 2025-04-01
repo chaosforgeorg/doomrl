@@ -71,7 +71,11 @@ function drl.register_traits()
 		abbr   = "SoB",
 
 		OnPick = function (being)
-			being.todamall = being.todamall + 1
+			player:upgrade_trait( "trait_bitch" )
+		end,
+
+		getDamageBonus = function ( self, weapon, is_melee, alt )
+			return self.trait_bitch
 		end,
 	}
 
@@ -87,14 +91,14 @@ function drl.register_traits()
 			player:upgrade_trait( "trait_gun" )
 		end,
 
-		getDamageBonus = function ( self, weapon, alt )
+		getDamageBonus = function ( self, weapon, is_melee, alt )
 			if weapon and weapon.flags[ IF_PISTOL ] then
 				return self.trait_gun * 3
 			end
 			return 0
 		end,
 
-		getFireCostBonus = function ( self, weapon, alt )
+		getFireCostBonus = function ( self, weapon, is_melee, alt )
 			if weapon and weapon.flags[ IF_PISTOL ] then
 				return self.trait_gun * 10
 			end
@@ -138,12 +142,18 @@ function drl.register_traits()
 
 		OnPick = function (being)
 			player:upgrade_trait( "trait_brute" )
-			being.todam = being.todam + 3
 		end,
 
 		getToHitBonus = function ( self, weapon, is_melee, alt )
 			if ( weapon and weapon.is_melee ) or is_melee then
 				return self.trait_brute * 2
+			end
+			return 0
+		end,
+
+		getDamageBonus = function ( self, weapon, is_melee, alt )
+			if ( weapon and weapon.is_melee ) or is_melee then
+				return self.trait_brute * 3
 			end
 			return 0
 		end,
@@ -412,7 +422,7 @@ function drl.register_traits()
 			return 0
 		end,
 
-		getFireCostBonus = function ( self, weapon, alt )
+		getFireCostBonus = function ( self, weapon, is_melee, alt )
 			if weapon and weapon.flags[ IF_PISTOL ] and alt == ALT_NONE and weapon.shots < 2 then
 				return -self.trait_triggerhappy * 50
 			end
@@ -493,7 +503,7 @@ function drl.register_traits()
 
 		OnPick = function (being) end,
 
-		getFireCostBonus = function ( self, weapon, alt )
+		getFireCostBonus = function ( self, weapon, is_melee, alt )
 			if weapon and weapon.flags[ IF_SHOTGUN ] then
 				return 67
 			end
