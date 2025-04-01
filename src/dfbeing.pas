@@ -15,9 +15,7 @@ uses Classes, SysUtils,
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
 
 type TBonuses = record
-  ToHit           : Integer;
   ToDam           : Integer;
-  Body            : Integer;
 end;
 
 type TBeingTimes = record
@@ -145,6 +143,7 @@ TBeing = class(TThing,IPathQuery)
 
     FVisionRadius  : Byte;
     FSpeedCount    : LongInt;
+    FAccuracy      : Integer;
     FSpeed         : Byte;
     FExpValue      : Word;
 
@@ -183,13 +182,11 @@ TBeing = class(TThing,IPathQuery)
     property SCount       : LongInt    read FSpeedCount   write FSpeedCount;
     property AnimSeq      : Integer    read FAnimSeq      write FAnimSeq;
 
-    property ToHit        : Integer    read FBonus.ToHit        write FBonus.ToHit;
     property ToDam        : Integer    read FBonus.ToDam        write FBonus.ToDam;
 
+    property Accuracy     : Integer    read FAccuracy      write FAccuracy;
     property Speed        : Byte       read FSpeed         write FSpeed;
     property ExpValue     : Word       read FExpValue      write FExpValue;
-
-    property BodyBonus       : Integer read FBonus.Body            write FBonus.Body;
 
     property HPDecayMax   : Word       read FHPDecayMax    write FHPDecayMax;
 
@@ -264,6 +261,7 @@ begin
   Stream.Read( FBonus,       SizeOf( FBonus ) );
   Stream.Read( FTimes,       SizeOf( FTimes ) );
   Stream.Read( FLastCommand, SizeOf( FLastCommand ) );
+  Stream.Read( FAccuracy,    SizeOf( FAccuracy ) );
 
   FVisionRadius := Stream.ReadByte();
   FSpeedCount   := Stream.ReadWord();
@@ -293,6 +291,7 @@ begin
   Stream.Write( FBonus,       SizeOf( FBonus ) );
   Stream.Write( FTimes,       SizeOf( FTimes ) );
   Stream.Write( FLastCommand, SizeOf( FLastCommand ) );
+  Stream.Write( FAccuracy,    SizeOf( FAccuracy ) );
 
   Stream.WriteByte( FVisionRadius );
   Stream.WriteWord( FSpeedCount );
@@ -342,14 +341,14 @@ begin
 
   FHooks := FHooks * BeingHooks;
 
-  FBonus.ToHit      := Table.getInteger('tohit');
   FBonus.ToDam      := Table.getInteger('todam');
   FTimes.Move       := Table.getInteger('movetime',100);
   FTimes.Fire       := Table.getInteger('firetime',100);
   FTimes.Reload     := Table.getInteger('reloadtime',100);
   FExpValue         := Table.getInteger('xp');
 
-  FSpeed      := Table.getInteger('speed');
+  FSpeed    := Table.getInteger('speed');
+  FAccuracy := Table.getInteger('accuracy');
 
   FVisionRadius := VisionBaseValue + Table.getInteger('vision');
 
@@ -358,8 +357,6 @@ begin
   FHPMax := FHP;
   FHPNom := FHP;
   FSpeedCount := 900+Random(90);
-
-  FBonus.Body   := 0;
 
   FHPDecayMax   := 100;
 
@@ -2149,7 +2146,7 @@ begin
 
   FStrength *= getKnockMod / 100;
   Strength := Round(FStrength);
-  Strength -= FBonus.Body;
+  Strength -= GetBonus( Hook_getBodyBonus, [] );
 
   if Strength <= 0 then Exit;
 
@@ -2285,10 +2282,10 @@ end;
 
 function TBeing.getToHit(aItem : TItem; aAltFire : TAltFire; aIsMelee : Boolean) : Integer;
 begin
-  getToHit := FBonus.ToHit + GetBonus( Hook_getToHitBonus,  [ aItem, aIsMelee, Integer( aAltFire ) ] );
+  getToHit := FAccuracy + GetBonus( Hook_getToHitBonus,  [ aItem, aIsMelee, Integer( aAltFire ) ] );
   if (aItem <> nil) and ( aItem.isMelee = aIsMelee ) then getToHit += aItem.Acc;
   if not isPlayer then
-    getToHit += TLevel(Parent).ToHitBonus;
+    getToHit += TLevel(Parent).AccuracyBonus;
 end;
 
 function TBeing.getToDam(aItem : TItem; aAltFire : TAltFire; aIsMelee : Boolean) : Integer;

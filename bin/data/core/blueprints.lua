@@ -20,21 +20,21 @@ core.register_blueprint "rank"
 
 core.register_blueprint "difficulty"
 {
-	id          = { true,  core.TSTRING },
-	name        = { true,  core.TSTRING },
-	description = { true,  core.TSTRING },
-	code        = { true,  core.TSTRING },
-	tohitbonus  = { false, core.TNUMBER, 0 },
-	expfactor   = { false, core.TNUMBER, 1 },
-	scorefactor = { false, core.TNUMBER, 1 },
-	ammofactor  = { false, core.TNUMBER, 1 },
-	powerfactor = { false, core.TNUMBER, 1 },
-	powerbonus  = { false, core.TNUMBER, 1.5 },
-	respawn     = { false, core.TBOOL,   false },
-	challenge   = { false, core.TBOOL,   true },
-	req_skill   = { false, core.TNUMBER, 0 },
-	req_exp     = { false, core.TNUMBER, 0 },
-	speed       = { false, core.TNUMBER, 1 },
+	id            = { true,  core.TSTRING },
+	name          = { true,  core.TSTRING },
+	description   = { true,  core.TSTRING },
+	code          = { true,  core.TSTRING },
+	accuracybonus = { false, core.TNUMBER, 0 },
+	expfactor     = { false, core.TNUMBER, 1 },
+	scorefactor   = { false, core.TNUMBER, 1 },
+	ammofactor    = { false, core.TNUMBER, 1 },
+	powerfactor   = { false, core.TNUMBER, 1 },
+	powerbonus    = { false, core.TNUMBER, 1.5 },
+	respawn       = { false, core.TBOOL,   false },
+	challenge     = { false, core.TBOOL,   true },
+	req_skill     = { false, core.TNUMBER, 0 },
+	req_exp       = { false, core.TNUMBER, 0 },
+	speed         = { false, core.TNUMBER, 1 },
 }
 
 core.register_blueprint "trait"
@@ -64,6 +64,11 @@ core.register_blueprint "trait"
 	getToHitBonus    = { false, core.TFUNC },
 	getShotsBonus    = { false, core.TFUNC },
 	getFireCostBonus = { false, core.TFUNC },
+	getDefenceBonus  = { false, core.TFUNC },
+	getDodgeBonus    = { false, core.TFUNC },
+	getMoveBonus     = { false, core.TFUNC },
+	getBodyBonus     = { false, core.TFUNC },
+	getDamageMul     = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
@@ -148,6 +153,7 @@ core.register_blueprint "affect"
 	getDefenceBonus  = { false, core.TFUNC },
 	getDodgeBonus    = { false, core.TFUNC },
 	getMoveBonus     = { false, core.TFUNC },
+	getBodyBonus     = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
 }
 
@@ -214,7 +220,7 @@ core.register_blueprint "being"
 	armor       = { false, core.TNUMBER , 0 },
 	attackchance= { false, core.TNUMBER , 75 },
 	todam       = { false, core.TNUMBER , 0 },
-	tohit       = { false, core.TNUMBER , 0 },
+	accuracy    = { false, core.TNUMBER , 0 },
 	movetime    = { false, core.TNUMBER , 100 },
 	firetime    = { false, core.TNUMBER , 100 },
 	reloadtime  = { false, core.TNUMBER , 100 },
@@ -259,6 +265,7 @@ core.register_blueprint "being"
 	getDefenceBonus  = { false, core.TFUNC },
 	getDodgeBonus    = { false, core.TFUNC },
 	getMoveBonus     = { false, core.TFUNC },
+	getBodyBonus     = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
 }
 

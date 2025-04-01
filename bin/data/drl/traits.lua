@@ -132,7 +132,7 @@ function drl.register_traits()
 		abbr   = "EE",
 
 		OnPick = function (being)
-			being.tohit = being.tohit + 2
+			being.accuracy = being.accuracy + 2
 		end,
 	}
 
@@ -297,9 +297,12 @@ function drl.register_traits()
 		author = "Malek",
 		abbr   = "Bad",
 
-		OnPick = function (being)
-			being.bodybonus  = being.bodybonus + 1
-			being.hpdecaymax = being.hpdecaymax + 50
+		OnPick = function (self)
+			player:upgrade_trait( "trait_badass" )
+			self.hpdecaymax = self.hpdecaymax + 50
+		end,
+		getBodyBonus = function ( self )
+			return self.trait_badass
 		end,
 	}
 

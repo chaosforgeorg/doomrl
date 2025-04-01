@@ -806,19 +806,12 @@ begin
       else FCharacter.Push( 'He has no bonus toward dodging attacks.' );
 
     { Knockback Modifier }
-    if ( ( iKnockMod <> 100 ) and ( BodyBonus <> 0 ) ) then
+    if ( iKnockMod <> 100 ) then
     begin
       if ( iKnockMod < 100 )
-      then FCharacter.Push( Format( 'He resists {!%d%%} of knockback', [100-iKnockMod]))
-      else FCharacter.Push( Format( 'He receives {!%d%%} extra knockback', [iKnockMod-100]));
-      FCharacter.Push( Format( '%s prevents {!%d} space%s of knockback.', [IIf( iKnockMod < 100, 'and', 'but' ), BodyBonus, IIf(BodyBonus <> 1, 's') ]));
+       then FCharacter.Push( Format( 'He resists {!%d%%} of knockback.', [100-iKnockMod]))
+       else FCharacter.Push( Format( 'He receives {!%d%%} extra knockback.', [iKnockMod-100]))
     end
-    else if ( iKnockMod <> 100 ) then
-      if ( iKnockMod < 100 )
-      then FCharacter.Push( Format( 'He resists {!%d%%} of knockback.', [100-iKnockMod]))
-      else FCharacter.Push( Format( 'He receives {!%d%%} extra knockback.', [iKnockMod-100]))
-    else if ( BodyBonus <> 0 )
-      then FCharacter.Push( Format( 'He prevents {!%d} space%s of knockback.', [BodyBonus, IIf(BodyBonus <> 1,'s')]))
     else
       FCharacter.Push( 'He has no resistance to knockback.' );
     FCharacter.Push( '' );

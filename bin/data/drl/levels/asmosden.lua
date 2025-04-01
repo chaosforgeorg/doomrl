@@ -24,7 +24,7 @@ register_level "the_asmos_den"
 			armor        = 0,
 			attackchance = 50,
 			todam        = 2,
-			tohit        = 12,
+			accuracy     = 12,
 			speed        = 50,
 			min_lev      = 200,
 			corpse       = "corpse",

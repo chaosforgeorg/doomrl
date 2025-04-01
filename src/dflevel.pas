@@ -123,24 +123,24 @@ TLevel = class(TLuaMapNode, ITextMap)
     function  getBeing( const coord : TCoord2D ) : TBeing; override;
     function  getItem( const coord : TCoord2D ) : TItem; override;
   private
-    FMap         : TMap;
-    FStatus      : Word; // level result
-    FStyle       : Byte;
+    FMap           : TMap;
+    FStatus        : Word; // level result
+    FStyle         : Byte;
 
-    FLNum        : Word;
-    FLTime       : DWord;
-    FEmpty       : Boolean;
+    FLNum          : Word;
+    FLTime         : DWord;
+    FEmpty         : Boolean;
 
-    FDangerLevel : Word;
-    FToHitBonus  : Integer;
+    FDangerLevel   : Word;
+    FAccuracyBonus : Integer;
 
-    FActiveBeing : TBeing;
-    FNextNode    : TNode;
+    FActiveBeing   : TBeing;
+    FNextNode      : TNode;
 
-    FFloorCell   : Word;
-    FFloorStyle  : Byte;
-    FFeeling     : AnsiString;
-    FSpecExit    : AnsiString;
+    FFloorCell     : Word;
+    FFloorStyle    : Byte;
+    FFeeling       : AnsiString;
+    FSpecExit      : AnsiString;
   private
     function getCellBottom( Index : TCoord2D ): Byte;
     function getCellTop( Index : TCoord2D ): Byte;
@@ -150,7 +150,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function getSpriteTop( Index : TCoord2D ): TSprite;
     function getSpriteBottom( Index : TCoord2D ): TSprite;
   public
-    property ToHitBonus : Integer                   read FToHitBonus;
+    property AccuracyBonus : Integer                read FAccuracyBonus;
     property Hooks : TFlags                         read FHooks;
     property FloorCell : Word                       read FFloorCell;
     property FloorStyle : Byte                      read FFloorStyle;
@@ -426,7 +426,7 @@ begin
   FLTime  := Stream.ReadDWord();
   Stream.Read( FEmpty, SizeOf( FEmpty ) );
   FDangerLevel := Stream.ReadWord();
-  Stream.Read( FToHitBonus, SizeOf( FToHitBonus ) );
+  Stream.Read( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
   FFloorCell   := Stream.ReadWord();
   FFloorStyle  := Stream.ReadByte();
   FID          := Stream.ReadAnsiString();
@@ -451,7 +451,7 @@ begin
   Stream.WriteDWord( FLTime );
   Stream.Write( FEmpty, SizeOf( FEmpty ) );
   Stream.WriteWord( FDangerLevel );
-  Stream.Write( FToHitBonus, SizeOf( FToHitBonus ) );
+  Stream.Write( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
   Stream.WriteWord( FFloorCell );
   Stream.WriteByte( FFloorStyle );
   Stream.WriteAnsiString( aID );
@@ -502,10 +502,10 @@ begin
   FHooks := [];
   FFeeling := '';
 
-  FFloorCell  := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
-  FFloorStyle := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
+  FFloorCell     := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
+  FFloorStyle    := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
   if LuaSystem.Get(['diff',Doom.Difficulty,'respawn']) then Include( FFlags, LF_RESPAWN );
-  FToHitBonus := LuaSystem.Get(['diff',Doom.Difficulty,'tohitbonus']);
+  FAccuracyBonus := LuaSystem.Get(['diff',Doom.Difficulty,'accuracybonus']);
 end;
 
 procedure TLevel.AfterGeneration( aGenerated : Boolean );

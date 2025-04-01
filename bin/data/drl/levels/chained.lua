@@ -155,7 +155,7 @@ register_level "the_chained_court"
 			armor        = 2,
 			attackchance = 50,
 			todam        = 6,
-			tohit        = 2,
+			accuracy     = 2,
 			speed        = 160,
 			min_lev      = 200,
 			corpse       = "corpse",
