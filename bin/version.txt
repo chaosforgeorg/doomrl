@@ -1,4 +1,5 @@
 0.9.9.9 BETA 7
+[mod] -- GH#000: enemy melee damage now randomized
 [fix] -- GH#241: clearing of level feeling on death/restart [brisbang]
 [fix] -- GH#113: thermonuclear explosions on Abyssal Plains/Containment area count also clear the traps [brisbang]
 [fix] -- GH#232: fixed Abyssal Plains trap not always triggering [brisbang]

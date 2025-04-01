@@ -23,7 +23,7 @@ register_level "the_asmos_den"
 			hp           = 1,
 			armor        = 0,
 			attackchance = 50,
-			todam        = 2,
+			strength     = 1,
 			accuracy     = 12,
 			speed        = 50,
 			min_lev      = 200,

@@ -14,10 +14,6 @@ uses Classes, SysUtils,
 
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
 
-type TBonuses = record
-  ToDam           : Integer;
-end;
-
 type TBeingTimes = record
   Reload : Byte;
   Fire   : Byte;
@@ -57,7 +53,7 @@ TBeing = class(TThing,IPathQuery)
     function  IsPlayer : Boolean;
     function GetBonus( aHook : Byte; const aParams : array of Const ) : Integer; virtual;
     procedure BloodFloor;
-    procedure Knockback( dir : TDirection; Strength : Integer );
+    procedure Knockback( aDir : TDirection; aStrength : Integer );
     destructor Destroy; override;
     function rollMeleeDamage( aSlot : TEqSlot = efWeapon ) : Integer;
     function getMoveCost : LongInt;
@@ -137,13 +133,13 @@ TBeing = class(TThing,IPathQuery)
     FHPMax         : Word;
     FHPDecayMax    : Word;
 
-    FBonus         : TBonuses;
     FTimes         : TBeingTimes;
     FLastCommand   : TCommand;
 
     FVisionRadius  : Byte;
     FSpeedCount    : LongInt;
     FAccuracy      : Integer;
+    FStrength      : Integer;
     FSpeed         : Byte;
     FExpValue      : Word;
 
@@ -182,9 +178,8 @@ TBeing = class(TThing,IPathQuery)
     property SCount       : LongInt    read FSpeedCount   write FSpeedCount;
     property AnimSeq      : Integer    read FAnimSeq      write FAnimSeq;
 
-    property ToDam        : Integer    read FBonus.ToDam        write FBonus.ToDam;
-
     property Accuracy     : Integer    read FAccuracy      write FAccuracy;
+    property Strength     : Integer    read FStrength      write FStrength;
     property Speed        : Byte       read FSpeed         write FSpeed;
     property ExpValue     : Word       read FExpValue      write FExpValue;
 
@@ -258,10 +253,10 @@ begin
   FHPNom      := Stream.ReadWord();
   FHPDecayMax := Stream.ReadWord();
 
-  Stream.Read( FBonus,       SizeOf( FBonus ) );
   Stream.Read( FTimes,       SizeOf( FTimes ) );
   Stream.Read( FLastCommand, SizeOf( FLastCommand ) );
   Stream.Read( FAccuracy,    SizeOf( FAccuracy ) );
+  Stream.Read( FStrength,    SizeOf( FStrength ) );
 
   FVisionRadius := Stream.ReadByte();
   FSpeedCount   := Stream.ReadWord();
@@ -288,10 +283,10 @@ begin
   Stream.WriteWord( FHPNom );
   Stream.WriteWord( FHPDecayMax );
 
-  Stream.Write( FBonus,       SizeOf( FBonus ) );
   Stream.Write( FTimes,       SizeOf( FTimes ) );
   Stream.Write( FLastCommand, SizeOf( FLastCommand ) );
   Stream.Write( FAccuracy,    SizeOf( FAccuracy ) );
+  Stream.Write( FStrength,    SizeOf( FStrength ) );
 
   Stream.WriteByte( FVisionRadius );
   Stream.WriteWord( FSpeedCount );
@@ -341,7 +336,6 @@ begin
 
   FHooks := FHooks * BeingHooks;
 
-  FBonus.ToDam      := Table.getInteger('todam');
   FTimes.Move       := Table.getInteger('movetime',100);
   FTimes.Fire       := Table.getInteger('firetime',100);
   FTimes.Reload     := Table.getInteger('reloadtime',100);
@@ -349,6 +343,7 @@ begin
 
   FSpeed    := Table.getInteger('speed');
   FAccuracy := Table.getInteger('accuracy');
+  FStrength := Table.getInteger('strength');
 
   FVisionRadius := VisionBaseValue + Table.getInteger('vision');
 
@@ -1541,8 +1536,9 @@ begin
 end;
 
 function TBeing.rollMeleeDamage( aSlot : TEqSlot = efWeapon ) : Integer;
-var iDamage : Integer;
-    iWeapon : TItem;
+var iDamage   : Integer;
+    iStrength : Integer;
+    iWeapon   : TItem;
 begin
   iWeapon := Inv.Slot[ aSlot ];
   if ( iWeapon <> nil ) and ( not iWeapon.isMelee ) then iWeapon := nil;
@@ -1560,9 +1556,9 @@ begin
   else
   begin
     if BF_MAXDAMAGE in FFlags then
-      iDamage += 3
+      iDamage += Max( FStrength * 3, 1 )
     else
-      iDamage += Byte(Dice(1,3));
+      iDamage += Max( Dice( FStrength, 3 ), 1 );
   end;
 
   iDamage := ApplyMul( iDamage, GetBonus( Hook_getDamageMul, [ iWeapon, True, ALT_NONE ] ) );
@@ -2132,43 +2128,43 @@ begin
   iLevel.Blood(FPosition);
 end;
 
-procedure TBeing.Knockback( dir : TDirection; Strength : Integer );
-var knock : TCoord2D;
-    FStrength : Real;
-    iLevel : TLevel;
+procedure TBeing.Knockback( aDir : TDirection; aStrength : Integer );
+var iKnock     : TCoord2D;
+    iFStrength : Real;
+    iLevel     : TLevel;
 begin
   iLevel := TLevel(Parent);
-  if Strength*Dir.code = 0 then Exit;
+  if aStrength*aDir.code = 0 then Exit;
   if BF_KNOCKIMMUNE in FFlags then Exit;
 
-  knock := FPosition + Dir;
-  FStrength := Strength;
+  iKnock := FPosition + aDir;
+  iFStrength := aStrength;
 
-  FStrength *= getKnockMod / 100;
-  Strength := Round(FStrength);
-  Strength -= GetBonus( Hook_getBodyBonus, [] );
+  iFStrength *= getKnockMod / 100;
+  aStrength := Round(iFStrength);
+  aStrength -= GetBonus( Hook_getBodyBonus, [] );
 
-  if Strength <= 0 then Exit;
+  if aStrength <= 0 then Exit;
 
-  if not iLevel.isEmpty( knock, [EF_NOBEINGS,EF_NOBLOCK] ) then Exit;
-  knock := FPosition;
-  while Strength > 0 do
+  if not iLevel.isEmpty( iKnock, [EF_NOBEINGS,EF_NOBLOCK] ) then Exit;
+  iKnock := FPosition;
+  while aStrength > 0 do
   begin
-    if not iLevel.isEmpty(knock + Dir, [EF_NOBEINGS,EF_NOBLOCK] ) then Break;
-    knock += Dir;
-    Dec(Strength);
+    if not iLevel.isEmpty(iKnock + aDir, [EF_NOBEINGS,EF_NOBLOCK] ) then Break;
+    iKnock += aDir;
+    Dec(aStrength);
   end;
 
-  if iLevel.isEmpty(knock,[EF_NOBEINGS,EF_NOBLOCK]) then
+  if iLevel.isEmpty(iKnock,[EF_NOBEINGS,EF_NOBLOCK]) then
   begin
     if GraphicsVersion then
     begin
       if isPlayer then
-        IO.addScreenMoveAnimation(100, knock );
+        IO.addScreenMoveAnimation(100, iKnock );
       if isVisible then
-        IO.addMoveAnimation(100,0,FUID,Position,knock,Sprite,True);
+        IO.addMoveAnimation(100,0,FUID,Position,iKnock,Sprite,True);
     end;
-    Displace( knock );
+    Displace( iKnock );
     HandlePostDisplace;
   end;
 end;
@@ -2291,8 +2287,6 @@ end;
 function TBeing.getToDam(aItem : TItem; aAltFire : TAltFire; aIsMelee : Boolean) : Integer;
 begin
   getToDam := GetBonus( Hook_getDamageBonus, [ aItem, aIsMelee, Integer( aAltFire ) ] );
-  if aIsMelee then getToDam += FBonus.ToDam;
-//  if (aItem <> nil) and ( aItem.isMelee = aIsMelee ) then getToHitRanged += Item.Acc;
 end;
 
 destructor TBeing.Destroy;

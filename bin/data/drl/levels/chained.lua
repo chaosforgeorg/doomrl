@@ -154,7 +154,7 @@ register_level "the_chained_court"
 			hp           = 80,
 			armor        = 2,
 			attackchance = 50,
-			todam        = 6,
+			strength     = 3,
 			accuracy     = 2,
 			speed        = 160,
 			min_lev      = 200,
