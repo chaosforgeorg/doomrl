@@ -60,7 +60,7 @@ begin
     for i := 1 to MAXAFFECT do
       if FList[i] <> 0 then
         if aHook in Affects[i].Hooks then
-          GetBonus += LuaSystem.ProtectedCall( [ 'affects',i, HookNames[ aHook ] ], aParams );
+          GetBonus += LuaSystem.ProtectedCall( [ 'affects',i, HookNames[ aHook ] ], ConcatConstArray( [FOwner], aParams ) );
 end;
 
 function TAffects.IsActive( aAffnum : Byte ) : boolean;

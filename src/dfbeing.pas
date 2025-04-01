@@ -22,8 +22,6 @@ type TBonuses = record
   Dodge           : Integer;
   Move            : Integer;
   Defence         : Integer;
-  MulDamage       : Integer;
-  MulDamageMelee  : Integer;
 end;
 
 type TBeingTimes = record
@@ -59,7 +57,7 @@ TBeing = class(TThing,IPathQuery)
     function meleeWeaponSlot : TEqSlot;
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
     procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); virtual;
-    function SendMissile( aTarget : TCoord2D; aItem : TItem; aAltFire : TAltFire; aSequence : DWord; aShotCount, aDamageMult : Integer ) : Boolean;
+    function SendMissile( aTarget : TCoord2D; aItem : TItem; aAltFire : TAltFire; aSequence : DWord; aShotCount : Integer ) : Boolean;
     function  isActive : boolean;
     function  WoundStatus : string;
     function  IsPlayer : Boolean;
@@ -200,8 +198,6 @@ TBeing = class(TThing,IPathQuery)
     property DodgeBonus      : Integer read FBonus.Dodge           write FBonus.Dodge;
     property MoveBonus       : Integer read FBonus.Move            write FBonus.Move;
     property DefenceBonus    : Integer read FBonus.Defence         write FBonus.Defence;
-    property MulDamage       : Integer read FBonus.MulDamage       write FBonus.MulDamage;
-    property MulDamageMelee  : Integer read FBonus.MulDamageMelee  write FBonus.MulDamageMelee;
 
     property HPDecayMax   : Word       read FHPDecayMax    write FHPDecayMax;
 
@@ -376,8 +372,6 @@ begin
   FBonus.Dodge  := 0;
   FBonus.Move   := 0;
   FBonus.Defence:= 0;
-  FBonus.MulDamage       := 0;
-  FBonus.MulDamageMelee  := 0;
 
   FHPDecayMax   := 100;
 
@@ -397,6 +391,7 @@ var iThisUID  : DWord;
     iDual     : Boolean;
     iCount    : DWord;
     iShotgun  : TShotgunData;
+    iDamageMul: Integer;
     iDamage   : TDiceRoll;
 begin
   Assert( aShotGun <> nil );
@@ -408,14 +403,14 @@ begin
 
   iDamage.Init( aShotGun.Damage_Dice, aShotGun.Damage_Sides, aShotGun.Damage_Add + getToDam( aShotgun, aAltFire, False ) );
   if BF_MAXDAMAGE in FFlags then iDamage.Init( 0, 0, iDamage.Max );
-
+  iDamageMul := GetBonus( Hook_getDamageMul, [ aShotgun, False, aAltFire ] );
   for iCount := 1 to aShots do
   begin
     if not iDual then aShotGun.PlaySound( 'fire', FPosition );
     iShotgun := Shotguns[ aShotGun.Missile ];
     iShotgun.DamageType := aShotGun.DamageType;
     if (BF_ARMYDEAD in FFlags) and (iShotgun.DamageType = DAMAGE_SHARPNEL) then iShotgun.DamageType := Damage_IgnoreArmor;
-    TLevel(Parent).ShotGun( FPosition, aTarget, iDamage, iShotgun, aShotgun );
+    TLevel(Parent).ShotGun( FPosition, aTarget, iDamage, iDamageMul, iShotgun, aShotgun );
     if UIDs[ iThisUID ] = nil then Exit( false );
     if (not iDual) and (aShotGun.Shots > 1) then IO.Delay(30);
   end;
@@ -428,9 +423,9 @@ begin
   iLevel := TLevel(Parent);
   Assert( aGun <> nil );
   if TLevel(Parent).Being[ aTarget ] <> nil then aTarget := TLevel(Parent).Being[ aTarget ].FLastPos;
-  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x+Sgn(aTarget.y-FPosition.y),aTarget.y-Sgn(aTarget.x-FPosition.x))),aGun,aAltFire,0,0,FBonus.MulDamage ) then Exit( False );
-  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x-Sgn(aTarget.y-FPosition.y),aTarget.y+Sgn(aTarget.x-FPosition.x))),aGun,aAltFire,0,0,FBonus.MulDamage ) then Exit( False );
-  if not SendMissile( aTarget, aGun,aAltFire,0,0,FBonus.MulDamage ) then Exit( False );
+  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x+Sgn(aTarget.y-FPosition.y),aTarget.y-Sgn(aTarget.x-FPosition.x))),aGun,aAltFire,0,0 ) then Exit( False );
+  if not SendMissile( iLevel.Area.Clamped(NewCoord2D(aTarget.x-Sgn(aTarget.y-FPosition.y),aTarget.y+Sgn(aTarget.x-FPosition.x))),aGun,aAltFire,0,0 ) then Exit( False );
+  if not SendMissile( aTarget, aGun,aAltFire,0,0 ) then Exit( False );
   Exit( True );
 end;
 
@@ -476,11 +471,11 @@ begin
     if iChaining then aTarget := RotateTowards( FPosition, aTarget, iChainTarget, PI/6 );
     if aGun.Flags[ IF_SCATTER ] then
        begin
-            if not SendMissile( TLevel(Parent).Area.Clamped(aTarget.RandomShifted( iScatter )), aGun, aAltFire, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, iCount-1, FBonus.MulDamage ) then Exit( False );
+            if not SendMissile( TLevel(Parent).Area.Clamped(aTarget.RandomShifted( iScatter )), aGun, aAltFire, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, iCount-1 ) then Exit( False );
        end
     else
        begin
-            if not SendMissile( aTarget, aGun, aAltFire, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, iCount-1, FBonus.MulDamage ) then Exit( False );
+            if not SendMissile( aTarget, aGun, aAltFire, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, iCount-1 ) then Exit( False );
        end;
   end;
   Exit( True );
@@ -833,7 +828,7 @@ begin
       case aWeapon.AltFire of
         ALT_THROW  :
         begin
-          SendMissile( aTarget, aWeapon, ALT_THROW, 0, 0, FBonus.MulDamage + FBonus.MulDamageMelee );
+          SendMissile( aTarget, aWeapon, ALT_THROW, 0, 0 );
           Dec( FSpeedCount, 1000 );
           Exit( True );
         end;
@@ -1562,16 +1557,19 @@ end;
 
 function TBeing.rollMeleeDamage( aSlot : TEqSlot = efWeapon ) : Integer;
 var iDamage : Integer;
+    iWeapon : TItem;
 begin
-  iDamage := getToDam( Inv.Slot[ aSlot ], ALT_NONE, True );
-  if ( Inv.Slot[ aSlot ] <> nil ) and ( Inv.Slot[ aSlot ].isMelee ) then
+  iWeapon := Inv.Slot[ aSlot ];
+  if ( iWeapon <> nil ) and ( not iWeapon.isMelee ) then iWeapon := nil;
+  iDamage := getToDam( iWeapon, ALT_NONE, True );
+  if iWeapon <> nil then
   begin
     if BF_MAXDAMAGE in FFlags then
-      iDamage += Inv.Slot[ aSlot ].maxDamage
+      iDamage += iWeapon.maxDamage
     else
-      iDamage += Inv.Slot[ aSlot ].rollDamage;
+      iDamage += iWeapon.rollDamage;
 
-    if ( BF_BLADEBONUS in FFlags ) and Inv.Slot[ aSlot ].Flags[ IF_BLADE ] then
+    if ( BF_BLADEBONUS in FFlags ) and iWeapon.Flags[ IF_BLADE ] then
       iDamage *= 2;
   end
   else
@@ -1582,10 +1580,10 @@ begin
       iDamage += Byte(Dice(1,3));
   end;
 
-  iDamage := ApplyMul( iDamage, FBonus.MulDamage + FBonus.MulDamageMelee );
-
+  iDamage := ApplyMul( iDamage, GetBonus( Hook_getDamageMul, [ iWeapon, True, ALT_NONE ] ) );
   if iDamage < 0 then iDamage := 0;
   rollMeleeDamage := iDamage;
+  Log( 'dmg %d', [iDamage] );
 end;
 
 procedure TBeing.Attack( aWhere : TCoord2D );
@@ -1886,7 +1884,7 @@ begin
     else CallHook( Hook_OnAttacked, [ iActive, aSource ] );
 end;
 
-function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aAltFire : TAltFire; aSequence : DWord; aShotCount, aDamageMult : Integer ) : Boolean;
+function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aAltFire : TAltFire; aSequence : DWord; aShotCount : Integer ) : Boolean;
 var iDirection  : TDirection;
     iMisslePath : TVisionRay;
     iOldCoord   : TCoord2D;
@@ -1919,6 +1917,7 @@ var iDirection  : TDirection;
     iLevel      : TLevel;
     iStart      : TCoord2D;
     iDamageMod  : Integer;
+    iDamageMul  : Integer;
     iMaxDamage  : Boolean;
 begin
   if aItem = nil then Exit( False );
@@ -1978,8 +1977,9 @@ begin
     iDamage := aItem.rollDamage;
 
   iDamageMod := getToDam( aItem, aAltFire, False );
+  iDamageMul := GetBonus( Hook_getDamageMul, [ aItem, False, Integer( aAltFire ) ] );
   iDamage    += iDamageMod;
-  iDamage    := ApplyMul( iDamage, aDamageMult );
+  iDamage    := ApplyMul( iDamage, iDamageMul );
 
   iSteps := 0;
   iHit   := MF_EXACT in Missiles[iMissile].Flags;
@@ -2126,7 +2126,7 @@ begin
     iSound := IO.Audio.ResolveSoundID([aItem.ID+'.explode',Missiles[iMissile].soundID+'.explode','explode']);
     with Missiles[iMissile] do
     iLevel.Explosion( iDelay*(iSteps+(aShotCount*2)), iCoord, iRadius, ExplDelay, iRoll, ExplColor,
-                    iSound, aItem.DamageType, aItem, ExplFlags, Content, iDirectHit, aDamageMult );
+                    iSound, aItem.DamageType, aItem, ExplFlags, Content, iDirectHit, iDamageMul );
   end;
   if (iAimedBeing = Player) and (iDodged) then Player.LastTurnDodge := True;
   Exit( UIDs[ iThisUID ] <> nil );

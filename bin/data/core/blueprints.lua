@@ -140,6 +140,12 @@ core.register_blueprint "affect"
 	OnAdd          = { false, core.TFUNC },
 	OnTick         = { false, core.TFUNC },
 	OnRemove       = { false, core.TFUNC },
+
+	getDamageBonus   = { false, core.TFUNC },
+	getToHitBonus    = { false, core.TFUNC },
+	getShotsBonus    = { false, core.TFUNC },
+	getFireCostBonus = { false, core.TFUNC },
+	getDamageMul     = { false, core.TFUNC },
 }
 
 core.register_blueprint "missile"
@@ -247,6 +253,7 @@ core.register_blueprint "being"
 	getToHitBonus    = { false, core.TFUNC },
 	getShotsBonus    = { false, core.TFUNC },
 	getFireCostBonus = { false, core.TFUNC },
+	getDamageMul     = { false, core.TFUNC },
 }
 
 core.register_blueprint "being_group_entry"

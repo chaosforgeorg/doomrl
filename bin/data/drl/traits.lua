@@ -145,14 +145,14 @@ function drl.register_traits()
 		end,
 
 		getToHitBonus = function ( self, weapon, is_melee, alt )
-			if ( weapon and weapon.is_melee ) or is_melee then
+			if ( weapon and weapon.itype == ITEMTYPE_MELEE ) or is_melee then
 				return self.trait_brute * 2
 			end
 			return 0
 		end,
 
 		getDamageBonus = function ( self, weapon, is_melee, alt )
-			if ( weapon and weapon.is_melee ) or is_melee then
+			if ( weapon and weapon.itype == ITEMTYPE_MELEE ) or is_melee then
 				return self.trait_brute * 3
 			end
 			return 0
