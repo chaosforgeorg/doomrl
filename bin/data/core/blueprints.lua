@@ -72,6 +72,7 @@ core.register_blueprint "trait"
 	getResistBonus   = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
+	getAmmoCostMul   = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
@@ -160,6 +161,7 @@ core.register_blueprint "affect"
 	getResistBonus   = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
+	getAmmoCostMul   = { false, core.TFUNC },
 }
 
 core.register_blueprint "missile"
@@ -275,6 +277,7 @@ core.register_blueprint "being"
 	getResistBonus   = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
+	getAmmoCostMul   = { false, core.TFUNC },
 }
 
 core.register_blueprint "being_group_entry"

@@ -69,8 +69,9 @@ const
   Hook_getResistBonus  = 58; // Trait, Being, Affects
   Hook_getDamageMul    = 59; // Trait, Being, Affects
   Hook_getFireCostMul  = 60; // Trait, Being, Affects
+  Hook_getAmmoCostMul  = 61; // Trait, Being, Affects
 
-  HookAmount           = 61;
+  HookAmount           = 62;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
 
@@ -87,13 +88,13 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnHitBeing', 'OnReload', 'OnEquipTick', 'OnEquipCheck', 'OnAct', 'OnDestroy', 'OnEnter',
       'OnFire', 'OnFired', 'OnExit', 'OnTick', 'OnCompletedCheck', 'OnNuked',
       'OnLoad','OnLoaded','OnUnLoad', 'OnCreatePlayer', 'OnLevelUp','OnPreLevelUp',
-      'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro', 'OnGenerate',
+      'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro' , 'OnGenerate',
 
       'OnPostMove', 'OnPreReload', 'OnDamage', 'OnReceiveDamage', 'OnPreAction', 'OnPostAction',
       'OnDescribe',
       'getDamageBonus', 'getToHitBonus', 'getShotsBonus', 'getFireCostBonus',
       'getDefenceBonus', 'getDodgeBonus', 'getMoveBonus', 'getBodyBonus', 'getResistBonus',
-      'getDamageMul', 'getFireCostMul'
+      'getDamageMul', 'getFireCostMul', 'getAmmoCostMul'
       );
 
 function LoadHooks( const Table : array of Const ) : TFlags;
@@ -124,7 +125,7 @@ BeingHooks   := [ Hook_OnCreate, Hook_OnAction, Hook_OnAttacked, Hook_OnUseActiv
   Hook_OnDamage, Hook_OnReceiveDamage, Hook_OnPreAction,
   Hook_getDamageBonus, Hook_getToHitBonus, Hook_getShotsBonus, Hook_getFireCostBonus,
   Hook_getDefenceBonus, Hook_getDodgeBonus, Hook_getMoveBonus, Hook_getBodyBonus,
-  Hook_getResistBonus, Hook_getDamageMul, Hook_getFireCostMul];
+  Hook_getResistBonus, Hook_getDamageMul, Hook_getFireCostMul, Hook_getAmmoCostMul];
 ItemHooks    := [ Hook_OnCreate, Hook_OnPickup, Hook_OnPickupCheck, Hook_OnFirstPickup,
   Hook_OnUse, Hook_OnUseCheck, Hook_OnAltFire, Hook_OnAltReload, Hook_OnEquip,
   Hook_OnRemove, Hook_OnKill, Hook_OnKillAll, Hook_OnHitBeing, Hook_OnReload,

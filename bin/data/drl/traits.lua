@@ -590,7 +590,13 @@ function drl.register_traits()
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_AMMOCHAIN ] = true
+		end,
+
+		getAmmoCostMul = function( self, weapon, alt, shots )
+			if weapon and weapon.altfire == ALT_CHAIN then
+				return 1.0 / shots
+			end
+			return 1.0
 		end,
 	}
 
@@ -618,7 +624,20 @@ function drl.register_traits()
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_ENTRENCHMENT ] = true
+		end,
+
+		getResistBonus = function ( self, resist, target )
+			if self.chainfire > 0 then
+				return 50
+			end
+			return 0
+		end,
+
+		getAmmoCostMul = function( self, weapon, alt, shots )
+			if weapon and self.chainfire > 0 and alt == ALT_CHAIN then
+				return 1.0 / shots
+			end
+			return 1.0
 		end,
 	}
 

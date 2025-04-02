@@ -168,11 +168,11 @@ TBeing = class(TThing,IPathQuery)
     property KnockBacked  : Boolean read FKnockBacked  write FKnockBacked;
     property SilentAction : Boolean read FSilentAction write FSilentAction;
     property MeleeAttack  : Boolean read FMeleeAttack;
-    property ChainFire    : Byte    read FChainFire    write FChainFire;
   published
 
     property can_dual_reload : Boolean read canDualReload;
     property last_command : Byte       read FLastCommand.Command;
+    property ChainFire    : Byte       read FChainFire    write FChainFire;
     property HPMax        : Word       read FHPMax        write FHPMax;
     property HPNom        : Word       read FHPNom        write FHPNom;
 
@@ -1242,12 +1242,11 @@ end;
 function TBeing.FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire ) : Boolean;
 var iShots       : Integer;
     iShotsBonus  : Integer;
-    iShotCost    : Byte;
+    iShotCost    : Integer;
+    iShotsCost   : Integer;
     iChaining    : Boolean;
-    iAmmochaining: Boolean;
     iFreeShot    : Boolean;
     iResult      : Boolean;
-
 begin
   if aTarget = FPosition then Exit( False );
   if aGun = nil then Exit( False );
@@ -1258,18 +1257,12 @@ begin
   iChaining    := ( aAlt = ALT_CHAIN ) and ( iShots > 1 );
   iShots       += iShotsBonus;
 
-  iAmmoChaining := ( aGun.AltFire = ALT_CHAIN ) and (
-    ( BF_AMMOCHAIN in FFlags ) or
-    ( ( BF_ENTRENCHMENT in FFlags ) and ( iChaining ) and ( FChainFire > 0 ) )
-  );
-
   if iChaining then
   begin
     case FChainFire of
       0 : iShots -= aGun.Shots div 3;
       2 : iShots += aGun.Shots div 2;
     end;
-    if FChainFire < 2 then Inc( FChainFire );
   end;
 
   if aAlt = ALT_SINGLE then iShots := 1;
@@ -1280,18 +1273,23 @@ begin
   if not iFreeShot then
   begin
     iShotCost       := Max( aGun.ShotCost, 1 );
-    if not (iAmmoChaining) then
-      iShots          := Min( aGun.Ammo div iShotCost , iShots );
+    iShotsCost      := iShots * iShotCost;
+    iShotsCost      := Round( iShotsCost * GetBonusMul( Hook_getAmmoCostMul, [aGun, Integer( aAlt ), iShots ] ) );
 
-    if (iShots < 1) or (aGun.ShotCost > aGun.Ammo) then Exit( False );
+    if iShotsCost > aGun.Ammo then
+    begin
+      if iShotsCost = ( iShots * iShotCost )
+        then iShots := Min( aGun.Ammo div iShotCost, iShots )
+        else iShots := Min( Floor( aGun.Ammo / ( iShotsCost / Single(iShots) ) ), iShots );
+    end;
+    if iShots < 1 then Exit( False );
 
     aGun.RechargeReset;
-    
-    if iAmmoChaining then
-      aGun.Ammo := aGun.Ammo - iShotCost
-    else
-      aGun.Ammo := aGun.Ammo - iShots * iShotCost;
+
+    aGun.Ammo := aGun.Ammo - iShotsCost;
   end;
+
+  if iChaining and ( FChainFire < 2 ) then Inc( FChainFire );
 
   if iShots < 1 then Exit;
 
@@ -1698,9 +1696,6 @@ begin
   if iResist >= 100 then Exit( 100 );
 
   iResist += GetBonus( Hook_getResistBonus, [ aResistance, Integer( aTarget ) ] );
-
-  if (BF_ENTRENCHMENT in FFlags) and (FChainFire > 0) then
-    iResist += 50;
 
   getTotalResistance += iResist;
   getTotalResistance := Min( 95, getTotalResistance );
