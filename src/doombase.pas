@@ -765,7 +765,8 @@ except
     CRASHMODE := True;
   end;
 end;
-
+  if State <> DSPlaying then Exit( False );
+  Player.CallHook(Hook_OnPostAction,[]);
   if State <> DSPlaying then Exit( False );
   IO.Focus( Player.Position );
   Player.UpdateVisual;

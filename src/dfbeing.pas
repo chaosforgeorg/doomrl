@@ -1355,10 +1355,10 @@ begin
   LastPos := FPosition;
   FAffects.OnUpdate;
   if UIDs[ iThisUID ] = nil then Exit;
-  CallHook(Hook_OnPreAction,[]);
-  if UIDs[ iThisUID ] = nil then Exit;
+  if CallHook(Hook_OnPreAction,[])  then if UIDs[ iThisUID ] = nil then Exit;
   CallHook(Hook_OnAction,[]);
   if UIDs[ iThisUID ] = nil then Exit;
+  if CallHook(Hook_OnPostAction,[]) then if UIDs[ iThisUID ] = nil then Exit;
   while FSpeedCount >= 5000 do Dec( FSpeedCount, 1000 );
 end;
 

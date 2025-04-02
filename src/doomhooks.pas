@@ -54,18 +54,20 @@ const
   Hook_OnDamage        = 45;   // Trait, Being, Item
   Hook_OnReceiveDamage = 46;   // Trait, Being
   Hook_OnPreAction     = 47;   // Trait, Being
+  Hook_OnPostAction    = 48;   // Trait, Being
 
-  Hook_getDamageBonus  = 48; // Trait, Being, Affects
-  Hook_getToHitBonus   = 49; // Trait, Being, Affects
-  Hook_getShotsBonus   = 50; // Trait, Being, Affects
-  Hook_getFireCostBonus= 51; // Trait, Being, Affects
-  Hook_getDefenceBonus = 52; // Trait, Being, Affects
-  Hook_getDodgeBonus   = 53; // Trait, Being, Affects
-  Hook_getMoveBonus    = 54; // Trait, Being, Affects
-  Hook_getBodyBonus    = 55; // Trait, Being, Affects
-  Hook_getDamageMul    = 56; // Trait, Being, Affects
+  Hook_getDamageBonus  = 49; // Trait, Being, Affects
+  Hook_getToHitBonus   = 50; // Trait, Being, Affects
+  Hook_getShotsBonus   = 51; // Trait, Being, Affects
+  Hook_getFireCostBonus= 52; // Trait, Being, Affects
+  Hook_getDefenceBonus = 53; // Trait, Being, Affects
+  Hook_getDodgeBonus   = 54; // Trait, Being, Affects
+  Hook_getMoveBonus    = 55; // Trait, Being, Affects
+  Hook_getBodyBonus    = 56; // Trait, Being, Affects
+  Hook_getDamageMul    = 57; // Trait, Being, Affects
+  Hook_getFireCostMul  = 58; // Trait, Being, Affects
 
-  HookAmount           = 57;
+  HookAmount           = 59;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
 
@@ -84,9 +86,9 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnLoad','OnLoaded','OnUnLoad', 'OnCreatePlayer', 'OnLevelUp','OnPreLevelUp',
       'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro', 'OnGenerate',
 
-      'OnPostMove', 'OnPreReload', 'OnDamage', 'OnReceiveDamage', 'OnPreAction',
+      'OnPostMove', 'OnPreReload', 'OnDamage', 'OnReceiveDamage', 'OnPreAction', 'OnPostAction',
       'getDamageBonus', 'getToHitBonus', 'getShotsBonus', 'getFireCostBonus',
-      'getDefenceBonus', 'getDodgeBonus', 'getMoveBonus', 'getBodyBonus', 'getDamageMul'
+      'getDefenceBonus', 'getDodgeBonus', 'getMoveBonus', 'getBodyBonus', 'getDamageMul', 'getFireCostMul'
       );
 
 function LoadHooks( const Table : array of Const ) : TFlags;
