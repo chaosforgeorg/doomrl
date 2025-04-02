@@ -403,8 +403,26 @@ function drl.register_traits()
 
 		OnPick = function (being)
 			being.flags[ BF_DUALBLADE ] = true
-			being.flags[ BF_BLADEDEFEND ] = true
-			being.flags[ BF_BLADEBONUS ] = true
+		end,
+
+		getResistBonus = function ( self, resist, target )
+			local wp = self.eq.prepared
+			if wp and wp.flags[ IF_BLADE ] then
+				return ({
+					bullet = 50,
+					shrapnel = 50,
+					fire = 50,
+					melee = 75,
+				})[ resist ] or 0
+			end
+			return 0
+		end,
+
+		getDamageMul = function( self, weapon, is_melee, alt )
+			if weapon and weapon.flags[ IF_BLADE ] then
+				return 2.0
+			end
+			return 1.0
 		end,
 	}
 

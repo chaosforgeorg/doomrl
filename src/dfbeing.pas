@@ -1527,9 +1527,6 @@ begin
       iDamage += iWeapon.maxDamage
     else
       iDamage += iWeapon.rollDamage;
-
-    if ( BF_BLADEBONUS in FFlags ) and iWeapon.Flags[ IF_BLADE ] then
-      iDamage *= 2;
   end
   else
   begin
@@ -1700,12 +1697,7 @@ begin
   end;
   if iResist >= 100 then Exit( 100 );
 
-  if BF_BLADEDEFEND in FFlags then
-    if (Inv.Slot[ efWeapon2 ] <> nil) and (Inv.Slot[ efWeapon2 ].Flags[ IF_BLADE ]) then
-    begin
-      if (aResistance = 'bullet') or (aResistance = 'shrapnel') or (aResistance = 'fire') then iResist += 50;
-      if (aResistance = 'melee') then iResist +=75;
-    end;
+  iResist += GetBonus( Hook_getResistBonus, [ aResistance, Integer( aTarget ) ] );
 
   if (BF_ENTRENCHMENT in FFlags) and (FChainFire > 0) then
     iResist += 50;

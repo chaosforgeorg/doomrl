@@ -69,6 +69,7 @@ core.register_blueprint "trait"
 	getDodgeBonus    = { false, core.TFUNC },
 	getMoveBonus     = { false, core.TFUNC },
 	getBodyBonus     = { false, core.TFUNC },
+	getResistBonus   = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
 }
@@ -156,7 +157,9 @@ core.register_blueprint "affect"
 	getDodgeBonus    = { false, core.TFUNC },
 	getMoveBonus     = { false, core.TFUNC },
 	getBodyBonus     = { false, core.TFUNC },
+	getResistBonus   = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
+	getFireCostMul   = { false, core.TFUNC },
 }
 
 core.register_blueprint "missile"
@@ -269,6 +272,7 @@ core.register_blueprint "being"
 	getDodgeBonus    = { false, core.TFUNC },
 	getMoveBonus     = { false, core.TFUNC },
 	getBodyBonus     = { false, core.TFUNC },
+	getResistBonus   = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
 }
