@@ -78,7 +78,6 @@ var i            : Byte;
     iMax, iMax12 : DWord;
     iMaster      : Boolean;
     iVariant     : Variant;
-    iHooks       : TFlags;
 begin
   Inc( FValues[ aTrait ] );
   Inc( FCount );

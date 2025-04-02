@@ -134,8 +134,11 @@ end
 function item:get_lever_description( full, good )
 	full = full or self.__proto.desc
 	good = good or self.__proto.good
-	if player.flags[ BF_LEVERSENSE2 ] then return "lever ("..full..")" end
-	if player.flags[ BF_LEVERSENSE1 ] then return "lever ("..good..")" end
+	if player:has_property( "LEVER_SENSE" ) then
+		local sense = player.LEVER_SENSE
+		if sense > 1 then return "lever ("..full..")" end
+		return "lever ("..good..")"
+	end
 	return "lever"
 end
 

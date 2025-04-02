@@ -264,11 +264,10 @@ function drl.register_traits()
 		abbr   = "Int",
 
 		OnPick = function (being,level)
+			being:add_property( "LEVER_SENSE", level )
 			if level == 1 then
-				being.flags[ BF_LEVERSENSE1 ] = true
 				being.flags[ BF_POWERSENSE  ] = true
 			elseif level == 2 then
-				being.flags[ BF_LEVERSENSE2 ] = true
 				being.flags[ BF_BEINGSENSE  ] = true
 			end
 		end,
