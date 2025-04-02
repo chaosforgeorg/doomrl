@@ -560,6 +560,7 @@ core.register_blueprint "item"
 	OnFire        = { false, core.TFUNC },
 	OnPostMove    = { false, core.TFUNC },
 	OnDamage      = { false, core.TFUNC },
+	OnDescribe    = { false, core.TFUNC },
 	
 	OnModDescribe = { false, core.TFUNC },
 }

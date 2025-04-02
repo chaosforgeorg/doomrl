@@ -30,6 +30,7 @@ TItem  = class( TThing )
     function    rollDamage : Integer;
     function    maxDamage : Integer;
     function    GetName(known : boolean) : string;
+    function    GetExtName( aLyingHere : Boolean ) : Ansistring;
     function    GetProtection : Byte;
     function    GetResistance( const aResistance : AnsiString ) : Integer;
     function    Description : Ansistring;
@@ -533,6 +534,23 @@ begin
   end;
   if known then Exit('the '+Description)
            else Exit(Preposition(Description)+Description);
+end;
+
+function TItem.GetExtName( aLyingHere : Boolean ) : Ansistring;
+var iName : AnsiString;
+begin
+  iName := '';
+  if Hook_OnDescribe in FHooks then
+  begin
+    iName := LuaSystem.ProtectedRunHook( Self, HookNames[Hook_OnDescribe], [] );
+  end;
+  if iName = '' then iName := GetName( False );
+
+  if not aLyingHere then Exit( iName );
+
+  if Flags[ IF_FEATURENAME ] then Exit( Format('There is a %s here.', [ iName ] ) );
+  if Flags[ IF_PLURALNAME ]  then Exit( Format('There are %s lying here.', [ iName ] ) );
+  Exit( Format('There is %s lying here.', [ iName ] ) );
 end;
 
 destructor  TItem.Destroy;

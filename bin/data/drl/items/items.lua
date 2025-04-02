@@ -1369,6 +1369,8 @@ function drl.register_regular_items()
 		warning    = "The air is really humid here...",
 		fullchance = 50,
 
+		flags  = { IF_FEATURENAME },
+
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
 		end,
@@ -1378,7 +1380,10 @@ function drl.register_regular_items()
 			level:flood( "water", self.target_area )
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
+		
 
 	register_item "lever_flood_acid"
 	{
@@ -1393,6 +1398,8 @@ function drl.register_regular_items()
 		desc       = "floods with acid",
 		warning    = "In the State of Denmark there was the odor of decay...",
 		fullchance = 10,
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
@@ -1409,6 +1416,8 @@ function drl.register_regular_items()
 			level:flood( "acid", self.target_area )
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_flood_lava"
@@ -1425,6 +1434,8 @@ function drl.register_regular_items()
 		warning    = "You feel that smell? That gasoline smell? Oh hell...",
 		fullchance = 10,
 
+		flags  = { IF_FEATURENAME },
+
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
 		end,
@@ -1439,6 +1450,8 @@ function drl.register_regular_items()
 			level:flood( "lava", self.target_area )
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_kill"
@@ -1455,6 +1468,8 @@ function drl.register_regular_items()
 		warning    = "The smell of a massacre...",
 		fullchance = 33,
 
+		flags  = { IF_FEATURENAME },
+
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
 		end,
@@ -1469,6 +1484,8 @@ function drl.register_regular_items()
 			ui.msg("The smell of blood surrounds you!")
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_explode"
@@ -1484,6 +1501,8 @@ function drl.register_regular_items()
 		desc       = "forces explosions",
 		fullchance = 100,
 
+		flags  = { IF_FEATURENAME },
+
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
 		end,
@@ -1498,6 +1517,8 @@ function drl.register_regular_items()
 			end
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_walls"
@@ -1513,6 +1534,8 @@ function drl.register_regular_items()
 		desc       = "destroys walls",
 		warning    = "You hear the trumpets of Jericho echoing in the distance...",
 		fullchance = 33,
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
@@ -1533,6 +1556,8 @@ function drl.register_regular_items()
 			ui.msg("The walls explode!")
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_summon"
@@ -1546,6 +1571,8 @@ function drl.register_regular_items()
 		type       = ITEMTYPE_LEVER,
 		good       = "dangerous",
 		desc       = "summons enemies",
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function(self)
 			self:add_property( "charges", math.random(3) )
@@ -1569,6 +1596,8 @@ function drl.register_regular_items()
 			self.charges = self.charges - 1
 			return self.charges == 0
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_repair"
@@ -1582,6 +1611,8 @@ function drl.register_regular_items()
 		type       = ITEMTYPE_LEVER,
 		good       = "beneficial",
 		desc       = "Armor depot",
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function(self)
 			self:add_property( "charges", math.random(3) )
@@ -1627,6 +1658,8 @@ function drl.register_regular_items()
 			end
 			return self.charges == 0
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_medical"
@@ -1640,6 +1673,8 @@ function drl.register_regular_items()
 		type       = ITEMTYPE_LEVER,
 		good       = "beneficial",
 		desc       = "MediTech depot",
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function( self )
 			self:add_property( "charges", math.random(3) )
@@ -1667,6 +1702,8 @@ function drl.register_regular_items()
 			ui.msg("You feel healed.")
 			return self.charges == 0
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_ammo"
@@ -1680,6 +1717,8 @@ function drl.register_regular_items()
 		type       = ITEMTYPE_LEVER,
 		good       = "beneficial",
 		desc       = "ammo dispenser",
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function( self )
 			self:add_property( "charges", math.random(3) + 1 )
@@ -1705,6 +1744,8 @@ function drl.register_regular_items()
 			level:drop_item( ammo_id, being.position, true )
 			return self.charges == 0
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "schematic_0"

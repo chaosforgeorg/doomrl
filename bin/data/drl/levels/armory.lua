@@ -25,7 +25,7 @@ register_level "hells_armory"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "dangerous",
 			desc = "opens the lab",
@@ -48,6 +48,8 @@ register_level "hells_armory"
 				ui.msg("You hear a loud wail!")
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
 	end,
 

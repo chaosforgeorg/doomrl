@@ -1397,9 +1397,7 @@ begin
     with Being[ aWhere ] do
       AddInfo( GetName( false ) + ' (' + WoundStatus + ')' );
     if aBeingOnly then Exit;
-    if Item[ aWhere ] <> nil then
-      if Item[ aWhere ].isLever then AddInfo( Player.DescribeLever( Item[ aWhere ] ) )
-                                else AddInfo( Item[ aWhere ].GetName( false ) );
+    if Item[ aWhere ] <> nil then AddInfo( Item[ aWhere ].GetExtName( False ) );
     if CellHook_OnDescribe in Cells[ Cell[ aWhere ] ].Hooks then
        AddInfo( CallHook( aWhere, CellHook_OnDescribe ) )
     else

@@ -56,18 +56,20 @@ const
   Hook_OnPreAction     = 47;   // Trait, Being
   Hook_OnPostAction    = 48;   // Trait, Being
 
-  Hook_getDamageBonus  = 49; // Trait, Being, Affects
-  Hook_getToHitBonus   = 50; // Trait, Being, Affects
-  Hook_getShotsBonus   = 51; // Trait, Being, Affects
-  Hook_getFireCostBonus= 52; // Trait, Being, Affects
-  Hook_getDefenceBonus = 53; // Trait, Being, Affects
-  Hook_getDodgeBonus   = 54; // Trait, Being, Affects
-  Hook_getMoveBonus    = 55; // Trait, Being, Affects
-  Hook_getBodyBonus    = 56; // Trait, Being, Affects
-  Hook_getDamageMul    = 57; // Trait, Being, Affects
-  Hook_getFireCostMul  = 58; // Trait, Being, Affects
+  Hook_OnDescribe      = 49; // Item
 
-  HookAmount           = 59;
+  Hook_getDamageBonus  = 50; // Trait, Being, Affects
+  Hook_getToHitBonus   = 51; // Trait, Being, Affects
+  Hook_getShotsBonus   = 52; // Trait, Being, Affects
+  Hook_getFireCostBonus= 53; // Trait, Being, Affects
+  Hook_getDefenceBonus = 54; // Trait, Being, Affects
+  Hook_getDodgeBonus   = 55; // Trait, Being, Affects
+  Hook_getMoveBonus    = 56; // Trait, Being, Affects
+  Hook_getBodyBonus    = 57; // Trait, Being, Affects
+  Hook_getDamageMul    = 58; // Trait, Being, Affects
+  Hook_getFireCostMul  = 59; // Trait, Being, Affects
+
+  HookAmount           = 60;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
 
@@ -87,6 +89,7 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro', 'OnGenerate',
 
       'OnPostMove', 'OnPreReload', 'OnDamage', 'OnReceiveDamage', 'OnPreAction', 'OnPostAction',
+      'OnDescribe',
       'getDamageBonus', 'getToHitBonus', 'getShotsBonus', 'getFireCostBonus',
       'getDefenceBonus', 'getDodgeBonus', 'getMoveBonus', 'getBodyBonus', 'getDamageMul', 'getFireCostMul'
       );
@@ -122,7 +125,7 @@ ItemHooks    := [ Hook_OnCreate, Hook_OnPickup, Hook_OnPickupCheck, Hook_OnFirst
   Hook_OnUse, Hook_OnUseCheck, Hook_OnAltFire, Hook_OnAltReload, Hook_OnEquip,
   Hook_OnRemove, Hook_OnKill, Hook_OnKillAll, Hook_OnHitBeing, Hook_OnReload,
   Hook_OnEquipTick, Hook_OnEquipCheck, Hook_OnEnter, Hook_OnFire, Hook_OnFired,
-  Hook_OnAct, Hook_OnDestroy, Hook_OnPostMove, Hook_OnPreReload, Hook_OnDamage ];
+  Hook_OnAct, Hook_OnDestroy, Hook_OnPostMove, Hook_OnPreReload, Hook_OnDamage, Hook_OnDescribe ];
 ChainedHooks := [ Hook_OnCreate, Hook_OnDie, Hook_OnDieCheck, Hook_OnPickup,
   Hook_OnPickUpItem, Hook_OnKillAll, Hook_OnPickupCheck, Hook_OnUse, Hook_OnUseCheck,
   Hook_OnFire, Hook_OnFired ];

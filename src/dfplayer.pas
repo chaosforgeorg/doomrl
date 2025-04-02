@@ -51,7 +51,6 @@ type TPlayer = class(TBeing)
   procedure WriteMemorial;
   destructor Destroy; override;
   procedure Kill( BloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem ); override;
-  function DescribeLever( aItem : TItem ) : string;
   procedure AddHistory( const aHistory : Ansistring );
   class procedure RegisterLuaAPI();
   procedure UpdateVisual;
@@ -348,13 +347,7 @@ begin
   if iLevel.Item[ FPosition ] <> nil then
   begin
     if not FMultiMove.IsPath then
-      with iLevel.Item[ FPosition ] do
-        if isLever then
-           IO.Msg('There is a %s here.', [ DescribeLever( iLevel.Item[ FPosition ] ) ] )
-        else
-          if Flags[ IF_PLURALNAME ]
-            then IO.Msg('There are %s lying here.', [ GetName( False ) ] )
-            else IO.Msg('There is %s lying here.', [ GetName( False ) ] );
+      IO.Msg( iLevel.Item[ FPosition ].GetExtName( True ) );
   end;
 
   FEnemiesInVision := iLevel.EnemiesVisible;
@@ -557,13 +550,6 @@ begin
     Close(iCopyText);
     Close(iMortemText);
   end;
-end;
-
-function TPlayer.DescribeLever( aItem : TItem ) : string;
-begin
-  if BF_LEVERSENSE2 in FFlags then Exit('lever ('+LuaSystem.Get(['items',aItem.ID,'desc'],'')+')' );
-  if BF_LEVERSENSE1 in FFlags then Exit('lever ('+LuaSystem.Get(['items',aItem.ID,'good'],'')+')' );
-  Exit('lever');
 end;
 
 procedure TPlayer.AddHistory( const aHistory : Ansistring );
