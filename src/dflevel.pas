@@ -1125,7 +1125,6 @@ procedure TLevel.Tick;
 var iNode : TNode;
 begin
   FActiveBeing := nil;
-  Player.LastTurnDodge := False;
   repeat
 
     Inc(FLTime);

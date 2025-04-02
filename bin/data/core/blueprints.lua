@@ -70,6 +70,7 @@ core.register_blueprint "trait"
 	getMoveBonus     = { false, core.TFUNC },
 	getBodyBonus     = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
+	getFireCostMul   = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
@@ -269,6 +270,7 @@ core.register_blueprint "being"
 	getMoveBonus     = { false, core.TFUNC },
 	getBodyBonus     = { false, core.TFUNC },
 	getDamageMul     = { false, core.TFUNC },
+	getFireCostMul   = { false, core.TFUNC },
 }
 
 core.register_blueprint "being_group_entry"

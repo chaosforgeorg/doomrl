@@ -766,10 +766,9 @@ except
   end;
 end;
   if State <> DSPlaying then Exit( False );
-  Player.CallHook(Hook_OnPostAction,[]);
+  Player.PostAction;
   if State <> DSPlaying then Exit( False );
   IO.Focus( Player.Position );
-  Player.UpdateVisual;
   FDamagedLastTurn := False;
   while (Player.SCount < 5000) and (State = DSPlaying) do
   begin

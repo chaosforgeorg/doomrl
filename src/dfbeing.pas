@@ -172,6 +172,7 @@ TBeing = class(TThing,IPathQuery)
   published
 
     property can_dual_reload : Boolean read canDualReload;
+    property last_command : Byte       read FLastCommand.Command;
     property HPMax        : Word       read FHPMax        write FHPMax;
     property HPNom        : Word       read FHPNom        write FHPNom;
 
@@ -787,10 +788,6 @@ end;
 
 function TBeing.ActionFire ( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean ) : Boolean;
 var iChainFire : Byte;
-    iEnemy     : TBeing;
-    iEnemyUID  : TUID;
-    iGunKata   : Boolean;
-    iFireCost  : LongInt;
     iLimitRange: Boolean;
     iRange     : Byte;
     iDist      : Byte;
@@ -860,38 +857,12 @@ begin
   end;
   FChainFire := iChainFire;
 
-  iEnemy    := TLevel(Parent).Being[ aTarget ];
-  iEnemyUID := 0;
-  if iEnemy <> nil then iEnemyUID := iEnemy.uid;
-  iGunKata  := aWeapon.Flags[ IF_PISTOL ] and (BF_GUNKATA in FFlags);
-
-  iFireCost := getFireCost( iAltFire, False );
-  // Gun Kata -- fire effect
-  if iGunKata and isPlayer and (iAltFire = ALT_NONE) then
-  begin
-    if Player.LastTurnDodge then
-    begin
-      iFireCost := iFireCost div 10;
-      Player.LastTurnDodge := False;
-    end
-    else if ( FLastCommand.Command = COMMAND_MOVE ) then
-      iFireCost := iFireCost div 2;
-  end;
-  Dec(FSpeedCount,iFireCost);
+  Dec( FSpeedCount, getFireCost( iAltFire, False ) );
 
   if ( not FireRanged( aTarget, aWeapon, iAltFire )) or Player.Dead then Exit;
   if canDualGun then
     if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], iAltFire )) or Player.Dead then Exit;
 
-  // Gun Kata -- reload effect
-  if iGunKata and (iEnemyUID <> 0) and ( not TLevel(Parent).isAlive( iEnemyUID ) ) then
-  begin
-    iFireCost := FSpeedCount;
-    if canDualReload
-      then ActionDualReload
-      else ActionReload;
-    FSpeedCount := iFireCost;
-  end;
   Exit( True );
 end;
 
@@ -2207,8 +2178,10 @@ begin
   iModifier *= FTimes.Fire/1000.;
   iBonus    := GetBonus( Hook_getFireCostBonus, [ Inv.Slot[ efWeapon ], aIsMelee, Integer( aAltFire ) ] );
   if iBonus <> 0 then iModifier *= Max( (100.-iBonus)/100, 0.1 );
+  if iModifier < 0.1 then iModifier := 0.1;
+  iModifier *= GetBonusMul( Hook_getFireCostMul, [ Inv.Slot[ efWeapon ], aIsMelee, Integer( aAltFire ) ] );
   if (aAltFire = ALT_AIMED) then iModifier *= 2;
-  getFireCost := Max( Round( ActionCostFire*iModifier ), 100 );
+  getFireCost := Round( ActionCostFire*iModifier );
 end;
 
 function TBeing.getReloadCost: LongInt;
@@ -2594,6 +2567,16 @@ begin
   Result := 1;
 end;
 
+function lua_being_action_dual_reload(L: Plua_State): Integer; cdecl;
+var iState  : TDoomLuaState;
+    iBeing  : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  iState.Push( iBeing.ActionDualReload );
+  Result := 1;
+end;
+
 function lua_being_direct_seek(L: Plua_State): Integer; cdecl;
 var State  : TDoomLuaState;
     Being  : TBeing;
@@ -2896,7 +2879,7 @@ begin
   Result := 1;
 end;
 
-const lua_being_lib : array[0..34] of luaL_Reg = (
+const lua_being_lib : array[0..35] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -2917,9 +2900,10 @@ const lua_being_lib : array[0..34] of luaL_Reg = (
       ( name : 'wear';          func : @lua_being_wear),
       ( name : 'attack';        func : @lua_being_attack),
       ( name : 'action_fire';   func : @lua_being_action_fire),
-      ( name : 'reload';           func : @lua_being_reload),
-      ( name : 'action_reload';    func : @lua_being_action_reload),
-      ( name : 'action_alt_reload';func : @lua_being_action_alt_reload),
+      ( name : 'reload';            func : @lua_being_reload),
+      ( name : 'action_reload';     func : @lua_being_action_reload),
+      ( name : 'action_alt_reload'; func : @lua_being_action_alt_reload),
+      ( name : 'action_dual_reload';func : @lua_being_action_dual_reload),
       ( name : 'direct_seek';   func : @lua_being_direct_seek),
       ( name : 'relocate';      func : @lua_being_relocate),
 

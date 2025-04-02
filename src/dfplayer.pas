@@ -23,7 +23,6 @@ type TPlayer = class(TBeing)
 
   InventorySize   : Byte;
   MasterDodge     : Boolean;
-  LastTurnDodge   : Boolean;
   FKills          : TKillTable;
   FKillMax        : DWord;
   FKillCount      : DWord;
@@ -41,6 +40,7 @@ type TPlayer = class(TBeing)
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
   procedure PreAction;
+  procedure PostAction;
   function GetMultiMoveInput : TInputKey;
   procedure LevelEnter;
   procedure doUpgradeTrait;
@@ -68,6 +68,7 @@ private
   FEnemiesInVision: Word;
   FKilledBy       : AnsiString;
   FKilledMelee    : Boolean;
+  FLastTurnDodge  : Boolean;
 
   FTraits         : TTraits;
   FStatistics     : TStatistics;
@@ -82,14 +83,15 @@ public
 published
   property KilledBy        : AnsiString read FKilledBy;
   property KilledMelee     : Boolean    read FKilledMelee;
-  property Exp             : LongInt    read FExp          write FExp;
-  property ExpLevel        : Byte       read FExpLevel     write FExpLevel;
-  property NukeTime        : Word       read NukeActivated write NukeActivated;
-  property Klass           : Byte       read FKlass        write FKlass;
-  property ExpFactor       : Real       read FExpFactor    write FExpFactor;
+  property LastTurnDodge   : Boolean    read FLastTurnDodge write FLastTurnDodge;
+  property Exp             : LongInt    read FExp           write FExp;
+  property ExpLevel        : Byte       read FExpLevel      write FExpLevel;
+  property NukeTime        : Word       read NukeActivated  write NukeActivated;
+  property Klass           : Byte       read FKlass         write FKlass;
+  property ExpFactor       : Real       read FExpFactor     write FExpFactor;
   property SkillRank       : Word       read GetSkillRank;
   property ExpRank         : Word       read GetExpRank;
-  property Score           : LongInt    read FScore        write FScore;
+  property Score           : LongInt    read FScore         write FScore;
   property Depth           : Word       read CurrentLevel;
   property EnemiesInVision : Word       read FEnemiesInVision;
 end;
@@ -143,7 +145,7 @@ begin
   FPath           := TPathFinder.Create(Self);
   MemorialWritten := False;
   MasterDodge     := False;
-  LastTurnDodge   := False;
+  FLastTurnDodge  := False;
 
   doombase.Lua.RegisterPlayer(Self);
 end;
@@ -163,8 +165,9 @@ begin
   Stream.WriteDWord( FKillMax );
   Stream.WriteDWord( FKillCount );
 
-  Stream.Write( FExpFactor,  SizeOf( FExpFactor ) );
-  Stream.Write( FQuickSlots, SizeOf( FQuickSlots ) );
+  Stream.Write( FLastTurnDodge, SizeOf( FLastTurnDodge ) );
+  Stream.Write( FExpFactor,     SizeOf( FExpFactor ) );
+  Stream.Write( FQuickSlots,    SizeOf( FQuickSlots ) );
 
   FTraits.WriteToStream( Stream );
   FKills.WriteToStream( Stream );
@@ -174,6 +177,7 @@ end;
 constructor TPlayer.CreateFromStream ( Stream : TStream ) ;
 begin
   inherited CreateFromStream( Stream );
+
   SpecExit       := Stream.ReadAnsiString();
   CurrentLevel   := Stream.ReadWord();
   NukeActivated  := Stream.ReadWord();
@@ -185,8 +189,9 @@ begin
   FKillMax       := Stream.ReadDWord();
   FKillCount     := Stream.ReadDWord();
 
-  Stream.Read( FExpFactor,  SizeOf( FExpFactor ) );
-  Stream.Read( FQuickSlots, SizeOf( FQuickSlots ) );
+  Stream.Read( FLastTurnDodge, SizeOf( FLastTurnDodge ) );
+  Stream.Read( FExpFactor,     SizeOf( FExpFactor ) );
+  Stream.Read( FQuickSlots,    SizeOf( FQuickSlots ) );
 
   FTraits         := TTraits.CreateFromStream( Stream );
   FKills          := TKillTable.CreateFromStream( Stream );
@@ -373,6 +378,14 @@ begin
   end;
 
   CallHook(Hook_OnPreAction,[]);
+end;
+
+procedure TPlayer.PostAction;
+begin
+  CallHook(Hook_OnPostAction,[]);
+  if Doom.State <> DSPlaying then Exit;
+  FLastTurnDodge := False;
+  UpdateVisual;
 end;
 
 procedure TPlayer.LevelEnter;

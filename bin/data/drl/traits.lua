@@ -448,9 +448,38 @@ function drl.register_traits()
 		abbr   = "MGK",
 		master = true,
 
-		OnPick = function (being)
-			being.flags[ BF_GUNKATA ] = true
+		OnPick = function (self)
+			self:add_property( "kata_reload", false )
 		end,
+
+		OnKill = function (self, target, weapon, melee )
+			if weapon and weapon.flags[ IF_PISTOL ] then
+				self.kata_reload = true
+			end
+		end,
+		getFireCostMul = function( self, weapon, is_melee, alt )
+			if weapon and weapon.flags[ IF_PISTOL ] then
+				if player.lastturndodge then
+					return 0.1
+				elseif player.last_command == COMMAND_MOVE then
+					return 0.5
+				end
+			end
+			return 1.0
+		end,
+		OnPostAction = function ( self )
+			if self.kata_reload then
+				self.kata_reload = false
+				local sc = self.scount
+				if self.can_dual_reload then
+					self:action_dual_reload( self )
+				else
+					self:action_reload( self )
+				end
+				self.scount = sc
+			end
+		end,
+
 	}
 
 	register_trait "sharpshooter"
