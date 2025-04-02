@@ -18,7 +18,7 @@ TThing = class( TLuaEntityNode )
   constructor CreateFromStream( Stream : TStream ); override;
   function PlaySound( const aSoundID : string; aDelay : Integer = 0 ) : Boolean;
   function PlaySound( const aSoundID : string; aPosition : TCoord2D; aDelay : Integer = 0 ) : Boolean;
-  procedure CallHook( aHook : Byte; const aParams : array of Const ); virtual;
+  function CallHook( aHook : Byte; const aParams : array of Const ) : Boolean; virtual;
   function CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean; virtual;
   function GetSprite : TSprite; virtual;
   procedure WriteToStream( Stream : TStream ); override;
@@ -90,11 +90,11 @@ begin
   Exit( True );
 end;
 
-procedure TThing.CallHook ( aHook : Byte; const aParams : array of const ) ;
+function TThing.CallHook ( aHook : Byte; const aParams : array of const ) : Boolean;
 begin
-  if aHook in FHooks         then LuaSystem.ProtectedRunHook(Self, HookNames[aHook], aParams );
-  if aHook in ChainedHooks   then
-    Doom.Level.CallHook( aHook, ConcatConstArray( [ Self ], aParams ) );
+  CallHook := False;
+  if aHook in FHooks         then begin CallHook := True; LuaSystem.ProtectedRunHook(Self, HookNames[aHook], aParams ); end;
+  if aHook in ChainedHooks   then begin CallHook := True; Doom.Level.CallHook( aHook, ConcatConstArray( [ Self ], aParams ) ); end;
 end;
 
 function TThing.CallHookCheck ( aHook : Byte; const aParams : array of const ) : Boolean;

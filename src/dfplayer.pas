@@ -34,9 +34,10 @@ type TPlayer = class(TBeing)
   procedure Initialize; reintroduce;
   constructor CreateFromStream( Stream: TStream ); override;
   procedure WriteToStream( Stream: TStream ); override;
-  procedure CallHook( aHook : Byte; const aParams : array of Const ); override;
+  function CallHook( aHook : Byte; const aParams : array of Const ) : Boolean; override;
   function CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean; override;
   function GetBonus( aHook : Byte; const aParams : array of Const ) : Integer; override;
+  function GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single; override;
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
   procedure PreAction;
@@ -194,10 +195,11 @@ begin
   Initialize;
 end;
 
-procedure TPlayer.CallHook( aHook : Byte; const aParams : array of Const );
+function TPlayer.CallHook( aHook : Byte; const aParams : array of Const ) : Boolean;
 begin
-  FTraits.CallHook( aHook, aParams );
-  inherited CallHook( aHook, aParams );
+  CallHook := FTraits.CallHook( aHook, aParams );
+  if inherited CallHook( aHook, aParams ) then
+    CallHook := True;
 end;
 
 function TPlayer.CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean;
@@ -212,6 +214,11 @@ begin
   GetBonus += FTraits.GetBonus( aHook, aParams );
 end;
 
+function TPlayer.GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single;
+begin
+  GetBonusMul := inherited GetBonusMul( aHook, aParams );
+  GetBonusMul *= FTraits.GetBonusMul( aHook, aParams );
+end;
 
 procedure TPlayer.LevelUp;
 begin

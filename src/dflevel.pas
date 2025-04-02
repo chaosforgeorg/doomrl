@@ -68,8 +68,8 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
-    procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Integer = 0 );
-    procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Integer; Shotgun : TShotgunData; aItem : TItem );
+    procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+    procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Single; Shotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
     function isEmpty( const coord : TCoord2D; EmptyFlags : TFlags32 = []) : Boolean; override;
@@ -178,7 +178,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
 implementation
 
-uses typinfo, vluadungen, vluatools, vluasystem,
+uses math, typinfo, vluatools, vluasystem,
      vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomgfxio,
      doomspritemap, doomhudviews;
 
@@ -861,7 +861,7 @@ begin
   end;
 end;
 
-procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Integer = 0 );
+procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
 var a     : TCoord2D;
     iDamage : Integer;
     dir   : TDirection;
@@ -888,7 +888,7 @@ begin
         iDamage := Damage.Roll;
         if not (efNoDistanceDrop in aFlags) then
           iDamage := iDamage div Max(1,(Distance(a,coord)+1) div 2);
-        iDamage := ApplyMul( iDamage, aDamageMult );
+        iDamage := Floor( iDamage * aDamageMult );
         DamageTile( a, iDamage, DamageType );
         if Being[a] <> nil then
         with Being[a] do
@@ -925,7 +925,7 @@ begin
   if aContent <> 0 then RecalcFluids;
 end;
 
-procedure TLevel.Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Integer; Shotgun : TShotgunData; aItem : TItem );
+procedure TLevel.Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Single; Shotgun : TShotgunData; aItem : TItem );
 var a,b,tc  : TCoord2D;
     d       : Single;
     dmg     : Integer;
@@ -977,7 +977,7 @@ begin
     if LightFlag[ tc, lfDamage ] then
       begin
         dmg := Round(Damage.Roll * (1.0-Reduce*Max(1,Distance( source, tc ))));
-        dmg := ApplyMul( dmg, aDamageMul );
+        dmg := Floor( dmg * aDamageMul );
 
         if (dmg < 1) then dmg := 1;
         

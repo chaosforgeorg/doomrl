@@ -79,9 +79,9 @@ function drl.register_affects()
 		end,
 		getDamageMul = function( self, weapon, is_melee, alt )
 			if ( weapon and weapon.itype == ITEMTYPE_MELEE ) or is_melee then
-				return 100
+				return 2.0
 			end
-			return 0
+			return 1.0
 		end,
 	}
 

@@ -10,9 +10,10 @@ type TTraits = class( TVObject )
   constructor Create;
   constructor CreateFromStream( aStream : TStream ); override;
   procedure WriteToStream( aStream : TStream ); override;
-  procedure CallHook( aHook : Byte; const aParams : array of Const );
+  function CallHook( aHook : Byte; const aParams : array of Const ) : Boolean;
   function CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean;
   function GetBonus( aHook : Byte; const aParams : array of Const ) : Integer;
+  function GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single;
   function GetHistory : AnsiString;
   procedure Upgrade ( aKlass : Byte; aTrait : Byte ) ;
   function CanPick( aKlass : Byte; aTrait : Byte; aCharLevel : Byte ): Boolean;
@@ -177,13 +178,17 @@ begin
   aStream.Write( FHookMask, SizeOf( FHookMask ) );
 end;
 
-procedure TTraits.CallHook( aHook : Byte; const aParams : array of Const );
+function TTraits.CallHook( aHook : Byte; const aParams : array of Const ) : Boolean;
 var i : Integer;
 begin
+  CallHook := False;
   if not ( aHook in FHookMask ) then Exit;
   for i := 1 to High(FHooks) do
     if aHook in FHooks[i] then
+    begin
+      CallHook := True;
       LuaSystem.ProtectedCall( [ 'traits', i, HookNames[aHook] ], ConcatConstArray( [Player], aParams ) )
+    end;
 end;
 
 function TTraits.CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean;
@@ -206,6 +211,17 @@ begin
     if aHook in FHooks[i] then
       GetBonus += LuaSystem.ProtectedCall( [ 'traits', i, HookNames[aHook] ], ConcatConstArray( [Player], aParams ) );
 end;
+
+function TTraits.GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single;
+var i : Integer;
+begin
+  GetBonusMul := 1.0;
+  if not ( aHook in FHookMask ) then Exit( 1.0 );
+  for i := 1 to High(FHooks) do
+    if aHook in FHooks[i] then
+      GetBonusMul *= LuaSystem.ProtectedCall( [ 'traits', i, HookNames[aHook] ], ConcatConstArray( [Player], aParams ) );
+end;
+
 
 function TTraits.GetHistory: AnsiString;
 var iCount : Byte;

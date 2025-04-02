@@ -8,6 +8,7 @@ type TAffects = class( TVObject )
   constructor CreateFromStream( aStream : TStream; aOwner : TThing ); reintroduce;
   procedure WriteToStream( aStream : TStream ); override;
   function GetBonus( aHook : Byte; const aParams : array of Const ) : Integer;
+  function GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single;
   procedure Add( aAffnum : Byte; aDuration : LongInt );
   function  Remove( aAffnum : Byte; aSilent : Boolean ) : boolean;
   procedure OnUpdate;
@@ -61,6 +62,17 @@ begin
       if FList[i] <> 0 then
         if aHook in Affects[i].Hooks then
           GetBonus += LuaSystem.ProtectedCall( [ 'affects',i, HookNames[ aHook ] ], ConcatConstArray( [FOwner], aParams ) );
+end;
+
+function TAffects.GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single;
+var i : Integer;
+begin
+  GetBonusMul := 1.0;
+  if aHook in FHooks then
+    for i := 1 to MAXAFFECT do
+      if FList[i] <> 0 then
+        if aHook in Affects[i].Hooks then
+          GetBonusMul *= LuaSystem.ProtectedCall( [ 'affects',i, HookNames[ aHook ] ], ConcatConstArray( [FOwner], aParams ) );
 end;
 
 function TAffects.IsActive( aAffnum : Byte ) : boolean;

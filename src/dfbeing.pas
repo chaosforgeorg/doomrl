@@ -52,6 +52,7 @@ TBeing = class(TThing,IPathQuery)
     function  WoundStatus : string;
     function  IsPlayer : Boolean;
     function GetBonus( aHook : Byte; const aParams : array of Const ) : Integer; virtual;
+    function GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single; virtual;
     procedure BloodFloor;
     procedure Knockback( aDir : TDirection; aStrength : Integer );
     destructor Destroy; override;
@@ -371,7 +372,7 @@ var iThisUID  : DWord;
     iDual     : Boolean;
     iCount    : DWord;
     iShotgun  : TShotgunData;
-    iDamageMul: Integer;
+    iDamageMul: Single;
     iDamage   : TDiceRoll;
 begin
   Assert( aShotGun <> nil );
@@ -383,7 +384,7 @@ begin
 
   iDamage.Init( aShotGun.Damage_Dice, aShotGun.Damage_Sides, aShotGun.Damage_Add + getToDam( aShotgun, aAltFire, False ) );
   if BF_MAXDAMAGE in FFlags then iDamage.Init( 0, 0, iDamage.Max );
-  iDamageMul := GetBonus( Hook_getDamageMul, [ aShotgun, False, aAltFire ] );
+  iDamageMul := GetBonusMul( Hook_getDamageMul, [ aShotgun, False, aAltFire ] );
   for iCount := 1 to aShots do
   begin
     if not iDual then aShotGun.PlaySound( 'fire', FPosition );
@@ -476,6 +477,13 @@ begin
   GetBonus := FAffects.GetBonus( aHook, aParams );
   if aHook in FHooks then
     GetBonus += LuaSystem.ProtectedRunHook( Self, HookNames[ aHook ], aParams );
+end;
+
+function TBeing.GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single;
+begin
+  GetBonusMul    := FAffects.GetBonusMul( aHook, aParams );
+  if aHook in FHooks then
+    GetBonusMul *= LuaSystem.ProtectedRunHook( Self, HookNames[ aHook ], aParams );
 end;
 
 function TBeing.isActive: boolean;
@@ -1537,7 +1545,6 @@ end;
 
 function TBeing.rollMeleeDamage( aSlot : TEqSlot = efWeapon ) : Integer;
 var iDamage   : Integer;
-    iStrength : Integer;
     iWeapon   : TItem;
 begin
   iWeapon := Inv.Slot[ aSlot ];
@@ -1561,10 +1568,9 @@ begin
       iDamage += Max( Dice( FStrength + 1, 3 ), 1 );
   end;
 
-  iDamage := ApplyMul( iDamage, GetBonus( Hook_getDamageMul, [ iWeapon, True, ALT_NONE ] ) );
+  iDamage := Floor( iDamage * GetBonusMul( Hook_getDamageMul, [ iWeapon, True, ALT_NONE ] ) );
   if iDamage < 0 then iDamage := 0;
   rollMeleeDamage := iDamage;
-  Log( 'dmg %d', [iDamage] );
 end;
 
 procedure TBeing.Attack( aWhere : TCoord2D );
@@ -1898,7 +1904,7 @@ var iDirection  : TDirection;
     iLevel      : TLevel;
     iStart      : TCoord2D;
     iDamageMod  : Integer;
-    iDamageMul  : Integer;
+    iDamageMul  : Single;
     iMaxDamage  : Boolean;
 begin
   if aItem = nil then Exit( False );
@@ -1958,9 +1964,9 @@ begin
     iDamage := aItem.rollDamage;
 
   iDamageMod := getToDam( aItem, aAltFire, False );
-  iDamageMul := GetBonus( Hook_getDamageMul, [ aItem, False, Integer( aAltFire ) ] );
+  iDamageMul := GetBonusMul( Hook_getDamageMul, [ aItem, False, Integer( aAltFire ) ] );
   iDamage    += iDamageMod;
-  iDamage    := ApplyMul( iDamage, iDamageMul );
+  iDamage    := Floor( iDamage * iDamageMul );
 
   iSteps := 0;
   iHit   := MF_EXACT in Missiles[iMissile].Flags;
