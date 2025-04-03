@@ -278,7 +278,7 @@ function drl.register_regular_items()
 				end
 			end
 			level.flags[ LF_ITEMSVISIBLE ] = true
-			if being.flags[BF_MAPEXPERT] then
+			if being:has_property( "MAP_EXPERT" ) then
 				being:msg( "You download tracking data to your PDA." )
 				level.flags[ LF_BEINGSVISIBLE ] = true
 			end

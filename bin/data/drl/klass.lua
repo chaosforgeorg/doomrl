@@ -37,7 +37,7 @@ function drl.register_klasses()
 		desc = "Marines are the backbone of the UAC, resilient and hardy. They start with 10 more health points, +20% fire/acid/plasma resistance and powerups they use have a +50% duration bonus (+25% on Nightmare).",
 
 		OnPick = function( being )
-			being.flags[ BF_POWERBONUS ] = true
+			being:add_property( "POWER_BONUS", diff[DIFFICULTY].powerbonus )
 			being.hpmax = being.hpmax + 10
 			being.hp    = being.hp + 10
 
@@ -131,8 +131,8 @@ function drl.register_klasses()
 		desc = "Technicians are masters of equipment and tinkering. They use consumables almost instantly and can hack computer maps for tracking data. Only they can also mod some really unique tech.",
 
 		OnPick = function( being )
+			being:add_property( "MAP_EXPERT" )
 			being.flags[ BF_INSTAUSE ] = true
-			being.flags[ BF_MAPEXPERT ] = true
 			being.flags[ BF_MODEXPERT ] = true
 
 			being.eq.weapon = "pistol"
