@@ -151,10 +151,7 @@ function drl.register_regular_items()
 		OnPickup = function(self,being)
 			being:msg("You feel better.")
 			being:remove_affect( "tired" )
-			local amount =  10 * diff[DIFFICULTY].powerfactor
-			if being.flags[ BF_MEDPLUS ] then
-				amount = amount * 2
-			end
+			local amount = math.floor( 10 * diff[DIFFICULTY].powerfactor * being:get_property( "MEDKIT_BONUS", 1 ) )
 			being.hp = math.min( being.hp +  amount, 2*being.hpmax )
 		end,
 	}
@@ -229,10 +226,7 @@ function drl.register_regular_items()
 		OnPickup = function(self,being)
 			being:msg("You feel like new!")
 			being:remove_affect( "tired" )
-			local amount =  10 * diff[DIFFICULTY].powerfactor
-			if being.flags[ BF_MEDPLUS ] then
-				amount = amount * 2
-			end
+			local amount = math.floor( 10 * diff[DIFFICULTY].powerfactor * being:get_property( "MEDKIT_BONUS", 1 ) )
 			being.hp = math.min( being.hp + amount, 2*being.hpmax )
 			if being.hp < being.hpmax then
 				being.hp = being.hpmax
@@ -819,16 +813,14 @@ function drl.register_regular_items()
 				if isPlayer then 
 					being:remove_affect( "tired" )
 				end
-				if being.hp >= being.hpmax * 2 or ( not being.flags[ BF_MEDPLUS ] and being.hp >= being.hpmax ) then
+				local overheal = being:has_property("MEDKIT_OVERHEAL")
+				if being.hp >= being.hpmax * 2 or ( not overheal and being.hp >= being.hpmax ) then
 					being:msg("Nothing happens.")
 					return true
 				end
-				local amount = (being.hpmax * diff[DIFFICULTY].powerfactor) / 4 + 2
-				if being.flags[ BF_MEDPLUS ] then
-					amount = amount * 2
-				end
+				local amount = math.floor( ( (being.hpmax * diff[DIFFICULTY].powerfactor) / 4 + 2 ) * being:get_property( "MEDKIT_BONUS", 1 ) )
 				being.hp = math.min( being.hp + amount, being.hpmax * 2 )
-				if not being.flags[ BF_MEDPLUS ] then being.hp = math.min( being.hp, being.hpmax ) end
+				if not overheal then being.hp = math.min( being.hp, being.hpmax ) end
 				being:msg("You feel healed.",being:get_name(true,true).." looks healthier!")
 			end
 			return true
@@ -856,13 +848,14 @@ function drl.register_regular_items()
 				if isPlayer then 
 					being:remove_affect( "tired" )
 				end
-				if being.hp >= being.hpmax * 2 or ( not being.flags[ BF_MEDPLUS ] and being.hp >= being.hpmax ) then
+				local overheal = being:has_property("MEDKIT_OVERHEAL")
+				if being.hp >= being.hpmax * 2 or ( (not overheal) and being.hp >= being.hpmax ) then
 					being:msg("Nothing happens.")
 					return true
 				end
 				being.hp = math.min( being.hp + (being.hpmax * diff[DIFFICULTY].powerfactor) / 2 + 2, being.hpmax * 2)
 				being.hp = math.max( being.hp, being.hpmax )
-				if not being.flags[ BF_MEDPLUS ] then being.hp = math.min( being.hp, being.hpmax ) end
+				if not overheal then being.hp = math.min( being.hp, being.hpmax ) end
 				being:msg("You feel fully healed.",being:get_name(true,true).." looks a lot healthier!")
 			end
 			return true

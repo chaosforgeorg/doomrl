@@ -905,7 +905,7 @@ begin
             Knockback( dir, iDamage div iKnockbackValue );
           end;
           KnockBacked := True;
-          if (Flags[BF_FIREANGEL]) and (not aDirectHit) then Continue;
+          if (Flags[BF_SPLASHIMMUNE]) and (not aDirectHit) then Continue;
           if (efSelfHalf in aFlags) and isActive then iDamage := iDamage div 2;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
           ApplyDamage( iDamage, Target_Torso, DamageType, aItem );

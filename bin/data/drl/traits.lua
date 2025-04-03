@@ -49,7 +49,6 @@ function drl.register_traits()
 		end,
 	}
 
-
 	register_trait "nails"
 	{
 		name   = "Tough as nails",
@@ -583,6 +582,7 @@ function drl.register_traits()
 
 		OnPick = function (being)
 			being.flags[ BF_FIREANGEL ] = true
+			being.flags[ BF_SPLASHIMMUNE ] = true
 		end,
 	}
 
@@ -657,9 +657,10 @@ function drl.register_traits()
 		abbr   = "MSv",
 		master = true,
 
-		OnPick = function (being)
-			being.flags[ BF_MEDPLUS ] = true
-			being.flags[ BF_HARDY ] = true
+		OnPick = function (self)
+			self:add_property( "MEDKIT_OVERHEAL" )
+			self:add_property( "MEDKIT_BONUS", 2 )
+			self.flags[ BF_HARDY ] = true
 		end,
 	}
 

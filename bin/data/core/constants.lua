@@ -61,7 +61,7 @@ BF_HUNTING      = 8;
 BF_BACKPACK     = 9;
 BF_UNIQUENAME   = 10;
 BF_IMPATIENT    = 11;
-
+BF_SPLASHIMMUNE = 12;
 
 BF_DARKNESS     = 15;
 BF_DUALGUN      = 16;
@@ -83,7 +83,7 @@ BF_INV          = 32;
 BF_INVISIBLE    = 33;
 
 BF_PISTOLMAX    = 35;
-BF_MEDPLUS      = 36;
+
 BF_HARDY        = 37;
 BF_SCAVENGER    = 38;
 BF_INSTAUSE     = 39;
