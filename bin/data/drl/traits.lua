@@ -513,22 +513,29 @@ function drl.register_traits()
 		end,
 	}
 
---[[
+	--[[
 	register_trait "regenerator"
 	{
 		name   = "Regenerator",
 		desc   = "Regenerate up to 20 Hp.",
 		quote  = "",
-		full   = "Your skin has unnatural healing abilities. You regenerate up to 10 HP at a rate of +1 per turn.",
+		full   = "Your skin has unnatural healing abilities. You regenerate up to 20 HP at a rate of +1 per turn.",
 		author = "Kornel",
 		abbr   = "MRg",
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_REGENERATE ] = true
-		end
+		end,
+
+		OnTick = function (self, ticks)
+			if ticks % 10 == 0 then
+				if self.hp < 20 and self.hp < self.hpmax then
+					self.hp = self.hp + 1
+				end
+			end
+		end,
 	}
---]]
+	--]]
 
 	register_trait "armydead"
 	{

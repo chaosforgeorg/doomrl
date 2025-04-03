@@ -1386,11 +1386,8 @@ begin
     if FHP > 1 then
       if ( Player.Statistics.GameTime mod 50 = 0 ) then
         Dec( FHP );
-  if BF_REGENERATE in FFlags then
-    if FHP < 20 then
-      if ( Player.Statistics.GameTime mod 10 = 0 ) then
-        Inc( FHP );
   FSpeedCount := Min( FSpeedCount + FSpeed, 10000 );
+  CallHook( Hook_OnTick, [ Player.Statistics.GameTime ] );
 end;
 
 procedure TBeing.Ressurect( RRange : Byte );

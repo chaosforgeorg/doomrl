@@ -59,6 +59,7 @@ core.register_blueprint "trait"
 	OnPostMove      = { false, core.TFUNC },
 	OnKill          = { false, core.TFUNC },
 	OnDamage        = { false, core.TFUNC },
+	OnTick          = { false, core.TFUNC },
 	OnReceiveDamage = { false, core.TFUNC },
 
 	getDamageBonus   = { false, core.TFUNC },
@@ -147,7 +148,7 @@ core.register_blueprint "affect"
 	status_strength= { false, core.TNUMBER },
 
 	OnAdd          = { false, core.TFUNC },
-	OnTick         = { false, core.TFUNC },
+	OnUpdate       = { false, core.TFUNC },
 	OnRemove       = { false, core.TFUNC },
 
 	getDamageBonus   = { false, core.TFUNC },
@@ -264,6 +265,7 @@ core.register_blueprint "being"
 	OnUseActive     = { false, core.TFUNC },
 	OnPostMove      = { false, core.TFUNC },
 	OnDamage        = { false, core.TFUNC },
+	OnTick          = { false, core.TFUNC },
 	OnReceiveDamage = { false, core.TFUNC },
 
 	getDamageBonus   = { false, core.TFUNC },

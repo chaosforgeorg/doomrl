@@ -65,7 +65,7 @@ function drl.register_affects()
 			self.resist.fire = (self.resist.fire or 0) + 50
 			self.resist.plasma = (self.resist.plasma or 0) + 50
 		end,
-		OnTick         = function(self)
+		OnUpdate        = function(self)
 			ui.msg("You need to taste blood!")
 		end,
 		OnRemove       = function(self)
@@ -99,7 +99,7 @@ function drl.register_affects()
 		OnAdd          = function(self)
 			self.flags[ BF_INV ] = true
 		end,
-		OnTick         = function(self)
+		OnUpdate       = function(self)
 			if self.hp < self.hpmax and not self.flags[ BF_NOHEAL ] then
 				self.hp = self.hpmax
 			end

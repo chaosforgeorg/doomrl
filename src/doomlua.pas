@@ -193,7 +193,7 @@ begin
     AffHooks      := [];
     StatusEff  := TStatusEffect( getInteger('status_effect',0) );
     StatusStr  := getInteger('status_strength',0);
-    if isFunction('OnTick')   then Include(AffHooks, AffectHookOnTick);
+    if isFunction('OnUpdate') then Include(AffHooks, AffectHookOnUpdate);
     if isFunction('OnAdd')    then Include(AffHooks, AffectHookOnAdd);
     if isFunction('OnRemove') then Include(AffHooks, AffectHookOnRemove);
   finally

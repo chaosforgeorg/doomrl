@@ -166,8 +166,8 @@ end;
 
 procedure   TAffects.Run( aAffnum : Byte);
 begin
-  if AffectHookOnTick in Affects[aAffnum].AffHooks then
-    LuaSystem.ProtectedCall( [ 'affects',aAffnum,'OnTick' ] ,[ FOwner as TBeing ]);
+  if AffectHookOnUpdate in Affects[aAffnum].AffHooks then
+    LuaSystem.ProtectedCall( [ 'affects',aAffnum,'OnUpdate' ] ,[ FOwner as TBeing ]);
 end;
 
 destructor TAffects.Destroy;
