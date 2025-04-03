@@ -80,16 +80,19 @@ var i            : Byte;
     iVariant     : Variant;
 begin
   Inc( FValues[ aTrait ] );
-  Inc( FCount );
 
-  with LuaSystem.GetTable(['klasses',aKlass,'trait',aTrait]) do
-  try
-    iMax    := getInteger( 'max', 1 );
-    iMax12  := getInteger( 'max_12', iMax );
-    iMaster := getBoolean( 'master', False );
-  finally
-    Free;
-  end;
+  iMax    := 1;
+  iMax12  := 1;
+  iMaster := False;
+  if aKlass > 0 then
+    with LuaSystem.GetTable(['klasses',aKlass,'trait',aTrait]) do
+    try
+      iMax    := getInteger( 'max', 1 );
+      iMax12  := getInteger( 'max_12', iMax );
+      iMaster := getBoolean( 'master', False );
+    finally
+      Free;
+    end;
 
   FHooks[ aTrait ] := LoadHooks( ['traits',aTrait] );
   FHookMask += FHooks[ aTrait ];
@@ -107,6 +110,8 @@ begin
 
   LuaSystem.ProtectedCall( [ 'traits',aTrait,'OnPick' ], [ Player, FValues[ aTrait ] ] );
 
+  if aKlass = 0 then Exit;
+
   if (FValues[ aTrait ] = 1) and LuaSystem.Defined(['klasses',aKlass,'trait',aTrait,'blocks']) then
   begin
     with LuaSystem.GetTable(['klasses',aKlass,'trait',aTrait,'blocks']) do
@@ -118,6 +123,7 @@ begin
     end;
   end;
 
+  Inc( FCount );
   FOrder[ FCount ] := aTrait;
 end;
 

@@ -141,7 +141,7 @@ function mortem.print_traits()
 
 	for i = 1,traits.__counter do
 		local value = player:get_trait(i)
-		if value > 0 then
+		if value > 0 and traits[i].name ~= "" then
 			player:mortem_print( "    "..mortem.padded(traits[i].name,16).." (Level {!"..value.."})" )
 		end
 	end

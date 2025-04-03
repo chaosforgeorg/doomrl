@@ -456,6 +456,7 @@ begin
       if Player.Traits[iCount] > 0 then
       begin
         iName := LuaSystem.Get(['traits',iCount,'name']);
+        if iName = '' then Continue;
         if iCount < 10 then
         begin
           Inc( iB );

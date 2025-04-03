@@ -2,8 +2,9 @@ function drl.register_klasses()
 
 	register_klass "marine"
 	{
-		name      = "Marine",
-		char      = "M",
+		name       = "Marine",
+		char       = "M",
+		core_trait = "trait_marine",
 
 		traits    = {
 			{ id = "ironman",    max = 3, max_12 = 5 },

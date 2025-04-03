@@ -1,5 +1,13 @@
 function drl.register_traits()
 
+	register_trait "trait_marine"
+	{
+		name = "",
+		abbr = "",
+
+		OnPick = function (being) end,
+	}
+
 	register_trait "ironman"
 	{
 		name   = "Ironman",

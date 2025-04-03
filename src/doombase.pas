@@ -1221,6 +1221,8 @@ until not Option_MenuReturn;
 end;
 
 procedure TDoom.CreatePlayer ( aResult : TMenuResult ) ;
+var iTraitID : AnsiString;
+    iTrait   : Byte;
 begin
   FreeAndNil( UIDs );
   UIDs := Systems.Add(TUIDStore.Create) as TUIDStore;
@@ -1236,6 +1238,12 @@ begin
       else Player.Name := aResult.Name;
 
   LuaSystem.ProtectedCall(['klasses',Player.Klass,'OnPick'], [ Player ] );
+  iTraitID := LuaSystem.Get(['klasses',Player.Klass,'core_trait'] );
+  if iTraitID <> '' then
+  begin
+    iTrait := LuaSystem.Get(['traits',iTraitID,'nid']);
+    Player.Traits.Upgrade( 0, iTrait );
+  end;
   CallHook(Hook_OnCreatePlayer,[]);
   Player.Traits.Upgrade( Player.Klass, aResult.Trait );
   Player.UpdateVisual;

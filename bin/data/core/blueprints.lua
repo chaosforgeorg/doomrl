@@ -96,6 +96,7 @@ core.register_blueprint "klass"
 	desc        = { true,  core.TSTRING },
 	hidden      = { false, core.TBOOL, false },
 	traits      = { true,  core.TARRAY("klass_trait") },
+	core_trait  = { false, core.TIDIN("traits") },
 
 	OnPick      = { false,  core.TFUNC },
 	OnUseActive = { false,  core.TFUNC },
