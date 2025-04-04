@@ -132,8 +132,8 @@ function drl.register_klasses()
 
 		OnPick = function( being )
 			being:add_property( "MAP_EXPERT" )
+			being:add_property( "MOD_EXPERT" )
 			being.flags[ BF_INSTAUSE ] = true
-			being.flags[ BF_MODEXPERT ] = true
 
 			being.eq.weapon = "pistol"
 			being.inv:add( "ammo", { ammo = 20 } )

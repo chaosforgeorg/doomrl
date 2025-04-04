@@ -37,8 +37,6 @@ TItem  = class( TThing )
     function    DescriptionBox( aNewFormat : Boolean = False ) : Ansistring;
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
-    function    CanMod( aModChar : Char; aTechBonus : Integer ) : Boolean;
-    function    AddMod( aModChar : Char; aTechBonus : Integer ) : Boolean;
     function    eqSlot : TEqSlot;
     function    isAmmo : Boolean;
     function    isMelee : Boolean;
@@ -475,49 +473,6 @@ begin
   if ResistDescriptionShort = '' then Exit('') else Exit(' {'+ResistDescriptionShort+'}')
 end;
 
-function TItem.CanMod( aModChar : Char; aTechBonus : Integer ): Boolean;
-var iSum   : Word;
-    iCount : Byte;
-    iMax   : Byte;
-begin
-  if not (aModChar in ['A'..'Z']) then Exit(false);
-  if (IF_UNIQUE in FFlags) and (not (IF_MODABLE in FFlags)) then Exit(False);
-  if IF_NONMODABLE in FFlags then Exit(False);
-  if (not Player.Flags[BF_MODEXPERT]) and ( IF_UNIQUE in FFlags ) then Exit( False );
-
-  iSum := 0;
-  for iCount := Ord('A') to Ord('Z') do iSum += FMods[iCount];
-
-  if (IF_ASSEMBLED in FFlags) then
-    if aTechBonus < (iSum + 2) then
-      Exit( False );
-
-  if (IF_SINGLEMOD in FFlags) and (iSum > 0) then Exit(False);
-
-  if FProps.IType = ITEMTYPE_RANGED
-    then iMax := 1 + 2* aTechBonus
-    else iMax := 1 + aTechBonus;
-
-  if iSum >= iMax then Exit(false);
-
-  case FProps.IType of
-    ITEMTYPE_RANGED :
-        if FMods[Ord(aModChar)] > 2 then Exit(False);
-    ITEMTYPE_MELEE, ITEMTYPE_ARMOR, ITEMTYPE_BOOTS :
-        if FMods[Ord(aModChar)] > 0 then Exit(False);
-    else Exit(False);
-  end;
-  Exit(True);
-end;
-
-function TItem.AddMod( aModChar: char; aTechBonus : Integer ): Boolean;
-begin
-  if not (CanMod(aModChar,aTechBonus)) then Exit( false );
-  Include(FFlags,IF_MODIFIED);
-  Inc(FMods[Ord(aModChar)]);
-  Exit(True);
-end;
-
 function TItem.Preposition( const Item : AnsiString ) : string;
 begin
   if IF_PLURALNAME in FFlags then Exit('');
@@ -670,54 +625,30 @@ begin
   Result := 1;
 end;
 
-function lua_item_add_mod(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
-    iItem  : TItem;
-begin
-  iState.Init(L);
-  iItem := iState.ToObject(1) as TItem;
-  iState.Push( iItem.AddMod( iState.ToChar(2), iState.ToInteger(3) ));
-  Result := 1;
-end;
-
-function lua_item_can_mod(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
-    iItem  : TItem;
-begin
-  iState.Init(L);
-  iItem := iState.ToObject(1) as TItem;
-  iState.Push( iItem.CanMod( iState.ToChar(2), iState.ToInteger(3) ));
-  Result := 1;
-end;
-
 function lua_item_get_mod(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
+var iState : TDoomLuaState;
+    iItem  : TItem;
 begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  State.Push( Item.FMods[ Ord(State.ToChar(2))]);
+  iState.Init(L);
+  iItem := iState.ToObject(1) as TItem;
+  iState.Push( iItem.FMods[ Ord(iState.ToChar(2))]);
   Result := 1;
 end;
 
-function lua_item_clear_mods(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
-    Cnt   : Byte;
+function lua_item_set_mod(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iItem  : TItem;
 begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  for Cnt := Ord('A') to Ord('Z') do
-    Item.FMods[Cnt] := 0;
+  iState.Init(L);
+  iItem := iState.ToObject(1) as TItem;
+  iItem.FMods[ Ord(iState.ToChar(2))] := iState.ToInteger(3);
   Result := 0;
 end;
 
-const lua_item_lib : array[0..5] of luaL_Reg = (
+const lua_item_lib : array[0..3] of luaL_Reg = (
       ( name : 'new';        func : @lua_item_new),
-      ( name : 'add_mod';    func : @lua_item_add_mod),
-      ( name : 'can_mod';    func : @lua_item_can_mod),
       ( name : 'get_mod';    func : @lua_item_get_mod),
-      ( name : 'clear_mods'; func : @lua_item_clear_mods),
+      ( name : 'set_mod';    func : @lua_item_set_mod),
       ( name : nil;          func : nil; )
 );
 
