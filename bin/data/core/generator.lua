@@ -138,6 +138,9 @@ function generator.place_dungen_tile( code, tile_object, tile_pos )
 				level.light[p][flag] = true
 			end
 		end
+		if tile_entry.raw_style then
+			level:set_raw_style( p, tile_entry.raw_style )
+		end
 		if tile_entry.style then
 			level:set_raw_style( p, generator.styles[ tile_entry.style ].style )
 		end
@@ -698,16 +701,18 @@ function generator.generate_archi_level( settings )
 				index = bx + (by-1) * blocks.x
 				index = string.sub( layout, index, index )
 			end
-			local block
-			if index then
-				block = table.random_pick( data[ index ] )
-			else
-			 	block = table.random_pick( data )
+			if index ~= "." then
+				local block
+				if index then
+					block = table.random_pick( data[ index ] )
+				else
+					block = table.random_pick( data )
+				end
+				local pos   = coord( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
+				local tile  = generator.tile_new( level, block, pure_translation, true )
+				tile:flip_random()
+				generator.place_dungen_tile( translation, tile, pos )
 			end
-			local pos   = coord( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
-			local tile  = generator.tile_new( level, block, pure_translation, true )
-			tile:flip_random()
-			generator.place_dungen_tile( translation, tile, pos )
 		end
 	end
 
