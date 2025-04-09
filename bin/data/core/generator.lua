@@ -153,11 +153,17 @@ end
 function generator.create_translation( code )
 	local translation = {}
 	for k,v in pairs(code) do
-		translation[k] = v
-		if type(v) == "table"  then translation[k] = translation[k][1] end
-		if type(v) == "string" then translation[k] = cells[v].nid end
-		if translation[k] == "FLOOR" then translation[k] = generator.styles[ level.style ].floor end
-		if translation[k] == "WALL"  then translation[k] = generator.styles[ level.style ].wall end
+		local value = v
+		if type(value) == "table"  then value = value[1] end
+		if type(value) == "string" then
+				if value == "FLOOR" then value = generator.styles[ level.style ].floor
+			elseif value == "WALL"  then value = generator.styles[ level.style ].wall
+			elseif value == "DOOR"  then value = generator.styles[ level.style ].door
+			else
+				value = cells[value].nid
+			end
+			translation[k] = value
+		end
 	end
 	return translation
 end
@@ -659,6 +665,7 @@ function generator.generate_archi_level( settings )
 			assert( data.size, "malformed data for archi level!" )
 		end
 	end
+	local stop_flip = data.stop_flip or false
 
 	layout = layout or data.layout
 	if layout then
@@ -672,7 +679,9 @@ function generator.generate_archi_level( settings )
 		["+"] = generator.styles[ level.style ].door,
 	}
 
-	level:fill( wall_cell )
+	if not data.no_fill then
+		level:fill( wall_cell )
+	end
 
 	local blocks = data.blocks
 	local bsize  = data.size
@@ -710,7 +719,9 @@ function generator.generate_archi_level( settings )
 				end
 				local pos   = coord( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
 				local tile  = generator.tile_new( level, block, pure_translation, true )
-				tile:flip_random()
+				if not stop_flip then
+					tile:flip_random()
+				end
 				generator.place_dungen_tile( translation, tile, pos )
 			end
 		end
@@ -722,8 +733,12 @@ function generator.generate_archi_level( settings )
 		end
 	end
 
-	generator.restore_walls( wall_cell )
-	generator.generate_fluids(area(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
+	if not data.no_fill then
+		generator.restore_walls( wall_cell )
+	end
+	if not data.no_fluids then
+		generator.generate_fluids(area(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
+	end
 end
 
 function generator.destroy_cell( c )
