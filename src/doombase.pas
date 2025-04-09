@@ -1238,7 +1238,7 @@ begin
       else Player.Name := aResult.Name;
 
   LuaSystem.ProtectedCall(['klasses',Player.Klass,'OnPick'], [ Player ] );
-  iTraitID := LuaSystem.Get(['klasses',Player.Klass,'core_trait'] );
+  iTraitID := LuaSystem.Get(['klasses',Player.Klass,'core_trait'],'' );
   if iTraitID <> '' then
   begin
     iTrait := LuaSystem.Get(['traits',iTraitID,'nid']);
