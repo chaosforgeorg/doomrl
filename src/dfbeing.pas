@@ -1967,38 +1967,39 @@ begin
 end;
 
 function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aSequence : DWord; aDamageMod, aToHitMod, aShotCount, aDamageMult : Integer ) : Boolean;
-var iDirection  : TDirection;
-    iMisslePath : TVisionRay;
-    iOldCoord   : TCoord2D;
-    iTarget     : TCoord2D;
-    iSource     : TCoord2D;
-    iCoord      : TCoord2D;
-    iColor      : Byte;
-    iToHit      : Integer;
-    iDamage     : Integer;
-    iBeing      : TBeing;
-    iAimedBeing : TBeing;
-    iRange      : Byte;
-    iMaxRange   : Byte;
-    iRoll       : TDiceRoll;
-    iRadius     : Byte;
-    iIsHit      : Boolean;
-    iRunDamage  : Boolean;
-    iDodged     : Boolean;
-    iFireDesc   : Ansistring;
-    iSprite     : TSprite;
-    iDuration   : DWord;
-    iSteps      : DWord;
-    iDelay      : DWord;
-    iSound      : DWord;
-    iMissile    : DWord;
-    iDirectHit  : Boolean;
-    iThisUID    : TUID;
-    iItemUID    : TUID;
-    iHit        : Boolean;
-    iLevel      : TLevel;
-    iStart      : TCoord2D;
-    iMaxDamage  : Boolean;
+var iDirection        : TDirection;
+    iMisslePath       : TVisionRay;
+    iOldCoord         : TCoord2D;
+    iTarget           : TCoord2D;
+    iSource           : TCoord2D;
+    iCoord            : TCoord2D;
+    iColor            : Byte;
+    iToHit            : Integer;
+    iDamage           : Integer;
+    iBeing            : TBeing;
+    iAimedBeing       : TBeing;
+    iRange            : Byte;
+    iMaxRange         : Byte;
+    iRoll             : TDiceRoll;
+    iRadius           : Byte;
+    iIsHit            : Boolean;
+    iRunDamage        : Boolean;
+    iDodged           : Boolean;
+    iFireDesc         : Ansistring;
+    iSprite           : TSprite;
+    iDuration         : DWord;
+    iSteps            : DWord;
+    iDelay            : DWord;
+    iSound            : DWord;
+    iMissile          : DWord;
+    iDirectHit        : Boolean;
+    iThisUID          : TUID;
+    iItemUID          : TUID;
+    iHit              : Boolean;
+    iLevel            : TLevel;
+    iStart            : TCoord2D;
+    iMaxDamagePlayer  : Boolean;
+    iMaxDamageWorld   : Boolean;
 begin
   if aItem = nil then Exit( False );
   if not aItem.isWeapon then Exit( False );
@@ -2048,8 +2049,9 @@ begin
 
   iMisslePath.Init( iLevel, iSource, aTarget );
 
-  iMaxDamage := (BF_MAXDAMAGE in FFlags) or (( aItem.Flags[ IF_PISTOL ]) and ( BF_PISTOLMAX in FFlags ) );
-  if iMaxDamage then
+  iMaxDamagePlayer := (( aItem.Flags[ IF_PISTOL ]) and ( BF_PISTOLMAX in FFlags ) );
+  iMaxDamageWorld := (BF_MAXDAMAGE in FFlags);
+  if iMaxDamagePlayer or iMaxDamageWorld then
     iDamage := aItem.maxDamage
   else
     iDamage := aItem.rollDamage;
@@ -2196,7 +2198,7 @@ begin
   begin
     iRoll.Init(aItem.Damage_Dice, aItem.Damage_Sides, aItem.Damage_Add + aDamageMod );
 
-    if iMaxDamage then
+    if iMaxDamageWorld then
       iRoll.Init( 0,0, iRoll.Max );
 
     iSound := IO.Audio.ResolveSoundID([aItem.ID+'.explode',Missiles[iMissile].soundID+'.explode','explode']);
