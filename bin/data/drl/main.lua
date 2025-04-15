@@ -817,10 +817,12 @@ function drl.OnTick( time )
 			ui.msg( "You hear angry growls!" )
 			level.flags[ LF_ENRAGE ] = true
 			for b in level:beings() do
-				b.flags[ BF_HUNTING ] = true
-				b.expvalue = math.ceil( b.expvalue * 0.5 )
-				b.speed    = math.ceil( b.speed * 1.5 )
-				b.accuracy = b.accuracy + 4
+				if not b:is_player() then
+					b.flags[ BF_HUNTING ] = true
+					b.expvalue = math.ceil( b.expvalue * 0.5 )
+					b.speed    = math.ceil( b.speed * 1.5 )
+					b.accuracy = b.accuracy + 4
+				end
 			end
 
 		end
@@ -828,12 +830,14 @@ function drl.OnTick( time )
 end
 
 function drl.OnCreate( this )
-	if level.flags[ LF_ENRAGE ] then
+	if rawget( level, "__ptr" ) and level.flags[ LF_ENRAGE ] then
 		if this:is_being() then
-			this.flags[ BF_HUNTING ] = true
-			this.expvalue = math.ceil( this.expvalue * 0.5 )
-			this.speed    = math.ceil( this.speed * 1.5 )
-			this.accuracy = this.accuracy + 4
+			if not this.flags[ BF_HUNTING ] then
+				this.flags[ BF_HUNTING ] = true
+				this.expvalue = math.ceil( this.expvalue * 0.5 )
+				this.speed    = math.ceil( this.speed * 1.5 )
+				this.accuracy = this.accuracy + 4
+			end
 		end
 	end
 end
