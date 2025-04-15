@@ -154,7 +154,6 @@ TLevel = class(TLuaMapNode, ITextMap)
     property Hooks : TFlags                         read FHooks;
     property FloorCell : Word                       read FFloorCell;
     property FloorStyle : Byte                      read FFloorStyle;
-    property Empty : Boolean                        read FEmpty;
     property Item     [ Index : TCoord2D ] : TItem  read getItem;
     property Being    [ Index : TCoord2D ] : TBeing read getBeing;
     property CellBottom [ Index : TCoord2D ] : Byte read getCellBottom;
@@ -166,6 +165,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     property SpriteTop    [ Index : TCoord2D ] : TSprite read getSpriteTop;
     property SpriteBottom [ Index : TCoord2D ] : TSprite read getSpriteBottom;
   published
+    property Empty        : Boolean    read FEmpty;
     property Status       : Word       read FStatus      write FStatus;
     property Name         : AnsiString read FName        write FName;
     property Name_Number  : Word       read FLNum        write FLNum;
@@ -1130,7 +1130,7 @@ begin
     Inc(FLTime);
     Player.Statistics.OnTick;
 
-    CallHook( Hook_OnTick,[] );
+    CallHook( Hook_OnTick,[ FLTime ] );
 
     if LF_RESPAWN in FFlags  then
     begin

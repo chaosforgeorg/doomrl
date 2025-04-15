@@ -746,7 +746,11 @@ begin
       else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(31,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
 
     iColor := Red;
-    if Doom.Level.Empty then iColor := Blue;
+    if Doom.Level.Empty
+      then iColor := Blue
+      else if Doom.Level.Flags[ LF_ENRAGE ]
+        then iColor := LightMagenta;
+
     iLevelName := Doom.Level.Name;
     if Doom.Level.Name_Number > 0 then
       iLevelName += ' Lev '+IntToStr( Doom.Level.Name_Number );
