@@ -832,11 +832,13 @@ end
 function drl.OnCreate( this )
 	if rawget( level, "__ptr" ) and level.flags[ LF_ENRAGE ] then
 		if this:is_being() then
-			if not this.flags[ BF_HUNTING ] then
-				this.flags[ BF_HUNTING ] = true
-				this.expvalue = math.ceil( this.expvalue * 0.5 )
-				this.speed    = math.ceil( this.speed * 1.5 )
-				this.accuracy = this.accuracy + 4
+			if not this:is_player() then
+				if not this.flags[ BF_HUNTING ] then
+					this.flags[ BF_HUNTING ] = true
+					this.expvalue = math.ceil( this.expvalue * 0.5 )
+					this.speed    = math.ceil( this.speed * 1.5 )
+					this.accuracy = this.accuracy + 4
+				end
 			end
 		end
 	end
