@@ -21,6 +21,17 @@ function aitk.OnAction( self )
 	end
 end
 
+function aitk.get_patrol_area( self, range, can_wander )
+    if not self.patrol_area then
+        if can_wander and (not self:has_property("GROUPED")) and ( math.random(2) == 1 ) then
+            self.patrol_area = area.FULL_SHRINKED
+        else
+            self.patrol_area = area.around( self.position, range ):clamped( area.FULL )
+        end
+    end
+    return self.patrol_area
+end
+
 function aitk.scan( self )
     if self.flags[ BF_FRIENDLY ] then
         local dist   = self.vision+1
@@ -130,10 +141,7 @@ function aitk.flock_idle( self )
         self:play_sound( "act" )
     end
     if not self.move_to then
-        if not self.patrol_area then
-            self.patrol_area = area.around( self.position, 9 ):clamped( area.FULL )
-        end
-        self.move_to = self:flock_target( self.vision, self.flock_min or 1, self.flock_max or 4, self.patrol_area )
+        self.move_to = self:flock_target( self.vision, self.flock_min or 1, self.flock_max or 4, aitk.get_patrol_area( self, 9 ) )
     end
 
     if not cells[ level.map[self.move_to] ].flags[ CF_HAZARD ] or self.flags[ BF_ENVIROSAFE ] == true then
@@ -313,10 +321,7 @@ function aitk.basic_idle( self )
         end
         self.scount = self.scount - 500
     end
-    if not self.patrol_area then
-        self.patrol_area = area.around( self.position, 5 ):clamped( area.FULL )
-    end
-    self.move_to = self.patrol_area:random_coord()
+    self.move_to = aitk.get_patrol_area( self, 5, true ):random_coord()
 	return "idle"
 end
 
@@ -401,10 +406,7 @@ function aitk.basic_smart_idle( self )
             end
         end
         if not next_move then
-            if not self.patrol_area then
-                self.patrol_area = area.around( self.position, 5 ):clamped( area.FULL )
-            end
-            next_move = self.patrol_area:random_coord()
+            next_move = aitk.get_patrol_area( self, 5, true ):random_coord()
         end
         if next_move then
             self.move_to = next_move
@@ -613,10 +615,7 @@ function aitk.charge_idle( self )
         end
         self.scount = self.scount - 500
     end
-    if not self.patrol_area then
-        self.patrol_area = area.around( self.position, 7 ):clamped( area.FULL )
-    end
-    self.move_to = self.patrol_area:random_coord()
+    self.move_to = aitk.get_patrol_area( self, 7, true ):random_coord()
 	return "idle"
 end
 
