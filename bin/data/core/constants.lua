@@ -163,6 +163,7 @@ LF_BEINGSVISIBLE  = 9;
 LF_RESPAWN        = 10;
 LF_SHARPFLUID     = 11;
 LF_BOSS           = 12;
+LF_ENRAGE         = 13;
 
 SF_LARGE      = 1;
 SF_OVERLAY    = 2;
