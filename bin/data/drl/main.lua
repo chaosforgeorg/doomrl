@@ -237,6 +237,7 @@ function drl.register_base_data()
 			end
 
 			self:add_property( "runningtime", 30 )
+			self:add_property( "techbonus", 0 )
 		end,
 
 		--These stubs exist so that modders can hijack them properly

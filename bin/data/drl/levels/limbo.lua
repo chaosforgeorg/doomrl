@@ -19,7 +19,7 @@ register_level "limbo"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "neutral",
 			desc = "raises the bridges",
@@ -33,7 +33,10 @@ register_level "limbo"
 				level:recalc_fluids()
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
+
 		register_item "lever_limboe"
 		{
 			name   = "lever",
@@ -41,7 +44,7 @@ register_level "limbo"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "neutral",
 			desc = "raises the bridges",
@@ -55,6 +58,8 @@ register_level "limbo"
 				level:recalc_fluids()
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
 	end,
 

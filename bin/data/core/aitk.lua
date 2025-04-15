@@ -101,7 +101,7 @@ end
 function aitk.flock_on_attacked( self, target )
     if self == target then return end
     if target and target:has_property("master") then return end
-    local target = target or self.target
+    local target = target or uids.get( self.target )
     for b in level:beings_in_range( self, self.flock_max or 4 ) do
         if b.id == self.id then
             if target then
@@ -207,7 +207,7 @@ function aitk.ammo_check( self )
     local w = self.eq.weapon
     if w.flags[ IF_NOAMMO ] then return true, false end
     if w.ammo >= math.max( w.shotcost, 1 ) then 
-        if w.flags[ IF_PUMPACTION ] and w.flags[ IF_CHAMBEREMPTY ] then return true, true end
+        if w:has_property("pump_action") and w.chamber_empty then return true, true end
         return true, false 
     end
     if self.inv[ items[w.ammoid].id ] then return true, true end
@@ -221,7 +221,7 @@ end
 function aitk.inventory_check( self, can_reload )
     local has_ammo, needs_reload = aitk.ammo_check( self )
     if needs_reload and can_reload then
-        if self:reload() then
+        if self:action_reload() then
             return true, true
         else
             has_ammo = false
@@ -466,7 +466,7 @@ function aitk.try_hunt( self )
         if self:has_property("on_fire") then
             return self.on_fire
         end
-        self:fire( target, self.eq.weapon )
+        self:action_fire( target, self.eq.weapon )
         if sequence == 0 and sequential then
             self.sequence = core.resolve_range( sequential )
         end 

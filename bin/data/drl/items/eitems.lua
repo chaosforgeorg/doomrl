@@ -120,8 +120,13 @@ function drl.register_exotic_items()
 		damagetype    = DAMAGE_SHARPNEL,
 		fire          = 10,
 		reload        = 10,
-		altreload     = RELOAD_FULL,
 		missile       = "sfocused",
+		altreload     = RELOAD_SCRIPT,
+		altreloadname = "full",
+
+		OnAltReload = function( self, being )
+			return being:full_reload( self )
+		end,
 	}
 
 	register_item "upshotgun"
@@ -146,8 +151,6 @@ function drl.register_exotic_items()
 		damagetype    = DAMAGE_PLASMA,
 		fire          = 10,
 		reload        = 20,
-		-- TODO Confirm if plasma shotgun does not use alt-reload
-		--altreload     = RELOAD_FULL,
 		missile       = "splasma",
 	}
 
@@ -298,8 +301,13 @@ function drl.register_exotic_items()
 		fire          = 8,
 		radius        = 3,
 		reload        = 12,
-		altreload     = RELOAD_FULL,
 		missile       = "mrocket",
+		altreload     = RELOAD_SCRIPT,
+		altreloadname = "full",
+
+		OnAltReload = function( self, being )
+			return being:full_reload( self )
+		end,
 	}
 
 	register_item "unplasma"
@@ -823,7 +831,7 @@ function drl.register_exotic_items()
 				item.blastradius = item.blastradius + 2
 			end
 			ui.msg( "You upgrade your weapon!" )
-			item:add_mod( 'F' )
+			item:add_mod( 'F', being.techbonus )
 			return true
 		end,
 	}
@@ -877,7 +885,7 @@ function drl.register_exotic_items()
 			else
 				item.flags[IF_FARHIT] = true
 			end
-			item:add_mod( 'S' )
+			item:add_mod( 'S', being.techbonus )
 			return true
 		end,
 	}
@@ -931,7 +939,7 @@ function drl.register_exotic_items()
 			if not self:has_property( "chosen_item" ) then return true end
 			local item = self.chosen_item
 			ui.msg( "You upgrade your gear!" )
-			item:add_mod( 'N' )
+			item:add_mod( 'N', being.techbonus )
 			if item.flags[ IF_RECHARGE ] then
 				if item.rechargedelay == 0 then
 					item.rechargeamount = item.rechargeamount + 1
@@ -987,7 +995,7 @@ function drl.register_exotic_items()
 			ui.msg( "You upgrade your gear!" )
 			item.durability = 100
 			item.flags[ IF_NODURABILITY ] = true
-			item:add_mod( 'O' )
+			item:add_mod( 'O', being.techbonus )
 			return true
 		end,
 	}

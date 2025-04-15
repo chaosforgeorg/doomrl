@@ -240,7 +240,7 @@ register_level "dis"
 			weight = 0,
 
 			type     = ITEMTYPE_LEVER,
-			flags    = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 			color_id = false,
 
 			good = "dangerous",
@@ -250,6 +250,8 @@ register_level "dis"
 				level:transmute( "wall", "floor" )
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
 
 	end,

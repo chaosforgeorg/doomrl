@@ -1,5 +1,13 @@
 function drl.register_traits()
 
+	register_trait "trait_marine"
+	{
+		name = "",
+		abbr = "",
+
+		OnPick = function (being) end,
+	}
+
 	register_trait "ironman"
 	{
 		name   = "Ironman",
@@ -40,9 +48,12 @@ function drl.register_traits()
 		full   = "You're like a train on legs - not only do you move 15% faster for every level of this trait but you also get an extra 10% chance to dodge those pesky bullets coming your way.",
 		abbr = "HR",
 
-		OnPick = function (being)
-			being.movetime   = being.movetime - 15
-			being.dodgebonus = being.dodgebonus + 10
+		OnPick = function (self)
+			player:upgrade_trait( "trait_hellrunner" )
+			self.movetime   = self.movetime - 15
+		end,
+		getDodgeBonus = function( self )
+			return self.trait_hellrunner * 10
 		end,
 	}
 
@@ -71,7 +82,11 @@ function drl.register_traits()
 		abbr   = "SoB",
 
 		OnPick = function (being)
-			being.todamall = being.todamall + 1
+			player:upgrade_trait( "trait_bitch" )
+		end,
+
+		getDamageBonus = function ( self, weapon, is_melee, alt )
+			return self.trait_bitch
 		end,
 	}
 
@@ -84,7 +99,21 @@ function drl.register_traits()
 		abbr   = "SoG",
 
 		OnPick = function (being)
-			being.pistolbonus = being.pistolbonus + 1
+			player:upgrade_trait( "trait_gun" )
+		end,
+
+		getDamageBonus = function ( self, weapon, is_melee, alt )
+			if weapon and weapon.flags[ IF_PISTOL ] then
+				return self.trait_gun * 3
+			end
+			return 0
+		end,
+
+		getFireCostBonus = function ( self, weapon, is_melee, alt )
+			if weapon and weapon.flags[ IF_PISTOL ] then
+				return self.trait_gun * 10
+			end
+			return 0
 		end,
 	}
 
@@ -110,7 +139,7 @@ function drl.register_traits()
 		abbr   = "EE",
 
 		OnPick = function (being)
-			being.tohit = being.tohit + 2
+			being.accuracy = being.accuracy + 2
 		end,
 	}
 
@@ -123,8 +152,21 @@ function drl.register_traits()
 		abbr   = "Bru",
 
 		OnPick = function (being)
-			being.todam = being.todam + 3
-			being.tohitmelee = being.tohitmelee + 2
+			player:upgrade_trait( "trait_brute" )
+		end,
+
+		getToHitBonus = function ( self, weapon, is_melee, alt )
+			if ( weapon and weapon.itype == ITEMTYPE_MELEE ) or is_melee then
+				return self.trait_brute * 2
+			end
+			return 0
+		end,
+
+		getDamageBonus = function ( self, weapon, is_melee, alt )
+			if ( weapon and weapon.itype == ITEMTYPE_MELEE ) or is_melee then
+				return self.trait_brute * 3
+			end
+			return 0
 		end,
 	}
 
@@ -149,8 +191,46 @@ function drl.register_traits()
 		full   = "You hate this place, you hate these stupid monsters, and you HATE that this is all happening to you. In fact you hate it so much that there's a chance that you'll fly into a berserk rage when you repeatedly smack someone in melee, or get hit hard enough. (NOTE: You do NOT get the healing effect of a Berserk Pack.)",
 		abbr   = "Ber",
 
-		OnPick = function (being)
-			being.flags[ BF_BERSERKER ] = true
+		OnPick = function (self)
+			self:add_property( "berserkerlimit", 0 )
+		end,
+
+		OnDamage = function ( self, target, damage, source, is_melee )
+			if is_melee then
+				if player.enemiesinvision > 0 then
+					if damage >= 10 then
+						self.berserkerlimit = self.berserkerlimit + 1
+						if self.berserkerlimit > 4 - math.min( math.floor( (player.enemiesinvision + 1) / 2), 3 ) then
+							level:play_sound( "bpack", "powerup", self.position )
+							ui.blink( RED, 30 )
+							if self:is_affect( "berserk" ) then
+								local berserk = self:get_affect_time( "berserk" )
+								if berserk > 0 then
+									local increase = 10 - math.min( math.floor( berserk / 10 ), 9 )
+									self:set_affect( "berserk", increase )
+								end
+							else
+								self:set_affect( "berserk", 20 )
+							end
+							ui.msg("You're going berserk!")
+							self.berserkerlimit = 0
+						end
+					end
+				end
+			end
+		end,
+
+		OnPreAction = function ( self )
+			if player.enemiesinvision < 1 and self.berserkerlimit > 0 then
+				self.berserkerlimit = self.berserkerlimit - 1
+			end
+		end,
+
+		OnReceiveDamage = function ( self, damage, weapon, active )
+			if damage >= math.max( math.floor( self.hpmax / 3 ), 10 ) then
+				ui.msg("That hurt! You're going berserk!")
+				self:set_affect( "berserk", 20 )
+			end
 		end,
 	}
 
@@ -191,11 +271,10 @@ function drl.register_traits()
 		abbr   = "Int",
 
 		OnPick = function (being,level)
+			being:add_property( "LEVER_SENSE", level )
 			if level == 1 then
-				being.flags[ BF_LEVERSENSE1 ] = true
 				being.flags[ BF_POWERSENSE  ] = true
 			elseif level == 2 then
-				being.flags[ BF_LEVERSENSE2 ] = true
 				being.flags[ BF_BEINGSENSE  ] = true
 			end
 		end,
@@ -224,9 +303,12 @@ function drl.register_traits()
 		author = "Malek",
 		abbr   = "Bad",
 
-		OnPick = function (being)
-			being.bodybonus  = being.bodybonus + 1
-			being.hpdecaymax = being.hpdecaymax + 50
+		OnPick = function (self)
+			player:upgrade_trait( "trait_badass" )
+			self.hpdecaymax = self.hpdecaymax + 50
+		end,
+		getBodyBonus = function ( self )
+			return self.trait_badass
 		end,
 	}
 
@@ -240,8 +322,17 @@ function drl.register_traits()
 		abbr   = "SM",
 
 		OnPick = function (being)
-			being.flags[ BF_SHOTTYMAN ] = true
-			being.flags[ BF_ROCKETMAN ] = true
+		end,
+
+		OnPostMove = function( being )
+			local weapon = being.eq.weapon
+			if weapon and weapon.itype == ITEMTYPE_RANGED then
+				if weapon.ammo < weapon.ammomax then
+					if ( weapon.flags[ IF_SHOTGUN ] or weapon.flags[ IF_ROCKET ] ) then
+						being:reload()
+					end
+				end
+			end
 		end,
 	}
 
@@ -250,13 +341,21 @@ function drl.register_traits()
 		name   = "Triggerhappy",
 		desc   = "+1 rapid weapon shots per weapon.",
 		quote  = "\"Ooh, I like it! The sugar-sweet kiss of heavy ordinance!\"",
-		full   = "\"Shoot first and shoot fast\" has always been your motto. And nobody shoots faster than you. With each weapon you get an extra rapid shot per level of this trait.",
+		full   = "\"Shoot first and shoot fast\" has always been your motto. And nobody shoots faster than you. With each rapid-fire weapon you get an extra rapid shot per level of this trait.",
 		author = "Kornel",
 		abbr   = "TH",
 
 		OnPick = function (being)
-			being.rapidbonus = being.rapidbonus + 1
+			player:upgrade_trait( "trait_triggerhappy" )
 		end,
+
+		getShotsBonus = function ( self, weapon, alt )
+			if weapon and ( weapon.shots > 2 or (weapon.shots > 1 and (not weapon.flags[ IF_PISTOL ] ) and (not weapon.flags[ IF_SHOTGUN ] ))) then
+				return self.trait_triggerhappy
+			end
+			return 0
+		end,
+
 	}
 
 	register_trait "blademaster"
@@ -270,7 +369,12 @@ function drl.register_traits()
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_CLEAVE ] = true
+		end,
+
+		OnKill = function ( being, target, weapon, melee )
+			if ( not being ) or ( not melee ) then return end
+			ui.msg("Next!")
+			being.scount = 5001
 		end,
 	}
 
@@ -285,7 +389,13 @@ function drl.register_traits()
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_VAMPYRE ] = true
+		end,
+
+		OnKill = function ( being, target, weapon, melee )
+			if ( not being ) or ( not melee ) or ( not target ) then return end
+			if being.hp < being.hpmax then
+				being.hp = math.min( being.hp + math.ceil(target.hpmax / 10), being.hpmax )
+			end
 		end,
 	}
 
@@ -300,8 +410,26 @@ function drl.register_traits()
 
 		OnPick = function (being)
 			being.flags[ BF_DUALBLADE ] = true
-			being.flags[ BF_BLADEDEFEND ] = true
-			being.flags[ BF_BLADEBONUS ] = true
+		end,
+
+		getResistBonus = function ( self, resist, target )
+			local wp = self.eq.prepared
+			if wp and wp.flags[ IF_BLADE ] then
+				return ({
+					bullet = 50,
+					shrapnel = 50,
+					fire = 50,
+					melee = 75,
+				})[ resist ] or 0
+			end
+			return 0
+		end,
+
+		getDamageMul = function( self, weapon, is_melee, alt )
+			if weapon and weapon.flags[ IF_BLADE ] then
+				return 2.0
+			end
+			return 1.0
 		end,
 	}
 
@@ -314,9 +442,24 @@ function drl.register_traits()
 		abbr   = "MBD",
 		master = true,
 
-		OnPick = function (being)
-			being.flags[ BF_BULLETDANCE ] = true
+		OnPick = function (self)
+			assert( self:has_trait( "trait_triggerhappy" ), "bulletdance can be picked without triggerhappy?" )
 		end,
+
+		getShotsBonus = function ( self, weapon, alt )
+			if weapon and weapon.flags[ IF_PISTOL ] and alt == ALT_NONE and weapon.shots < 2 then
+				return self.trait_triggerhappy
+			end
+			return 0
+		end,
+
+		getFireCostBonus = function ( self, weapon, is_melee, alt )
+			if weapon and weapon.flags[ IF_PISTOL ] and alt == ALT_NONE and weapon.shots < 2 then
+				return -self.trait_triggerhappy * 50
+			end
+			return 0
+		end,
+
 	}
 
 	register_trait "gunkata"
@@ -329,9 +472,38 @@ function drl.register_traits()
 		abbr   = "MGK",
 		master = true,
 
-		OnPick = function (being)
-			being.flags[ BF_GUNKATA ] = true
+		OnPick = function (self)
+			self:add_property( "kata_reload", false )
 		end,
+
+		OnKill = function (self, target, weapon, melee )
+			if weapon and weapon.flags[ IF_PISTOL ] then
+				self.kata_reload = true
+			end
+		end,
+		getFireCostMul = function( self, weapon, is_melee, alt )
+			if weapon and weapon.flags[ IF_PISTOL ] then
+				if player.lastturndodge then
+					return 0.1
+				elseif player.last_command == COMMAND_MOVE then
+					return 0.5
+				end
+			end
+			return 1.0
+		end,
+		OnPostAction = function ( self )
+			if self.kata_reload then
+				self.kata_reload = false
+				local sc = self.scount
+				if self.can_dual_reload then
+					self:action_dual_reload( self )
+				else
+					self:action_reload( self )
+				end
+				self.scount = sc
+			end
+		end,
+
 	}
 
 	register_trait "sharpshooter"
@@ -348,22 +520,29 @@ function drl.register_traits()
 		end,
 	}
 
---[[
+	--[[
 	register_trait "regenerator"
 	{
 		name   = "Regenerator",
 		desc   = "Regenerate up to 20 Hp.",
 		quote  = "",
-		full   = "Your skin has unnatural healing abilities. You regenerate up to 10 HP at a rate of +1 per turn.",
+		full   = "Your skin has unnatural healing abilities. You regenerate up to 20 HP at a rate of +1 per turn.",
 		author = "Kornel",
 		abbr   = "MRg",
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_REGENERATE ] = true
-		end
+		end,
+
+		OnTick = function (self, ticks)
+			if ticks % 10 == 0 then
+				if self.hp < 20 and self.hp < self.hpmax then
+					self.hp = self.hp + 1
+				end
+			end
+		end,
 	}
---]]
+	--]]
 
 	register_trait "armydead"
 	{
@@ -383,14 +562,19 @@ function drl.register_traits()
 	register_trait "shottyhead"
 	{
 		name   = "Shottyhead",
-		desc   = "Shotgun fire time is %20",
+		desc   = "Shotgun fire time is %33",
 		quote  = "\"Groovy.\"",
 		full   = "Shotgun is the gun on the move! While you can already reload on the move, this trait allows you to cut firetime to 1/3rd of the original!",
 		abbr   = "MSh",
 		master = true,
 
-		OnPick = function (being)
-			being.flags[ BF_SHOTTYHEAD ] = true
+		OnPick = function (being) end,
+
+		getFireCostBonus = function ( self, weapon, is_melee, alt )
+			if weapon and weapon.flags[ IF_SHOTGUN ] then
+				return 67
+			end
+			return 0
 		end,
 	}
 
@@ -406,6 +590,7 @@ function drl.register_traits()
 
 		OnPick = function (being)
 			being.flags[ BF_FIREANGEL ] = true
+			being.flags[ BF_SPLASHIMMUNE ] = true
 		end,
 	}
 
@@ -420,7 +605,13 @@ function drl.register_traits()
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_AMMOCHAIN ] = true
+		end,
+
+		getAmmoCostMul = function( self, weapon, alt, shots )
+			if weapon and weapon.altfire == ALT_CHAIN then
+				return 1.0 / shots
+			end
+			return 1.0
 		end,
 	}
 
@@ -448,7 +639,20 @@ function drl.register_traits()
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_ENTRENCHMENT ] = true
+		end,
+
+		getResistBonus = function ( self, resist, target )
+			if self.chainfire > 0 then
+				return 50
+			end
+			return 0
+		end,
+
+		getAmmoCostMul = function( self, weapon, alt, shots )
+			if weapon and self.chainfire > 0 and alt == ALT_CHAIN then
+				return 1.0 / shots
+			end
+			return 1.0
 		end,
 	}
 
@@ -461,9 +665,10 @@ function drl.register_traits()
 		abbr   = "MSv",
 		master = true,
 
-		OnPick = function (being)
-			being.flags[ BF_MEDPLUS ] = true
-			being.flags[ BF_HARDY ] = true
+		OnPick = function (self)
+			self:add_property( "MEDKIT_OVERHEAL" )
+			self:add_property( "MEDKIT_BONUS", 2 )
+			self.flags[ BF_HARDY ] = true
 		end,
 	}
 
@@ -478,10 +683,7 @@ function drl.register_traits()
 
 		OnPick = function (being)
 			being.runningtime = being.runningtime * 2
-			being.flags[ BF_NORUNPENALTY ] = true
-			if being:is_affect( "running" ) then
-				being.tohit = being.tohit + 2
-			end
+			being:add_property( "NO_RUN_PENALTY" )
 		end,
 	}
 
@@ -496,7 +698,22 @@ function drl.register_traits()
 
 		OnPick = function (being)
 			being.runningtime = math.floor( being.runningtime * 1.5 )
-			being.flags[ BF_GUNRUNNER ] = true
+		end,
+
+		OnPostMove = function( being )
+			local weapon = being.eq.weapon
+			if weapon and weapon.itype == ITEMTYPE_RANGED then
+				if weapon.flags[ IF_NOAMMO ] or ( weapon.ammo > 0 and weapon.ammo > weapon.shotcost ) and (weapon.shots < 3) then
+					if being:is_affect( "running" ) then
+						local target = being:get_auto_target()
+						if target then
+							local scount = being.scount
+							being:action_fire( target, weapon )
+							being.scount = scount
+						end
+					end
+				end
+			end
 		end,
 	}
 

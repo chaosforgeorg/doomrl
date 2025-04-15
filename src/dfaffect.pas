@@ -1,118 +1,178 @@
 {$INCLUDE doomrl.inc}
 unit dfaffect;
 interface
-uses vutil, dfdata;
+uses classes, vutil, vnode, dfdata, dfthing;
 
-type
-
-{ TAffects }
-
-TAffects = object
-  List : array[1..MAXAFFECT] of LongInt;
-  procedure Clear;
-  procedure Add( affnum : Byte; duration : LongInt );
+type TAffects = class( TVObject )
+  constructor Create( aOwner : TThing );
+  constructor CreateFromStream( aStream : TStream; aOwner : TThing ); reintroduce;
+  procedure WriteToStream( aStream : TStream ); override;
+  function GetBonus( aHook : Byte; const aParams : array of Const ) : Integer;
+  function GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single;
+  procedure Add( aAffnum : Byte; aDuration : LongInt );
   function  Remove( aAffnum : Byte; aSilent : Boolean ) : boolean;
-  procedure Tick;
-  function  IsActive( affnum : Byte ) : boolean;
-  function  IsExpiring( affnum : Byte ) : boolean;
+  procedure OnUpdate;
+  function  IsActive( aAffnum : Byte ) : boolean;
+  function  IsExpiring( aAffnum : Byte ) : boolean;
   function  getEffect : TStatusEffect;
-  function  getTime( affnum : Byte ) : longint;
+  function  getTime( aAffnum : Byte ) : longint;
+  destructor Destroy; override;
 private
-  procedure Run( affnum : Byte );
+  FOwner : TThing;
+  FHooks : TFlags;
+  FList  : array[1..MAXAFFECT] of LongInt;
+  procedure Run( aAffnum : Byte );
   procedure Expire( aAffnum : Byte; aSilent : Boolean );
-
+  procedure UpdateHooks;
 end;
 
 implementation
 
-uses vdebug, vluasystem, dfplayer, doomio;
+uses vdebug, vluasystem, vuid, dfbeing, dfplayer, doomio, doomhooks;
 
-procedure TAffects.Clear;
-var aff : Word;
+constructor TAffects.Create( aOwner : TThing );
+var iAff : Word;
 begin
-  for aff := 1 to MAXAFFECT do
-    List[aff] := 0;
+  FOwner := aOwner;
+  FHooks := [];
+  for iAff := 1 to MAXAFFECT do
+    FList[iAff] := 0;
 end;
 
-function    TAffects.IsActive(affnum : Byte) : boolean;
+constructor TAffects.CreateFromStream( aStream : TStream; aOwner : TThing );
 begin
-  Exit(List[affnum] <> 0);
+  inherited CreateFromStream( aStream );
+  FOwner := aOwner;
+  aStream.Read( FList, SizeOf( FList ) );
+  UpdateHooks;
 end;
 
-function TAffects.IsExpiring(affnum : Byte): boolean;
+procedure TAffects.WriteToStream( aStream : TStream );
 begin
-  Exit(List[affnum] <= 5);
-  IO.Msg( LuaSystem.Get([ 'affects', affnum, 'message_ending' ],'') );
+  inherited WriteToStream( aStream );
+  aStream.Write( FList, SizeOf( FList ) );
+end;
+
+function TAffects.GetBonus( aHook : Byte; const aParams : array of Const ) : Integer;
+var i : Integer;
+begin
+  GetBonus := 0;
+  if aHook in FHooks then
+    for i := 1 to MAXAFFECT do
+      if FList[i] <> 0 then
+        if aHook in Affects[i].Hooks then
+          GetBonus += LuaSystem.ProtectedCall( [ 'affects',i, HookNames[ aHook ] ], ConcatConstArray( [FOwner], aParams ) );
+end;
+
+function TAffects.GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single;
+var i : Integer;
+begin
+  GetBonusMul := 1.0;
+  if aHook in FHooks then
+    for i := 1 to MAXAFFECT do
+      if FList[i] <> 0 then
+        if aHook in Affects[i].Hooks then
+          GetBonusMul *= LuaSystem.ProtectedCall( [ 'affects',i, HookNames[ aHook ] ], ConcatConstArray( [FOwner], aParams ) );
+end;
+
+function TAffects.IsActive( aAffnum : Byte ) : boolean;
+begin
+  Exit( FList[aAffnum] <> 0 );
+end;
+
+function TAffects.IsExpiring(aAffnum : Byte): boolean;
+begin
+  Exit(FList[aAffnum] <= 5);
 end;
 
 function TAffects.getEffect : TStatusEffect;
-var cn : DWord;
-    st : DWord;
+var iCount    : DWord;
+    iStrength : DWord;
 begin
   getEffect := StatusNormal;
-  st := 0;
-  for cn := 1 to MAXAFFECT do
-    if List[cn] <> 0 then
-      if Affects[cn].StatusStr > st then
+  iStrength := 0;
+  for iCount := 1 to MAXAFFECT do
+    if FList[iCount] <> 0 then
+      if Affects[iCount].StatusStr > iStrength then
       begin
-        getEffect := Affects[cn].StatusEff;
-        st        := Affects[cn].StatusStr;
+        getEffect := Affects[iCount].StatusEff;
+        iStrength := Affects[iCount].StatusStr;
       end;
 end;
 
-function TAffects.getTime(affnum: Byte): longint;
+function TAffects.getTime( aAffnum : Byte ) : longint;
 begin
-  Exit(List[affnum]);
+  Exit(FList[aAffnum]);
 end;
 
-procedure   TAffects.Add(affnum : Byte; duration : LongInt);
+procedure   TAffects.Add( aAffnum : Byte; aDuration : LongInt );
 begin
-  if duration     = 0  then Exit;
-  if List[affnum] = 0  then
+  if aDuration      = 0  then Exit;
+  if FList[aAffnum] = 0  then
   begin
-    IO.Msg( LuaSystem.Get([ 'affects', affnum, 'message_init' ],'') );
-    if AffectHookOnAdd in Affects[affnum].Hooks then
-      LuaSystem.ProtectedCall( [ 'affects',affnum,'OnAdd' ],[Player]);
+    if FOwner is TPlayer then
+      IO.Msg( LuaSystem.Get([ 'affects', aAffnum, 'message_init' ],'') );
+    if AffectHookOnAdd in Affects[aAffnum].AffHooks then
+      LuaSystem.ProtectedCall( [ 'affects',aAffnum,'OnAdd' ],[ FOwner as TBeing ]);
   end;
-  if List[affnum] >= 0
-    then List[affnum] += duration;
-  if duration = -1
-    then List[affnum] := duration;
+  if FList[aAffnum] >= 0
+    then FList[aAffnum] += aDuration;
+  if aDuration = -1
+    then FList[aAffnum] := aDuration;
+  UpdateHooks;
 end;
 
 function TAffects.Remove( aAffnum: Byte; aSilent: Boolean ): boolean;
 begin
   Remove := True;
-  if List[ aAffnum] = 0 then Exit(false);
+  if FList[ aAffnum] = 0 then Exit(false);
   Expire( aAffnum, aSilent );
 end;
 
-procedure    TAffects.Expire( aAffnum : Byte; aSilent : Boolean );
+procedure TAffects.Expire( aAffnum : Byte; aSilent : Boolean );
 begin
-  List[ aAffnum ] := 0;
-  if AffectHookOnRemove in Affects[ aAffnum ].Hooks then
-    LuaSystem.ProtectedCall( [ 'affects',aAffnum,'OnRemove'],[Player]);
-  if not aSilent then
+  FList[ aAffnum ] := 0;
+  if AffectHookOnRemove in Affects[ aAffnum ].AffHooks then
+    LuaSystem.ProtectedCall( [ 'affects',aAffnum,'OnRemove'],[ FOwner as TBeing ]);
+  if FOwner is TPlayer and ( not aSilent ) then
     IO.Msg( LuaSystem.Get([ 'affects', aAffnum, 'message_done' ],'') );
+  UpdateHooks;
 end;
 
-procedure   TAffects.Tick;
-var cn : DWord;
+procedure TAffects.UpdateHooks;
+var i : Integer;
 begin
-  for cn := 1 to MAXAFFECT do
-    if List[cn] <> 0 then
+  FHooks := [];
+  for i := 1 to MAXAFFECT do
+    if FList[i] <> 0 then
+      FHooks += Affects[i].Hooks;
+end;
+
+procedure   TAffects.OnUpdate;
+var iCount   : DWord;
+    iThisUID : DWord;
+begin
+  iThisUID := FOwner.UID;
+  for iCount := 1 to MAXAFFECT do
+    if FList[iCount] <> 0 then
       begin
-        if List[cn] > 0  then Dec(List[cn]);
-        if List[cn] = 5  then IO.Msg( LuaSystem.Get([ 'affects', cn, 'message_ending' ],'') );
-        if List[cn] <> 0 then Run(cn)
-                         else Expire( cn, False );
+        if FList[iCount] > 0  then Dec( FList[iCount] );
+        if FList[iCount] = 5  then if FOwner is TPlayer then IO.Msg( LuaSystem.Get([ 'affects', iCount, 'message_ending' ],'') );
+        if FList[iCount] <> 0 then Run( iCount )
+                              else Expire( iCount, False );
+        if UIDs[ iThisUID ] = nil then Exit;
       end;
 end;
 
-procedure   TAffects.Run(affnum : Byte);
+procedure   TAffects.Run( aAffnum : Byte);
 begin
-  if AffectHookOnTick in Affects[affnum].Hooks then
-    LuaSystem.ProtectedCall( [ 'affects',affnum,'OnTick' ] ,[Player]);
+  if AffectHookOnUpdate in Affects[aAffnum].AffHooks then
+    LuaSystem.ProtectedCall( [ 'affects',aAffnum,'OnUpdate' ] ,[ FOwner as TBeing ]);
+end;
+
+destructor TAffects.Destroy;
+begin
+  inherited Destroy;
 end;
 
 end.

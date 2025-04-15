@@ -57,9 +57,9 @@ function lua_statistics_get(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  Player.FStatistics.Update;
+  Player.Statistics.Update;
   // Unused parameter #1 is self
-  State.Push( Player.FStatistics.Map[ State.ToString( 2 ) ] );
+  State.Push( Player.Statistics[ State.ToString( 2 ) ] );
   Result := 1;
 end;
 
@@ -68,7 +68,7 @@ var State : TDoomLuaState;
 begin
   State.Init(L);
   // Unused parameter #1 is self
-  Player.FStatistics.Map[ State.ToString( 2 ) ] := State.ToInteger( 3 );
+  Player.Statistics.Assign( State.ToString( 2 ), State.ToInteger( 3 ) );
   Result := 0;
 end;
 
@@ -76,7 +76,7 @@ function lua_statistics_inc(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  Player.IncStatistic( State.ToString( 1 ), State.ToInteger( 2 ) );
+  Player.Statistics.Increase( State.ToString( 1 ), State.ToInteger( 2 ) );
   Result := 0;
 end;
 
@@ -190,15 +190,16 @@ begin
     Name       := getString('name');
     Color      := getInteger('color');
     Color_exp  := getInteger('color_expire');
-    Hooks      := [];
+    AffHooks      := [];
     StatusEff  := TStatusEffect( getInteger('status_effect',0) );
     StatusStr  := getInteger('status_strength',0);
-    if isFunction('OnTick')   then Include(Hooks, AffectHookOnTick);
-    if isFunction('OnAdd')    then Include(Hooks, AffectHookOnAdd);
-    if isFunction('OnRemove') then Include(Hooks, AffectHookOnRemove);
+    if isFunction('OnUpdate') then Include(AffHooks, AffectHookOnUpdate);
+    if isFunction('OnAdd')    then Include(AffHooks, AffectHookOnAdd);
+    if isFunction('OnRemove') then Include(AffHooks, AffectHookOnRemove);
   finally
     Free;
   end;
+  Affects[mID].Hooks := LoadHooks( ['affects',mID] );
   Result := 0;
 end;
 
@@ -261,7 +262,7 @@ function lua_core_game_time(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  State.Push(Player.FStatistics.GameTime);
+  State.Push(Player.Statistics.GameTime);
   Result := 1;
 end;
 

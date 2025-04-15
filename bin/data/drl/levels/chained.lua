@@ -71,7 +71,7 @@ register_level "the_chained_court"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "dangerous",
 			desc = "opens cage",
@@ -88,6 +88,8 @@ register_level "the_chained_court"
 				end
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
 
 		register_item "lever_chain2"
@@ -97,7 +99,7 @@ register_level "the_chained_court"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "dangerous",
 			desc = "opens cage",
@@ -114,6 +116,8 @@ register_level "the_chained_court"
 				end
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
 
 		register_item "lever_chain3"
@@ -124,7 +128,7 @@ register_level "the_chained_court"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "dangerous",
 			desc = "opens cage",
@@ -141,6 +145,8 @@ register_level "the_chained_court"
 				end
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
 
 		register_being "arenamaster"
@@ -154,8 +160,8 @@ register_level "the_chained_court"
 			hp           = 80,
 			armor        = 2,
 			attackchance = 50,
-			todam        = 6,
-			tohit        = 2,
+			strength     = 3,
+			accuracy     = 2,
 			speed        = 160,
 			min_lev      = 200,
 			corpse       = "corpse",

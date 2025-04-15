@@ -68,8 +68,8 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
-    procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Integer = 0 );
-    procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; Shotgun : TShotgunData; aItem : TItem );
+    procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+    procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Single; Shotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
     function isEmpty( const coord : TCoord2D; EmptyFlags : TFlags32 = []) : Boolean; override;
@@ -123,24 +123,24 @@ TLevel = class(TLuaMapNode, ITextMap)
     function  getBeing( const coord : TCoord2D ) : TBeing; override;
     function  getItem( const coord : TCoord2D ) : TItem; override;
   private
-    FMap         : TMap;
-    FStatus      : Word; // level result
-    FStyle       : Byte;
+    FMap           : TMap;
+    FStatus        : Word; // level result
+    FStyle         : Byte;
 
-    FLNum        : Word;
-    FLTime       : DWord;
-    FEmpty       : Boolean;
+    FLNum          : Word;
+    FLTime         : DWord;
+    FEmpty         : Boolean;
 
-    FDangerLevel : Word;
-    FToHitBonus  : Integer;
+    FDangerLevel   : Word;
+    FAccuracyBonus : Integer;
 
-    FActiveBeing : TBeing;
-    FNextNode    : TNode;
+    FActiveBeing   : TBeing;
+    FNextNode      : TNode;
 
-    FFloorCell   : Word;
-    FFloorStyle  : Byte;
-    FFeeling     : AnsiString;
-    FSpecExit    : AnsiString;
+    FFloorCell     : Word;
+    FFloorStyle    : Byte;
+    FFeeling       : AnsiString;
+    FSpecExit      : AnsiString;
   private
     function getCellBottom( Index : TCoord2D ): Byte;
     function getCellTop( Index : TCoord2D ): Byte;
@@ -150,7 +150,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function getSpriteTop( Index : TCoord2D ): TSprite;
     function getSpriteBottom( Index : TCoord2D ): TSprite;
   public
-    property ToHitBonus : Integer                   read FToHitBonus;
+    property AccuracyBonus : Integer                read FAccuracyBonus;
     property Hooks : TFlags                         read FHooks;
     property FloorCell : Word                       read FFloorCell;
     property FloorStyle : Byte                      read FFloorStyle;
@@ -178,7 +178,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
 implementation
 
-uses typinfo, vluadungen, vluatools, vluasystem,
+uses math, typinfo, vluatools, vluasystem,
      vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomgfxio,
      doomspritemap, doomhudviews;
 
@@ -315,7 +315,7 @@ function TLevel.getGylph(const aCoord: TCoord2D): TIOGylph;
         COLOR_LAVA  : if Mod2 then aAtr := YELLOW   else aAtr := RED;
         COLOR_BLOOD : if Mod2 then aAtr := LIGHTRED else aAtr := RED;
         COLOR_MUD   : if Mod2 then aAtr := YELLOW   else aAtr := BROWN;
-        MULTIPORTAL : case (( Player.FStatistics.GameTime div 10 ) mod 3) of
+        MULTIPORTAL : case (( Player.Statistics.GameTime div 10 ) mod 3) of
                         0 : aAtr := LIGHTMAGENTA;
                         1 : aAtr := MAGENTA;
                         2 : aAtr := WHITE;
@@ -426,7 +426,7 @@ begin
   FLTime  := Stream.ReadDWord();
   Stream.Read( FEmpty, SizeOf( FEmpty ) );
   FDangerLevel := Stream.ReadWord();
-  Stream.Read( FToHitBonus, SizeOf( FToHitBonus ) );
+  Stream.Read( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
   FFloorCell   := Stream.ReadWord();
   FFloorStyle  := Stream.ReadByte();
   FID          := Stream.ReadAnsiString();
@@ -451,7 +451,7 @@ begin
   Stream.WriteDWord( FLTime );
   Stream.Write( FEmpty, SizeOf( FEmpty ) );
   Stream.WriteWord( FDangerLevel );
-  Stream.Write( FToHitBonus, SizeOf( FToHitBonus ) );
+  Stream.Write( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
   Stream.WriteWord( FFloorCell );
   Stream.WriteByte( FFloorStyle );
   Stream.WriteAnsiString( aID );
@@ -502,10 +502,10 @@ begin
   FHooks := [];
   FFeeling := '';
 
-  FFloorCell  := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
-  FFloorStyle := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
+  FFloorCell     := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
+  FFloorStyle    := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
   if LuaSystem.Get(['diff',Doom.Difficulty,'respawn']) then Include( FFlags, LF_RESPAWN );
-  FToHitBonus := LuaSystem.Get(['diff',Doom.Difficulty,'tohitbonus']);
+  FAccuracyBonus := LuaSystem.Get(['diff',Doom.Difficulty,'accuracybonus']);
 end;
 
 procedure TLevel.AfterGeneration( aGenerated : Boolean );
@@ -597,15 +597,15 @@ begin
   if LF_BONUS in FFlags then
     if Hook_OnCompletedCheck in FHooks then
     begin
-      if RawCallHookCheck( Hook_OnCompletedCheck,[] ) then Player.IncStatistic('bonus_levels_completed');
+      if RawCallHookCheck( Hook_OnCompletedCheck,[] ) then Player.Statistics.Increase('bonus_levels_completed');
     end
     else
-      if EnemiesLeft() = 0 then Player.IncStatistic('bonus_levels_completed');
+      if EnemiesLeft() = 0 then Player.Statistics.Increase('bonus_levels_completed');
 
 
   if (not (LF_BONUS in FFlags)) and (Player.HP > 0) then
   begin
-    TimeDiff :=  Player.FStatistics.GameTime - Player.FStatistics.Map['entry_time'];
+    TimeDiff :=  Player.Statistics.GameTime - Player.Statistics['entry_time'];
     if TimeDiff < 100 then
       Player.AddHistory(Format('He left level %d as soon as possible.',[Player.CurrentLevel]));
   end;
@@ -861,7 +861,7 @@ begin
   end;
 end;
 
-procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Integer = 0 );
+procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
 var a     : TCoord2D;
     iDamage : Integer;
     dir   : TDirection;
@@ -888,7 +888,7 @@ begin
         iDamage := Damage.Roll;
         if not (efNoDistanceDrop in aFlags) then
           iDamage := iDamage div Max(1,(Distance(a,coord)+1) div 2);
-        iDamage := ApplyMul( iDamage, aDamageMult );
+        iDamage := Floor( iDamage * aDamageMult );
         DamageTile( a, iDamage, DamageType );
         if Being[a] <> nil then
         with Being[a] do
@@ -905,7 +905,7 @@ begin
             Knockback( dir, iDamage div iKnockbackValue );
           end;
           KnockBacked := True;
-          if (Flags[BF_FIREANGEL]) and (not aDirectHit) then Continue;
+          if (Flags[BF_SPLASHIMMUNE]) and (not aDirectHit) then Continue;
           if (efSelfHalf in aFlags) and isActive then iDamage := iDamage div 2;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
           ApplyDamage( iDamage, Target_Torso, DamageType, aItem );
@@ -925,7 +925,7 @@ begin
   if aContent <> 0 then RecalcFluids;
 end;
 
-procedure TLevel.Shotgun( source, target : TCoord2D; Damage : TDiceRoll; Shotgun : TShotgunData; aItem : TItem );
+procedure TLevel.Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Single; Shotgun : TShotgunData; aItem : TItem );
 var a,b,tc  : TCoord2D;
     d       : Single;
     dmg     : Integer;
@@ -977,6 +977,8 @@ begin
     if LightFlag[ tc, lfDamage ] then
       begin
         dmg := Round(Damage.Roll * (1.0-Reduce*Max(1,Distance( source, tc ))));
+        dmg := Floor( dmg * aDamageMul );
+
         if (dmg < 1) then dmg := 1;
         
         if Being[ tc ] <> nil then
@@ -1123,11 +1125,10 @@ procedure TLevel.Tick;
 var iNode : TNode;
 begin
   FActiveBeing := nil;
-  Player.LastTurnDodge := False;
   repeat
 
     Inc(FLTime);
-    Inc(Player.FStatistics.GameTime);
+    Player.Statistics.OnTick;
 
     CallHook( Hook_OnTick,[] );
 
@@ -1191,7 +1192,7 @@ begin
     end
     else
     begin
-      Player.IncStatistic('levels_nuked');
+      Player.Statistics.Increase('levels_nuked');
       if Doom.State in [DSNextLevel,DSSaving] then
       begin
         IO.Msg('Right in the nick of time!');
@@ -1396,9 +1397,7 @@ begin
     with Being[ aWhere ] do
       AddInfo( GetName( false ) + ' (' + WoundStatus + ')' );
     if aBeingOnly then Exit;
-    if Item[ aWhere ] <> nil then
-      if Item[ aWhere ].isLever then AddInfo( Player.DescribeLever( Item[ aWhere ] ) )
-                                else AddInfo( Item[ aWhere ].GetName( false ) );
+    if Item[ aWhere ] <> nil then AddInfo( Item[ aWhere ].GetExtName( False ) );
     if CellHook_OnDescribe in Cells[ Cell[ aWhere ] ].Hooks then
        AddInfo( CallHook( aWhere, CellHook_OnDescribe ) )
     else
@@ -1471,12 +1470,14 @@ begin
 end;
 
 function lua_level_play_sound(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Level : TLevel;
+var iState : TDoomLuaState;
+    iLevel : TLevel;
 begin
-  State.Init(L);
-  Level := State.ToObject(1) as TLevel;
-  Level.playSound( IO.Audio.ResolveSoundID( [State.ToString(2)] ), State.ToPosition(3), State.ToInteger(4,0) );
+  iState.Init(L);
+  iLevel := iState.ToObject(1) as TLevel;
+  if iState.IsString(3)
+    then iLevel.playSound( iState.ToString(2), iState.ToString(3), iState.ToPosition(4) )
+    else iLevel.playSound( IO.Audio.ResolveSoundID( [iState.ToString(2)] ), iState.ToPosition(3), iState.ToInteger(4,0) );
   Result := 0;
 end;
 

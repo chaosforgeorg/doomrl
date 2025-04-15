@@ -151,10 +151,7 @@ function drl.register_regular_items()
 		OnPickup = function(self,being)
 			being:msg("You feel better.")
 			being:remove_affect( "tired" )
-			local amount =  10 * diff[DIFFICULTY].powerfactor
-			if being.flags[ BF_MEDPLUS ] then
-				amount = amount * 2
-			end
+			local amount = math.floor( 10 * diff[DIFFICULTY].powerfactor * being:get_property( "MEDKIT_BONUS", 1 ) )
 			being.hp = math.min( being.hp +  amount, 2*being.hpmax )
 		end,
 	}
@@ -229,10 +226,7 @@ function drl.register_regular_items()
 		OnPickup = function(self,being)
 			being:msg("You feel like new!")
 			being:remove_affect( "tired" )
-			local amount =  10 * diff[DIFFICULTY].powerfactor
-			if being.flags[ BF_MEDPLUS ] then
-				amount = amount * 2
-			end
+			local amount = math.floor( 10 * diff[DIFFICULTY].powerfactor * being:get_property( "MEDKIT_BONUS", 1 ) )
 			being.hp = math.min( being.hp + amount, 2*being.hpmax )
 			if being.hp < being.hpmax then
 				being.hp = being.hpmax
@@ -284,7 +278,7 @@ function drl.register_regular_items()
 				end
 			end
 			level.flags[ LF_ITEMSVISIBLE ] = true
-			if being.flags[BF_MAPEXPERT] then
+			if being:has_property( "MAP_EXPERT" ) then
 				being:msg( "You download tracking data to your PDA." )
 				level.flags[ LF_BEINGSVISIBLE ] = true
 			end
@@ -619,7 +613,7 @@ function drl.register_regular_items()
 		group    = "weapon-shotgun",
 		desc     = "Nothing beats the sound of pumping a combat shotgun.",
 		firstmsg = "Pump'n'roll!",
-		flags    = { IF_SHOTGUN, IF_PUMPACTION, IF_SINGLERELOAD },
+		flags    = { IF_SHOTGUN, IF_SINGLERELOAD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -628,8 +622,70 @@ function drl.register_regular_items()
 		damagetype    = DAMAGE_SHARPNEL,
 		fire          = 10,
 		reload        = 10,
-		altreload     = RELOAD_FULL,
+		altreload     = RELOAD_SCRIPT,
+		altreloadname = "full",
 		missile       = "sfocused",
+		
+		OnCreate = function(self)
+			self:add_property( "pump_action", true )
+			self:add_property( "chamber_empty", false )
+		end,
+
+		OnPostMove = function( self, being )
+			if not self.pump_action then return end
+			if self.chamber_empty and self.ammo > 0 then
+				level:play_sound( self.id, "pump", being.position )
+				self.chamber_empty = false
+				if being:is_player() then
+					ui.msg( "You pump a shell into the shotgun chamber." )
+				end
+			end
+		end,
+
+		OnFire = function( self, being )
+			if not self.pump_action then return true end
+			if self.chamber_empty and self.ammo > 0 then
+				if being:is_player() then
+					ui.msg( "Shell chamber empty - move or reload!" )
+				end
+				return false
+			end
+			return true
+		end,
+
+		OnFired = function( self, being )
+			if not self.pump_action then return end
+			self.chamber_empty = true
+		end,
+
+		OnPreReload = function( self, being )
+			if not self.pump_action then return true end
+			if self.flags[ IF_NOAMMO ] or self.ammo > 0 then
+				if self.chamber_empty then
+					self.chamber_empty = false
+					level:play_sound( self.id, "pump", being.position )
+					if being:is_player() then
+						ui.msg( "You pump a shell into the "..self.name.." chamber." )
+					end
+					being.scount = being.scount - 200
+					return false
+				end
+			end
+			return true
+		end,
+
+		OnReload = function( self, being, ammo, is_pack )
+			if not self.pump_action then return true end
+			being:reload( ammo, true, true ) -- reduces scount
+			local pack = ""
+			if is_pack then pack = "quickly " end
+			being:msg("You "..pack.."load a shell into the "..self.name..".", being:get_name(true,true).." loads a shell into his "..self.name.."." )
+			return true
+		end,
+		
+		OnAltReload = function( self, being )
+			return being:full_reload( self )
+		end,
 	}
 
 	register_item "bazooka"
@@ -757,16 +813,14 @@ function drl.register_regular_items()
 				if isPlayer then 
 					being:remove_affect( "tired" )
 				end
-				if being.hp >= being.hpmax * 2 or ( not being.flags[ BF_MEDPLUS ] and being.hp >= being.hpmax ) then
+				local overheal = being:has_property("MEDKIT_OVERHEAL")
+				if being.hp >= being.hpmax * 2 or ( not overheal and being.hp >= being.hpmax ) then
 					being:msg("Nothing happens.")
 					return true
 				end
-				local amount = (being.hpmax * diff[DIFFICULTY].powerfactor) / 4 + 2
-				if being.flags[ BF_MEDPLUS ] then
-					amount = amount * 2
-				end
+				local amount = math.floor( ( (being.hpmax * diff[DIFFICULTY].powerfactor) / 4 + 2 ) * being:get_property( "MEDKIT_BONUS", 1 ) )
 				being.hp = math.min( being.hp + amount, being.hpmax * 2 )
-				if not being.flags[ BF_MEDPLUS ] then being.hp = math.min( being.hp, being.hpmax ) end
+				if not overheal then being.hp = math.min( being.hp, being.hpmax ) end
 				being:msg("You feel healed.",being:get_name(true,true).." looks healthier!")
 			end
 			return true
@@ -794,13 +848,14 @@ function drl.register_regular_items()
 				if isPlayer then 
 					being:remove_affect( "tired" )
 				end
-				if being.hp >= being.hpmax * 2 or ( not being.flags[ BF_MEDPLUS ] and being.hp >= being.hpmax ) then
+				local overheal = being:has_property("MEDKIT_OVERHEAL")
+				if being.hp >= being.hpmax * 2 or ( (not overheal) and being.hp >= being.hpmax ) then
 					being:msg("Nothing happens.")
 					return true
 				end
 				being.hp = math.min( being.hp + (being.hpmax * diff[DIFFICULTY].powerfactor) / 2 + 2, being.hpmax * 2)
 				being.hp = math.max( being.hp, being.hpmax )
-				if not being.flags[ BF_MEDPLUS ] then being.hp = math.min( being.hp, being.hpmax ) end
+				if not overheal then being.hp = math.min( being.hp, being.hpmax ) end
 				being:msg("You feel fully healed.",being:get_name(true,true).." looks a lot healthier!")
 			end
 			return true
@@ -1002,7 +1057,7 @@ function drl.register_regular_items()
 			elseif item.itype == ITEMTYPE_BOOTS then
 				item.armor = item.armor * 2
 			end
-			item:add_mod('P')
+			item:add_mod( 'P', being.techbonus )
 			return true
 		end,
 	}
@@ -1057,7 +1112,7 @@ function drl.register_regular_items()
 				item.resist.fire     = (item.resist.fire or 0)     + 10
 				item.resist.plasma   = (item.resist.plasma or 0)   + 10
 			end
-			item:add_mod('T')
+			item:add_mod( 'T', being.techbonus )
 			return true
 		end,
 	}
@@ -1116,7 +1171,7 @@ function drl.register_regular_items()
 			elseif item.itype == ITEMTYPE_BOOTS then
 				item.movemod = item.movemod + 10
 			end
-			item:add_mod('A')
+			item:add_mod( 'A', being.techbonus )
 			-- A little easter egg for applying A-mod on shotgun
 			if item.flags[ IF_SHOTGUN ] then
 				ui.msg( "You suddenly feel a little silly." )
@@ -1188,7 +1243,7 @@ function drl.register_regular_items()
 				item.maxdurability = item.maxdurability + 100
 				item.movemod = item.movemod - 10
 			end
-			item:add_mod('B')
+			item:add_mod( 'B', being.techbonus )
 			return true
 		end,
 	}
@@ -1307,6 +1362,8 @@ function drl.register_regular_items()
 		warning    = "The air is really humid here...",
 		fullchance = 50,
 
+		flags  = { IF_FEATURENAME },
+
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
 		end,
@@ -1316,7 +1373,10 @@ function drl.register_regular_items()
 			level:flood( "water", self.target_area )
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
+		
 
 	register_item "lever_flood_acid"
 	{
@@ -1331,6 +1391,8 @@ function drl.register_regular_items()
 		desc       = "floods with acid",
 		warning    = "In the State of Denmark there was the odor of decay...",
 		fullchance = 10,
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
@@ -1347,6 +1409,8 @@ function drl.register_regular_items()
 			level:flood( "acid", self.target_area )
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_flood_lava"
@@ -1363,6 +1427,8 @@ function drl.register_regular_items()
 		warning    = "You feel that smell? That gasoline smell? Oh hell...",
 		fullchance = 10,
 
+		flags  = { IF_FEATURENAME },
+
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
 		end,
@@ -1377,6 +1443,8 @@ function drl.register_regular_items()
 			level:flood( "lava", self.target_area )
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_kill"
@@ -1393,6 +1461,8 @@ function drl.register_regular_items()
 		warning    = "The smell of a massacre...",
 		fullchance = 33,
 
+		flags  = { IF_FEATURENAME },
+
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
 		end,
@@ -1407,6 +1477,8 @@ function drl.register_regular_items()
 			ui.msg("The smell of blood surrounds you!")
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_explode"
@@ -1422,6 +1494,8 @@ function drl.register_regular_items()
 		desc       = "forces explosions",
 		fullchance = 100,
 
+		flags  = { IF_FEATURENAME },
+
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
 		end,
@@ -1436,6 +1510,8 @@ function drl.register_regular_items()
 			end
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_walls"
@@ -1451,6 +1527,8 @@ function drl.register_regular_items()
 		desc       = "destroys walls",
 		warning    = "You hear the trumpets of Jericho echoing in the distance...",
 		fullchance = 33,
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function(self)
 			self:add_property( "target_area", area.FULL_SHRINKED:clone() )
@@ -1471,6 +1549,8 @@ function drl.register_regular_items()
 			ui.msg("The walls explode!")
 			return true
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_summon"
@@ -1484,6 +1564,8 @@ function drl.register_regular_items()
 		type       = ITEMTYPE_LEVER,
 		good       = "dangerous",
 		desc       = "summons enemies",
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function(self)
 			self:add_property( "charges", math.random(3) )
@@ -1507,6 +1589,8 @@ function drl.register_regular_items()
 			self.charges = self.charges - 1
 			return self.charges == 0
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_repair"
@@ -1520,6 +1604,8 @@ function drl.register_regular_items()
 		type       = ITEMTYPE_LEVER,
 		good       = "beneficial",
 		desc       = "Armor depot",
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function(self)
 			self:add_property( "charges", math.random(3) )
@@ -1565,6 +1651,8 @@ function drl.register_regular_items()
 			end
 			return self.charges == 0
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_medical"
@@ -1578,6 +1666,8 @@ function drl.register_regular_items()
 		type       = ITEMTYPE_LEVER,
 		good       = "beneficial",
 		desc       = "MediTech depot",
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function( self )
 			self:add_property( "charges", math.random(3) )
@@ -1605,6 +1695,8 @@ function drl.register_regular_items()
 			ui.msg("You feel healed.")
 			return self.charges == 0
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "lever_ammo"
@@ -1618,6 +1710,8 @@ function drl.register_regular_items()
 		type       = ITEMTYPE_LEVER,
 		good       = "beneficial",
 		desc       = "ammo dispenser",
+
+		flags  = { IF_FEATURENAME },
 
 		OnCreate = function( self )
 			self:add_property( "charges", math.random(3) + 1 )
@@ -1643,6 +1737,8 @@ function drl.register_regular_items()
 			level:drop_item( ammo_id, being.position, true )
 			return self.charges == 0
 		end,
+
+		OnDescribe = item.get_lever_description,
 	}
 
 	register_item "schematic_0"

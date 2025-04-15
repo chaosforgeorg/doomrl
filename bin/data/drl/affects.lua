@@ -6,10 +6,10 @@ function drl.register_affects()
 		color          = DARKGRAY,
 		color_expire   = DARKGRAY,
 		
-		OnAdd          = function(being)
-			being:remove_affect( "running" )
+		OnAdd          = function(self)
+			self:remove_affect( "running" )
 		end,
-		OnRemove       = function(being)
+		OnRemove       = function(self)
 		end,
 	}
 
@@ -21,23 +21,26 @@ function drl.register_affects()
 		message_init   = "You start running!",
 		message_done   = "You stop running.",
 
-		OnAdd          = function(being)
-			being:remove_affect( "tired" )
-			being.dodgebonus   = being.dodgebonus   + 20
-			being.movebonus    = being.movebonus    + 30
-			being.defencebonus = being.defencebonus + 4
-			if not being.flags[ BF_NORUNPENALTY ] then
-				being.tohit      = being.tohit - 2
-			end
+		OnAdd          = function(self)
+			self:remove_affect( "tired" )
 		end,
-		OnRemove       = function(being)
-			being.dodgebonus   = being.dodgebonus   - 20
-			being.movebonus    = being.movebonus    - 30
-			being.defencebonus = being.defencebonus - 4
-			if not being.flags[ BF_NORUNPENALTY ] then
-				being.tohit      = being.tohit + 2
+		OnRemove       = function(self)
+			self:set_affect( "tired" );
+		end,
+		getDodgeBonus = function( self )
+			return 20
+		end,
+		getMoveBonus = function( self )
+			return 30
+		end,
+		getDefenceBonus = function( self, is_melee )
+			return 4
+		end,
+		getToHitBonus = function( self, weapon, is_melee, alt )
+			if not self:has_property( "NO_RUN_PENALTY" ) then
+				return -2
 			end
-			being:set_affect( "tired" );
+			return 0
 		end,
 	}
 
@@ -52,29 +55,33 @@ function drl.register_affects()
 		status_effect  = STATUSRED,
 		status_strength= 5,
 
-		OnAdd          = function(being)
-			being:remove_affect( "running", true )
-			being.muldamagemelee = being.muldamagemelee + 100
-			being.speed = being.speed + 50
-			being.resist.bullet = (being.resist.bullet or 0) + 50
-			being.resist.melee = (being.resist.melee or 0) + 50
-			being.resist.shrapnel = (being.resist.shrapnel or 0) + 50
-			being.resist.acid = (being.resist.acid or 0) + 50
-			being.resist.fire = (being.resist.fire or 0) + 50
-			being.resist.plasma = (being.resist.plasma or 0) + 50
+		OnAdd          = function(self)
+			self:remove_affect( "running", true )
+			self.speed = self.speed + 50
+			self.resist.bullet = (self.resist.bullet or 0) + 50
+			self.resist.melee = (self.resist.melee or 0) + 50
+			self.resist.shrapnel = (self.resist.shrapnel or 0) + 50
+			self.resist.acid = (self.resist.acid or 0) + 50
+			self.resist.fire = (self.resist.fire or 0) + 50
+			self.resist.plasma = (self.resist.plasma or 0) + 50
 		end,
-		OnTick         = function(being)
+		OnUpdate        = function(self)
 			ui.msg("You need to taste blood!")
 		end,
-		OnRemove       = function(being)
-			being.speed = being.speed - 50
-			being.muldamagemelee = being.muldamagemelee - 100
-			being.resist.bullet = (being.resist.bullet or 0) - 50
-			being.resist.melee = (being.resist.melee or 0) - 50
-			being.resist.shrapnel = (being.resist.shrapnel or 0) - 50
-			being.resist.acid = (being.resist.acid or 0) - 50
-			being.resist.fire = (being.resist.fire or 0) - 50
-			being.resist.plasma = (being.resist.plasma or 0) - 50
+		OnRemove       = function(self)
+			self.speed = self.speed - 50
+			self.resist.bullet = (self.resist.bullet or 0) - 50
+			self.resist.melee = (self.resist.melee or 0) - 50
+			self.resist.shrapnel = (self.resist.shrapnel or 0) - 50
+			self.resist.acid = (self.resist.acid or 0) - 50
+			self.resist.fire = (self.resist.fire or 0) - 50
+			self.resist.plasma = (self.resist.plasma or 0) - 50
+		end,
+		getDamageMul = function( self, weapon, is_melee, alt )
+			if ( weapon and weapon.itype == ITEMTYPE_MELEE ) or is_melee then
+				return 2.0
+			end
+			return 1.0
 		end,
 	}
 
@@ -89,16 +96,16 @@ function drl.register_affects()
 		status_effect  = STATUSINVERT,
 		status_strength= 10,
 
-		OnAdd          = function(being)
-			being.flags[ BF_INV ] = true
+		OnAdd          = function(self)
+			self.flags[ BF_INV ] = true
 		end,
-		OnTick         = function(being)
-			if being.hp < being.hpmax and not being.flags[ BF_NOHEAL ] then
-				being.hp = being.hpmax
+		OnUpdate       = function(self)
+			if self.hp < self.hpmax and not self.flags[ BF_NOHEAL ] then
+				self.hp = self.hpmax
 			end
 		end,
-		OnRemove       = function(being)
-			being.flags[ BF_INV ] = false
+		OnRemove       = function(self)
+			self.flags[ BF_INV ] = false
 		end,
 	}
 
@@ -113,14 +120,14 @@ function drl.register_affects()
 		status_effect  = STATUSGREEN,
 		status_strength= 1,
 
-		OnAdd          = function(being)
-			being.resist.acid = (being.resist.acid or 0) + 25
-			being.resist.fire = (being.resist.fire or 0) + 25
+		OnAdd          = function(self)
+			self.resist.acid = (self.resist.acid or 0) + 25
+			self.resist.fire = (self.resist.fire or 0) + 25
 		end,
 
-		OnRemove       = function(being)
-			being.resist.acid = (being.resist.acid or 0) - 25
-			being.resist.fire = (being.resist.fire or 0) - 25
+		OnRemove       = function(self)
+			self.resist.acid = (self.resist.acid or 0) - 25
+			self.resist.fire = (self.resist.fire or 0) - 25
 		end,
 	}
 
@@ -133,12 +140,12 @@ function drl.register_affects()
 		message_ending = "You feel your enhanced vision fading...",
 		message_done   = "Your vision fades.",
 
-		OnAdd          = function(being)
-			being.vision = being.vision + 4
+		OnAdd          = function(self)
+			self.vision = self.vision + 4
 		end,
 
-		OnRemove       = function(being)
-			being.vision = being.vision - 4
+		OnRemove       = function(self)
+			self.vision = self.vision - 4
 		end,
 	}
 
