@@ -824,7 +824,15 @@ function drl.OnTick( time )
 					b.accuracy = b.accuracy + 4
 				end
 			end
-
+		end
+		if time == enrage * 2 then
+			for b in level:beings() do
+				if not b:is_player() then
+					b.expvalue = 0
+					b.speed    = math.ceil( b.speed * 1.5 )
+					b.accuracy = b.accuracy + 4
+				end
+			end
 		end
 	end
 end
