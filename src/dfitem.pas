@@ -24,8 +24,8 @@ TItem  = class( TThing )
 
     constructor Create( const anid : AnsiString; onFloor : boolean = False ); overload;
     constructor Create(anid : byte; onFloor : boolean = False); overload;
-    constructor CreateFromStream( Stream: TStream ); override;
-    procedure WriteToStream( Stream: TStream ); override;
+    constructor CreateFromStream( aStream: TStream ); override;
+    procedure WriteToStream( aStream: TStream ); override;
 
     function    rollDamage : Integer;
     function    maxDamage : Integer;
@@ -101,7 +101,7 @@ procedure SwapItem(var a, b: TItem);
 
 implementation
 
-uses doomlua, doomio, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, dfplayer, doombase, vmath, doomhooks;
+uses vnode, doomlua, doomio, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, dfplayer, doombase, vmath, doomhooks;
 
 procedure SwapItem(var a, b: TItem);
 var c : TItem;
@@ -157,26 +157,39 @@ begin
   FreeAndNil( Table );
 end;
 
-constructor TItem.CreateFromStream ( Stream : TStream ) ;
+constructor TItem.CreateFromStream ( aStream : TStream ) ;
+var i, iCount : Word;
 begin
-  inherited CreateFromStream ( Stream ) ;
+  inherited CreateFromStream ( aStream ) ;
 
-  Stream.Read( FRecharge, SizeOf( FRecharge ) );
-  Stream.Read( FMods,     SizeOf( FMods ) );
-  Stream.Read( FProps,    SizeOf( FProps ) );
+  aStream.Read( FRecharge, SizeOf( FRecharge ) );
+  aStream.Read( FMods,     SizeOf( FMods ) );
+  aStream.Read( FProps,    SizeOf( FProps ) );
 
-  FNID   := Stream.ReadByte();
+  FNID   := aStream.ReadByte();
+  iCount := aStream.ReadWord();
+  if iCount = 0 then Exit;
+  for i := 1 to iCount do
+    Add( TItem.CreateFromStream( aStream ) );
 end;
 
-procedure TItem.WriteToStream ( Stream : TStream ) ;
+procedure TItem.WriteToStream ( aStream : TStream ) ;
+var iNode : TNode;
 begin
-  inherited WriteToStream ( Stream ) ;
+  inherited WriteToStream ( aStream ) ;
 
-  Stream.Write( FRecharge, SizeOf( FRecharge ) );
-  Stream.Write( FMods,     SizeOf( FMods ) );
-  Stream.Write( FProps,    SizeOf( FProps ) );
+  aStream.Write( FRecharge, SizeOf( FRecharge ) );
+  aStream.Write( FMods,     SizeOf( FMods ) );
+  aStream.Write( FProps,    SizeOf( FProps ) );
 
-  Stream.WriteByte( FNID );
+  aStream.WriteByte( FNID );
+
+  aStream.WriteWord( ChildCount );
+  if ChildCount = 0 then Exit;
+
+  for iNode in Self do
+     if iNode is TItem then
+       iNode.WriteToStream( aStream );
 end;
 
 procedure TItem.LuaLoad( Table : TLuaTable; onFloor: boolean );

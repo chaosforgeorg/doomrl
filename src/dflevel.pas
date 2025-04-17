@@ -752,6 +752,7 @@ procedure TLevel.DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType :
 var iCellID  : Byte;
     iHeavy   : Boolean;
     iFeature : TItem;
+    iNode    : TNode;
     iDamage  : Integer;
 begin
   if not isProperCoord( aCoord )      then Exit;
@@ -797,6 +798,8 @@ begin
       SetItem( aCoord, nil );
       iFeature.Detach;
       iFeature.CallHook( Hook_OnDestroy, [ LuaCoord( aCoord ) ] );
+      for iNode in iFeature do
+        DropItem( iNode as TItem, aCoord );
       FreeAndNil( iFeature );
     end;
   end;
@@ -1571,6 +1574,22 @@ begin
   Result := 0;
 end;
 
+function lua_level_animate_item(L: Plua_State): Integer; cdecl;
+var State   : TDoomLuaState;
+    iItem   : TItem;
+    iLevel  : TLevel;
+    iValue  : Integer;
+begin
+  State.Init(L);
+  iLevel := State.ToObject(1) as TLevel;
+  if State.IsNil(2) then Exit(0);
+  iItem  := State.ToObject(2) as TItem;
+  iValue := State.ToInteger(3);
+  if iLevel.isVisible( iItem.Position ) then
+    IO.addItemAnimation( iItem.Sprite.Frametime * Abs( iValue ), 0, iItem, iValue );
+  Result := 0;
+end;
+
 function lua_level_set_generator_style(L: Plua_State): Integer; cdecl;
 var State   : TDoomLuaState;
     iCoord  : TCoord2D;
@@ -1691,7 +1710,7 @@ begin
   Exit( 0 );
 end;
 
-const lua_level_lib : array[0..18] of luaL_Reg = (
+const lua_level_lib : array[0..19] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1701,6 +1720,7 @@ const lua_level_lib : array[0..18] of luaL_Reg = (
       ( name : 'clear_being';func : @lua_level_clear_being),
       ( name : 'recalc_fluids';func : @lua_level_recalc_fluids),
       ( name : 'animate_cell'; func : @lua_level_animate_cell),
+      ( name : 'animate_item'; func : @lua_level_animate_item),
       ( name : 'set_generator_style';func : @lua_level_set_generator_style),
       ( name : 'set_raw_style';      func : @lua_level_set_raw_style),
       ( name : 'get_raw_style';      func : @lua_level_get_raw_style),

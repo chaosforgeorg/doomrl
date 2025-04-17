@@ -124,6 +124,16 @@ private
   FValue  : Integer;
 end;
 
+TDoomAnimateItem = class(TAnimation)
+  constructor Create( aDuration : DWord; aDelay : DWord; aUID : TUID; aValue : Integer );
+  procedure OnStart; override;
+  procedure OnDraw; override;
+  destructor Destroy; override;
+private
+  FSprite : TSprite;
+  FValue  : Integer;
+end;
+
 { TDoomScreenShake }
 
 TDoomScreenShake = class(TAnimation)
@@ -426,6 +436,55 @@ end;
 destructor TDoomAnimateCell.Destroy;
 begin
   Doom.Level.LightFlag[ FCoord, LFANIMATING ] := False;
+  inherited Destroy;
+end;
+
+constructor TDoomAnimateItem.Create( aDuration : DWord; aDelay : DWord; aUID : TUID; aValue : Integer );
+var iThing : TThing;
+begin
+  inherited Create( aDuration, aDelay, aUID );
+  iThing  := UIDs.Get( FUID ) as TThing;
+  FValue  := aValue;
+  if iThing = nil then Exit;
+  FSprite := iThing.Sprite;
+end;
+
+procedure TDoomAnimateItem.OnStart;
+var iThing : TThing;
+begin
+  iThing := UIDs.Get( FUID ) as TThing;
+  if iThing <> nil then iThing.AnimCount := iThing.AnimCount + 1;
+end;
+
+procedure TDoomAnimateItem.OnDraw;
+var iThing    : TThing;
+    iSprite   : TSprite;
+    iSegment  : Integer;
+    iPosition : TVec2i;
+begin
+  iThing := UIDs.Get( FUID ) as TThing;
+  if iThing = nil then Exit;
+  iSprite  := FSprite;
+  iSegment := ( FTime * FValue ) div FDuration;
+  if ( iSegment <> FValue ) then
+    iSegment += Sgn( FValue );
+  if iSprite.SCount > 1 then
+  begin
+    iSegment := Abs( iSegment );
+    iSprite.SpriteID[0] := iSprite.SpriteID[ iSegment ];
+  end
+  else
+    iSprite.SpriteID[0] += ( FValue - iSegment ) * DRL_COLS;
+  iThing.Sprite := iSprite;
+  iPosition.Init( (iThing.Position.X - 1)*SpriteMap.GetGridSize,(iThing.Position.Y - 1)*SpriteMap.GetGridSize);
+  SpriteMap.PushSpriteItem( iPosition, iThing.Sprite, 255 );
+end;
+
+destructor TDoomAnimateItem.Destroy;
+var iThing : TThing;
+begin
+  iThing := UIDs.Get( FUID ) as TThing;
+  if iThing <> nil then iThing.AnimCount := Max( 0, iThing.AnimCount - 1 );
   inherited Destroy;
 end;
 

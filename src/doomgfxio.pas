@@ -3,7 +3,7 @@ unit doomgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
      vrltools, vutil, vtextures, vvector,
-     doomio, doomspritemap, doomanimation, doomminimap, dfdata;
+     doomio, doomspritemap, doomanimation, doomminimap, dfdata, dfthing;
 
 type
 
@@ -28,6 +28,7 @@ type
     procedure addMeleeAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite ); override;
     procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); override;
     procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); override;
+    procedure addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer ); override;
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
     procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); override;
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
@@ -373,6 +374,12 @@ procedure TDoomGFXIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord
 begin
   if Doom.State <> DSPlaying then Exit;
   FAnimations.addAnimation( TDoomAnimateCell.Create( aDuration, aDelay, aCoord, aSprite, aValue ) );
+end;
+
+procedure TDoomGFXIO.addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer );
+begin
+  if Doom.State <> DSPlaying then Exit;
+  FAnimations.addAnimation( TDoomAnimateItem.Create( aDuration, aDelay, aItem.UID, aValue ) );
 end;
 
 procedure TDoomGFXIO.addMissileAnimation(aDuration: DWord; aDelay: DWord; aSource,
