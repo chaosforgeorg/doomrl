@@ -652,7 +652,7 @@ begin
   if isVisible( coord ) then Exit(True);
   if aItem.isPower and Player.Flags[ BF_POWERSENSE ] then Exit(True);
   if Player.Flags[ BF_DARKNESS ] then Exit(False);
-  if ( not aItem.isFeature ) and ( LF_ITEMSVISIBLE in FFlags ) then Exit(True);
+  if ( LF_ITEMSVISIBLE in FFlags ) and ( ( not aItem.isFeature ) or ( aItem.Flags[IF_HIGHLIGHT] ) ) then Exit(True);
   Exit(False);
 end;
 
