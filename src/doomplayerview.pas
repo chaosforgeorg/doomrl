@@ -706,7 +706,7 @@ begin
     with LuaSystem.GetTable(['traits',iTrait]) do
     try
       iEntry.Quote := getString('quote');
-      iEntry.Desc  := getString('full');
+      iEntry.Desc  := getString('desc');
     finally
       Free;
     end;

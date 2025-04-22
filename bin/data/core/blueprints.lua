@@ -43,7 +43,6 @@ core.register_blueprint "trait"
 	name            = { true,  core.TSTRING },
 	desc            = { false, core.TSTRING, "" },
 	quote           = { false, core.TSTRING, "" },
-	full            = { false, core.TSTRING, "" },
 	author          = { false, core.TSTRING },
 	master          = { false, core.TBOOL,   false },
 	abbr            = { true,  core.TSTRING },
