@@ -168,7 +168,7 @@ register_level "phobos_lab"
 		end
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		level.status = 0
 	end,
 

@@ -67,7 +67,7 @@ XX.XX
 		level:player(38,10)
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		ui.msg_feel("The smell of blood! Can this be real?? The floor is")
 		ui.msg_feel("covered in blood, and there are corpses everywhere!")
 

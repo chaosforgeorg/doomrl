@@ -181,7 +181,7 @@ register_level "the_asmos_den"
 		level:player(77,19)
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		level.status = 0
 	end,
 

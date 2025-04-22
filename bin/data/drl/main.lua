@@ -282,7 +282,7 @@ function drl.register_base_data()
 
 end
 
-function drl.OnEnter()
+function drl.OnEnterLevel()
 	player:remove_affect( "running", true )
 	player:remove_affect( "tired", true )
 end

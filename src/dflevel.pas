@@ -549,7 +549,8 @@ begin
     SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
   end;
 
-  CallHook(Hook_OnEnter,[Player.CurrentLevel,FID]);
+  CallHook( Hook_OnEnterLevel,[Player.CurrentLevel,FID] );
+  Player.CallHook( Hook_OnEnterLevel,[Player.CurrentLevel,FID] );
 
   if GraphicsVersion then
   begin

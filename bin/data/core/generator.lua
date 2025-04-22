@@ -522,11 +522,11 @@ end
 function generator.reset()
 	core.log("generator.reset()")
 	ui.clear_feel()
-	generator.OnKill    = nil
-	generator.OnKillAll = nil
-	generator.OnEnter   = nil
-	generator.OnExit    = nil
-	generator.OnTick    = nil
+	generator.OnKill       = nil
+	generator.OnKillAll    = nil
+	generator.OnEnterLevel = nil
+	generator.OnExit       = nil
+	generator.OnTick       = nil
 
 	generator.room_list = {}
 	generator.room_meta = {}

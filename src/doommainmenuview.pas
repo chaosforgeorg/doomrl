@@ -395,12 +395,14 @@ begin
 end;
 
 procedure TMainMenuView.UpdateKlass;
-var iSelected, i : Integer;
+var iSelected, i, iLines : Integer;
 begin
   iSelected := VTIG_Selected('mainmenu_klass');
   if iSelected < 0 then iSelected := 0;
+  iLines := 8;
+  if Length( FArrayKlass[iSelected].Desc ) > 255 then iLines := 13;
   VTIG_PushStyle( @TIGStyleFrameless );
-  VTIG_Begin( 'mainmenu_klass_desc', Point( 47, 8 ), Point( 30, 16 ) );
+  VTIG_Begin( 'mainmenu_klass_desc', Point( 47, iLines ), Point( 30, 16 ) );
   VTIG_PopStyle;
     VTIG_PushStyle( @TIGStyleColored );
     VTIG_Text( Padded( '- {!' + FArrayKlass[iSelected].Name + ' }', 48, '-' ) );
@@ -424,7 +426,7 @@ begin
   VTIG_End;
 
   IO.RenderUIBackground(  Point(9,15), Point(25,17+FArrayKlass.Size), 0.7 );
-  IO.RenderUIBackground( Point(28,15), Point(77,24), 0.7 );
+  IO.RenderUIBackground( Point(28,15), Point(77,16+iLines), 0.7 );
   if VTIG_EventCancel then
   begin
     FMode := MAINMENU_MENU;

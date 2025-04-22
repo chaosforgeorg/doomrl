@@ -126,7 +126,7 @@ register_level "limbo"
 		level:player(38,10)
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		ui.msg_feel("The smell of blood! You can barely believe this living hell...")
 		level.status = 0
 		ui.msg_feel("Suddenly with a wail, arch-viles appear!")

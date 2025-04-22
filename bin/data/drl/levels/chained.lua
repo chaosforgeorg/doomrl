@@ -311,7 +311,7 @@ register_level "the_chained_court"
 		end
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		if level.status == 0 then
 			ui.msg("A devilish voice booms:")
 			ui.msg("\"Come to think of it... I'd rather see you dead, mortal... prepare yourself!\"")

@@ -98,7 +98,7 @@ register_level "abyssal_plains"
 		level.status = 2
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		level.status = 0
 	end,
 

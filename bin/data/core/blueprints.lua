@@ -60,6 +60,7 @@ core.register_blueprint "trait"
 	OnDamage        = { false, core.TFUNC },
 	OnTick          = { false, core.TFUNC },
 	OnReceiveDamage = { false, core.TFUNC },
+	OnEnterLevel    = { false, core.TFUNC },
 
 	getDamageBonus   = { false, core.TFUNC },
 	getToHitBonus    = { false, core.TFUNC },
@@ -267,6 +268,7 @@ core.register_blueprint "being"
 	OnDamage        = { false, core.TFUNC },
 	OnTick          = { false, core.TFUNC },
 	OnReceiveDamage = { false, core.TFUNC },
+	OnEnterLevel    = { false, core.TFUNC },
 
 	getDamageBonus   = { false, core.TFUNC },
 	getToHitBonus    = { false, core.TFUNC },
@@ -365,7 +367,7 @@ core.register_blueprint "challenge"
 	OnUseCheck       = { false, core.TFUNC },
 	OnKill           = { false, core.TFUNC },
 	OnKillAll        = { false, core.TFUNC },
-	OnEnter          = { false, core.TFUNC },
+	OnEnterLevel     = { false, core.TFUNC },
 	OnFire           = { false, core.TFUNC },
 	OnFired          = { false, core.TFUNC },
 	OnExit           = { false, core.TFUNC },
@@ -605,7 +607,7 @@ core.register_blueprint "level"
 	OnUseCheck       = { false, core.TFUNC },
 	OnKill           = { false, core.TFUNC },
 	OnKillAll        = { false, core.TFUNC },
-	OnEnter          = { false, core.TFUNC },
+	OnEnterLevel     = { false, core.TFUNC },
 	OnFire           = { false, core.TFUNC },
 	OnFired          = { false, core.TFUNC },
 	OnExit           = { false, core.TFUNC },
