@@ -359,11 +359,7 @@ function core.mod_list_signature( mod_list )
 end
 
 function core.power_duration( base )
-	if player.flags[ BF_POWERBONUS ] then
-		return math.floor( base * diff[DIFFICULTY].powerfactor * diff[DIFFICULTY].powerbonus )
-	else
-		return math.floor( base * diff[DIFFICULTY].powerfactor )
-	end
+	return math.floor( base * diff[DIFFICULTY].powerfactor * player:get_property( "POWER_BONUS", 1 ) )
 end
 
 function core.is_challenge( chal_id )

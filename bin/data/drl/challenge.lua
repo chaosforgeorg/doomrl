@@ -928,7 +928,7 @@ function drl.register_challenges()
 
 		OnCreate = function ( this )
 			if this:is_being() then
-				this.tohit = this.tohit + 12
+				this.accuracy = this.accuracy + 12
 				this.flags[ BF_MAXDAMAGE ] = true
 			end
 		end,

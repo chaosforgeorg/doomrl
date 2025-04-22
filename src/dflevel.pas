@@ -68,8 +68,8 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
-    procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Integer = 0 );
-    procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; Shotgun : TShotgunData; aItem : TItem );
+    procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+    procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Single; Shotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
     function isEmpty( const coord : TCoord2D; EmptyFlags : TFlags32 = []) : Boolean; override;
@@ -123,24 +123,24 @@ TLevel = class(TLuaMapNode, ITextMap)
     function  getBeing( const coord : TCoord2D ) : TBeing; override;
     function  getItem( const coord : TCoord2D ) : TItem; override;
   private
-    FMap         : TMap;
-    FStatus      : Word; // level result
-    FStyle       : Byte;
+    FMap           : TMap;
+    FStatus        : Word; // level result
+    FStyle         : Byte;
 
-    FLNum        : Word;
-    FLTime       : DWord;
-    FEmpty       : Boolean;
+    FLNum          : Word;
+    FLTime         : DWord;
+    FEmpty         : Boolean;
 
-    FDangerLevel : Word;
-    FToHitBonus  : Integer;
+    FDangerLevel   : Word;
+    FAccuracyBonus : Integer;
 
-    FActiveBeing : TBeing;
-    FNextNode    : TNode;
+    FActiveBeing   : TBeing;
+    FNextNode      : TNode;
 
-    FFloorCell   : Word;
-    FFloorStyle  : Byte;
-    FFeeling     : AnsiString;
-    FSpecExit    : AnsiString;
+    FFloorCell     : Word;
+    FFloorStyle    : Byte;
+    FFeeling       : AnsiString;
+    FSpecExit      : AnsiString;
   private
     function getCellBottom( Index : TCoord2D ): Byte;
     function getCellTop( Index : TCoord2D ): Byte;
@@ -150,11 +150,10 @@ TLevel = class(TLuaMapNode, ITextMap)
     function getSpriteTop( Index : TCoord2D ): TSprite;
     function getSpriteBottom( Index : TCoord2D ): TSprite;
   public
-    property ToHitBonus : Integer                   read FToHitBonus;
+    property AccuracyBonus : Integer                read FAccuracyBonus;
     property Hooks : TFlags                         read FHooks;
     property FloorCell : Word                       read FFloorCell;
     property FloorStyle : Byte                      read FFloorStyle;
-    property Empty : Boolean                        read FEmpty;
     property Item     [ Index : TCoord2D ] : TItem  read getItem;
     property Being    [ Index : TCoord2D ] : TBeing read getBeing;
     property CellBottom [ Index : TCoord2D ] : Byte read getCellBottom;
@@ -166,6 +165,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     property SpriteTop    [ Index : TCoord2D ] : TSprite read getSpriteTop;
     property SpriteBottom [ Index : TCoord2D ] : TSprite read getSpriteBottom;
   published
+    property Empty        : Boolean    read FEmpty;
     property Status       : Word       read FStatus      write FStatus;
     property Name         : AnsiString read FName        write FName;
     property Name_Number  : Word       read FLNum        write FLNum;
@@ -178,7 +178,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
 implementation
 
-uses typinfo, vluadungen, vluatools, vluasystem,
+uses math, typinfo, vluatools, vluasystem,
      vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomgfxio,
      doomspritemap, doomhudviews;
 
@@ -315,7 +315,7 @@ function TLevel.getGylph(const aCoord: TCoord2D): TIOGylph;
         COLOR_LAVA  : if Mod2 then aAtr := YELLOW   else aAtr := RED;
         COLOR_BLOOD : if Mod2 then aAtr := LIGHTRED else aAtr := RED;
         COLOR_MUD   : if Mod2 then aAtr := YELLOW   else aAtr := BROWN;
-        MULTIPORTAL : case (( Player.FStatistics.GameTime div 10 ) mod 3) of
+        MULTIPORTAL : case (( Player.Statistics.GameTime div 10 ) mod 3) of
                         0 : aAtr := LIGHTMAGENTA;
                         1 : aAtr := MAGENTA;
                         2 : aAtr := WHITE;
@@ -426,7 +426,7 @@ begin
   FLTime  := Stream.ReadDWord();
   Stream.Read( FEmpty, SizeOf( FEmpty ) );
   FDangerLevel := Stream.ReadWord();
-  Stream.Read( FToHitBonus, SizeOf( FToHitBonus ) );
+  Stream.Read( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
   FFloorCell   := Stream.ReadWord();
   FFloorStyle  := Stream.ReadByte();
   FID          := Stream.ReadAnsiString();
@@ -451,7 +451,7 @@ begin
   Stream.WriteDWord( FLTime );
   Stream.Write( FEmpty, SizeOf( FEmpty ) );
   Stream.WriteWord( FDangerLevel );
-  Stream.Write( FToHitBonus, SizeOf( FToHitBonus ) );
+  Stream.Write( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
   Stream.WriteWord( FFloorCell );
   Stream.WriteByte( FFloorStyle );
   Stream.WriteAnsiString( aID );
@@ -502,10 +502,10 @@ begin
   FHooks := [];
   FFeeling := '';
 
-  FFloorCell  := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
-  FFloorStyle := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
+  FFloorCell     := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
+  FFloorStyle    := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
   if LuaSystem.Get(['diff',Doom.Difficulty,'respawn']) then Include( FFlags, LF_RESPAWN );
-  FToHitBonus := LuaSystem.Get(['diff',Doom.Difficulty,'tohitbonus']);
+  FAccuracyBonus := LuaSystem.Get(['diff',Doom.Difficulty,'accuracybonus']);
 end;
 
 procedure TLevel.AfterGeneration( aGenerated : Boolean );
@@ -597,15 +597,15 @@ begin
   if LF_BONUS in FFlags then
     if Hook_OnCompletedCheck in FHooks then
     begin
-      if RawCallHookCheck( Hook_OnCompletedCheck,[] ) then Player.IncStatistic('bonus_levels_completed');
+      if RawCallHookCheck( Hook_OnCompletedCheck,[] ) then Player.Statistics.Increase('bonus_levels_completed');
     end
     else
-      if EnemiesLeft() = 0 then Player.IncStatistic('bonus_levels_completed');
+      if EnemiesLeft() = 0 then Player.Statistics.Increase('bonus_levels_completed');
 
 
   if (not (LF_BONUS in FFlags)) and (Player.HP > 0) then
   begin
-    TimeDiff :=  Player.FStatistics.GameTime - Player.FStatistics.Map['entry_time'];
+    TimeDiff :=  Player.Statistics.GameTime - Player.Statistics['entry_time'];
     if TimeDiff < 100 then
       Player.AddHistory(Format('He left level %d as soon as possible.',[Player.CurrentLevel]));
   end;
@@ -652,7 +652,7 @@ begin
   if isVisible( coord ) then Exit(True);
   if aItem.isPower and Player.Flags[ BF_POWERSENSE ] then Exit(True);
   if Player.Flags[ BF_DARKNESS ] then Exit(False);
-  if ( not aItem.isFeature ) and ( LF_ITEMSVISIBLE in FFlags ) then Exit(True);
+  if ( LF_ITEMSVISIBLE in FFlags ) and ( ( not aItem.isFeature ) or ( aItem.Flags[IF_HIGHLIGHT] ) ) then Exit(True);
   Exit(False);
 end;
 
@@ -752,6 +752,7 @@ procedure TLevel.DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType :
 var iCellID  : Byte;
     iHeavy   : Boolean;
     iFeature : TItem;
+    iNode    : TNode;
     iDamage  : Integer;
 begin
   if not isProperCoord( aCoord )      then Exit;
@@ -797,6 +798,8 @@ begin
       SetItem( aCoord, nil );
       iFeature.Detach;
       iFeature.CallHook( Hook_OnDestroy, [ LuaCoord( aCoord ) ] );
+      for iNode in iFeature do
+        DropItem( iNode as TItem, aCoord );
       FreeAndNil( iFeature );
     end;
   end;
@@ -861,7 +864,7 @@ begin
   end;
 end;
 
-procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Integer = 0 );
+procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
 var a     : TCoord2D;
     iDamage : Integer;
     dir   : TDirection;
@@ -888,7 +891,7 @@ begin
         iDamage := Damage.Roll;
         if not (efNoDistanceDrop in aFlags) then
           iDamage := iDamage div Max(1,(Distance(a,coord)+1) div 2);
-        iDamage := ApplyMul( iDamage, aDamageMult );
+        iDamage := Floor( iDamage * aDamageMult );
         DamageTile( a, iDamage, DamageType );
         if Being[a] <> nil then
         with Being[a] do
@@ -905,7 +908,7 @@ begin
             Knockback( dir, iDamage div iKnockbackValue );
           end;
           KnockBacked := True;
-          if (Flags[BF_FIREANGEL]) and (not aDirectHit) then Continue;
+          if (Flags[BF_SPLASHIMMUNE]) and (not aDirectHit) then Continue;
           if (efSelfHalf in aFlags) and isActive then iDamage := iDamage div 2;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
           ApplyDamage( iDamage, Target_Torso, DamageType, aItem );
@@ -925,7 +928,7 @@ begin
   if aContent <> 0 then RecalcFluids;
 end;
 
-procedure TLevel.Shotgun( source, target : TCoord2D; Damage : TDiceRoll; Shotgun : TShotgunData; aItem : TItem );
+procedure TLevel.Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Single; Shotgun : TShotgunData; aItem : TItem );
 var a,b,tc  : TCoord2D;
     d       : Single;
     dmg     : Integer;
@@ -977,6 +980,8 @@ begin
     if LightFlag[ tc, lfDamage ] then
       begin
         dmg := Round(Damage.Roll * (1.0-Reduce*Max(1,Distance( source, tc ))));
+        dmg := Floor( dmg * aDamageMul );
+
         if (dmg < 1) then dmg := 1;
         
         if Being[ tc ] <> nil then
@@ -1123,13 +1128,12 @@ procedure TLevel.Tick;
 var iNode : TNode;
 begin
   FActiveBeing := nil;
-  Player.LastTurnDodge := False;
   repeat
 
     Inc(FLTime);
-    Inc(Player.FStatistics.GameTime);
+    Player.Statistics.OnTick;
 
-    CallHook( Hook_OnTick,[] );
+    CallHook( Hook_OnTick,[ FLTime ] );
 
     if LF_RESPAWN in FFlags  then
     begin
@@ -1191,7 +1195,7 @@ begin
     end
     else
     begin
-      Player.IncStatistic('levels_nuked');
+      Player.Statistics.Increase('levels_nuked');
       if Doom.State in [DSNextLevel,DSSaving] then
       begin
         IO.Msg('Right in the nick of time!');
@@ -1396,9 +1400,7 @@ begin
     with Being[ aWhere ] do
       AddInfo( GetName( false ) + ' (' + WoundStatus + ')' );
     if aBeingOnly then Exit;
-    if Item[ aWhere ] <> nil then
-      if Item[ aWhere ].isLever then AddInfo( Player.DescribeLever( Item[ aWhere ] ) )
-                                else AddInfo( Item[ aWhere ].GetName( false ) );
+    if Item[ aWhere ] <> nil then AddInfo( Item[ aWhere ].GetExtName( False ) );
     if CellHook_OnDescribe in Cells[ Cell[ aWhere ] ].Hooks then
        AddInfo( CallHook( aWhere, CellHook_OnDescribe ) )
     else
@@ -1471,12 +1473,14 @@ begin
 end;
 
 function lua_level_play_sound(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Level : TLevel;
+var iState : TDoomLuaState;
+    iLevel : TLevel;
 begin
-  State.Init(L);
-  Level := State.ToObject(1) as TLevel;
-  Level.playSound( IO.Audio.ResolveSoundID( [State.ToString(2)] ), State.ToPosition(3), State.ToInteger(4,0) );
+  iState.Init(L);
+  iLevel := iState.ToObject(1) as TLevel;
+  if iState.IsString(3)
+    then iLevel.playSound( iState.ToString(2), iState.ToString(3), iState.ToPosition(4) )
+    else iLevel.playSound( IO.Audio.ResolveSoundID( [iState.ToString(2)] ), iState.ToPosition(3), iState.ToInteger(4,0) );
   Result := 0;
 end;
 
@@ -1567,6 +1571,22 @@ begin
     iSprite := iLevel.GetSpriteTop( iCoord );
     IO.addCellAnimation( iSprite.Frametime * Abs( iValue ), 0, iCoord, iSprite, iValue );
   end;
+  Result := 0;
+end;
+
+function lua_level_animate_item(L: Plua_State): Integer; cdecl;
+var State   : TDoomLuaState;
+    iItem   : TItem;
+    iLevel  : TLevel;
+    iValue  : Integer;
+begin
+  State.Init(L);
+  iLevel := State.ToObject(1) as TLevel;
+  if State.IsNil(2) then Exit(0);
+  iItem  := State.ToObject(2) as TItem;
+  iValue := State.ToInteger(3);
+  if iLevel.isVisible( iItem.Position ) then
+    IO.addItemAnimation( iItem.Sprite.Frametime * Abs( iValue ), 0, iItem, iValue );
   Result := 0;
 end;
 
@@ -1690,7 +1710,7 @@ begin
   Exit( 0 );
 end;
 
-const lua_level_lib : array[0..18] of luaL_Reg = (
+const lua_level_lib : array[0..19] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1700,6 +1720,7 @@ const lua_level_lib : array[0..18] of luaL_Reg = (
       ( name : 'clear_being';func : @lua_level_clear_being),
       ( name : 'recalc_fluids';func : @lua_level_recalc_fluids),
       ( name : 'animate_cell'; func : @lua_level_animate_cell),
+      ( name : 'animate_item'; func : @lua_level_animate_item),
       ( name : 'set_generator_style';func : @lua_level_set_generator_style),
       ( name : 'set_raw_style';      func : @lua_level_set_raw_style),
       ( name : 'get_raw_style';      func : @lua_level_get_raw_style),

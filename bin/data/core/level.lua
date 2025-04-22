@@ -32,18 +32,34 @@ function level:get_being_table( dlevel, weights, reqs, dmod )
 	return list
 end
 
-function level:get_item_table( dlevel, weights, reqs )
+function level:get_item_table( dlevel, weights, reqs, global )
 	local danger       = dlevel or self.danger_level
 	local allow_exotic = self.danger_level > DIFFICULTY
 	local allow_unique = self.danger_level > DIFFICULTY+3
 	local list         = weight_table.new()
+	local greqs        = nil
+	local gweights	   = nil
+	if global then
+		local linfo = player.episode[ player.depth ]
+		if linfo then
+			greqs    = linfo.reqs
+			gweights = linfo.weights
+		end
+	end
 	for _,i in ipairs(items) do
 		if i.weight > 0 and danger >= i.level then
 			if (not i.is_exotic or allow_exotic) and (not i.is_unique or allow_unique) then
-				if core.proto_reqs_met( i, reqs ) then
-					local weight = core.proto_weight( i, weights )
-					if weight > 0 and (not i.is_unique or not player.__props.items_found[i.id]) then
-						list:add( i, weight )
+				if core.proto_reqs_met( i, reqs ) and ( ( not greqs ) or core.proto_reqs_met( i, greqs ) ) then
+					if (not i.is_unique or not player.__props.items_found[i.id]) then
+						local weight = core.proto_weight( i, weights ) 
+						if weight > 0 then
+							if gweights then
+								weight = weight * core.proto_weight( i, gweights )
+							end
+							if weight > 0 then
+								list:add( i, weight )
+							end
+						end
 					end
 				end
 			end
@@ -81,14 +97,24 @@ function level:flood_monsters( params )
 	while (dtotal > 0) and (count > 0) do
 		local bp    = list:roll()
 		local where = level:random_empty_coord( flags, params.area )
-		if not where then break end
+		if not where then 
+			core.warning("level:flood_monsters - no empty space found!")
+			break
+		end
+		if not bp then 
+			core.warning("level:flood_monsters - no fitting enemy found for given reqs!")
+			break
+		end
 		if bp.is_group then
 			for _,group in ipairs(bp.beings) do
 				local count = core.resolve_range(group.amount or 1)
 				for i=1,count do
-					self:drop_being( group.being, where )
+					local b = self:drop_being( group.being, where )
 					dtotal = dtotal - beings[group.being].danger
 					count  = count - 1
+					if b then 
+						b:add_property( "GROUPED" )
+					end
 				end
 			end
 		else
@@ -121,13 +147,10 @@ function level:flood_items( params )
 	local list    = self:get_item_table( params.level or level.danger_level, params.weights, params.reqs )
 
 	while amount > 0 do
-		local ip = list:roll()
-		if not ( ip.is_unique and self.flags[ LF_UNIQUEITEM ] ) then
-			if ip.is_unique then
-				self.flags[ LF_UNIQUEITEM ] = true
-			end
+		local id = self:roll_item_list( list )
+		if id then
 			local where = level:random_empty_coord{ EF_NOITEMS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
-			self:drop_item( ip.id, where, true )
+			self:drop_item( id, where, true )
 			amount = amount - 1
 		end
 	end
@@ -153,14 +176,30 @@ function level:roll_being( params )
 	return list:roll().id
 end
 
+function level:roll_item_list( list )
+	if list:size() == 0 then return nil end
+	local limit = 100
+	repeat
+		local ip    = list:roll()
+		if ip.is_unique then
+			if not self.flags[ LF_UNIQUEITEM ] then 
+				self.flags[ LF_UNIQUEITEM ] = true
+				return ip.id
+			end
+		else
+			return ip.id
+		end
+		limit = limit - 1
+	until limit <= 0
+	core.warning("roll_item_list: only unique items left!")
+	return nil	
+end
+
+
 function level:roll_item( params )
 	params = params or {}
 	local reqs    = params.reqs
 	local weights = params.weights
-	if self.flags[ LF_UNIQUEITEM ] then 
-		reqs = reqs or {}
-		reqs.is_unique = false
-	end
 	if params.type then
 		reqs = reqs or {}
 		reqs.type = params.type
@@ -171,13 +210,7 @@ function level:roll_item( params )
 		weights[ IF_EXOTIC ]  = params.exotic_mod
 		weights.is_special    = params.special_mod
 	end
-	local list    = self:get_item_table( params.level, weights, reqs )
-	if list:size() == 0 then return nil end
-	local ip    = list:roll()
-	if ip.is_unique then
-		self.flags[ LF_UNIQUEITEM ] = true
-	end
-	return ip.id
+	return self:roll_item_list( self:get_item_table( params.level, weights, reqs ) )
 end
 
 function level:summon(t,opt)
@@ -344,6 +377,13 @@ end
 function level:items_in_range( position, range )
 	return self:children_in_range( position, range, ENTITY_ITEM )
 end
+
+function level:drop_items( what )
+	for i in what:children("item") do
+		self:drop_item( i, what.position, true )
+	end
+end
+
 
 -- TODO: this depends on player having a proper propety registered!
 level.data = setmetatable({}, {

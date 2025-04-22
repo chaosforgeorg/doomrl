@@ -31,6 +31,21 @@ being.inv = {
 		end
 		return true
 	end,
+	seek_ammo = function( self, ammo_nid )
+		local ammo   = nil
+		local acount = 65000
+		for i in being.inv.items(self) do
+			if i.itype == ITEMTYPE_AMMO then
+				if i.nid == ammo_nid then
+					if i.ammo <= acount then
+						ammo   = i
+						acount = i.ammo
+					end
+				end
+			end
+		end
+		return ammo
+	end,
 }
 
 setmetatable(being.inv, {
@@ -92,6 +107,17 @@ setmetatable(being.eq, {
 		return being["get_eq_item"]( self, key )
 	end,
 })
+
+function being:get_ammo_item( weapon )
+	if ( not weapon ) then return nil end
+	if weapon == self.eq.weapon and weapon.itype == ITEMTYPE_RANGED and
+	  self.eq.prepared and 
+	  self.eq.prepared.itype == ITEMTYPE_AMMOPACK and 
+	  self.eq.prepared.ammoid == weapon.ammoid then
+		return self.eq.prepared
+	end
+	return self.inv:seek_ammo( weapon.ammoid )
+end
 
 function being:flock_target( range, mind, maxd, parea )
 	local pos     = self.position
@@ -233,7 +259,7 @@ function being:pick_item_to_mod( mod, filter )
 			local desc
 			local ma = it:find_mod_array( modletter, techbonus )
 			if ma or ( ( not filter ) or filter(it) ) then
-				local cm = it:can_mod( modletter )
+				local cm = it:can_mod( modletter, techbonus )
 				if (not ma) and ( not cm ) then
 					desc = "Max level of this mod reached!"
 				else
@@ -286,11 +312,56 @@ function being:pick_item_to_mod( mod, filter )
 			return nil, true
 		end
 	end
-	if not item:can_mod( modletter ) then
+	if not item:can_mod( modletter, techbonus ) then
 		ui.msg( "This item can't be modified anymore with this mod!" )
 		return nil, false
 	end
 	return item, true
+end
+
+function being:apply_affect( id, max_duration )
+	local current = self:get_affect_time( id )
+	if current > 0 then
+		if current < max_duration then
+			self:set_affect( id, max_duration - current )
+		end
+	else
+		self:set_affect( id, max_duration )
+	end
+end
+
+function being:full_reload( weapon )
+	if not weapon then return false end
+	local is_player = self:is_player()
+	if weapon.ammo == weapon.ammomax then
+		if is_player then
+			ui.msg("Your "..weapon.name.." is already fully loaded.")
+		end
+		return false
+	end
+	if weapon:has_property( "chamber_empty" ) then weapon.chamber_empty = false end
+	local ammo = self:get_ammo_item( weapon )
+	if not ammo then
+		if is_player then
+			ui.msg("You have no more ammo for the "..weapon.name.."!")
+		end
+		return false
+	end
+	local pack = ammo.itype == ITEMTYPE_AMMOPACK
+	while weapon.ammo < weapon.ammomax do
+		if not ammo then ammo = self:get_ammo_item( weapon ) end
+		if not ammo then
+			if is_player then
+				ui.msg("You have no more ammo for the "..weapon.name.."!")
+			end
+			return false
+		end
+		self:reload( ammo, true )
+		ammo = nil
+	end
+	self:msg("You "..core.iif(pack,"quickly ","").."fully load the "..weapon.name..".", self:get_name( true, true ).." fully loads the "..weapon.name..".")
+	return true
+
 end
 
 

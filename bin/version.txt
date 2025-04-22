@@ -1,4 +1,8 @@
 0.9.9.9 BETA 7
+[new] -- GH#252: staying too long on a level will enrage the enemies
+[mod] -- GH#252: only some enemies keep to their patrol area
+[mod] -- GH#000: enemy melee damage now randomized
+[mod] -- GH#000: Malicious Blades will double damage of thrown knives
 [fix] -- GH#241: clearing of level feeling on death/restart [brisbang]
 [fix] -- GH#113: thermonuclear explosions on Abyssal Plains/Containment area count also clear the traps [brisbang]
 [fix] -- GH#232: fixed Abyssal Plains trap not always triggering [brisbang]

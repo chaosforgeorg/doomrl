@@ -15,7 +15,7 @@ register_level "phobos_lab"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "neutral",
 			desc = "unlocks door",
@@ -29,7 +29,10 @@ register_level "phobos_lab"
 				ui.msg("Green access granted, west doors unlocked.")
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
+
 		register_item "lever_phoboslab2"
 		{
 			name   = "lever",
@@ -37,7 +40,7 @@ register_level "phobos_lab"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "neutral",
 			desc = "unlocks door",
@@ -55,6 +58,8 @@ register_level "phobos_lab"
 				level.status = 1
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
 	end,	
 

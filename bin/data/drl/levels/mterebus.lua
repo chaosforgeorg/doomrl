@@ -15,7 +15,7 @@ register_level "mt_erebus"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "dangerous",
 			desc = "raises the mountain",
@@ -38,6 +38,8 @@ register_level "mt_erebus"
 				level.status = level.status + 1
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
 	end,
 
