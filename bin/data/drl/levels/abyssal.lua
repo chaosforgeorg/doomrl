@@ -19,6 +19,7 @@ register_level "abyssal_plains"
 		local translation = {
 			['.'] = "floor",
 			[','] = { "floor", flags = { LFBLOOD } },
+			['C'] = { "floor", flags = { LFMARKER1 } },
 			['#'] = { "wall",  flags = { LFPERMANENT } },
 			['$'] = { "rwall", flags = { LFPERMANENT } },
 			['Z'] = { "gwall", flags = { LFPERMANENT } },
@@ -58,10 +59,10 @@ register_level "abyssal_plains"
 #i........###........###........I$$$$$$$$$$......O...##^.......###.......###
 ##.........##..$$.....I....$$$$$$$........$$$$$$$..........$$..##...S...####
 ##............i$$$.....$$$$$.......ZZZZZZ.......$$$$$.....$$$..........###..
-###........b.....$$$$$$$.......ZZZZZs..sZZZZZ.......$$$$$$$...........##....
-....................b.+.......ZZs....KK....sZZ.......+.......b............#!
-......................+.......ZZs....KX....sZZ.......+....................#7
-###...........b..$$$$$$$.......ZZZZZs..sZZZZZ.......$$$$$$$.......S...##....
+###........b.....$$$$$$$..C....ZZZZZs..sZZZZZ...C...$$$$$$$...........##....
+....................b.+...C...ZZs....KK....sZZ..C............b............#!
+......................+...C...ZZs....KX....sZZ..C.........................#7
+###...........b..$$$$$$$..C....ZZZZZs..sZZZZZ...C...$$$$$$$.......S...##....
 ##........b....$$$...I.$$$$$.......ZZZZZZ.......$$$$$.....$$$..........###..
 ##.........##i.$$..........$$$$$$$........$$$$$$$......#...$$..##.......####
 #i........###.......##...........$$$$$$$$$$..........####O.....###.....b.###
@@ -74,6 +75,7 @@ register_level "abyssal_plains"
 
 		generator.set_permanence( area.FULL )
 		level.data.drop_time = 0
+		level.data.inner_room = area(29, 7, 49, 14)
 		level.data.kill_all  = false
 		level:player(2,11)
 	end,
@@ -106,12 +108,11 @@ register_level "abyssal_plains"
 		local time = core.game_time()
 		local res = level.status
 		if res > 1 then return end
-		if res == 0 and player.x > 29 and player.x < 49 and player.y > 7 and player.y < 14 then
+		if res == 0 and level.data.inner_room:contains(player.position) then
 			ui.msg("Suddenly you're trapped in!")
 			level:play_sound( "door.close", player.position )
 			level:transmute( "gwall", "floor" )
-			for c in area( 28, 9, 28, 12 )() do generator.wallin_cell( c, "rwall" ) end
-			for c in area( 50, 9, 50, 12 )() do generator.wallin_cell( c, "rwall" ) end
+			level:transmute_by_flag("floor", "rwall", LFMARKER1, area.FULL)
 			generator.set_permanence( area.FULL )
 
 			ui.msg("You hear a howl of agony!")
@@ -125,7 +126,7 @@ register_level "abyssal_plains"
 		end
 		if res == 1 and (time - 400 > level.data.drop_time or level.data.kill_all) then
 			ui.msg("Finally, the walls retract into the ground.")
-			level:transmute( "rwall", "floor", area( 28, 9, 50, 12 ) )
+			level:transmute_by_flag( "rwall", "floor", LFMARKER1, area.FULL )
 			generator.set_permanence( area.FULL )
 			level.status = 2
 		end

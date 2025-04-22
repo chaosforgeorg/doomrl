@@ -82,15 +82,7 @@ function generator.scatter_cross_item(scatter_area,good,item_id,count)
 	end
 end
 
-function generator.transmute_marker( marker, fill, ar )
-	local a = ar or area.FULL
-	for c in a() do 
-		if level.light[ c ][ marker ] then
-			level.map[ c ] = fill
-		end
-	end
-end
-
+--brisbang: Recommend deprecation and replace with level:transmute_by_flag. This function wasn't working when I was invoking it in 2025-03-15.
 function generator.transmute_style( from, to, fstyle, tstyle, ar )
 	local a = ar or area.FULL
 	for c in a() do 
