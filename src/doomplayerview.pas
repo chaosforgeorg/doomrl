@@ -395,14 +395,15 @@ begin
 end;
 
 procedure TPlayerView.UpdateEquipment;
-const ResNames : array[TResistance] of AnsiString = ('Bullet','Melee','Shrap','Acid','Fire','Plasma');
-      ResIDs   : array[TResistance] of AnsiString = ('bullet','melee','shrapnel','acid','fire','plasma');
-var iEntry        : TItemViewEntry;
-    iSelected,iY  : Integer;
-    iB, iA, iR, iK: Integer;
-    iCount        : Integer;
-    iRes          : TResistance;
-    iName         : Ansistring;
+const ResNames : array[TResistance] of AnsiString = ('Bullet','Melee','Shrap','Acid','Fire','Plasma','Cold','Poison');
+      ResIDs   : array[TResistance] of AnsiString = ('bullet','melee','shrapnel','acid','fire','plasma','cold','poison');
+var iEntry            : TItemViewEntry;
+    iSelected,iY      : Integer;
+    iB, iA, iR, iK    : Integer;
+    iTot, iFeet, iTor : Integer;
+    iCount            : Integer;
+    iRes              : TResistance;
+    iName             : Ansistring;
   function Cursed : Boolean;
   begin
     if ( FEq[iSelected].Item <> nil ) and FEq[iSelected].Item.Flags[ IF_CURSED ] then
@@ -471,15 +472,21 @@ begin
 
     for iRes := Low(TResistance) to High(TResistance) do
     begin
-      Inc( iY );
-      VTIG_FreeLabel( '{d'+Padded(ResNames[iRes],7)+'{!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_INTERNAL))+'%',5)+
-           '} Torso {!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_TORSO))+'%',5)+
-           '} Feet {!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_FEET))+'%',5)+'}', Point( iR, iY ) );
+      iTot  := Player.getTotalResistance(ResIDs[iRes],TARGET_INTERNAL);
+      iTor  := Player.getTotalResistance(ResIDs[iRes],TARGET_TORSO);
+      iFeet := Player.getTotalResistance(ResIDs[iRes],TARGET_FEET);
+      if (iTot <> 0) or (iTor <> 0) or (iFeet <> 0) then
+      begin
+        Inc( iY );
+        VTIG_FreeLabel( '{d'+Padded(ResNames[iRes],7)+'{!'+Padded(BonusStr(iTot)+'%',5)+
+             '} Torso {!'+Padded(BonusStr(iTor)+'%',5)+
+             '} Feet {!'+Padded(BonusStr(iFeet)+'%',5)+'}', Point( iR, iY ) );
+      end;
     end;
 
-     VTIG_FreeLabel( '<{!Enter}> take off/wear', Point(iK, 18) );
-     VTIG_FreeLabel( '<{!Tab}> swap item',       Point(iK, 19) );
-     VTIG_FreeLabel( '<{!Backspace}> drop item', Point(iK, 20) );
+     VTIG_FreeLabel( '<{!Enter}> take off/wear', Point(iK, 19) );
+     VTIG_FreeLabel( '<{!Tab}> swap item',       Point(iK, 20) );
+     VTIG_FreeLabel( '<{!Backspace}> drop item', Point(iK, 21) );
   VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit}');
 
   if (iSelected >= 0) then

@@ -1,3 +1,6 @@
+0.9.9.9 BETA 8
+[mod] -- GH#264: resistances will only show up if non-zero
+
 0.9.9.9 BETA 7
 [new] -- GH#252: staying too long on a level will enrage the enemies
 [mod] -- GH#252: only some enemies keep to their patrol area

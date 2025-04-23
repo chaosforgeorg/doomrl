@@ -1735,6 +1735,8 @@ begin
     case aDamageType of
       Damage_Acid        : iResist := getTotalResistance( 'acid', aTarget );
       Damage_Fire        : iResist := getTotalResistance( 'fire', aTarget );
+      Damage_Cold        : iResist := getTotalResistance( 'cold', aTarget );
+      Damage_Poison      : iResist := getTotalResistance( 'poison', aTarget );
       Damage_Sharpnel    : iResist := getTotalResistance( 'shrapnel', aTarget );
       Damage_Plasma,
       Damage_SPlasma     : iResist := getTotalResistance( 'plasma', aTarget );

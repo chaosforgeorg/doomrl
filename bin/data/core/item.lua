@@ -171,6 +171,8 @@ function item:reset_resistances()
 		self.resist.fire     = (self.__proto.resist.fire or 0)
 		self.resist.acid     = (self.__proto.resist.acid or 0)
 		self.resist.plasma   = (self.__proto.resist.plasma or 0)
+		self.resist.cold     = (self.__proto.resist.cold or 0)
+		self.resist.poison   = (self.__proto.resist.poison or 0)
 	else
 		self.resist.bullet   = 0
 		self.resist.shrapnel = 0
@@ -178,6 +180,8 @@ function item:reset_resistances()
 		self.resist.fire     = 0
 		self.resist.acid     = 0
 		self.resist.plasma   = 0
+		self.resist.cold     = 0
+		self.resist.poison   = 0
 	end		
 end
 

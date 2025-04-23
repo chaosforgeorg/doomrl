@@ -204,6 +204,8 @@ function mortem.print_resistances()
 	mortem.print_resistance( "shrapnel" )
 	mortem.print_resistance( "acid" )
 	mortem.print_resistance( "fire" )
+	mortem.print_resistance( "cold" )
+	mortem.print_resistance( "poison" )
 	mortem.print_resistance( "plasma" )
 	if mortem.resistance_count == 0 then
 		player:mortem_print("    None")
