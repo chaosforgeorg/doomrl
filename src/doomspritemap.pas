@@ -739,7 +739,7 @@ begin
     iSprite := aSprite;
     iSprite.SpriteID[0] := iSprite.SpriteID[0] - DRL_COLS;
     Exclude( iSprite.Flags, SF_HIGHSPRITE );
-    PushSpriteDoodad( NewCoord2D( aCoord.x, aCoord.y-1 ), iSprite, aLight );
+    PushSpriteDoodad( NewCoord2D( aCoord.x, aCoord.y-1 ), iSprite, aLight, aZOffset );
   end;
 end;
 
