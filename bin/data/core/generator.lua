@@ -122,22 +122,24 @@ function generator.place_dungen_tile( code, tile_object, tile_pos )
 		local char       = string.char( tile_object:get_ascii(c) )
 		local tile_entry = code[ char ]
 		assert( tile_entry, "Character in map not defined -> "..char)
-		local p = tile_pos + c - coord.UNIT
-		if tile_entry.being then level:drop_being_ext( tile_entry.being, p ) end
-		if tile_entry.item  then level:drop_item_ext( tile_entry.item, p ) end
-		if tile_entry.flags then
-			for _, flag in ipairs(tile_entry.flags) do
-				level.light[p][flag] = true
+		if type(tile_entry) ~= "number" then
+			local p = tile_pos + c - coord.UNIT
+			if tile_entry.being then level:drop_being_ext( tile_entry.being, p ) end
+			if tile_entry.item  then level:drop_item_ext( tile_entry.item, p ) end
+			if tile_entry.flags then
+				for _, flag in ipairs(tile_entry.flags) do
+					level.light[p][flag] = true
+				end
 			end
-		end
-		if tile_entry.raw_style then
-			level:set_raw_style( p, tile_entry.raw_style )
-		end
-		if tile_entry.style then
-			level:set_raw_style( p, generator.styles[ tile_entry.style ].style )
-		end
-		if tile_entry.deco then
-			level:set_raw_deco( p, tile_entry.deco )
+			if tile_entry.raw_style then
+				level:set_raw_style( p, tile_entry.raw_style )
+			end
+			if tile_entry.style then
+				level:set_raw_style( p, generator.styles[ tile_entry.style ].style )
+			end
+			if tile_entry.deco then
+				level:set_raw_deco( p, tile_entry.deco )
+			end
 		end
 	end
 end
@@ -666,7 +668,8 @@ function generator.generate_archi_level( settings )
 
 	local wall_cell    = generator.styles[ level.style ].wall
 	local translation = {
-		["X"] = wall_cell,
+		["X"] = 0,
+		["#"] = wall_cell,
 		["."] = generator.styles[ level.style ].floor,
 		["+"] = generator.styles[ level.style ].door,
 	}
