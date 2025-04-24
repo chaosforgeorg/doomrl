@@ -734,6 +734,7 @@ function generator.generate_archi_level( settings )
 	if not data.no_fluids then
 		generator.generate_fluids(area(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
 	end
+	return area( shift, shift + blocks * (bsize - coord.UNIT) )
 end
 
 function generator.destroy_cell( c )
@@ -759,4 +760,34 @@ function generator.wallin_cell( c, cell_id )
 	level.map[c] = cell_id
 	level.light[c][LFPERMANENT] = true
 	return true
+end
+
+function generator.clear_dead_ends( iterations )
+	iterations = iterations or 1
+	local applied = false
+	local floor   = generator.styles[ level.style ].floor
+	local door    = generator.styles[ level.style ].door
+	local wall    = generator.styles[ level.style ].wall
+	repeat
+		applied = false
+		for c in level:each( floor, area.FULL_SHRINKED ) do
+			if level:cross_around( c, wall ) >= 3 then
+				applied = true
+				level:set_cell( c, generator.styles[ level.style ].wall )
+			end
+		end
+		for c in level:each( door, area.FULL_SHRINKED ) do
+			if level:cross_around( c, wall ) >= 3 then
+				applied = true
+				level:set_cell( c, generator.styles[ level.style ].wall )
+			end
+		end
+		iterations = iterations - 1
+	until iterations == 0 or (not applied)
+
+	for c in level:each( door, area.FULL_SHRINKED ) do
+		if level:cross_around( c, wall ) < 2 then
+			level:set_cell( c, floor )
+		end
+	end
 end
