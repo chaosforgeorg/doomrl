@@ -889,7 +889,7 @@ begin
   // Handle key-repeat
   if aEvent.Key.Repeated then
     if ( not ( iInput in [ INPUT_WAIT ] + INPUT_MOVE ) ) or
-       ( IO.Time - FLastInputTime < Player.VisualTime( Player.getMoveCost, 98 ) ) or (Player.EnemiesInVision > 0) then
+       ( IO.Time - FLastInputTime < Player.VisualTime( Player.getMoveCost, AnimationSpeedMove - 2 ) ) or (Player.EnemiesInVision > 0) then
       Exit( False );
   FLastInputTime := IO.Time;
 

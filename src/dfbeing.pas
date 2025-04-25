@@ -1047,7 +1047,7 @@ begin
   iMoveCost := getMoveCost;
   if GraphicsVersion then
   begin
-    iVisualTime := Ceil( VisualTime( iMoveCost, 100 ) * aVisualMultiplier );
+    iVisualTime := Ceil( VisualTime( iMoveCost, AnimationSpeedMove ) * aVisualMultiplier );
     if isPlayer then
       IO.addScreenMoveAnimation( iVisualTime, aTarget );
     IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite, True );
@@ -1559,7 +1559,7 @@ begin
     // Attack cost
     iAttackCost := getFireCost( ALT_NONE, True );
 
-    IO.addMeleeAnimation( VisualTime( iAttackCost, 100 ), 0, FUID, Position, aWhere, Sprite );
+    IO.addMeleeAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aWhere, Sprite );
 
     TLevel(Parent).DamageTile( aWhere, rollMeleeDamage( iSlot ), Damage_Melee );
     Dec( FSpeedCount, iAttackCost )
@@ -1612,7 +1612,7 @@ begin
   iAttackCost := getFireCost( ALT_NONE, True );
 
   if not Second then
-    IO.addMeleeAnimation( VisualTime( iAttackCost, 100 ), 0, FUID, Position, aTarget.Position, Sprite );
+    IO.addMeleeAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aTarget.Position, Sprite );
 
   if iDualAttack then iAttackCost := iAttackCost div 2;
   Dec( FSpeedCount, iAttackCost );

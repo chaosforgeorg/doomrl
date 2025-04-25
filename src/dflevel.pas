@@ -1356,7 +1356,7 @@ function TLevel.PushItem( aWho : TBeing; aWhat : TItem; aFrom, aTo : TCoord2D ) 
 var iItemOld : TItem;
 begin
   if ( aWho = nil ) or ( aWhat = nil ) or ( aWhat.Position <> aFrom ) then Exit( False );
-  IO.addMoveAnimation( aWho.VisualTime( aWho.getMoveCost, 150 ), 0, aWhat.UID, aFrom, aTo, aWhat.Sprite, False );
+  IO.addMoveAnimation( aWho.VisualTime( aWho.getMoveCost, AnimationSpeedPush ), 0, aWhat.UID, aFrom, aTo, aWhat.Sprite, False );
   iItemOld := Item[ aTo ];
   SetItem( aTo, aWhat );
   SetItem( aFrom, nil );
@@ -1366,7 +1366,7 @@ begin
     SetItem( aFrom, iItemOld );
     iItemOld.Position := aFrom;
   end;
-  aWho.ActionMove( aFrom, 1.5 );
+  aWho.ActionMove( aFrom, AnimationSpeedPush / AnimationSpeedMove );
 end;
 
 function TLevel.SwapBeings( aA, aB : TCoord2D ) : Boolean;
