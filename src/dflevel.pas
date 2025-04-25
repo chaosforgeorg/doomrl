@@ -1623,7 +1623,7 @@ begin
   if iState.IsArea(2) then
   begin
     iArea := iState.ToArea(2);
-    for iCoord in iLevel.FArea do
+    for iCoord in iArea do
       iLevel.FMap.Style[iCoord.X,iCoord.Y] := iValue;
   end
   else
@@ -1662,7 +1662,7 @@ begin
   if iState.IsArea(2) then
   begin
     iArea := iState.ToArea(2);
-    for iCoord in iLevel.FArea do
+    for iCoord in iArea do
       iLevel.FMap.Deco[iCoord.X,iCoord.Y] := iValue;
   end
   else
