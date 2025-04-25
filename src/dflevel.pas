@@ -1610,17 +1610,27 @@ begin
 end;
 
 function lua_level_set_raw_style(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var iState  : TDoomLuaState;
     iCoord  : TCoord2D;
+    iArea   : TArea;
     iLevel  : TLevel;
     iValue  : Byte;
 begin
-  State.Init(L);
-  iLevel := State.ToObject(1) as TLevel;
-  if State.IsNil(2) then Exit(0);
-  iCoord := State.ToCoord(2);
-  iValue := State.ToInteger(3);
-  iLevel.FMap.Style[iCoord.X,iCoord.Y] := iValue;
+  iState.Init(L);
+  iLevel := iState.ToObject(1) as TLevel;
+  if iState.IsNil(2) then Exit(0);
+  iValue := iState.ToInteger(3);
+  if iState.IsArea(2) then
+  begin
+    iArea := iState.ToArea(2);
+    for iCoord in iLevel.FArea do
+      iLevel.FMap.Style[iCoord.X,iCoord.Y] := iValue;
+  end
+  else
+  begin
+    iCoord := iState.ToCoord(2);
+    iLevel.FMap.Style[iCoord.X,iCoord.Y] := iValue;
+  end;
   Result := 0;
 end;
 
@@ -1639,17 +1649,27 @@ end;
 
 
 function lua_level_set_raw_deco(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
-    iCoord  : TCoord2D;
-    iLevel  : TLevel;
-    iValue  : Byte;
+var iState : TDoomLuaState;
+    iCoord : TCoord2D;
+    iArea  : TArea;
+    iLevel : TLevel;
+    iValue : Byte;
 begin
-  State.Init(L);
-  iLevel := State.ToObject(1) as TLevel;
-  if State.IsNil(2) then Exit(0);
-  iCoord := State.ToCoord(2);
-  iValue := State.ToInteger(3);
-  iLevel.FMap.Deco[iCoord.X,iCoord.Y] := iValue;
+  iState.Init(L);
+  iLevel := iState.ToObject(1) as TLevel;
+  if iState.IsNil(2) then Exit(0);
+  iValue := iState.ToInteger(3);
+  if iState.IsArea(2) then
+  begin
+    iArea := iState.ToArea(2);
+    for iCoord in iLevel.FArea do
+      iLevel.FMap.Deco[iCoord.X,iCoord.Y] := iValue;
+  end
+  else
+  begin
+    iCoord := iState.ToCoord(2);
+    iLevel.FMap.Deco[iCoord.X,iCoord.Y] := iValue;
+  end;
   Result := 0;
 end;
 
