@@ -69,15 +69,34 @@ function generator.scatter_cross_item(scatter_area,good,item_id,count)
 	local test = function( c )
 		return level:is_empty( c, { EF_NOBLOCK } )
 	end
-	for _ = 1, count do
-		local c = level:random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
-		if c then
-			if level:get_cell( c ) == good then
+
+	local function drop( id )
+		local attempts = 10 
+		repeat
+			local c = level:random_empty_coord( { EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, good, scatter_area )
+			if c then
 				if test( coord( c.x-1, c.y ) ) and test( coord( c.x+1, c.y ) ) and
 					test( coord( c.x, c.y-1 ) ) and test( coord( c.x, c.y+1 ) ) then
-					level:drop_item( item_id, c, true )
+					level:drop_item( id, c, true )
+					return true
 				end
+			end	
+			attempts = attempts - 1
+		until attempts == 0
+		return false
+	end
+
+	if type( item_id ) == "table" then
+		for _,item in ipairs( item_id ) do
+			count = core.resolve_range( item[2] or 1 )
+			for i = 1, count do
+				drop( item[1] )
 			end
+		end
+	else
+		count = core.resolve_range( count or 1 )
+		for _ = 1, count do
+			drop( item_id )
 		end
 	end
 end
