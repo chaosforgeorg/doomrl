@@ -62,6 +62,7 @@ begin
 
   Option_MaxRun           := Configure('MaxRun',Option_MaxRun);
   Option_MaxWait          := Configure('MaxWait',Option_MaxWait);
+  Option_ForceRaw         := Configure('ForceRaw',GodMode);
 
   if ForceNoAudio then
   begin

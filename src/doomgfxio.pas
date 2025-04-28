@@ -205,7 +205,7 @@ begin
 
   FTextures  := TTextureManager.Create( Option_Blending );
 
-  if GodMode then
+  if Option_ForceRaw then
   begin
     iFontFormat := ReadFileString( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + 'default' );
   end
@@ -220,7 +220,7 @@ begin
 
   SScanf( iFontFormat, '%s %d %d %d %d', [@iFontName, @FFontSizeX, @FFontSizeY, @ConsoleSizeX, @ConsoleSizeY ] );
 
-  if GodMode then
+  if Option_ForceRaw then
     iImage := LoadImage( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + iFontName )
   else
   begin

@@ -168,6 +168,7 @@ const
   Option_ColoredInventory : Boolean = True;
   Option_LockBreak        : Boolean = True;
   Option_LockClose        : Boolean = True;
+  Option_ForceRaw         : Boolean = True;
   Option_MessageBuffer    : DWord = 100;
   Option_MaxRun           : DWord = 100;
   Option_MaxWait          : DWord = 20;
