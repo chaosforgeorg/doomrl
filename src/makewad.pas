@@ -1,6 +1,6 @@
 {$INCLUDE doomrl.inc}
 program makewad;
-uses Classes,SysUtils, strutils, vpkg,vdf, vutil, dfdata, idea;
+uses Classes,SysUtils, strutils, vlog, vpkg,vdf, vutil, dfdata, idea;
 
 var WAD         : TVDataCreator;
     EKey,DKKey  : TIDEAKey;
@@ -11,6 +11,9 @@ var WAD         : TVDataCreator;
 
 const UserKey : TIdeaCryptKey = (123,111,10,12,222,90,1,8);
 begin
+  Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, WritePath + 'runtime.log', False ) );
+  Logger.AddSink( TConsoleLogSink.Create( LOGDEBUG ) );
+
   EnKeyIdea(UserKey,EKey);
   DeKeyIdea(EKey,DKKey);
 
@@ -29,7 +32,6 @@ begin
   if ParamCount < 1
     then ModuleID := 'drl'
     else ModuleID := ParamStr(1);
-
   begin
     Path := 'data/' + ModuleID + '/';
 
@@ -39,7 +41,7 @@ begin
     WAD.Add(Path+'help/*.hlp',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'help' );
     WAD.Add(Path+'ascii/*.asc',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'ascii' );
     WAD.Add(Path+'*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], '' );
-    WAD.Add(Path+'levels/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'levels' );
+    WAD.Add(Path+'levels/**.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'levels' );
     WAD.Add(Path+'items/*.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], 'items' );
     WAD.Add(Path+'fonts/font*.png',FILETYPE_IMAGE,[], 'fonts' );
     WAD.Add(Path+'fonts/default',FILETYPE_RAW,[], 'fonts' );
@@ -50,6 +52,5 @@ begin
     WAD.Add(Path+'music/*.mid',FILETYPE_RAW,[vdfCompressed], 'music' );
 
     FreeAndNil(WAD);
-
   end;
 end.

@@ -8,6 +8,7 @@
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <MainUnitHasScaledStatement Value="False"/>
         <LRSInOutputDirectory Value="False"/>
         <CompatibilityMode Value="True"/>
       </Flags>
@@ -22,13 +23,13 @@
     </PublishOptions>
     <RunParams>
       <local>
-        <LaunchingApplication Use="True" PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
+        <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
       </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
           <local>
-            <LaunchingApplication Use="True" PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
+            <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
           </local>
         </Mode0>
       </Modes>
@@ -43,6 +44,11 @@
         <IsPartOfProject Value="True"/>
       </Unit1>
     </Units>
+    <Debugger>
+      <ClassConfig Version="1">
+        <Config ConfigName="New" ConfigClass="TFpDebugDebugger" Active="True" UID="{4BFA719F-8B51-4855-9D7C-144B3E910B9D}"/>
+      </ClassConfig>
+    </Debugger>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
@@ -61,7 +67,8 @@
     </Parsing>
     <Linking>
       <Debugging>
-        <DebugInfoType Value="dsDwarf3"/>
+        <DebugInfoType Value="dsDwarf2"/>
+        <UseLineInfoUnit Value="False"/>
       </Debugging>
     </Linking>
   </CompilerOptions>
