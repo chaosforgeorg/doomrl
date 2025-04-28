@@ -60,9 +60,25 @@ makefile = {
 				["data/drlhq"] = "*.lua",
 			},
 			other = { "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
+		},
+		jhc = {
+			exec = { "drl" },
+			files = { "config.lua" },
+			os = {
+				WINDOWS = { "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "drl_console.bat" },
+				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm",  dos2unix = true, },
+				MACOSX  = { "unix_notes.txt" },
+			},
+			other = { "jhc.wad", "core.wad" },
+			create = { { "module", "jhc" } },
 		}
 	},
 	commands = {
+		jhc_steam = function()
+			os.execute_in_dir( "makewad jhc", "bin" )
+			local path = make.publish( "deploy", "jhc" )
+			make.steam( path, os.pwd().."\\bin\\data\\jhc\\setup\\app_build_3256910.vdf" )
+		end,
 		lq = function()
 			make.package( make.publish( (OS_VER_PREFIX or "")..make.version_name().."-lq", "lq" ), PUBLISH_DIR )
 		end,
