@@ -29,7 +29,6 @@ core.register_blueprint "difficulty"
 	scorefactor   = { false, core.TNUMBER, 1 },
 	ammofactor    = { false, core.TNUMBER, 1 },
 	powerfactor   = { false, core.TNUMBER, 1 },
-	powerbonus    = { false, core.TNUMBER, 1.5 },
 	respawn       = { false, core.TBOOL,   false },
 	challenge     = { false, core.TBOOL,   true },
 	req_skill     = { false, core.TNUMBER, 0 },

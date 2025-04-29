@@ -53,7 +53,6 @@ function drl.register_difficulties()
 		scorefactor   = 4,
 		ammofactor    = 2,
 		powerfactor   = 2,
-		powerbonus    = 1.25,
 		respawn       = true,
 		req_skill     = 4,
 		speed         = 1.5,

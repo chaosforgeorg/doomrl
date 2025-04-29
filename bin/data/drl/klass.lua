@@ -37,7 +37,11 @@ function drl.register_klasses()
 		desc = "Marines are the backbone of the UAC, resilient and hardy. They start with 10 more health points, +20% fire/acid/plasma resistance and powerups they use have a +50% duration bonus (+25% on Nightmare).",
 
 		OnPick = function( being )
-			being:add_property( "POWER_BONUS", diff[DIFFICULTY].powerbonus )
+			if DIFFICULTY >= DIFF_NIGHTMARE then
+				being:add_property( "POWER_BONUS", 25 )
+			else
+				being:add_property( "POWER_BONUS", 50 )
+			end
 			being.hpmax = being.hpmax + 10
 			being.hp    = being.hp + 10
 

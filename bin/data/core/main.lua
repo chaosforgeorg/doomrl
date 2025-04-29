@@ -359,7 +359,7 @@ function core.mod_list_signature( mod_list )
 end
 
 function core.power_duration( base )
-	return math.floor( base * diff[DIFFICULTY].powerfactor * player:get_property( "POWER_BONUS", 1 ) )
+	return math.floor( base * diff[DIFFICULTY].powerfactor * ( 1.0 + player:get_property( "POWER_BONUS", 0 ) / 100 ) )
 end
 
 function core.is_challenge( chal_id )
