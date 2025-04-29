@@ -732,6 +732,7 @@ begin
       end;
 
       iValue := GetInteger('reqlevel',0);
+      if iValue > 0 then iValue += Value(iTrait)*3;
       if iValue > 0
         then iEntry.Requires += '{'+RG[iLevel < iValue]+'Level }({!'+IntToStr(iValue)+'})'
         else Delete( iEntry.Requires, Length(iEntry.Requires) - 1, 2 );

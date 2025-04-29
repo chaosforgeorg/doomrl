@@ -27,7 +27,6 @@ protected
   FHooks    : array[1..MAXTRAITS]      of TFlags;
   FHookMask : TFlags;
   FCount    : Byte;
-  FMastered : Boolean;
 protected
   property Values[ aIndex : Byte ] : Byte read Get; default;
 end;
@@ -40,6 +39,7 @@ function TTraits.CanPick( aKlass : Byte; aTrait : Byte; aCharLevel : Byte ): Boo
 var iOther, iValue : DWord;
     iVariant : Variant;
     iTable   : TLuaTable;
+    iReqLevel : Integer;
 begin
   if FBlocked[ aTrait ] then Exit( False );
   if not LuaSystem.Defined(['traits',aTrait,'OnPick']) then Exit( False );
@@ -47,7 +47,9 @@ begin
   with LuaSystem.GetTable(['klasses',aKlass,'trait',aTrait]) do
   try
     if (aCharLevel < 12) and (Self.FValues[ aTrait ] >= getInteger( 'max', 1 )) then Exit( False );
-    if aCharLevel < getInteger( 'reqlevel', 0 ) then Exit( False );
+    iReqLevel := getInteger( 'reqlevel', 0 );
+    if iReqLevel > 0 then iReqLevel += Self.FValues[ aTrait ] * 3;
+    if aCharLevel < iReqLevel then Exit( False );
 	
     if IsTable('blocks') then
     begin
@@ -102,10 +104,10 @@ begin
 
   if iMaster then
   begin
-    FMastered := True;
     for i := 1 to MAXTRAITS do
       if LuaSystem.Get(['klasses',aKlass,'trait',i,'master'], False ) then
         FBlocked[ i ] := True;
+    FBlocked[ aTrait ] := FValues[ aTrait ] >= iMax;
   end;
 
   LuaSystem.ProtectedCall( [ 'traits',aTrait,'OnPick' ], [ Player, FValues[ aTrait ] ] );
@@ -155,7 +157,6 @@ begin
   for iCount := 1 to High(FOrder)   do FOrder[iCount] := 0;
   for iCount := 1 to High(FHooks)   do FHooks[iCount] := [];
   FCount := 0;
-  FMastered := False;
   FHookMask := [];
 end;
 
@@ -166,7 +167,6 @@ begin
   aStream.Read( FBlocked,  SizeOf( FBlocked ) );
   aStream.Read( FOrder,    SizeOf( FOrder ) );
   aStream.Read( FCount,    SizeOf( FCount ) );
-  aStream.Read( FMastered, SizeOf( FMastered ) );
   aStream.Read( FHooks,    SizeOf( FHooks ) );
   aStream.Read( FHookMask, SizeOf( FHookMask ) );
 end;
@@ -178,7 +178,6 @@ begin
   aStream.Write( FBlocked,  SizeOf( FBlocked ) );
   aStream.Write( FOrder,    SizeOf( FOrder ) );
   aStream.Write( FCount,    SizeOf( FCount ) );
-  aStream.Write( FMastered, SizeOf( FMastered ) );
   aStream.Write( FHooks,    SizeOf( FHooks ) );
   aStream.Write( FHookMask, SizeOf( FHookMask ) );
 end;
