@@ -168,7 +168,8 @@ TBeing = class(TThing,IPathQuery)
     property MeleeAttack  : Boolean read FMeleeAttack;
   published
 
-    property can_dual_reload : Boolean read canDualWield;
+    property can_dual_wield       : Boolean read canDualWield;
+    property can_dual_wield_melee : Boolean read canDualWieldMelee;
     property last_command : Byte       read FLastCommand.Command;
     property ChainFire    : Byte       read FChainFire    write FChainFire;
     property HPMax        : Word       read FHPMax        write FHPMax;
@@ -1613,7 +1614,6 @@ begin
   if not Second then
     IO.addMeleeAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aTarget.Position, Sprite );
 
-  if iDualAttack then iAttackCost := iAttackCost div 2;
   Dec( FSpeedCount, iAttackCost );
 
   // Get names
@@ -2150,23 +2150,26 @@ function TBeing.getFireCost( aAltFire : TAltFire; aIsMelee : Boolean ) : LongInt
 var iModifier : Single;
     iBonus    : Integer;
     iWeapon   : TItem;
+  function getWeaponFireCost( aWeapon : TItem ) : LongInt;
+  begin
+    if aIsMelee and ( aWeapon <> nil ) and ( not aWeapon.isMelee ) then aWeapon := nil;
+    iModifier := 10;
+    if aWeapon <> nil then iModifier := aWeapon.UseTime;
+    iModifier *= FTimes.Fire/1000.;
+    iBonus    := GetBonus( Hook_getFireCostBonus, [ aWeapon, aIsMelee, Integer( aAltFire ) ] );
+    if iBonus <> 0 then iModifier *= Max( (100.-iBonus)/100, 0.1 );
+    if iModifier < 0.1 then iModifier := 0.1;
+    iModifier *= GetBonusMul( Hook_getFireCostMul, [ aWeapon, aIsMelee, Integer( aAltFire ) ] );
+    if (aAltFire = ALT_AIMED) then iModifier *= 2;
+    getWeaponFireCost := Round( ActionCostFire*iModifier );
+  end;
+
 begin
   iWeapon   := Inv.Slot[ efWeapon ];
-  if aIsMelee and ( iWeapon <> nil ) and ( not iWeapon.isMelee ) then iWeapon := nil;
-  iModifier := 10;
-  if iWeapon <> nil then
-  begin
-    if (not aIsMelee) and canDualWield and ( Inv.Slot[ efWeapon2 ].Ammo > 0 )
-      then iModifier := ( iWeapon.UseTime + Inv.Slot[ efWeapon2 ].UseTime ) / 2
-      else iModifier := iWeapon.UseTime;
-  end;
-  iModifier *= FTimes.Fire/1000.;
-  iBonus    := GetBonus( Hook_getFireCostBonus, [ Inv.Slot[ efWeapon ], aIsMelee, Integer( aAltFire ) ] );
-  if iBonus <> 0 then iModifier *= Max( (100.-iBonus)/100, 0.1 );
-  if iModifier < 0.1 then iModifier := 0.1;
-  iModifier *= GetBonusMul( Hook_getFireCostMul, [ Inv.Slot[ efWeapon ], aIsMelee, Integer( aAltFire ) ] );
-  if (aAltFire = ALT_AIMED) then iModifier *= 2;
-  getFireCost := Round( ActionCostFire*iModifier );
+  if ( iWeapon <> nil ) and ( aAltFire <> ALT_SINGLE ) then
+    if ( aIsMelee and canDualWieldMelee ) or ( (not aIsMelee) and canDualWield and (Inv.Slot[ efWeapon2 ].Ammo > 0) ) then
+       Exit( ( getWeaponFireCost( iWeapon ) + getWeaponFireCost( Inv.Slot[ efWeapon2 ] ) ) div 2 );
+  Exit( getWeaponFireCost( iWeapon ) );
 end;
 
 function TBeing.getReloadCost: LongInt;

@@ -422,6 +422,7 @@ function drl.register_traits()
 			end
 			return 1.0
 		end,
+		
 	}
 
 	register_trait "bulletdance"
@@ -484,7 +485,7 @@ function drl.register_traits()
 			if self.kata_reload then
 				self.kata_reload = false
 				local sc = self.scount
-				if self.can_dual_reload then
+				if self.can_dual_wield then
 					self:action_dual_reload( self )
 				else
 					self:action_reload( self )
