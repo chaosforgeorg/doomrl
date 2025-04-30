@@ -713,7 +713,7 @@ function drl.register_regular_items()
 		altfire       = ALT_TARGETSCRIPT,
 		altfirename   = "rocketjump",
 		missile       = "mrocket",
-		flags         = { IF_ROCKET },
+		flags         = {},
 
 		OnAltFire = function( self, being )
 			self.missile = missiles[ "mrocketjump" ].nid

@@ -503,7 +503,7 @@ function drl.register_unique_items()
 		group    = "rocket",
 		desc     = "Two can play the homing missile game.",
 		scavenge = { "umod_sniper" },
-		flags    = { IF_UNIQUE, IF_ROCKET, IF_MODABLE },
+		flags    = { IF_UNIQUE, IF_MODABLE },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "rocket",

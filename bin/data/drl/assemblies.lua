@@ -161,7 +161,7 @@ function drl.register_assemblies()
 		request_type = ITEMTYPE_RANGED,
 
 		Match = function (item)
-			return item.ammomax > 5 and (not item.flags[ IF_SHOTGUN ] )
+			return item.ammomax > 5 and item.group ~= "shotgun"
 		end,
 
 		OnApply = function (item)
@@ -316,7 +316,7 @@ function drl.register_assemblies()
 		desc  = "any shotgun",
 
 		Match = function (item)
-			return item.flags[ IF_SHOTGUN ]
+			return item.group == "shotgun"
 		end,
 
 		OnApply = function (item)
@@ -645,7 +645,7 @@ function drl.register_assemblies()
 		desc  = "non-sg/non-bfg ranged weapon",
 
 		Match = function (item)
-			return (not item.flags[ IF_SHOTGUN ]) and (item.itype == ITEMTYPE_RANGED) and (item.blastradius < 5)
+			return item.group ~= "shotgun" and (item.itype == ITEMTYPE_RANGED) and (item.blastradius < 5)
 		end,
 
 		OnApply = function (item)
@@ -665,7 +665,7 @@ function drl.register_assemblies()
 		desc  = "any shotgun",
 
 		Match = function (item)
-			return item.flags[ IF_SHOTGUN ]
+			return item.group == "shotgun"
 		end,
 
 		OnApply = function (item)

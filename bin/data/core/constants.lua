@@ -123,7 +123,7 @@ IF_NECROCHARGE    = 31;
 IF_SINGLERELOAD   = 33;
 IF_PISTOL         = 34;
 IF_SHOTGUN        = 35;
-IF_ROCKET         = 36;
+
 IF_SPREAD         = 37;
 IF_SCATTER        = 38;
 IF_SINGLEMOD      = 39;

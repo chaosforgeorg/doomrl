@@ -290,7 +290,7 @@ function drl.register_exotic_items()
 		weight   = 6,
 		group    = "rocket",
 		desc     = "The definitive upgrade to the rocket launcher.",
-		flags    = { IF_EXOTIC, IF_ROCKET, IF_SINGLERELOAD },
+		flags    = { IF_EXOTIC, IF_SINGLERELOAD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "rocket",
@@ -467,7 +467,7 @@ function drl.register_exotic_items()
 		weight   = 6,
 		group    = "rocket",
 		desc     = "This will surely make a mess!",
-		flags    = { IF_EXOTIC, IF_ROCKET, IF_SINGLERELOAD },
+		flags    = { IF_EXOTIC, IF_SINGLERELOAD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "rocket",
