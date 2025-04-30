@@ -393,13 +393,19 @@ function drl.register_traits()
 		abbr   = "MMB",
 		master = true,
 
-		OnPick = function (being)
-			being.flags[ BF_DUALBLADE ] = true
+		OnPick = function (self)
+		end,
+
+		OnCanDualWield = function( self, weapon, weapon2 )
+			if weapon:get_property( "BLADE", false ) and weapon2:get_property( "BLADE", false ) then
+				return true
+			end
+			return false
 		end,
 
 		getResistBonus = function ( self, resist, target )
 			local wp = self.eq.prepared
-			if wp and wp.flags[ IF_BLADE ] then
+			if wp and wp:get_property( "BLADE", false ) then
 				return ({
 					bullet = 50,
 					shrapnel = 50,
@@ -411,7 +417,7 @@ function drl.register_traits()
 		end,
 
 		getDamageMul = function( self, weapon, is_melee, alt )
-			if weapon and weapon.flags[ IF_BLADE ] then
+			if weapon and weapon:get_property( "BLADE", false ) then
 				return 2.0
 			end
 			return 1.0

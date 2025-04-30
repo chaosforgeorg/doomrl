@@ -13,7 +13,7 @@ function drl.register_regular_items()
 		weight   = 640,
 		group    = "melee",
 		desc     = "Not what you'd really like to use, but it's better than your fists.",
-		flags    = { IF_BLADE, IF_THROWDROP },
+		flags    = { IF_THROWDROP },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "2d5",
@@ -21,6 +21,10 @@ function drl.register_regular_items()
 		acc         = 1,
 		altfire     = ALT_THROW,
 		missile     = "mknife",
+
+		OnCreate = function(self)
+			self:add_property( "BLADE", true )
+		end,
 	}
 
 	-- Armors --

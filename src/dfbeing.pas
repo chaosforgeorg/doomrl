@@ -65,7 +65,7 @@ TBeing = class(TThing,IPathQuery)
     function getToHit( aItem : TItem; aAltFire : TAltFire; aIsMelee : Boolean ) : Integer;
     function getToDam( aItem : TItem; aAltFire : TAltFire; aIsMelee : Boolean ) : Integer;
     function canDualWield : boolean;
-    function canDualBlade : boolean;
+    function canDualWieldMelee : boolean;
     function canPackReload : Boolean;
     function getStrayChance( aDefender : TBeing; aMissile : Byte ) : Byte;
     function Preposition( Creature : AnsiString ) : string;
@@ -1580,7 +1580,7 @@ begin
   if BF_NOMELEE in FFlags then Exit;
   if aTarget = nil then Exit;
   FMeleeAttack := True;
-  iDualAttack  := canDualBlade;
+  iDualAttack  := False;
   iTargetUID   := aTarget.UID;
   iMissed      := False;
 
@@ -1604,6 +1604,8 @@ begin
   end
   else
     PlaySound( 'melee' );
+
+  iDualAttack := canDualWieldMelee;
 
   // Attack cost
   iAttackCost := getFireCost( ALT_NONE, True );
@@ -2201,20 +2203,18 @@ begin
   getKnockMod := Round(Modifier) ;
 end;
 
-function TBeing.canDualWield: boolean;
+function TBeing.canDualWield : boolean;
 begin
   if ( Inv.Slot[efWeapon] <> nil ) and ( Inv.Slot[efWeapon2] <> nil ) and ( Inv.Slot[ efWeapon2 ].isWeapon ) then
     Exit( CallHookCan( Hook_OnCanDualWield, [ Inv.Slot[efWeapon], Inv.Slot[efWeapon2] ] ) );
   Exit( False );
 end;
 
-function TBeing.canDualBlade: boolean;
+function TBeing.canDualWieldMelee: boolean;
 begin
-  Exit( ( BF_DUALBLADE in FFlags )
-    and ( Inv.Slot[efWeapon] <> nil )
-    and ( Inv.Slot[efWeapon].Flags[ IF_BLADE ] )
-    and ( Inv.Slot[efWeapon2] <> nil )
-    and ( Inv.Slot[efWeapon2].Flags[ IF_BLADE ] ) );
+  if ( Inv.Slot[efWeapon] <> nil ) and ( Inv.Slot[efWeapon2] <> nil ) and ( Inv.Slot[ efWeapon ].isMelee ) and ( Inv.Slot[ efWeapon2 ].isMelee ) then
+    Exit( CallHookCan( Hook_OnCanDualWield, [ Inv.Slot[efWeapon], Inv.Slot[efWeapon2] ] ) );
+  Exit( False );
 end;
 
 function TBeing.canPackReload : Boolean;

@@ -91,7 +91,7 @@ BF_INSTAUSE     = 39;
 BF_STAIRSENSE   = 40;
 
 
-BF_DUALBLADE    = 43;
+
 
 
 
@@ -140,7 +140,7 @@ IF_NONMODABLE     = 49;
 IF_NOREPAIR       = 50;
 IF_ASSEMBLED      = 51;
 IF_DESTROY        = 52;
-IF_BLADE          = 53;
+
 IF_DESTRUCTIVE    = 54;
 IF_FARHIT         = 55;
 IF_UNSEENHIT      = 56;

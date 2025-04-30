@@ -134,12 +134,16 @@ function drl.register_unique_items()
 		weight   = 2,
 		desc     = "Now that is a BIG cleaver. Butcher them!",
 		firstmsg = "Aaaah, fresh meat!",
-		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_BLADE, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "5d6",
 		damagetype  = DAMAGE_MELEE,
 		group       = "melee",
+
+		OnCreate = function(self)
+			self:add_property( "BLADE", true )
+		end,
 
 		OnKill = function ( self, being, target )
 			if not being then return end
@@ -195,7 +199,7 @@ function drl.register_unique_items()
 		weight   = 1,
 		desc     = "A weapon that can cut the very fabric of reality. Too bad it's only eight inches long...",
 		firstmsg = "Looks very inconspicious.",
-		flags    = { IF_UNIQUE, IF_BLADE, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "3d5",
@@ -203,6 +207,10 @@ function drl.register_unique_items()
 		group       = "melee",
 		altfire     = ALT_SCRIPT,
 		altfirename = "invoke",
+
+		OnCreate = function(self)
+			self:add_property( "BLADE", true )
+		end,
 
 		OnAltFire = function(self,being)
 			if being:is_affect( "tired" ) then
@@ -961,7 +969,7 @@ function drl.register_unique_items()
 		weight   = 1,
 		group    = "melee",
 		desc     = "It was called the Dragonslayer, because no human could wield it...",
-		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_CURSED, IF_BLADE },
+		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_CURSED },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "9d9",
@@ -969,6 +977,10 @@ function drl.register_unique_items()
 		altfire     = ALT_SCRIPT,
 		altfirename = "whirlwind",
 
+		OnCreate = function(self)
+			self:add_property( "BLADE", true )
+		end,
+		
 		OnPickupCheck = function (self,being)
 			-- XXX Maybe we should allow Barons of Hell to wield it since they are not really human...
 			if not being:is_player() then return false end
