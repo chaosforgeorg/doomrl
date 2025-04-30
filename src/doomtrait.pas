@@ -12,6 +12,7 @@ type TTraits = class( TVObject )
   procedure WriteToStream( aStream : TStream ); override;
   function CallHook( aHook : Byte; const aParams : array of Const ) : Boolean;
   function CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean;
+  function CallHookCan( aHook : Byte; const aParams : array of Const ) : Boolean;
   function GetBonus( aHook : Byte; const aParams : array of Const ) : Integer;
   function GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single;
   function GetHistory : AnsiString;
@@ -204,6 +205,17 @@ begin
       if not LuaSystem.ProtectedCall( [ 'traits', i, HookNames[aHook] ], ConcatConstArray( [Player], aParams ) ) then
         Exit( False );
   Exit( True );
+end;
+
+function TTraits.CallHookCan( aHook : Byte; const aParams : array of Const ) : Boolean;
+var i : Integer;
+begin
+  if not ( aHook in FHookMask ) then Exit( False );
+  for i := 1 to High(FHooks) do
+    if aHook in FHooks[i] then
+      if LuaSystem.ProtectedCall( [ 'traits', i, HookNames[aHook] ], ConcatConstArray( [Player], aParams ) ) then
+        Exit( True );
+  Exit( False );
 end;
 
 function TTraits.GetBonus( aHook : Byte; const aParams : array of Const ) : Integer;

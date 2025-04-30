@@ -231,7 +231,13 @@ function drl.register_traits()
 		abbr   = "DG",
 
 		OnPick = function (being)
-			being.flags[ BF_DUALGUN ] = true
+		end,
+
+		OnCanDualWield = function( self, weapon, weapon2 )
+			if weapon.group == "pistol" and weapon2.group == "pistol" then
+				return true
+			end
+			return false
 		end,
 	}
 

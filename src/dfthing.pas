@@ -20,6 +20,7 @@ TThing = class( TLuaEntityNode )
   function PlaySound( const aSoundID : string; aPosition : TCoord2D; aDelay : Integer = 0 ) : Boolean;
   function CallHook( aHook : Byte; const aParams : array of Const ) : Boolean; virtual;
   function CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean; virtual;
+  function CallHookCan( aHook : Byte; const aParams : array of Const ) : Boolean; virtual;
   function GetSprite : TSprite; virtual;
   procedure WriteToStream( Stream : TStream ); override;
 protected
@@ -102,6 +103,12 @@ begin
   if aHook in ChainedHooks then if not Doom.Level.CallHookCheck( aHook, ConcatConstArray( [ Self ], aParams ) ) then Exit( False );
   if aHook in FHooks then if not LuaSystem.ProtectedRunHook(Self, HookNames[aHook], aParams ) then Exit( False );
   Exit( True );
+end;
+
+function TThing.CallHookCan ( aHook : Byte; const aParams : array of const ) : Boolean;
+begin
+  if aHook in FHooks then if LuaSystem.ProtectedRunHook(Self, HookNames[aHook], aParams ) then Exit( True );
+  Exit( False );
 end;
 
 function TThing.GetSprite: TSprite;

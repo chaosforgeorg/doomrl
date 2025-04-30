@@ -64,9 +64,8 @@ TBeing = class(TThing,IPathQuery)
     function getKnockMod : LongInt;
     function getToHit( aItem : TItem; aAltFire : TAltFire; aIsMelee : Boolean ) : Integer;
     function getToDam( aItem : TItem; aAltFire : TAltFire; aIsMelee : Boolean ) : Integer;
-    function canDualGun : boolean;
+    function canDualWield : boolean;
     function canDualBlade : boolean;
-    function canDualReload : Boolean;
     function canPackReload : Boolean;
     function getStrayChance( aDefender : TBeing; aMissile : Byte ) : Byte;
     function Preposition( Creature : AnsiString ) : string;
@@ -169,7 +168,7 @@ TBeing = class(TThing,IPathQuery)
     property MeleeAttack  : Boolean read FMeleeAttack;
   published
 
-    property can_dual_reload : Boolean read canDualReload;
+    property can_dual_reload : Boolean read canDualWield;
     property last_command : Byte       read FLastCommand.Command;
     property ChainFire    : Byte       read FChainFire    write FChainFire;
     property HPMax        : Word       read FHPMax        write FHPMax;
@@ -606,7 +605,7 @@ begin
       then Inv.Slot[ efWeapon ].PlaySound( 'pickup', FPosition )
       else Inv.Slot[ efWeapon ].PlaySound( 'reload', FPosition );
 
-  if ( BF_QUICKSWAP in FFlags ) or ( canDualReload )
+  if ( BF_QUICKSWAP in FFlags ) or ( canDualWield )
     then Exit( Success( 'You swap your weapons instantly!',[] ) )
     else Exit( Success( 'You swap your weapons.',[], Round(ActionCostWear*0.8) ) );
 end;
@@ -742,7 +741,7 @@ function TBeing.ActionDualReload : Boolean;
 var SAStore : Boolean;
     iReload : Boolean;
 begin
-  if not canDualReload then
+  if not canDualWield then
     Exit( Fail( 'Dualreload not possible.', [] ) );
   SAStore := FSilentAction;
   FSilentAction := True;
@@ -856,8 +855,8 @@ begin
 
   Dec( FSpeedCount, getFireCost( iAltFire, False ) );
 
-  if canDualGun then
   if ( not FireRanged( aTarget, aWeapon, iAltFire, aDelay )) or Player.Dead then Exit;
+  if canDualWield and ( Inv.Slot[ efWeapon2 ].Ammo > 0 ) then
     if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], iAltFire, aDelay + 100 )) or Player.Dead then Exit;
 
   Exit( True );
@@ -2155,7 +2154,7 @@ begin
   iModifier := 10;
   if iWeapon <> nil then
   begin
-    if (not aIsMelee) and canDualGun
+    if (not aIsMelee) and canDualWield and ( Inv.Slot[ efWeapon2 ].Ammo > 0 )
       then iModifier := ( iWeapon.UseTime + Inv.Slot[ efWeapon2 ].UseTime ) / 2
       else iModifier := iWeapon.UseTime;
   end;
@@ -2202,14 +2201,11 @@ begin
   getKnockMod := Round(Modifier) ;
 end;
 
-function TBeing.canDualGun: boolean;
+function TBeing.canDualWield: boolean;
 begin
-  Exit( ( BF_DUALGUN in FFlags )
-    and ( Inv.Slot[efWeapon] <> nil )
-    and ( Inv.Slot[efWeapon].Flags[ IF_PISTOL ] )
-    and ( Inv.Slot[efWeapon2] <> nil )
-    and ( Inv.Slot[efWeapon2].Flags[ IF_PISTOL ] )
-    and ( Inv.Slot[efWeapon2].Ammo <> 0 ) );
+  if ( Inv.Slot[efWeapon] <> nil ) and ( Inv.Slot[efWeapon2] <> nil ) and ( Inv.Slot[ efWeapon2 ].isWeapon ) then
+    Exit( CallHookCan( Hook_OnCanDualWield, [ Inv.Slot[efWeapon], Inv.Slot[efWeapon2] ] ) );
+  Exit( False );
 end;
 
 function TBeing.canDualBlade: boolean;
@@ -2219,14 +2215,6 @@ begin
     and ( Inv.Slot[efWeapon].Flags[ IF_BLADE ] )
     and ( Inv.Slot[efWeapon2] <> nil )
     and ( Inv.Slot[efWeapon2].Flags[ IF_BLADE ] ) );
-end;
-
-function TBeing.canDualReload : Boolean;
-begin
-  Exit( (BF_DUALGUN in FFlags) and
-      ( Inv.Slot[ efWeapon  ] <> nil ) and Inv.Slot[ efWeapon ].Flags[ IF_PISTOL ] and
-      ( Inv.Slot[ efWeapon2 ] <> nil ) and Inv.Slot[ efWeapon2 ].Flags[ IF_PISTOL ]
-  );
 end;
 
 function TBeing.canPackReload : Boolean;

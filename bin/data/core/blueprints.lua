@@ -60,6 +60,7 @@ core.register_blueprint "trait"
 	OnTick          = { false, core.TFUNC },
 	OnReceiveDamage = { false, core.TFUNC },
 	OnEnterLevel    = { false, core.TFUNC },
+	OnCanDualWield  = { false, core.TFUNC },
 
 	getDamageBonus   = { false, core.TFUNC },
 	getToHitBonus    = { false, core.TFUNC },
