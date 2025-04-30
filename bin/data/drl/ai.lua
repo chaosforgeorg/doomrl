@@ -556,19 +556,17 @@ register_ai "mastermind_ai"
 					for shot = 1,num_fire do
 						local energy = self.scount
 						if math.random(2) == 1 then
-							self:action_fire( player, self.eq.weapon )
+							self:action_fire( player, self.eq.weapon, animseq )
 						else
 							local hit = spray:random_coord()
 							area.FULL:clamp_coord(hit)
-							self:action_fire( hit, self.eq.weapon )
+							self:action_fire( hit, self.eq.weapon, animseq )
 						end
 						if shot ~= 1 then
 							self.scount = energy
 						end
 						animseq = animseq + 60
-						self.animseq = animseq
 					end
-					self.animseq = 0
 					self.eq.weapon.shots = num_fire
 				end
 				return "hunt"

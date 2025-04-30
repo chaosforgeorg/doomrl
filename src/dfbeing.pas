@@ -87,7 +87,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionReload : Boolean;
     function ActionDualReload : Boolean;
     function ActionAltReload : Boolean;
-    function ActionFire( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean = False ) : Boolean;
+    function ActionFire( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean = False; aDelay : Integer = 0 ) : Boolean;
     function ActionPickup : Boolean;
     function ActionUse( aItem : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
@@ -123,11 +123,11 @@ TBeing = class(TThing,IPathQuery)
   protected
     procedure LuaLoad( Table : TLuaTable ); override;
     // private
-    function FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire = ALT_NONE ) : Boolean;
+    function FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire = ALT_NONE; aDelay : Integer = 0 ) : Boolean;
     function getAmmoItem( Weapon : TItem ) : TItem;
     function HandleShotgunFire( aTarget : TCoord2D; aShotGun : TItem; aAltFire : TAltFire; aShots : DWord ) : Boolean;
     function HandleSpreadShots( aTarget : TCoord2D; aGun : TItem; aAltFire : TAltFire ) : Boolean;
-    function HandleShots( aTarget : TCoord2D; aGun : TItem; aShots : DWord; aAltFire : TAltFire ) : Boolean;
+    function HandleShots( aTarget : TCoord2D; aGun : TItem; aShots : DWord; aAltFire : TAltFire; aDelay : Integer ) : Boolean;
 
   protected
     FHPNom         : Word;
@@ -156,7 +156,6 @@ TBeing = class(TThing,IPathQuery)
     FPathHazards   : TFlags;
     FPathClear     : TFlags;
     FKnockBacked   : Boolean;
-    FAnimSeq       : Integer;
     FAffects       : TAffects;
   public
     property Affects   : TAffects    read FAffects;
@@ -178,7 +177,6 @@ TBeing = class(TThing,IPathQuery)
 
     property Vision       : Byte       read FVisionRadius write FVisionRadius;
     property SCount       : LongInt    read FSpeedCount   write FSpeedCount;
-    property AnimSeq      : Integer    read FAnimSeq      write FAnimSeq;
 
     property Accuracy     : Integer    read FAccuracy      write FAccuracy;
     property Strength     : Integer    read FStrength      write FStrength;
@@ -323,7 +321,6 @@ begin
 
   FBloodBoots   := 0;
   FChainFire    := 0;
-  FAnimSeq      := 0;
 
   FSilentAction := False;
   FKnockBacked  := False;
@@ -411,7 +408,7 @@ begin
   Exit( True );
 end;
 
-function TBeing.HandleShots ( aTarget : TCoord2D; aGun : TItem; aShots : DWord; aAltFire : TAltFire ) : Boolean;
+function TBeing.HandleShots ( aTarget : TCoord2D; aGun : TItem; aShots : DWord; aAltFire : TAltFire; aDelay : Integer ) : Boolean;
 var iScatter     : DWord;
     iCount       : DWord;
     iSeqBase     : DWord;
@@ -424,7 +421,7 @@ begin
   Assert( aGun <> nil );
   iSeqBase := 0;
   if not isPlayer then iSeqBase := 100;
-  iSeqBase += FAnimSeq;
+  iSeqBase += aDelay;
   iMissileRange := Missiles[aGun.Missile].MaxRange;
   iChaining := ( aAltFire = ALT_CHAIN ) and ( aShots > 1 );
 
@@ -786,7 +783,7 @@ begin
   end;
 end;
 
-function TBeing.ActionFire ( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean ) : Boolean;
+function TBeing.ActionFire ( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean; aDelay : Integer = 0 ) : Boolean;
 var iChainFire : Byte;
     iLimitRange: Boolean;
     iRange     : Byte;
@@ -859,9 +856,9 @@ begin
 
   Dec( FSpeedCount, getFireCost( iAltFire, False ) );
 
-  if ( not FireRanged( aTarget, aWeapon, iAltFire )) or Player.Dead then Exit;
   if canDualGun then
-    if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], iAltFire )) or Player.Dead then Exit;
+  if ( not FireRanged( aTarget, aWeapon, iAltFire, aDelay )) or Player.Dead then Exit;
+    if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], iAltFire, aDelay + 100 )) or Player.Dead then Exit;
 
   Exit( True );
 end;
@@ -1239,7 +1236,7 @@ begin
   until aAmmoItem = nil;
 end;
 
-function TBeing.FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire ) : Boolean;
+function TBeing.FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire; aDelay : Integer = 0 ) : Boolean;
 var iShots       : Integer;
     iShotsBonus  : Integer;
     iShotCost    : Integer;
@@ -1301,7 +1298,7 @@ begin
   else if aGun.Flags[ IF_SPREAD ] then
     iResult := HandleSpreadShots( aTarget, aGun, aAlt )
   else
-    iResult := HandleShots( aTarget, aGun, iShots, aAlt );
+    iResult := HandleShots( aTarget, aGun, iShots, aAlt, aDelay );
 
   if not iResult then Exit( False );
 
@@ -2487,14 +2484,16 @@ var iState  : TDoomLuaState;
     iBeing  : TBeing;
     iWeapon : TItem;
     iTarget : TCoord2D;
+    iDelay  : Integer;
 begin
   iState.Init(L);
   iBeing  := iState.ToObject( 1 ) as TBeing;
   iTarget := iState.ToPosition( 2 );
   iWeapon := iState.ToObject( 3 ) as TItem;
+  iDelay  := iState.ToInteger( 4, 0 );
   if ( iBeing = nil ) or ( iWeapon = nil ) then Exit( 0 );
   if iWeapon.CallHookCheck( Hook_OnFire, [ iBeing ] )
-    then iState.Push( iBeing.ActionFire( iTarget, iWeapon ) )
+    then iState.Push( iBeing.ActionFire( iTarget, iWeapon, False, iDelay ) )
     else iState.Push( False );
   Result := 1;
 end;
