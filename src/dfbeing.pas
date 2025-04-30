@@ -1281,6 +1281,7 @@ begin
       if iShotsCost = ( iShots * iShotCost )
         then iShots := Min( aGun.Ammo div iShotCost, iShots )
         else iShots := Min( Floor( aGun.Ammo / ( iShotsCost / Single(iShots) ) ), iShots );
+      iShotsCost := aGun.Ammo;
     end;
     if iShots < 1 then Exit( False );
 
