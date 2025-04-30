@@ -238,7 +238,7 @@ register_item          = core.register_storage( "items", "item", function( ip )
 		end	
 
 		if type(ip.missile) == "table" then
-			if ip.flags[ IF_SHOTGUN ] then
+			if ip.group == "shotgun" then
 				ip.missile        = register_shotgun ( "s"..ip.id ) ( ip.missile )
 			else
 				ip.missile        = register_missile ( "m"..ip.id ) ( ip.missile )
@@ -246,7 +246,7 @@ register_item          = core.register_storage( "items", "item", function( ip )
 		end
 
 		if type(ip.missile) == "string" then
-			ip.missile = core.iif( ip.flags[ IF_SHOTGUN ], shotguns, missiles )[ip.missile].nid
+			ip.missile = core.iif( ip.group == "shotgun", shotguns, missiles )[ip.missile].nid
 		end
 
 		local OnCreate = function (self)
@@ -256,7 +256,12 @@ register_item          = core.register_storage( "items", "item", function( ip )
 					self.resist[ k ] = v
 				end
 			end
-			self:add_property( "group", ip.group )
+			self:add_property( "group", ip.group or "" )
+			if ip.group == "shotgun" then
+				self.flags[ IF_SHOTGUN ] = true
+			elseif ip.group == "pistol" then
+				self.flags[ IF_PISTOL ] = true
+			end
 		end
 		ip.OnCreate = core.create_seq_function( OnCreate, ip.OnCreate )
 	end

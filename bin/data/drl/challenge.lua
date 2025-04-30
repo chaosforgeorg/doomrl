@@ -214,7 +214,7 @@ function drl.register_challenges()
 		OnFire = function (item,being)
 			if not being:is_player() then return true end
 			if not item then return true end
-			if item.flags[IF_PISTOL] then return true end
+			if item.group == "pistol" then return true end
 			ui.msg("This weapon isn't worthy of a marksman!")
 			return false
 		end,
@@ -318,7 +318,7 @@ function drl.register_challenges()
 		OnFire = function (item,being)
 			if not being:is_player() then return true end
 			if not item then return true end
-			if item.flags[IF_SHOTGUN] then return true end
+			if item.group == "shotgun" then return true end
 			ui.msg("This is a weapon for wimps, not a true man!")
 			return false
 		end,

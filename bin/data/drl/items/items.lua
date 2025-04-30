@@ -535,7 +535,6 @@ function drl.register_regular_items()
 		weight   = 70,
 		group    = "pistol",
 		desc     = "Your trusty 10mm pistol. It may be nice, but better find something stronger.",
-		flags    = { IF_PISTOL },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -562,7 +561,6 @@ function drl.register_regular_items()
 		group    = "shotgun",
 		desc     = "A 12g shotgun -- you gotta love its spread.",
 		firstmsg = "Just what I needed!",
-		flags    = { IF_SHOTGUN },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -586,7 +584,7 @@ function drl.register_regular_items()
 		group    = "shotgun",
 		desc     = "Double barreled shotgun -- the perfect weapon for a desperado.",
 		firstmsg = "Now THIS is what I call a shotgun!",
-		flags    = { IF_SHOTGUN, IF_DUALSHOTGUN },
+		flags    = { IF_DUALSHOTGUN },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -613,7 +611,7 @@ function drl.register_regular_items()
 		group    = "shotgun",
 		desc     = "Nothing beats the sound of pumping a combat shotgun.",
 		firstmsg = "Pump'n'roll!",
-		flags    = { IF_SHOTGUN, IF_SINGLERELOAD },
+		flags    = { IF_SINGLERELOAD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -713,7 +711,6 @@ function drl.register_regular_items()
 		altfire       = ALT_TARGETSCRIPT,
 		altfirename   = "rocketjump",
 		missile       = "mrocket",
-		flags         = {},
 
 		OnAltFire = function( self, being )
 			self.missile = missiles[ "mrocketjump" ].nid
@@ -1173,7 +1170,7 @@ function drl.register_regular_items()
 			end
 			item:add_mod( 'A', being.techbonus )
 			-- A little easter egg for applying A-mod on shotgun
-			if item.flags[ IF_SHOTGUN ] then
+			if item.group == "shotgun" then
 				ui.msg( "You suddenly feel a little silly." )
 			end
 			return true

@@ -234,7 +234,7 @@ function drl.register_unique_items()
 		group    = "pistol",
 		desc     = "One of the deadliest weapons ever made. Nyooo >O.o<",
 		scavenge = { "umod_nano" },
-		flags    = { IF_UNIQUE, IF_PISTOL, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -275,7 +275,7 @@ function drl.register_unique_items()
 		weight   = 2,
 		group    = "pistol",
 		desc     = "In the name of God, impure souls of the living dead shall be banished into eternal damnation. Amen.",
-		flags    = { IF_UNIQUE, IF_PISTOL, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 		scavenge = { "umod_firestorm" },
 
 		type          = ITEMTYPE_RANGED,
@@ -384,7 +384,7 @@ function drl.register_unique_items()
 		weight   = 3,
 		group    = "pistol",
 		desc     = "No. Not without incident.",
-		flags    = { IF_UNIQUE, IF_PISTOL },
+		flags    = { IF_UNIQUE },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -440,7 +440,7 @@ function drl.register_unique_items()
 		weight   = 2,
 		group    = "shotgun",
 		desc     = "The Pancor Corporation Jackhammer is a 12-gauge, gas-operated automatic weapon.",
-		flags    = { IF_UNIQUE, IF_SHOTGUN, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -479,7 +479,7 @@ function drl.register_unique_items()
 		weight   = 1,
 		group    = "shotgun",
 		desc     = "Advanced pulverization technology converts bullets into shrapnel.",
-		flags    = { IF_UNIQUE, IF_SHOTGUN, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",

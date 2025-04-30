@@ -97,14 +97,14 @@ function drl.register_traits()
 		end,
 
 		getDamageBonus = function ( self, weapon, is_melee, alt )
-			if weapon and weapon.flags[ IF_PISTOL ] then
+			if weapon and weapon.group == "pistol" then
 				return self.trait_gun * 3
 			end
 			return 0
 		end,
 
 		getFireCostBonus = function ( self, weapon, is_melee, alt )
-			if weapon and weapon.flags[ IF_PISTOL ] then
+			if weapon and weapon.group == "pistol" then
 				return self.trait_gun * 10
 			end
 			return 0
@@ -332,7 +332,7 @@ function drl.register_traits()
 		end,
 
 		getShotsBonus = function ( self, weapon, alt )
-			if weapon and ( weapon.shots > 2 or (weapon.shots > 1 and (not weapon.flags[ IF_PISTOL ] ) and (not weapon.flags[ IF_SHOTGUN ] ))) then
+			if weapon and ( weapon.shots > 2 or (weapon.shots > 1 and weapon.group ~= "pistol" and weapon.group ~= "shotgun")) then
 				return self.trait_triggerhappy
 			end
 			return 0
@@ -425,14 +425,14 @@ function drl.register_traits()
 		end,
 
 		getShotsBonus = function ( self, weapon, alt )
-			if weapon and weapon.flags[ IF_PISTOL ] and alt == ALT_NONE and weapon.shots < 2 then
+			if weapon and weapon.group == "pistol" and alt == ALT_NONE and weapon.shots < 2 then
 				return self.trait_triggerhappy
 			end
 			return 0
 		end,
 
 		getFireCostBonus = function ( self, weapon, is_melee, alt )
-			if weapon and weapon.flags[ IF_PISTOL ] and alt == ALT_NONE and weapon.shots < 2 then
+			if weapon and weapon.group == "pistol" and alt == ALT_NONE and weapon.shots < 2 then
 				return -self.trait_triggerhappy * 50
 			end
 			return 0
@@ -454,12 +454,12 @@ function drl.register_traits()
 		end,
 
 		OnKill = function (self, target, weapon, melee )
-			if weapon and weapon.flags[ IF_PISTOL ] then
+			if weapon and weapon.group == "pistol" then
 				self.kata_reload = true
 			end
 		end,
 		getFireCostMul = function( self, weapon, is_melee, alt )
-			if weapon and weapon.flags[ IF_PISTOL ] then
+			if weapon and weapon.group == "pistol" then
 				if player.lastturndodge then
 					return 0.1
 				elseif player.last_command == COMMAND_MOVE then
@@ -544,7 +544,7 @@ function drl.register_traits()
 		OnPick = function (being) end,
 
 		getFireCostBonus = function ( self, weapon, is_melee, alt )
-			if weapon and weapon.flags[ IF_SHOTGUN ] then
+			if weapon and weapon.group == "shotgun" then
 				return 67
 			end
 			return 0

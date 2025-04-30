@@ -59,7 +59,7 @@ function drl.register_exotic_items()
 		weight   = 2,
 		group    = "pistol",
 		desc     = "This is the standard issue rechargeable energy side-arm. Cool!",
-		flags    = { IF_EXOTIC, IF_PISTOL, IF_RECHARGE },
+		flags    = { IF_EXOTIC, IF_RECHARGE },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "cell",
@@ -85,7 +85,7 @@ function drl.register_exotic_items()
 		weight   = 6,
 		group    = "pistol",
 		desc     = "This is the kind of handgun given to your superiors. Doesn't look like they're using it right now...",
-		flags    = { IF_EXOTIC, IF_PISTOL },
+		flags    = { IF_EXOTIC, },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -111,7 +111,7 @@ function drl.register_exotic_items()
 		weight   = 6,
 		group    = "shotgun",
 		desc     = "Big, bad and ugly.",
-		flags    = { IF_EXOTIC, IF_SHOTGUN, IF_SINGLERELOAD },
+		flags    = { IF_EXOTIC, IF_SINGLERELOAD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -141,7 +141,7 @@ function drl.register_exotic_items()
 		group    = "shotgun",
 		desc     = "Plasma shotgun -- the best of two worlds.",
 		firstmsg = "Splash and they're dead!",
-		flags    = { IF_EXOTIC, IF_SHOTGUN },
+		flags    = { IF_EXOTIC },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "cell",
@@ -166,7 +166,7 @@ function drl.register_exotic_items()
 		group    = "shotgun",
 		desc     = "After the first hellish invasion, weapon engineers designed the super shotgun as the world's first firearm designed to kill demons. And boy does it do a good job.",
 		firstmsg = "This little baby brings back memories!",
-		flags    = { IF_EXOTIC, IF_SHOTGUN, IF_DUALSHOTGUN },
+		flags    = { IF_EXOTIC, IF_DUALSHOTGUN },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -799,7 +799,7 @@ function drl.register_exotic_items()
 		OnUseCheck = function(self,being)
 			local function filter( item )
 				if item.itype ~= ITEMTYPE_RANGED then return false end
-				if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
+				if item.group ~= "shotgun" and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
 					return true
 				elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
 					return true
@@ -814,7 +814,7 @@ function drl.register_exotic_items()
 		end,
 
 		OnModDescribe = function( self, item )
-			if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
+			if item.group ~= "shotgun" and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
 				return "shots {!"..item.shots.."} -> {!"..(item.shots+2).."}"
 			elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
 				return "blast radius {!"..item.blastradius.."} -> {!"..(item.blastradius+2).."}"
@@ -825,7 +825,7 @@ function drl.register_exotic_items()
 		OnUse = function(self,being)
 			if not self:has_property( "chosen_item" ) then return true end
 			local item = self.chosen_item
-			if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
+			if item.group ~= "shotgun" and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
 				item.shots = item.shots + 2
 			elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
 				item.blastradius = item.blastradius + 2
@@ -875,7 +875,7 @@ function drl.register_exotic_items()
 			if not self:has_property( "chosen_item" ) then return true end
 			local item = self.chosen_item
 			-- A little easter egg for applying S-mod on shotgun/melee
-			if item.flags[ IF_SHOTGUN ] or item.itype ~= ITEMTYPE_RANGED then
+			if item.group == "shotgun" or item.itype ~= ITEMTYPE_RANGED then
 				ui.msg( "You suddenly feel a little silly." )
 			else
 				ui.msg( "You upgrade your weapon!" )
