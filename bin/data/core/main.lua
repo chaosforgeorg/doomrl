@@ -173,7 +173,15 @@ register_being         = core.register_storage( "beings", "being", function( bp 
 			if type(bp.corpse) == "string"  then bp.corpse = cells[bp.corpse].nid end
 		end
 
-		core.register_resistances( bp )
+		local OnCreate = function (self)
+			self:add_property( "resist", {} )
+			if bp.resist then
+				for k,v in pairs( bp.resist ) do
+					self.resist[ k ] = v
+				end
+			end
+		end
+		bp.OnCreate = core.create_seq_function( OnCreate, bp.OnCreate )
 	end
 )
 
@@ -241,7 +249,16 @@ register_item          = core.register_storage( "items", "item", function( ip )
 			ip.missile = core.iif( ip.flags[ IF_SHOTGUN ], shotguns, missiles )[ip.missile].nid
 		end
 
-		core.register_resistances( ip )
+		local OnCreate = function (self)
+			self:add_property( "resist", {} )
+			if ip.resist then
+				for k,v in pairs( ip.resist ) do
+					self.resist[ k ] = v
+				end
+			end
+			self:add_property( "group", ip.group )
+		end
+		ip.OnCreate = core.create_seq_function( OnCreate, ip.OnCreate )
 	end
 )
 
@@ -333,18 +350,6 @@ function core.update_player_data( awards_only )
 		end
 	end
 end	
-
-function core.register_resistances( proto )
-	local OnCreate = function (self)
-		self:add_property( "resist", {} )
-		if proto.resist then
-			for k,v in pairs( proto.resist ) do
-				self.resist[ k ] = v
-			end
-		end
-	end
-	proto.OnCreate = core.create_seq_function( OnCreate, proto.OnCreate )
-end
 
 function core.mod_list_signature( mod_list )
 	local modsig = ""

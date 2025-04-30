@@ -431,7 +431,7 @@ function drl.register_challenges()
 		OnMortem = function ()
 			local melee_tot = kills.get_type("melee")
 			for index = 1, items.__counter do
-				if items[index].group == "weapon-melee" then
+				if items[index].group == "melee" then
 					melee_tot = melee_tot + kills.get_type(items[index].id)
 				end
 			end

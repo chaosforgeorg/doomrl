@@ -23,7 +23,7 @@ register_level "unholy_cathedral"
 			level    = 200,
 			weight   = 0,
 			set      = "angelic",
-			group    = "weapon-melee",
+			group    = "melee",
 			desc     = "Legend says that no one wielding the Spear of Destiny can ever be defeated.",
 			flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_NUKERESIST },
 
@@ -62,7 +62,7 @@ register_level "unholy_cathedral"
 			glow     = { 1.0,0.5,0.0,1.0 },
 			level    = 200,
 			weight   = 0,
-			group    = "weapon-melee",
+			group    = "melee",
 			desc     = "You don't want to know who's scythe this is...",
 			flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_NUKERESIST },
 

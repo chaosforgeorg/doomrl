@@ -412,7 +412,7 @@ function drl.register_assemblies()
 		desc = "any pistol",
 
 		Match = function (item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-pistol")
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "pistol")
 		end,
 
 		OnApply = function (item)
@@ -436,7 +436,7 @@ function drl.register_assemblies()
 		desc = "any rapid-fire",
 
 		Match = function (item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-chain" or item.__proto.group == "weapon-plasma") and item.flags[IF_UNIQUE] == false
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "chain" or item.group == "plasma") and item.flags[IF_UNIQUE] == false
 		end,
 
 		OnApply = function (item)
@@ -458,7 +458,7 @@ function drl.register_assemblies()
 		desc = "any pistol",
 
 		Match = function (item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-pistol")
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "pistol")
 		end,
 
 		OnApply = function (item)
@@ -479,7 +479,7 @@ function drl.register_assemblies()
 		desc = "any rapid-fire",
 
 		Match = function(item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-chain" or item.__proto.group == "weapon-plasma") and item.flags[IF_UNIQUE] == false
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "chain" or item.group == "plasma") and item.flags[IF_UNIQUE] == false
 		end,
 
 		OnApply = function (item)
@@ -501,7 +501,7 @@ function drl.register_assemblies()
 		desc = "any BFG9000",
 
 		Match = function(item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-bfg") and item.flags[IF_UNIQUE] == false
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "bfg") and item.flags[IF_UNIQUE] == false
 		end,
 
 		OnApply = function (item)
@@ -728,7 +728,7 @@ function drl.register_assemblies()
 		desc = "any BFG9000",
 
 		Match = function(item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-bfg") and item.flags[IF_UNIQUE] == false
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "bfg") and item.flags[IF_UNIQUE] == false
 		end,
 
 		OnApply = function (item)

@@ -311,7 +311,7 @@ function drl.register_traits()
 			local weapon = being.eq.weapon
 			if weapon and weapon.itype == ITEMTYPE_RANGED then
 				if weapon.ammo < weapon.ammomax then
-					if ( weapon.flags[ IF_SHOTGUN ] or weapon.flags[ IF_ROCKET ] ) then
+					if ( weapon.flags[ IF_SHOTGUN ] or weapon.flags[ IF_ROCKET ] ) and (not weapon.flags[ IF_NOUNLOAD ]) then
 						being:reload()
 					end
 				end

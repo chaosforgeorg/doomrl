@@ -496,7 +496,7 @@ function drl.RunPrintMortem()
 	player:mortem_print()
 	mortem.print_kills()
 	player:mortem_print()
-	local groups = { "weapon-melee", "weapon-pistol", "weapon-shotgun", "weapon-chain", "weapon-rocket", "weapon-plasma", "weapon-bfg" }
+	local groups = { "melee", "pistol", "shotgun", "chain", "rocket", "plasma", "bfg" }
 	local names  = { "Melee kills   : ", "Pistol kills  : ", "Shotgun kills : ", "Chaingun kills: ", "Rocket kills  : ", "Plasma kills  : ", "BFG kills     : " }
 	for idx,group in ipairs(groups) do
 		local count = core.kills_count_group( group )
