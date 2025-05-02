@@ -345,7 +345,7 @@ end;
 procedure TDoom.PreAction;
 begin
   FLevel.CalculateVision( Player.Position );
-  StatusEffect := Player.FAffects.getEffect;
+  StatusEffect := Player.Affects.getEffect;
   IO.PreAction;
   IO.Focus( Player.Position );
   Player.UpdateVisual;
@@ -514,15 +514,13 @@ begin
   iTarget := Player.Position + iDir;
   iMoveResult := Player.TryMove( iTarget );
 
-  if (not Player.FPathRun) and Player.FRun.Active and (
-       ( Player.FRun.Count >= Option_MaxRun ) or
+  if Player.MultiMove.IsRepeat and (
        ( iMoveResult <> MoveOk ) or
        Level.cellFlagSet( iTarget, CF_NORUN ) or
        (not Level.isEmpty(iTarget,[EF_NOTELE]))
      ) then
   begin
-    Player.FPathRun := False;
-    Player.FRun.Stop;
+    Player.MultiMove.Stop;
     Exit( False );
   end;
 
@@ -626,9 +624,6 @@ begin
       else if iItem.Ammo < iItem.ShotCost then begin IO.Msg( 'You don''t have enough ammo to fire the %s!', [iItem.Name] ); iEmpty := True; end;
     end;
 
-    if not iEmpty then
-      if iItem.Flags[ IF_CHAMBEREMPTY ] then
-      begin IO.Msg( 'Shell chamber empty - move or reload.' ); iEmpty := True; end;
     if iEmpty then
     begin
       if Setting_EmptyConfirm then
@@ -770,16 +765,16 @@ except
     CRASHMODE := True;
   end;
 end;
-
+  if State <> DSPlaying then Exit( False );
+  Player.PostAction;
   if State <> DSPlaying then Exit( False );
   IO.Focus( Player.Position );
-  Player.UpdateVisual;
   FDamagedLastTurn := False;
   while (Player.SCount < 5000) and (State = DSPlaying) do
   begin
     FLevel.CalculateVision( Player.Position );
     FLevel.Tick;
-    if Player.FRun.Active then
+    if Player.MultiMove.Active then
       IO.WaitForAnimation;
     if not Player.PlayerTick then Exit( True );
   end;
@@ -894,7 +889,7 @@ begin
   // Handle key-repeat
   if aEvent.Key.Repeated then
     if ( not ( iInput in [ INPUT_WAIT ] + INPUT_MOVE ) ) or
-       ( IO.Time - FLastInputTime < Player.VisualTime( Player.getMoveCost, 98 ) ) or (Player.EnemiesInVision > 0) then
+       ( IO.Time - FLastInputTime < Player.VisualTime( Player.getMoveCost, AnimationSpeedMove - 2 ) ) or (Player.EnemiesInVision > 0) then
       Exit( False );
   FLastInputTime := IO.Time;
 
@@ -910,10 +905,10 @@ begin
     // TODO: Fix
     if iInput in [INPUT_RUNWAIT]+INPUT_MULTIMOVE then
     begin
-      Player.FPathRun := False;
+      Player.MultiMove.Stop;
       if Player.EnemiesInVision > 0
         then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
-        else Player.FRun.Start( InputDirection( iInput ) );
+        else Player.MultiMove.Start( InputDirection( iInput ) );
       Exit;
     end;
 
@@ -957,7 +952,7 @@ begin
       INPUT_LEGACYSAVE: begin Doom.SetState( DSSaving ); Exit; end;
       INPUT_TRAITS    : begin FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
       INPUT_RUN       : begin
-        Player.FPathRun := False;
+        Player.MultiMove.Stop;
         if Player.EnemiesInVision > 0
           then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
           else IO.PushLayer( TRunModeView.create );
@@ -1060,20 +1055,17 @@ repeat
       if (Player.NukeActivated > 0) then
       begin
         IO.Msg('You hear a gigantic explosion above!');
-        Inc(Player.FScore,1000);
-        Player.IncStatistic('levels_nuked');
+        Player.Score := Player.Score + 1000;
+        Player.Statistics.Increase('levels_nuked');
         Player.NukeActivated := 0;
       end;
 
-      with Player do
-      begin
-        FStatistics.Update;
-      end;
+      Player.Statistics.Update;
 
       if Player.SpecExit = '' then
         Inc(Player.CurrentLevel)
       else
-        Player.IncStatistic('bonus_levels_visited');
+        Player.Statistics.Increase('bonus_levels_visited');
 
       with LuaSystem.GetTable(['player','episode',Player.CurrentLevel]) do
       try
@@ -1126,9 +1118,9 @@ repeat
         Continue;
       end;
 
-      if ( Player.FRun.Active ) then
+      if ( Player.MultiMove.Active ) then
       begin
-        iInput := Player.GetRunInput;
+        iInput := Player.GetMultiMoveInput;
         if iInput <> INPUT_NONE then
           Action( iInput );
         Continue;
@@ -1165,7 +1157,7 @@ repeat
 
     if State <> DSSaving then
     begin
-      Inc(Player.FScore,100);
+      Player.Score := Player.Score + 1000;
       if GameWon and (State <> DSNextLevel) then Player.WriteMemorial;
       FLevel.Clear;
     end;
@@ -1175,10 +1167,10 @@ repeat
   begin
     EmitCrashInfo( e.Message, True );
     EXCEPTEMMITED := True;
-    if Option_SaveOnCrash and ((Player.FStatistics.Map['crash_count'] = 0) or{thelaptop: Vengeance is MINE} (Doom.Difficulty < DIFF_NIGHTMARE)) then
+    if Option_SaveOnCrash and ((Player.Statistics['crash_count'] = 0) or{thelaptop: Vengeance is MINE} (Doom.Difficulty < DIFF_NIGHTMARE)) then
     begin
       if Player.CurrentLevel <> 1 then Dec(Player.CurrentLevel);
-      Player.IncStatistic('crash_count');
+      Player.Statistics.Increase('crash_count');
       Player.SpecExit := '';
       WriteSaveFile( True );
     end;
@@ -1206,7 +1198,7 @@ repeat
       IO.PushLayer( TRankUpView.Create( iRank ) );
       IO.WaitForLayer( True );
     end;
-    if Player.FScore >= -1000 then
+    if Player.Score >= -1000 then
     begin
       iReport := TPagedReport.Create('Post mortem', False );
       iReport.Add( MortemData, 'mortem.txt' );
@@ -1229,6 +1221,8 @@ until not Option_MenuReturn;
 end;
 
 procedure TDoom.CreatePlayer ( aResult : TMenuResult ) ;
+var iTraitID : AnsiString;
+    iTrait   : Byte;
 begin
   FreeAndNil( UIDs );
   UIDs := Systems.Add(TUIDStore.Create) as TUIDStore;
@@ -1244,8 +1238,14 @@ begin
       else Player.Name := aResult.Name;
 
   LuaSystem.ProtectedCall(['klasses',Player.Klass,'OnPick'], [ Player ] );
+  iTraitID := LuaSystem.Get(['klasses',Player.Klass,'core_trait'],'' );
+  if iTraitID <> '' then
+  begin
+    iTrait := LuaSystem.Get(['traits',iTraitID,'nid']);
+    Player.Traits.Upgrade( 0, iTrait );
+  end;
   CallHook(Hook_OnCreatePlayer,[]);
-  Player.FTraits.Upgrade( aResult.Trait );
+  Player.Traits.Upgrade( Player.Klass, aResult.Trait );
   Player.UpdateVisual;
 end;
 
@@ -1302,8 +1302,7 @@ var Stream : TStream;
 begin
   LuaSystem.ProtectedCall( [ 'generator', 'on_save' ], [] );
 
-  Player.FStatistics.RealTime += MSecNow() - GameRealTime;
-  Player.IncStatistic('save_count');
+  Player.Statistics.OnSaveFile;
 
   Stream := TGZFileStream.Create( ModuleUserPath + 'save',gzOpenWrite );
   //      Stream := TDebugStream.Create( Stream );

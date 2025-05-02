@@ -14,6 +14,7 @@ register_level "containment_area"
 		local translation = {
 			['.'] = "floor",
 			['#'] = { "wall", style = 1, },
+			['X'] = { "wall", style = 1, flags = { LFMARKER1 }},
 			['P'] = { "wall", flags = { LFPERMANENT } },
 			['*'] = "gwall",
 			[','] = { "floor", flags = { LFBLOOD } },
@@ -40,9 +41,9 @@ register_level "containment_area"
 ...........######..$$..%%.......&&..&&....%%...#...**...**...**..P..........
 ...........######...&&&%%...$$.$$...&&.....&&..#.................P..........
 ...........######...&&&.....$$.$$..$$..$$..&&..#.................P..........
-............#####.......$$.........$$..$$..$$..L........,,..................
-............#####..$$...$$....&&..&&$$&&...$$..L......,,,,,............^....
-............#####..$$...&&..$$&&..&&$$&&$$.....L.......,,...................
+............XXXXX.......$$.........$$..$$..$$..L........,,..................
+............XXXXX..$$...$$....&&..&&$$&&...$$..L......,,,,,............^....
+............XXXXX..$$...&&..$$&&..&&$$&&$$.....L.......,,...................
 ...........######.....$$@@..$$.....&&...$$.....#.................P..........
 ...........######.....$$@@...&&....&&....&&....#.................P..........
 ...........######..$$........&&...$$.....&&....#...**...**...**..P..........
@@ -56,9 +57,10 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 ]]
 		generator.place_tile( translation, map, 2, 2 )
 
-		level.data.left   = area( 19, 2, 48, 14 ) 
-		level.data.middle = area( 50, 2, 66, 14 ) 
-		level.data.right  = area( 68, 2, 78, 14 ) 
+		level.data.left   = area( 19, 2, 48, 14 )
+		level.data.middle = area( 50, 2, 66, 14 )
+		level.data.right  = area( 68, 2, 78, 14 )
+		level.data.sound_location = coord(15, 8)
 
 		local total   = 5 + 2*DIFFICULTY
 		level:summon{ "imp", total, area = level.data.left }
@@ -69,11 +71,14 @@ PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 
 	OnKillAll = function ()
 		if level.status ~= 3 then return end
-		ui.msg("I guess I prefered the Wall.")
+		level:transmute_by_flag( "wall", "floor", LFMARKER1, area.FULL)
+		level:play_sound( "door.close", level.data.sound_location)
+		ui.msg("I guess I prefered the Wall. The air seems less claustrophic now.")
 		level.status = 4
 	end,
 
 	OnNuked = function ()
+		--Just check that everyone is dead
 		for b in level:beings() do
 			if not b:is_player() then return end
 		end

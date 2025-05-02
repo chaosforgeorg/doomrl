@@ -103,7 +103,11 @@ begin
         else iColor := LightRed;
     end
     else if ItemVisible( aCoord, iItem ) or ItemExplored( aCoord, iItem ) then
-      iColor := LightBlue
+    begin
+      if iItem.Flags[ IF_HIGHLIGHT ]
+        then iColor := LightCyan
+        else iColor := LightBlue;
+    end
     else if CellExplored( aCoord ) then
     begin
       if not isVisible( aCoord ) then

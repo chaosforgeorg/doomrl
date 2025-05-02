@@ -91,7 +91,7 @@ function drl.register_challenges()
 			end
 		end,
 
-		OnEnter = function (l, lid)
+		OnEnterLevel = function (l, lid)
 			if lid == "hells_arena" then
 				level.data.final_reward.rocket = nil
 				level.data.final_reward.bazooka = nil
@@ -202,7 +202,7 @@ function drl.register_challenges()
 			player.inv:add( table.random_pick({"mod_agility","mod_bulk","mod_tech"}) )
 		end,
 
-		OnEnter = function (l, lid)
+		OnEnterLevel = function (l, lid)
 			if lid == "hells_arena" then
 				level.data.final_reward.rocket = nil
 				level.data.final_reward.bazooka = nil
@@ -214,7 +214,7 @@ function drl.register_challenges()
 		OnFire = function (item,being)
 			if not being:is_player() then return true end
 			if not item then return true end
-			if item.flags[IF_PISTOL] then return true end
+			if item.group == "pistol" then return true end
 			ui.msg("This weapon isn't worthy of a marksman!")
 			return false
 		end,
@@ -306,7 +306,7 @@ function drl.register_challenges()
 			end
 		end,
 
-		OnEnter = function (l, lid)
+		OnEnterLevel = function (l, lid)
 			if lid == "hells_arena" then
 				level.data.final_reward.rocket = nil
 				level.data.final_reward.bazooka = nil
@@ -318,7 +318,7 @@ function drl.register_challenges()
 		OnFire = function (item,being)
 			if not being:is_player() then return true end
 			if not item then return true end
-			if item.flags[IF_SHOTGUN] then return true end
+			if item.group == "shotgun" then return true end
 			ui.msg("This is a weapon for wimps, not a true man!")
 			return false
 		end,
@@ -419,7 +419,7 @@ function drl.register_challenges()
 			end
 		end,
 
-		OnEnter = function (l, lid)
+		OnEnterLevel = function (l, lid)
 			if lid == "hells_arena" then
 				level.data.final_reward.rocket = nil
 				level.data.final_reward.bazooka = nil
@@ -431,7 +431,7 @@ function drl.register_challenges()
 		OnMortem = function ()
 			local melee_tot = kills.get_type("melee")
 			for index = 1, items.__counter do
-				if items[index].group == "weapon-melee" then
+				if items[index].group == "melee" then
 					melee_tot = melee_tot + kills.get_type(items[index].id)
 				end
 			end
@@ -517,7 +517,7 @@ function drl.register_challenges()
 			player.flags[ BF_IMPATIENT ] = true
 		end,
 
-		OnEnter = function (l, lid)
+		OnEnterLevel = function (l, lid)
 			if lid == "hells_arena" then
 				level.data.final_reward.lmed = nil
 				level.data.final_reward.sboots = 1
@@ -680,7 +680,7 @@ function drl.register_challenges()
 		let         = "P",
 		secondary   = { "AoCn", "AoOC", "A100", "AoLT", "AoRA", "AoD" },
 
-		OnEnter = function (l, lid)
+		OnEnterLevel = function (l, lid)
 			if lid == "hells_arena" then
 				level.data.final_reward.scglobe = nil
 				if level.data.final_reward.lmed then
@@ -769,7 +769,7 @@ function drl.register_challenges()
 		arch_rating      = "BLADE",
 		arch_rank        = 6,
 
-		OnEnter = function (l, lid)
+		OnEnterLevel = function (l, lid)
 			player.flags[ BF_STAIRSENSE ] = false
 			if ARCHANGEL then
 				player:nuke(2.5*60*10)
@@ -847,7 +847,7 @@ function drl.register_challenges()
 		let         = "D",
 		secondary   = { "AoCn", "AoOC", "A100", "AoLT", "AoI", "AoP", "AoRA", "AoMs" },
 
-		OnEnter = function ()
+		OnEnterLevel = function ()
 			level.flags[ LF_RESPAWN ] = true
 		end,
 
@@ -928,7 +928,7 @@ function drl.register_challenges()
 
 		OnCreate = function ( this )
 			if this:is_being() then
-				this.tohit = this.tohit + 12
+				this.accuracy = this.accuracy + 12
 				this.flags[ BF_MAXDAMAGE ] = true
 			end
 		end,
@@ -1006,7 +1006,7 @@ function drl.register_challenges()
 			player.flags[ BF_NOHEAL ] = true
 		end,
 
-		OnEnter = function (l, lid)
+		OnEnterLevel = function (l, lid)
 			if lid == "hells_arena" then
 				level.data.final_reward.barmor = nil
 				level.data.final_reward.rarmor = 1
@@ -1149,7 +1149,7 @@ function drl.register_challenges()
 			drl.OnCreateEpisode()
 		end,
 
-		OnEnter = function (l)
+		OnEnterLevel = function (l)
 			local LevCount = 100
 			if ARCHANGEL then LevCount = 666 end
 
@@ -1289,7 +1289,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 			end
 		end,
 
-		OnEnter = function (l,lid)
+		OnEnterLevel = function (l,lid)
 			if not ARCHANGEL and l % 3 == 0 and player.explevel < 25 then
 				player:level_up()
 			end
@@ -1397,7 +1397,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 			end
 		end,
 
-		OnEnter = function (l, lid)
+		OnEnterLevel = function (l, lid)
 			if lid == "hells_arena" then
 				level.data.final_reward.barmor = nil
 				level.data.final_reward[table.random_pick{"uparmor","uballisticarmor","uacidboots"}] = 1

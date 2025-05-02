@@ -130,7 +130,7 @@ function drl.register_awards()
 		desc  = "Won & killed only with shotguns/fists",
 		hidden  = true,
 		winonly = true,
-		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + core.kills_count_group( "weapon-shotgun" ) == statistics.kills end,
+		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + core.kills_count_group( "shotgun" ) == statistics.kills end,
 	}
 
 	register_medal "pistols"
@@ -139,7 +139,7 @@ function drl.register_awards()
 		desc  = "Won & killed only with pistols/fists",
 		hidden  = true,
 		winonly = true,
-		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + core.kills_count_group( "weapon-pistol" ) == statistics.kills end,
+		condition = function() return kills.get_type( "other" ) + kills.get_type( "melee" ) + core.kills_count_group( "pistol" ) == statistics.kills end,
 	}
 
 	register_medal "knives"

@@ -3,39 +3,19 @@
 unit dfplayer;
 interface
 uses classes, sysutils,
-     vuielement, vutil, vrltools, vuitypes,
+     vuielement,vpath, vutil, vrltools, vuitypes,
      dfbeing, dfhof, dfdata, dfitem, dfaffect,
-     doomtrait, doomkeybindings;
+     doomtrait, doomkeybindings, drlstatistics, drlmultimove;
 
-type
 
-TRunData = object
-  Dir    : TDirection;
-  Active : Boolean;
-  Count  : Word;
-  procedure Clear;
-  procedure Stop;
-  procedure Start( const aDir : TDirection );
-end;
-
-TStatistics = object
-  Map        : TIntHashMap;
-  GameTime   : LongInt;
-  RealTime   : Comp;
-  procedure Clear;
-  procedure Destroy;
-  procedure Update;
-  procedure UpdateNDCount( aCount : DWord );
-end;
-
-TQuickSlotInfo = record
+type TQuickSlotInfo = record
   UID : TUID;
   ID  : string[32];
 end;
 
 { TPlayer }
 
-TPlayer = class(TBeing)
+type TPlayer = class(TBeing)
   CurrentLevel    : Word;
 
   SpecExit        : string[20];
@@ -43,33 +23,26 @@ TPlayer = class(TBeing)
 
   InventorySize   : Byte;
   MasterDodge     : Boolean;
-  LastTurnDodge   : Boolean;
-
-  FScore          : LongInt;
-  FExpFactor      : Real;
-  FBersekerLimit  : LongInt;
-  FEnemiesInVision: Word;
-  FKilledBy       : AnsiString;
-  FKilledMelee    : Boolean;
-
-  FStatistics     : TStatistics;
   FKills          : TKillTable;
   FKillMax        : DWord;
   FKillCount      : DWord;
-  FTraits         : TTraits;
-  FRun            : TRunData;
-  FAffects        : TAffects;
-  FPathRun        : Boolean;
+
   FQuickSlots     : array[1..9] of TQuickSlotInfo;
 
   constructor Create; reintroduce;
   procedure Initialize; reintroduce;
   constructor CreateFromStream( Stream: TStream ); override;
   procedure WriteToStream( Stream: TStream ); override;
+  function CallHook( aHook : Byte; const aParams : array of Const ) : Boolean; override;
+  function CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean; override;
+  function CallHookCan( aHook : Byte; const aParams : array of Const ) : Boolean; override;
+  function GetBonus( aHook : Byte; const aParams : array of Const ) : Integer; override;
+  function GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single; override;
   function PlayerTick : Boolean;
   procedure HandlePostMove; override;
   procedure PreAction;
-  function GetRunInput : TInputKey;
+  procedure PostAction;
+  function GetMultiMoveInput : TInputKey;
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem; aUnique : Boolean );
@@ -78,9 +51,7 @@ TPlayer = class(TBeing)
   procedure AddExp( aAmount : LongInt );
   procedure WriteMemorial;
   destructor Destroy; override;
-  procedure IncStatistic( const aStatisticID : AnsiString; aAmount : Integer = 1 );
   procedure Kill( BloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem ); override;
-  function DescribeLever( aItem : TItem ) : string;
   procedure AddHistory( const aHistory : Ansistring );
   class procedure RegisterLuaAPI();
   procedure UpdateVisual;
@@ -88,23 +59,39 @@ TPlayer = class(TBeing)
   function RunPath( const aCoord : TCoord2D ) : Boolean;
   procedure ExamineNPC;
   procedure ExamineItem;
-  private
+private
   FExp            : LongInt;
   FExpLevel       : Byte;
-  private
+  FKlass          : Byte;
+  FScore          : LongInt;
+  FExpFactor      : Real;
+  FEnemiesInVision: Word;
+  FKilledBy       : AnsiString;
+  FKilledMelee    : Boolean;
+  FLastTurnDodge  : Boolean;
+
+  FTraits         : TTraits;
+  FStatistics     : TStatistics;
+  FMultiMove      : TMultiMove;
+private
   function GetSkillRank : Word;
   function GetExpRank : Word;
-  published
+public
+  property MultiMove       : TMultiMove  read FMultiMove;
+  property Statistics      : TStatistics read FStatistics;
+  property Traits          : TTraits     read FTraits;
+published
   property KilledBy        : AnsiString read FKilledBy;
   property KilledMelee     : Boolean    read FKilledMelee;
-  property Exp             : LongInt    read FExp          write FExp;
-  property ExpLevel        : Byte       read FExpLevel     write FExpLevel;
-  property NukeTime        : Word       read NukeActivated write NukeActivated;
-  property Klass           : Byte       read FTraits.Klass write FTraits.Klass;
-  property ExpFactor       : Real       read FExpFactor    write FExpFactor;
+  property LastTurnDodge   : Boolean    read FLastTurnDodge write FLastTurnDodge;
+  property Exp             : LongInt    read FExp           write FExp;
+  property ExpLevel        : Byte       read FExpLevel      write FExpLevel;
+  property NukeTime        : Word       read NukeActivated  write NukeActivated;
+  property Klass           : Byte       read FKlass         write FKlass;
+  property ExpFactor       : Real       read FExpFactor     write FExpFactor;
   property SkillRank       : Word       read GetSkillRank;
   property ExpRank         : Word       read GetExpRank;
-  property Score           : LongInt    read FScore        write FScore;
+  property Score           : LongInt    read FScore         write FScore;
   property Depth           : Word       read CurrentLevel;
   property EnemiesInVision : Word       read FEnemiesInVision;
 end;
@@ -114,85 +101,30 @@ var Player     : TPlayer;
 
 implementation
 
-uses math, vuid, vpath, variants, vioevent, vgenerics,
+uses math, vuid, variants, vioevent, vgenerics,
      vnode, vcolor, vdebug, vluasystem, vtig,
      dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doombase,
      doomlua, doominventory, doomplayerview, doomhudviews;
 
-{ TStatistics }
-
-procedure TStatistics.Clear;
-begin
-  Map        := TIntHashMap.Create( HashMap_NoRaise );
-  GameTime   := 0;
-  RealTime   := 0;
-end;
-
-procedure TStatistics.Destroy;
-begin
-  FreeAndNil( Map );
-end;
-
-procedure TStatistics.Update;
-var iRealTime : Comp;
-begin
-  iRealTime := RealTime + MSecNow() - GameRealTime;
-  Map['real_time']       := Round(iRealTime / 1000);
-  Map['real_time_ms']    := Round(iRealTime);
-  Map['game_time']       := GameTime;
-  Map['kills']           := Player.FKills.Count;
-  Map['max_kills']       := Player.FKills.MaxCount;
-  Map['unique_kills']    := Player.FKillCount;
-  Map['max_unique_kills']:= Player.FKillMax;
-end;
-
-procedure TStatistics.UpdateNDCount( aCount : DWord );
-begin
-  Map['kills_non_damage'] := Max( Map['kills_non_damage'], aCount );
-end;
-
-{ TRunData }
-
-procedure TRunData.Clear;
-begin
-  Active := False;
-  Count  := 0;
-end;
-
-procedure TRunData.Stop;
-begin
-  Active := False;
-  Count := 0;
-end;
-
-procedure TRunData.Start ( const aDir : TDirection ) ;
-begin
-  Active := True;
-  Count  := 0;
-  Dir    := aDir;
-end;
-
 constructor TPlayer.Create;
 begin
   inherited Create('soldier');
 
-  FTraits.Clear;
-  FKills := TKillTable.Create;
-  FKillMax        := 0;
-  FKillCount      := 0;
-  FRun.Clear;
-  FAffects.Clear;
+  FTraits    := TTraits.Create;
+  FKills     := TKillTable.Create;
+  FKillMax   := 0;
+  FKillCount := 0;
 
   CurrentLevel  := 0;
   StatusEffect  := StatusNormal;
-  FStatistics.Clear;
+  FStatistics   := TStatistics.Create;
   FScore        := 0;
   SpecExit      := '';
   NukeActivated := 0;
   FExpLevel   := 1;
+  FKlass      := 1;
   FExp        := ExpTable[ FExpLevel ];
-  FPathRun    := False;
 
   InventorySize := High( TItemSlot );
   FExpFactor := 1.0;
@@ -209,11 +141,11 @@ begin
   FKilledMelee    := False;
 
   FEnemiesInVision:= 0;
-  FPathRun := False;
+  FMultiMove      := TMultiMove.Create;
   FPath           := TPathFinder.Create(Self);
   MemorialWritten := False;
   MasterDodge     := False;
-  LastTurnDodge   := False;
+  FLastTurnDodge  := False;
 
   doombase.Lua.RegisterPlayer(Self);
 end;
@@ -227,48 +159,76 @@ begin
   Stream.WriteWord( NukeActivated );
   Stream.WriteByte( InventorySize );
   Stream.WriteByte( FExpLevel );
+  Stream.WriteByte( FKlass );
   Stream.WriteDWord( FExp );
   Stream.WriteDWord( FScore );
   Stream.WriteDWord( FKillMax );
   Stream.WriteDWord( FKillCount );
-  Stream.WriteDWord( FBersekerLimit );
 
-  Stream.Write( FExpFactor,  SizeOf( FExpFactor ) );
-  Stream.Write( FAffects,    SizeOf( FAffects ) );
-  Stream.Write( FTraits,     SizeOf( FTraits ) );
-  Stream.Write( FRun,        SizeOf( FRun ) );
-  Stream.Write( FStatistics, SizeOf( FStatistics ) );
-  Stream.Write( FQuickSlots, SizeOf( FQuickSlots ) );
+  Stream.Write( FLastTurnDodge, SizeOf( FLastTurnDodge ) );
+  Stream.Write( FExpFactor,     SizeOf( FExpFactor ) );
+  Stream.Write( FQuickSlots,    SizeOf( FQuickSlots ) );
 
+  FTraits.WriteToStream( Stream );
   FKills.WriteToStream( Stream );
-  FStatistics.Map.WriteToStream( Stream );
+  FStatistics.WriteToStream( Stream );
 end;
 
 constructor TPlayer.CreateFromStream ( Stream : TStream ) ;
 begin
   inherited CreateFromStream( Stream );
+
   SpecExit       := Stream.ReadAnsiString();
   CurrentLevel   := Stream.ReadWord();
   NukeActivated  := Stream.ReadWord();
   InventorySize  := Stream.ReadByte();
   FExpLevel      := Stream.ReadByte();
+  FKlass         := Stream.ReadByte();
   FExp           := Stream.ReadDWord();
   FScore         := Stream.ReadDWord();
   FKillMax       := Stream.ReadDWord();
   FKillCount     := Stream.ReadDWord();
-  FBersekerLimit := Stream.ReadDWord();
 
-  Stream.Read( FExpFactor,  SizeOf( FExpFactor ) );
-  Stream.Read( FAffects,    SizeOf( TAffects ) );
-  Stream.Read( FTraits,     SizeOf( FTraits ) );
-  Stream.Read( FRun,        SizeOf( FRun ) );
-  Stream.Read( FStatistics, SizeOf( FStatistics ) );
-  Stream.Read( FQuickSlots, SizeOf( FQuickSlots ) );
+  Stream.Read( FLastTurnDodge, SizeOf( FLastTurnDodge ) );
+  Stream.Read( FExpFactor,     SizeOf( FExpFactor ) );
+  Stream.Read( FQuickSlots,    SizeOf( FQuickSlots ) );
 
+  FTraits         := TTraits.CreateFromStream( Stream );
   FKills          := TKillTable.CreateFromStream( Stream );
-  FStatistics.Map := TIntHashMap.CreateFromStream( Stream );
-  
+  FStatistics     := TStatistics.CreateFromStream( Stream );
+
   Initialize;
+end;
+
+function TPlayer.CallHook( aHook : Byte; const aParams : array of Const ) : Boolean;
+begin
+  CallHook := FTraits.CallHook( aHook, aParams );
+  if inherited CallHook( aHook, aParams ) then
+    CallHook := True;
+end;
+
+function TPlayer.CallHookCheck( aHook : Byte; const aParams : array of Const ) : Boolean;
+begin
+  if not ( inherited CallHookCheck( aHook, aParams ) ) then Exit ( False );
+  Exit( FTraits.CallHookCheck( aHook, aParams ) );
+end;
+
+function TPlayer.CallHookCan( aHook : Byte; const aParams : array of Const ) : Boolean;
+begin
+  if ( inherited CallHookCan( aHook, aParams ) ) then Exit ( true );
+  Exit( FTraits.CallHookCan( aHook, aParams ) );
+end;
+
+function TPlayer.GetBonus( aHook : Byte; const aParams : array of Const ) : Integer;
+begin
+  GetBonus := inherited GetBonus( aHook, aParams );
+  GetBonus += FTraits.GetBonus( aHook, aParams );
+end;
+
+function TPlayer.GetBonusMul( aHook : Byte; const aParams : array of Const ) : Single;
+begin
+  GetBonusMul := inherited GetBonusMul( aHook, aParams );
+  GetBonusMul *= FTraits.GetBonusMul( aHook, aParams );
 end;
 
 procedure TPlayer.LevelUp;
@@ -302,24 +262,12 @@ procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageTyp
 begin
   if aDamage < 0 then Exit;
   if BF_INV in FFlags then Exit;
-  FPathRun := False;
-  FRun.Stop;
+  FMultiMove.Stop;
   Doom.DamagedLastTurn := True;
   if ( aDamage >= Max( FHPNom div 3, 10 ) ) then
-  begin
     IO.Blink(Red,100);
-    if BF_BERSERKER in FFlags then
-    begin
-      IO.Msg('That hurt! You''re going berserk!');
-      FAffects.Add(LuaSystem.Defines['berserk'],20);
-    end;
-  end;
 
-  if aDamage > 0 then
-  begin
-    FKills.DamageTaken;
-    FStatistics.UpdateNDCount( FKills.BestNoDamageSequence );
-  end;
+  if aDamage > 0 then FKills.DamageTaken;
   inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource );
 end;
 
@@ -342,9 +290,7 @@ begin
   FPathClear   := [];
   if FPath.Run( FPosition, aCoord, 200) then
   begin
-    FPath.Start := FPath.Start.Child;
-    FRun.Active := True;
-    FPathRun := True;
+    FMultiMove.Start( FPath );
     Exit( True );
   end;
   Exit( False );
@@ -358,7 +304,7 @@ begin
   if UIDs[ iThisUID ] = nil then Exit( False );
 
   MasterDodge := False;
-  FAffects.Tick;
+  FAffects.OnUpdate;
   if Doom.State <> DSPlaying then Exit( False );
   Inv.EqTick;
   FLastPos := FPosition;
@@ -367,10 +313,6 @@ begin
 end;
 
 procedure TPlayer.HandlePostMove;
-var iTempSC     : LongInt;
-    iItem       : TItem;
-    iWeapon     : TItem;
-    iAutoTarget : TAutoTarget;
 
   function RunStopNear : boolean;
   begin
@@ -382,94 +324,25 @@ var iTempSC     : LongInt;
   end;
 
 begin
-  iTempSC := FSpeedCount;
-  iWeapon := Inv.Slot[ efWeapon ];
-  if iWeapon <> nil then
-  with iWeapon do
-    if isRanged then
-    begin // Autoreloading
-     if Ammo < AmmoMax then
-       if ( ( ( IF_SHOTGUN in FFlags ) and ( BF_SHOTTYMAN in Self.FFlags ) ) or
-          ( ( IF_ROCKET  in FFlags ) and ( BF_ROCKETMAN in Self.FFlags ) ) )
-          and (not (IF_RECHARGE in FFlags)) then
-       begin
-         iItem := Inv.SeekAmmo(AmmoID);
-         if iItem <> nil then
-           Reload( iItem, IF_SINGLERELOAD in FFlags )
-         else if canPackReload then
-           Reload( FInv.Slot[ efWeapon2 ], IF_SINGLERELOAD in FFlags );
-       end;
-     if IF_PUMPACTION in FFlags then
-       if (IF_CHAMBEREMPTY in FFlags) and (Ammo <> 0) then
-       begin
-         TLevel( Parent ).playSound( ID, 'pump', Player.FPosition );
-         Exclude( FFlags, IF_CHAMBEREMPTY );
-         IO.Msg( 'You pump a shell into the shotgun chamber.' );
-       end;
-    end;
-
-
-  if ( iWeapon <> nil ) and ( iWeapon.isRanged ) then
-     if (BF_GUNRUNNER in Self.FFlags) and iWeapon.canFire and (iWeapon.Shots < 3) and FAffects.IsActive( LuaSystem.Defines['running'] ) then
-     begin
-       iAutoTarget := TAutoTarget.Create( FPosition );
-       TLevel(Parent).UpdateAutoTarget( iAutoTarget, Self, Player.Vision );
-       with iAutoTarget do
-       try
-         FTargetPos := Current;
-         if FTargetPos <> FPosition then
-         begin
-           // TODO: fix?
-           if iWeapon.CallHookCheck( Hook_OnFire, [ Self, false ] ) then
-             ActionFire( FTargetPos, iWeapon );
-         end;
-       finally
-         Free;
-       end;
-     end;
-  FSpeedCount := iTempSC;
-
-  if FRun.Active and (not FPathRun) then
+  inherited HandlePostMove;
+  if FMultiMove.IsRepeat then
     if RunStopNear or ((not Setting_RunOverItems) and (TLevel( Parent ).Item[ FPosition ] <> nil)) then
-    begin
-      FPathRun := False;
-      FRun.Stop;
-    end;
+      FMultiMove.Stop;
 end;
 
-function TPlayer.GetRunInput : TInputKey;
-var iDir : TDirection;
+function TPlayer.GetMultiMoveInput : TInputKey;
 begin
-  GetRunInput := INPUT_NONE;
-  if FRun.Active then
+  GetMultiMoveInput := INPUT_NONE;
+  if FMultiMove.Active then
   begin
-    Inc( FRun.Count );
     if BF_SESSILE in FFlags then
     begin
-      FPathRun := False;
-      FRun.Stop;
+      FMultiMove.Stop;
       Fail('You can''t!',[] );
       Exit( INPUT_NONE );
     end;
 
-    if FPathRun then
-    begin
-      if (not FPath.Found) or (FPath.Start = nil) or (FPath.Start.Coord = FPosition) then
-      begin
-        FPathRun := False;
-        FRun.Stop;
-        Exit( INPUT_NONE );
-      end;
-      iDir := NewDirection( FPosition, FPath.Start.Coord );
-      FPath.Start := FPath.Start.Child;
-    end
-    else iDir := FRun.Dir;
-
-    if iDir.code = 5 then
-    begin
-      if FRun.Count >= Option_MaxWait then begin FPathRun := False; FRun.Stop; end;
-    end;
-    Exit( DirectionToInput( iDir ) );
+    Exit( FMultiMove.CalculateInput( FPosition ) );
   end;
 end;
 
@@ -480,36 +353,21 @@ begin
 
   if iLevel.Item[ FPosition ] <> nil then
   begin
-    if not FPathRun then
-      with iLevel.Item[ FPosition ] do
-        if isLever then
-           IO.Msg('There is a %s here.', [ DescribeLever( iLevel.Item[ FPosition ] ) ] )
-        else
-          if Flags[ IF_PLURALNAME ]
-            then IO.Msg('There are %s lying here.', [ GetName( False ) ] )
-            else IO.Msg('There is %s lying here.', [ GetName( False ) ] );
+    if not FMultiMove.IsPath then
+      IO.Msg( iLevel.Item[ FPosition ].GetExtName( True ) );
   end;
 
   FEnemiesInVision := iLevel.EnemiesVisible;
-  if FEnemiesInVision < 1 then
-  begin
-    FChainFire := 0;
-    if FBersekerLimit > 0 then Dec( FBersekerLimit );
-  end;
+  if FEnemiesInVision > 0
+    then FMultiMove.Stop
+    else FChainFire := 0;
 
-  if FEnemiesInVision > 0 then
-  begin
-    FPathRun := False;
-    FRun.Stop;
-  end;
-
-  if FRun.Active then
+  if FMultiMove.Active then
   begin
     if IO.CommandEventPending then
     begin
       IO.Msg('Stop.');
-      FPathRun := False;
-      FRun.Stop;
+      FMultiMove.Stop;
       IO.ClearEventBuffer;
     end
     else
@@ -518,6 +376,16 @@ begin
         IO.Delay( Option_RunDelay );
     end;
   end;
+
+  CallHook(Hook_OnPreAction,[]);
+end;
+
+procedure TPlayer.PostAction;
+begin
+  CallHook(Hook_OnPostAction,[]);
+  if Doom.State <> DSPlaying then Exit;
+  FLastTurnDodge := False;
+  UpdateVisual;
 end;
 
 procedure TPlayer.LevelEnter;
@@ -525,8 +393,7 @@ begin
   if FHP < (FHPMax div 10) then
     AddHistory('Entering level '+IntToStr(CurrentLevel)+' he was almost dead...');
 
-  FStatistics.Map['damage_on_level'] := 0;
-  FStatistics.Map['entry_time'] := FStatistics.GameTime;
+  FStatistics.OnLevelEnter;
 
   FTargetPos.Create(0,0);
   FChainFire := 0;
@@ -535,7 +402,7 @@ end;
 procedure TPlayer.ExamineNPC;
 var iLevel : TLevel;
     iWhere : TCoord2D;
-    iCount  : Word;
+    iCount : Word;
 begin
   iLevel := TLevel(Parent);
   iCount := 0;
@@ -571,14 +438,10 @@ end;
 
 destructor TPlayer.Destroy;
 begin
-  FStatistics.Destroy;
+  FreeAndNil( FStatistics );
   FreeAndNil( FKills );
+  FreeAndNil( FMultiMove );
   inherited Destroy;
-end;
-
-procedure TPlayer.IncStatistic(const aStatisticID: AnsiString; aAmount: Integer);
-begin
-  FStatistics.Map[ aStatisticID ] := FStatistics.Map[ aStatisticID ] + aAmount;
 end;
 
 procedure TPlayer.Kill( BloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem );
@@ -696,13 +559,6 @@ begin
   end;
 end;
 
-function TPlayer.DescribeLever( aItem : TItem ) : string;
-begin
-  if BF_LEVERSENSE2 in FFlags then Exit('lever ('+LuaSystem.Get(['items',aItem.ID,'desc'],'')+')' );
-  if BF_LEVERSENSE1 in FFlags then Exit('lever ('+LuaSystem.Get(['items',aItem.ID,'good'],'')+')' );
-  Exit('lever');
-end;
-
 procedure TPlayer.AddHistory( const aHistory : Ansistring );
 begin
   LuaSystem.ProtectedCall(['player','add_history'],[ Self, aHistory ]);
@@ -768,49 +624,6 @@ procedure TPlayer.doUpgradeTrait;
 begin
   IO.PushLayer( TPlayerView.CreateTrait( False ) );
   IO.WaitForLayer( True );
-end;
-
-function lua_player_set_affect(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
-    Being   : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  if not (Being is TPlayer) then Exit(0);
-  Player.FAffects.Add(State.ToId(2),State.ToInteger(3,-1));
-  Result := 0;
-end;
-
-function lua_player_get_affect_time(L: Plua_State): Integer; cdecl;
-var State    : TDoomLuaState;
-    Being    : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  if not (Being is TPlayer) then Exit(0);
-  State.Push(Player.FAffects.getTime(State.ToId(2)));
-  Result := 1;
-end;
-
-function lua_player_remove_affect(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
-    Being   : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  if not (Being is TPlayer) then Exit(0);
-  Player.FAffects.Remove( State.ToId(2), State.ToBoolean( 3, False ) );
-  Result := 0;
-end;
-
-function lua_player_is_affect(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
-    Being   : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  State.Push( ( Being is TPlayer ) and Player.FAffects.IsActive(State.ToId(2)));
-  Result := 1;
 end;
 
 function lua_player_add_exp(L: Plua_State): Integer; cdecl;
@@ -992,7 +805,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  State.Push( Player.FTraits.Values[ State.ToInteger( 2 ) ] );
+  State.Push( Player.Traits[ State.ToInteger( 2 ) ] );
   Result := 1;
 end;
 
@@ -1003,15 +816,11 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  State.Push( Player.FTraits.GetHistory );
+  State.Push( Player.Traits.GetHistory );
   Result := 1;
 end;
 
-const lua_player_lib : array[0..17] of luaL_Reg = (
-      ( name : 'set_affect';      func : @lua_player_set_affect),
-      ( name : 'get_affect_time'; func : @lua_player_get_affect_time),
-      ( name : 'remove_affect';   func : @lua_player_remove_affect),
-      ( name : 'is_affect';       func : @lua_player_is_affect),
+const lua_player_lib : array[0..13] of luaL_Reg = (
       ( name : 'add_exp';         func : @lua_player_add_exp),
       ( name : 'has_won';         func : @lua_player_has_won),
       ( name : 'get_trait';       func : @lua_player_get_trait),

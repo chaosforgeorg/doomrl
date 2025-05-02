@@ -4,7 +4,7 @@ interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vmessages,
      vuitypes, vluastate,  viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
-     dfdata, doomspritemap, doomaudio, doomkeybindings, doomloadingview;
+     dfdata, dfthing, doomspritemap, doomaudio, doomkeybindings, doomloadingview;
 
 const TIG_EV_NONE      = 0;
       TIG_EV_DROP      = 1;
@@ -79,6 +79,7 @@ type TDoomIO = class( TIO )
   procedure addMeleeAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite ); virtual;
   procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); virtual;
   procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); virtual;
+  procedure addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer ); virtual;
   procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); virtual; abstract;
   procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); virtual; abstract;
   procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); virtual; abstract;
@@ -235,6 +236,11 @@ begin
 end;
 
 procedure TDoomIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+begin
+
+end;
+
+procedure TDoomIO.addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer );
 begin
 
 end;
@@ -746,18 +752,21 @@ begin
       else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(31,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
 
     iColor := Red;
-    if Doom.Level.Empty then iColor := Blue;
+    if Doom.Level.Empty
+      then iColor := Blue
+      else if Doom.Level.Flags[ LF_ENRAGE ]
+        then iColor := LightMagenta;
+
     iLevelName := Doom.Level.Name;
     if Doom.Level.Name_Number > 0 then
       iLevelName += ' Lev '+IntToStr( Doom.Level.Name_Number );
     VTIG_FreeLabel( iLevelName, Point( -2-Length( iLevelName), iBottom ), iColor );
 
     iP := 0;
-    with Player do
     for i := 1 to MAXAFFECT do
-      if FAffects.IsActive(i) then
+      if Player.Affects.IsActive(i) then
       begin
-        if FAffects.IsExpiring(i)
+        if Player.Affects.IsExpiring(i)
           then iColor := Affects[i].Color_exp
           else iColor := Affects[i].Color;
         VTIG_FreeLabel( Affects[i].name, Point( iPos.X+iP+1, iBottom ), iColor );

@@ -57,9 +57,9 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_PISTOL,
 		level    = 8,
 		weight   = 2,
-		group    = "weapon-pistol",
+		group    = "pistol",
 		desc     = "This is the standard issue rechargeable energy side-arm. Cool!",
-		flags    = { IF_EXOTIC, IF_PISTOL, IF_RECHARGE },
+		flags    = { IF_EXOTIC, IF_RECHARGE },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "cell",
@@ -83,9 +83,9 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_PISTOL,
 		level    = 4,
 		weight   = 6,
-		group    = "weapon-pistol",
+		group    = "pistol",
 		desc     = "This is the kind of handgun given to your superiors. Doesn't look like they're using it right now...",
-		flags    = { IF_EXOTIC, IF_PISTOL },
+		flags    = { IF_EXOTIC, },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -109,9 +109,9 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_CSHOTGUN,
 		level    = 6,
 		weight   = 6,
-		group    = "weapon-shotgun",
+		group    = "shotgun",
 		desc     = "Big, bad and ugly.",
-		flags    = { IF_EXOTIC, IF_SHOTGUN, IF_SINGLERELOAD },
+		flags    = { IF_EXOTIC, IF_SINGLERELOAD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -120,8 +120,13 @@ function drl.register_exotic_items()
 		damagetype    = DAMAGE_SHARPNEL,
 		fire          = 10,
 		reload        = 10,
-		altreload     = RELOAD_FULL,
 		missile       = "sfocused",
+		altreload     = RELOAD_SCRIPT,
+		altreloadname = "full",
+
+		OnAltReload = function( self, being )
+			return being:full_reload( self )
+		end,
 	}
 
 	register_item "upshotgun"
@@ -133,10 +138,10 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_SHOTGUN,
 		level    = 12,
 		weight   = 4,
-		group    = "weapon-shotgun",
+		group    = "shotgun",
 		desc     = "Plasma shotgun -- the best of two worlds.",
 		firstmsg = "Splash and they're dead!",
-		flags    = { IF_EXOTIC, IF_SHOTGUN },
+		flags    = { IF_EXOTIC },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "cell",
@@ -146,8 +151,6 @@ function drl.register_exotic_items()
 		damagetype    = DAMAGE_PLASMA,
 		fire          = 10,
 		reload        = 20,
-		-- TODO Confirm if plasma shotgun does not use alt-reload
-		--altreload     = RELOAD_FULL,
 		missile       = "splasma",
 	}
 
@@ -160,10 +163,10 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_DSHOTGUN,
 		level    = 10,
 		weight   = 5,
-		group    = "weapon-shotgun",
+		group    = "shotgun",
 		desc     = "After the first hellish invasion, weapon engineers designed the super shotgun as the world's first firearm designed to kill demons. And boy does it do a good job.",
 		firstmsg = "This little baby brings back memories!",
-		flags    = { IF_EXOTIC, IF_SHOTGUN, IF_DUALSHOTGUN },
+		flags    = { IF_EXOTIC, IF_DUALSHOTGUN },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -185,7 +188,7 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_PLASMA,
 		level    = 12,
 		weight   = 5,
-		group    = "weapon-plasma",
+		group    = "plasma",
 		desc     = "With no recoil and pinpoint accuracy, it takes a world-class moron to miss while using a laser rifle.",
 		firstmsg = "The sniper chain weapon!",
 		flags    = { IF_EXOTIC },
@@ -221,7 +224,7 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_DSHOTGUN,
 		level    = 12,
 		weight   = 4,
-		group    = "weapon-plasma",
+		group    = "plasma",
 		desc     = "Now this is a weird weapon.",
 		firstmsg = "Quite bulky!",
 		flags    = { IF_EXOTIC, IF_SPREAD },
@@ -260,7 +263,7 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_CHAINGUN,
 		level    = 10,
 		weight   = 6,
-		group    = "weapon-chain",
+		group    = "chain",
 		desc     = "Spits enough lead into the air to be considered an environmental hazard.",
 		flags    = { IF_EXOTIC },
 
@@ -285,9 +288,9 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_BAZOOKA,
 		level    = 10,
 		weight   = 6,
-		group    = "weapon-rocket",
+		group    = "rocket",
 		desc     = "The definitive upgrade to the rocket launcher.",
-		flags    = { IF_EXOTIC, IF_ROCKET, IF_SINGLERELOAD },
+		flags    = { IF_EXOTIC, IF_SINGLERELOAD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "rocket",
@@ -298,8 +301,13 @@ function drl.register_exotic_items()
 		fire          = 8,
 		radius        = 3,
 		reload        = 12,
-		altreload     = RELOAD_FULL,
 		missile       = "mrocket",
+		altreload     = RELOAD_SCRIPT,
+		altreloadname = "full",
+
+		OnAltReload = function( self, being )
+			return being:full_reload( self )
+		end,
 	}
 
 	register_item "unplasma"
@@ -310,7 +318,7 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_PLASMA,
 		level    = 15,
 		weight   = 4,
-		group    = "weapon-plasma",
+		group    = "plasma",
 		desc     = "A self-charging plasma rifle -- too bad it can't be manually reloaded.",
 		flags    = { IF_EXOTIC, IF_RECHARGE },
 
@@ -359,7 +367,7 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_BFG9000,
 		level    = 22,
 		weight   = 2,
-		group    = "weapon-bfg",
+		group    = "bfg",
 		desc     = "A self-charging BFG9000! How much more lucky can you get?",
 		flags    = { IF_EXOTIC, IF_RECHARGE },
 
@@ -409,7 +417,7 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_PLASMA,
 		level    = 14,
 		weight   = 3,
-		group    = "weapon-plasma",
+		group    = "plasma",
 		desc     = "Now this is a piece of weird technology, wonder how it works?",
 		firstmsg = "Well this is a weird device!",
 		flags    = { IF_EXOTIC, IF_NONMODABLE },
@@ -457,9 +465,9 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_BAZOOKA,
 		level    = 10,
 		weight   = 6,
-		group    = "weapon-rocket",
+		group    = "rocket",
 		desc     = "This will surely make a mess!",
-		flags    = { IF_EXOTIC, IF_ROCKET, IF_SINGLERELOAD },
+		flags    = { IF_EXOTIC, IF_SINGLERELOAD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "rocket",
@@ -791,7 +799,7 @@ function drl.register_exotic_items()
 		OnUseCheck = function(self,being)
 			local function filter( item )
 				if item.itype ~= ITEMTYPE_RANGED then return false end
-				if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
+				if item.group ~= "shotgun" and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
 					return true
 				elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
 					return true
@@ -806,7 +814,7 @@ function drl.register_exotic_items()
 		end,
 
 		OnModDescribe = function( self, item )
-			if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
+			if item.group ~= "shotgun" and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
 				return "shots {!"..item.shots.."} -> {!"..(item.shots+2).."}"
 			elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
 				return "blast radius {!"..item.blastradius.."} -> {!"..(item.blastradius+2).."}"
@@ -817,13 +825,13 @@ function drl.register_exotic_items()
 		OnUse = function(self,being)
 			if not self:has_property( "chosen_item" ) then return true end
 			local item = self.chosen_item
-			if ( not item.flags[ IF_SHOTGUN ] ) and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
+			if item.group ~= "shotgun" and ( item.shots >= 3 ) and ( not item.flags[ IF_SPREAD ]) then
 				item.shots = item.shots + 2
 			elseif ( item.blastradius >= 3 ) or ( item.flags[ IF_SPREAD ] and ( item.blastradius >= 2 ) ) then
 				item.blastradius = item.blastradius + 2
 			end
 			ui.msg( "You upgrade your weapon!" )
-			item:add_mod( 'F' )
+			item:add_mod( 'F', being.techbonus )
 			return true
 		end,
 	}
@@ -867,7 +875,7 @@ function drl.register_exotic_items()
 			if not self:has_property( "chosen_item" ) then return true end
 			local item = self.chosen_item
 			-- A little easter egg for applying S-mod on shotgun/melee
-			if item.flags[ IF_SHOTGUN ] or item.itype ~= ITEMTYPE_RANGED then
+			if item.group == "shotgun" or item.itype ~= ITEMTYPE_RANGED then
 				ui.msg( "You suddenly feel a little silly." )
 			else
 				ui.msg( "You upgrade your weapon!" )
@@ -877,7 +885,7 @@ function drl.register_exotic_items()
 			else
 				item.flags[IF_FARHIT] = true
 			end
-			item:add_mod( 'S' )
+			item:add_mod( 'S', being.techbonus )
 			return true
 		end,
 	}
@@ -931,7 +939,7 @@ function drl.register_exotic_items()
 			if not self:has_property( "chosen_item" ) then return true end
 			local item = self.chosen_item
 			ui.msg( "You upgrade your gear!" )
-			item:add_mod( 'N' )
+			item:add_mod( 'N', being.techbonus )
 			if item.flags[ IF_RECHARGE ] then
 				if item.rechargedelay == 0 then
 					item.rechargeamount = item.rechargeamount + 1
@@ -987,7 +995,7 @@ function drl.register_exotic_items()
 			ui.msg( "You upgrade your gear!" )
 			item.durability = 100
 			item.flags[ IF_NODURABILITY ] = true
-			item:add_mod( 'O' )
+			item:add_mod( 'O', being.techbonus )
 			return true
 		end,
 	}
@@ -1117,7 +1125,7 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_CHAINSAW,
 		level    = 12,
 		weight   = 6,
-		group    = "weapon-melee",
+		group    = "melee",
 		desc     = "Chainsaw -- cuts through flesh like a hot knife through butter.",
 		flags    = { IF_EXOTIC },
 
@@ -1147,7 +1155,7 @@ function drl.register_exotic_items()
 		psprite  = SPRITE_PLAYER_BFG9000,
 		level    = 20,
 		weight   = 4,
-		group    = "weapon-bfg",
+		group    = "bfg",
 		desc     = "The Big Fucking Gun. Hell wouldn't be fun without it.",
 		flags    = { IF_EXOTIC },
 

@@ -214,7 +214,7 @@ end;
 
 procedure TRunModeView.Finalize( aDir : TDirection );
 begin
-  Player.FRun.Start( aDir );
+  Player.MultiMove.Start( aDir );
 end;
 
 constructor TMeleeDirView.Create;

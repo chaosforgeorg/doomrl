@@ -110,17 +110,21 @@ const
 
   Config       : TDoomConfig = nil;
 
+const
+  AnimationSpeedMove   = 125;
+  AnimationSpeedPush   = 200;
+  AnimationSpeedAttack = 100;
 
 type
     TItemType       = ( ItemType_None, ItemType_Ranged, ItemType_NRanged, ItemType_Armor, ItemType_Melee, ItemType_Ammo, ItemType_Pack, ItemType_Power, ItemType_Boots, ItemType_Tele, ItemType_Lever, ItemType_Feature, ItemType_AmmoPack );
     TBodyTarget     = ( Target_Internal, Target_Torso, Target_Feet );
     TEqSlot         = ( efTorso, efWeapon, efBoots, efWeapon2 );
     TStatusEffect   = ( StatusNormal, StatusInvert, StatusRed, StatusGreen, StatusBlue, StatusCyan, StatusMagenta, StatusYellow, StatusGray, StatusWhite );
-    TDamageType     = ( Damage_Bullet, Damage_Melee, Damage_Sharpnel, Damage_Acid, Damage_Fire, Damage_Plasma, Damage_SPlasma, Damage_IgnoreArmor );
+    TDamageType     = ( Damage_Bullet, Damage_Melee, Damage_Sharpnel, Damage_Acid, Damage_Fire, Damage_Cold, Damage_Poison, Damage_Plasma, Damage_SPlasma, Damage_IgnoreArmor );
     TAltFire        = ( ALT_NONE, ALT_CHAIN, ALT_THROW, ALT_SCRIPT, ALT_TARGETSCRIPT, ALT_AIMED, ALT_SINGLE );
-    TAltReload      = ( RELOAD_NONE, RELOAD_SCRIPT, RELOAD_FULL, RELOAD_DUAL, RELOAD_SINGLE );
+    TAltReload      = ( RELOAD_NONE, RELOAD_SCRIPT, RELOAD_DUAL, RELOAD_SINGLE );
     TExplosionFlag  = ( efSelfHalf, efSelfKnockback, efSelfSafe, efAfterBlink, efChain, efHalfKnock, efNoKnock, efRandomContent, efNoDistanceDrop );
-    TResistance     = ( Resist_Bullet, Resist_Melee, Resist_Shrapnel, Resist_Acid, Resist_Fire, Resist_Plasma );
+    TResistance     = ( Resist_Bullet, Resist_Melee, Resist_Shrapnel, Resist_Acid, Resist_Fire, Resist_Plasma, Resist_Cold, Resist_Poison );
 
 
 const
@@ -164,6 +168,7 @@ const
   Option_ColoredInventory : Boolean = True;
   Option_LockBreak        : Boolean = True;
   Option_LockClose        : Boolean = True;
+  Option_ForceRaw         : Boolean = True;
   Option_MessageBuffer    : DWord = 100;
   Option_MaxRun           : DWord = 100;
   Option_MaxWait          : DWord = 20;
@@ -265,7 +270,8 @@ type
     Name       : Ansistring;
     Color      : Byte;
     Color_exp  : Byte;
-    Hooks      : set of (AffectHookOnAdd,AffectHookOnTick,AffectHookOnRemove);
+    AffHooks   : set of (AffectHookOnAdd,AffectHookOnUpdate,AffectHookOnRemove);
+    Hooks      : TFlags;
     StatusEff  : TStatusEffect;
     StatusStr  : DWord;
   end;

@@ -395,14 +395,15 @@ begin
 end;
 
 procedure TPlayerView.UpdateEquipment;
-const ResNames : array[TResistance] of AnsiString = ('Bullet','Melee','Shrap','Acid','Fire','Plasma');
-      ResIDs   : array[TResistance] of AnsiString = ('bullet','melee','shrapnel','acid','fire','plasma');
-var iEntry        : TItemViewEntry;
-    iSelected,iY  : Integer;
-    iB, iA, iR, iK: Integer;
-    iCount        : Integer;
-    iRes          : TResistance;
-    iName         : Ansistring;
+const ResNames : array[TResistance] of AnsiString = ('Bullet','Melee','Shrap','Acid','Fire','Plasma','Cold','Poison');
+      ResIDs   : array[TResistance] of AnsiString = ('bullet','melee','shrapnel','acid','fire','plasma','cold','poison');
+var iEntry            : TItemViewEntry;
+    iSelected,iY      : Integer;
+    iB, iA, iR, iK    : Integer;
+    iTot, iFeet, iTor : Integer;
+    iCount            : Integer;
+    iRes              : TResistance;
+    iName             : Ansistring;
   function Cursed : Boolean;
   begin
     if ( FEq[iSelected].Item <> nil ) and FEq[iSelected].Item.Flags[ IF_CURSED ] then
@@ -453,32 +454,39 @@ begin
     VTIG_FreeLabel( 'Resistances',     Point(iR,iY) );
 
     for iCount := 1 to MAXTRAITS do
-      if Player.FTraits.Values[iCount] > 0 then
+      if Player.Traits[iCount] > 0 then
       begin
         iName := LuaSystem.Get(['traits',iCount,'name']);
+        if iName = '' then Continue;
         if iCount < 10 then
         begin
           Inc( iB );
-          VTIG_FreeLabel( '{d'+Padded(iName,16) + '({!' + IntToStr(Player.FTraits.Values[iCount])+ '})}', Point(0, iY+iB) );
+          VTIG_FreeLabel( '{d'+Padded(iName,16) + '({!' + IntToStr(Player.Traits[iCount])+ '})}', Point(0, iY+iB) );
         end
         else
         begin
           Inc( iA );
-          VTIG_FreeLabel( '{d'+Padded(iName,16) + '({!' + IntToStr(Player.FTraits.Values[iCount])+ '})}', Point(20, iY+iA) );
+          VTIG_FreeLabel( '{d'+Padded(iName,16) + '({!' + IntToStr(Player.Traits[iCount])+ '})}', Point(20, iY+iA) );
         end;
       end;
 
     for iRes := Low(TResistance) to High(TResistance) do
     begin
-      Inc( iY );
-      VTIG_FreeLabel( '{d'+Padded(ResNames[iRes],7)+'{!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_INTERNAL))+'%',5)+
-           '} Torso {!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_TORSO))+'%',5)+
-           '} Feet {!'+Padded(BonusStr(Player.getTotalResistance(ResIDs[iRes],TARGET_FEET))+'%',5)+'}', Point( iR, iY ) );
+      iTot  := Player.getTotalResistance(ResIDs[iRes],TARGET_INTERNAL);
+      iTor  := Player.getTotalResistance(ResIDs[iRes],TARGET_TORSO);
+      iFeet := Player.getTotalResistance(ResIDs[iRes],TARGET_FEET);
+      if (iTot <> 0) or (iTor <> 0) or (iFeet <> 0) then
+      begin
+        Inc( iY );
+        VTIG_FreeLabel( '{d'+Padded(ResNames[iRes],7)+'{!'+Padded(BonusStr(iTot)+'%',5)+
+             '} Torso {!'+Padded(BonusStr(iTor)+'%',5)+
+             '} Feet {!'+Padded(BonusStr(iFeet)+'%',5)+'}', Point( iR, iY ) );
+      end;
     end;
 
-     VTIG_FreeLabel( '<{!Enter}> take off/wear', Point(iK, 18) );
-     VTIG_FreeLabel( '<{!Tab}> swap item',       Point(iK, 19) );
-     VTIG_FreeLabel( '<{!Backspace}> drop item', Point(iK, 20) );
+     VTIG_FreeLabel( '<{!Enter}> take off/wear', Point(iK, 19) );
+     VTIG_FreeLabel( '<{!Tab}> swap item',       Point(iK, 20) );
+     VTIG_FreeLabel( '<{!Backspace}> drop item', Point(iK, 21) );
   VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit}');
 
   if (iSelected >= 0) then
@@ -603,7 +611,7 @@ begin
       FState := PLAYERVIEW_CLOSING;
       if FTraitFirst
         then FTraitPick := FTraits[iSelected].Index
-        else Player.FTraits.Upgrade( FTraits[iSelected].Index );
+        else Player.Traits.Upgrade( Player.Klass, FTraits[iSelected].Index );
       FState := PLAYERVIEW_DONE;
     end;
 end;
@@ -672,7 +680,6 @@ var iEntry    : TTraitViewEntry;
     iLevel    : Byte;
     iTrait, i : byte;
     iTraits   : Variant;
-    iTData    : PTraits;
     iName     : AnsiString;
     iNID      : Word;
     iValue    : Word;
@@ -684,7 +691,7 @@ const RG : array[Boolean] of Char = ('G','R');
   function Value( aTrait : Byte ) : Byte;
   begin
     if FTraitFirst then Exit(0);
-    Exit( iTData^.Values[aTrait] );
+    Exit( Player.Traits[aTrait] );
   end;
 
 begin
@@ -693,12 +700,8 @@ begin
 
   iKlass := aKlass;
   iLevel := 0;
-  iTData := nil;
   if not FTraitFirst then
-  begin
     iLevel := Player.ExpLevel;
-    iTData := @(Player.FTraits);
-  end;
 
   iTraits := LuaSystem.Get(['klasses',iKlass,'traitlist']);
   for i := VarArrayLowBound(iTraits, 1) to VarArrayHighBound(iTraits, 1) do
@@ -710,7 +713,7 @@ begin
     with LuaSystem.GetTable(['traits',iTrait]) do
     try
       iEntry.Quote := getString('quote');
-      iEntry.Desc  := getString('full');
+      iEntry.Desc  := getString('desc');
     finally
       Free;
     end;
@@ -729,6 +732,7 @@ begin
       end;
 
       iValue := GetInteger('reqlevel',0);
+      if iValue > 0 then iValue += Value(iTrait)*3;
       if iValue > 0
         then iEntry.Requires += '{'+RG[iLevel < iValue]+'Level }({!'+IntToStr(iValue)+'})'
         else Delete( iEntry.Requires, Length(iEntry.Requires) - 1, 2 );
@@ -756,7 +760,7 @@ begin
     iEntry.Index     := iTrait;
     if FTraitFirst
       then iEntry.Available := TTraits.CanPickInitially( iTrait, iKlass )
-      else iEntry.Available := iTData^.CanPick( iTrait, iLevel );
+      else iEntry.Available := Player.Traits.CanPick( iKlass, iTrait, iLevel );
     FTraits.Push( iEntry );
   end;
 end;
@@ -781,26 +785,26 @@ begin
 
   with Player do
   begin
-    FStatistics.Update();
-    iKillRecord := FStatistics.Map['kills_non_damage'];
+    Statistics.Update();
+    iKillRecord := Statistics['kills_non_damage'];
     if FKills.NoDamageSequence > iKillRecord then iKillRecord := FKills.NoDamageSequence;
 
     FCharacter.Push( Format( '{!%s}, level {!%d} {!%s},',[ Name, ExpLevel, AnsiString(LuaSystem.Get(['klasses',Klass,'name']))] ) );
     if Doom.Level.Name_Number > 0
       then FCharacter.Push( Format( 'currently on level {!%d} of {!%s}. ', [ Doom.Level.Name_Number, Doom.Level.Name ] ) )
       else FCharacter.Push( Format( 'currently at {!%s}. ', [ Doom.Level.Name ] ) );
-    FCharacter.Push( Format( 'He survived {!%d} turns, which took him {!%d} seconds. ', [ FStatistics.Map['game_time'], FStatistics.Map['real_time'] ] ) );
-    FCharacter.Push( Format( 'He took {!%d} damage, {!%d} on this floor alone. ', [ FStatistics.Map['damage_taken'], FStatistics.Map['damage_on_level'] ] ) );
-    FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemies ({!%d%%}). ', [ FStatistics.Map['unique_kills'], FStatistics.Map['max_unique_kills'], Percent( FStatistics.Map['unique_kills'], FStatistics.Map['max_unique_kills'] ) ] ) );
-    if FStatistics.Map['kills'] <> FStatistics.Map['unique_kills'] then
-      FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemy spawns total. ', [ FStatistics.Map['kills'], FStatistics.Map['max_kills'] ] ) );
+    FCharacter.Push( Format( 'He survived {!%d} turns, which took him {!%d} seconds. ', [ Statistics['game_time'], Statistics['real_time'] ] ) );
+    FCharacter.Push( Format( 'He took {!%d} damage, {!%d} on this floor alone. ', [ Statistics['damage_taken'], Statistics['damage_on_level'] ] ) );
+    FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemies ({!%d%%}). ', [ Statistics['unique_kills'], Statistics['max_unique_kills'], Percent( Statistics['unique_kills'], Statistics['max_unique_kills'] ) ] ) );
+    if Statistics['kills'] <> Statistics['unique_kills'] then
+      FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemy spawns total. ', [ Statistics['kills'], Statistics['max_kills'] ] ) );
     FCharacter.Push( Format( 'His current killing spree is {!%d}, with a record of {!%d}. ', [ FKills.NoDamageSequence, iKillRecord ] ) );
     FCharacter.Push( '' );
     FCharacter.Push( Format( 'Current movement speed is {!%.2f} second/move.', [getMoveCost/(Speed*10.0)] ) );
-    FCharacter.Push( Format( 'Current fire speed is {!%.2f} second/%s.', [getFireCost/(Speed*10.0),IIf(canDualGun,'dualshot','shot')] ) );
+    FCharacter.Push( Format( 'Current fire speed is {!%.2f} second/%s.', [getFireCost( ALT_NONE, False )/(Speed*10.0),IIf(canDualWield,'dualshot','shot')] ) );
     FCharacter.Push( Format( 'Current reload speed is {!%.2f} second/reload.', [getReloadCost/(Speed*10.0)] ) );
-    FCharacter.Push( Format( 'Current to hit chance (point blank) is {!%s}.',[toHitPercent(10+getToHitRanged(Inv.Slot[efWeapon]))]));
-    FCharacter.Push( Format( 'Current melee hit chance is {!%s}.',[toHitPercent(10+getToHitMelee(Inv.Slot[efWeapon]))]));
+    FCharacter.Push( Format( 'Current to hit chance (point blank) is {!%s}.',[toHitPercent(10+getToHit(Inv.Slot[efWeapon], ALT_NONE, False))]));
+    FCharacter.Push( Format( 'Current melee hit chance is {!%s}.',[toHitPercent(10+getToHit(Inv.Slot[efWeapon], ALT_NONE, True))]));
     FCharacter.Push( '' );
 
     iDodgeBonus := getDodgeMod;
@@ -811,19 +815,12 @@ begin
       else FCharacter.Push( 'He has no bonus toward dodging attacks.' );
 
     { Knockback Modifier }
-    if ( ( iKnockMod <> 100 ) and ( BodyBonus <> 0 ) ) then
+    if ( iKnockMod <> 100 ) then
     begin
       if ( iKnockMod < 100 )
-      then FCharacter.Push( Format( 'He resists {!%d%%} of knockback', [100-iKnockMod]))
-      else FCharacter.Push( Format( 'He receives {!%d%%} extra knockback', [iKnockMod-100]));
-      FCharacter.Push( Format( '%s prevents {!%d} space%s of knockback.', [IIf( iKnockMod < 100, 'and', 'but' ), BodyBonus, IIf(BodyBonus <> 1, 's') ]));
+       then FCharacter.Push( Format( 'He resists {!%d%%} of knockback.', [100-iKnockMod]))
+       else FCharacter.Push( Format( 'He receives {!%d%%} extra knockback.', [iKnockMod-100]))
     end
-    else if ( iKnockMod <> 100 ) then
-      if ( iKnockMod < 100 )
-      then FCharacter.Push( Format( 'He resists {!%d%%} of knockback.', [100-iKnockMod]))
-      else FCharacter.Push( Format( 'He receives {!%d%%} extra knockback.', [iKnockMod-100]))
-    else if ( BodyBonus <> 0 )
-      then FCharacter.Push( Format( 'He prevents {!%d} space%s of knockback.', [BodyBonus, IIf(BodyBonus <> 1,'s')]))
     else
       FCharacter.Push( 'He has no resistance to knockback.' );
     FCharacter.Push( '' );

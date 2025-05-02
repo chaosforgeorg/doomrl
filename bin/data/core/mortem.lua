@@ -127,10 +127,10 @@ function mortem.print_statistics()
 	local function bonus( val ) if val < 0 then return "{!"..val.."}" else return "{!+"..val.."}" end end
 
 	player:mortem_print( "  Health {!"..player.hp.."}/{!"..player.hpmax.."}   Experience {!"..player.exp.."}/{!"..player.explevel.."}" )
-	player:mortem_print("  ToHit Ranged "..bonus( player.tohit )..
-						"  ToHit Melee "..bonus( player.tohitmelee + player.tohit )..
-						"  ToDmg Ranged "..bonus( player.todamall )..
-						"  ToDmg Melee "..bonus( player.todamall + player.todam ) )
+	player:mortem_print("  ToHit Ranged "..bonus( player:get_tohit() )..
+						"  ToHit Melee "..bonus( player:get_tohit(true) )..
+						"  ToDmg Ranged "..bonus( player:get_todam() )..
+						"  ToDmg Melee "..bonus( player:get_todam(true) ) )
 end
 
 function mortem.print_traits()
@@ -141,7 +141,7 @@ function mortem.print_traits()
 
 	for i = 1,traits.__counter do
 		local value = player:get_trait(i)
-		if value > 0 then
+		if value > 0 and traits[i].name ~= "" then
 			player:mortem_print( "    "..mortem.padded(traits[i].name,16).." (Level {!"..value.."})" )
 		end
 	end
@@ -204,6 +204,8 @@ function mortem.print_resistances()
 	mortem.print_resistance( "shrapnel" )
 	mortem.print_resistance( "acid" )
 	mortem.print_resistance( "fire" )
+	mortem.print_resistance( "cold" )
+	mortem.print_resistance( "poison" )
 	mortem.print_resistance( "plasma" )
 	if mortem.resistance_count == 0 then
 		player:mortem_print("    None")

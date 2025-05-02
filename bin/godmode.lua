@@ -3,6 +3,25 @@
 --  If you mess up something overwrite with a new godmode.lua.
 -- ----------------------------------------------------------------------
 
+-- use F1 to toggle console
+--   example commands:
+--     player:exit(12) -- exit to level indexed 12
+--     player:exit("the_valuts") -- exit to level id "the_valuts"
+--     player.inv:add( "barmor") -- add item to inventory
+
+
+-- code can be assigned to keys, as below (Keytable entries)
+--   the default god keybindings are:
+--     F2: regenerate level
+--     F3: teleport to stairs
+--     F4: teleport to next level
+--     F5: toggle visibility of all cells
+--     F6: give player some advanced stuff
+--     F7: teleport to random location on level
+--     F8: add 500 experience points
+--     SHIFT+F8: kill all monsters on level
+--     BACKSPACE: heal player to max HP
+
 dofile "config.lua"
 
 SoundEngine = "DEFAULT"
@@ -10,103 +29,29 @@ SoundEngine = "DEFAULT"
 LockBreak        = false
 LockClose        = false
 SaveOnCrash      = false
+ForceRaw         = true
 
 Keytable = {}
 
 -- God commands
-Keytable["W"]        = function() 
-	ui.msg('Invulnerability!')
-	player:set_affect("inv",50) 
-end
-
--- XXX Does this even work?
-Keytable["SHIFT+BACKSPACE"] = function() 
-	ui.msg('Supercharge!')
-	player.hp = 2 * player.hpmax 
-end
 Keytable["BACKSPACE"] = function() 
-	ui.msg('Heal!')
+	ui.msg("Heal!")
 	player.hp = player.hpmax 
 end
-Keytable["BQUOTE"] = function() 
-	ui.msg('Home!')
-	player:phase("stairs")
-end
-Keytable["SHIFT+3"]        = function() 
-	if player:is_affect( "inv" ) then
-		player:remove_affect( "inv" )
-	else
-		ui.msg('Invulnerability!')
-		player:set_affect("inv", 5000) 
-	end
-end
-Keytable["SHIFT+4"]        = function() 
-	if player:is_affect( "berserk" ) then
-		player:remove_affect( "berserk" )
-	else
-		ui.msg('Berserk!')
-		player:set_affect("berserk", 5000) 
-	end
-end
-Keytable["SHIFT+5"]        = function() 
-	if player:is_affect( "enviro" ) then
-		player:remove_affect( "enviro" )
-	else
-		ui.msg('Enviro!')
-		player:set_affect("enviro", 5000) 
-	end
-end
-
 Keytable["F2"] = function() 
-	ui.msg('Regenerate!')
+	ui.msg("Regenerate!")
 	generator.regenerate( true )
 end
-
 Keytable["F3"] = function() 
-	ui.msg('Next level!')
-	player:exit()
+	ui.msg("Home!")
+	player:phase("stairs")
 end
 Keytable["F4"] = function() 
-	ui.msg('Endgame!')
-	-- Different ending floors for different challenges (this should be fairly independent code)
-	player:exit(table.getn(player.episode))
+	ui.msg("Next level!")
+	player:exit()
 end
 Keytable["F5"] = function() 
-	ui.msg('+500 Experience!')
-	player:add_exp(500)
-end
-Keytable["F6"] = function() 
-	ui.msg('ARMAGEDDON!')
-	for b in level:beings() do
-		if not b:is_player() then
-			b:kill()
-		end
-	end
-end 
-Keytable["F7"] = function() 
-	ui.msg('Teleport!')
-	player:phase()
-end
-Keytable["F8"]        = function() 
-	player.inv:clear()
-	ui.msg('idkfa!')
-	player.inv:add( 'ashotgun' )
-	player.inv:add( 'unbfg9000')
- 	player.inv:add( 'uberetta')
- 	player.inv:add( 'uberarmor')
-	player.inv:add( 'utrigun')
-	player.inv:add( 'urailgun')
-	player.inv:add( 'udragon')
-	player.inv:add( 'nuke' )
-	for i = 1,5 do
-		player.inv:add( 'cell', { ammo = 50 } )
-	end
-	for i = 1,4 do
-		player.inv:add( 'shell', { ammo = 50 } )
-	end
-end
-Keytable["BSLASH"] = function() 
-	ui.msg('Visibility! '..player.x..'x'..player.y)
+	ui.msg("Visibility! "..player.x.."x"..player.y)
 	for c in area.FULL() do
 		local cell = cells[ level.map[ c ] ]
 		if cell.flags[ CF_BLOCKMOVE ] or cell.flags[ CF_NOCHANGE ] then
@@ -116,3 +61,60 @@ Keytable["BSLASH"] = function()
 	level.flags[ LF_BEINGSVISIBLE ] = not level.flags[ LF_BEINGSVISIBLE ]
 	level.flags[ LF_ITEMSVISIBLE  ] = not level.flags[ LF_ITEMSVISIBLE  ]
 end
+Keytable["F6"]        = function() 
+	player.inv:clear()
+	ui.msg("idkfa!")
+	if rawget(_G,"jhc") then
+		player.inv:add( "ashotgun" )
+		player.inv:add( "prifle")
+		player.inv:add( "glauncher")
+		player.inv:add( "launcher")
+		player.inv:add( "utrigun")
+		player.inv:add( "usjack")
+		player.inv:add( "barmor")
+		for i = 1,3 do
+			player.inv:add( "rocket", { ammo = 10 } )
+		end
+		for i = 1,3 do
+			player.inv:add( "ammo_40", { ammo = 15 } )
+		end
+	else
+		player.inv:add( "ashotgun" )
+		player.inv:add( "unbfg9000")
+		player.inv:add( "uberetta")
+		player.inv:add( "uberarmor")
+		player.inv:add( "utrigun")
+		player.inv:add( "urailgun")
+		player.inv:add( "udragon")
+		player.inv:add( "nuke" )
+	end
+	for i = 1,3 do
+		player.inv:add( "cell", { ammo = 50 } )
+	end
+	for i = 1,2 do
+		player.inv:add( "shell", { ammo = 50 } )
+	end
+end
+Keytable["F7"] = function() 
+	ui.msg("Teleport!")
+	player:phase()
+end
+
+Keytable["F8"] = function() 
+	ui.msg("+500 Experience!")
+	player:add_exp(500)
+end
+Keytable["SHIFT+F8"] = function() 
+	ui.msg("ARMAGEDDON!")
+	for b in level:beings() do
+		if not b:is_player() then
+			b:kill()
+		end
+	end
+end 
+--[[
+Keytable["F4"] = function() 
+	ui.msg("Endgame!")
+	player:exit(table.getn(player.episode))
+end
+--]]

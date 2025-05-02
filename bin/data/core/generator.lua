@@ -69,28 +69,39 @@ function generator.scatter_cross_item(scatter_area,good,item_id,count)
 	local test = function( c )
 		return level:is_empty( c, { EF_NOBLOCK } )
 	end
-	for _ = 1, count do
-		local c = level:random_empty_coord({ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, scatter_area )
-		if c then
-			if level:get_cell( c ) == good then
+
+	local function drop( id )
+		local attempts = 10 
+		repeat
+			local c = level:random_empty_coord( { EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, good, scatter_area )
+			if c then
 				if test( coord( c.x-1, c.y ) ) and test( coord( c.x+1, c.y ) ) and
 					test( coord( c.x, c.y-1 ) ) and test( coord( c.x, c.y+1 ) ) then
-					level:drop_item( item_id, c, true )
+					level:drop_item( id, c, true )
+					return true
 				end
+			end	
+			attempts = attempts - 1
+		until attempts == 0
+		return false
+	end
+
+	if type( item_id ) == "table" then
+		for _,item in ipairs( item_id ) do
+			count = core.resolve_range( item[2] or 1 )
+			for i = 1, count do
+				drop( item[1] )
 			end
 		end
-	end
-end
-
-function generator.transmute_marker( marker, fill, ar )
-	local a = ar or area.FULL
-	for c in a() do 
-		if level.light[ c ][ marker ] then
-			level.map[ c ] = fill
+	else
+		count = core.resolve_range( count or 1 )
+		for _ = 1, count do
+			drop( item_id )
 		end
 	end
 end
 
+--brisbang: Recommend deprecation and replace with level:transmute_by_flag. This function wasn't working when I was invoking it in 2025-03-15.
 function generator.transmute_style( from, to, fstyle, tstyle, ar )
 	local a = ar or area.FULL
 	for c in a() do 
@@ -130,19 +141,24 @@ function generator.place_dungen_tile( code, tile_object, tile_pos )
 		local char       = string.char( tile_object:get_ascii(c) )
 		local tile_entry = code[ char ]
 		assert( tile_entry, "Character in map not defined -> "..char)
-		local p = tile_pos + c - coord.UNIT
-		if tile_entry.being then level:drop_being_ext( tile_entry.being, p ) end
-		if tile_entry.item  then level:drop_item_ext( tile_entry.item, p ) end
-		if tile_entry.flags then
-			for _, flag in ipairs(tile_entry.flags) do
-				level.light[p][flag] = true
+		if type(tile_entry) ~= "number" then
+			local p = tile_pos + c - coord.UNIT
+			if tile_entry.being then level:drop_being_ext( tile_entry.being, p ) end
+			if tile_entry.item  then level:drop_item_ext( tile_entry.item, p ) end
+			if tile_entry.flags then
+				for _, flag in ipairs(tile_entry.flags) do
+					level.light[p][flag] = true
+				end
 			end
-		end
-		if tile_entry.style then
-			level:set_raw_style( p, generator.styles[ tile_entry.style ].style )
-		end
-		if tile_entry.deco then
-			level:set_raw_deco( p, tile_entry.deco )
+			if tile_entry.raw_style then
+				level:set_raw_style( p, tile_entry.raw_style )
+			end
+			if tile_entry.style then
+				level:set_raw_style( p, generator.styles[ tile_entry.style ].style )
+			end
+			if tile_entry.deco then
+				level:set_raw_deco( p, tile_entry.deco )
+			end
 		end
 	end
 end
@@ -150,11 +166,17 @@ end
 function generator.create_translation( code )
 	local translation = {}
 	for k,v in pairs(code) do
-		translation[k] = v
-		if type(v) == "table"  then translation[k] = translation[k][1] end
-		if type(v) == "string" then translation[k] = cells[v].nid end
-		if translation[k] == "FLOOR" then translation[k] = generator.styles[ level.style ].floor end
-		if translation[k] == "WALL"  then translation[k] = generator.styles[ level.style ].wall end
+		local value = v
+		if type(value) == "table"  then value = value[1] end
+		if type(value) == "string" then
+				if value == "FLOOR" then value = generator.styles[ level.style ].floor
+			elseif value == "WALL"  then value = generator.styles[ level.style ].wall
+			elseif value == "DOOR"  then value = generator.styles[ level.style ].door
+			else
+				value = cells[value].nid
+			end
+			translation[k] = value
+		end
 	end
 	return translation
 end
@@ -513,11 +535,11 @@ end
 function generator.reset()
 	core.log("generator.reset()")
 	ui.clear_feel()
-	generator.OnKill    = nil
-	generator.OnKillAll = nil
-	generator.OnEnter   = nil
-	generator.OnExit    = nil
-	generator.OnTick    = nil
+	generator.OnKill       = nil
+	generator.OnKillAll    = nil
+	generator.OnEnterLevel = nil
+	generator.OnExit       = nil
+	generator.OnTick       = nil
 
 	generator.room_list = {}
 	generator.room_meta = {}
@@ -656,6 +678,7 @@ function generator.generate_archi_level( settings )
 			assert( data.size, "malformed data for archi level!" )
 		end
 	end
+	local stop_flip = data.stop_flip or false
 
 	layout = layout or data.layout
 	if layout then
@@ -664,12 +687,15 @@ function generator.generate_archi_level( settings )
 
 	local wall_cell    = generator.styles[ level.style ].wall
 	local translation = {
-		["X"] = wall_cell,
+		["X"] = 0,
+		["#"] = wall_cell,
 		["."] = generator.styles[ level.style ].floor,
 		["+"] = generator.styles[ level.style ].door,
 	}
 
-	level:fill( wall_cell )
+	if not data.no_fill then
+		level:fill( wall_cell )
+	end
 
 	local blocks = data.blocks
 	local bsize  = data.size
@@ -698,16 +724,20 @@ function generator.generate_archi_level( settings )
 				index = bx + (by-1) * blocks.x
 				index = string.sub( layout, index, index )
 			end
-			local block
-			if index then
-				block = table.random_pick( data[ index ] )
-			else
-			 	block = table.random_pick( data )
+			if index ~= "." then
+				local block
+				if index then
+					block = table.random_pick( data[ index ] )
+				else
+					block = table.random_pick( data )
+				end
+				local pos   = coord( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
+				local tile  = generator.tile_new( level, block, pure_translation, true )
+				if not stop_flip then
+					tile:flip_random()
+				end
+				generator.place_dungen_tile( translation, tile, pos )
 			end
-			local pos   = coord( (bx-1) * (bsize.x-1) + shift.x, (by-1) * (bsize.y-1) + shift.y )
-			local tile  = generator.tile_new( level, block, pure_translation, true )
-			tile:flip_random()
-			generator.place_dungen_tile( translation, tile, pos )
 		end
 	end
 
@@ -717,8 +747,13 @@ function generator.generate_archi_level( settings )
 		end
 	end
 
-	generator.restore_walls( wall_cell )
-	generator.generate_fluids(area(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
+	if not data.no_fill then
+		generator.restore_walls( wall_cell )
+	end
+	if not data.no_fluids then
+		generator.generate_fluids(area(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
+	end
+	return area( shift, shift + blocks * (bsize - coord.UNIT) )
 end
 
 function generator.destroy_cell( c )
@@ -744,4 +779,34 @@ function generator.wallin_cell( c, cell_id )
 	level.map[c] = cell_id
 	level.light[c][LFPERMANENT] = true
 	return true
+end
+
+function generator.clear_dead_ends( iterations )
+	iterations = iterations or 1
+	local applied = false
+	local floor   = generator.styles[ level.style ].floor
+	local door    = generator.styles[ level.style ].door
+	local wall    = generator.styles[ level.style ].wall
+	repeat
+		applied = false
+		for c in level:each( floor, area.FULL_SHRINKED ) do
+			if level:cross_around( c, wall ) >= 3 then
+				applied = true
+				level:set_cell( c, generator.styles[ level.style ].wall )
+			end
+		end
+		for c in level:each( door, area.FULL_SHRINKED ) do
+			if level:cross_around( c, wall ) >= 3 then
+				applied = true
+				level:set_cell( c, generator.styles[ level.style ].wall )
+			end
+		end
+		iterations = iterations - 1
+	until iterations == 0 or (not applied)
+
+	for c in level:each( door, area.FULL_SHRINKED ) do
+		if level:cross_around( c, wall ) < 2 then
+			level:set_cell( c, floor )
+		end
+	end
 end

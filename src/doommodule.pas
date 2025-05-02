@@ -84,7 +84,7 @@ begin
     begin
       repeat
         if (iInfo.Attr and faDirectory <> 0) and (iInfo.Name <> '.') and (iInfo.Name <> '..') then
-          ReadMetaFromFolder( iLua,DataPath + 'data' + PathDelim + iInfo.Name + PathDelim, GodMode );
+          ReadMetaFromFolder( iLua,DataPath + 'data' + PathDelim + iInfo.Name + PathDelim, Option_ForceRaw );
       until FindNext(iInfo) <> 0;
     end;
     FindClose(iInfo);

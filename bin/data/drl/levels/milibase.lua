@@ -86,7 +86,7 @@ register_level "military_base"
 		end
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		level.status = 0
 	end,
 

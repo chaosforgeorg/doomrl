@@ -23,8 +23,8 @@ register_level "the_asmos_den"
 			hp           = 1,
 			armor        = 0,
 			attackchance = 50,
-			todam        = 2,
-			tohit        = 12,
+			strength     = 1,
+			accuracy     = 12,
 			speed        = 50,
 			min_lev      = 200,
 			corpse       = "corpse",
@@ -181,7 +181,7 @@ register_level "the_asmos_den"
 		level:player(77,19)
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		level.status = 0
 	end,
 

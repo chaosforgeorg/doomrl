@@ -48,7 +48,7 @@ type
   function DevicePointToCoord( aPoint : TPoint ) : TCoord2D;
   procedure PushSpriteBeing( aPos : TVec2i; const aSprite : TSprite; aLight : Byte );
   procedure PushSpriteItem( aPos : TVec2i; const aSprite : TSprite; aLight : Byte );
-  procedure PushSpriteDoodad( aCoord : TCoord2D; const aSprite : TSprite; aLight : Integer = -1 );
+  procedure PushSpriteDoodad( aCoord : TCoord2D; const aSprite : TSprite; aLight : Integer = -1; aZOffset : Integer = 0 );
   procedure PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite; aTime : Integer = -1 );
   procedure PushSpriteFXRotated( aPos : TVec2i; const aSprite : TSprite; aRotation : Single );
   procedure PushSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aTSX : Single = 0; aTSY : Single = 0 );
@@ -720,7 +720,7 @@ begin
   PushSprite( aPos, aSprite, aLight, aPos.Y * DRL_Z_LINE + DRL_Z_ITEMS + 500);
 end;
 
-procedure TDoomSpriteMap.PushSpriteDoodad( aCoord : TCoord2D; const aSprite: TSprite; aLight: Integer );
+procedure TDoomSpriteMap.PushSpriteDoodad( aCoord : TCoord2D; const aSprite: TSprite; aLight: Integer; aZOffset : Integer );
 var iLight  : Byte;
     iSprite : TSprite;
     iZ      : DWord;
@@ -732,14 +732,14 @@ begin
     iLight := Byte( aLight );
   if SF_COSPLAY in iSprite.Flags then
     iSprite.Color := ScaleColor( iSprite.Color, Byte(iLight) );
-  iZ := aCoord.Y * DRL_Z_LINE;
+  iZ := aCoord.Y * DRL_Z_LINE + aZOffset;
   PushSprite( Vec2i( (aCoord.X-1)*FSpriteEngine.Grid.X, (aCoord.Y-1)*FSpriteEngine.Grid.Y ), iSprite, iLight, iZ + DRL_Z_DOODAD );
   if ( SF_HIGHSPRITE in aSprite.Flags ) and ( aCoord.y > 0 ) then
   begin
     iSprite := aSprite;
     iSprite.SpriteID[0] := iSprite.SpriteID[0] - DRL_COLS;
     Exclude( iSprite.Flags, SF_HIGHSPRITE );
-    PushSpriteDoodad( NewCoord2D( aCoord.x, aCoord.y-1 ), iSprite, aLight );
+    PushSpriteDoodad( NewCoord2D( aCoord.x, aCoord.y-1 ), iSprite, aLight, aZOffset );
   end;
 end;
 
@@ -999,6 +999,8 @@ var iDMinX   : Word;
     iBeing   : TBeing;
     iItem    : TItem;
     iColor   : TColor;
+    iDeco    : Byte;
+    iCell    : TCell;
     iVisible : Boolean;
 begin
   iDMinX := FShift.X div FSpriteEngine.Grid.X + 1;
@@ -1015,7 +1017,17 @@ begin
         if CF_STAIRS in Cells[iTop].Flags then
           PushSpriteDoodad( iCoord, Cells[iTop].Sprite[0], 255 )
         else
+        begin
           PushSpriteDoodad( iCoord, GetSprite( iTop, Doom.Level.CStyle[iCoord] ) );
+          iDeco := Doom.Level.Deco[iCoord];
+          if iDeco <> 0 then
+          begin
+            iCell := Cells[ iTop ];
+            if iCell.Deco[ iDeco ].SpriteID[0] <> 0 then
+              PushSpriteDoodad( iCoord, iCell.Deco[ iDeco ], -1, 1 );
+          end;
+
+        end;
       end;
 
       iItem    := Doom.Level.Item[ iCoord ];

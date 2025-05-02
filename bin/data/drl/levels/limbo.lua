@@ -19,7 +19,7 @@ register_level "limbo"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "neutral",
 			desc = "raises the bridges",
@@ -28,12 +28,15 @@ register_level "limbo"
 			sound_id = "lever",
 
 			OnUse = function(self,being)
-				generator.transmute_marker( LFMARKER1, "bridge" )
+				level:transmute_by_flag( "blood", "bridge", LFMARKER1, area.FULL)
 				ui.msg("The west bridges rise!")
 				level:recalc_fluids()
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
+
 		register_item "lever_limboe"
 		{
 			name   = "lever",
@@ -41,7 +44,7 @@ register_level "limbo"
 			sprite = SPRITE_LEVER,
 			weight = 0,
 			type   = ITEMTYPE_LEVER,
-			flags  = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 
 			good = "neutral",
 			desc = "raises the bridges",
@@ -50,11 +53,13 @@ register_level "limbo"
 			sound_id = "lever",
 
 			OnUse = function(self,being)
-				generator.transmute_marker( LFMARKER2, "bridge" )
+				level:transmute_by_flag( "blood", "bridge", LFMARKER2, area.FULL)
 				ui.msg("The east bridges rise!")
 				level:recalc_fluids()
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
 	end,
 
@@ -121,7 +126,7 @@ register_level "limbo"
 		level:player(38,10)
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		ui.msg_feel("The smell of blood! You can barely believe this living hell...")
 		level.status = 0
 		ui.msg_feel("Suddenly with a wail, arch-viles appear!")
@@ -130,6 +135,7 @@ register_level "limbo"
 	end,
 
 	OnKillAll = function ()
+		--Unlike Erebus, if you nuke this level you still need to pull the levers to raise the bridges
 		if level.status == 0 then
 			ui.msg("Suddenly everything is peaceful. Rest in peace, damned souls...")
 

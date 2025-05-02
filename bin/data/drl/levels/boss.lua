@@ -132,7 +132,7 @@ register_level "hellgate"
 		level.flags[ LF_BOSS     ] = true
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		level.status = 1
 		ui.msg_feel("You sense a certain tension.")
 		level:play_sound( "baron.act", player.position )
@@ -207,7 +207,7 @@ register_level "tower_of_babel"
 		generator.scatter_blood(area.FULL_SHRINKED,"floor",100)
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		local boss = level:summon("cyberdemon")
 	end,
 
@@ -240,7 +240,7 @@ register_level "dis"
 			weight = 0,
 
 			type     = ITEMTYPE_LEVER,
-			flags    = { IF_NODESTROY },
+			flags  = { IF_NODESTROY, IF_FEATURENAME },
 			color_id = false,
 
 			good = "dangerous",
@@ -250,6 +250,8 @@ register_level "dis"
 				level:transmute( "wall", "floor" )
 				return true
 			end,
+
+			OnDescribe = item.get_lever_description,
 		}
 
 	end,
@@ -312,7 +314,7 @@ WWWWWWWWWWWWWWWWWWWWW...............####...............WWWWWWWWWWWWWWWWWWWWW
 		end
 	end,
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		local boss = level:drop_being("mastermind",coord(39,19))
 		boss.flags[ BF_BOSS ] = true
 	end

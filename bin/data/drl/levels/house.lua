@@ -141,7 +141,7 @@ register_level "house_of_pain"
 	end,
 
 
-	OnEnter = function ()
+	OnEnterLevel = function ()
 		level.status = 0
 		local choice = ui.query("A deathly high-pitched voice cackles!\n{R\"Well, who do we have here?\"} it begins. {R\"It seems that you've stumbled into my luxurious home. Would you care to have access?\"}")
 		if choice then

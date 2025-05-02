@@ -68,7 +68,7 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_PLASMA,
 		level    = 15,
 		weight   = 1,
-		group    = "weapon-plasma",
+		group    = "plasma",
 		desc     = "It feels extremely unstable... what twisted mind could conceive such a weird device?",
 		firstmsg = "This seems to be an extremely unstable device!",
 		flags    = { IF_UNIQUE },
@@ -134,12 +134,25 @@ function drl.register_unique_items()
 		weight   = 2,
 		desc     = "Now that is a BIG cleaver. Butcher them!",
 		firstmsg = "Aaaah, fresh meat!",
-		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_CLEAVE, IF_BLADE, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "5d6",
 		damagetype  = DAMAGE_MELEE,
-		group       = "weapon-melee",
+		group       = "melee",
+
+		OnCreate = function(self)
+			self:add_property( "BLADE", true )
+		end,
+
+		OnKill = function ( self, being, target )
+			if not being then return end
+			if being:is_player() then
+				if player:get_trait( traits["blademaster"].nid ) > 0 then return end
+				ui.msg("Next!")
+			end
+			being.scount = 5001
+		end,
 	}
 
 	register_item "umjoll"
@@ -150,7 +163,7 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_CLEAVER,
 		level    = 5,
 		weight   = 1,
-		group    = "weapon-melee",
+		group    = "melee",
 		scavenge = { "umod_onyx" },
 		desc     = "Forged by the dwarves Eitri and Brokk, in response to Loki's challenge, Mjollnir is an indestructible war hammer.",
 		flags    = { IF_UNIQUE, IF_NODESTROY, IF_MODABLE, IF_SINGLEMOD },
@@ -186,14 +199,18 @@ function drl.register_unique_items()
 		weight   = 1,
 		desc     = "A weapon that can cut the very fabric of reality. Too bad it's only eight inches long...",
 		firstmsg = "Looks very inconspicious.",
-		flags    = { IF_UNIQUE, IF_BLADE, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "3d5",
 		damagetype  = DAMAGE_SPLASMA,
-		group       = "weapon-melee",
+		group       = "melee",
 		altfire     = ALT_SCRIPT,
 		altfirename = "invoke",
+
+		OnCreate = function(self)
+			self:add_property( "BLADE", true )
+		end,
 
 		OnAltFire = function(self,being)
 			if being:is_affect( "tired" ) then
@@ -222,10 +239,10 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_PISTOL,
 		level    = 8,
 		weight   = 2,
-		group    = "weapon-pistol",
+		group    = "pistol",
 		desc     = "One of the deadliest weapons ever made. Nyooo >O.o<",
 		scavenge = { "umod_nano" },
-		flags    = { IF_UNIQUE, IF_PISTOL, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -264,9 +281,9 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_PISTOL,
 		level    = 10,
 		weight   = 2,
-		group    = "weapon-pistol",
+		group    = "pistol",
 		desc     = "In the name of God, impure souls of the living dead shall be banished into eternal damnation. Amen.",
-		flags    = { IF_UNIQUE, IF_PISTOL, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 		scavenge = { "umod_firestorm" },
 
 		type          = ITEMTYPE_RANGED,
@@ -291,7 +308,7 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_PLASMA,
 		level    = 15,
 		weight   = 1,
-		group    = "weapon-chain",
+		group    = "chain",
 		desc     = "You suddenly wish to slaughter the forces of Hell to 8-bit chiptune music.",
 		flags    = { IF_UNIQUE },
 
@@ -373,9 +390,9 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_PISTOL,
 		level    = 6,
 		weight   = 3,
-		group    = "weapon-pistol",
+		group    = "pistol",
 		desc     = "No. Not without incident.",
-		flags    = { IF_UNIQUE, IF_PISTOL },
+		flags    = { IF_UNIQUE },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -429,9 +446,9 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_CSHOTGUN,
 		level    = 12,
 		weight   = 2,
-		group    = "weapon-shotgun",
+		group    = "shotgun",
 		desc     = "The Pancor Corporation Jackhammer is a 12-gauge, gas-operated automatic weapon.",
-		flags    = { IF_UNIQUE, IF_SHOTGUN, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "shell",
@@ -468,9 +485,9 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_CSHOTGUN,
 		level    = 15,
 		weight   = 1,
-		group    = "weapon-shotgun",
+		group    = "shotgun",
 		desc     = "Advanced pulverization technology converts bullets into shrapnel.",
-		flags    = { IF_UNIQUE, IF_SHOTGUN, IF_MODABLE, IF_SINGLEMOD },
+		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "ammo",
@@ -491,10 +508,10 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_BAZOOKA,
 		level    = 12,
 		weight   = 2,
-		group    = "weapon-rocket",
+		group    = "rocket",
 		desc     = "Two can play the homing missile game.",
 		scavenge = { "umod_sniper" },
-		flags    = { IF_UNIQUE, IF_ROCKET, IF_MODABLE },
+		flags    = { IF_UNIQUE, IF_MODABLE },
 
 		type          = ITEMTYPE_RANGED,
 		ammo_id       = "rocket",
@@ -527,7 +544,7 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_PLASMA,
 		level    = 12,
 		weight   = 3,
-		group    = "weapon-rocket",
+		group    = "rocket",
 		desc     = "Woah, looks cool, but how do I reload it?",
 		flags    = { IF_UNIQUE, IF_NOUNLOAD },
 
@@ -560,7 +577,11 @@ function drl.register_unique_items()
 			self.ammo = 0
 		end,
 
-		OnReload = function( self, being )
+		OnPreReload = function( self, being )
+			if self.ammo == self.ammomax  then 
+				ui.msg("Your weapon is already loaded!")
+				return false
+			end
 			local pos  = being.position
 			if level.map[ pos ] == "acid" then
 				ui.msg("Slurp!")
@@ -582,7 +603,7 @@ function drl.register_unique_items()
 		psprite  = SPRITE_PLAYER_BFG9000,
 		level    = 20,
 		weight   = 1,
-		group    = "weapon-bfg",
+		group    = "bfg",
 		scavenge = { "umod_nano" },
 		desc     = "The Ultimate Big Fucking Gun. Redefines the word \"wallpaper\".",
 		flags    = { IF_UNIQUE, IF_SCATTER, IF_MODABLE, IF_SINGLEMOD },
@@ -623,7 +644,7 @@ function drl.register_unique_items()
 		level    = 15,
 		weight   = 2,
 		scavenge = { "umod_sniper" },
-		group    = "weapon-plasma",
+		group    = "plasma",
 		desc     = "Groovy! Wait 'til they stand in a row, and watch them being impaled.",
 		flags    = { IF_UNIQUE, IF_MODABLE, IF_SINGLEMOD },
 
@@ -946,9 +967,9 @@ function drl.register_unique_items()
 		glow     = { 1.0,0.0,0.0,1.0 },
 		level    = 16,
 		weight   = 1,
-		group    = "weapon-melee",
+		group    = "melee",
 		desc     = "It was called the Dragonslayer, because no human could wield it...",
-		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_CURSED, IF_BLADE },
+		flags    = { IF_UNIQUE, IF_HALFKNOCK, IF_CURSED },
 
 		type        = ITEMTYPE_MELEE,
 		damage      = "9d9",
@@ -956,6 +977,10 @@ function drl.register_unique_items()
 		altfire     = ALT_SCRIPT,
 		altfirename = "whirlwind",
 
+		OnCreate = function(self)
+			self:add_property( "BLADE", true )
+		end,
+		
 		OnPickupCheck = function (self,being)
 			-- XXX Maybe we should allow Barons of Hell to wield it since they are not really human...
 			if not being:is_player() then return false end

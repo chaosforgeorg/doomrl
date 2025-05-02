@@ -161,7 +161,7 @@ function drl.register_assemblies()
 		request_type = ITEMTYPE_RANGED,
 
 		Match = function (item)
-			return item.ammomax > 5 and (not item.flags[ IF_SHOTGUN ] )
+			return item.ammomax > 5 and item.group ~= "shotgun"
 		end,
 
 		OnApply = function (item)
@@ -227,8 +227,10 @@ function drl.register_assemblies()
 			item.damage_sides = 3
 			item.usetime      = 10
 			item.ammomax      = 5
-			item.flags[ IF_PUMPACTION ] = false
-			item.flags[ IF_CHAMBEREMPTY ] = false
+			if item:has_property("pump_action") then
+				item.pump_action = false
+				item.chamber_empty = false
+			end
 		end,
 	}
 
@@ -314,7 +316,7 @@ function drl.register_assemblies()
 		desc  = "any shotgun",
 
 		Match = function (item)
-			return item.flags[ IF_SHOTGUN ]
+			return item.group == "shotgun"
 		end,
 
 		OnApply = function (item)
@@ -410,7 +412,7 @@ function drl.register_assemblies()
 		desc = "any pistol",
 
 		Match = function (item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-pistol")
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "pistol")
 		end,
 
 		OnApply = function (item)
@@ -434,7 +436,7 @@ function drl.register_assemblies()
 		desc = "any rapid-fire",
 
 		Match = function (item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-chain" or item.__proto.group == "weapon-plasma") and item.flags[IF_UNIQUE] == false
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "chain" or item.group == "plasma") and item.flags[IF_UNIQUE] == false
 		end,
 
 		OnApply = function (item)
@@ -456,7 +458,7 @@ function drl.register_assemblies()
 		desc = "any pistol",
 
 		Match = function (item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-pistol")
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "pistol")
 		end,
 
 		OnApply = function (item)
@@ -477,7 +479,7 @@ function drl.register_assemblies()
 		desc = "any rapid-fire",
 
 		Match = function(item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-chain" or item.__proto.group == "weapon-plasma") and item.flags[IF_UNIQUE] == false
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "chain" or item.group == "plasma") and item.flags[IF_UNIQUE] == false
 		end,
 
 		OnApply = function (item)
@@ -499,7 +501,7 @@ function drl.register_assemblies()
 		desc = "any BFG9000",
 
 		Match = function(item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-bfg") and item.flags[IF_UNIQUE] == false
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "bfg") and item.flags[IF_UNIQUE] == false
 		end,
 
 		OnApply = function (item)
@@ -643,7 +645,7 @@ function drl.register_assemblies()
 		desc  = "non-sg/non-bfg ranged weapon",
 
 		Match = function (item)
-			return (not item.flags[ IF_SHOTGUN ]) and (item.itype == ITEMTYPE_RANGED) and (item.blastradius < 5)
+			return item.group ~= "shotgun" and (item.itype == ITEMTYPE_RANGED) and (item.blastradius < 5)
 		end,
 
 		OnApply = function (item)
@@ -663,7 +665,7 @@ function drl.register_assemblies()
 		desc  = "any shotgun",
 
 		Match = function (item)
-			return item.flags[ IF_SHOTGUN ]
+			return item.group == "shotgun"
 		end,
 
 		OnApply = function (item)
@@ -671,9 +673,9 @@ function drl.register_assemblies()
 			item.damage_dice = item.__proto.damage_dice - 3
 			item.damagetype   = DAMAGE_IGNOREARMOR
 			item.flags[ IF_NOAMMO ] = true
-			if item.flags[ IF_PUMPACTION ] == true then
-				item.flags[ IF_PUMPACTION ] = false
-				item.flags[ IF_CHAMBEREMPTY ] = false
+			if item:has_property("pump_action") then
+				item.pump_action = false
+				item.chamber_empty = false
 			end
 		end,
 	}
@@ -726,7 +728,7 @@ function drl.register_assemblies()
 		desc = "any BFG9000",
 
 		Match = function(item)
-			return (item.itype == ITEMTYPE_RANGED) and (item.__proto.group == "weapon-bfg") and item.flags[IF_UNIQUE] == false
+			return (item.itype == ITEMTYPE_RANGED) and (item.group == "bfg") and item.flags[IF_UNIQUE] == false
 		end,
 
 		OnApply = function (item)

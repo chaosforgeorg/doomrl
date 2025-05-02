@@ -24,20 +24,19 @@ TItem  = class( TThing )
 
     constructor Create( const anid : AnsiString; onFloor : boolean = False ); overload;
     constructor Create(anid : byte; onFloor : boolean = False); overload;
-    constructor CreateFromStream( Stream: TStream ); override;
-    procedure WriteToStream( Stream: TStream ); override;
+    constructor CreateFromStream( aStream: TStream ); override;
+    procedure WriteToStream( aStream: TStream ); override;
 
     function    rollDamage : Integer;
     function    maxDamage : Integer;
     function    GetName(known : boolean) : string;
+    function    GetExtName( aLyingHere : Boolean ) : Ansistring;
     function    GetProtection : Byte;
     function    GetResistance( const aResistance : AnsiString ) : Integer;
     function    Description : Ansistring;
     function    DescriptionBox( aNewFormat : Boolean = False ) : Ansistring;
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
-    function    CanMod(aModChar : char) : Boolean;
-    function    AddMod(aModChar : char) : Boolean;
     function    eqSlot : TEqSlot;
     function    isAmmo : Boolean;
     function    isMelee : Boolean;
@@ -65,10 +64,10 @@ TItem  = class( TThing )
     FMods     : array[Ord('A')..Ord('Z')] of Byte;
     procedure LuaLoad( Table : TLuaTable; onFloor: boolean ); reintroduce;
     public
-    property NID            : Byte        read FNID;
     property PGlowColor     : TColor      read FProps.PGlowColor     write FProps.PGlowColor;
     property PCosColor      : TColor      read FProps.PCosColor      write FProps.PCosColor;
     published
+    property NID            : Byte        read FNID;
     property RechargeDelay  : Byte        read FRecharge.Delay       write FRecharge.Delay;
     property RechargeAmount : Byte        read FRecharge.Amount      write FRecharge.Amount;
     property RechargeLimit  : Byte        read FRecharge.Limit       write FRecharge.Limit;
@@ -102,7 +101,7 @@ procedure SwapItem(var a, b: TItem);
 
 implementation
 
-uses doomlua, doomio, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, dfplayer, doombase, vmath, doomhooks;
+uses vnode, doomlua, doomio, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, dfplayer, doombase, vmath, doomhooks;
 
 procedure SwapItem(var a, b: TItem);
 var c : TItem;
@@ -158,26 +157,39 @@ begin
   FreeAndNil( Table );
 end;
 
-constructor TItem.CreateFromStream ( Stream : TStream ) ;
+constructor TItem.CreateFromStream ( aStream : TStream ) ;
+var i, iCount : Word;
 begin
-  inherited CreateFromStream ( Stream ) ;
+  inherited CreateFromStream ( aStream ) ;
 
-  Stream.Read( FRecharge, SizeOf( FRecharge ) );
-  Stream.Read( FMods,     SizeOf( FMods ) );
-  Stream.Read( FProps,    SizeOf( FProps ) );
+  aStream.Read( FRecharge, SizeOf( FRecharge ) );
+  aStream.Read( FMods,     SizeOf( FMods ) );
+  aStream.Read( FProps,    SizeOf( FProps ) );
 
-  FNID   := Stream.ReadByte();
+  FNID   := aStream.ReadByte();
+  iCount := aStream.ReadWord();
+  if iCount = 0 then Exit;
+  for i := 1 to iCount do
+    Add( TItem.CreateFromStream( aStream ) );
 end;
 
-procedure TItem.WriteToStream ( Stream : TStream ) ;
+procedure TItem.WriteToStream ( aStream : TStream ) ;
+var iNode : TNode;
 begin
-  inherited WriteToStream ( Stream ) ;
+  inherited WriteToStream ( aStream ) ;
 
-  Stream.Write( FRecharge, SizeOf( FRecharge ) );
-  Stream.Write( FMods,     SizeOf( FMods ) );
-  Stream.Write( FProps,    SizeOf( FProps ) );
+  aStream.Write( FRecharge, SizeOf( FRecharge ) );
+  aStream.Write( FMods,     SizeOf( FMods ) );
+  aStream.Write( FProps,    SizeOf( FProps ) );
 
-  Stream.WriteByte( FNID );
+  aStream.WriteByte( FNID );
+
+  aStream.WriteWord( ChildCount );
+  if ChildCount = 0 then Exit;
+
+  for iNode in Self do
+     if iNode is TItem then
+       iNode.WriteToStream( aStream );
 end;
 
 procedure TItem.LuaLoad( Table : TLuaTable; onFloor: boolean );
@@ -386,7 +398,6 @@ function TItem.DescriptionBox( aNewFormat : Boolean = False ): Ansistring;
     AltReloadName := LuaSystem.Get([ 'items', ID, 'altreloadname' ], '');
     if AltReloadName <> '' then Exit;
     case aValue of
-      RELOAD_FULL        : Exit('full');
       RELOAD_DUAL        : Exit('dual');
       RELOAD_SINGLE      : Exit('single');
     end;
@@ -452,14 +463,16 @@ begin
         Iff(GetResistance('shrapnel') <> 0,'Shrapnel res: @<' + BonusStr(GetResistance('shrapnel'))+'@>'#10)+
         Iff(GetResistance('acid')     <> 0,'Acid res.   : @<' + BonusStr(GetResistance('acid'))+'@>'#10)+
         Iff(GetResistance('fire')     <> 0,'Fire res.   : @<' + BonusStr(GetResistance('fire'))+'@>'#10)+
-        Iff(GetResistance('plasma')   <> 0,'Plasma res. : @<' + BonusStr(GetResistance('plasma'))+'@>'#10);
+        Iff(GetResistance('plasma')   <> 0,'Plasma res. : @<' + BonusStr(GetResistance('plasma'))+'@>'#10)+
+        Iff(GetResistance('cold')     <> 0,'Cold res.   : @<' + BonusStr(GetResistance('cold'))+'@>'#10)+
+        Iff(GetResistance('poison')   <> 0,'Poison res. : @<' + BonusStr(GetResistance('poison'))+'@>'#10);
   end;
  end;
 
 function TItem.ResistDescriptionShort: AnsiString;
-const ResLetter : array[Low(TResistance)..High(TResistance)] of Char = ( 'b','m','s','a','f','p' );
+const ResLetter : array[Low(TResistance)..High(TResistance)] of Char = ( 'b','m','s','a','f','p','c','o' );
 const ResID   : array[Low(TResistance)..High(TResistance)] of AnsiString =
-   ( 'bullet', 'melee', 'shrapnel', 'acid', 'fire', 'plasma' );
+   ( 'bullet', 'melee', 'shrapnel', 'acid', 'fire', 'plasma', 'cold', 'poison' );
 var Resistance : TResistance;
     iValue : LongInt;
 begin
@@ -473,49 +486,6 @@ begin
       ResistDescriptionShort += '-'+ResLetter[ Resistance ];
   end;
   if ResistDescriptionShort = '' then Exit('') else Exit(' {'+ResistDescriptionShort+'}')
-end;
-
-function TItem.CanMod(aModChar: char): Boolean;
-var iSum   : Word;
-    iCount : Byte;
-    iMax   : Byte;
-begin
-  if not (aModChar in ['A'..'Z']) then Exit(false);
-  if (IF_UNIQUE in FFlags) and (not (IF_MODABLE in FFlags)) then Exit(False);
-  if IF_NONMODABLE in FFlags then Exit(False);
-  if (not Player.Flags[BF_MODEXPERT]) and ( IF_UNIQUE in FFlags ) then Exit( False );
-
-  iSum := 0;
-  for iCount := Ord('A') to Ord('Z') do iSum += FMods[iCount];
-
-  if (IF_ASSEMBLED in FFlags) then
-    if Player.TechBonus < (iSum + 2) then
-      Exit( False );
-
-  if (IF_SINGLEMOD in FFlags) and (iSum > 0) then Exit(False);
-
-  if FProps.IType = ITEMTYPE_RANGED
-    then iMax := 1 + 2* Player.TechBonus
-    else iMax := 1 + Player.TechBonus;
-
-  if iSum >= iMax then Exit(false);
-
-  case FProps.IType of
-    ITEMTYPE_RANGED :
-        if FMods[Ord(aModChar)] > 2 then Exit(False);
-    ITEMTYPE_MELEE, ITEMTYPE_ARMOR, ITEMTYPE_BOOTS :
-        if FMods[Ord(aModChar)] > 0 then Exit(False);
-    else Exit(False);
-  end;
-  Exit(True);
-end;
-
-function TItem.AddMod(aModChar: char): Boolean;
-begin
-  if not (CanMod(aModChar)) then Exit( false );
-  Include(FFlags,IF_MODIFIED);
-  Inc(FMods[Ord(aModChar)]);
-  Exit(True);
 end;
 
 function TItem.Preposition( const Item : AnsiString ) : string;
@@ -534,6 +504,23 @@ begin
   end;
   if known then Exit('the '+Description)
            else Exit(Preposition(Description)+Description);
+end;
+
+function TItem.GetExtName( aLyingHere : Boolean ) : Ansistring;
+var iName : AnsiString;
+begin
+  iName := '';
+  if Hook_OnDescribe in FHooks then
+  begin
+    iName := LuaSystem.ProtectedRunHook( Self, HookNames[Hook_OnDescribe], [] );
+  end;
+  if iName = '' then iName := GetName( False );
+
+  if not aLyingHere then Exit( iName );
+
+  if Flags[ IF_FEATURENAME ] then Exit( Format('There is a %s here.', [ iName ] ) );
+  if Flags[ IF_PLURALNAME ]  then Exit( Format('There are %s lying here.', [ iName ] ) );
+  Exit( Format('There is %s lying here.', [ iName ] ) );
 end;
 
 destructor  TItem.Destroy;
@@ -609,7 +596,6 @@ begin
     if Ammo = 0        then Exit( False );
     if Ammo < ShotCost then Exit( False );
   end;
-  if Flags[ IF_CHAMBEREMPTY ] then Exit( False );
   Exit( True );
 end;
 
@@ -654,54 +640,30 @@ begin
   Result := 1;
 end;
 
-function lua_item_add_mod(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
-begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  State.Push( Item.AddMod( State.ToChar(2) ));
-  Result := 1;
-end;
-
-function lua_item_can_mod(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
-begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  State.Push( Item.CanMod( State.ToChar(2) ));
-  Result := 1;
-end;
-
 function lua_item_get_mod(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
+var iState : TDoomLuaState;
+    iItem  : TItem;
 begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  State.Push( Item.FMods[ Ord(State.ToChar(2))]);
+  iState.Init(L);
+  iItem := iState.ToObject(1) as TItem;
+  iState.Push( iItem.FMods[ Ord(iState.ToChar(2))]);
   Result := 1;
 end;
 
-function lua_item_clear_mods(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
-    Cnt   : Byte;
+function lua_item_set_mod(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iItem  : TItem;
 begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  for Cnt := Ord('A') to Ord('Z') do
-    Item.FMods[Cnt] := 0;
+  iState.Init(L);
+  iItem := iState.ToObject(1) as TItem;
+  iItem.FMods[ Ord(iState.ToChar(2))] := iState.ToInteger(3);
   Result := 0;
 end;
 
-const lua_item_lib : array[0..5] of luaL_Reg = (
+const lua_item_lib : array[0..3] of luaL_Reg = (
       ( name : 'new';        func : @lua_item_new),
-      ( name : 'add_mod';    func : @lua_item_add_mod),
-      ( name : 'can_mod';    func : @lua_item_can_mod),
       ( name : 'get_mod';    func : @lua_item_get_mod),
-      ( name : 'clear_mods'; func : @lua_item_clear_mods),
+      ( name : 'set_mod';    func : @lua_item_set_mod),
       ( name : nil;          func : nil; )
 );
 

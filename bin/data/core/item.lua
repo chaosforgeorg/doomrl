@@ -1,5 +1,55 @@
 table.merge( item, thing )
 
+function item:can_mod( c, tech_bonus )
+	if not string.match(c,"^[A-Z]$") then return false end
+	if self.flags[ IF_UNIQUE ] and ( not self.flags[ IF_MODABLE ] ) then return false end
+	if self.flags[ IF_NONMODABLE ] then return false end
+	if ( not player:has_property( "MOD_EXPERT") ) and ( self.flags[ IF_UNIQUE ] ) then return false end
+
+	local sum = 0
+	for c = string.byte("A"), string.byte("Z") do
+		sum = sum + self:get_mod( string.char(c) )
+	end
+
+	if self.flags[ IF_ASSEMBLED ] then
+		if tech_bonus < (sum + 2) then return false end
+	end
+
+	if self.flags[ IF_SINGLEMOD ] and (sum > 0) then return false end
+
+	local max = 0
+	if self.itype == ITEMTYPE_RANGED then
+		max = 1 + 2 * tech_bonus
+	else
+		max = 1 + tech_bonus
+	end
+
+	if sum >= max then return false end
+
+	if self.itype == ITEMTYPE_RANGED then
+		if self:get_mod(c) > 2 then return false end
+	elseif self.itype == ITEMTYPE_MELEE or self.itype == ITEMTYPE_ARMOR or self.itype == ITEMTYPE_BOOTS then
+		if self:get_mod(c) > 0 then return false end
+	else
+		return false
+	end
+
+	return true
+end
+
+function item:add_mod( c, tech_bonus )
+	if not self:can_mod( c, tech_bonus ) then return false end
+	self.flags[ IF_MODIFIED ] = true
+	self:set_mod( c, self:get_mod(c) + 1 )
+	return true
+end	  
+
+function item:clear_mods()
+	for c=string.byte("A"),string.byte("Z") do
+		self:set_mod( string.char(c), 0 )
+	end
+end
+
 function item:is_damaged()
 	if self.flags[ IF_NOREPAIR ] then return false end
 	return self.durability < self.maxdurability
@@ -121,6 +171,8 @@ function item:reset_resistances()
 		self.resist.fire     = (self.__proto.resist.fire or 0)
 		self.resist.acid     = (self.__proto.resist.acid or 0)
 		self.resist.plasma   = (self.__proto.resist.plasma or 0)
+		self.resist.cold     = (self.__proto.resist.cold or 0)
+		self.resist.poison   = (self.__proto.resist.poison or 0)
 	else
 		self.resist.bullet   = 0
 		self.resist.shrapnel = 0
@@ -128,7 +180,20 @@ function item:reset_resistances()
 		self.resist.fire     = 0
 		self.resist.acid     = 0
 		self.resist.plasma   = 0
+		self.resist.cold     = 0
+		self.resist.poison   = 0
 	end		
+end
+
+function item:get_lever_description( full, good )
+	full = full or self.__proto.desc
+	good = good or self.__proto.good
+	if player:has_property( "LEVER_SENSE" ) then
+		local sense = player.LEVER_SENSE
+		if sense > 1 then return "lever ("..full..")" end
+		return "lever ("..good..")"
+	end
+	return "lever"
 end
 
 setmetatable(item,getmetatable(thing))
