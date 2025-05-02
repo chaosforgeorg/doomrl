@@ -80,10 +80,16 @@ DRL uses a few sophisticated Lua tricks however v5.1 specifically is compulsory:
 
 #### Build
 0. Open drl.code-workspace
+
+To get a debug-ready version going:
+1. Terminal/Run Task/Build drl.exe (debug), or Control-Shift-B
+At this point you can start debugging, and the lua will compile when you run.
+
+If you want to build the full package:
 1. Terminal/Run Task/Build makewad.exe (debug)
-2. Terminal/Run Task/Build drl.exe (debug)
-3. Terminal/Run Task/Build drl.wad, core.wad
-4. Terminal/Run Task/Build the release package (all). This won't work on a windows machine without some adjustments to the build script.
+2. Terminal/Run Task/Build drl.wad, core.wad
+3. Terminal/Run Task/Build the release package (all). This won't work on a windows machine without some adjustments to the build script.
+
 You can test all these steps with Terminal/Run Task/Unit test build scripts (noting the release build step may fail).
 
 #### Build errors
