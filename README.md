@@ -104,6 +104,7 @@ Because the lua code is packaged into the wad file, inline debugging is more dif
 4. Some examples of useful commands are:
    * player:exit("the_wall") (<i>Exit and open this level</i>)
    * player.inv:add("nuke") (<i>Give me some real firepower</i>)
+   * player:set_affect("inv",5000) (<i>Feeling scared</i>)
    * player:relocate(coord(10,10)) (<i>Send me to this location</i>)
 5. You can also use = to print values for classes, methods or properties:
    * =player (<i>class</i>)
