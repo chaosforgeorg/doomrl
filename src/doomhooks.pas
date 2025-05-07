@@ -31,7 +31,7 @@ const
   Hook_OnEnter         = 24;  // Item (separate)
   Hook_OnEnterLevel    = 25;  // Level, Module, Challenge, Core (chained)
   Hook_OnFire          = 26;  // Item, Level, Module, Challenge, Core (Chained)
-  Hook_OnFired         = 27;  // Item, Level, Module, Challenge, Core (Chained)
+  Hook_OnFired         = 27;  // Trait (separate), Item, Level, Module, Challenge, Core (Chained)
   Hook_OnExit          = 28;  // Level, Module, Challenge, Core (Chained)
   Hook_OnTick          = 29;  // Being (Separate), Level, Module, Challenge, Core (Chained)
   Hook_OnCompletedCheck= 30;  // Level, Module, Challenge, Core (Chained)

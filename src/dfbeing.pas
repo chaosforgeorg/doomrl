@@ -1305,6 +1305,7 @@ begin
   FTargetPos := aTarget;
 
   aGun.CallHook( Hook_OnFired, [ Self ] );
+  CallHook( Hook_OnFired, [ aGun ] );
 
   if aGun.Flags[ IF_DESTROY ] then
     FreeAndNil( aGun );

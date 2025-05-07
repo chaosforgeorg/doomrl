@@ -56,6 +56,7 @@ core.register_blueprint "trait"
 	OnPickupItem    = { false, core.TFUNC },
 	OnPostMove      = { false, core.TFUNC },
 	OnKill          = { false, core.TFUNC },
+	OnFired         = { false, core.TFUNC },
 	OnDamage        = { false, core.TFUNC },
 	OnTick          = { false, core.TFUNC },
 	OnReceiveDamage = { false, core.TFUNC },
