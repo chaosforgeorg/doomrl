@@ -1,5 +1,7 @@
 0.9.9.9 BETA 8
 [mod] -- GH#264: resistances will only show up if non-zero
+[fix] -- GH#272: full reload will take time again
+[fix] -- GH#271: fixed combat shotgun chamber empty not clearing on 0 ammo load
 
 0.9.9.9 BETA 7
 [new] -- GH#252: staying too long on a level will enrage the enemies
