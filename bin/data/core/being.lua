@@ -356,7 +356,7 @@ function being:full_reload( weapon )
 			end
 			return false
 		end
-		self:reload( ammo, true )
+		self:reload( ammo, true, true )
 		ammo = nil
 	end
 	self:msg("You "..core.iif(pack,"quickly ","").."fully load the "..weapon.name..".", self:get_name( true, true ).." fully loads the "..weapon.name..".")
