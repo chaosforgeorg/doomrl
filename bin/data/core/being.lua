@@ -319,7 +319,16 @@ function being:pick_item_to_mod( mod, filter )
 	return item, true
 end
 
-function being:apply_affect( id, max_duration )
+function being:apply_affect( id, max_duration, resist )
+	if resist and self.resist and self.resist[ resist ] then
+		local rvalue = self.resist[ resist ]
+		if rvalue > 0 then
+			max_duration = math.floor( max_duration * ( 1 - rvalue / 100 ) )
+		end
+		if max_duration <= 0 then
+			return false
+		end
+	end
 	local current = self:get_affect_time( id )
 	if current > 0 then
 		if current < max_duration then
@@ -328,6 +337,7 @@ function being:apply_affect( id, max_duration )
 	else
 		self:set_affect( id, max_duration )
 	end
+	return true
 end
 
 function being:full_reload( weapon )
