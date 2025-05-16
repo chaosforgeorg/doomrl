@@ -810,3 +810,35 @@ function generator.clear_dead_ends( iterations )
 		end
 	end
 end
+
+function generator.remove_needless_doors()
+	core.log("generator.remove_needless_doors()")
+	local floor = generator.styles[ level.style ].floor
+	local wall  = generator.styles[ level.style ].wall
+	local door  = generator.styles[ level.style ].door
+	for c in level:each( door, area.FULL_SHRINKED ) do
+		local wcaround = level:cross_around( c, wall )
+		if wcaround > 2 then
+			level:set_cell( c, wall )
+		elseif wcaround == 2 then
+			if level:around( c, wall ) > 5 then 
+				level:set_cell( c, floor )
+			end
+		end
+	end
+end
+
+function generator.mirror_horizontally( y_value )
+	core.log("generator.mirror_horizontally()")
+	for x = 1, MAXX do
+		for y = 1, y_value-1 do
+			local c1 = coord( x, y )
+			local c2 = coord( x, 2 * y_value - y )
+			level:set_cell( c2, level:get_cell( c1 ) )
+			local item = level:get_item( c1 )
+			if item then
+				level:drop_item( item.id, c2 )
+			end
+		end
+	end
+end
