@@ -108,6 +108,7 @@ uses math, vuid, variants, vioevent, vgenerics,
      doomlua, doominventory, doomplayerview, doomhudviews;
 
 constructor TPlayer.Create;
+var iState : TLuaState;
 begin
   inherited Create('soldier');
 
@@ -130,12 +131,14 @@ begin
   FExpFactor := 1.0;
 
   Initialize;
+  iState.Init( doombase.Lua.Raw );
+  iState.ClearLuaProperties( Self );
+
   FillChar( FQuickSlots, SizeOf(FQuickSlots), 0 );
   CallHook( Hook_OnCreate, [] );
 end;
 
 procedure TPlayer.Initialize;
-var iState : TLuaState;
 begin
   FKilledBy       := '';
   FKilledMelee    := False;
@@ -148,8 +151,6 @@ begin
   FLastTurnDodge  := False;
 
   doombase.Lua.RegisterPlayer(Self);
-  iState.Init( doombase.Lua.Raw );
-  iState.ClearLuaProperties( Self );
 end;
 
 procedure TPlayer.WriteToStream ( Stream : TStream ) ;
