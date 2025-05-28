@@ -219,7 +219,6 @@ function drl.register_base_data()
 		ai_type      = "",
 
 		OnCreate = function(self)
-			self.__props = {}
 			self:add_property( "medals", {} )
 			self:add_property( "badges", {} )
 			self:add_property( "awards", {} )
