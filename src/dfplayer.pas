@@ -600,7 +600,7 @@ begin
       if Inv.Slot[ efWeapon ].isMelee then FSprite.SpriteID[0] := 2 else FSprite.SpriteID[0] := 11;
   end
   else
-    FSprite.SpriteID[0] := LuaSystem.Get( ['beings', ID, 'sprite'], 0 );
+    FSprite.SpriteID[0] := LuaSystem.Get( ['beings', ID, 'sprite'], 0 ) + iSpMod;
 end;
 
 function TPlayer.ASCIIMoreCode : AnsiString;
