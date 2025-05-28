@@ -73,7 +73,7 @@ function generator.scatter_cross_item(scatter_area,good,item_id,count)
 	local function drop( id )
 		local attempts = 10 
 		repeat
-			local c = level:random_empty_coord( { EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, good, scatter_area )
+			local c = level:random_empty_coord( { EF_NOITEMS, EF_NOBEINGS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, good, scatter_area )
 			if c then
 				if test( coord( c.x-1, c.y ) ) and test( coord( c.x+1, c.y ) ) and
 					test( coord( c.x, c.y-1 ) ) and test( coord( c.x, c.y+1 ) ) then
