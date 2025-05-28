@@ -79,7 +79,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure playSound( const BaseID,SoundID : string; coord : TCoord2D ); overload;
     function EnemiesVisible : Word;
 
-    function DropItem ( aItem  : TItem;  aCoord : TCoord2D ) : boolean;  // raises EPlacementException
+    function DropItem ( aItem  : TItem;  aCoord : TCoord2D; aNoHazard : Boolean = False ) : boolean;  // raises EPlacementException
     procedure DropBeing( aBeing : TBeing; aCoord : TCoord2D ); // raises EPlacementException
 
     procedure Remove( Node : TNode ); override;
@@ -813,11 +813,13 @@ begin
   inherited Destroy;
 end;
 
-function TLevel.DropItem( aItem : TItem; aCoord : TCoord2D ) : boolean;
+function TLevel.DropItem( aItem : TItem; aCoord : TCoord2D; aNoHazard : Boolean ) : boolean;
 begin
   DropItem := true;
   if aItem = nil then Exit;
-  aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS ] );
+  if aNoHazard
+    then aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOHARM,EF_NOSTAIRS ] )
+    else aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS ] );
   Add( aItem, aCoord );
 
   if cellFlagSet(aCoord,CF_HAZARD) then
@@ -1450,8 +1452,8 @@ begin
   try
     if State.IsTable(2)
       then iItem := State.ToObject(2) as TItem
-      else iItem := TItem.Create( State.ToId(2), State.ToBoolean(4, false) );
-    Level.DropItem( iItem, State.ToPosition(3) );
+      else iItem := TItem.Create( State.ToId(2), State.ToBoolean( 4, False ) );
+    Level.DropItem( iItem, State.ToPosition(3), State.ToBoolean( 5, False ) );
     State.Push( iItem );
   except
     on EPlacementException do

@@ -380,7 +380,7 @@ end
 
 function level:drop_items( what )
 	for i in what:children("item") do
-		self:drop_item( i, what.position, true )
+		self:drop_item( i, what.position, true, true )
 	end
 end
 
