@@ -6,6 +6,7 @@
 [fix] -- GH#275: fix bulletdance pick crash
 [fix] -- GH#000: fixed armor sprite when no weapon present
 [fix] -- GH#000: fixed trait data not wiped between runs
+[fix] -- GH#000: cleaned up old color formatting errors
 
 0.9.9.9 BETA 7
 [new] -- GH#252: staying too long on a level will enrage the enemies

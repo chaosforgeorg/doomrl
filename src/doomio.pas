@@ -1039,10 +1039,10 @@ end;
 
 procedure TDoomIO.ErrorReport(const aText: AnsiString);
 begin
-  Msg('@RError:@> '+aText);
+  Msg('{RError:} '+aText);
   PushLayer( TMoreLayer.Create( False ) );
   WaitForLayer( False );
-  Msg('@yError written to error.log, please report!@>');
+  Msg('{yError written to error.log, please report!}');
 end;
 
 procedure TDoomIO.ClearAllMessages;

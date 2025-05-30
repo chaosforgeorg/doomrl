@@ -80,19 +80,19 @@ const MAINMENU_ID = 'mainmenu';
 var ChallengeType : array[1..4] of TMainMenuEntry =
 ((
    Name : 'Angel Game';
-   Desc : 'Play one of the DRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach @yPrivate FC@> rank to unlock!';
+   Desc : 'Play one of the DRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach {yPrivate FC} rank to unlock!';
    Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Dual-angel Game';
-   Desc : 'Mix two DRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach @ySergeant@> rank to unlock!';
+   Desc : 'Mix two DRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach {ySergeant} rank to unlock!';
    Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Archangel Game';
-   Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach @ySergeant@> rank to unlock!';
+   Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach {ySergeant} rank to unlock!';
    Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Custom Challenge';
-   Desc : 'Play one of many custom DRL challenge levels and episodes. Download new ones from the @yCustom game/Download Mods@> option in the main menu.';
+   Desc : 'Play one of many custom DRL challenge levels and episodes. Download new ones from the {yCustom game/Download Mods} option in the main menu.';
    Allow : True; Extra : ''; ID : ''; NID : 0;
 ));
 
