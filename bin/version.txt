@@ -1,5 +1,6 @@
 0.9.9.9 BETA 8
 [mod] -- GH#264: resistances will only show up if non-zero
+[mod] -- GH#000: added damage type to weapon descriptions
 [fix] -- GH#272: full reload will take time again
 [fix] -- GH#271: fixed combat shotgun chamber empty not clearing on 0 ammo load
 [fix] -- GH#275: fix bulletdance pick crash

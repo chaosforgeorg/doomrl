@@ -416,6 +416,7 @@ begin
         'Fire time   : {!'+Seconds(FProps.UseTime)+'}'#10+
         'Reload time : {!'+Seconds(FProps.ReloadTime)+'}'#10+
         'Accuracy    : {!'+BonusStr(FProps.Acc)+'}'#10+
+        'Damage type : {!'+DamageTypeName(FProps.DamageType)+'}'#10+
         Iff(FProps.Shots       <> 0,'Shots       : {!'+IntToStr(FProps.Shots)+'}'#10)+
         Iff(FProps.ShotCost    <> 0,'Shot cost   : {!'+IntToStr(FProps.ShotCost)+'}'#10)+
         Iff(FProps.BlastRadius <> 0,'Expl.radius : {!'+IntToStr(FProps.BlastRadius)+'}'#10)+
@@ -447,6 +448,7 @@ begin
         'Fire time   : @<'+Seconds(FProps.UseTime)+'@>'#10+
         'Reload time : @<'+Seconds(FProps.ReloadTime)+'@>'#10+
         'Accuracy    : @<'+BonusStr(FProps.Acc)+'@>'#10+
+        'Damage type : @<'+DamageTypeName(FProps.DamageType)+'@>'#10+
         Iff(FProps.Shots       <> 0,'Shots       : @<'+IntToStr(FProps.Shots)+'@>'#10)+
         Iff(FProps.ShotCost    <> 0,'Shot cost   : @<'+IntToStr(FProps.ShotCost)+'@>'#10)+
         Iff(FProps.BlastRadius <> 0,'Expl.radius : @<'+IntToStr(FProps.BlastRadius)+'@>'#10)+
