@@ -622,7 +622,7 @@ var iEntry : TItemViewEntry;
 begin
   iEntry.Item  := aItem;
   iEntry.Name  := aItem.Description;
-  iEntry.Stats := aItem.DescriptionBox( True );
+  iEntry.Stats := aItem.DescriptionBox;
   iEntry.Color := aItem.MenuColor;
   iEntry.QSlot := 0;
 
