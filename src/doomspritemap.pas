@@ -856,6 +856,7 @@ begin
     StatusGreen  : FLutTexture := (IO as TDoomGFXIO).Textures['lut_enviro'].GLTexture;
     StatusBlue   : FLutTexture := (IO as TDoomGFXIO).Textures['lut_stealth'].GLTexture;
     StatusInvert : FLutTexture := (IO as TDoomGFXIO).Textures['lut_iddqd'].GLTexture;
+    StatusMagenta: FLutTexture := (IO as TDoomGFXIO).Textures['lut_rage'].GLTexture;
     else
     begin
       if Setting_Glow
