@@ -568,9 +568,11 @@ begin
 end;
 
 procedure TPlayer.UpdateVisual;
-var Spr : LongInt;
-    Gray : TColor;
-    iSpMod : Integer;
+var Spr       : LongInt;
+    Gray      : TColor;
+    iWeapon   : TItem;
+    iSpMod    : Integer;
+    iPDSprite : Integer;
 begin
   Color  := LightGray;
   iSpMod := 0;
@@ -587,9 +589,13 @@ begin
     FSprite.Color     := Inv.Slot[ efTorso ].PCosColor;
     iSpMod            := Inv.Slot[ efTorso ].SpriteMod;
   end;
-  if Inv.Slot[ efWeapon ] <> nil then
+  iWeapon := Inv.Slot[ efWeapon ];
+  if iWeapon <> nil then
   begin
-    FSprite.SpriteID[0] := LuaSystem.Get( ['items', Inv.Slot[ efWeapon ].ID, 'psprite'], 0 );
+    iPDSprite := LuaSystem.Get( ['items', iWeapon.ID, 'pdsprite'], 0 );
+    if ( iPDSprite <> 0 ) and ( canDualWield )
+      then FSprite.SpriteID[0] := iPDSprite
+      else FSprite.SpriteID[0] := LuaSystem.Get( ['items', iWeapon.ID, 'psprite'], 0 );
     if FSprite.SpriteID[0] <> 0 then
     begin
       FSprite.SpriteID[0] += iSpMod;
