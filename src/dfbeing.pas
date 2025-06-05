@@ -2174,12 +2174,16 @@ begin
 end;
 
 function TBeing.getReloadCost: LongInt;
-var Modifier : Real;
+var iModifier : Real;
+    iWeapon   : TItem;
 begin
-  if (Inv.Slot[efWeapon] = nil) or (Inv.Slot[efWeapon].isMelee) then Exit(1000);
-  Modifier := Inv.Slot[efWeapon].ReloadTime/10.0;
-  Modifier *= FTimes.Reload/100.;
-  getReloadCost := Round(ActionCostReload*Modifier);
+  iWeapon := Inv.Slot[efWeapon];
+  if (iWeapon = nil) or (iWeapon.isMelee) then Exit(1000);
+  iModifier := iWeapon.ReloadTime/10.0;
+  iModifier *= FTimes.Reload/100.;
+  iModifier *= GetBonusMul( Hook_getReloadCostMul, [ iWeapon ] );
+
+  getReloadCost := Round(ActionCostReload*iModifier);
 end;
 
 function TBeing.getDodgeMod : LongInt;

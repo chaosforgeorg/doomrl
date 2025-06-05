@@ -75,6 +75,7 @@ core.register_blueprint "trait"
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
 	getAmmoCostMul   = { false, core.TFUNC },
+	getReloadCostMul = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
@@ -165,6 +166,7 @@ core.register_blueprint "affect"
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
 	getAmmoCostMul   = { false, core.TFUNC },
+	getReloadCostMul = { false, core.TFUNC },
 }
 
 core.register_blueprint "missile"
@@ -283,6 +285,7 @@ core.register_blueprint "being"
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
 	getAmmoCostMul   = { false, core.TFUNC },
+	getReloadCostMul = { false, core.TFUNC },
 }
 
 core.register_blueprint "being_group_entry"
