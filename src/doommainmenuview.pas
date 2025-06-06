@@ -312,12 +312,15 @@ end;
 
 procedure TMainMenuView.UpdateBadSave;
 begin
-  VTIG_BeginWindow('Corrupted save file', Point( 42, 8 ), Point(19,8) );
-  VTIG_Text('Save file is corrupted! Removed corrupted save file, sorry :(.');
+  VTIG_BeginWindow('Corrupted save file', Point( 42, 13 ), Point(19,8) );
+  VTIG_Text('Save file is {!corrupted}, or from a'+#10+'{!previous version}!'+#10+#10+'Version compatibility will be maintained between big versions.'+#10+#10+'{!Removed} corrupted save file, we''re sorry :(. Player and score data are {!intact}.');
   VTIG_End('Press <{!Enter,Escape}> to continue...');
-  IO.RenderUIBackground( Point(18,7), Point(60,15), 0.7 );
+  IO.RenderUIBackground( Point(18,7), Point(60,20), 0.7 );
   if VTIG_EventCancel or VTIG_EventConfirm then
+  begin
+    FSaveExists := False;
     FMode := MAINMENU_MENU;
+  end;
 end;
 
 procedure TMainMenuView.UpdateFair;
