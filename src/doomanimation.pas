@@ -344,14 +344,21 @@ begin
 end;
 
 procedure TDoomMove.OnDraw;
-var iValue    : Single;
-    iLight    : Byte;
+var iValue : Single;
+    iLight : Byte;
+    iBeing : TBeing;
 begin
   iValue    := Clampf( FTime / FDuration, 0, 1 );
   iLight    := Lerp( FLightStart, FLightEnd, iValue );
   FPosition := Lerp( FSource, FTarget, iValue );
   if FBeing
-    then SpriteMap.PushSpriteBeing( FPosition, FSprite, iLight )
+    then
+    begin
+      iBeing := UIDs.Get( FUID ) as TBeing;
+      if iBeing <> nil
+        then SpriteMap.PushSpriteBeing( FPosition, SpriteMap.GetBeingSprite( iBeing ), iLight )
+        else SpriteMap.PushSpriteBeing( FPosition, FSprite, iLight );
+    end
     else SpriteMap.PushSpriteItem( FPosition, FSprite, iLight );
 end;
 

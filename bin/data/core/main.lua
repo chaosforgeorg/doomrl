@@ -37,9 +37,10 @@ register_cell = core.register_storage( "cells", "cell", function( c )
 	end	
 )
 
-function register_corpse( being_proto )
+function register_corpse( being_proto, index )
 	local frames = being_proto.sframes or 1
 	if frames < 1 then frames = 1 end
+	frames = frames + (index or 0)
 	local proto = {
 		name = being_proto.name.." corpse";
 		ascii = "%";
@@ -169,6 +170,7 @@ register_being         = core.register_storage( "beings", "being", function( bp 
 		end
 
 		if bp.corpse then
+			if type(bp.corpse) == "number"  then bp.corpse = register_corpse(bp,bp.corpse)  end
 			if type(bp.corpse) == "boolean" then bp.corpse = register_corpse(bp)  end
 			if type(bp.corpse) == "string"  then bp.corpse = cells[bp.corpse].nid end
 		end

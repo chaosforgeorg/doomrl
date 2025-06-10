@@ -68,7 +68,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
-    procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+    procedure Explosion( Sequence : Integer; coord : TCoord2D; aRange, aDelay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
     procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Single; Shotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
@@ -867,7 +867,7 @@ begin
   end;
 end;
 
-procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; aRange, aDelay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
 var a     : TCoord2D;
     iDamage : Integer;
     dir   : TDirection;
@@ -878,7 +878,7 @@ begin
   if not isProperCoord( coord ) then Exit;
   if aItem <> nil then iItemUID := aItem.uid;
 
-  IO.Explosion( Sequence, coord, Range, Delay, Color, ExplSound, aFlags );
+  IO.Explosion( Sequence, coord, aRange, aDelay, Color, ExplSound, aFlags );
 
   for iNode in Self do
     if iNode is TBeing then
@@ -887,8 +887,8 @@ begin
   ClearLightMapBits( [lfFresh] );
 
   if Damage.max > 0 then
-  for a in NewArea( Coord, Range ).Clamped( FArea ) do
-    if Distance( a, coord ) <= Range then
+  for a in NewArea( Coord, aRange ).Clamped( FArea ) do
+    if Distance( a, coord ) <= aRange then
       begin
         if not isEyeContact( a, coord ) then Continue;
         iDamage := Damage.Roll;
@@ -901,7 +901,7 @@ begin
         begin
           if KnockBacked then Continue;
           if (efSelfSafe in aFlags) and isActive then Continue;
-          if efChain in aFlags then Explosion( Sequence + Distance( a, coord ) * Delay, a,Max( Range div 2 - 1, 1 ), Delay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
+          if efChain in aFlags then Explosion( Sequence + Distance( a, coord ) * aDelay, a,Max( aRange div 2 - 1, 1 ), aDelay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
           iKnockbackValue := KnockBackValue;
           if (efHalfKnock in aFlags) then iKnockbackValue *= 2;
           if (efSelfKnockback in aFlags) and isActive then iKnockbackValue := 2;
@@ -914,12 +914,12 @@ begin
           if (Flags[BF_SPLASHIMMUNE]) and (not aDirectHit) then Continue;
           if (efSelfHalf in aFlags) and isActive then iDamage := iDamage div 2;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
-          ApplyDamage( iDamage, Target_Torso, DamageType, aItem );
+          ApplyDamage( iDamage, Target_Torso, DamageType, aItem, aDelay );
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
         if ( iDamage > 10 ) and ( Item[a] <> nil ) and (not Item[a].isFeature) then
         begin
-          if efChain in aFlags then Explosion(Sequence + Distance( a, coord ) * Delay,a,Max( Range div 2 - 1, 1 ), Delay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
+          if efChain in aFlags then Explosion(Sequence + Distance( a, coord ) * aDelay,a,Max( aRange div 2 - 1, 1 ), aDelay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
           DestroyItem( a );
         end;
         if (aContent <> 0) and isEmpty( a, [ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM ] ) then
@@ -1004,7 +1004,7 @@ begin
           end;
           KnockBacked := True;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
-          ApplyDamage( dmg, Target_Torso, Shotgun.DamageType, aItem );
+          ApplyDamage( dmg, Target_Torso, Shotgun.DamageType, aItem, 0 );
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
         
@@ -1220,7 +1220,7 @@ begin
 
 
       Player.NukeActivated := 0;
-      Player.ApplyDamage( 6000, Target_Internal, Damage_Plasma, nil );
+      Player.ApplyDamage( 6000, Target_Internal, Damage_Plasma, nil, 0 );
       CallHook(Hook_OnNuked,[Player.CurrentLevel,FID]);
     end;
   end;

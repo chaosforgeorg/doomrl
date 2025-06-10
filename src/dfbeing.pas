@@ -46,7 +46,7 @@ TBeing = class(TThing,IPathQuery)
     procedure Attack( aTarget : TBeing; Second : Boolean = False ); overload;
     function meleeWeaponSlot : TEqSlot;
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
-    procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); virtual;
+    procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem; aDelay : Integer ); virtual;
     function SendMissile( aTarget : TCoord2D; aItem : TItem; aAltFire : TAltFire; aSequence : DWord; aShotCount : Integer ) : Boolean;
     function  isActive : boolean;
     function  WoundStatus : string;
@@ -156,6 +156,8 @@ TBeing = class(TThing,IPathQuery)
     FPathClear     : TFlags;
     FKnockBacked   : Boolean;
     FAffects       : TAffects;
+
+    FOverlayUntil  : QWord;
   public
     property Affects   : TAffects    read FAffects;
     property Inv       : TInventory  read FInv       write FInv;
@@ -166,6 +168,8 @@ TBeing = class(TThing,IPathQuery)
     property KnockBacked  : Boolean read FKnockBacked  write FKnockBacked;
     property SilentAction : Boolean read FSilentAction write FSilentAction;
     property MeleeAttack  : Boolean read FMeleeAttack;
+
+    property OverlayUntil : QWord   read FOverlayUntil;
   published
 
     property can_dual_wield       : Boolean read canDualWield;
@@ -196,6 +200,8 @@ implementation
 uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vluasystem, vluatools, vcolor,
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio;
+
+const PAIN_DURATION = 400;
 
 function TBeing.getStrayChance( aDefender : TBeing; aMissile : Byte ) : Byte;
 var iMiss : Integer;
@@ -325,6 +331,8 @@ begin
   FSilentAction := False;
   FKnockBacked  := False;
   FMeleeAttack  := False;
+
+  FOverlayUntil := 0;
 end;
 
 procedure TBeing.LuaLoad( Table : TLuaTable );
@@ -1643,7 +1651,7 @@ begin
     if isVisible then IO.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
 
     // Apply damage
-    aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon );
+    aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon, 0 );
   end;
   // Dualblade attack
   if iDualAttack and (not Second) and TLevel(Parent).isAlive( iTargetUID ) then
@@ -1698,7 +1706,7 @@ begin
   getTotalResistance := Min( 95, getTotalResistance );
 end;
 
-procedure TBeing.ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem );
+procedure TBeing.ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem; aDelay : Integer );
 var iDirection     : TDirection;
     iArmor         : TItem;
     iActive        : TBeing;
@@ -1825,7 +1833,11 @@ begin
                  else IO.Msg('You hear the scream of a freed soul!');
   if Dead
     then Kill( Min( aDamage div 2, 15), aDamage >= iOverKillValue, iActive, aSource )
-    else CallHook( Hook_OnAttacked, [ iActive, aSource ] );
+    else begin
+      CallHook( Hook_OnAttacked, [ iActive, aSource ] );
+      // TODO: handle Delay?
+      FOverlayUntil := Max( FOverlayUntil, IO.Time + aDelay + PAIN_DURATION );
+    end;
 end;
 
 function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aAltFire : TAltFire; aSequence : DWord; aShotCount : Integer ) : Boolean;
@@ -2008,7 +2020,7 @@ begin
             iRunDamage    := aItem.CallHookCheck(Hook_OnHitBeing,[Self,iBeing]);
           end;
           if iRunDamage then
-            iBeing.ApplyDamage( iDamage, Target_Torso, aItem.DamageType, aItem );
+            iBeing.ApplyDamage( iDamage, Target_Torso, aItem.DamageType, aItem, aSequence );
         end;
 
         if not ( MF_HARD in Missiles[iMissile].Flags ) then
@@ -2364,7 +2376,7 @@ var State       : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  Being.ApplyDamage(State.ToInteger(2),TBodyTarget( State.ToInteger(3) ), TDamageType( State.ToInteger(4,Byte(Damage_Bullet)) ), State.ToObjectOrNil(2) as TItem );
+  Being.ApplyDamage(State.ToInteger(2),TBodyTarget( State.ToInteger(3) ), TDamageType( State.ToInteger(4,Byte(Damage_Bullet)) ), State.ToObjectOrNil(2) as TItem, 0 );
   Result := 0;
 end;
 

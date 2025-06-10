@@ -46,7 +46,7 @@ type TPlayer = class(TBeing)
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem; aUnique : Boolean );
-  procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); override;
+  procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem; aDelay : Integer ); override;
   procedure LevelUp;
   procedure AddExp( aAmount : LongInt );
   procedure WriteMemorial;
@@ -261,7 +261,7 @@ begin
   while FExp >= ExpTable[ FExpLevel + 1 ] do LevelUp;
 end;
 
-procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageType: TDamageType; aSource : TItem);
+procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageType: TDamageType; aSource : TItem; aDelay : Integer );
 begin
   if aDamage < 0 then Exit;
   if BF_INV in FFlags then Exit;
@@ -271,7 +271,7 @@ begin
     IO.Blink(Red,100);
 
   if aDamage > 0 then FKills.DamageTaken;
-  inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource );
+  inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource, aDelay );
 end;
 
 procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem; aUnique : Boolean ) ;
