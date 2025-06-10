@@ -139,7 +139,7 @@ function drl.register_base_data()
 		ascii = "%";
 		color = RED;
 		set = CELLSET_FLOORS;
-		flags = {CF_OVERLAY, CF_NOCHANGE, CF_VBLOODY};
+		flags = { CF_CORPSE, CF_OVERLAY, CF_NOCHANGE, CF_VBLOODY};
 		destroyto = "bloodpool",
 		sprite = SPRITE_CORPSE,
 	}

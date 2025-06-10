@@ -51,7 +51,7 @@ type TPlayer = class(TBeing)
   procedure AddExp( aAmount : LongInt );
   procedure WriteMemorial;
   destructor Destroy; override;
-  procedure Kill( BloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem ); override;
+  procedure Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem; aDelay : Integer ); override;
   procedure AddHistory( const aHistory : Ansistring );
   class procedure RegisterLuaAPI();
   procedure UpdateVisual;
@@ -447,7 +447,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TPlayer.Kill( BloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem );
+procedure TPlayer.Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem; aDelay : Integer );
 var iLevel : TLevel;
 begin
   iLevel := TLevel(Parent);
@@ -472,7 +472,9 @@ begin
      then iLevel.playSound( 'gib',FPosition )
      else PlaySound( 'die' );
 
+  IO.addKillAnimation( 1000, aDelay, Self );
   IO.WaitForAnimation;
+  FAnimCount := 1;
 
   begin
     IO.Msg('You die!...');

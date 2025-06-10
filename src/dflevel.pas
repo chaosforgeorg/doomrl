@@ -1242,7 +1242,7 @@ begin
   CellItem  := Item [ where ];
 
   if ( CellBeing <> nil ) and ( not CellBeing.isPlayer ) then
-    CellBeing.Kill(15,true,nil,nil);
+    CellBeing.Kill(15,true,nil,nil,0);
   if ( CellItem <> nil ) and ( not ( CellItem.Flags[ IF_NUKERESIST ] ) ) then
     DestroyItem( where );
 end;

@@ -1020,7 +1020,8 @@ begin
           PushSpriteDoodad( iCoord, Cells[iTop].Sprite[0], 255 )
         else
         begin
-          PushSpriteDoodad( iCoord, GetSprite( iTop, Doom.Level.CStyle[iCoord] ) );
+          if not ( ( CF_CORPSE in Cells[iTop].Flags ) and ( Doom.Level.LightFlag[ iCoord, LFCORPSING ] ) ) then
+            PushSpriteDoodad( iCoord, GetSprite( iTop, Doom.Level.CStyle[iCoord] ) );
           iDeco := Doom.Level.Deco[iCoord];
           if iDeco <> 0 then
           begin
