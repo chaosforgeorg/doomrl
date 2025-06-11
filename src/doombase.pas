@@ -966,7 +966,7 @@ begin
       INPUT_MUSICTOGGLE  : begin
                                MusicOff := not MusicOff;
                                if MusicOff then IO.Audio.PlayMusic('')
-                                           else IO.Audio.PlayMusic(Level.ID);
+                                           else IO.Audio.PlayMusic(Iif( FLevel.Music_ID <> '', FLevel.Music_ID, FLevel.ID ));
                                Exit;
                              end;
     end;
@@ -1100,7 +1100,7 @@ repeat
     FLevel.CalculateVision( Player.Position );
     SetState( DSPlaying );
     IO.BloodSlideDown(20);
-    IO.Audio.PlayMusic(FLevel.ID);
+    IO.Audio.PlayMusic( Iif( FLevel.Music_ID <> '', FLevel.Music_ID, FLevel.ID ) );
 
     if not iFullLoad then
     begin

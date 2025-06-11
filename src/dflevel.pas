@@ -141,6 +141,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     FFloorStyle    : Byte;
     FFeeling       : AnsiString;
     FSpecExit      : AnsiString;
+    FMusicID       : AnsiString;
   private
     function getCellBottom( Index : TCoord2D ): Byte;
     function getCellTop( Index : TCoord2D ): Byte;
@@ -174,6 +175,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     property Special_Exit : AnsiString read FSpecExit;
     property Feeling      : AnsiString read FFeeling     write FFeeling;
     property id           : AnsiString read FID;
+    property Music_ID     : AnsiString read FMusicID     write FMusicID;
   end;
 
 implementation
@@ -432,6 +434,7 @@ begin
   FID          := Stream.ReadAnsiString();
   FFeeling     := Stream.ReadAnsiString();
   FSpecExit    := Stream.ReadAnsiString();
+  FMusicID     := Stream.ReadAnsiString();
 
   FActiveBeing := nil;
   FNextNode    := nil;
@@ -457,6 +460,8 @@ begin
   Stream.WriteAnsiString( aID );
   Stream.WriteAnsiString( FFeeling );
   Stream.WriteAnsiString( FSpecExit );
+  Stream.WriteAnsiString( FMusicID );
+
 
 //    FActiveBeing : TBeing;
 //    FNextNode    : TNode;
@@ -501,6 +506,7 @@ begin
   FEmpty := False;
   FHooks := [];
   FFeeling := '';
+  FMusicID := '';
 
   FFloorCell     := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
   FFloorStyle    := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
