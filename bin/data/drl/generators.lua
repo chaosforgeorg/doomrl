@@ -215,6 +215,7 @@ function drl.register_generators()
 
 			if math.random(3) == 1 then	generator.generate_rivers( false, true ) end
 		
+			local list = {}
 			for i=1,tries do
 				local room = area.random_subarea( city, coord.random( dim_min, dim_max ) )
 				if level:scan(room,floor_cell) then
@@ -223,10 +224,11 @@ function drl.register_generators()
 					level:set_cell( area.random_inner_edge_coord( room ), door_cell )
 					room:shrink(1)
 					level:fill( "crate", room )
-					generator.add_room( room:expanded() )
+					generator.add_room( list, room:expanded() )
 				end
 			end
 			level:transmute( "crate", floor_cell )
+			generator.room_list = list
 		end
 	}
 

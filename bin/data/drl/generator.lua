@@ -258,6 +258,7 @@ function generator.generate_lava_dungeon()
 	local dim_max = coord( 20, 16 )
 	local dim_min = coord( 12, 10 )
 	local a = area.shrinked( area.FULL, 2 )
+	local list = {}
 	for i=1,tries do
 		local quad = area.random_subarea( a, coord.random( dim_min, dim_max ) ):clamped( a )
 		local good = true
@@ -274,10 +275,11 @@ function generator.generate_lava_dungeon()
 			level:set_cell( area.random_inner_edge_coord( quad ), door_cell )
 			quad:shrink(1)
 			level:fill( "crate", quad )
-			generator.add_room( quad:expanded() )
+			generator.add_room( list, quad:expanded() )
 		end
 	end
 	level:transmute( "crate", floor_cell )
+	generator.room_list = list
 end
 
 function generator.generate_caves_dungeon()
