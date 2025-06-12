@@ -489,7 +489,7 @@ function generator.handle_rooms( count, no_monsters, restore_walls )
 		local room_meta = generator.get_room( room.min_size, room.max_size_x, room.max_size_y, room.max_area, room.class )
 		if room_meta then
 			core.log("generator.handle_rooms() > setting up room : "..room.id)
-			if room.setup( room.area, room_meta ) then
+			if room.setup( room_meta.area, room_meta ) then
 				room_meta.used = true
 			end
 		end
