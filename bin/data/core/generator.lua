@@ -1,7 +1,6 @@
 generator.styles = {}
 generator.cell_sets = {}
 generator.cell_lists = {}
-generator.room_list = {}
 
 function generator.cell_set( list )
 	local s = {}
@@ -438,20 +437,22 @@ function generator.add_room( list, room, class )
 	table.insert( list, rm )
 end
 
-function generator.add_rooms( list )
+function generator.create_room_list( list )
 	core.log("generator.add_rooms()")
 	local room_list = generator.read_rooms()
+	local list = list or {}
 	for _,room in ipairs( room_list ) do
 		generator.add_room( list, room )	
 	end
+	return list
 end
 
-function generator.get_room( min_size, max_x, max_y, max_area, class )
+function generator.get_room( room_list, min_size, max_x, max_y, max_area, class )
 	core.log("generator.get_room()")
 	local cl = class or "any"
 	local marea = max_area or 10000
 	local choice_list = {}
-	for _,rm in ipairs( generator.room_list ) do
+	for _,rm in ipairs( room_list ) do
 		local r = rm.area
 		if not rm.used and ( rm.class == "any" or class == "any" or rm.class == cl ) then
 			if rm.dims.x >= min_size and rm.dims.y >= min_size and
@@ -475,9 +476,9 @@ function generator.restore_walls( wall_cell, fluid_to_perm )
 	end
 end
 
-function generator.handle_rooms( count, no_monsters, restore_walls )
+function generator.handle_rooms( room_list, count, no_monsters, restore_walls )
 	core.log("generator.handle_rooms()")
-	if count < 1 or #(generator.room_list) == 0 then return end
+	if count < 1 or #(room_list) == 0 then return end
 	local choice = weight_table.new()
 	for _,r in ipairs(rooms) do
 		if not no_monsters or r.no_monsters then choice:add( r ) end
@@ -486,10 +487,10 @@ function generator.handle_rooms( count, no_monsters, restore_walls )
 
 	for i = 1,count do
 		local room      = choice:roll()
-		local room_meta = generator.get_room( room.min_size, room.max_size_x, room.max_size_y, room.max_area, room.class )
+		local room_meta = generator.get_room( room_list, room.min_size, room.max_size_x, room.max_size_y, room.max_area, room.class )
 		if room_meta then
 			core.log("generator.handle_rooms() > setting up room : "..room.id)
-			if room.setup( room_meta.area, room_meta ) then
+			if room.setup( room_meta.area, room_meta, room_list ) then
 				room_meta.used = true
 			end
 		end
@@ -539,8 +540,6 @@ function generator.reset()
 	generator.OnEnterLevel = nil
 	generator.OnExit       = nil
 	generator.OnTick       = nil
-
-	generator.room_list = {}
 
 	level:set_generator_style( level.style )
 	level:fill( generator.styles[ level.style ].floor )
@@ -657,7 +656,6 @@ function generator.generate_tiled_level( settings )
 	end
 
 	generator.restore_walls( wall_cell )
-	generator.add_rooms( generator.room_list )
 end
 
 function generator.generate_archi_level( settings )

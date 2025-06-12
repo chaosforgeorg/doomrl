@@ -27,7 +27,7 @@ generator.wall_to_ice = {
 function generator.run( gen )
 	generator.reset()
 	core.log("generator.run > generating level type : "..gen.id)
-	gen.run()
+	local room_list = gen.run()
 
 	if gen.fluids then
 		if type( gen.fluids ) == "function" then
@@ -60,8 +60,8 @@ function generator.run( gen )
 	if gen.rooms then
 		if type( gen.rooms ) == "function" then
 			gen.rooms() 
-		elseif type( gen.rooms ) == "table" then
-			generator.handle_rooms( math.random( gen.rooms[1], gen.rooms[2] ), gen.rooms[3], generator.fluid_to_perm )
+		elseif type( gen.rooms ) == "table" and room_list then
+			generator.handle_rooms( room_list, math.random( gen.rooms[1], gen.rooms[2] ), gen.rooms[3], generator.fluid_to_perm )
 		end
 	end
 
@@ -279,7 +279,7 @@ function generator.generate_lava_dungeon()
 		end
 	end
 	level:transmute( "crate", floor_cell )
-	generator.room_list = list
+	return list
 end
 
 function generator.generate_caves_dungeon()

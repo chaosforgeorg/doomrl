@@ -35,6 +35,7 @@ function drl.register_generators()
 
 		run        = function() 
 			generator.generate_tiled_level()
+			return generator.create_room_list()
 		end
 	}
 
@@ -228,7 +229,7 @@ function drl.register_generators()
 				end
 			end
 			level:transmute( "crate", floor_cell )
-			generator.room_list = list
+			return list
 		end
 	}
 
@@ -286,7 +287,9 @@ function drl.register_generators()
 		end,
 		run        = function() 
 			generator.generate_tiled_level()
+			return generator.create_room_list()
 		end
+
 	}
 
 	register_generator "gen_single_plus"
@@ -313,6 +316,7 @@ function drl.register_generators()
 		end,
 		run        = function() 
 			generator.generate_tiled_level()
+			return generator.create_room_list()
 		end
 	}
 
@@ -324,7 +328,7 @@ function drl.register_generators()
 		rooms      = { 4, 10 },
 
 		run        = function() 
-			generator.generate_lava_dungeon()
+			return generator.generate_lava_dungeon()
 		end
 	}
 
