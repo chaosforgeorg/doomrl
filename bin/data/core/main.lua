@@ -393,6 +393,29 @@ function core.proto_weight( proto, weights, one_only )
 	return weight
 end
 
+function core.tag_reqs_met( proto, reqs )
+	if not reqs then return true end
+	if type(reqs) == "string" then
+		return proto.tags[ reqs ]
+	end
+	if reqs.all then 
+		for _,r in ipairs( reqs.all ) do
+			if not proto.tags[ r ] then return false end
+		end
+	end
+	if reqs.any then 
+		local found = false
+		for _,r in ipairs( reqs.any ) do
+			if proto.tags[ r ] then 
+				found = true 
+				break
+			end
+		end
+		if not found then return false end
+	end
+	return true
+end
+
 function core.proto_reqs_met( proto, reqs )
 	if not reqs then return true end
 	for k,r in pairs( reqs ) do

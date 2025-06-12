@@ -112,6 +112,17 @@ function generator.transmute_style( from, to, fstyle, tstyle, ar )
 	end
 end
 
+function generator.transmute_to_object( from, object, ar, floor )
+	local a     = ar or area.FULL
+	local floor = floor or generator.styles[ level.style ].floor
+	if type(from) == "string" then from = cells[from].nid end
+	for c in a() do 
+		if level.map[ c ] == from then
+			level.map[ c ] = floor
+			level:drop_item_ext( object, c )
+		end
+	end
+end
 
 function generator.scatter_blood(scatter_area,good,count)
 	if type(good) == "string" then good = cells[good].nid end
@@ -480,11 +491,11 @@ function generator.handle_rooms( room_list, settings )
 	local settings   = settings or {}
 	local count      = settings.count or 1
 	if count < 1 or #(room_list) == 0 then return end
-	local tags       = settings.tags or {}
+	local reqs       = settings.reqs
 	local weights    = settings.weights or {}
 	local choice = weight_table.new()
 	for _,r in ipairs(rooms) do
-		if core.proto_reqs_met( r, tags ) then
+		if core.tag_reqs_met( r, reqs ) then
 			local weight = core.proto_weight( r, weights )
 			if weight > 0 then
 				choice:add( r, weight )
