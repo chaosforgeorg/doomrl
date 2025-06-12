@@ -61,7 +61,9 @@ function generator.run( gen )
 		if type( gen.rooms ) == "function" then
 			gen.rooms() 
 		elseif type( gen.rooms ) == "table" and room_list then
-			generator.handle_rooms( room_list, math.random( gen.rooms[1], gen.rooms[2] ), gen.rooms[3], generator.fluid_to_perm )
+			local settings = { count = math.random( gen.rooms[1], gen.rooms[2] ) }
+			generator.handle_rooms( room_list, settings, room_list )
+			generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 		end
 	end
 

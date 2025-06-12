@@ -10,6 +10,7 @@
 [fix] -- GH#000: cleaned up old color formatting errors
 [fix] -- GH#000: fix removal of corrupted/old save files
 [fix] -- GH#000: beings idle-animate while moving
+[fix] -- GH#000: fixed locked vaults - will appear again
 
 0.9.9.9 BETA 7
 [new] -- GH#252: staying too long on a level will enrage the enemies

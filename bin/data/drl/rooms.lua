@@ -140,7 +140,7 @@ function drl.register_rooms()
 		min_size    = 8,
 		max_size_x  = 26,
 		max_size_x  = 14,
-		no_monsters = false,
+		tags        = { "monsters" },
 
 		setup       = function ( room, room_meta, room_list )
 			local fill, keypos
