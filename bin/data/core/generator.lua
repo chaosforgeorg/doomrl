@@ -426,10 +426,9 @@ function generator.read_rooms()
 	return room_list
 end
 
-function generator.add_room( list, room, class )
+function generator.add_room( list, room )
 	local r = room:clone()
 	local rm = {}
-	rm.class = class or "closed"
 	rm.used  = false
 	rm.dims  = area.dim( r )
 	rm.size  = rm.dims.x * rm.dims.y
@@ -454,7 +453,7 @@ function generator.get_room( room_list, min_size, max_x, max_y, max_area, class 
 	local choice_list = {}
 	for _,rm in ipairs( room_list ) do
 		local r = rm.area
-		if not rm.used and ( rm.class == "any" or class == "any" or rm.class == class ) then
+		if not rm.used then
 			if rm.dims.x >= min_size and rm.dims.y >= min_size and
 				rm.dims.x <= max_x and rm.dims.y <= max_y and rm.size <= marea then
 				table.insert( choice_list, rm )
@@ -499,7 +498,7 @@ function generator.handle_rooms( room_list, settings )
 
 	for i = 1,count do
 		local room      = choice:roll()
-		local room_meta = generator.get_room( room_list, room.min_size, room.max_size_x, room.max_size_y, room.max_area, room.class )
+		local room_meta = generator.get_room( room_list, room.min_size, room.max_size_x, room.max_size_y, room.max_area )
 		if room_meta then
 			core.log("generator.handle_rooms() > setting up room : "..room.id)
 			if room.setup( room_meta.area, room_meta, room_list ) then

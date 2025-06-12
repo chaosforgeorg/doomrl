@@ -62,7 +62,6 @@ function drl.register_rooms()
 	{
 		weight      = 5,
 		min_size    = 4,
-		class       = "closed",
 
 		setup       = function ( room )
 			local entries = {
@@ -102,7 +101,6 @@ function drl.register_rooms()
 		weight      = 7,
 		min_size    = 4,
 		max_area    = 140,
-		class       = "closed",
 
 		setup       = function ( room )
 			local fill
@@ -126,7 +124,6 @@ function drl.register_rooms()
 	{
 		weight      = 20,
 		min_size    = 8,
-		class       = "closed",
 
 		setup       = function ( room )
 			generator.warehouse_fill( { "crate", "ycrate" }, room:shrinked(), 2, 30, 5, {"crate_armor","crate_ammo"} )

@@ -644,7 +644,6 @@ core.register_blueprint "room"
 	max_size_x  = { false, core.TNUMBER, 100 },
 	max_size_y  = { false, core.TNUMBER, 100 },
 	max_area    = { false, core.TNUMBER },
-	class       = { false, core.TSTRING, "any" },
 	setup       = { true,  core.TFUNC },
 }
 
