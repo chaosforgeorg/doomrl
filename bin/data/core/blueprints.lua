@@ -639,12 +639,11 @@ core.register_blueprint "room"
 {
 	id          = { true,  core.TSTRING },
 	weight      = { true,  core.TNUMBER },
+	tags        = { false, core.TTABLE, {} },
 	min_size    = { false, core.TNUMBER, 4 },
 	max_size_x  = { false, core.TNUMBER, 100 },
 	max_size_y  = { false, core.TNUMBER, 100 },
 	max_area    = { false, core.TNUMBER },
-	no_monsters = { false, core.TBOOL, true },
-	class       = { false, core.TSTRING, "any" },
 	setup       = { true,  core.TFUNC },
 }
 

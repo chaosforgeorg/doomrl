@@ -27,7 +27,7 @@ generator.wall_to_ice = {
 function generator.run( gen )
 	generator.reset()
 	core.log("generator.run > generating level type : "..gen.id)
-	gen.run()
+	local room_list = gen.run()
 
 	if gen.fluids then
 		if type( gen.fluids ) == "function" then
@@ -60,8 +60,10 @@ function generator.run( gen )
 	if gen.rooms then
 		if type( gen.rooms ) == "function" then
 			gen.rooms() 
-		elseif type( gen.rooms ) == "table" then
-			generator.handle_rooms( math.random( gen.rooms[1], gen.rooms[2] ), gen.rooms[3], generator.fluid_to_perm )
+		elseif type( gen.rooms ) == "table" and room_list then
+			local settings = { count = math.random( gen.rooms[1], gen.rooms[2] ) }
+			generator.handle_rooms( room_list, settings, room_list )
+			generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 		end
 	end
 
@@ -258,6 +260,7 @@ function generator.generate_lava_dungeon()
 	local dim_max = coord( 20, 16 )
 	local dim_min = coord( 12, 10 )
 	local a = area.shrinked( area.FULL, 2 )
+	local list = {}
 	for i=1,tries do
 		local quad = area.random_subarea( a, coord.random( dim_min, dim_max ) ):clamped( a )
 		local good = true
@@ -274,10 +277,11 @@ function generator.generate_lava_dungeon()
 			level:set_cell( area.random_inner_edge_coord( quad ), door_cell )
 			quad:shrink(1)
 			level:fill( "crate", quad )
-			generator.add_room( quad:expanded() )
+			generator.add_room( list, quad:expanded() )
 		end
 	end
 	level:transmute( "crate", floor_cell )
+	return list
 end
 
 function generator.generate_caves_dungeon()

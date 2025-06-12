@@ -60,7 +60,10 @@ function register_corpse( being_proto, index )
 	return register_cell( being_proto.id.."corpse" ) (proto)
 end
 
-register_room       = core.register_storage( "rooms", "room" )
+register_room       = core.register_storage( "rooms", "room", function( r )
+	r.tags = table.toset( r.tags )
+end
+)
 register_event      = core.register_storage( "events", "event" )
 register_difficulty = core.register_storage( "diff", "difficulty" )
 register_medal      = core.register_storage( "medals", "medal" )
@@ -379,7 +382,7 @@ function core.is_challenge( chal_id )
 end
 
 function core.proto_weight( proto, weights, one_only )
-	local weight = proto.weight
+	local weight = proto.weight or 1
 	if not weights then return weight end
 	for k,w in pairs( weights ) do
 		if (proto.flags and proto.flags[ k ]) or (proto.tags and proto.tags[ k ]) or proto[ k ] or proto.id == k then 

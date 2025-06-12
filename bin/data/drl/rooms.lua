@@ -62,7 +62,6 @@ function drl.register_rooms()
 	{
 		weight      = 5,
 		min_size    = 4,
-		class       = "closed",
 
 		setup       = function ( room )
 			local entries = {
@@ -102,7 +101,6 @@ function drl.register_rooms()
 		weight      = 7,
 		min_size    = 4,
 		max_area    = 140,
-		class       = "closed",
 
 		setup       = function ( room )
 			local fill
@@ -126,7 +124,6 @@ function drl.register_rooms()
 	{
 		weight      = 20,
 		min_size    = 8,
-		class       = "closed",
 
 		setup       = function ( room )
 			generator.warehouse_fill( { "crate", "ycrate" }, room:shrinked(), 2, 30, 5, {"crate_armor","crate_ammo"} )
@@ -140,21 +137,21 @@ function drl.register_rooms()
 		min_size    = 8,
 		max_size_x  = 26,
 		max_size_x  = 14,
-		no_monsters = false,
+		tags        = { "monsters" },
 
-		setup       = function ( room )
+		setup       = function ( room, room_meta, room_list )
 			local fill, keypos
 			local space = 1
-			local room2 = generator.get_room(4,100,100)
-			if generator.room_meta[room].dims.x > 10 and generator.room_meta[room].dims.y > 10 and math.random(2) == 1 then
+			local room2 = generator.get_room( room_list, 4,100,100)
+			if room_meta.dims.x > 10 and room_meta.dims.y > 10 and math.random(2) == 1 then
 				space = 2
 			end
 			if room2 then
-				keypos = level:random_empty_coord( { EF_NOBLOCK, EF_NOSTAIRS, EF_NOITEMS, EF_NOHARM, EF_NOSPAWN }, room2 )
+				keypos = level:random_empty_coord( { EF_NOBLOCK, EF_NOSTAIRS, EF_NOITEMS, EF_NOHARM, EF_NOSPAWN }, room2.area )
 			end
 			local locked = (keypos ~= nil) and (math.random(25) < level.danger_level) and (math.random(4) == 1)
 			if locked then
-				generator.room_meta[room2].used = true
+				room2.used = true
 				local lever = level:drop_item( "lever_walls", keypos )
 				lever.flags[ IF_NODESTROY ] = true
 				lever:add_property( "target_area", room:shrinked(1) )
