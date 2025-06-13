@@ -798,21 +798,22 @@ function generator.wallin_cell( c, cell_id )
 	return true
 end
 
-function generator.clear_dead_ends( iterations )
+function generator.clear_dead_ends( iterations, ar )
 	iterations = iterations or 1
+	local ar      = ar or area.FULL_SHRINKED
 	local applied = false
 	local floor   = generator.styles[ level.style ].floor
 	local door    = generator.styles[ level.style ].door
 	local wall    = generator.styles[ level.style ].wall
 	repeat
 		applied = false
-		for c in level:each( floor, area.FULL_SHRINKED ) do
+		for c in level:each( floor, ar ) do
 			if level:cross_around( c, wall ) >= 3 then
 				applied = true
 				level:set_cell( c, generator.styles[ level.style ].wall )
 			end
 		end
-		for c in level:each( door, area.FULL_SHRINKED ) do
+		for c in level:each( door, ar ) do
 			if level:cross_around( c, wall ) >= 3 then
 				applied = true
 				level:set_cell( c, generator.styles[ level.style ].wall )
@@ -821,7 +822,7 @@ function generator.clear_dead_ends( iterations )
 		iterations = iterations - 1
 	until iterations == 0 or (not applied)
 
-	for c in level:each( door, area.FULL_SHRINKED ) do
+	for c in level:each( door, ar ) do
 		if level:cross_around( c, wall ) < 2 then
 			level:set_cell( c, floor )
 		end
