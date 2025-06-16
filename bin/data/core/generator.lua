@@ -860,3 +860,78 @@ function generator.mirror_horizontally( y_value )
 		end
 	end
 end
+
+function generator.horiz_river( settings )
+	assert( settings )
+	assert( settings.cell )
+	local cell     = settings.cell 
+	local rwidth   = settings.width or { 2, 4 }
+	local bridge   = settings.bridge
+
+	local width    = core.resolve_range( rwidth )
+	local floor = generator.styles[ level.style ].floor
+	local bx    = 8 + math.random(60)
+	local y = 10 + math.random(2*width) - width
+	local fill = cell
+	for x = 1,MAXX do
+		if bridge and ( x == bx or x == bx + 1 ) then fill = bridge else fill = cell end
+		for w = 1,width do
+			level:set_cell( x, w + y, fill )
+		end
+		if math.random(6) == 1 then y = math.min( math.max( y + math.random(3) - 2, 3 ), MAXY - width - 2 ) end
+	end
+end
+
+function generator.vert_river( settings )
+	assert( settings )
+	assert( settings.cell )
+	local cell     = settings.cell 
+	local rwidth   = settings.width or { 2, 4 }
+	local position = settings.position
+	local bridge   = settings.bridge
+	local brange   = settings.bridge_range
+	local floor = generator.styles[ level.style ].floor
+
+	local function execute( pos )
+		local width = core.resolve_range( rwidth )
+		local by = 100
+		if type( brange ) == "table" then
+			by = core.resolve_range( brange )
+		else
+			by = 3 + math.random(14)
+		end
+		local x_start, y_start
+		if type(pos) == "userdata" then
+			x_start = math.min( math.max( pos.x + 1 - math.random(width), 3), MAXX - width - 3)
+			y_start = pos.y
+		else
+			x_start = pos or ( 18 + math.random(40) )
+			y_start = 1
+		end
+		local fill = cell
+		local x
+		local function iteration(y)
+			if bridge and (y == by or y == by + 1) then fill = bridge else fill = cell end
+			for w = 1,width do
+				level:set_cell( coord( w + x, y ), fill )
+			end
+			if math.random(3) == 1 then x = math.min( math.max( x + math.random(3) - 2, 3 ), MAXX - width - 3 ) end
+		end
+		x = x_start
+		for y = y_start, MAXY do
+			iteration(y)
+		end
+		x = x_start
+		for y = y_start, 1, -1 do
+			iteration(y)
+		end
+	end
+
+	if type(position) == "table" then
+		for _,p in ipairs(position) do
+			execute(p)
+		end
+	else
+		execute(position)
+	end
+end

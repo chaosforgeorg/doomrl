@@ -129,54 +129,6 @@ function generator.item_amount()
 	return math.ceil( 21 - math.max( 25-level.danger_level, 0 ) / 3 )
 end
 
-function generator.horiz_river( cell, width, bridge )
-	local floor = generator.styles[ level.style ].floor
-	if bridge then bridge = 8 + math.random(60) else bridge = 100 end
-	local y = 10 + math.random(2*width) - width
-	local fill = cell
-	for x = 1,MAXX do
-		if x == bridge or x == bridge + 1 then fill = "bridge" else fill = cell end
-		for w = 1,width do
-			level:set_cell( x, w + y, fill )
-		end
-		if math.random(6) == 1 then y = math.min( math.max( y + math.random(3) - 2, 3 ), MAXY - width - 2 ) end
-	end
-	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
-end
-
-function generator.vert_river( cell, width, bridge, pos )
-	-- guarantee bridges - needs to be tested
-	bridge = true
-	local floor = generator.styles[ level.style ].floor
-	if bridge then bridge = 3 + math.random(14) else bridge = 100 end
-	local x_start, y_start
-	if type(pos) == "userdata" then
-		x_start = math.min( math.max( pos.x + 1 - math.random(width), 3), MAXX - width - 3)
-		y_start = pos.y
-	else
-		x_start = pos or ( 18 + math.random(40) )
-		y_start = 1
-	end
-	local fill = cell
-	local x
-	local function iteration(y)
-		if y == bridge or y == bridge + 1 then fill = "bridge" else fill = cell end
-		for w = 1,width do
-			level:set_cell( w + x, y, fill )
-		end
-		if math.random(3) == 1 then x = math.min( math.max( x + math.random(3) - 2, 3 ), MAXX - width - 3 ) end
-	end
-	x = x_start
-	for y = y_start, MAXY do
-		iteration(y)
-	end
-	x = x_start
-	for y = y_start, 1, -1 do
-		iteration(y)
-	end
-	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
-end
-
 function generator.generate_rivers( allow_horiz, allow_more )
 	local cell  = "lava"
 	local lvl = level.danger_level + math.random(DIFFICULTY * 2 + 6)
@@ -185,21 +137,34 @@ function generator.generate_rivers( allow_horiz, allow_more )
 	elseif lvl > 50 then cell = table.random_pick{ "lava", "lava", "acid", "blood" } end
 
 	if allow_horiz and math.random(4) == 1 then
-		generator.horiz_river( cell, math.random(3)+1, math.random(6) ~= 1 )
+		generator.horiz_river{ cell = cell, bridge = "bridge" }
 	else
+		local settings = {
+			cell         = cell,
+			width        = math.random(3)+2,
+			bridge       = "bridge",
+			bridge_range = settings.vert_bridge,		  
+		}
+
 		if allow_more and math.random(3) == 1 then
 			if math.random(4) == 1 then
-				generator.vert_river( cell, math.random(3)+1, math.random(4) ~= 1, 8  + math.random(20) )
-				generator.vert_river( cell, math.random(3)+1, math.random(4) ~= 1, 32 + math.random(16) )
-				generator.vert_river( cell, math.random(3)+1, math.random(4) ~= 1, 50 + math.random(20) )
+				settings.width = math.random(3)+1
+				settings.position = {
+					8  + math.random(20), 
+					32 + math.random(16),
+					50 + math.random(20)
+				}
 			else
-				generator.vert_river( cell, math.random(3)+2, math.random(3) ~= 1, 8  + math.random(22) )
-				generator.vert_river( cell, math.random(3)+2, math.random(3) ~= 1, 48 + math.random(22) )
+				settings.width = math.random(3)+2
+				settings.position = { 
+					8  + math.random(22), 
+					48 + math.random(22),
+				}	
 			end
-		else
-			generator.vert_river( cell, math.random(3)+3, math.random(4) ~= 1 )
 		end
+		generator.vert_river( settings )
 	end
+	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 end
 
 function generator.generate_lava_dungeon()
@@ -330,14 +295,21 @@ function generator.generate_caves_dungeon()
 		elseif lvl < 27 then cell = "acid" end
 
 		if math.random(3) == 1 then
-			generator.horiz_river( cell, math.random(3)+1, math.random(6) ~= 1 )
+			generator.horiz_river{ cell = cell, bridge = "bridge" }
 		else
 			local pos = generator.standard_empty_coord()
 			if pos then
-				generator.vert_river( cell, math.random(3)+3, math.random(4) ~= 1, pos)
+				local settings = {
+					cell     = cell,
+					width    = { 4, 6 },
+					position = pos,
+					bridge   = "bridge",
+				}
+				generator.vert_river( settings )
 			end
 		end
 	end
+	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 
 	local sets = {
 		{ level = { 0,  16 }, weight = 3, list = "lostsoul"},
