@@ -46,14 +46,16 @@ function generator.run( gen )
 			gen.rivers() 
 		elseif type( gen.rivers ) == "number" then
 			if math.random(100) <= gen.rivers then
-				generator.generate_rivers( true, true )
+				generator.handle_rivers()
 			end
 		elseif type( gen.rivers ) == "table" then
-			if math.random(100) <= gen.rivers[1] then
-				generator.generate_rivers( gen.rivers[2], gen.rivers[3] )
+			if type( gen.rivers[1] ) == "number" then
+				if math.random(100) <= gen.rivers[1] then
+					generator.handle_rivers( gen.rivers )
+				end
 			end
 		else
-			generator.generate_rivers( true, true )
+			generator.handle_rivers()
 		end
 	end
 
@@ -129,41 +131,18 @@ function generator.item_amount()
 	return math.ceil( 21 - math.max( 25-level.danger_level, 0 ) / 3 )
 end
 
-function generator.generate_rivers( allow_horiz, allow_more )
-	local cell  = "lava"
-	local lvl = level.danger_level + math.random(DIFFICULTY * 2 + 6)
-	    if lvl < 17 then cell = table.random_pick{ "water", "water", "water", "mud" }
-	elseif lvl < 27 then cell = "acid"
-	elseif lvl > 50 then cell = table.random_pick{ "lava", "lava", "acid", "blood" } end
-
-	if allow_horiz and math.random(4) == 1 then
-		generator.horiz_river{ cell = cell, bridge = "bridge" }
-	else
-		local settings = {
-			cell         = cell,
-			width        = math.random(3)+2,
-			bridge       = "bridge",
-			bridge_range = settings.vert_bridge,		  
-		}
-
-		if allow_more and math.random(3) == 1 then
-			if math.random(4) == 1 then
-				settings.width = math.random(3)+1
-				settings.position = {
-					8  + math.random(20), 
-					32 + math.random(16),
-					50 + math.random(20)
-				}
-			else
-				settings.width = math.random(3)+2
-				settings.position = { 
-					8  + math.random(22), 
-					48 + math.random(22),
-				}	
-			end
-		end
-		generator.vert_river( settings )
+function generator.handle_rivers( settings )
+	local settings = table.copy( settings or {} )
+	settings.bridge = settings.bridge or "bridge"
+	settings.no_destroy_items = true
+	if not settings.cell then
+		settings.cell    = "lava"
+		local lvl = level.danger_level + math.random(DIFFICULTY * 2 + 6)
+			if lvl < 17 then settings.cell = table.random_pick{ "water", "water", "water", "mud" }
+		elseif lvl < 27 then settings.cell = "acid"
+		elseif lvl > 50 then settings.cell = table.random_pick{ "lava", "lava", "acid", "blood" } end
 	end
+	generator.generate_rivers( settings )
 	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 end
 
@@ -302,7 +281,7 @@ function generator.generate_caves_dungeon()
 				local settings = {
 					cell     = cell,
 					width    = { 4, 6 },
-					position = pos,
+					position = math.clamp( pos.x, 3, MAXX-3 ),
 					bridge   = "bridge",
 				}
 				generator.vert_river( settings )

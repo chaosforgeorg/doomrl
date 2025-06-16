@@ -868,18 +868,67 @@ function generator.horiz_river( settings )
 	local rwidth   = settings.width or { 2, 4 }
 	local bridge   = settings.bridge
 
-	local width    = core.resolve_range( rwidth )
+	local bridges = {}
+	local dbridges = {}
+	local function bridge_ok( x, y )
+		if not bridge then return false end
+		local cell = level:get_cell( x, y )
+		return generator.cell_sets[ CELLSET_FLOORS ][cell] or generator.cell_sets[ CELLSET_DOORS ][cell]
+	end
+
+	local width = core.resolve_range( rwidth )
 	local floor = generator.styles[ level.style ].floor
-	local bx    = 8 + math.random(60)
-	local y = 10 + math.random(2*width) - width
-	local fill = cell
+	local y     = 10 + math.random(2*width) - width
+	local fill  = cell
 	for x = 1,MAXX do
-		if bridge and ( x == bx or x == bx + 1 ) then fill = bridge else fill = cell end
 		for w = 1,width do
 			level:set_cell( x, w + y, fill )
 		end
-		if math.random(6) == 1 then y = math.min( math.max( y + math.random(3) - 2, 3 ), MAXY - width - 2 ) end
+		if bridge and bridge_ok( x, y ) and bridge_ok( x, y + width + 1 ) then
+			table.insert( bridges, coord( x, y ) )
+		end
+		if math.random(6) == 1 then 
+			y = math.clamp( y + math.random(3) - 2, 3, MAXY - width - 2 )
+		end
 	end
+
+	if bridge and #bridges > 0 then
+		local dbridges = {}
+		for i,c in ipairs( bridges ) do
+			if bridges[i+1] and c.x == bridges[i+1].x-1 then
+				table.insert( dbridges, { c, bridges[i+1] } )
+			end
+		end
+
+		local count  = 0
+		local dcount = 0
+		if #dbridges == 0 or math.random(3) == 1 then
+			count = math.min( #bridges, 3+math.random(3) )
+		else
+			dcount = 1 + math.random(2)
+		end
+
+		while count > 0 and #bridges > 0 do
+			count = count - 1
+			local c = table.random_remove( bridges )
+			for w = 1,width do
+				level:set_cell( coord( c.x, c.y + w ), bridge )
+			end
+		end
+
+		while dcount > 0 and #dbridges > 0 do
+			dcount = dcount - 1
+			local cc = table.random_remove( dbridges )
+			for w = 1,width do
+				level:set_cell( coord( cc[1].x, cc[1].y + w ), bridge )
+				level:set_cell( coord( cc[2].x, cc[2].y + w ), bridge )
+			end
+			if cc[1].x < 4 or cc[2].x > MAXX - 4 then
+				dcount = dcount + 1
+			end
+		end
+	end
+
 end
 
 function generator.vert_river( settings )
@@ -892,38 +941,73 @@ function generator.vert_river( settings )
 	local brange   = settings.bridge_range
 	local floor = generator.styles[ level.style ].floor
 
+	local function bridge_ok( x, y )
+		if not bridge then return false end
+		if brange and type(brange) == "table" then
+			if not (y >= brange[1] and y <= brange[2]) then return false end
+		end
+		local cell = level:get_cell( x, y )
+		return generator.cell_sets[ CELLSET_FLOORS ][cell] or generator.cell_sets[ CELLSET_DOORS ][cell]
+	end
+
 	local function execute( pos )
+		local bridges = {}
+
+		local pos   = pos or ( 18 + math.random(40) )
 		local width = core.resolve_range( rwidth )
-		local by = 100
-		if type( brange ) == "table" then
-			by = core.resolve_range( brange )
-		else
-			by = 3 + math.random(14)
-		end
-		local x_start, y_start
-		if type(pos) == "userdata" then
-			x_start = math.min( math.max( pos.x + 1 - math.random(width), 3), MAXX - width - 3)
-			y_start = pos.y
-		else
-			x_start = pos or ( 18 + math.random(40) )
-			y_start = 1
-		end
+		local by    = 100
 		local fill = cell
-		local x
+		local x    = math.clamp( pos, 3, MAXX - width - 3 )
 		local function iteration(y)
-			if bridge and (y == by or y == by + 1) then fill = bridge else fill = cell end
 			for w = 1,width do
 				level:set_cell( coord( w + x, y ), fill )
 			end
-			if math.random(3) == 1 then x = math.min( math.max( x + math.random(3) - 2, 3 ), MAXX - width - 3 ) end
+			if bridge and bridge_ok( x, y ) and bridge_ok( width+x+1, y ) then
+				table.insert( bridges, coord( x, y ) )
+			end
+			if math.random(3) == 1 then 
+				x = math.clamp( x + math.random(3) - 2, 3, MAXX - width - 3 )
+			end
 		end
-		x = x_start
-		for y = y_start, MAXY do
+		for y = 1, MAXY do
 			iteration(y)
 		end
-		x = x_start
-		for y = y_start, 1, -1 do
-			iteration(y)
+
+		if bridge and #bridges > 0 then
+			local dbridges = {}
+			for i,c in ipairs( bridges ) do
+				if bridges[i+1] and c.y == bridges[i+1].y-1 then
+					table.insert( dbridges, { c, bridges[i+1] } )
+				end
+			end
+
+			local count  = 0
+			local dcount = 0
+			if #dbridges == 0 or math.random(3) == 1 then
+				count = math.min( #bridges, 2 )
+			else
+				dcount = 1
+			end
+
+			while count > 0 and #bridges > 0 do
+				count = count - 1
+				local c = table.random_remove( bridges )
+				for w = 1,width do
+					level:set_cell( coord( c.x + w, c.y ), bridge )
+				end
+			end
+
+			while dcount > 0 and #dbridges > 0 do
+				dcount = dcount - 1
+				local cc = table.random_remove( dbridges )
+				for w = 1,width do
+					level:set_cell( coord( cc[1].x + w, cc[1].y ), bridge )
+					level:set_cell( coord( cc[2].x + w, cc[2].y ), bridge )
+				end
+				if cc[1].y < 4 or cc[2].y > MAXY - 4 then
+					dcount = dcount + 1
+				end
+			end
 		end
 	end
 
@@ -933,5 +1017,56 @@ function generator.vert_river( settings )
 		end
 	else
 		execute(position)
+	end
+end
+
+function generator.generate_rivers( settings )
+	assert( settings )
+	assert( settings.cell )
+	local cell          = settings.cell 
+	local bridge        = settings.bridge
+	local allow_horiz   = not ( settings.vertical_only or false )
+	local allow_more    = not ( settings.no_extra      or false )
+	local destroy_items = not ( settings.no_destroy_items or false )
+
+	if allow_horiz and math.random(4) == 1 then
+		generator.horiz_river{ cell = cell, bridge = bridge }
+	else
+		local rsettings = {
+			cell         = cell,
+			width        = {3,5},
+			bridge       = bridge,
+			bridge_range = settings.vert_bridge,		  
+		}
+
+		if allow_more and math.random(3) == 1 then
+			if math.random(4) == 1 then
+				rsettings.width = {2,4}
+				rsettings.position = {
+					8  + math.random(20), 
+					32 + math.random(16),
+					50 + math.random(20)
+				}
+			else
+				rsettings.position = { 
+					8  + math.random(22), 
+					48 + math.random(22),
+				}	
+			end
+		end
+		generator.vert_river( rsettings )
+	end
+
+	if destroy_items then
+		for c in level:each( cell ) do
+			local item = level:get_item(c)
+			if item then item:destroy() end
+		end
+		if bridge then
+			for c in level:each( bridge ) do
+				local item = level:get_item(c)
+				if item then item:destroy() end
+			end
+		end
 	end
 end
