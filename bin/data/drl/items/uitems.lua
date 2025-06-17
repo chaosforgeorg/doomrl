@@ -660,9 +660,10 @@ function drl.register_unique_items()
 		missile = {
 			sound_id   = "pistol",
 			color      = LIGHTGREEN,
-			sprite     = SPRITE_SHOT,
+			sprite     = SPRITE_CSHOT,
+			coscolor   = { 0.0,1.0,0.0,0.3 },
 			hitsprite  = SPRITE_BLAST,
-			delay      = 5,
+			delay      = 3,
 			miss_base  = 3,
 			miss_dist  = 3,
 			flags      = { MF_RAY, MF_HARD },

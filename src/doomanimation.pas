@@ -212,9 +212,25 @@ begin
 end;
 
 procedure TDoomMissile.OnDraw;
-var iPos : TVec2i;
+var iPos    : TVec2i;
+    iLength : Single;
+    iStep   : Single;
 begin
-  if Doom.Level.isProperCoord( FPath.GetC ) and Doom.Level.isVisible( FPath.GetC ) then
+  if ( not Doom.Level.isProperCoord( FPath.GetC ) ) or (not Doom.Level.isVisible( FPath.GetC ) ) then
+    Exit;
+  if FRay then
+  begin
+    iLength := FSource.Distance( FTarget );
+    iStep := 0;
+    while iStep < iLength do
+    begin
+      iStep += 20.0;
+      iPos := Lerp( FSource, FTarget, iStep / iLength );
+      SpriteMap.PushSpriteFXRotated( iPos, FSprite, FHeading + PI/2)
+    end;
+    Exit;
+  end
+  else
   begin
     iPos := Lerp( FSource, FTarget, Minf(FTime / FDuration, 1.0) );
     SpriteMap.PushSpriteFXRotated( iPos, FSprite, FHeading + PI/2)
