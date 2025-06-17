@@ -711,10 +711,6 @@ function generator.generate_archi_level( settings )
 		["+"] = generator.styles[ level.style ].door,
 	}
 
-	if not data.no_fill then
-		level:fill( wall_cell )
-	end
-
 	local blocks = data.blocks
 	local bsize  = data.size
 	local shift  = data.shift 
@@ -727,6 +723,15 @@ function generator.generate_archi_level( settings )
 		shift.y = math.max( 1, math.floor( shift.y / 2 ) )
 	end
 	core.log( "blocks: "..blocks.x.."x"..blocks.y.." size: "..bsize.x.."x"..bsize.y.." shift: "..shift.x..","..shift.y )
+	local result = area( shift, shift + blocks * (bsize - coord.UNIT) )
+
+	if not data.no_fill and not data.prefill then
+		level:fill( wall_cell )
+	end
+	if data.prefill then
+		level:fill( data.prefill, result )
+	end
+
 	if data.trans then
 		for k,v in pairs( data.trans ) do translation[k] = v end
 	end
@@ -765,13 +770,23 @@ function generator.generate_archi_level( settings )
 		end
 	end
 
-	if not data.no_fill then
+	if data.restore_edges then
+		for c in area.edges( result ) do 
+            level:set_cell( c, data.restore_edges )
+        end
+	end
+
+	if data.clear_dead_ends then
+		generator.clear_dead_ends( data.clear_dead_ends )
+	end
+
+	if not data.no_fill and ( not data.restore_edges )  then
 		generator.restore_walls( wall_cell )
 	end
 	if not data.no_fluids then
 		generator.generate_fluids(area(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
 	end
-	return area( shift, shift + blocks * (bsize - coord.UNIT) )
+	return result
 end
 
 function generator.destroy_cell( c )
