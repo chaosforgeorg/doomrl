@@ -663,7 +663,7 @@ function drl.register_unique_items()
 			sprite     = SPRITE_CSHOT,
 			coscolor   = { 0.0,1.0,0.0,0.3 },
 			hitsprite  = SPRITE_BLAST,
-			delay      = 3,
+			delay      = 50,
 			miss_base  = 3,
 			miss_dist  = 3,
 			flags      = { MF_RAY, MF_HARD },

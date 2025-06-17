@@ -1864,6 +1864,7 @@ var iDirection  : TDirection;
     iFireDesc   : Ansistring;
     iSprite     : TSprite;
     iDuration   : DWord;
+    iMarkSeq    : DWord;
     iSteps      : DWord;
     iDelay      : DWord;
     iSound      : DWord;
@@ -2059,12 +2060,21 @@ begin
   if iSound <> 0 then
     IO.addSoundAnimation( aSequence, iSource, iSound );
 
-  iDuration := (iSource - iMisslePath.GetC).LargerLength * iDelay;
   if not ( MF_IMMIDATE in Missiles[iMissile].Flags ) then
   begin
+    if MF_RAY in Missiles[iMissile].Flags then
+    begin
+      iDuration := iDelay;
+      iMarkSeq  := 0;
+    end
+    else
+    begin
+      iDuration := (iSource - iMisslePath.GetC).LargerLength * iDelay;
+      iMarkSeq  := iDuration + aSequence;
+    end;
     IO.addMissileAnimation( iDuration, aSequence,iSource,iMisslePath.GetC,iColor,Missiles[iMissile].Picture,iDelay,iSprite,MF_RAY in Missiles[iMissile].Flags);
     if iHit and iLevel.isVisible( iMisslePath.GetC ) then
-      IO.addMarkAnimation(199, aSequence + iDuration, iMisslePath.GetC, Missiles[iMissile].HitSprite, Iif( iIsHit, LightRed, LightGray ), '*' );
+      IO.addMarkAnimation(199, iMarkSeq, iMisslePath.GetC, Missiles[iMissile].HitSprite, Iif( iIsHit, LightRed, LightGray ), '*' );
   end;
 
   if aItem.Flags[ IF_THROWDROP ] then

@@ -221,7 +221,7 @@ begin
   if FRay then
   begin
     iLength := FSource.Distance( FTarget );
-    iStep := 0;
+    iStep := SpriteMap.GetGridSize div 2;
     while iStep < iLength do
     begin
       iStep += 20.0;
