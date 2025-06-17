@@ -1,27 +1,10 @@
 require( "drl:archi" )
 
-generator.fluid_to_perm = {
-	water  = "pwater",
-	mud    = "pmud",
-	lava   = "plava",
-	acid   = "pacid",
-	blood  = "pblood",
-	pwater = "pwater",
-	pmud   = "pmud",
-	plava  = "plava",
-	pacid  = "pacid",
-	pblood = "pblood",
-}
-
 generator.wall_to_ice = {
 	lava   = "water",
 	acid   = "water",
 	mud    = "water",
 	blood  = "water",
-	plava  = "pwater",
-	pacid  = "pwater",
-	pblood = "pwater",
-	pmud   = "pwater",
 }
 
 function generator.run( gen )
@@ -65,7 +48,7 @@ function generator.run( gen )
 		elseif type( gen.rooms ) == "table" and room_list then
 			local settings = { count = math.random( gen.rooms[1], gen.rooms[2] ) }
 			generator.handle_rooms( room_list, settings, room_list )
-			generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
+			generator.restore_walls( generator.styles[ level.style ].wall, generator.cell_sets[ CELLSET_FLUIDS ] )
 		end
 	end
 
@@ -143,28 +126,26 @@ function generator.handle_rivers( settings )
 		elseif lvl > 50 then settings.cell = table.random_pick{ "lava", "lava", "acid", "blood" } end
 	end
 	generator.generate_rivers( settings )
-	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 end
 
 function generator.generate_lava_dungeon()
 	core.log("generator.generate_lava_dungeon()")
 	local fluids = {
-		{ "lava", "plava" },
-		{ "lava", "plava" },
-		{ "acid", "pacid" },
-		{ "blood","pblood" },
+		"lava",
+		"lava",
+		"acid",
+		"blood"
 	}
 	local range = 2
 	if level.danger_level > 30 then range = 3 end
 	if level.danger_level > 40 then range = 4 end
 	local fluid = fluids[ math.random( range ) ]
 
-	level:fill( fluid[1] )
-	level:fill_edges( fluid[2] )
+	level:fill( fluid )
 	local wall_cell    = generator.styles[ level.style ].wall
 	local floor_cell   = generator.styles[ level.style ].floor
 	local door_cell    = generator.styles[ level.style ].door
-	local lava_nid     = cells[ fluid[1] ].nid
+	local lava_nid     = cells[ fluid ].nid
 	local wall_nid     = cells[ wall_cell ].nid
 
 	local tries = 3
@@ -185,7 +166,7 @@ function generator.generate_lava_dungeon()
 
 		if math.random(2) == 1 then
 			quad:shrink(1)
-			level:fill( fluid[1], quad )
+			level:fill( fluid, quad )
 			quad:expand(1)
 		end
 
@@ -288,7 +269,6 @@ function generator.generate_caves_dungeon()
 			end
 		end
 	end
-	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
 
 	local sets = {
 		{ level = { 0,  16 }, weight = 3, list = "lostsoul"},

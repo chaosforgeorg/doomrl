@@ -66,7 +66,7 @@ register_level "limbo"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		level:fill( "pblood" )
+		level:fill( "blood" )
 
 		local translation = {
 			['.'] = "floor",

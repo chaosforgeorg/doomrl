@@ -474,12 +474,13 @@ function generator.get_room( room_list, min_size, max_x, max_y, max_area, class 
 	return table.random_pick( choice_list )
 end
 
-function generator.restore_walls( wall_cell, fluid_to_perm )
+function generator.restore_walls( wall_cell, skip_cells )
 	core.log("generator.restore_walls("..wall_cell..")")
-	if fluid_to_perm then
+	if skip_cells then
 		for c in area.edges( area.FULL ) do
-			local sub = fluid_to_perm[ cells[level:get_cell( c )].id ] or wall_cell
-			level:set_cell( c, sub )
+			if not skip_cells[ cells[level:get_cell( c )].id ] then
+				level:set_cell( c, wall_cell )
+			end
 		end
 	else
 		level:fill_edges( wall_cell )
