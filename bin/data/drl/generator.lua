@@ -1,33 +1,16 @@
 require( "drl:archi" )
 
-generator.fluid_to_perm = {
-	water  = "pwater",
-	mud    = "pmud",
-	lava   = "plava",
-	acid   = "pacid",
-	blood  = "pblood",
-	pwater = "pwater",
-	pmud   = "pmud",
-	plava  = "plava",
-	pacid  = "pacid",
-	pblood = "pblood",
-}
-
 generator.wall_to_ice = {
 	lava   = "water",
 	acid   = "water",
 	mud    = "water",
 	blood  = "water",
-	plava  = "pwater",
-	pacid  = "pwater",
-	pblood = "pwater",
-	pmud   = "pwater",
 }
 
 function generator.run( gen )
 	generator.reset()
 	core.log("generator.run > generating level type : "..gen.id)
-	gen.run()
+	local room_list = gen.run()
 
 	if gen.fluids then
 		if type( gen.fluids ) == "function" then
@@ -46,22 +29,26 @@ function generator.run( gen )
 			gen.rivers() 
 		elseif type( gen.rivers ) == "number" then
 			if math.random(100) <= gen.rivers then
-				generator.generate_rivers( true, true )
+				generator.handle_rivers()
 			end
 		elseif type( gen.rivers ) == "table" then
-			if math.random(100) <= gen.rivers[1] then
-				generator.generate_rivers( gen.rivers[2], gen.rivers[3] )
+			if type( gen.rivers[1] ) == "number" then
+				if math.random(100) <= gen.rivers[1] then
+					generator.handle_rivers( gen.rivers )
+				end
 			end
 		else
-			generator.generate_rivers( true, true )
+			generator.handle_rivers()
 		end
 	end
 
 	if gen.rooms then
 		if type( gen.rooms ) == "function" then
 			gen.rooms() 
-		elseif type( gen.rooms ) == "table" then
-			generator.handle_rooms( math.random( gen.rooms[1], gen.rooms[2] ), gen.rooms[3], generator.fluid_to_perm )
+		elseif type( gen.rooms ) == "table" and room_list then
+			local settings = { count = math.random( gen.rooms[1], gen.rooms[2] ) }
+			generator.handle_rooms( room_list, settings, room_list )
+			generator.restore_walls( generator.styles[ level.style ].wall, generator.cell_sets[ CELLSET_FLUIDS ] )
 		end
 	end
 
@@ -127,98 +114,38 @@ function generator.item_amount()
 	return math.ceil( 21 - math.max( 25-level.danger_level, 0 ) / 3 )
 end
 
-function generator.horiz_river( cell, width, bridge )
-	local floor = generator.styles[ level.style ].floor
-	if bridge then bridge = 8 + math.random(60) else bridge = 100 end
-	local y = 10 + math.random(2*width) - width
-	local fill = cell
-	for x = 1,MAXX do
-		if x == bridge or x == bridge + 1 then fill = "bridge" else fill = cell end
-		for w = 1,width do
-			level:set_cell( x, w + y, fill )
-		end
-		if math.random(6) == 1 then y = math.min( math.max( y + math.random(3) - 2, 3 ), MAXY - width - 2 ) end
+function generator.handle_rivers( settings )
+	local settings = table.copy( settings or {} )
+	settings.bridge = settings.bridge or "bridge"
+	settings.no_destroy_items = true
+	if not settings.cell then
+		settings.cell    = "lava"
+		local lvl = level.danger_level + math.random(DIFFICULTY * 2 + 6)
+			if lvl < 17 then settings.cell = table.random_pick{ "water", "water", "water", "mud" }
+		elseif lvl < 27 then settings.cell = "acid"
+		elseif lvl > 50 then settings.cell = table.random_pick{ "lava", "lava", "acid", "blood" } end
 	end
-	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
-end
-
-function generator.vert_river( cell, width, bridge, pos )
-	-- guarantee bridges - needs to be tested
-	bridge = true
-	local floor = generator.styles[ level.style ].floor
-	if bridge then bridge = 3 + math.random(14) else bridge = 100 end
-	local x_start, y_start
-	if type(pos) == "userdata" then
-		x_start = math.min( math.max( pos.x + 1 - math.random(width), 3), MAXX - width - 3)
-		y_start = pos.y
-	else
-		x_start = pos or ( 18 + math.random(40) )
-		y_start = 1
-	end
-	local fill = cell
-	local x
-	local function iteration(y)
-		if y == bridge or y == bridge + 1 then fill = "bridge" else fill = cell end
-		for w = 1,width do
-			level:set_cell( w + x, y, fill )
-		end
-		if math.random(3) == 1 then x = math.min( math.max( x + math.random(3) - 2, 3 ), MAXX - width - 3 ) end
-	end
-	x = x_start
-	for y = y_start, MAXY do
-		iteration(y)
-	end
-	x = x_start
-	for y = y_start, 1, -1 do
-		iteration(y)
-	end
-	generator.restore_walls( generator.styles[ level.style ].wall, generator.fluid_to_perm )
-end
-
-function generator.generate_rivers( allow_horiz, allow_more )
-	local cell  = "lava"
-	local lvl = level.danger_level + math.random(DIFFICULTY * 2 + 6)
-	    if lvl < 17 then cell = table.random_pick{ "water", "water", "water", "mud" }
-	elseif lvl < 27 then cell = "acid"
-	elseif lvl > 50 then cell = table.random_pick{ "lava", "lava", "acid", "blood" } end
-
-	if allow_horiz and math.random(4) == 1 then
-		generator.horiz_river( cell, math.random(3)+1, math.random(6) ~= 1 )
-	else
-		if allow_more and math.random(3) == 1 then
-			if math.random(4) == 1 then
-				generator.vert_river( cell, math.random(3)+1, math.random(4) ~= 1, 8  + math.random(20) )
-				generator.vert_river( cell, math.random(3)+1, math.random(4) ~= 1, 32 + math.random(16) )
-				generator.vert_river( cell, math.random(3)+1, math.random(4) ~= 1, 50 + math.random(20) )
-			else
-				generator.vert_river( cell, math.random(3)+2, math.random(3) ~= 1, 8  + math.random(22) )
-				generator.vert_river( cell, math.random(3)+2, math.random(3) ~= 1, 48 + math.random(22) )
-			end
-		else
-			generator.vert_river( cell, math.random(3)+3, math.random(4) ~= 1 )
-		end
-	end
+	generator.generate_rivers( settings )
 end
 
 function generator.generate_lava_dungeon()
 	core.log("generator.generate_lava_dungeon()")
 	local fluids = {
-		{ "lava", "plava" },
-		{ "lava", "plava" },
-		{ "acid", "pacid" },
-		{ "blood","pblood" },
+		"lava",
+		"lava",
+		"acid",
+		"blood"
 	}
 	local range = 2
 	if level.danger_level > 30 then range = 3 end
 	if level.danger_level > 40 then range = 4 end
 	local fluid = fluids[ math.random( range ) ]
 
-	level:fill( fluid[1] )
-	level:fill_edges( fluid[2] )
+	level:fill( fluid )
 	local wall_cell    = generator.styles[ level.style ].wall
 	local floor_cell   = generator.styles[ level.style ].floor
 	local door_cell    = generator.styles[ level.style ].door
-	local lava_nid     = cells[ fluid[1] ].nid
+	local lava_nid     = cells[ fluid ].nid
 	local wall_nid     = cells[ wall_cell ].nid
 
 	local tries = 3
@@ -239,7 +166,7 @@ function generator.generate_lava_dungeon()
 
 		if math.random(2) == 1 then
 			quad:shrink(1)
-			level:fill( fluid[1], quad )
+			level:fill( fluid, quad )
 			quad:expand(1)
 		end
 
@@ -258,6 +185,7 @@ function generator.generate_lava_dungeon()
 	local dim_max = coord( 20, 16 )
 	local dim_min = coord( 12, 10 )
 	local a = area.shrinked( area.FULL, 2 )
+	local list = {}
 	for i=1,tries do
 		local quad = area.random_subarea( a, coord.random( dim_min, dim_max ) ):clamped( a )
 		local good = true
@@ -274,10 +202,11 @@ function generator.generate_lava_dungeon()
 			level:set_cell( area.random_inner_edge_coord( quad ), door_cell )
 			quad:shrink(1)
 			level:fill( "crate", quad )
-			generator.add_room( quad:expanded() )
+			generator.add_room( list, quad:expanded() )
 		end
 	end
 	level:transmute( "crate", floor_cell )
+	return list
 end
 
 function generator.generate_caves_dungeon()
@@ -326,11 +255,17 @@ function generator.generate_caves_dungeon()
 		elseif lvl < 27 then cell = "acid" end
 
 		if math.random(3) == 1 then
-			generator.horiz_river( cell, math.random(3)+1, math.random(6) ~= 1 )
+			generator.horiz_river{ cell = cell, bridge = "bridge" }
 		else
 			local pos = generator.standard_empty_coord()
 			if pos then
-				generator.vert_river( cell, math.random(3)+3, math.random(4) ~= 1, pos)
+				local settings = {
+					cell     = cell,
+					width    = { 4, 6 },
+					position = math.clamp( pos.x, 3, MAXX-3 ),
+					bridge   = "bridge",
+				}
+				generator.vert_river( settings )
 			end
 		end
 	end

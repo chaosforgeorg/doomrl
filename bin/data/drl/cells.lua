@@ -370,6 +370,7 @@ function drl.register_cells()
 		sprite     = SPRITE_WATER,
 		sflags     = { SF_FLOW, SF_FLUID },
 		move_cost  = 1.25,
+		set        = CELLSET_FLUIDS,
 	}
 
 	register_cell "mud"
@@ -381,6 +382,7 @@ function drl.register_cells()
 		sprite     = SPRITE_MUD,
 		sflags     = { SF_FLOW, SF_FLUID },
 		move_cost  = 1.65,
+		set        = CELLSET_FLUIDS,
 	}
 
 	register_cell "acid"
@@ -392,6 +394,7 @@ function drl.register_cells()
 		sprite     = SPRITE_ACID,
 		sflags     = { SF_FLOW, SF_FLUID },
 		move_cost  = 1.25,
+		set        = CELLSET_FLUIDS,
 
 		OnEnter = function(c,being)
 			if not cells.acid.OnHazardQuery( being ) then return end
@@ -428,6 +431,7 @@ function drl.register_cells()
 		sprite     = SPRITE_LAVA,
 		sflags     = { SF_FLOW, SF_FLUID },
 		move_cost  = 1.25,
+		set        = CELLSET_FLUIDS,
 
 		OnEnter = function(c,being)
 			if not cells.lava.OnHazardQuery( being ) then return end
@@ -465,6 +469,7 @@ function drl.register_cells()
 		sprite     = SPRITE_BLOODLAVA,
 		sflags     = { SF_FLOW, SF_FLUID },
 		move_cost  = 1.25,
+		set        = CELLSET_FLUIDS,
 
 		OnEnter = function(c,being)
 			if not cells.blood.OnHazardQuery( being ) then return end
@@ -487,66 +492,6 @@ function drl.register_cells()
 			if being:is_affect("enviro") then return false end
 			return true
 		end,
-	}
-
-	register_cell "pwater"
-	{
-  		name       = "water",
-		ascii      = "=",
-		color      = COLOR_WATER,
-		color_id   = "water",
-		set        = CELLSET_WALLS,
-		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE},
-		sprite     = SPRITE_WATER,
-		sflags     = { SF_FLOW, SF_FLUID },
-	}
-
-	register_cell "pmud"
-	{
-  		name       = "mud",
-		ascii      = "=",
-		color      = COLOR_MUD,
-		color_id   = "mud",
-		set        = CELLSET_WALLS,
-		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE},
-		sprite     = SPRITE_MUD,
-		sflags     = { SF_FLOW, SF_FLUID },
-	}
-
-	register_cell "pacid"
-	{
-		name       = "acid",
-		ascii      = "=",
-		color      = COLOR_ACID,
-		color_id   = "acid",
-		set        = CELLSET_WALLS,
-		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_HIGHLIGHT},
-		sprite     = SPRITE_ACID,
-		sflags     = { SF_FLOW, SF_FLUID },
-	}
-
-	register_cell "plava"
-	{
-		name       = "lava",
-		ascii      = "=",
-		color      = COLOR_LAVA,
-		color_id   = "lava",
-		set        = CELLSET_WALLS,
-		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_HIGHLIGHT},
-		sprite     = SPRITE_LAVA,
-		sflags     = { SF_FLOW, SF_FLUID },
-	}
-
-	register_cell "pblood"
-	{
-		name       = "blood",
-		ascii      = "=",
-		color      = COLOR_BLOOD,
-		color_id   = "blood",
-		set        = CELLSET_WALLS,
-		flags      = { CF_BLOCKLOS, CF_BLOCKMOVE, CF_HIGHLIGHT},
-		sprite     = SPRITE_BLOODLAVA,
-		sflags     = { SF_FLOW, SF_FLUID },
 	}
 
 -- End Fluids --

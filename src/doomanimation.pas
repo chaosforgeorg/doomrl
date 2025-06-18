@@ -134,6 +134,21 @@ private
   FValue  : Integer;
 end;
 
+TDoomAnimateKill = class(TAnimation)
+  constructor Create( aDuration : DWord; aDelay : DWord; aUID : TUID );
+  procedure OnStart; override;
+  procedure OnDraw; override;
+  destructor Destroy; override;
+private
+  FSprite     : TSprite;
+  FValue      : Integer;
+  FLight      : Byte;
+  FPosition   : TVec2i;
+  FCoord      : TCoord2D;
+  FPlayerHack : Boolean;
+end;
+
+
 { TDoomScreenShake }
 
 TDoomScreenShake = class(TAnimation)
@@ -197,9 +212,25 @@ begin
 end;
 
 procedure TDoomMissile.OnDraw;
-var iPos : TVec2i;
+var iPos    : TVec2i;
+    iLength : Single;
+    iStep   : Single;
 begin
-  if Doom.Level.isProperCoord( FPath.GetC ) and Doom.Level.isVisible( FPath.GetC ) then
+  if ( not Doom.Level.isProperCoord( FPath.GetC ) ) or (not Doom.Level.isVisible( FPath.GetC ) ) then
+    Exit;
+  if FRay then
+  begin
+    iLength := FSource.Distance( FTarget );
+    iStep := SpriteMap.GetGridSize div 2;
+    while iStep < iLength do
+    begin
+      iStep += 20.0;
+      iPos := Lerp( FSource, FTarget, iStep / iLength );
+      SpriteMap.PushSpriteFXRotated( iPos, FSprite, FHeading + PI/2)
+    end;
+    Exit;
+  end
+  else
   begin
     iPos := Lerp( FSource, FTarget, Minf(FTime / FDuration, 1.0) );
     SpriteMap.PushSpriteFXRotated( iPos, FSprite, FHeading + PI/2)
@@ -344,14 +375,21 @@ begin
 end;
 
 procedure TDoomMove.OnDraw;
-var iValue    : Single;
-    iLight    : Byte;
+var iValue : Single;
+    iLight : Byte;
+    iBeing : TBeing;
 begin
   iValue    := Clampf( FTime / FDuration, 0, 1 );
   iLight    := Lerp( FLightStart, FLightEnd, iValue );
   FPosition := Lerp( FSource, FTarget, iValue );
   if FBeing
-    then SpriteMap.PushSpriteBeing( FPosition, FSprite, iLight )
+    then
+    begin
+      iBeing := UIDs.Get( FUID ) as TBeing;
+      if iBeing <> nil
+        then SpriteMap.PushSpriteBeing( FPosition, SpriteMap.GetBeingSprite( iBeing ), iLight )
+        else SpriteMap.PushSpriteBeing( FPosition, FSprite, iLight );
+    end
     else SpriteMap.PushSpriteItem( FPosition, FSprite, iLight );
 end;
 
@@ -488,6 +526,65 @@ begin
   inherited Destroy;
 end;
 
+constructor TDoomAnimateKill.Create( aDuration : DWord; aDelay : DWord; aUID : TUID );
+var iBeing : TBeing;
+begin
+  inherited Create( aDuration, aDelay, aUID );
+  iBeing  := UIDs.Get( FUID ) as TBeing;
+  FValue  := 2;
+  if iBeing = nil then Exit;
+  FSprite     := iBeing.Sprite;
+  FCoord      := iBeing.Position;
+  FPlayerHack := iBeing.IsPlayer;
+  FPosition.Init( (iBeing.Position.X - 1)*SpriteMap.GetGridSize,(iBeing.Position.Y - 1)*SpriteMap.GetGridSize);
+  FLight      := Iif( Doom.Level.isVisible(iBeing.Position), SpriteMap.VariableLight( iBeing.Position, 30 ), 0 );
+end;
+
+procedure TDoomAnimateKill.OnStart;
+var iBeing : TBeing;
+begin
+  iBeing := UIDs.Get( FUID ) as TBeing;
+  if iBeing <> nil then iBeing.AnimCount := iBeing.AnimCount + 1;
+  Doom.Level.LightFlag[ FCoord, LFCORPSING ] := True;
+end;
+
+procedure TDoomAnimateKill.OnDraw;
+var iBeing    : TBeing;
+    iSprite   : TSprite;
+    iSegment  : Integer;
+    iPosition : TVec2i;
+begin
+  iSprite   := FSprite;
+  iPosition := FPosition;
+  iBeing    := UIDs.Get( FUID ) as TBeing;
+  if iBeing <> nil then
+  begin
+    iPosition.Init( (iBeing.Position.X - 1)*SpriteMap.GetGridSize,(iBeing.Position.Y - 1)*SpriteMap.GetGridSize);
+  end;
+  iSegment := ( FTime * FValue ) div FDuration;
+  // TODO : remove hack!
+  if FPlayerHack and ( iSegment > 0 ) then
+  begin
+    iSprite.SpriteID[0] -= iSprite.SpriteID[0] mod 1000;
+    iSprite.SpriteID[0] += DRL_COLS * 18 + 1;
+  end
+  else
+  begin
+    iSegment += iSprite.Frames;
+    if SF_LARGE in iSprite.Flags then iSegment *= 2;
+    iSprite.SpriteID[0] += iSegment * DRL_COLS;
+  end;
+  SpriteMap.PushSpriteBeing( iPosition, iSprite, FLight );
+end;
+
+destructor TDoomAnimateKill.Destroy;
+var iBeing : TBeing;
+begin
+  iBeing := UIDs.Get( FUID ) as TBeing;
+  if iBeing <> nil then iBeing.AnimCount := Max( 0, iBeing.AnimCount - 1 );
+  Doom.Level.LightFlag[ FCoord, LFCORPSING ] := False;
+  inherited Destroy;
+end;
 constructor TDoomScreenShake.Create( aDuration : DWord; aDelay : DWord; aStrength : Single );
 begin
   inherited Create( aDuration, aDelay, 0 );

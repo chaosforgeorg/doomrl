@@ -56,6 +56,7 @@ core.register_blueprint "trait"
 	OnPickupItem    = { false, core.TFUNC },
 	OnPostMove      = { false, core.TFUNC },
 	OnKill          = { false, core.TFUNC },
+	OnFired         = { false, core.TFUNC },
 	OnDamage        = { false, core.TFUNC },
 	OnTick          = { false, core.TFUNC },
 	OnReceiveDamage = { false, core.TFUNC },
@@ -74,6 +75,7 @@ core.register_blueprint "trait"
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
 	getAmmoCostMul   = { false, core.TFUNC },
+	getReloadCostMul = { false, core.TFUNC },
 }
 
 core.register_blueprint "klass_trait"
@@ -164,6 +166,7 @@ core.register_blueprint "affect"
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
 	getAmmoCostMul   = { false, core.TFUNC },
+	getReloadCostMul = { false, core.TFUNC },
 }
 
 core.register_blueprint "missile"
@@ -282,6 +285,7 @@ core.register_blueprint "being"
 	getDamageMul     = { false, core.TFUNC },
 	getFireCostMul   = { false, core.TFUNC },
 	getAmmoCostMul   = { false, core.TFUNC },
+	getReloadCostMul = { false, core.TFUNC },
 }
 
 core.register_blueprint "being_group_entry"
@@ -480,6 +484,7 @@ core.register_blueprint "item"
 			ascii         = { false, core.TSTRING, "}" },
 			sound_id      = { false, core.TID },
 			psprite       = { true, core.TNUMBER },
+			pdsprite      = { false, core.TNUMBER },
 			desc          = { true, core.TSTRING },
 			group         = { true, core.TSTRING },
 			ammomax       = { true, core.TNUMBER },
@@ -516,6 +521,7 @@ core.register_blueprint "item"
 			ascii       = { false, core.TSTRING, "\\" },
 			sound_id    = { false, core.TSTRING },
 			psprite     = { true, core.TNUMBER },
+			pdsprite    = { false, core.TNUMBER },
 			group       = { true, core.TSTRING },
 			desc        = { true, core.TSTRING },
 			damage      = { true, core.TSTRING },
@@ -633,12 +639,11 @@ core.register_blueprint "room"
 {
 	id          = { true,  core.TSTRING },
 	weight      = { true,  core.TNUMBER },
+	tags        = { false, core.TTABLE, {} },
 	min_size    = { false, core.TNUMBER, 4 },
 	max_size_x  = { false, core.TNUMBER, 100 },
 	max_size_y  = { false, core.TNUMBER, 100 },
 	max_area    = { false, core.TNUMBER },
-	no_monsters = { false, core.TBOOL, true },
-	class       = { false, core.TSTRING, "any" },
 	setup       = { true,  core.TFUNC },
 }
 

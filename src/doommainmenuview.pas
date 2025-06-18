@@ -80,19 +80,19 @@ const MAINMENU_ID = 'mainmenu';
 var ChallengeType : array[1..4] of TMainMenuEntry =
 ((
    Name : 'Angel Game';
-   Desc : 'Play one of the DRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach @yPrivate FC@> rank to unlock!';
+   Desc : 'Play one of the DRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach {yPrivate FC} rank to unlock!';
    Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Dual-angel Game';
-   Desc : 'Mix two DRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach @ySergeant@> rank to unlock!';
+   Desc : 'Mix two DRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach {ySergeant} rank to unlock!';
    Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Archangel Game';
-   Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach @ySergeant@> rank to unlock!';
+   Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach {ySergeant} rank to unlock!';
    Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Custom Challenge';
-   Desc : 'Play one of many custom DRL challenge levels and episodes. Download new ones from the @yCustom game/Download Mods@> option in the main menu.';
+   Desc : 'Play one of many custom DRL challenge levels and episodes. Download new ones from the {yCustom game/Download Mods} option in the main menu.';
    Allow : True; Extra : ''; ID : ''; NID : 0;
 ));
 
@@ -312,12 +312,15 @@ end;
 
 procedure TMainMenuView.UpdateBadSave;
 begin
-  VTIG_BeginWindow('Corrupted save file', Point( 42, 8 ), Point(19,8) );
-  VTIG_Text('Save file is corrupted! Removed corrupted save file, sorry :(.');
+  VTIG_BeginWindow('Corrupted save file', Point( 42, 13 ), Point(19,8) );
+  VTIG_Text('Save file is {!corrupted}, or from a'+#10+'{!previous version}!'+#10+#10+'Version compatibility will be maintained between big versions.'+#10+#10+'{!Removed} corrupted save file, we''re sorry :(. Player and score data are {!intact}.');
   VTIG_End('Press <{!Enter,Escape}> to continue...');
-  IO.RenderUIBackground( Point(18,7), Point(60,15), 0.7 );
+  IO.RenderUIBackground( Point(18,7), Point(60,20), 0.7 );
   if VTIG_EventCancel or VTIG_EventConfirm then
+  begin
+    FSaveExists := False;
     FMode := MAINMENU_MENU;
+  end;
 end;
 
 procedure TMainMenuView.UpdateFair;

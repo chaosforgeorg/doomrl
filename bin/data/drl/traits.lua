@@ -434,7 +434,7 @@ function drl.register_traits()
 		master = true,
 
 		OnPick = function (self)
-			assert( self:has_trait( "trait_triggerhappy" ), "bulletdance can be picked without triggerhappy?" )
+			assert( self:has_property( "trait_triggerhappy" ), "bulletdance can be picked without triggerhappy?" )
 		end,
 
 		getShotsBonus = function ( self, weapon, alt )

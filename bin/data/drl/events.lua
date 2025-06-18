@@ -290,16 +290,12 @@ end
 
 function generator.events_flood_tick()
 	local flood_tile = function( pos, cell )
-		if area.FULL:is_edge( pos ) then
-			level:set_cell( pos, generator.fluid_to_perm[ cell ] )
-		else
-			local cell_data = cells[ level:get_cell( pos ) ]
-			if not cell_data.flags[ CF_CRITICAL ] then
-				level:set_cell( pos, cell )
-			end
-			if cell_data.OnDestroy then cell_data.OnDestroy(pos) end
-			level:try_destroy_item( pos )
+		local cell_data = cells[ level:get_cell( pos ) ]
+		if not cell_data.flags[ CF_CRITICAL ] then
+			level:set_cell( pos, cell )
 		end
+		if cell_data.OnDestroy then cell_data.OnDestroy(pos) end
+		level:try_destroy_item( pos )
 	end
 	local data = level.data.event
 	data.timer = data.timer + 1

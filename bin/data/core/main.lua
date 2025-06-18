@@ -37,9 +37,10 @@ register_cell = core.register_storage( "cells", "cell", function( c )
 	end	
 )
 
-function register_corpse( being_proto )
+function register_corpse( being_proto, index )
 	local frames = being_proto.sframes or 1
 	if frames < 1 then frames = 1 end
+	frames = frames + (index or 0)
 	local proto = {
 		name = being_proto.name.." corpse";
 		ascii = "%";
@@ -59,7 +60,10 @@ function register_corpse( being_proto )
 	return register_cell( being_proto.id.."corpse" ) (proto)
 end
 
-register_room       = core.register_storage( "rooms", "room" )
+register_room       = core.register_storage( "rooms", "room", function( r )
+	r.tags = table.toset( r.tags )
+end
+)
 register_event      = core.register_storage( "events", "event" )
 register_difficulty = core.register_storage( "diff", "difficulty" )
 register_medal      = core.register_storage( "medals", "medal" )
@@ -169,6 +173,7 @@ register_being         = core.register_storage( "beings", "being", function( bp 
 		end
 
 		if bp.corpse then
+			if type(bp.corpse) == "number"  then bp.corpse = register_corpse(bp,bp.corpse)  end
 			if type(bp.corpse) == "boolean" then bp.corpse = register_corpse(bp)  end
 			if type(bp.corpse) == "string"  then bp.corpse = cells[bp.corpse].nid end
 		end
@@ -377,7 +382,7 @@ function core.is_challenge( chal_id )
 end
 
 function core.proto_weight( proto, weights, one_only )
-	local weight = proto.weight
+	local weight = proto.weight or 1
 	if not weights then return weight end
 	for k,w in pairs( weights ) do
 		if (proto.flags and proto.flags[ k ]) or (proto.tags and proto.tags[ k ]) or proto[ k ] or proto.id == k then 
@@ -386,6 +391,29 @@ function core.proto_weight( proto, weights, one_only )
 		end
 	end
 	return weight
+end
+
+function core.tag_reqs_met( proto, reqs )
+	if not reqs then return true end
+	if type(reqs) == "string" then
+		return proto.tags[ reqs ]
+	end
+	if reqs.all then 
+		for _,r in ipairs( reqs.all ) do
+			if not proto.tags[ r ] then return false end
+		end
+	end
+	if reqs.any then 
+		local found = false
+		for _,r in ipairs( reqs.any ) do
+			if proto.tags[ r ] then 
+				found = true 
+				break
+			end
+		end
+		if not found then return false end
+	end
+	return true
 end
 
 function core.proto_reqs_met( proto, reqs )

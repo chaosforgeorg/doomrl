@@ -68,7 +68,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
-    procedure Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+    procedure Explosion( Sequence : Integer; coord : TCoord2D; aRange, aDelay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
     procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Single; Shotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
@@ -79,7 +79,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure playSound( const BaseID,SoundID : string; coord : TCoord2D ); overload;
     function EnemiesVisible : Word;
 
-    function DropItem ( aItem  : TItem;  aCoord : TCoord2D ) : boolean;  // raises EPlacementException
+    function DropItem ( aItem  : TItem;  aCoord : TCoord2D; aNoHazard : Boolean = False ) : boolean;  // raises EPlacementException
     procedure DropBeing( aBeing : TBeing; aCoord : TCoord2D ); // raises EPlacementException
 
     procedure Remove( Node : TNode ); override;
@@ -141,6 +141,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     FFloorStyle    : Byte;
     FFeeling       : AnsiString;
     FSpecExit      : AnsiString;
+    FMusicID       : AnsiString;
   private
     function getCellBottom( Index : TCoord2D ): Byte;
     function getCellTop( Index : TCoord2D ): Byte;
@@ -174,6 +175,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     property Special_Exit : AnsiString read FSpecExit;
     property Feeling      : AnsiString read FFeeling     write FFeeling;
     property id           : AnsiString read FID;
+    property Music_ID     : AnsiString read FMusicID     write FMusicID;
   end;
 
 implementation
@@ -432,6 +434,7 @@ begin
   FID          := Stream.ReadAnsiString();
   FFeeling     := Stream.ReadAnsiString();
   FSpecExit    := Stream.ReadAnsiString();
+  FMusicID     := Stream.ReadAnsiString();
 
   FActiveBeing := nil;
   FNextNode    := nil;
@@ -457,6 +460,8 @@ begin
   Stream.WriteAnsiString( aID );
   Stream.WriteAnsiString( FFeeling );
   Stream.WriteAnsiString( FSpecExit );
+  Stream.WriteAnsiString( FMusicID );
+
 
 //    FActiveBeing : TBeing;
 //    FNextNode    : TNode;
@@ -501,6 +506,7 @@ begin
   FEmpty := False;
   FHooks := [];
   FFeeling := '';
+  FMusicID := '';
 
   FFloorCell     := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
   FFloorStyle    := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
@@ -813,11 +819,13 @@ begin
   inherited Destroy;
 end;
 
-function TLevel.DropItem( aItem : TItem; aCoord : TCoord2D ) : boolean;
+function TLevel.DropItem( aItem : TItem; aCoord : TCoord2D; aNoHazard : Boolean ) : boolean;
 begin
   DropItem := true;
   if aItem = nil then Exit;
-  aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS ] );
+  if aNoHazard
+    then aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOHARM,EF_NOSTAIRS ] )
+    else aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS ] );
   Add( aItem, aCoord );
 
   if cellFlagSet(aCoord,CF_HAZARD) then
@@ -865,7 +873,7 @@ begin
   end;
 end;
 
-procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; Range, Delay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; aRange, aDelay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
 var a     : TCoord2D;
     iDamage : Integer;
     dir   : TDirection;
@@ -876,7 +884,7 @@ begin
   if not isProperCoord( coord ) then Exit;
   if aItem <> nil then iItemUID := aItem.uid;
 
-  IO.Explosion( Sequence, coord, Range, Delay, Color, ExplSound, aFlags );
+  IO.Explosion( Sequence, coord, aRange, aDelay, Color, ExplSound, aFlags );
 
   for iNode in Self do
     if iNode is TBeing then
@@ -885,8 +893,8 @@ begin
   ClearLightMapBits( [lfFresh] );
 
   if Damage.max > 0 then
-  for a in NewArea( Coord, Range ).Clamped( FArea ) do
-    if Distance( a, coord ) <= Range then
+  for a in NewArea( Coord, aRange ).Clamped( FArea ) do
+    if Distance( a, coord ) <= aRange then
       begin
         if not isEyeContact( a, coord ) then Continue;
         iDamage := Damage.Roll;
@@ -899,7 +907,7 @@ begin
         begin
           if KnockBacked then Continue;
           if (efSelfSafe in aFlags) and isActive then Continue;
-          if efChain in aFlags then Explosion( Sequence + Distance( a, coord ) * Delay, a,Max( Range div 2 - 1, 1 ), Delay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
+          if efChain in aFlags then Explosion( Sequence + Distance( a, coord ) * aDelay, a,Max( aRange div 2 - 1, 1 ), aDelay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
           iKnockbackValue := KnockBackValue;
           if (efHalfKnock in aFlags) then iKnockbackValue *= 2;
           if (efSelfKnockback in aFlags) and isActive then iKnockbackValue := 2;
@@ -912,12 +920,12 @@ begin
           if (Flags[BF_SPLASHIMMUNE]) and (not aDirectHit) then Continue;
           if (efSelfHalf in aFlags) and isActive then iDamage := iDamage div 2;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
-          ApplyDamage( iDamage, Target_Torso, DamageType, aItem );
+          ApplyDamage( iDamage, Target_Torso, DamageType, aItem, aDelay );
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
         if ( iDamage > 10 ) and ( Item[a] <> nil ) and (not Item[a].isFeature) then
         begin
-          if efChain in aFlags then Explosion(Sequence + Distance( a, coord ) * Delay,a,Max( Range div 2 - 1, 1 ), Delay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
+          if efChain in aFlags then Explosion(Sequence + Distance( a, coord ) * aDelay,a,Max( aRange div 2 - 1, 1 ), aDelay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
           DestroyItem( a );
         end;
         if (aContent <> 0) and isEmpty( a, [ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM ] ) then
@@ -1002,7 +1010,7 @@ begin
           end;
           KnockBacked := True;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
-          ApplyDamage( dmg, Target_Torso, Shotgun.DamageType, aItem );
+          ApplyDamage( dmg, Target_Torso, Shotgun.DamageType, aItem, 0 );
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
         
@@ -1218,7 +1226,7 @@ begin
 
 
       Player.NukeActivated := 0;
-      Player.ApplyDamage( 6000, Target_Internal, Damage_Plasma, nil );
+      Player.ApplyDamage( 6000, Target_Internal, Damage_Plasma, nil, 0 );
       CallHook(Hook_OnNuked,[Player.CurrentLevel,FID]);
     end;
   end;
@@ -1240,7 +1248,7 @@ begin
   CellItem  := Item [ where ];
 
   if ( CellBeing <> nil ) and ( not CellBeing.isPlayer ) then
-    CellBeing.Kill(15,true,nil,nil);
+    CellBeing.Kill(15,true,nil,nil,0);
   if ( CellItem <> nil ) and ( not ( CellItem.Flags[ IF_NUKERESIST ] ) ) then
     DestroyItem( where );
 end;
@@ -1450,8 +1458,8 @@ begin
   try
     if State.IsTable(2)
       then iItem := State.ToObject(2) as TItem
-      else iItem := TItem.Create( State.ToId(2), State.ToBoolean(4, false) );
-    Level.DropItem( iItem, State.ToPosition(3) );
+      else iItem := TItem.Create( State.ToId(2), State.ToBoolean( 4, False ) );
+    Level.DropItem( iItem, State.ToPosition(3), State.ToBoolean( 5, False ) );
     State.Push( iItem );
   except
     on EPlacementException do

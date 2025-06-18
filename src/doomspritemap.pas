@@ -3,7 +3,7 @@ unit doomspritemap;
 interface
 uses Classes, SysUtils,
      vutil, vgltypes, vrltools, vgenerics, vvector, vcolor, vglquadrenderer, vglprogram,
-     vglfullscreentriangle, vnode, vspriteengine, vtextures, vglframebuffer, dfdata;
+     vglfullscreentriangle, vnode, vspriteengine, vtextures, vglframebuffer, dfdata, dfbeing;
 
 // TODO : remove
 const SpriteCellRow = 16;
@@ -61,6 +61,7 @@ type
   function GetGridSize : Word;
   function GetCellRotationMask( cell: TCoord2D ): Byte;
   destructor Destroy; override;
+  function GetBeingSprite( aBeing : TBeing ) : TSprite;
 private
   FGridActive     : Boolean;
   FMaxShift       : TVec2i;
@@ -113,7 +114,7 @@ implementation
 
 uses math, vmath, viotypes, vvision, vgl3library,
      doomio, doomgfxio, doombase,
-     dfmap, dfitem, dfbeing, dfplayer;
+     dfmap, dfitem, dfplayer;
 
 function SpritePartSetFill( aPart : TSpritePart ) : TSpritePartSet;
 begin
@@ -856,6 +857,7 @@ begin
     StatusGreen  : FLutTexture := (IO as TDoomGFXIO).Textures['lut_enviro'].GLTexture;
     StatusBlue   : FLutTexture := (IO as TDoomGFXIO).Textures['lut_stealth'].GLTexture;
     StatusInvert : FLutTexture := (IO as TDoomGFXIO).Textures['lut_iddqd'].GLTexture;
+    StatusMagenta: FLutTexture := (IO as TDoomGFXIO).Textures['lut_rage'].GLTexture;
     else
     begin
       if Setting_Glow
@@ -1018,7 +1020,8 @@ begin
           PushSpriteDoodad( iCoord, Cells[iTop].Sprite[0], 255 )
         else
         begin
-          PushSpriteDoodad( iCoord, GetSprite( iTop, Doom.Level.CStyle[iCoord] ) );
+          if not ( ( CF_CORPSE in Cells[iTop].Flags ) and ( Doom.Level.LightFlag[ iCoord, LFCORPSING ] ) ) then
+            PushSpriteDoodad( iCoord, GetSprite( iTop, Doom.Level.CStyle[iCoord] ) );
           iDeco := Doom.Level.Deco[iCoord];
           if iDeco <> 0 then
           begin
@@ -1053,9 +1056,9 @@ begin
       iBeing := Doom.Level.Being[iCoord];
       if (iBeing <> nil) and (iBeing.AnimCount = 0) then
         if Doom.Level.BeingVisible(iCoord, iBeing) then
-          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iBeing.Sprite ), VariableLight( iCoord, 30 ), iZ + DRL_Z_BEINGS )
+          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetBeingSprite( iBeing ), VariableLight( iCoord, 30 ), iZ + DRL_Z_BEINGS )
         else if Doom.Level.BeingExplored(iCoord, iBeing) then
-          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iBeing.Sprite ), 40, iZ + DRL_Z_BEINGS )
+          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetBeingSprite( iBeing ), 40, iZ + DRL_Z_BEINGS )
         else if Doom.Level.BeingIntuited(iCoord, iBeing) then
         begin
           with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
@@ -1102,6 +1105,20 @@ function TDoomSpriteMap.VariableLight( aWhere: TCoord2D; aBonus : ShortInt = 0 )
 begin
   if not Doom.Level.isVisible( aWhere ) then Exit( 70 ); //20
   Exit( Min( 100+aBonus+Doom.Level.Vision.getLight(aWhere)*20, 255 ) );
+end;
+
+function TDoomSpriteMap.GetBeingSprite( aBeing : TBeing ) : TSprite;
+begin
+  Assert( Assigned( aBeing ) );
+  Result := aBeing.Sprite;
+  if (aBeing.OverlayUntil > IO.Time) and (SF_PAINANIM in Result.Flags) then
+  begin
+    if SF_LARGE in Result.Flags then
+      Result.SpriteID[0] += DRL_COLS * 2 * Result.Frames
+    else
+      Result.SpriteID[0] += DRL_COLS * Result.Frames;
+  end
+  else Exit( GetSprite( Result ) );
 end;
 
 function TDoomSpriteMap.GetSprite( aSprite : TSprite; aTime : Integer = -1 ) : TSprite;

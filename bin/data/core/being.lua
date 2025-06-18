@@ -236,7 +236,9 @@ end
 function being:nuke( time )
 	player.nuketime = time or 1
 	if not cells[ level.map[ self.position ] ].flags[ CF_CRITICAL ] then
-		level.map[ self.position ] = 'nukecell'
+		if cells.nukecell.sprite > 0 then
+			level.map[ self.position ] = 'nukecell'
+		end
 	end
 end
 
@@ -319,7 +321,16 @@ function being:pick_item_to_mod( mod, filter )
 	return item, true
 end
 
-function being:apply_affect( id, max_duration )
+function being:apply_affect( id, max_duration, resist )
+	if resist and self.resist and self.resist[ resist ] then
+		local rvalue = self.resist[ resist ]
+		if rvalue > 0 then
+			max_duration = math.floor( max_duration * ( 1 - rvalue / 100 ) )
+		end
+		if max_duration <= 0 then
+			return false
+		end
+	end
 	local current = self:get_affect_time( id )
 	if current > 0 then
 		if current < max_duration then
@@ -328,6 +339,7 @@ function being:apply_affect( id, max_duration )
 	else
 		self:set_affect( id, max_duration )
 	end
+	return true
 end
 
 function being:full_reload( weapon )
@@ -356,7 +368,7 @@ function being:full_reload( weapon )
 			end
 			return false
 		end
-		self:reload( ammo, true )
+		self:reload( ammo, true, true )
 		ammo = nil
 	end
 	self:msg("You "..core.iif(pack,"quickly ","").."fully load the "..weapon.name..".", self:get_name( true, true ).." fully loads the "..weapon.name..".")

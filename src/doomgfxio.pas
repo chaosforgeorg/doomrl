@@ -29,6 +29,7 @@ type
     procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); override;
     procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); override;
     procedure addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer ); override;
+    procedure addKillAnimation( aDuration : DWord; aDelay : DWord; aBeing : TThing ); override;
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
     procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); override;
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
@@ -381,6 +382,14 @@ begin
   if Doom.State <> DSPlaying then Exit;
   FAnimations.addAnimation( TDoomAnimateItem.Create( aDuration, aDelay, aItem.UID, aValue ) );
 end;
+
+procedure TDoomGFXIO.addKillAnimation( aDuration : DWord; aDelay : DWord; aBeing : TThing );
+begin
+  if Doom.State <> DSPlaying then Exit;
+  if SF_PAINANIM in aBeing.Sprite.Flags then
+    FAnimations.addAnimation( TDoomAnimateKill.Create( aDuration, aDelay, aBeing.UID ) );
+end;
+
 
 procedure TDoomGFXIO.addMissileAnimation(aDuration: DWord; aDelay: DWord; aSource,
   aTarget: TCoord2D; aColor: Byte; aPic: Char; aDrawDelay: Word;

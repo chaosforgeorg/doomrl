@@ -324,7 +324,7 @@ end
 
 function level:is_corpse( c )
 	local cell = cells[ self.map[ c ] ]
-	return cell.id == "corpse" or cell.flags[ CF_CORPSE ]
+	return cell.flags[ CF_CORPSE ]
 end
 
 function level:push_feature( who, what, c, target, quiet )
@@ -380,7 +380,7 @@ end
 
 function level:drop_items( what )
 	for i in what:children("item") do
-		self:drop_item( i, what.position, true )
+		self:drop_item( i, what.position, true, true )
 	end
 end
 

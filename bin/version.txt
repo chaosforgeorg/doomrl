@@ -1,7 +1,24 @@
 0.9.9.9 BETA 8
 [mod] -- GH#264: resistances will only show up if non-zero
-[mod] -- GH#222: Central Processing is now available
-[mod] -- GH#222: Toxin Refinery is now available
+[mod] -- GH#222: new L4 special level - Central Processing [brisbang]
+[mod] -- GH#222: new L4 special level - Toxin Refinery [brisbang]
+[mod] -- GH#000: added damage type to weapon descriptions
+[mod] -- GH#000: DRL engine is now DPI aware which should prevent resolution issues
+[mod] -- GH#114: improved bridge placement 
+[mod] -- GH#000: improved ray shot effect
+[mod] -- GH#267: captains now have 40 ammo [brisbang]
+[mod] -- GH#267: nightmare viles explosion size 2 [brisbang]
+[mod] -- GH#269: Frag shotgun is now a 6d3, 0.5s shotty with level 10 and weight 3 [brisbang]
+[fix] -- GH#272: full reload will take time again
+[fix] -- GH#271: fixed combat shotgun chamber empty not clearing on 0 ammo load
+[fix] -- GH#275: fix bulletdance pick crash
+[fix] -- GH#000: fixed armor sprite when no weapon present
+[fix] -- GH#000: fixed trait data not wiped between runs
+[fix] -- GH#000: cleaned up old color formatting errors
+[fix] -- GH#000: fix removal of corrupted/old save files
+[fix] -- GH#000: beings idle-animate while moving
+[fix] -- GH#000: fixed locked vaults - will appear again
+[fix] -- GH#256: fixed on pickup shenanigans (no longer "no chainsaw" on pickup) [brisbang]
 
 0.9.9.9 BETA 7
 [new] -- GH#252: staying too long on a level will enrage the enemies
