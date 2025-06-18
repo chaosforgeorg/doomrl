@@ -823,7 +823,7 @@ function drl.OnTick( time )
 				if not b:is_player() then
 					b.flags[ BF_HUNTING ] = true
 					b.expvalue = math.ceil( b.expvalue * 0.5 )
-					b.speed    = math.ceil( b.speed * 1.5 )
+					b.speed    = math.min( math.ceil( b.speed * 1.5 ), 250 )
 					b.accuracy = b.accuracy + 4
 				end
 			end
@@ -832,7 +832,7 @@ function drl.OnTick( time )
 			for b in level:beings() do
 				if not b:is_player() then
 					b.expvalue = 0
-					b.speed    = math.ceil( b.speed * 1.5 )
+					b.speed    = math.min( math.ceil( b.speed * 1.5 ), 250 )
 					b.accuracy = b.accuracy + 4
 				end
 			end
