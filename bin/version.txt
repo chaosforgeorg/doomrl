@@ -1,5 +1,6 @@
 0.9.9.9 BETA 8
 [mod] -- GH#264: resistances will only show up if non-zero
+[mod] -- GH#222: Central Processing is now available
 [mod] -- GH#000: added damage type to weapon descriptions
 [mod] -- GH#000: DRL engine is now DPI aware which should prevent resolution issues
 [mod] -- GH#114: improved bridge placement 

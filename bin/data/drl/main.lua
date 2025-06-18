@@ -29,6 +29,7 @@ require( "drl:levels/phoboslab" )
 require( "drl:levels/fortress" )
 require( "drl:levels/intro" )
 require( "drl:levels/chained" )
+require( "drl:levels/centralprocessing")
 require( "drl:levels/carnage" )
 require( "drl:levels/milibase" )
 require( "drl:levels/deimoslab" )
@@ -570,6 +571,7 @@ function drl.OnCreateEpisode()
 	player.episode = {}
 	local paired = {
 		{"hells_arena"}, -- 2
+		{"central_processing"}, -- 4
 		{"the_chained_court"}, -- 5
 		{"military_base","phobos_lab"}, -- 7
 		{"hells_armory", "deimos_lab"}, -- 9/1
