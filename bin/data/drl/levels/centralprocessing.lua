@@ -136,35 +136,35 @@ register_level "central_processing"
 		level:set_generator_style( 1 )
 		level:fill( "wall" )
 
-		level.data.trap11   = area(5,15,5,16)
-		level.data.trap12   = area(11,14,12,14)
-		level.data.trap13   = area(7,18,8,18)
-		level.data.trap14   = area(13,18,14,18)
-		level.data.door1    = area(8,8,9,8)
-		level.data.door1_coord = coord(8,8)
-		level.data.trap2    = area(9,3,9,4)
-		level.data.trap21   = area(6,3,6,4)
-		level.data.trapSA   = area(13,3,13,3)
-		level.data.trapSA1  = area(14,3,14,3)
-		level.data.trapSB   = area(4,3,4,3)
-		level.data.trapSB1  = area(4,12,4,12)
-		level.data.trapSB2  = area(3,3,3,3)
-		level.data.door2    = area(15,10,15,10)
-		level.data.door2_coord = coord(15,10)
-		level.data.trap31   = area(32,13,32,13)
-		level.data.trap32   = area(34,11,34,11)
-		level.data.door3    = area(29,10,29,10)
-		level.data.door3_coord = coord(29,10)
-		level.data.wall22   = area(36,19,36,19)
-		level.data.door4    = area(53,5,53,5)
-		level.data.door4_coord = coord(53,5)
-		level.data.door5    = area(72,9,72,9)
-		level.data.door5_coord = coord(72,9)
-		level.data.platform = area(57,17,57,17)
+		level.data.trap11         = area(5,15,5,16)
+		level.data.trap12         = area(11,14,12,14)
+		level.data.trap13         = area(7,18,8,18)
+		level.data.trap14         = area(13,18,14,18)
+		level.data.door1          = area(8,8,9,8)
+		level.data.door1_coord    = coord(8,8)
+		level.data.trap2          = area(9,3,9,4)
+		level.data.trap21         = area(6,3,6,4)
+		level.data.trapSA         = area(13,3,13,3)
+		level.data.trapSA1        = area(14,3,14,3)
+		level.data.trapSB         = area(4,3,4,3)
+		level.data.trapSB1        = area(4,12,4,12)
+		level.data.trapSB2        = area(3,3,3,3)
+		level.data.door2          = area(15,10,15,10)
+		level.data.door2_coord    = coord(15,10)
+		level.data.trap31         = area(32,13,32,13)
+		level.data.trap32         = area(34,11,34,11)
+		level.data.door3          = area(29,10,29,10)
+		level.data.door3_coord    = coord(29,10)
+		level.data.wall22         = area(36,19,36,19)
+		level.data.door4          = area(53,5,53,5)
+		level.data.door4_coord    = coord(53,5)
+		level.data.door5          = area(72,9,72,9)
+		level.data.door5_coord    = coord(72,9)
+		level.data.platform       = area(57,17,57,17)
 		level.data.platform_coord = coord(57,17)
-		level.data.trapSC   = area(57,16,57,16)
-		level.data.trapSC1  = area(57,15,57,15)
-		level.data.platform_up = false
+		level.data.trapSC         = area(57,16,57,16)
+		level.data.trapSC1        = area(57,15,57,15)
+		level.data.platform_up    = false
 
 		local translation = {
 			['.'] = "floor",
@@ -221,7 +221,6 @@ register_level "central_processing"
 		generator.place_tile( translation, map, 2, 2 )
 
 		generator.set_permanence( area.FULL )
-		level.data.drop_time = 0
 		level.data.kill_all  = false
 		level:player(5,12)
 	end,
@@ -245,6 +244,8 @@ register_level "central_processing"
 			elseif level.data.platform_up and not platform_up then
 				level:transmute( "floor", "wall", level.data.platform)
 				level:play_sound( "door.close", level.data.platform_coord )
+				--Actually, this 'wall' is a platform, so there is no need to kill the monster. However it will look unusual sitting atop a wall.
+				--If killing it is the preferred option, refer to toxinrefinery's code.
 			end
 			level.data.platform_up = platform_up
 		end
