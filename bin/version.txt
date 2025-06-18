@@ -22,6 +22,7 @@
 [fix] -- GH#000: fixed locked vaults - will appear again
 [fix] -- GH#256: fixed on pickup shenanigans (no longer "no chainsaw" on pickup) [brisbang]
 [fix] -- GH#278: fixed a crash when fast enemies were double enraged (speed overflow)
+[fix] -- GH#277: fixed HUNTING behaviour for AI's that didn't have them yet
 
 0.9.9.9 BETA 7
 [new] -- GH#252: staying too long on a level will enrage the enemies

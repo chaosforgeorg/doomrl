@@ -137,6 +137,13 @@ function aitk.flock_idle( self )
     if aitk.flock_scan( self ) then
         return "hunt"
     end
+
+    if self.flags[ BF_HUNTING ] then
+        self.target  = player.uid
+        self.boredom = 0
+        return "hunt"
+    end
+
     if math.random(30) == 1 then
         self:play_sound( "act" )
     end
@@ -308,6 +315,11 @@ end
 function aitk.basic_idle( self )
     if aitk.basic_scan( self ) then
         self.move_to = false
+        return "hunt"
+    end
+    if self.flags[ BF_HUNTING ] then
+        self.target  = player.uid
+        self.boredom = 0
         return "hunt"
     end
 	if math.random(30) == 1 then
@@ -604,6 +616,13 @@ function aitk.charge_idle( self )
         self.move_to        = mt
         return "charge"
     end
+
+    if self.flags[ BF_HUNTING ] then
+        self.target  = player.uid
+        self.move_to = player.position
+        return "pursue"
+    end
+
 	if math.random(30) == 1 then
 		self:play_sound( "act" )
 	end
