@@ -402,7 +402,11 @@ begin
     iBlock := false;
     repeat
       iTargetLine.Next;
-      if not iLevel.isPassable( iTargetLine.GetC ) then iBlock := true;
+      if (not iLevel.isProperCoord( iTargetLine.GetC ) ) or (not iLevel.isPassable( iTargetLine.GetC ) ) then
+      begin
+        iBlock := true;
+        Break;
+      end;
     until iTargetLine.Done;
   end
   else iBlock := False;
