@@ -937,7 +937,8 @@ var isOnGround : Boolean;
     isPack     : Boolean;
     isEquip    : Boolean;
     isPrepared : Boolean;
-    isUsed     : Boolean;
+    isUse      : Boolean;
+    isUsedUp   : Boolean;
     isFailed   : Boolean;
     iSlot      : TEqSlot;
     iUID       : TUID;
@@ -952,6 +953,7 @@ begin
   isLever := aItem.isLever;
   isPack  := aItem.isPack;
   isEquip := aItem.isWearable;
+  isUse   := not isEquip;
   iUID    := aItem.uid;
   if isOnGround then
     begin
@@ -975,37 +977,39 @@ begin
 			end
 		  else
 			begin
-  			  isEquip := False;
-			  isFailed := True;
 			  Emote( 'You must unequip first!', '', [ aItem.GetName(false) ] );
+			  isFailed := True;
 			end;
 		end;
 	end
   else
      Emote( 'You use %s.', 'uses %s.', [ aItem.GetName(false) ] );
+  if isFailed then 
+    Exit( False );
 
-  if not isFailed then
-    if isEquip
-      then aItem.PlaySound( 'pickup', FPosition )
-      else aItem.PlaySound( 'use', FPosition );
+  if isEquip then
+  begin
+    aItem.PlaySound( 'pickup', FPosition );
+    Inv.setSlot( iSlot, aItem );
+  end;
+  if isUse then
+    aItem.PlaySound( 'use', FPosition );
   if isEquip or isPack then
     begin
       CallHook( Hook_OnPickUpItem, [aItem] );
-	  aItem.CallHook( Hook_OnPickup,[Self] )
+      aItem.CallHook( Hook_OnPickup,[Self] )
     end;
-  if isEquip then
-    Inv.setSlot( iSlot, aItem )
-  else
-    isUsed := aItem.CallHookCheck( Hook_OnUse,[Self] );
-	 
-  if ((UIDs.Get( iUID ) <> nil) and isUsed and (isLever or isPack)) then FreeAndNil( aItem );
+  if isUse then
+  begin
+    isUsedUp := aItem.CallHookCheck( Hook_OnUse,[Self] );
+    if isUsedUp and ((UIDs.Get( iUID ) <> nil)  and (isLever or isPack)) then FreeAndNil( aItem );
+  end;
   
-  if not isFailed then
-    if (BF_INSTAUSE in FFlags) and (not isEquip) then
-      Dec(FSpeedCount,100)
-    else
-      Dec(FSpeedCount,1000);
-  Exit( not isFailed );
+  if (BF_INSTAUSE in FFlags) and isUse then
+    Dec(FSpeedCount,100)
+  else
+    Dec(FSpeedCount,1000);
+  Exit( True );
 end;
 
 function TBeing.ActionUnLoad ( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
