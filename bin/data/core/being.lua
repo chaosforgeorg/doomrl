@@ -236,7 +236,9 @@ end
 function being:nuke( time )
 	player.nuketime = time or 1
 	if not cells[ level.map[ self.position ] ].flags[ CF_CRITICAL ] then
-		level.map[ self.position ] = 'nukecell'
+		if cells.nukecell.sprite > 0 then
+			level.map[ self.position ] = 'nukecell'
+		end
 	end
 end
 
