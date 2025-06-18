@@ -4,6 +4,9 @@
 [mod] -- GH#000: DRL engine is now DPI aware which should prevent resolution issues
 [mod] -- GH#114: improved bridge placement 
 [mod] -- GH#000: improved ray shot effect
+[mod] -- GH#267: captains now have 40 ammo [brisbang]
+[mod] -- GH#267: nightmare viles explosion size 2 [brisbang]
+[mod] -- GH#269: Frag shotgun is now a 6d3, 0.5s shotty with level 10 and weight 3 [brisbang]
 [fix] -- GH#272: full reload will take time again
 [fix] -- GH#271: fixed combat shotgun chamber empty not clearing on 0 ammo load
 [fix] -- GH#275: fix bulletdance pick crash
