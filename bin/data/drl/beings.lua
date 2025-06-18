@@ -79,7 +79,7 @@ function drl.register_beings()
 
 		OnCreate = function (self)
 			self.eq.weapon = "chaingun"
-			self.inv:add( "ammo", { ammo = 100 } )
+			self.inv:add( "ammo", { ammo = 40 } )
 		end
 	}
 
@@ -1137,7 +1137,7 @@ function drl.register_beings()
 		weapon = {
 			damage     = "20d1",
 			damagetype = DAMAGE_PLASMA,
-			radius     = 1,
+			radius     = 2,
 			flags      = { IF_AUTOHIT },
 			missile = {
 				sound_id   = "arch",
