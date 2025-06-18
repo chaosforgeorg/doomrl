@@ -46,12 +46,12 @@ type TPlayer = class(TBeing)
   procedure LevelEnter;
   procedure doUpgradeTrait;
   procedure RegisterKill( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem; aUnique : Boolean );
-  procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); override;
+  procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem; aDelay : Integer ); override;
   procedure LevelUp;
   procedure AddExp( aAmount : LongInt );
   procedure WriteMemorial;
   destructor Destroy; override;
-  procedure Kill( BloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem ); override;
+  procedure Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem; aDelay : Integer ); override;
   procedure AddHistory( const aHistory : Ansistring );
   class procedure RegisterLuaAPI();
   procedure UpdateVisual;
@@ -102,12 +102,13 @@ var Player     : TPlayer;
 implementation
 
 uses math, vuid, variants, vioevent, vgenerics,
-     vnode, vcolor, vdebug, vluasystem, vtig,
+     vnode, vcolor, vdebug, vluasystem, vluastate, vtig,
      dfmap, dflevel,
      doomhooks, doomio, doomspritemap, doombase,
      doomlua, doominventory, doomplayerview, doomhudviews;
 
 constructor TPlayer.Create;
+var iState : TLuaState;
 begin
   inherited Create('soldier');
 
@@ -130,8 +131,10 @@ begin
   FExpFactor := 1.0;
 
   Initialize;
-  FillChar( FQuickSlots, SizeOf(FQuickSlots), 0 );
+  iState.Init( doombase.Lua.Raw );
+  iState.ClearLuaProperties( Self );
 
+  FillChar( FQuickSlots, SizeOf(FQuickSlots), 0 );
   CallHook( Hook_OnCreate, [] );
 end;
 
@@ -258,7 +261,7 @@ begin
   while FExp >= ExpTable[ FExpLevel + 1 ] do LevelUp;
 end;
 
-procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageType: TDamageType; aSource : TItem);
+procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageType: TDamageType; aSource : TItem; aDelay : Integer );
 begin
   if aDamage < 0 then Exit;
   if BF_INV in FFlags then Exit;
@@ -268,7 +271,7 @@ begin
     IO.Blink(Red,100);
 
   if aDamage > 0 then FKills.DamageTaken;
-  inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource );
+  inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource, aDelay );
 end;
 
 procedure TPlayer.RegisterKill ( const aKilledID : AnsiString; aKiller : TBeing; aWeapon : TItem; aUnique : Boolean ) ;
@@ -444,7 +447,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TPlayer.Kill( BloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem );
+procedure TPlayer.Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem; aDelay : Integer );
 var iLevel : TLevel;
 begin
   iLevel := TLevel(Parent);
@@ -469,7 +472,9 @@ begin
      then iLevel.playSound( 'gib',FPosition )
      else PlaySound( 'die' );
 
+  IO.addKillAnimation( 1000, aDelay, Self );
   IO.WaitForAnimation;
+  FAnimCount := 1;
 
   begin
     IO.Msg('You die!...');
@@ -565,9 +570,11 @@ begin
 end;
 
 procedure TPlayer.UpdateVisual;
-var Spr : LongInt;
-    Gray : TColor;
-    iSpMod : Integer;
+var Spr       : LongInt;
+    Gray      : TColor;
+    iWeapon   : TItem;
+    iSpMod    : Integer;
+    iPDSprite : Integer;
 begin
   Color  := LightGray;
   iSpMod := 0;
@@ -584,9 +591,13 @@ begin
     FSprite.Color     := Inv.Slot[ efTorso ].PCosColor;
     iSpMod            := Inv.Slot[ efTorso ].SpriteMod;
   end;
-  if Inv.Slot[ efWeapon ] <> nil then
+  iWeapon := Inv.Slot[ efWeapon ];
+  if iWeapon <> nil then
   begin
-    FSprite.SpriteID[0] := LuaSystem.Get( ['items', Inv.Slot[ efWeapon ].ID, 'psprite'], 0 );
+    iPDSprite := LuaSystem.Get( ['items', iWeapon.ID, 'pdsprite'], 0 );
+    if ( iPDSprite <> 0 ) and ( canDualWield )
+      then FSprite.SpriteID[0] := iPDSprite
+      else FSprite.SpriteID[0] := LuaSystem.Get( ['items', iWeapon.ID, 'psprite'], 0 );
     if FSprite.SpriteID[0] <> 0 then
     begin
       FSprite.SpriteID[0] += iSpMod;
@@ -600,7 +611,7 @@ begin
       if Inv.Slot[ efWeapon ].isMelee then FSprite.SpriteID[0] := 2 else FSprite.SpriteID[0] := 11;
   end
   else
-    FSprite.SpriteID[0] := LuaSystem.Get( ['beings', ID, 'sprite'], 0 );
+    FSprite.SpriteID[0] := LuaSystem.Get( ['beings', ID, 'sprite'], 0 ) + iSpMod;
 end;
 
 function TPlayer.ASCIIMoreCode : AnsiString;

@@ -14,7 +14,7 @@ end;
 PHelpRecord = ^THelpRecord;
 
 type THelp = class(TVObject)
-  RegHelps : array[1..MaxHelpFiles] of THelpRecord;
+    RegHelps : array[1..MaxHelpFiles] of THelpRecord;
     HNum     : byte;
     constructor Create;
     procedure StreamLoader(Stream : TStream; Name : Ansistring; Size : DWord);

@@ -1,8 +1,6 @@
 generator.styles = {}
 generator.cell_sets = {}
 generator.cell_lists = {}
-generator.room_list = {}
-generator.room_meta = {}
 
 function generator.cell_set( list )
 	local s = {}
@@ -73,7 +71,7 @@ function generator.scatter_cross_item(scatter_area,good,item_id,count)
 	local function drop( id )
 		local attempts = 10 
 		repeat
-			local c = level:random_empty_coord( { EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, good, scatter_area )
+			local c = level:random_empty_coord( { EF_NOITEMS, EF_NOBEINGS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID }, good, scatter_area )
 			if c then
 				if test( coord( c.x-1, c.y ) ) and test( coord( c.x+1, c.y ) ) and
 					test( coord( c.x, c.y-1 ) ) and test( coord( c.x, c.y+1 ) ) then
@@ -114,6 +112,17 @@ function generator.transmute_style( from, to, fstyle, tstyle, ar )
 	end
 end
 
+function generator.transmute_to_object( from, object, ar, floor )
+	local a     = ar or area.FULL
+	local floor = floor or generator.styles[ level.style ].floor
+	if type(from) == "string" then from = cells[from].nid end
+	for c in a() do 
+		if level.map[ c ] == from then
+			level.map[ c ] = floor
+			level:drop_item_ext( object, c )
+		end
+	end
+end
 
 function generator.scatter_blood(scatter_area,good,count)
 	if type(good) == "string" then good = cells[good].nid end
@@ -428,74 +437,87 @@ function generator.read_rooms()
 	return room_list
 end
 
-function generator.add_room( room, class )
+function generator.add_room( list, room )
 	local r = room:clone()
 	local rm = {}
-	rm.class = class or "closed"
 	rm.used  = false
 	rm.dims  = area.dim( r )
 	rm.size  = rm.dims.x * rm.dims.y
-	table.insert( generator.room_list, r )
-	generator.room_meta[ r ] = rm
+	rm.area  = r
+	table.insert( list, rm )
 end
 
-function generator.add_rooms()
+function generator.create_room_list( list )
 	core.log("generator.add_rooms()")
 	local room_list = generator.read_rooms()
+	local list = list or {}
 	for _,room in ipairs( room_list ) do
-		generator.add_room( room )	
+		generator.add_room( list, room )	
 	end
+	return list
 end
 
-function generator.get_room( min_size, max_x, max_y, max_area, class )
+function generator.get_room( room_list, min_size, max_x, max_y, max_area, class )
 	core.log("generator.get_room()")
-	local cl = class or "any"
+	local class = class or "any"
 	local marea = max_area or 10000
 	local choice_list = {}
-	for _,r in ipairs( generator.room_list ) do
-		local rm = generator.room_meta[r]
-		if not rm.used and ( rm.class == "any" or class == "any" or rm.class == cl ) then
+	for _,rm in ipairs( room_list ) do
+		local r = rm.area
+		if not rm.used then
 			if rm.dims.x >= min_size and rm.dims.y >= min_size and
 				rm.dims.x <= max_x and rm.dims.y <= max_y and rm.size <= marea then
-				table.insert( choice_list, r )
+				table.insert( choice_list, rm )
 			end
 		end
 	end
 	return table.random_pick( choice_list )
 end
 
-function generator.restore_walls( wall_cell, fluid_to_perm )
+function generator.restore_walls( wall_cell, skip_cells )
 	core.log("generator.restore_walls("..wall_cell..")")
-	if fluid_to_perm then
+	if skip_cells then
 		for c in area.edges( area.FULL ) do
-			local sub = fluid_to_perm[ cells[level:get_cell( c )].id ] or wall_cell
-			level:set_cell( c, sub )
+			if not skip_cells[ cells[level:get_cell( c )].id ] then
+				level:set_cell( c, wall_cell )
+			end
 		end
 	else
 		level:fill_edges( wall_cell )
 	end
 end
 
-function generator.handle_rooms( count, no_monsters, restore_walls )
+function generator.handle_rooms( room_list, settings )
 	core.log("generator.handle_rooms()")
-	if count < 1 or #(generator.room_list) == 0 then return end
+	local settings   = settings or {}
+	local count      = settings.count or 1
+	if count < 1 or #(room_list) == 0 then return end
+	local reqs       = settings.reqs
+	local weights    = settings.weights or {}
 	local choice = weight_table.new()
 	for _,r in ipairs(rooms) do
-		if not no_monsters or r.no_monsters then choice:add( r ) end
-	end
-	if choice:size() == 0 then return end
-
-	for i = 1,count do
-		local room      = choice:roll()
-		local room_area = generator.get_room( room.min_size, room.max_size_x, room.max_size_y, room.max_area, room.class )
-		if room_area then
-			core.log("generator.handle_rooms() > setting up room : "..room.id)
-			if room.setup( room_area ) then
-				generator.room_meta[room_area].used = true
+		if core.tag_reqs_met( r, reqs ) then
+			local weight = core.proto_weight( r, weights )
+			if weight > 0 then
+				choice:add( r, weight )
 			end
 		end
 	end
-	generator.restore_walls( generator.styles[ level.style ].wall, restore_walls )
+	if choice:size() == 0 then 
+		core.log("generator.handle_rooms() > no rooms available for generation")
+		return
+	end
+
+	for i = 1,count do
+		local room      = choice:roll()
+		local room_meta = generator.get_room( room_list, room.min_size, room.max_size_x, room.max_size_y, room.max_area )
+		if room_meta then
+			core.log("generator.handle_rooms() > setting up room : "..room.id)
+			if room.setup( room_meta.area, room_meta, room_list ) then
+				room_meta.used = true
+			end
+		end
+	end
 end
 
 
@@ -540,9 +562,6 @@ function generator.reset()
 	generator.OnEnterLevel = nil
 	generator.OnExit       = nil
 	generator.OnTick       = nil
-
-	generator.room_list = {}
-	generator.room_meta = {}
 
 	level:set_generator_style( level.style )
 	level:fill( generator.styles[ level.style ].floor )
@@ -659,7 +678,6 @@ function generator.generate_tiled_level( settings )
 	end
 
 	generator.restore_walls( wall_cell )
-	generator.add_rooms()
 end
 
 function generator.generate_archi_level( settings )
@@ -693,10 +711,6 @@ function generator.generate_archi_level( settings )
 		["+"] = generator.styles[ level.style ].door,
 	}
 
-	if not data.no_fill then
-		level:fill( wall_cell )
-	end
-
 	local blocks = data.blocks
 	local bsize  = data.size
 	local shift  = data.shift 
@@ -709,6 +723,15 @@ function generator.generate_archi_level( settings )
 		shift.y = math.max( 1, math.floor( shift.y / 2 ) )
 	end
 	core.log( "blocks: "..blocks.x.."x"..blocks.y.." size: "..bsize.x.."x"..bsize.y.." shift: "..shift.x..","..shift.y )
+	local result = area( shift, shift + blocks * (bsize - coord.UNIT) )
+
+	if not data.no_fill and not data.prefill then
+		level:fill( wall_cell )
+	end
+	if data.prefill then
+		level:fill( data.prefill, result )
+	end
+
 	if data.trans then
 		for k,v in pairs( data.trans ) do translation[k] = v end
 	end
@@ -747,13 +770,23 @@ function generator.generate_archi_level( settings )
 		end
 	end
 
-	if not data.no_fill then
+	if data.restore_edges then
+		for c in area.edges( result ) do 
+            level:set_cell( c, data.restore_edges )
+        end
+	end
+
+	if data.clear_dead_ends then
+		generator.clear_dead_ends( data.clear_dead_ends )
+	end
+
+	if not data.no_fill and ( not data.restore_edges )  then
 		generator.restore_walls( wall_cell )
 	end
 	if not data.no_fluids then
 		generator.generate_fluids(area(shift.x+1, shift.y+1, MAXX - shift.x-1, MAXY - shift.y-1))
 	end
-	return area( shift, shift + blocks * (bsize - coord.UNIT) )
+	return result
 end
 
 function generator.destroy_cell( c )
@@ -781,21 +814,22 @@ function generator.wallin_cell( c, cell_id )
 	return true
 end
 
-function generator.clear_dead_ends( iterations )
+function generator.clear_dead_ends( iterations, ar )
 	iterations = iterations or 1
+	local ar      = ar or area.FULL_SHRINKED
 	local applied = false
 	local floor   = generator.styles[ level.style ].floor
 	local door    = generator.styles[ level.style ].door
 	local wall    = generator.styles[ level.style ].wall
 	repeat
 		applied = false
-		for c in level:each( floor, area.FULL_SHRINKED ) do
+		for c in level:each( floor, ar ) do
 			if level:cross_around( c, wall ) >= 3 then
 				applied = true
 				level:set_cell( c, generator.styles[ level.style ].wall )
 			end
 		end
-		for c in level:each( door, area.FULL_SHRINKED ) do
+		for c in level:each( door, ar ) do
 			if level:cross_around( c, wall ) >= 3 then
 				applied = true
 				level:set_cell( c, generator.styles[ level.style ].wall )
@@ -804,9 +838,251 @@ function generator.clear_dead_ends( iterations )
 		iterations = iterations - 1
 	until iterations == 0 or (not applied)
 
-	for c in level:each( door, area.FULL_SHRINKED ) do
+	for c in level:each( door, ar ) do
 		if level:cross_around( c, wall ) < 2 then
 			level:set_cell( c, floor )
+		end
+	end
+end
+
+function generator.remove_needless_doors()
+	core.log("generator.remove_needless_doors()")
+	local floor = generator.styles[ level.style ].floor
+	local wall  = generator.styles[ level.style ].wall
+	local door  = generator.styles[ level.style ].door
+	for c in level:each( door, area.FULL_SHRINKED ) do
+		local wcaround = level:cross_around( c, wall )
+		if wcaround > 2 then
+			level:set_cell( c, wall )
+		elseif wcaround == 2 then
+			if level:around( c, wall ) > 5 then 
+				level:set_cell( c, floor )
+			end
+		end
+	end
+end
+
+function generator.mirror_horizontally( y_value )
+	core.log("generator.mirror_horizontally()")
+	for x = 1, MAXX do
+		for y = 1, y_value-1 do
+			local c1 = coord( x, y )
+			local c2 = coord( x, 2 * y_value - y )
+			level:set_cell( c2, level:get_cell( c1 ) )
+			local item = level:get_item( c1 )
+			if item then
+				level:drop_item( item.id, c2 )
+			end
+		end
+	end
+end
+
+function generator.horiz_river( settings )
+	assert( settings )
+	assert( settings.cell )
+	local cell     = settings.cell 
+	local rwidth   = settings.width or { 2, 4 }
+	local bridge   = settings.bridge
+
+	local bridges = {}
+	local dbridges = {}
+	local function bridge_ok( x, y )
+		if not bridge then return false end
+		local cell = level:get_cell( x, y )
+		return generator.cell_sets[ CELLSET_FLOORS ][cell] or generator.cell_sets[ CELLSET_DOORS ][cell]
+	end
+
+	local width = core.resolve_range( rwidth )
+	local floor = generator.styles[ level.style ].floor
+	local y     = 10 + math.random(2*width) - width
+	local fill  = cell
+	for x = 1,MAXX do
+		for w = 1,width do
+			level:set_cell( x, w + y, fill )
+		end
+		if bridge and bridge_ok( x, y ) and bridge_ok( x, y + width + 1 ) then
+			table.insert( bridges, coord( x, y ) )
+		end
+		if math.random(6) == 1 then 
+			y = math.clamp( y + math.random(3) - 2, 3, MAXY - width - 2 )
+		end
+	end
+
+	if bridge and #bridges > 0 then
+		local dbridges = {}
+		for i,c in ipairs( bridges ) do
+			if bridges[i+1] and c.x == bridges[i+1].x-1 then
+				table.insert( dbridges, { c, bridges[i+1] } )
+			end
+		end
+
+		local count  = 0
+		local dcount = 0
+		if #dbridges == 0 or math.random(3) == 1 then
+			count = math.min( #bridges, 3+math.random(3) )
+		else
+			dcount = 1 + math.random(2)
+		end
+
+		while count > 0 and #bridges > 0 do
+			count = count - 1
+			local c = table.random_remove( bridges )
+			for w = 1,width do
+				level:set_cell( coord( c.x, c.y + w ), bridge )
+			end
+		end
+
+		while dcount > 0 and #dbridges > 0 do
+			dcount = dcount - 1
+			local cc = table.random_remove( dbridges )
+			for w = 1,width do
+				level:set_cell( coord( cc[1].x, cc[1].y + w ), bridge )
+				level:set_cell( coord( cc[2].x, cc[2].y + w ), bridge )
+			end
+			if cc[1].x < 4 or cc[2].x > MAXX - 4 then
+				dcount = dcount + 1
+			end
+		end
+	end
+
+end
+
+function generator.vert_river( settings )
+	assert( settings )
+	assert( settings.cell )
+	local cell     = settings.cell 
+	local rwidth   = settings.width or { 2, 4 }
+	local position = settings.position
+	local bridge   = settings.bridge
+	local brange   = settings.bridge_range
+	local floor = generator.styles[ level.style ].floor
+
+	local function bridge_ok( x, y )
+		if not bridge then return false end
+		if brange and type(brange) == "table" then
+			if not (y >= brange[1] and y <= brange[2]) then return false end
+		end
+		local cell = level:get_cell( x, y )
+		return generator.cell_sets[ CELLSET_FLOORS ][cell] or generator.cell_sets[ CELLSET_DOORS ][cell]
+	end
+
+	local function execute( pos )
+		local bridges = {}
+
+		local pos   = pos or ( 18 + math.random(40) )
+		local width = core.resolve_range( rwidth )
+		local by    = 100
+		local fill = cell
+		local x    = math.clamp( pos, 3, MAXX - width - 3 )
+		local function iteration(y)
+			for w = 1,width do
+				level:set_cell( coord( w + x, y ), fill )
+			end
+			if bridge and bridge_ok( x, y ) and bridge_ok( width+x+1, y ) then
+				table.insert( bridges, coord( x, y ) )
+			end
+			if math.random(3) == 1 then 
+				x = math.clamp( x + math.random(3) - 2, 3, MAXX - width - 3 )
+			end
+		end
+		for y = 1, MAXY do
+			iteration(y)
+		end
+
+		if bridge and #bridges > 0 then
+			local dbridges = {}
+			for i,c in ipairs( bridges ) do
+				if bridges[i+1] and c.y == bridges[i+1].y-1 then
+					table.insert( dbridges, { c, bridges[i+1] } )
+				end
+			end
+
+			local count  = 0
+			local dcount = 0
+			if #dbridges == 0 or math.random(3) == 1 then
+				count = math.min( #bridges, 2 )
+			else
+				dcount = 1
+			end
+
+			while count > 0 and #bridges > 0 do
+				count = count - 1
+				local c = table.random_remove( bridges )
+				for w = 1,width do
+					level:set_cell( coord( c.x + w, c.y ), bridge )
+				end
+			end
+
+			while dcount > 0 and #dbridges > 0 do
+				dcount = dcount - 1
+				local cc = table.random_remove( dbridges )
+				for w = 1,width do
+					level:set_cell( coord( cc[1].x + w, cc[1].y ), bridge )
+					level:set_cell( coord( cc[2].x + w, cc[2].y ), bridge )
+				end
+				if cc[1].y < 4 or cc[2].y > MAXY - 4 then
+					dcount = dcount + 1
+				end
+			end
+		end
+	end
+
+	if type(position) == "table" then
+		for _,p in ipairs(position) do
+			execute(p)
+		end
+	else
+		execute(position)
+	end
+end
+
+function generator.generate_rivers( settings )
+	assert( settings )
+	assert( settings.cell )
+	local cell          = settings.cell 
+	local bridge        = settings.bridge
+	local allow_horiz   = not ( settings.vertical_only or false )
+	local allow_more    = not ( settings.no_extra      or false )
+	local destroy_items = not ( settings.no_destroy_items or false )
+
+	if allow_horiz and math.random(4) == 1 then
+		generator.horiz_river{ cell = cell, bridge = bridge }
+	else
+		local rsettings = {
+			cell         = cell,
+			width        = {3,5},
+			bridge       = bridge,
+			bridge_range = settings.vert_bridge,		  
+		}
+
+		if allow_more and math.random(3) == 1 then
+			if math.random(4) == 1 then
+				rsettings.width = {2,4}
+				rsettings.position = {
+					8  + math.random(20), 
+					32 + math.random(16),
+					50 + math.random(20)
+				}
+			else
+				rsettings.position = { 
+					8  + math.random(22), 
+					48 + math.random(22),
+				}	
+			end
+		end
+		generator.vert_river( rsettings )
+	end
+
+	if destroy_items then
+		for c in level:each( cell ) do
+			local item = level:get_item(c)
+			if item then item:destroy() end
+		end
+		if bridge then
+			for c in level:each( bridge ) do
+				local item = level:get_item(c)
+				if item then item:destroy() end
+			end
 		end
 	end
 end

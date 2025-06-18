@@ -9,7 +9,7 @@ register_level "the_lava_pits"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		level:fill( "plava" )
+		level:fill( "lava" )
 
 		local lavapits_armor = {
 			level      = 25,

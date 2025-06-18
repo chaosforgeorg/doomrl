@@ -34,7 +34,7 @@ TItem  = class( TThing )
     function    GetProtection : Byte;
     function    GetResistance( const aResistance : AnsiString ) : Integer;
     function    Description : Ansistring;
-    function    DescriptionBox( aNewFormat : Boolean = False ) : Ansistring;
+    function    DescriptionBox : Ansistring;
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
     function    eqSlot : TEqSlot;
@@ -377,7 +377,7 @@ begin
   end;
 end;
 
-function TItem.DescriptionBox( aNewFormat : Boolean = False ): Ansistring;
+function TItem.DescriptionBox: Ansistring;
   function Iff(expr : Boolean; str : Ansistring) : Ansistring;
   begin
     if expr then exit(str) else exit('');
@@ -403,71 +403,36 @@ function TItem.DescriptionBox( aNewFormat : Boolean = False ): Ansistring;
     end;
   end;
 begin
-  if aNewFormat then
-  begin
-    DescriptionBox := '';
-    case FProps.IType of
-      ITEMTYPE_ARMOR, ITEMTYPE_BOOTS : DescriptionBox :=
-        'Durability  : {!'+IntToStr(FProps.MaxDurability)+'}'#10+
-        'Move speed  : {!'+Percent(FProps.MoveMod)+'}'#10+
-        'Knockback   : {!'+Percent(FProps.KnockMod)+'}'#10+
-        Iff(FProps.DodgeMod <> 0,'Dodge rate  : {!'+Percent(FProps.DodgeMod)+'}'#10);
-      ITEMTYPE_RANGED : DescriptionBox :=
-        'Fire time   : {!'+Seconds(FProps.UseTime)+'}'#10+
-        'Reload time : {!'+Seconds(FProps.ReloadTime)+'}'#10+
-        'Accuracy    : {!'+BonusStr(FProps.Acc)+'}'#10+
-        Iff(FProps.Shots       <> 0,'Shots       : {!'+IntToStr(FProps.Shots)+'}'#10)+
-        Iff(FProps.ShotCost    <> 0,'Shot cost   : {!'+IntToStr(FProps.ShotCost)+'}'#10)+
-        Iff(FProps.BlastRadius <> 0,'Expl.radius : {!'+IntToStr(FProps.BlastRadius)+'}'#10)+
-        Iff(FProps.AltFire   <> ALT_NONE   ,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10)+
-        Iff(FProps.AltReload <> RELOAD_NONE,'Alt. reload : {!'+AltReloadName( FProps.AltReload )+'}'#10);
-      ITEMTYPE_MELEE : DescriptionBox :=
-        'Attack time : {!'+Seconds(FProps.UseTime)+'}'#10+
-        Iff(FProps.Acc     <> 0,'Accuracy    : {!' + BonusStr(FProps.Acc)+'}'#10)+
-        Iff(FProps.AltFire <> ALT_NONE,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10);
-    end;
-    DescriptionBox +=
-        Iff(GetResistance('bullet')   <> 0,'Bullet res. : {!' + BonusStr(GetResistance('bullet'))+'}'#10)+
-        Iff(GetResistance('melee')    <> 0,'Melee res.  : {!' + BonusStr(GetResistance('melee'))+'}'#10)+
-        Iff(GetResistance('shrapnel') <> 0,'Shrapnel res: {!' + BonusStr(GetResistance('shrapnel'))+'}'#10)+
-        Iff(GetResistance('acid')     <> 0,'Acid res.   : {!' + BonusStr(GetResistance('acid'))+'}'#10)+
-        Iff(GetResistance('fire')     <> 0,'Fire res.   : {!' + BonusStr(GetResistance('fire'))+'}'#10)+
-        Iff(GetResistance('plasma')   <> 0,'Plasma res. : {!' + BonusStr(GetResistance('plasma'))+'}'#10);
-  end
-  else
-  begin
-    DescriptionBox := '';
-    case FProps.IType of
-      ITEMTYPE_ARMOR, ITEMTYPE_BOOTS : DescriptionBox :=
-        'Durability  : @<'+IntToStr(FProps.MaxDurability)+'@>'#10+
-        'Move speed  : @<'+Percent(FProps.MoveMod)+'@>'#10+
-        'Knockback   : @<'+Percent(FProps.KnockMod)+'@>'#10+
-        Iff(FProps.DodgeMod <> 0,'Dodge rate  : @<'+Percent(FProps.DodgeMod)+'@>'#10);
-      ITEMTYPE_RANGED : DescriptionBox :=
-        'Fire time   : @<'+Seconds(FProps.UseTime)+'@>'#10+
-        'Reload time : @<'+Seconds(FProps.ReloadTime)+'@>'#10+
-        'Accuracy    : @<'+BonusStr(FProps.Acc)+'@>'#10+
-        Iff(FProps.Shots       <> 0,'Shots       : @<'+IntToStr(FProps.Shots)+'@>'#10)+
-        Iff(FProps.ShotCost    <> 0,'Shot cost   : @<'+IntToStr(FProps.ShotCost)+'@>'#10)+
-        Iff(FProps.BlastRadius <> 0,'Expl.radius : @<'+IntToStr(FProps.BlastRadius)+'@>'#10)+
-        Iff(FProps.AltFire   <> ALT_NONE   ,'Alt. fire   : @<'+AltFireName( FProps.AltFire )+'@>'#10)+
-        Iff(FProps.AltReload <> RELOAD_NONE,'Alt. reload : @<'+AltReloadName( FProps.AltReload )+'@>'#10);
-      ITEMTYPE_MELEE : DescriptionBox :=
-        'Attack time : @<'+Seconds(FProps.UseTime)+'@>'#10+
-        Iff(FProps.Acc     <> 0,'Accuracy    : @<' + BonusStr(FProps.Acc)+'@>'#10)+
-        Iff(FProps.AltFire <> ALT_NONE,'Alt. fire   : @<'+AltFireName( FProps.AltFire )+'@>'#10);
-    end;
-    DescriptionBox +=
-        Iff(GetResistance('bullet')   <> 0,'Bullet res. : @<' + BonusStr(GetResistance('bullet'))+'@>'#10)+
-        Iff(GetResistance('melee')    <> 0,'Melee res.  : @<' + BonusStr(GetResistance('melee'))+'@>'#10)+
-        Iff(GetResistance('shrapnel') <> 0,'Shrapnel res: @<' + BonusStr(GetResistance('shrapnel'))+'@>'#10)+
-        Iff(GetResistance('acid')     <> 0,'Acid res.   : @<' + BonusStr(GetResistance('acid'))+'@>'#10)+
-        Iff(GetResistance('fire')     <> 0,'Fire res.   : @<' + BonusStr(GetResistance('fire'))+'@>'#10)+
-        Iff(GetResistance('plasma')   <> 0,'Plasma res. : @<' + BonusStr(GetResistance('plasma'))+'@>'#10)+
-        Iff(GetResistance('cold')     <> 0,'Cold res.   : @<' + BonusStr(GetResistance('cold'))+'@>'#10)+
-        Iff(GetResistance('poison')   <> 0,'Poison res. : @<' + BonusStr(GetResistance('poison'))+'@>'#10);
+  DescriptionBox := '';
+  case FProps.IType of
+    ITEMTYPE_ARMOR, ITEMTYPE_BOOTS : DescriptionBox :=
+      'Durability  : {!'+IntToStr(FProps.MaxDurability)+'}'#10+
+      'Move speed  : {!'+Percent(FProps.MoveMod)+'}'#10+
+      'Knockback   : {!'+Percent(FProps.KnockMod)+'}'#10+
+      Iff(FProps.DodgeMod <> 0,'Dodge rate  : {!'+Percent(FProps.DodgeMod)+'}'#10);
+    ITEMTYPE_RANGED : DescriptionBox :=
+      'Fire time   : {!'+Seconds(FProps.UseTime)+'}'#10+
+      'Reload time : {!'+Seconds(FProps.ReloadTime)+'}'#10+
+      'Accuracy    : {!'+BonusStr(FProps.Acc)+'}'#10+
+      'Damage type : {!'+DamageTypeName(FProps.DamageType)+'}'#10+
+      Iff(FProps.Shots       <> 0,'Shots       : {!'+IntToStr(FProps.Shots)+'}'#10)+
+      Iff(FProps.ShotCost    <> 0,'Shot cost   : {!'+IntToStr(FProps.ShotCost)+'}'#10)+
+      Iff(FProps.BlastRadius <> 0,'Expl.radius : {!'+IntToStr(FProps.BlastRadius)+'}'#10)+
+      Iff(FProps.AltFire   <> ALT_NONE   ,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10)+
+      Iff(FProps.AltReload <> RELOAD_NONE,'Alt. reload : {!'+AltReloadName( FProps.AltReload )+'}'#10);
+    ITEMTYPE_MELEE : DescriptionBox :=
+      'Attack time : {!'+Seconds(FProps.UseTime)+'}'#10+
+      Iff(FProps.Acc     <> 0,'Accuracy    : {!' + BonusStr(FProps.Acc)+'}'#10)+
+      Iff(FProps.AltFire <> ALT_NONE,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10);
   end;
- end;
+  DescriptionBox +=
+      Iff(GetResistance('bullet')   <> 0,'Bullet res. : {!' + BonusStr(GetResistance('bullet'))+'}'#10)+
+      Iff(GetResistance('melee')    <> 0,'Melee res.  : {!' + BonusStr(GetResistance('melee'))+'}'#10)+
+      Iff(GetResistance('shrapnel') <> 0,'Shrapnel res: {!' + BonusStr(GetResistance('shrapnel'))+'}'#10)+
+      Iff(GetResistance('acid')     <> 0,'Acid res.   : {!' + BonusStr(GetResistance('acid'))+'}'#10)+
+      Iff(GetResistance('fire')     <> 0,'Fire res.   : {!' + BonusStr(GetResistance('fire'))+'}'#10)+
+      Iff(GetResistance('plasma')   <> 0,'Plasma res. : {!' + BonusStr(GetResistance('plasma'))+'}'#10);
+end;
 
 function TItem.ResistDescriptionShort: AnsiString;
 const ResLetter : array[Low(TResistance)..High(TResistance)] of Char = ( 'b','m','s','a','f','p','c','o' );

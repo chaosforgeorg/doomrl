@@ -40,13 +40,13 @@ TBeing = class(TThing,IPathQuery)
     function  MoveTowards( aWhere : TCoord2D; aVisualMultiplier : Single = 1.0 ) : TMoveResult;
     procedure Reload( aAmmoItem : TItem; aSingle : Boolean );
     procedure Ressurect( RRange : Byte );
-    procedure Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem ); virtual;
+    procedure Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem; aDelay : Integer ); virtual;
     procedure Blood( aFrom : TDirection; aAmount : LongInt );
     procedure Attack( aWhere : TCoord2D ); overload;
     procedure Attack( aTarget : TBeing; Second : Boolean = False ); overload;
     function meleeWeaponSlot : TEqSlot;
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
-    procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem ); virtual;
+    procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem; aDelay : Integer ); virtual;
     function SendMissile( aTarget : TCoord2D; aItem : TItem; aAltFire : TAltFire; aSequence : DWord; aShotCount : Integer ) : Boolean;
     function  isActive : boolean;
     function  WoundStatus : string;
@@ -156,6 +156,8 @@ TBeing = class(TThing,IPathQuery)
     FPathClear     : TFlags;
     FKnockBacked   : Boolean;
     FAffects       : TAffects;
+
+    FOverlayUntil  : QWord;
   public
     property Affects   : TAffects    read FAffects;
     property Inv       : TInventory  read FInv       write FInv;
@@ -166,6 +168,8 @@ TBeing = class(TThing,IPathQuery)
     property KnockBacked  : Boolean read FKnockBacked  write FKnockBacked;
     property SilentAction : Boolean read FSilentAction write FSilentAction;
     property MeleeAttack  : Boolean read FMeleeAttack;
+
+    property OverlayUntil : QWord   read FOverlayUntil;
   published
 
     property can_dual_wield       : Boolean read canDualWield;
@@ -196,6 +200,8 @@ implementation
 uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vluasystem, vluatools, vcolor,
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio;
+
+const PAIN_DURATION = 500;
 
 function TBeing.getStrayChance( aDefender : TBeing; aMissile : Byte ) : Byte;
 var iMiss : Integer;
@@ -325,6 +331,8 @@ begin
   FSilentAction := False;
   FKnockBacked  := False;
   FMeleeAttack  := False;
+
+  FOverlayUntil := 0;
 end;
 
 procedure TBeing.LuaLoad( Table : TLuaTable );
@@ -929,7 +937,8 @@ var isOnGround : Boolean;
     isPack     : Boolean;
     isEquip    : Boolean;
     isPrepared : Boolean;
-    isUsed     : Boolean;
+    isUse      : Boolean;
+    isUsedUp   : Boolean;
     isFailed   : Boolean;
     iSlot      : TEqSlot;
     iUID       : TUID;
@@ -944,6 +953,7 @@ begin
   isLever := aItem.isLever;
   isPack  := aItem.isPack;
   isEquip := aItem.isWearable;
+  isUse   := not isEquip;
   iUID    := aItem.uid;
   if isOnGround then
     begin
@@ -967,37 +977,39 @@ begin
 			end
 		  else
 			begin
-  			  isEquip := False;
-			  isFailed := True;
 			  Emote( 'You must unequip first!', '', [ aItem.GetName(false) ] );
+			  isFailed := True;
 			end;
 		end;
 	end
   else
      Emote( 'You use %s.', 'uses %s.', [ aItem.GetName(false) ] );
+  if isFailed then 
+    Exit( False );
 
-  if not isFailed then
-    if isEquip
-      then aItem.PlaySound( 'pickup', FPosition )
-      else aItem.PlaySound( 'use', FPosition );
+  if isEquip then
+  begin
+    aItem.PlaySound( 'pickup', FPosition );
+    Inv.setSlot( iSlot, aItem );
+  end;
+  if isUse then
+    aItem.PlaySound( 'use', FPosition );
   if isEquip or isPack then
     begin
       CallHook( Hook_OnPickUpItem, [aItem] );
-	  aItem.CallHook( Hook_OnPickup,[Self] )
+      aItem.CallHook( Hook_OnPickup,[Self] )
     end;
-  if isEquip then
-    Inv.setSlot( iSlot, aItem )
-  else
-    isUsed := aItem.CallHookCheck( Hook_OnUse,[Self] );
-	 
-  if ((UIDs.Get( iUID ) <> nil) and isUsed and (isLever or isPack)) then FreeAndNil( aItem );
+  if isUse then
+  begin
+    isUsedUp := aItem.CallHookCheck( Hook_OnUse,[Self] );
+    if isUsedUp and ((UIDs.Get( iUID ) <> nil)  and (isLever or isPack)) then FreeAndNil( aItem );
+  end;
   
-  if not isFailed then
-    if (BF_INSTAUSE in FFlags) and (not isEquip) then
-      Dec(FSpeedCount,100)
-    else
-      Dec(FSpeedCount,1000);
-  Exit( not isFailed );
+  if (BF_INSTAUSE in FFlags) and isUse then
+    Dec(FSpeedCount,100)
+  else
+    Dec(FSpeedCount,1000);
+  Exit( True );
 end;
 
 function TBeing.ActionUnLoad ( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
@@ -1305,6 +1317,7 @@ begin
   FTargetPos := aTarget;
 
   aGun.CallHook( Hook_OnFired, [ Self ] );
+  CallHook( Hook_OnFired, [ aGun ] );
 
   if aGun.Flags[ IF_DESTROY ] then
     FreeAndNil( aGun );
@@ -1440,7 +1453,7 @@ begin
   end;
 end;
 
-procedure TBeing.Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem );
+procedure TBeing.Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem; aDelay : Integer );
 var iItem      : TItem;
     iCorpse    : Word;
     iBlood     : Byte;
@@ -1494,7 +1507,9 @@ begin
     iLevel.playSound( 'gib',FPosition )
   else
     playSound( 'die' );
-  
+
+  IO.addKillAnimation( 400, aDelay, Self );
+
   if not (BF_NOEXP in FFlags) then Player.AddExp(FExpValue);
 
   if BF_BOSS in FFlags then
@@ -1642,7 +1657,7 @@ begin
     if isVisible then IO.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
 
     // Apply damage
-    aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon );
+    aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon, 0 );
   end;
   // Dualblade attack
   if iDualAttack and (not Second) and TLevel(Parent).isAlive( iTargetUID ) then
@@ -1697,7 +1712,7 @@ begin
   getTotalResistance := Min( 95, getTotalResistance );
 end;
 
-procedure TBeing.ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem );
+procedure TBeing.ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem; aDelay : Integer );
 var iDirection     : TDirection;
     iArmor         : TItem;
     iActive        : TBeing;
@@ -1823,8 +1838,12 @@ begin
     if isVisible then IO.Msg(Capitalized(GetName(true))+' dies.')
                  else IO.Msg('You hear the scream of a freed soul!');
   if Dead
-    then Kill( Min( aDamage div 2, 15), aDamage >= iOverKillValue, iActive, aSource )
-    else CallHook( Hook_OnAttacked, [ iActive, aSource ] );
+    then Kill( Min( aDamage div 2, 15), aDamage >= iOverKillValue, iActive, aSource, aDelay )
+    else begin
+      CallHook( Hook_OnAttacked, [ iActive, aSource ] );
+      // TODO: handle Delay?
+      FOverlayUntil := Max( FOverlayUntil, IO.Time + aDelay + PAIN_DURATION );
+    end;
 end;
 
 function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aAltFire : TAltFire; aSequence : DWord; aShotCount : Integer ) : Boolean;
@@ -1849,6 +1868,7 @@ var iDirection  : TDirection;
     iFireDesc   : Ansistring;
     iSprite     : TSprite;
     iDuration   : DWord;
+    iMarkSeq    : DWord;
     iSteps      : DWord;
     iDelay      : DWord;
     iSound      : DWord;
@@ -2007,7 +2027,7 @@ begin
             iRunDamage    := aItem.CallHookCheck(Hook_OnHitBeing,[Self,iBeing]);
           end;
           if iRunDamage then
-            iBeing.ApplyDamage( iDamage, Target_Torso, aItem.DamageType, aItem );
+            iBeing.ApplyDamage( iDamage, Target_Torso, aItem.DamageType, aItem, aSequence );
         end;
 
         if not ( MF_HARD in Missiles[iMissile].Flags ) then
@@ -2044,12 +2064,21 @@ begin
   if iSound <> 0 then
     IO.addSoundAnimation( aSequence, iSource, iSound );
 
-  iDuration := (iSource - iMisslePath.GetC).LargerLength * iDelay;
   if not ( MF_IMMIDATE in Missiles[iMissile].Flags ) then
   begin
+    if MF_RAY in Missiles[iMissile].Flags then
+    begin
+      iDuration := iDelay;
+      iMarkSeq  := 0;
+    end
+    else
+    begin
+      iDuration := (iSource - iMisslePath.GetC).LargerLength * iDelay;
+      iMarkSeq  := iDuration + aSequence;
+    end;
     IO.addMissileAnimation( iDuration, aSequence,iSource,iMisslePath.GetC,iColor,Missiles[iMissile].Picture,iDelay,iSprite,MF_RAY in Missiles[iMissile].Flags);
     if iHit and iLevel.isVisible( iMisslePath.GetC ) then
-      IO.addMarkAnimation(199, aSequence + iDuration, iMisslePath.GetC, Missiles[iMissile].HitSprite, Iif( iIsHit, LightRed, LightGray ), '*' );
+      IO.addMarkAnimation(199, iMarkSeq, iMisslePath.GetC, Missiles[iMissile].HitSprite, Iif( iIsHit, LightRed, LightGray ), '*' );
   end;
 
   if aItem.Flags[ IF_THROWDROP ] then
@@ -2173,12 +2202,16 @@ begin
 end;
 
 function TBeing.getReloadCost: LongInt;
-var Modifier : Real;
+var iModifier : Real;
+    iWeapon   : TItem;
 begin
-  if (Inv.Slot[efWeapon] = nil) or (Inv.Slot[efWeapon].isMelee) then Exit(1000);
-  Modifier := Inv.Slot[efWeapon].ReloadTime/10.0;
-  Modifier *= FTimes.Reload/100.;
-  getReloadCost := Round(ActionCostReload*Modifier);
+  iWeapon := Inv.Slot[efWeapon];
+  if (iWeapon = nil) or (iWeapon.isMelee) then Exit(1000);
+  iModifier := iWeapon.ReloadTime/10.0;
+  iModifier *= FTimes.Reload/100.;
+  iModifier *= GetBonusMul( Hook_getReloadCostMul, [ iWeapon ] );
+
+  getReloadCost := Round(ActionCostReload*iModifier);
 end;
 
 function TBeing.getDodgeMod : LongInt;
@@ -2326,7 +2359,7 @@ var State       : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  Being.Kill(15,State.ToBoolean(2),nil,nil);
+  Being.Kill(15,State.ToBoolean(2),nil,nil,0);
   Result := 0;
 end;
 
@@ -2359,7 +2392,7 @@ var State       : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  Being.ApplyDamage(State.ToInteger(2),TBodyTarget( State.ToInteger(3) ), TDamageType( State.ToInteger(4,Byte(Damage_Bullet)) ), State.ToObjectOrNil(2) as TItem );
+  Being.ApplyDamage(State.ToInteger(2),TBodyTarget( State.ToInteger(3) ), TDamageType( State.ToInteger(4,Byte(Damage_Bullet)) ), State.ToObjectOrNil(2) as TItem, 0 );
   Result := 0;
 end;
 

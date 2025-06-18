@@ -622,7 +622,7 @@ var iEntry : TItemViewEntry;
 begin
   iEntry.Item  := aItem;
   iEntry.Name  := aItem.Description;
-  iEntry.Stats := aItem.DescriptionBox( True );
+  iEntry.Stats := aItem.DescriptionBox;
   iEntry.Color := aItem.MenuColor;
   iEntry.QSlot := 0;
 
@@ -630,7 +630,7 @@ begin
   if aItem.Flags[ IF_SETITEM ] then
   begin
     iSet        := LuaSystem.Get(['items',aItem.ID,'set']);
-    iEntry.Desc := Format('@<%s@> (1/%d)', [
+    iEntry.Desc := Format('{!%s} (1/%d)', [
       AnsiString( LuaSystem.Get(['itemsets',iSet,'name']) ),
       Byte( LuaSystem.Get(['itemsets',iSet,'trigger']) ) ])
       + #10+ iEntry.Desc;

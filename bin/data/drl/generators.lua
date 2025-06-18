@@ -35,6 +35,7 @@ function drl.register_generators()
 
 		run        = function() 
 			generator.generate_tiled_level()
+			return generator.create_room_list()
 		end
 	}
 
@@ -213,8 +214,9 @@ function drl.register_generators()
 			local dim_min = coord( 7, 6 )
 			local city = area.shrinked( area.FULL, 2 )
 
-			if math.random(3) == 1 then	generator.generate_rivers( false, true ) end
+			if math.random(3) == 1 then	generator.handle_rivers{ vertical_only = true } end
 		
+			local list = {}
 			for i=1,tries do
 				local room = area.random_subarea( city, coord.random( dim_min, dim_max ) )
 				if level:scan(room,floor_cell) then
@@ -223,10 +225,11 @@ function drl.register_generators()
 					level:set_cell( area.random_inner_edge_coord( room ), door_cell )
 					room:shrink(1)
 					level:fill( "crate", room )
-					generator.add_room( room:expanded() )
+					generator.add_room( list, room:expanded() )
 				end
 			end
 			level:transmute( "crate", floor_cell )
+			return list
 		end
 	}
 
@@ -284,7 +287,9 @@ function drl.register_generators()
 		end,
 		run        = function() 
 			generator.generate_tiled_level()
+			return generator.create_room_list()
 		end
+
 	}
 
 	register_generator "gen_single_plus"
@@ -311,6 +316,7 @@ function drl.register_generators()
 		end,
 		run        = function() 
 			generator.generate_tiled_level()
+			return generator.create_room_list()
 		end
 	}
 
@@ -322,7 +328,7 @@ function drl.register_generators()
 		rooms      = { 4, 10 },
 
 		run        = function() 
-			generator.generate_lava_dungeon()
+			return generator.generate_lava_dungeon()
 		end
 	}
 

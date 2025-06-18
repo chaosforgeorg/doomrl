@@ -682,6 +682,7 @@ function drl.register_regular_items()
 			local pack = ""
 			if is_pack then pack = "quickly " end
 			being:msg("You "..pack.."load a shell into the "..self.name..".", being:get_name(true,true).." loads a shell into his "..self.name.."." )
+			self.chamber_empty = false
 			return true
 		end,
 		

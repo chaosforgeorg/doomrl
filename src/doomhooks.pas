@@ -31,7 +31,7 @@ const
   Hook_OnEnter         = 24;  // Item (separate)
   Hook_OnEnterLevel    = 25;  // Level, Module, Challenge, Core (chained)
   Hook_OnFire          = 26;  // Item, Level, Module, Challenge, Core (Chained)
-  Hook_OnFired         = 27;  // Item, Level, Module, Challenge, Core (Chained)
+  Hook_OnFired         = 27;  // Trait (separate), Item, Level, Module, Challenge, Core (Chained)
   Hook_OnExit          = 28;  // Level, Module, Challenge, Core (Chained)
   Hook_OnTick          = 29;  // Being (Separate), Level, Module, Challenge, Core (Chained)
   Hook_OnCompletedCheck= 30;  // Level, Module, Challenge, Core (Chained)
@@ -72,8 +72,9 @@ const
   Hook_getDamageMul    = 61; // Trait, Being, Affects
   Hook_getFireCostMul  = 62; // Trait, Being, Affects
   Hook_getAmmoCostMul  = 63; // Trait, Being, Affects
+  Hook_getReloadCostMul= 64; // Trait, Being, Affects
 
-  HookAmount           = 64;
+  HookAmount           = 65;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
 
@@ -96,7 +97,7 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnDescribe',
       'getDamageBonus', 'getToHitBonus', 'getShotsBonus', 'getFireCostBonus',
       'getDefenceBonus', 'getDodgeBonus', 'getMoveBonus', 'getBodyBonus', 'getResistBonus',
-      'getDamageMul', 'getFireCostMul', 'getAmmoCostMul'
+      'getDamageMul', 'getFireCostMul', 'getAmmoCostMul', 'getReloadCostMul'
       );
 
 function LoadHooks( const Table : array of Const ) : TFlags;

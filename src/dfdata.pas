@@ -365,6 +365,7 @@ function MSecNow : Comp;
 function DurationString( aSeconds : int64 ) : Ansistring;
 function BlindCoord( const where : TCoord2D ) : string;
 function SlotName(slot : TEqSlot) : string;
+function DamageTypeName( aDamageType : TDamageType ) : Ansistring;
 function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
 function ReadSprite( aTable : TLuaTable; aName : Ansistring; var aSprite : TSprite ) : Boolean;
 function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
@@ -507,6 +508,22 @@ begin
     efWeapon  : Exit('[ Weapon     ]');
     efBoots   : Exit('[ Boots      ]');
     efWeapon2 : Exit('[ Prepared   ]');
+  end;
+end;
+
+function DamageTypeName( aDamageType : TDamageType ) : Ansistring;
+begin
+  case aDamageType of
+    Damage_Bullet  : Exit('bullet');
+    Damage_Melee   : Exit('melee');
+    Damage_Sharpnel: Exit('shred');
+    Damage_Acid    : Exit('acid');
+    Damage_Fire    : Exit('fire');
+    Damage_Cold    : Exit('cold');
+    Damage_Poison  : Exit('poison');
+    Damage_Plasma  : Exit('plasma');
+    Damage_SPlasma : Exit('plasma');
+    Damage_IgnoreArmor : Exit('heavy');
   end;
 end;
 

@@ -76,7 +76,7 @@ begin
 
   VTIG_Ruler;
 
-  VTIG_Text('Select help topic above. Quick (default) kebindings primer:');
+  VTIG_Text('Select help topic above. Quick (default) keybindings primer:');
   VTIG_Text('');
   VTIG_Text('  {!Escape}    - game menu (Save, Quit, Settings, Help, etc)');
   VTIG_Text('  {!Arrows}    - movement (Home,End,PgUp,PgDown - diagonals)');

@@ -45,7 +45,7 @@ register_level "mt_erebus"
 
 	Create = function ()
 		level:set_generator_style( 1 )
-		level:fill( "plava" )
+		level:fill( "lava" )
 
 		local lavapits_armor = {
 			level      = 25,

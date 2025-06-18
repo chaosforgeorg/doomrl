@@ -90,7 +90,7 @@ begin
   Setting_SoundVolume      := Configuration.GetInteger( 'sound_volume' );
 
   Sound.SetSoundVolume(5*Setting_SoundVolume);
-  Sound.SetMusicVolume(2*Setting_MusicVolume);
+  Sound.SetMusicVolume(Setting_MusicVolume);
 
   if Setting_MusicVolume = 0
     then Sound.Silence

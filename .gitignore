@@ -32,3 +32,4 @@ src/fpcmade.x86_64-linux
 src/makewad.lps
 tmp/
 !tmp/!readme.txt
+bin/console.history
