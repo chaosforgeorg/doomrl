@@ -120,6 +120,13 @@ register_level "house_of_pain"
 				level.status = 4
 			elseif res == 5 and player.x < 27 then
 				ui.msg("The voice laughs: \"Allow me to present you your just reward!\"")
+				local id = core.get_unknown_assembly( 2 )
+				if id then
+					local item = level:drop_item("schematic_2",coord(14,10))
+					local ma   = mod_arrays[id]
+					item.ammo  = ma.nid
+					item.name  = ma.name.." schematics"
+				end
 				local room_1 = area( 7, 7, 21, 14 )
 				level:summon{ core.ifdiff( 3, "narch", "arch" ), core.bydiff{ 0, 2, 1, 2, 2 }, area = room_1 }
 				if DIFFICULTY > 4 then level:summon{ "baron" , 4, area = room_1 } end

@@ -149,12 +149,6 @@ register_level "hells_armory"
 			end
 			player:play_sound("lever.use")
 
-			local unknown = { {}, {}, {} }
-
-			local lvl = math.max( DIFFICULTY - 3, 0 )
-			if math.random(10) == 1 then lvl = lvl + 1 end
-			if math.random(10) == 1 then lvl = lvl + 1 end
-
 			local reward1 = table.random_pick{ "umod_sniper","umod_firestorm","umod_nano","umod_onyx" }
 			local reward2 = table.random_pick{ "mod_power","mod_agility","mod_bulk","mod_tech","ucarmor"}
 
@@ -169,21 +163,12 @@ register_level "hells_armory"
 			level:drop_item(reward1,coord(4,9))
 			level:drop_item(reward2,coord(4,11))
 
-			local rewards = weight_table.new{}
-			for k,ma in ipairs(mod_arrays) do
-				if ma.level <= lvl then
-					if player_data.count('player/assemblies/assembly[@id="'..ma.id..'"]') == 0 and not player:has_assembly(ma.id) then
-						rewards:add( items["schematic_"..ma.level] )
-						table.insert( unknown[ma.level+1], ma.nid )
-					end
-				end
-			end
-
-			if rewards:size() > 0 then
-				local special = rewards:roll()
-				local item    = level:drop_item(special.id,coord(4,10))
-				item.ammo = table.random_pick(unknown[special.slevel+1])
-				item.name = mod_arrays[ item.ammo ].name.." schematics"
+			local id = core.get_unknown_assembly( 1 )
+			if id then
+				local item = level:drop_item("schematic_1",coord(42,10))
+				local ma   = mod_arrays[id]
+				item.ammo  = ma.nid
+				item.name  = ma.name.." schematics"
 			end
 		end
 	end,

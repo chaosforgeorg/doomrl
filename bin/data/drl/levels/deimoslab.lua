@@ -157,33 +157,18 @@ register_level "deimos_lab"
 			level:transmute( "gwall", "floor", level.data.vault2 )
 			ui.msg("The lab caches open.")
 
-			local unknown = { {}, {}, {} }
-
-			local lvl = math.max( DIFFICULTY - 3, 0 )
-			if math.random(10) == 1 then lvl = lvl + 1 end
-			if math.random(10) == 1 then lvl = lvl + 1 end
-
 			local reward1,reward2 = generator.roll_pair{ "umod_sniper","umod_firestorm","umod_nano","umod_onyx","ucarmor" }
 			local reward3         = table.random_pick{"mod_power","mod_agility","mod_bulk","mod_tech"}
 			level:drop_item(reward3,coord(37,10))
 			level:drop_item(reward2,coord(42,11))
 			level:drop_item(reward1,coord(37,11))
 
-			local rewards = weight_table.new{}
-			for k,ma in ipairs(mod_arrays) do
-				if ma.level <= lvl then
-					if player_data.count('player/assemblies/assembly[@id="'..ma.id..'"]') == 0 and not player:has_assembly(ma.id) then
-						rewards:add( items["schematic_"..ma.level] )
-						table.insert( unknown[ma.level+1], ma.nid )
-					end
-				end
-			end
-
-			if rewards:size() > 0 then
-				local special = rewards:roll()
-				local item    = level:drop_item(special.id,coord(42,10))
-				item.ammo = table.random_pick(unknown[special.slevel+1])
-				item.name = mod_arrays[ item.ammo ].name.." schematics"
+			local id = core.get_unknown_assembly( 1 )
+			if id then
+				local item    = level:drop_item("schematic_1",coord(42,10))
+				local ma      = mod_arrays[id]
+				item.ammo = ma.nid
+				item.name = ma.name.." schematics"
 			end
 		end
 	end,

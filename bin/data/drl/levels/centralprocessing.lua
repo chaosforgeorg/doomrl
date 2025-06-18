@@ -222,6 +222,15 @@ register_level "central_processing"
 
 		generator.set_permanence( area.FULL )
 		level.data.kill_all  = false
+
+		local id = core.get_unknown_assembly( 0 )
+		if id then
+			local item = level:drop_item("schematic_0",coord(63,18))
+			local ma   = mod_arrays[id]
+			item.ammo  = ma.nid
+			item.name  = ma.name.." schematics"
+		end
+
 		level:player(5,12)
 	end,
 

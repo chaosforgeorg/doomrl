@@ -495,6 +495,21 @@ function core.mod_array_description( mod_array_proto )
 	return desc
 end
 
+function core.get_unknown_assembly( lvl )
+	local list = {}
+	for _,ma in ipairs(mod_arrays) do
+		if ma.level == lvl then
+			if player_data.count('player/assemblies/assembly[@id="'..ma.id..'"]') == 0 and not player:has_assembly(ma.id) then
+				table.insert( list, ma.id )
+			end
+		end
+	end
+	if #list > 0 then
+  		return table.random_pick( list )
+ 	end
+	return nil
+end	
+
 function core.ifdiff( min, positive, negative )
 	if DIFFICULTY >= min then return positive else return negative end
 end

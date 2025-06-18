@@ -124,6 +124,13 @@ register_level "the_vaults"
 ]]
 
 		generator.place_tile( translation, map, 2, 2 )
+		local id = core.get_unknown_assembly( 2 )
+		if id then
+			local item = level:drop_item("schematic_2",coord(37,12))
+			local ma   = mod_arrays[id]
+			item.ammo  = ma.nid
+			item.name  = ma.name.." schematics"
+		end
 
 		level:player(4,11)
 		level.status = 0

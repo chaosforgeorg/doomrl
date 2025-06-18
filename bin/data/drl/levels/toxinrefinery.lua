@@ -154,6 +154,15 @@ register_level "toxin_refinery"
 		level.data.kill_all  = false
 		level.data.old_darkness = player.flags [ BF_DARKNESS ]
 		level.data.darkness_end_time = 0
+
+		local id = core.get_unknown_assembly( 0 )
+		if id then
+			local item = level:drop_item("schematic_0",coord(41,2))
+			local ma   = mod_arrays[id]
+			item.ammo  = ma.nid
+			item.name  = ma.name.." schematics"
+		end
+
 		level:player(36,18)
 	end,
 
