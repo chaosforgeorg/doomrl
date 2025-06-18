@@ -10,6 +10,7 @@
 [mod] -- GH#267: nightmare viles explosion size 2 [brisbang]
 [mod] -- GH#269: Frag shotgun is now a 6d3, 0.5s shotty with level 10 and weight 3 [brisbang]
 [mod] -- GH#222: assembly schematics found in specific levels in each episode per level
+[mod] -- GH#104: Mt. Erebus prevents teleporting into the mountain
 [fix] -- GH#272: full reload will take time again
 [fix] -- GH#271: fixed combat shotgun chamber empty not clearing on 0 ammo load
 [fix] -- GH#275: fix bulletdance pick crash

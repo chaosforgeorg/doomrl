@@ -250,6 +250,7 @@ begin
   if EF_NOLIQUID in EmptyFlags then if cellFlagSet(coord,CF_LIQUID) then Exit(False);
   if EF_NOSAFE   in EmptyFlags then if Distance(coord,Player.Position) < PlayerSafeZone then Exit(False);
   if EF_NOSPAWN  in EmptyFlags then if LightFlag[ coord, lfNoSpawn ] then Exit(False);
+  if EF_CANTELE  in EmptyFlags then if LightFlag[ coord, lfNoTele ] then Exit(False);
 end;
 
 function TLevel.cellFlagSet( coord : TCoord2D; Flag : byte) : Boolean;

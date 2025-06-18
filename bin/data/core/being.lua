@@ -172,7 +172,7 @@ function being:msg( msg_player, msg_being )
 end
 
 function being:phase( cell )
-	local target = level:random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
+	local target = level:random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_CANTELE }
 	if cell then
 		cell = cells[ cell ].nid
 		local targets = {}
@@ -182,7 +182,7 @@ function being:phase( cell )
 			end
 		end
 		if #targets ~= 0 then
-			target = level:drop_coord( table.random_pick( targets ), {EF_NOITEMS,EF_NOBEINGS,EF_NOBLOCK}  )
+			target = level:drop_coord( table.random_pick( targets ), {EF_NOITEMS,EF_NOBEINGS,EF_NOBLOCK,EF_CANTELE}  )
 		end
 	end
 	if target then
