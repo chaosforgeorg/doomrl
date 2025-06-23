@@ -3,7 +3,7 @@
 register_level "phobos_lab"
 {
 	name  = "Phobos Lab",
-	entry = "On level @1 he sneaked into the Phobos Lab.",
+	entry = "On @1 he sneaked into the Phobos Lab.",
 	welcome = "You arrive at the Phobos Lab. You are overcome by the feeling of nostalgia!",
 	level = 7,
 

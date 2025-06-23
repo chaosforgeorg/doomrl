@@ -3,7 +3,7 @@
 register_level "mt_erebus"
 {
 	name  = "Mt. Erebus",
-	entry = "On level @1 he arrived at Mt. Erebus.",
+	entry = "On @1 he arrived at Mt. Erebus.",
 	welcome = "You arrive at Mt. Erebus. You shiver before the mountain of eternal fire!",
 	level = 22,
 

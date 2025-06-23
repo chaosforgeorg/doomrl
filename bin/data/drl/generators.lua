@@ -283,7 +283,7 @@ function drl.register_generators()
 				level:flood_monster{ id = monster, danger = generator.being_weight() }
 			end
 
-			player:add_history("On level @1 he stumbled into a complex full of "..beings[monster].name_plural.."!")
+			player:add_history("On @1 he stumbled into a complex full of "..beings[monster].name_plural.."!")
 		end,
 		run        = function() 
 			generator.generate_tiled_level()
@@ -312,7 +312,7 @@ function drl.register_generators()
 			local monster = table.random_pick{"cyberdemon","shambler","bruiser"}
 			ui.msg_feel( intro[monster] )
 			level:flood_monster{ id = monster, danger = generator.being_weight() }
-			player:add_history("On level @1 he stumbled into a complex full of "..beings[monster].name_plural.."!")
+			player:add_history("On @1 he stumbled into a complex full of "..beings[monster].name_plural.."!")
 		end,
 		run        = function() 
 			generator.generate_tiled_level()

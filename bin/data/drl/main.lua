@@ -1,4 +1,5 @@
 core.declare( "drl", {} )
+core.declare( "core_module", "drl" )
 
 require( "drl:generator" )
 require( "drl:generators" )
@@ -252,7 +253,7 @@ function drl.register_base_data()
 			if not self:has_found_item( i.id ) then
 				if i.flags[ IF_UNIQUE ] then
 					statistics.uniques_found = statistics.uniques_found + 1
-					self:add_history( 'On level @1 he found the '..i.name..'!' )
+					self:add_history( 'On @1 he found the '..i.name..'!' )
 					ui.blink( LIGHTGREEN, 20 )
 				end
 				if items[ i.id ].OnFirstPickup then

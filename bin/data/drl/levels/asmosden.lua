@@ -5,7 +5,7 @@ local hell
 register_level "the_asmos_den"
 {
 	name  = "The Asmos Den",
-	entry = "On level @1 he braved the Asmos Den.",
+	entry = "On @1 he braved the Asmos Den.",
 	welcome = "This place reeks of evil, even more so than everywhere else...",
 	level = 22,
 	welcome = "You enter Asmos Den.",

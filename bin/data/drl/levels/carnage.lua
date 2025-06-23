@@ -3,7 +3,7 @@
 register_level "halls_of_carnage"
 {
 	name  = "Halls of Carnage",
-	entry = "On level @1 he ventured into the Halls of Carnage.",
+	entry = "On @1 he ventured into the Halls of Carnage.",
 	welcome = "You enter the Halls of Carnage. You feel you need to run!",
 	level = 14,
 

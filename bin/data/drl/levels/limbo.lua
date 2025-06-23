@@ -3,7 +3,7 @@
 register_level "limbo"
 {
 	name  = "Limbo",
-	entry = "On level @1 he was foolish enough to enter Limbo!",
+	entry = "On @1 he was foolish enough to enter Limbo!",
 	level = 20,
 	welcome = "You arrive at Limbo.",
 

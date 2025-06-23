@@ -3,7 +3,7 @@
 register_level "toxin_refinery"
 {
 	name  = "Toxin Refinery",
-	entry = "On level @1 he waded into the Toxin Refinery.",
+	entry = "On @1 he waded into the Toxin Refinery.",
 	welcome = "The stench of toxins chokes you briefly.",
 	level = 4,
 

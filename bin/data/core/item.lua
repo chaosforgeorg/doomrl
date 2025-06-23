@@ -160,7 +160,7 @@ function item:apply_mod_array( ma )
 	self.flags[ IF_ASSEMBLED ] = true
 	self:clear_mods()
 	player:add_assembly( ma.id )
-	player:add_history("On level @1 he assembled a "..ma.name.."!")
+	player:add_history("On @1 he assembled a "..ma.name.."!")
 end
 
 function item:reset_resistances()

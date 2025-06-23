@@ -394,7 +394,7 @@ end;
 procedure TPlayer.LevelEnter;
 begin
   if FHP < (FHPMax div 10) then
-    AddHistory('Entering level '+IntToStr(CurrentLevel)+' he was almost dead...');
+    AddHistory('Entering @1 he was almost dead...');
 
   FStatistics.OnLevelEnter;
 

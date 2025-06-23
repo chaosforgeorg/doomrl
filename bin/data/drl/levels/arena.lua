@@ -4,7 +4,7 @@ register_level "hells_arena"
 {
 
 	name  = "Hell's Arena",
-	entry = "On level @1 he entered Hell's Arena.",
+	entry = "On @1 he entered Hell's Arena.",
 	welcome = "You enter Hell's Arena",
 	level = 2,
 

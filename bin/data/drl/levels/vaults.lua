@@ -3,7 +3,7 @@
 register_level "the_vaults"
 {
 	name  = "The Vaults",
-	entry = "On level @1 he entered the Vaults.",
+	entry = "On @1 he entered the Vaults.",
 	welcome = "You enter the Vaults. There's a presence here...",
 	level = 17,
 

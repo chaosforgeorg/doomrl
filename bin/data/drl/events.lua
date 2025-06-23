@@ -4,7 +4,7 @@ function drl.register_events()
 	{
 		min_dlevel = 16,
 		weight     = 2,
-		history    = "On level @1, hell froze over!",
+		history    = "On @1, hell froze over!",
 		message    = "Yes... Hell just froze over...",
 		
 		setup      = function()
@@ -21,7 +21,7 @@ function drl.register_events()
 
 	register_event "perma_event"
 	{
-		history    = "Level @1 was a hard nut to crack!",
+		history    = "@1 was a hard nut to crack!",
 		message    = "The walls here seem tough!",
 		min_dlevel = 8,
 		weight     = 4,
@@ -33,7 +33,7 @@ function drl.register_events()
 
 	register_event "alarm_event"
 	{
-		history    = "He sounded the alarm on level @1!",
+		history    = "He sounded the alarm on @1!",
 		message    = "As you enter, some weird alarm starts howling!",
 		min_dlevel = 8,
 		weight     = 2,
@@ -45,7 +45,7 @@ function drl.register_events()
 
 	register_event "deadly_air_event"
 	{
-		history    = "Level @1 blasted him with an unholy atmosphere!",
+		history    = "@1 blasted him with an unholy atmosphere!",
 		message    = "The air seems deadly here, you better leave quick!",
 		min_dlevel = 16,
 		min_diff   = 2,
@@ -78,7 +78,7 @@ function drl.register_events()
 
 	register_event "nuke_event"
 	{
-		history    = "On level @1 he encountered an armed nuke!",
+		history    = "On @1 he encountered an armed nuke!",
 		min_dlevel = 16,
 		min_diff   = 2,
 		weight     = 2,
@@ -94,7 +94,7 @@ function drl.register_events()
 	register_event "flood_acid_event"
 	{
 		message    = "You feel the sudden need to run!!!",
-		history    = "On level @1 he ran for his life from acid!" ,
+		history    = "On @1 he ran for his life from acid!" ,
 		min_dlevel = 8,
 		weight     = 1,
 
@@ -128,7 +128,7 @@ function drl.register_events()
 	register_event "flood_lava_event"
 	{
 		message    = "You feel the sudden need to run!!!",
-		history    = "On level @1 he ran for his life from lava!" ,
+		history    = "On @1 he ran for his life from lava!" ,
 		weight     = 4,
 		min_dlevel = 17,
 		min_diff   = 3,
@@ -167,7 +167,7 @@ function drl.register_events()
 	register_event "targeted_event"
 	{
 		message    = "You feel you're being targeted!",
-		history    = "On level @1 he was targeted for extermination!" ,
+		history    = "On @1 he was targeted for extermination!" ,
 		weight     = 2,
 		min_dlevel = 17,
 		min_diff   = 3,
@@ -212,7 +212,7 @@ function drl.register_events()
 	register_event "explosion_event"
 	{
 		message    = "You hear sounds of hellish mortars!",
-		history    = "On level @1 he was bombarded!" ,
+		history    = "On @1 he was bombarded!" ,
 		weight     = 1,
 		min_dlevel = 18,
 		min_diff   = 2,
@@ -231,7 +231,7 @@ function drl.register_events()
 	register_event "explosion_lava_event"
 	{
 		message    = "You hear sounds of hellish mortars! They rolled out the BIG GUNS!",
-		history    = "On level @1 he was walking in fire!" ,
+		history    = "On @1 he was walking in fire!" ,
 		weight     = 1,
 		min_dlevel = 25,
 		min_diff   = 3,
@@ -250,7 +250,7 @@ function drl.register_events()
 	register_event "darkness_event"
 	{
 		message    = "This floor is pitch-black!",
-		history    = "On level @1 he was stumbling in the dark!",
+		history    = "On @1 he was stumbling in the dark!",
 		weight     = 2,
 		min_dlevel = 9,
 		min_diff   = 2,

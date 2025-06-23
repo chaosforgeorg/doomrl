@@ -3,7 +3,7 @@
 register_level "military_base"
 {
 	name  = "Military Base",
-	entry = "On level @1 he marched into the Military Base.",
+	entry = "On @1 he marched into the Military Base.",
 	welcome = "You enter the Military Base. Arriving here again sure takes you back!",
 	level = 7,
 

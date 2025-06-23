@@ -352,7 +352,7 @@ function drl.register_exotic_items()
 				ui.msg("Warning! Explosion in 10 seconds!")
 				being:nuke(100)
 			end
-			player:add_history("He overloaded a nuclear plasma rifle on level @1!")
+			player:add_history("He overloaded a nuclear plasma rifle on @1!")
 			being.eq.weapon = nil
 			being.scount = being.scount - 1000
 			return true
@@ -402,7 +402,7 @@ function drl.register_exotic_items()
 				ui.msg("Warning! Explosion in 10 seconds!")
 				being:nuke(100)
 			end
-			player:add_history("He overloaded a nuclear BFG 9000 on level @1!")
+			player:add_history("He overloaded a nuclear BFG 9000 on @1!")
 			being.eq.weapon = nil
 			being.scount = being.scount - 1000
 			return true

@@ -992,7 +992,7 @@ function drl.register_regular_items()
 				ui.msg('Ufff... I knew you were a reasonable person.');
 				return false
 			end
-			being:add_history('He nuked level @1!')
+			being:add_history('He nuked @1!')
 			return true
 		end,
 	}
@@ -1404,7 +1404,7 @@ function drl.register_regular_items()
 			if self.target_area:size() >= area.FULL_SHRINKED:size() then
 				-- Really?  Censoring "f***" when the plot has it?
 				ui.msg("WTF?! Acid splashes everywhere!")
-				being:add_history("He flooded the entire level @1 with acid!")
+				being:add_history("He flooded the entire @1 with acid!")
 			else
 				ui.msg("Green acid covers the floor!")
 			end
@@ -1438,7 +1438,7 @@ function drl.register_regular_items()
 		OnUse = function(self,being)
 			if self.target_area:size() >= area.FULL_SHRINKED:size() then
 				ui.msg("Oh shit... oh shit... OH SHIT!!!!")
-				being:add_history("He flooded the entire level @1 with lava!")
+				being:add_history("He flooded the entire @1 with lava!")
 			else
 				ui.msg("The ground explodes in flames!")
 			end

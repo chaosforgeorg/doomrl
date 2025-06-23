@@ -3,7 +3,7 @@
 register_level "central_processing"
 {
 	name  = "Central Processing",
-	entry = "On level @1 he trekked through Central Processing.",
+	entry = "On @1 he trekked through Central Processing.",
 	welcome = "You enter Central Processing. You shudder, thinking about the evil mastermind who planned this.",
 	level = 4,
 

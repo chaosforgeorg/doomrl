@@ -3,7 +3,7 @@
 register_level "the_lava_pits"
 {
 	name  = "The Lava Pits",
-	entry = "On level @1 he entered the Lava Pits.",
+	entry = "On @1 he entered the Lava Pits.",
 	welcome = "You descend into the Lava Pits. Dammit, it's hot in here!",
 	level = 22,
 

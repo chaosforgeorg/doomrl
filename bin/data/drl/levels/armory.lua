@@ -3,7 +3,7 @@
 register_level "hells_armory"
 {
 	name  = "Hell's Armory",
-	entry = "On level @1 he entered Hell's Armory.",
+	entry = "On @1 he entered Hell's Armory.",
 	level = 9,
 	welcome = "You enter Hell's Armory.",
 

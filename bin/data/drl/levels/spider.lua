@@ -3,7 +3,7 @@
 register_level "spiders_lair"
 {
 	name  = "Spider's Lair",
-	entry = "On level @1 he ventured into the Spider's Lair.",
+	entry = "On @1 he ventured into the Spider's Lair.",
 	welcome = "You descend into the Spider's Lair. Mechanical clicks everywhere! Oh my god it's full of spiders!",
 	level = 14,
 

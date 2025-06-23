@@ -3,7 +3,7 @@
 register_level "unholy_cathedral"
 {
 	name  = "Unholy Cathedral",
-	entry = "On level @1 he invaded the Unholy Cathedral!",
+	entry = "On @1 he invaded the Unholy Cathedral!",
 	welcome = "You arrive at the Unholy Cathedral. You feel something sinister in the air.",
 	level = 19,
 

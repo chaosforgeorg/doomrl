@@ -615,7 +615,7 @@ begin
   begin
     TimeDiff :=  Player.Statistics.GameTime - Player.Statistics['entry_time'];
     if TimeDiff < 100 then
-      Player.AddHistory(Format('He left level %d as soon as possible.',[Player.CurrentLevel]));
+      Player.AddHistory('He left @1 as soon as possible.');
   end;
 
   IO.MsgReset;

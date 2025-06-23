@@ -3,7 +3,7 @@
 register_level "house_of_pain"
 {
 	name  = "House of Pain",
-	entry = "On level @1 he trespassed on the House of Pain.",
+	entry = "On @1 he trespassed on the House of Pain.",
 	level = 17,
 	welcome = "You enter the House of Pain.",
 

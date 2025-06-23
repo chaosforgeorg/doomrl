@@ -261,7 +261,7 @@ function drl.register_unique_items()
 			if being:is_player() and being.hpmax > 10 then
 				if ui.confirm( "Do you want to use the dangerous Angel Arm?") then
 					ui.msg("You activate the Angel Arm! Your life is drained!")
-					player:add_history("He activated the Angel Arm on level @1!")
+					player:add_history("He activated the Angel Arm on @1!")
 					being.hpmax = math.max( being.hpmax - 5, 10 )
 					being.hp = math.max( being.hp - 5, 1 )
 					being.scount = being.scount - 1000

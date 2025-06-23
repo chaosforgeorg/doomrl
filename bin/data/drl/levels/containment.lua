@@ -3,7 +3,7 @@
 register_level "containment_area"
 {
 	name  = "Containment Area",
-	entry = "On level @1 he arrived at the Containment Area.",
+	entry = "On @1 he arrived at the Containment Area.",
 	welcome = "You enter the Containment Area. You feel something is hidden behind this wall.",
 	level = 11,
 

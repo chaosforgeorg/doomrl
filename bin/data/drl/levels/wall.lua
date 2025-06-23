@@ -3,7 +3,7 @@
 register_level "the_wall"
 {
 	name  = "The Wall",
-	entry = "On level @1 he witnessed the Wall.",
+	entry = "On @1 he witnessed the Wall.",
 	welcome = "You arrive at the Wall. You feel uneasy.",
 	level = 11,
 

@@ -3,7 +3,7 @@
 register_level "city_of_skulls"
 {
 	name  = "City of Skulls",
-	entry = "On level @1 he found the City of Skulls.",
+	entry = "On @1 he found the City of Skulls.",
 	welcome = "You enter a city made out of bones. You sense a certain tension.",
 	level = 12,
 

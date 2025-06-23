@@ -3,7 +3,7 @@
 register_level "deimos_lab"
 {
 	name  = "Deimos Lab",
-	entry = "On level @1 he entered Deimos Lab.",
+	entry = "On @1 he entered Deimos Lab.",
 	level = 9,
 	welcome = "You arrive at the Deimos Lab entry area.",
 
@@ -165,10 +165,10 @@ register_level "deimos_lab"
 
 			local id = core.get_unknown_assembly( 1 )
 			if id then
-				local item    = level:drop_item("schematic_1",coord(42,10))
-				local ma      = mod_arrays[id]
-				item.ammo = ma.nid
-				item.name = ma.name.." schematics"
+				local item = level:drop_item("schematic_1",coord(42,10))
+				local ma   = mod_arrays[id]
+				item.ammo  = ma.nid
+				item.name  = ma.name.." schematics"
 			end
 		end
 	end,

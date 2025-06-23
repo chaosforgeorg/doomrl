@@ -290,12 +290,12 @@ function generator.generate_caves_dungeon()
 		{ level = { 40, 80 }, weight = 2, list = { "narachno", "arachno" } },
 		{ level = { 50, 100}, weight = 2, list = { "ncacodemon", "cacodemon" } },
 
-		{ level = { 30 },     weight = 5, list = "ndemon",         history = "On level @1 he stumbled into a nightmare demon cave!" },
-		{ level = { 40 },     weight = 5, list = "narachno",       history = "On level @1 he stumbled into a nightmare arachnotron cave!" },
-		{ level = { 50 },     weight = 1, list = "npain",          history = "On level @1 he stumbled into a nightmare elemental cave!" },
-		{ level = { 60 },     weight = 5, list = "ncacodemon",     history = "On level @1 he stumbled into a nightmare cacodemon cave!" },
-		{ level = { 70 },     weight = 1, list = "agony",          history = "On level @1 he stumbled into a agony elemental cave!", min_diff = 3, feeling = "You hear echoing wails of agony!" },
-		{ level = { 80 },     weight = 1, list = "lava_elemental", history = "On level @1 he stumbled into a lava elemental cave!", min_diff = 3, feeling = "The cave temperature is insanely hot!" },
+		{ level = { 30 },     weight = 5, list = "ndemon",         history = "On @1 he stumbled into a nightmare demon cave!" },
+		{ level = { 40 },     weight = 5, list = "narachno",       history = "On @1 he stumbled into a nightmare arachnotron cave!" },
+		{ level = { 50 },     weight = 1, list = "npain",          history = "On @1 he stumbled into a nightmare elemental cave!" },
+		{ level = { 60 },     weight = 5, list = "ncacodemon",     history = "On @1 he stumbled into a nightmare cacodemon cave!" },
+		{ level = { 70 },     weight = 1, list = "agony",          history = "On @1 he stumbled into a agony elemental cave!", min_diff = 3, feeling = "You hear echoing wails of agony!" },
+		{ level = { 80 },     weight = 1, list = "lava_elemental", history = "On @1 he stumbled into a lava elemental cave!", min_diff = 3, feeling = "The cave temperature is insanely hot!" },
 	}
 
 	local mlevel = math.max( level.danger_level + (DIFFICULTY - 2)*3, 0 )

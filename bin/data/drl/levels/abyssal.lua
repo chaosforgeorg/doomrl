@@ -3,7 +3,7 @@
 register_level "abyssal_plains"
 {
 	name  = "Abyssal Plains",
-	entry = "On level @1 he romped upon the Abyssal Plains.",
+	entry = "On @1 he romped upon the Abyssal Plains.",
 	welcome = "You enter the Abyssal Plains. Well isn't this... just... dandy.",
 	level = 12,
 

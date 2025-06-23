@@ -38,7 +38,7 @@ register_badge "hellgate5"
 register_level "hellgate"
 {
 	name  = "Phobos Anomaly",
-	entry = "On level @1 he encountered the Phobos Anomaly.",
+	entry = "On @1 he encountered the Phobos Anomaly.",
 	welcome = "You arrive at the Phobos Anomaly.",
 
 	OnRegister = function ()
@@ -179,7 +179,7 @@ register_level "hellgate"
 register_level "tower_of_babel"
 {
 	name  = "Tower of Babel",
-	entry = "On level @1 he found the Tower of Babel!",
+	entry = "On @1 he found the Tower of Babel!",
 	welcome = "You enter a big arena. There's blood everywhere. You hear heavy mechanical footsteps...",
 	welcome = "You reach the Tower of Babel.",
 

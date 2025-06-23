@@ -3,7 +3,7 @@
 register_level "the_chained_court"
 {
 	name  = "The Chained Court",
-	entry = "On level @1 he stormed the Chained Court.",
+	entry = "On @1 he stormed the Chained Court.",
 	welcome = "Welcome to the Chained Court...",
 	level = 5,
 
