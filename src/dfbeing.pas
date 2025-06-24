@@ -18,6 +18,8 @@ type TBeingTimes = record
   Reload : Byte;
   Fire   : Byte;
   Move   : Byte;
+  Use    : Byte;
+  Wear   : Byte;
 end;
 
 type
@@ -60,6 +62,8 @@ TBeing = class(TThing,IPathQuery)
     function getMoveCost : LongInt;
     function getFireCost( aAltFire : TAltFire; aIsMelee : Boolean ) : LongInt;
     function getReloadCost : LongInt;
+    function getUseCost : LongInt;
+    function getWearCost : LongInt;
     function getDodgeMod : LongInt;
     function getKnockMod : LongInt;
     function getToHit( aItem : TItem; aAltFire : TAltFire; aIsMelee : Boolean ) : Integer;
@@ -192,6 +196,8 @@ TBeing = class(TThing,IPathQuery)
     property ReloadTime   : Byte       read FTimes.Reload  write FTimes.Reload;
     property FireTime     : Byte       read FTimes.Fire    write FTimes.Fire;
     property MoveTime     : Byte       read FTimes.Move    write FTimes.Move;
+    property UseTime      : Byte       read FTimes.Use     write FTimes.Use;
+    property WearTime     : Byte       read FTimes.Wear    write FTimes.Wear;
   end;
 
 
@@ -346,6 +352,8 @@ begin
   FTimes.Move       := Table.getInteger('movetime',100);
   FTimes.Fire       := Table.getInteger('firetime',100);
   FTimes.Reload     := Table.getInteger('reloadtime',100);
+  FTimes.Use        := Table.getInteger('usetime',100);
+  FTimes.Wear       := Table.getInteger('weartime',100);
   FExpValue         := Table.getInteger('xp');
 
   FSpeed    := Table.getInteger('speed');
@@ -616,7 +624,7 @@ begin
 
   if ( BF_QUICKSWAP in FFlags ) or ( canDualWield )
     then Exit( Success( 'You swap your weapons instantly!',[] ) )
-    else Exit( Success( 'You swap your weapons.',[], Round(ActionCostWear*0.8) ) );
+    else Exit( Success( 'You swap your weapons.',[], Round(getWearCost*0.8) ) );
 end;
 
 function TBeing.ActionDrop ( Item : TItem ) : boolean;
@@ -661,9 +669,9 @@ begin
 
   if FInv.DoWear( aItem ) then
   begin
-    if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then
+    if not ( iWeapon and Flags[BF_QUICKSWAP] ) then
     begin
-      Dec( FSpeedCount, ActionCostWear );
+      Dec( FSpeedCount, getWearCost );
       Exit( True );
     end;
   end;
@@ -683,9 +691,9 @@ begin
 
   if FInv.DoWear( aItem, aSlot ) then
   begin
-    if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then
+    if not ( iWeapon and Flags[BF_QUICKSWAP] ) then
     begin
-      Dec( FSpeedCount, ActionCostWear );
+      Dec( FSpeedCount, getWearCost );
       Exit( True );
     end;
   end;
@@ -699,9 +707,9 @@ begin
     Exit( False );
   iWeapon := FInv.Slot[aSlot].isWeapon;
   FInv.setSlot( aSlot, nil );
-  if ( not iWeapon ) or ( not Flags[BF_QUICKSWAP] ) then
+  if not ( iWeapon and Flags[BF_QUICKSWAP] ) then
   begin
-    Dec( FSpeedCount, ActionCostWear );
+    Dec( FSpeedCount, getWearCost );
     Exit( True );
   end;
   Exit( False );
@@ -1005,8 +1013,8 @@ begin
     if isUsedUp and ((UIDs.Get( iUID ) <> nil)  and (isLever or isPack)) then FreeAndNil( aItem );
   end;
   
-  if (BF_INSTAUSE in FFlags) and isUse then
-    Dec(FSpeedCount,100)
+  if isUse then
+    Dec(FSpeedCount,getUseCost)
   else
     Dec(FSpeedCount,1000);
   Exit( True );
@@ -2220,6 +2228,16 @@ begin
   getReloadCost := Round(ActionCostReload*iModifier);
 end;
 
+function TBeing.getUseCost: LongInt;
+begin
+  getUseCost := FTimes.Use * 10;
+end;
+
+function TBeing.getWearCost: LongInt;
+begin
+  getWearCost := FTimes.Wear * 10;
+end;
+
 function TBeing.getDodgeMod : LongInt;
 begin
   Result := GetBonus( Hook_getDodgeBonus, [] );
@@ -2630,7 +2648,7 @@ begin
     if Item.isWearable then
     begin
       Inv.Wear( Item );
-      SCount := SCount - ActionCostWear;
+      SCount := SCount - getWearCost;
       LRes := True;
     end;
   end;

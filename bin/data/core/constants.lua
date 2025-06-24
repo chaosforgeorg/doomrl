@@ -91,7 +91,7 @@ BF_PISTOLMAX    = 35;
 
 BF_HARDY        = 37;
 BF_SCAVENGER    = 38;
-BF_INSTAUSE     = 39;
+
 BF_STAIRSENSE   = 40;
 
 

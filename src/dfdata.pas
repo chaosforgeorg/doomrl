@@ -231,7 +231,6 @@ const
   ActionCostDrop   = 500;
   ActionCostAct    = 500;
   ActionCostReload = 1000;
-  ActionCostWear   = 1000;
   ActionCostMove   = 1000;
   ActionCostFire   = 1000;
 
