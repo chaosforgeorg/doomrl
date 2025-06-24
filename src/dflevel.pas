@@ -142,6 +142,8 @@ TLevel = class(TLuaMapNode, ITextMap)
     FFeeling       : AnsiString;
     FSpecExit      : AnsiString;
     FMusicID       : AnsiString;
+    FSName         : AnsiString;
+    FAbbr          : AnsiString;
   private
     function getCellBottom( Index : TCoord2D ): Byte;
     function getCellTop( Index : TCoord2D ): Byte;
@@ -169,6 +171,8 @@ TLevel = class(TLuaMapNode, ITextMap)
     property Empty        : Boolean    read FEmpty;
     property Status       : Word       read FStatus      write FStatus;
     property Name         : AnsiString read FName        write FName;
+    property SName        : AnsiString read FSName       write FSName;
+    property Abbr         : AnsiString read FAbbr        write FAbbr;
     property Name_Number  : Word       read FLNum        write FLNum;
     property Danger_Level : Word       read FDangerLevel write FDangerLevel;
     property Style        : Byte       read FStyle;
@@ -202,6 +206,9 @@ begin
     end;
     FStatus := 0;
     FName   := GetString( 'name' );
+    FSName  := GetString( 'sname','' );
+    FAbbr   := GetString( 'abbr','' );
+    if FSName = '' then FSName := FName;
     FLNum   := 0;
     Call('Create',[]);
     Place( Player, DropCoord( NewCoord2D(LuaPlayerX,LuaPlayerY), [ EF_NOBEINGS ] ) );
@@ -436,6 +443,8 @@ begin
   FFeeling     := Stream.ReadAnsiString();
   FSpecExit    := Stream.ReadAnsiString();
   FMusicID     := Stream.ReadAnsiString();
+  FSName       := Stream.ReadAnsiString();
+  FAbbr        := Stream.ReadAnsiString();
 
   FActiveBeing := nil;
   FNextNode    := nil;
@@ -462,7 +471,8 @@ begin
   Stream.WriteAnsiString( FFeeling );
   Stream.WriteAnsiString( FSpecExit );
   Stream.WriteAnsiString( FMusicID );
-
+  Stream.WriteAnsiString( FSName );
+  Stream.WriteAnsiString( FAbbr );
 
 //    FActiveBeing : TBeing;
 //    FNextNode    : TNode;
@@ -500,6 +510,8 @@ begin
   FullClear;
   FLNum := nlnum;
   FName := nname;
+  FSName := FName;
+  FAbbr  := '';
   FDangerLevel := nDangerLevel;
   FSpecExit := nSpecExit;
   FID := 'level'+IntToStr(nDepth);
