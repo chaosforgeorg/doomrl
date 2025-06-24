@@ -61,6 +61,7 @@ protected
   FArrayChal   : TMainMEnuEntryArray;
   FTitleChal   : Ansistring;
   FChallenges  : Boolean;
+  FFKlassPick  : Boolean;
 
   FBGTexture   : TTextureID;
   FLogoTexture : TTextureID;
@@ -416,6 +417,17 @@ begin
   VTIG_PushStyle( @TIGStyleFrameless );
   VTIG_Begin( 'mainmenu_klass', Point( 16, 2+FArrayKlass.Size ), Point( 10, 16 ) );
   VTIG_PopStyle;
+    if not FFKlassPick then
+    begin
+      for i := 0 to FArrayKlass.Size - 1 do
+        if FArrayKlass[i].Allow then
+        begin
+          VTIG_ResetSelect( '', i );
+          Break;
+        end;
+      FFKlassPick := True;
+    end;
+
     VTIG_PushStyle( @TIGStyleColored );
     for i := 0 to FArrayKlass.Size - 1 do
       if VTIG_Selectable( FArrayKlass[i].Name, FArrayKlass[i].Allow ) then
