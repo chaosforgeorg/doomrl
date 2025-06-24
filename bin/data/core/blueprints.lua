@@ -596,6 +596,8 @@ core.register_blueprint "level"
 {
 	id            = { true,  core.TSTRING },
 	name          = { true,  core.TSTRING },
+	sname         = { false, core.TSTRING },
+	abbr          = { false, core.TSTRING },
 	entry         = { false, core.TSTRING },
 	welcome       = { false, core.TSTRING },
 	level         = { false, core.TANY },

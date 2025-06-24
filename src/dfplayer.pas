@@ -527,7 +527,7 @@ begin
   // FScore
   ScoreCRC(FScore);
 
-  HOF.Add(Name,FScore,FKilledBy,FExpLevel,CurrentLevel,Doom.Challenge);
+  HOF.Add(Name,FScore,FKilledBy,FExpLevel,CurrentLevel,Doom.Challenge,Doom.Level.Abbr);
 
   if Assigned( MortemData ) then
   begin

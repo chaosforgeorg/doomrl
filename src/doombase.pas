@@ -1075,6 +1075,8 @@ repeat
                    getString('special',''),
                    Player.CurrentLevel,
                    getInteger('danger',0));
+        if IsString('sname') then FLevel.SName := getString('sname');
+        if IsString('abbr')  then FLevel.Abbr  := getString('abbr');
 
         if Player.SpecExit <> ''
           then FLevel.Flags[ LF_BONUS ] := True
