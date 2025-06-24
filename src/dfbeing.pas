@@ -1256,6 +1256,7 @@ var iShots       : Integer;
     iChaining    : Boolean;
     iFreeShot    : Boolean;
     iResult      : Boolean;
+    iSecond      : Boolean;
 begin
   if aTarget = FPosition then Exit( False );
   if aGun = nil then Exit( False );
@@ -1316,8 +1317,9 @@ begin
 
   FTargetPos := aTarget;
 
-  aGun.CallHook( Hook_OnFired, [ Self ] );
-  CallHook( Hook_OnFired, [ aGun ] );
+  iSecond := (aGun = FInv.Slot[ efWeapon2 ]);
+  aGun.CallHook( Hook_OnFired, [ Self, iSecond ] );
+  CallHook( Hook_OnFired, [ aGun, iSecond ] );
 
   if aGun.Flags[ IF_DESTROY ] then
     FreeAndNil( aGun );
@@ -1659,6 +1661,10 @@ begin
     // Apply damage
     aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon, 0 );
   end;
+
+  if iWeapon <> nil then iWeapon.CallHook( Hook_OnFired, [ Self, Second ] );
+  CallHook( Hook_OnFired, [ iWeapon, Second ] );
+
   // Dualblade attack
   if iDualAttack and (not Second) and TLevel(Parent).isAlive( iTargetUID ) then
     Attack( aTarget, True );
