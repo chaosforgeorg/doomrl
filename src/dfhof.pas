@@ -23,7 +23,7 @@ type THOF = object
   ExpRank    : Word;
 
   procedure Init;
-  procedure Add( const Name : AnsiString; aScore : LongInt; const aKillerID : AnsiString; Level, DLev : Word; nChal : AnsiString );
+  procedure Add( const Name : AnsiString; aScore : LongInt; const aKillerID : AnsiString; Level, DLev : Word; nChal, nAbbr : AnsiString );
   function RankCheck( out aResult : THOFRank ) : Boolean;
   function GetPagedPlayerReport : TPagedReport;
   function GetPagedScoreReport : TPagedReport;
@@ -608,7 +608,7 @@ var iChals     : TIntHashMap;
 
     iScore     : DWord;
     iLevel     : DWord;
-    iDlev      : DWord;
+    iDlev      : AnsiString;
     iString    : AnsiString;
     iName      : AnsiString;
     iKill      : AnsiString;
@@ -647,7 +647,7 @@ begin
 
     iScore := math.Max( StrToInt( iElement.GetAttribute('score') ), 0 );
     iLevel := StrToInt( iElement.GetAttribute('level') );
-    iDLev  := StrToInt( iElement.GetAttribute('depth') );
+    iDLev  := iElement.GetAttribute('depth');
     iName  := iElement.GetAttribute('name');
     iKill  := iElement.GetAttribute('killed');
 
@@ -665,7 +665,14 @@ begin
 
     iString += iKlassChar + '{L'+Padded(IntToStr(iLevel),3)+'}';
     iString += Padded(iKill,34);
-    iString += 'L{L'+Padded(IntToStr(iDLev),4)+'}';
+    if iDLev.Length > 0 then
+    begin
+      if iDLev[1] in ['1'..'9'] then
+        iString += 'L{L'+Padded(iDLev,4)+'}'
+      else
+        iString += Padded(iDLev,5);
+
+    end;
 //    if iChal <> '' then iString += iChal;
     iString += '}';
 
@@ -781,7 +788,7 @@ begin
   Exit( iXMLElement );
 end;
 
-procedure THOF.Add( const Name : AnsiString; aScore : LongInt; const aKillerID : AnsiString; Level, DLev : Word; nChal : AnsiString );
+procedure THOF.Add( const Name : AnsiString; aScore : LongInt; const aKillerID : AnsiString; Level, DLev : Word; nChal, nAbbr : AnsiString );
 var XMLElement : TDOMElement;
     XMLSubElement : TDOMElement;
     XMLEntry   : TDOMElement;
@@ -902,7 +909,9 @@ begin
         //Score.Add(Name,aScore,Level,DLev,Doom.Difficulty,VS,VSS,LuaSystem.Get(['klasses',Player.Klass,'id']));
         iScoreEntry.SetAttribute('name', Name );
         iScoreEntry.SetAttribute('level', IntToStr(Level) );
-        iScoreEntry.SetAttribute('depth', IntToStr(DLev) );
+        if nAbbr <> ''
+          then iScoreEntry.SetAttribute('depth', nAbbr )
+          else iScoreEntry.SetAttribute('depth', IntToStr(DLev) );
         iScoreEntry.SetAttribute('klass', LuaSystem.Get(['klasses',Player.Klass,'id']) );
         iScoreEntry.SetAttribute('killed', VS );
         iScoreEntry.SetAttribute('difficulty', IntToStr(Doom.Difficulty) );
