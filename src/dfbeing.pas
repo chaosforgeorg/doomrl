@@ -1673,7 +1673,7 @@ end;
 function TBeing.meleeWeaponSlot: TEqSlot;
 begin
   meleeWeaponSlot := efWeapon;
-  if (BF_QUICKSWAP in FFlags) and
+  if (BF_SWASHBUCKLER in FFlags) and
      ((Inv.Slot[efWeapon] = nil) or (not Inv.Slot[efWeapon].isMelee)) and
      (Inv.Slot[efWeapon2] <> nil) and (Inv.Slot[efWeapon2].isMelee) then
       meleeWeaponSlot := efWeapon2;

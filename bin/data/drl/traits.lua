@@ -170,6 +170,7 @@ function drl.register_traits()
 
 		OnPick = function (being)
 			being.flags[ BF_QUICKSWAP ] = true
+			being.flags[ BF_SWASHBUCKLER ] = true
 		end,
 	}
 
