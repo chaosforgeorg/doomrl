@@ -344,14 +344,15 @@ function drl.register_regular_items()
 		type    = ITEMTYPE_POWER,
 
 		OnPickup = function(self,being)
-			if being.flags[ BF_BACKPACK ] then
+			if being:has_property( "BACKPACK" ) then
 				ui.msg("Another backpack? Who needs two anyway.")
 				return
 			end
 			self.flags[ IF_NODESTROY ] = false
 			ui.msg("BackPack!")
 			ui.blink(YELLOW,50)
-			being:power_backpack()
+			being:add_property( "BACKPACK", 4 )
+			being:resort_ammo()
 		end,
 	}
 

@@ -785,6 +785,15 @@ function drl.GetQuitMessage()
 	return messages[math.random(#(messages))]
 end
 
+function drl.GetAmmoMax( ammo_id )
+	local result   = items[ ammo_id ].ammomax
+	local backpack = player:get_property( "BACKPACK", 0 )
+	if backpack > 0 then
+		result = math.ceil( result * ( 1 + backpack * 0.1 ) )
+	end
+	return result
+end
+
 function drl.OnGenerate()
 	core.log("drl.OnGenerate()")
 

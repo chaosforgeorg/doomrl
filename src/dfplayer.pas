@@ -657,7 +657,7 @@ begin
   Result := 1;
 end;
 
-function lua_player_power_backpack(L: Plua_State): Integer; cdecl;
+function lua_player_resort_ammo(L: Plua_State): Integer; cdecl;
 var State     : TDoomLuaState;
     Being     : TBeing;
     Item      : TItem;
@@ -669,7 +669,6 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  Include(Player.FFlags,BF_BackPack);
 
   for Cnt in TItemSlot do
     List[ Cnt ] := nil;
@@ -836,7 +835,7 @@ const lua_player_lib : array[0..13] of luaL_Reg = (
       ( name : 'has_won';         func : @lua_player_has_won),
       ( name : 'get_trait';       func : @lua_player_get_trait),
       ( name : 'get_trait_hist';  func : @lua_player_get_trait_hist),
-      ( name : 'power_backpack';  func : @lua_player_power_backpack),
+      ( name : 'resort_ammo';     func : @lua_player_resort_ammo),
       ( name : 'win';             func : @lua_player_win),
       ( name : 'continue_game';   func : @lua_player_continue_game),
       ( name : 'choose_trait';    func : @lua_player_choose_trait),

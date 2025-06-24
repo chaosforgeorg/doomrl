@@ -62,7 +62,7 @@ BF_NODROP       = 5;
 BF_NOEXP        = 6;
 BF_QUICKSWAP    = 7;
 BF_HUNTING      = 8;
-BF_BACKPACK     = 9;
+
 BF_UNIQUENAME   = 10;
 BF_IMPATIENT    = 11;
 BF_SPLASHIMMUNE = 12;
