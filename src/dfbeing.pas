@@ -90,7 +90,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionReload : Boolean;
     function ActionDualReload : Boolean;
     function ActionAltReload : Boolean;
-    function ActionFire( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean = False; aDelay : Integer = 0 ) : Boolean;
+    function ActionFire( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean = False; aDelay : Integer = 0; aForceSingle : Boolean = False ) : Boolean;
     function ActionPickup : Boolean;
     function ActionUse( aItem : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
@@ -799,7 +799,7 @@ begin
   end;
 end;
 
-function TBeing.ActionFire ( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean; aDelay : Integer = 0 ) : Boolean;
+function TBeing.ActionFire ( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean; aDelay : Integer = 0; aForceSingle : Boolean = False ) : Boolean;
 var iChainFire : Byte;
     iLimitRange: Boolean;
     iRange     : Byte;
@@ -873,7 +873,7 @@ begin
   Dec( FSpeedCount, getFireCost( iAltFire, False ) );
 
   if ( not FireRanged( aTarget, aWeapon, iAltFire, aDelay )) or Player.Dead then Exit;
-  if canDualWield and ( Inv.Slot[ efWeapon2 ].Ammo > 0 ) then
+  if ( not aForceSingle ) and canDualWield and ( Inv.Slot[ efWeapon2 ].Ammo > 0 ) then
     if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], iAltFire, aDelay + 100 )) or Player.Dead then Exit;
 
   Exit( True );
@@ -2541,7 +2541,7 @@ begin
   iDelay  := iState.ToInteger( 4, 0 );
   if ( iBeing = nil ) or ( iWeapon = nil ) then Exit( 0 );
   if iWeapon.CallHookCheck( Hook_OnFire, [ iBeing ] )
-    then iState.Push( iBeing.ActionFire( iTarget, iWeapon, False, iDelay ) )
+    then iState.Push( iBeing.ActionFire( iTarget, iWeapon, False, iDelay, iState.ToBoolean( 5, False ) ) )
     else iState.Push( False );
   Result := 1;
 end;
@@ -2875,18 +2875,28 @@ function lua_being_get_auto_target(L: Plua_State): Integer; cdecl;
 var iState : TDoomLuaState;
     iBeing : TBeing;
     iAuto  : TAutoTarget;
+    iRange : Integer;
+    iCount : Integer;
 begin
   iState.Init(L);
   iBeing := iState.ToObject( 1 ) as TBeing;
   if iBeing = nil then Exit( 0 );
+  iRange := iState.ToInteger( 2, iBeing.Vision );
+  iCount := iState.ToInteger( 3, 1 );
   Result := 0;
   iAuto := TAutoTarget.Create( iBeing.Position );
-  TLevel(iBeing.Parent).UpdateAutoTarget( iAuto, iBeing, iState.ToInteger( 2, iBeing.Vision ) );
+  TLevel(iBeing.Parent).UpdateAutoTarget( iAuto, iBeing, iRange );
   if iAuto.Current <> iBeing.Position then
   begin
     iBeing.FTargetPos := iAuto.Current;
-    iState.PushCoord( iAuto.Current );
-    Result := 1;
+    while iCount > 0 do
+    begin
+      if iAuto.Current = iBeing.Position then Break;
+      iState.PushCoord( iAuto.Current );
+      iAuto.Next;
+      Inc( Result );
+      Dec( iCount );
+    end;
   end;
   FreeAndNil( iAuto );
 end;
