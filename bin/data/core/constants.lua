@@ -1,6 +1,6 @@
 MAXX           = 78;
 MAXY           = 20;
-MAXAFFECT      = 16;
+MAXAFFECT      = 24;
 MAX_INV_SIZE   = 22;
 MAX_EQ_SIZE    = 4;
 
