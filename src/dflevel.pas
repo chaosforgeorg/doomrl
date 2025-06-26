@@ -1434,6 +1434,7 @@ begin
     end;
   end
   else Result := 'out of vision';
+  if GodMode then AddInfo( aWhere.ToString );
 end;
 
 function lua_level_drop_being(L: Plua_State): Integer; cdecl;
