@@ -222,6 +222,7 @@ function level:summon(t,opt)
 	local cid   = nil
 	local bid   = nil
 	local empty = { EF_NOBEINGS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
+	local safe  = 0
 	if type(t) == "string" then 
 		bid = t
 		count = opt or 1
@@ -232,6 +233,7 @@ function level:summon(t,opt)
 		if cid then empty = { EF_NOBEINGS, EF_NOBLOCK } end
 		where = t.area
 		empty = t.empty or empty
+		safe  = t.safe or 0
 	else
 		error( "Bad argument #1 passed to summon!" )
 	end
@@ -242,11 +244,13 @@ function level:summon(t,opt)
 	local last_being = nil
 	local c
 	for i=1,count or 1 do
-		if cid then
-			c = level:random_empty_coord(empty, cid, where)
-		else
-			c = level:random_empty_coord(empty, where)
-		end
+		repeat
+			if cid then
+				c = level:random_empty_coord(empty, cid, where)
+			else
+				c = level:random_empty_coord(empty, where)
+			end
+		until ( safe == 0 ) or ( player:distance_to( c ) > safe )
 		last_being = self:drop_being( bid, c )
 	end
 	return last_being
