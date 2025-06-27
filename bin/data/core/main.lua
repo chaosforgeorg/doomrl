@@ -37,7 +37,7 @@ register_cell = core.register_storage( "cells", "cell", function( c )
 	end	
 )
 
-function register_corpse( being_proto, index )
+function register_corpse( being_proto, index, no_ressurect )
 	local frames = being_proto.sframes or 1
 	if frames < 1 then frames = 1 end
 	frames = frames + (index or 0)
@@ -53,6 +53,9 @@ function register_corpse( being_proto, index )
 		destroyto = "bloodpool";
 		raiseto = being_proto.id;
 	}
+	if no_ressurect then
+		proto.flags = {CF_CORPSE, CF_NOCHANGE, CF_OVERLAY, CF_VBLOODY }
+	end
 	if being_proto.sflags[ SF_LARGE ] then
 		proto.sflags = { SF_LARGE }
 		proto.sprite = being_proto.sprite + frames * 2 * DRL_COLS
@@ -175,6 +178,7 @@ register_being         = core.register_storage( "beings", "being", function( bp 
 		if bp.corpse then
 			if type(bp.corpse) == "number"  then bp.corpse = register_corpse(bp,bp.corpse)  end
 			if type(bp.corpse) == "boolean" then bp.corpse = register_corpse(bp)  end
+			if type(bp.corpse) == "table"   then bp.corpse = register_corpse(bp,bp.corpse[1],bp.corpse[2]) end
 			if type(bp.corpse) == "string"  then bp.corpse = cells[bp.corpse].nid end
 		end
 
