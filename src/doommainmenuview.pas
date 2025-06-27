@@ -404,7 +404,7 @@ begin
   iSelected := VTIG_Selected('mainmenu_klass');
   if iSelected < 0 then iSelected := 0;
   iLines := 8;
-  if Length( FArrayKlass[iSelected].Desc ) > 255 then iLines := 13;
+  if Length( FArrayKlass[iSelected].Desc ) > 200 then iLines := 13;
   VTIG_PushStyle( @TIGStyleFrameless );
   VTIG_Begin( 'mainmenu_klass_desc', Point( 47, iLines ), Point( 30, 16 ) );
   VTIG_PopStyle;
