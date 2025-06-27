@@ -16,7 +16,9 @@ function level:get_being_table( dlevel, weights, reqs, dmod )
 		if b.weight > 0	and danger+dmod >= b.min_lev and danger <= b.max_lev then
 			if core.proto_reqs_met( b, reqs ) then
 				local weight = core.proto_weight( b, weights )
-				list:add( b, weight )
+				if weight > 0 then
+					list:add( b, weight )
+				end
 			end
 		end
 	end
@@ -25,7 +27,9 @@ function level:get_being_table( dlevel, weights, reqs, dmod )
 		if bg.weight > 0 and danger+dmod >= bg.min_lev and danger <= bg.max_lev then
 			if core.proto_reqs_met( bg, reqs ) then
 				local weight = core.proto_weight( bg, weights )
-				list:add( bg )
+				if weight > 0 then
+					list:add( bg )
+				end
 			end
 		end
 	end
@@ -157,7 +161,6 @@ function level:flood_items( params )
 end
 
 function level:roll_being( params )
-	local flags  = params.flags  or { EF_NOBEINGS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }
 	local reqs   = params.reqs or {}
 	reqs.is_group = false
 	local list

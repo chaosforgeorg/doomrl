@@ -862,9 +862,10 @@ function generator.remove_needless_doors()
 	end
 end
 
-function generator.mirror_horizontally( y_value )
+function generator.mirror_horizontally( y_value, x_start )
 	core.log("generator.mirror_horizontally()")
-	for x = 1, MAXX do
+	local x_start = x_start or 1
+	for x = x_start, MAXX do
 		for y = 1, y_value-1 do
 			local c1 = coord( x, y )
 			local c2 = coord( x, 2 * y_value - y )
