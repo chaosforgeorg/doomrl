@@ -35,7 +35,7 @@ register_level "house_of_pain"
 			['#'] = {"iwall", flags = {LFPERMANENT} },
 			['$'] = {"gwall", flags = {LFPERMANENT} },
 			['Z'] = {"rwall", flags = {LFPERMANENT} },
-			['+'] = "door",
+			['+'] = "ldoor",
 			['>'] = "stairs",
 			['-'] = "water",
 			['~'] = "acid",
@@ -79,7 +79,7 @@ register_level "house_of_pain"
 ]=]
 		generator.place_tile( translation, map, 1, 1 )
 		generator.set_permanence( area.FULL )
-		generator.set_permanence( area.FULL, true, "door" )
+		generator.set_permanence( area.FULL, true, "ldoor" )
 
 		level:player(14,10)
 	end,
@@ -90,7 +90,6 @@ register_level "house_of_pain"
 			if not level.data.is_staff then
 				ui.msg("The doors unlock.")
 				level:transmute("ldoor","door")
-				generator.set_permanence(area.FULL, true, "door")
 			end
 			if res == 0 then
 				level.status = 1
@@ -141,7 +140,6 @@ register_level "house_of_pain"
 			if not level.data.is_staff then
 				level:play_sound( "door.close", player.position )
 				level:transmute({"door","odoor"},"ldoor")
-				generator.set_permanence(area.FULL, true, "ldoor")
 				ui.msg("The doors shut violently!")
 			end
 		end
