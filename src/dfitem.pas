@@ -369,7 +369,7 @@ begin
               FlagStr := '';
               for Count := Ord('A') to Ord('Z') do
               if FMods[Count] > 0 then
-                FlagStr += Chr(Count) + IntToStr(FMods[Count]);
+                FlagStr += Chr(Count) + Iif( FMods[Count] > 1, IntToStr(FMods[Count]), '' );
               if FlagStr <> '' then Description += ' ('+FlagStr+')';
             end;
             Description += ResistDescriptionShort;
