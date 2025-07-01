@@ -329,14 +329,15 @@ function core.award_medals()
 	end
 end
 
-function core.update_player_data( awards_only )
+function core.update_player_awards()
 	for k,v in ipairs( awards ) do
 		if player:has_award( v.id ) then
 			player_data.add_counted( 'awards', 'award', v.id.."_"..tostring(player:get_award( v.id )))
 		end
 	end
-	if awards_only then return end
-		
+end
+
+function core.update_player_data()
 	for k,v in ipairs( items ) do
 		if ( v.is_exotic or v.is_unique ) and player:has_found_item( v.id ) then
 			player_data.add_counted( 'uniques', 'unique', v.id )
@@ -354,7 +355,9 @@ function core.update_player_data( awards_only )
 			player_data.add_counted( 'medals', 'medal', v.id )
 		end
 	end
-	
+end
+
+function core.update_player_badges()
 	for k,v in ipairs( badges ) do
 		if player:has_badge( v.id ) then
 			if player_data.get_counted( 'badges', 'badge', v.id ) > 0 then

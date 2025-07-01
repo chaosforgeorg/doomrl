@@ -703,7 +703,7 @@ function drl.register_awards()
 
 end
 
-function drl.award_badges( no_record )
+function drl.award_badges()
 	-- UAC, veteran, strongman and elite badges
 	if player:has_won() then
 		local is_conqueror = (statistics.bonus_levels_completed == statistics.bonus_levels_count)
@@ -798,11 +798,9 @@ function drl.award_badges( no_record )
 		end
 		--]]
 	end
+end
 
-	if no_record then return end
-
-	-- award global badges
-
+function drl.award_global_badges()
 	local medals_max = medals.__counter
 	local medals     = player_data.child_count('player/medals')
 
@@ -851,6 +849,10 @@ end
 
 function drl.RunAwards( no_record )
 	core.award_medals()
-	drl.award_badges( no_record )
-	core.update_player_data( no_record )
+	drl.award_badges()
+	core.update_player_awards()
+	if no_record then return end
+	core.update_player_data()
+	drl.award_global_badges()
+	core.update_player_badges()
 end

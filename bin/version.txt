@@ -3,6 +3,7 @@
 [fix] -- GH#282: House of Pain locks fixed [brisbang]
 [fix] -- GH#295: grappling armor assembly won't be affected by mod order
 [fix] -- GH#295: grappling boots move penalty removed
+[fix] -- GH#291: fixed order of awarding badges (fixes Tech, Armorer and Heroic badges)
 
 0.9.9.9 BETA 8
 [new] -- GH#222: new L4 special level - Central Processing [brisbang]
