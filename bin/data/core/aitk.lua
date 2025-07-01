@@ -422,6 +422,10 @@ function aitk.basic_smart_idle( self )
         end
         if next_move then
             self.move_to = next_move
+            if next_move == self.position then
+                self.scount = self.scount - 500
+                return "idle"
+            end
             if not self:path_find( self.move_to, 10, 40 ) then
                 self.scount = self.scount - 1000
                 self.move_to = false
