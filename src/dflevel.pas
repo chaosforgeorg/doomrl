@@ -1038,6 +1038,7 @@ end;
 procedure TLevel.Respawn( aChance : byte );
 var iCoord : TCoord2D;
     iBeing : TBeing;
+    iItem  : TItem;
 begin
   if LF_NORESPAWN in FFlags then Exit;
   for iCoord in FArea do
@@ -1051,7 +1052,8 @@ begin
               iBeing.Flags[ BF_RESPAWN ] := True;
               DropBeing( iBeing, iCoord );
               iBeing.Flags[ BF_NOEXP   ] := True;
-              iBeing.Flags[ BF_NODROP ]  := True;
+              for iItem in iBeing.Inv do
+                iItem.Flags[ IF_NODROP ] := True;
               Cell[ iCoord ] := LuaSystem.Defines[ Cells[ GetCell(iCoord) ].destroyto ];
             except
               on EPlacementException do FreeAndNil( iBeing );

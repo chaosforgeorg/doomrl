@@ -1415,6 +1415,7 @@ procedure TBeing.Ressurect( RRange : Byte );
 var range   : byte;
     sc      : TCoord2D;
     iBeing  : TBeing;
+    iItem   : TItem;
     iLevel  : TLevel;
     iCellID : Byte;
 begin
@@ -1432,7 +1433,9 @@ begin
             iLevel.DropBeing( iBeing, sc );
             iLevel.Cell[sc] := LuaSystem.Defines[ Cells[ iCellID ].destroyto ];
             Include( iBeing.FFlags, BF_NOEXP );
-            Include( iBeing.FFlags, BF_NODROP );
+            for iItem in iBeing.FInv do
+              iItem.Flags[ IF_NODROP ] := True;
+
             if isVisible then IO.Msg(Capitalized(GetName(true))+' raises his arms!');
             if iBeing.isVisible then IO.Msg(Capitalized( iBeing.GetName(true))+' suddenly rises from the dead!');
           except
@@ -1490,7 +1493,7 @@ begin
   if not aOverkill then
   try
     for iItem in FInv do
-      if (not (BF_NODROP in FFlags)) and (not iItem.Flags[IF_NODROP]) then
+      if not iItem.Flags[IF_NODROP] then
         iLevel.DropItem( iItem, FPosition );
   except
     on e : EPlacementException do ;
