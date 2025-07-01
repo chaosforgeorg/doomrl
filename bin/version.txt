@@ -1,3 +1,7 @@
+0.9.9.9 BETA 9
+[fix] -- GH#294: improved filtering of WM/System events while multi-move stop
+[fix] -- GH#282: House of Pain locks fixed [brisbang]
+
 0.9.9.9 BETA 8
 [new] -- GH#222: new L4 special level - Central Processing [brisbang]
 [new] -- GH#222: new L4 special level - Toxin Refinery [brisbang]
