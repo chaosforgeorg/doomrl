@@ -1,10 +1,11 @@
 0.9.9.9 BETA 9
 [fix] -- GH#294: improved filtering of WM/System events while multi-move stop
-[fix] -- GH#282: House of Pain locks fixed [brisbang]
+[fix] -- RCFIX : House of Pain locks fixed [brisbang]
 [fix] -- GH#295: grappling armor assembly won't be affected by mod order
 [fix] -- GH#295: grappling boots move penalty removed
-[fix] -- GH#291: fixed order of awarding badges (fixes Tech, Armorer and Heroic badges)
+[fix] -- RCFIX : fixed order of awarding badges (fixes Tech, Armorer and Heroic badges)
 [fix] -- GH#296: the UV+ barons in The Vaults spawn wearing red armor
+[fix] -- RCFIX : fix item seek case when standing on item (fixes item camping)
 
 0.9.9.9 BETA 8
 [new] -- GH#222: new L4 special level - Central Processing [brisbang]
