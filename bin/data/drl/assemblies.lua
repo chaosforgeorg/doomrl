@@ -334,7 +334,7 @@ function drl.register_assemblies()
 
 		OnApply = function (item)
 			item.name      = "grappling "..item.name
-			item.movemod   = item.__proto.movemod - 10
+			item.movemod   = item.__proto.movemod
 			item.armor     = item.armor + 1
 			item.knockmod  = math.max( -90, item.__proto.knockmod - 50 )
 		end,
@@ -348,6 +348,7 @@ function drl.register_assemblies()
 
 		OnApply = function (item)
 			item.name          = "grappling "..item.name
+			item.movemod       = item.__proto.movemod
 			item.durability    = 100
 			item.maxdurability = 100
 			item.knockmod      = math.max( -90, item.__proto.knockmod - 50 )
