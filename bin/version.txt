@@ -8,6 +8,7 @@
 [fix] -- RCFIX : fixed order of awarding badges (fixes Tech, Armorer and Heroic badges)
 [fix] -- GH#296: the UV+ barons in The Vaults spawn wearing red armor
 [fix] -- RCFIX : fix item seek case when standing on item (fixes item camping)
+[fix] -- RCFIX : fixed coloring (check your config.lua for color definition order!)
 
 0.9.9.9 BETA 8
 [new] -- GH#222: new L4 special level - Central Processing [brisbang]

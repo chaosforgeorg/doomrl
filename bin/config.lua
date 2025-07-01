@@ -116,6 +116,26 @@ SaveOnCrash      = true
 
 -- Unsure how these work and want to fiddle with them?
 -- Head over to http://forum.chaosforge.org/ for more info.
+
+-- Colors can be:
+BLUE        = 1
+GREEN       = 2
+CYAN        = 3
+RED         = 4
+MAGENTA     = 5
+BROWN       = 6
+LIGHTGRAY   = 7
+DARKGRAY    = 8
+LIGHTBLUE   = 9
+LIGHTGREEN  = 10
+LIGHTCYAN   = 11
+LIGHTRED    = 12
+LIGHTMAGENTA= 13
+YELLOW      = 14
+WHITE       = 15
+-- The darker (first 8) work better, as they get highlighted
+-- rest will highlight to White.
+
 Messages = {
 	["Warning!*"] 		              = RED,
 	["Your * destroyed!"]             = RED,
@@ -150,23 +170,6 @@ Messages = {
 --
 -- In case of cells, there are two overrides - [id]_light and [id]_dark
 -- [id]_dark cells are out of vision, [id]_light cells are ones you can see.
-
--- Colors can be:
-BLUE        = 1
-GREEN       = 2
-CYAN        = 3
-RED         = 4
-MAGENTA     = 5
-BROWN       = 6
-LIGHTGRAY   = 7
-DARKGRAY    = 8
-LIGHTBLUE   = 9
-LIGHTGREEN  = 10
-LIGHTCYAN   = 11
-LIGHTRED    = 12
-LIGHTMAGENTA= 13
-YELLOW      = 14
-WHITE       = 15
 
 -- An example of how to change DRL's color scheme.
 Colors = {
