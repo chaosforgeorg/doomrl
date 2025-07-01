@@ -982,7 +982,7 @@ begin
       FIODriver.PollEvent( iEvent );
       Continue;
     end;
-    if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEUP, VEVENT_KEYUP ] then
+    if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEUP, VEVENT_KEYUP, VEVENT_SYSTEM, VEVENT_TEXT ] then
     begin
       FIODriver.PollEvent( iEvent );
       OnEvent( iEvent );
