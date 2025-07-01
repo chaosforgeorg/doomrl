@@ -747,6 +747,7 @@ begin
           if FCachedAmmo = -1 then
             FCachedAmmo := Player.Inv.CountAmmo( iWeapon.AmmoID );
           iDesc := Player.Inv.Slot[efWeapon].Description;
+          if Length( iDesc ) > 42 then iDesc := Copy(iDesc, 1, 42 );
           VTIG_FreeLabel( iDesc, iPos + Point(31,1), WeaponColor(Player.Inv.Slot[efWeapon]) );
           VTIG_FreeLabel( ' ({0})', iPos + Point(31+Length(iDesc),1), [ FCachedAmmo ], iCNormal );
         end

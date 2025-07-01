@@ -622,6 +622,7 @@ var iEntry : TItemViewEntry;
 begin
   iEntry.Item  := aItem;
   iEntry.Name  := aItem.Description;
+  if Length( iEntry.Name ) > 47 then iEntry.Name := Copy(iEntry.Name, 1, 47 );
   iEntry.Stats := aItem.DescriptionBox;
   iEntry.Color := aItem.MenuColor;
   iEntry.QSlot := 0;

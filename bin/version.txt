@@ -1,5 +1,6 @@
 0.9.9.9 BETA 9
 [mod] -- GH#293: weapon mods won't print the count if one (so (AP2) for example)
+[mod] -- GH#293: item names will be truncated to available space if too long
 [fix] -- GH#294: improved filtering of WM/System events while multi-move stop
 [fix] -- RCFIX : House of Pain locks fixed [brisbang]
 [fix] -- GH#295: grappling armor assembly won't be affected by mod order
