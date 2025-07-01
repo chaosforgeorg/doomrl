@@ -4,6 +4,7 @@
 [fix] -- GH#295: grappling armor assembly won't be affected by mod order
 [fix] -- GH#295: grappling boots move penalty removed
 [fix] -- GH#291: fixed order of awarding badges (fixes Tech, Armorer and Heroic badges)
+[fix] -- GH#296: the UV+ barons in The Vaults spawn wearing red armor
 
 0.9.9.9 BETA 8
 [new] -- GH#222: new L4 special level - Central Processing [brisbang]

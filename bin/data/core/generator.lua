@@ -152,7 +152,12 @@ function generator.place_dungen_tile( code, tile_object, tile_pos )
 		assert( tile_entry, "Character in map not defined -> "..char)
 		if type(tile_entry) ~= "number" then
 			local p = tile_pos + c - coord.UNIT
-			if tile_entry.being then level:drop_being_ext( tile_entry.being, p ) end
+			if tile_entry.being then 
+				local b = level:drop_being_ext( tile_entry.being, p )
+				if b and tile_entry.armor then
+					b.eq.armor = tile_entry.armor
+				end
+			end
 			if tile_entry.item  then level:drop_item_ext( tile_entry.item, p ) end
 			if tile_entry.flags then
 				for _, flag in ipairs(tile_entry.flags) do

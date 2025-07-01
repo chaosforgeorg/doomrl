@@ -293,6 +293,7 @@ function level:drop_item_ext( item, c )
 			end
 		end
 	end
+	return new_item
 end
 
 function level:drop_being_ext( being, c )
@@ -307,6 +308,7 @@ function level:drop_being_ext( being, c )
 			end
 		end
 	end
+	return new_being
 end
 
 function level:try_destroy_item( coord )
