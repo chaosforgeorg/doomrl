@@ -578,6 +578,10 @@ function drl.register_beings()
 				expl_flags = { EFNOKNOCK, EFSELFSAFE },
 			},
 		},
+
+		OnCreate = function (self)
+			self:add_property( "master", true )
+		end,
 	}
 
 	-- elite formers ------------------------------------------------------
@@ -1159,6 +1163,9 @@ function drl.register_beings()
 			},
 		},
 
+		OnCreate = function (self)
+			self:add_property( "master", true )
+		end,
 	}
 
 	-- special enemies ----------------------------------------------------
@@ -1409,6 +1416,8 @@ function drl.register_beings()
 		OnCreate = function (self)
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 10
 			self.hp = self.hpmax
+
+			self:add_property( "master", true )
 		end,
 	}
 
@@ -1451,6 +1460,8 @@ function drl.register_beings()
 			end
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 10
 			self.hp = self.hpmax
+
+			self:add_property( "master", true )
 		end,
 
 		OnDie = function (self)
@@ -1515,6 +1526,8 @@ function drl.register_beings()
 		OnCreate = function (self)
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 10
 			self.hp = self.hpmax
+
+			self:add_property( "master", true )
 		end,
 
 		OnDie = function (self)
@@ -1563,6 +1576,8 @@ function drl.register_beings()
 
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 10
 			self.hp = self.hpmax
+
+			self:add_property( "master", true )
 		end,
 
 		OnDie = function (self)
@@ -1637,6 +1652,7 @@ function drl.register_beings()
 
 		OnCreate = function (self)
 			level.flags[ LF_NONUKE ] = true
+			self:add_property( "master", true )
 		end,
 
 		OnAction = function (self)

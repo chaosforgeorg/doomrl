@@ -345,7 +345,6 @@ register_ai "jc_ai"
 	OnCreate = function( self )
 		aitk.basic_init( self, false, false )
 		self:add_property( "attacked", false )
-		self:add_property( "master", true )
 		self.ai_state = "wait"
 	end,
 

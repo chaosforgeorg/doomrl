@@ -199,6 +199,8 @@ register_level "the_chained_court"
 				self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 5
 				self.hp = self.hpmax
 				self.inv:add( item.new( "uarenastaff" ) )
+
+				self:add_property( "master", true )
 			end,
 		}
 

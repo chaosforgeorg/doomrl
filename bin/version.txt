@@ -4,6 +4,8 @@
 [mod] -- GH#279: no-drop is now per item, not per-enemy, so rezzed enemies pickups will drop
 [mod] -- GH#274: improved nuke and nuke escape FX
 [mod] -- GH#274: 1/3rd hit flash will now base on MaxHP instead of nominal
+[mod] -- RCMOD : infighting won't happen between same enemies
+[mod] -- RCMOD : vile-likes and bosses won't trigger retaliation
 [fix] -- GH#294: improved filtering of WM/System events while multi-move stop
 [fix] -- RCFIX : House of Pain locks fixed [brisbang]
 [fix] -- GH#295: grappling armor assembly won't be affected by mod order

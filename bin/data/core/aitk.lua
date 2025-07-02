@@ -342,6 +342,7 @@ function aitk.basic_on_attacked( self, target )
     if self:has_property("boredom") then self.boredom = 0 end
     if target then 
         if target:has_property("master") then return end
+        if target.id == self.id then return end
         if self.flags[ BF_FRIENDLY ] and target == player then return end
         self.target = target.uid
         if self.ai_state == "idle" or ( self.ai_state == "pursue" and self.move_to ~= target.position ) then

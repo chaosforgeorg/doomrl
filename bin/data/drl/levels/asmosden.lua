@@ -58,6 +58,10 @@ register_level "the_asmos_den"
 				},
 			},
 
+			OnCreate = function (self)
+				self:add_property( "master", true )
+			end,
+			
 			OnAction = function (self)
 				if self:distance_to(player) > self.vision-1 then
 					local target = level:drop_coord( self.position, {EF_NOBEINGS,EF_NOBLOCK} )
@@ -66,6 +70,7 @@ register_level "the_asmos_den"
 					player:relocate( target )
 					level:explosion( player, 1, 50, 0, 0, YELLOW )
 				end
+
 			end,
 		}
 
