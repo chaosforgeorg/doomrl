@@ -583,7 +583,7 @@ function drl.register_unique_items()
 				return false
 			end
 			local pos  = being.position
-			if level.map[ pos ] == "acid" then
+			if level.map[ pos ] == cells[ "acid" ].nid then
 				ui.msg("Slurp!")
 				self.ammo = math.min( self.ammo + 1, self.ammomax )
 				being.scount = being.scount - 1000
