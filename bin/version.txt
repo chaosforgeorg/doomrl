@@ -16,6 +16,7 @@
 [fix] -- GH#274: fixed flashes not appearing if framerate is low
 [fix] -- RCFIX : Acid Spitter reload works again
 [fix] -- RCFIX : corpseless enemies no longer will leave invisible corpses
+[fix] -- RCFIX : assignment of music for the two new levels
 
 0.9.9.9 BETA 8
 [new] -- GH#222: new L4 special level - Central Processing [brisbang]

@@ -51,6 +51,8 @@ music = {
 	the_vaults        = "music/dark_secrets.mp3",
 	house_of_pain     = "music/dark_secrets.mp3",
 	the_lava_pits     = "music/too_hot_down_here.mp3",
+	toxin_refinery    = "music/cde1m3.mp3",
+	central_processing= "music/cde1m6.mp3",
 
 	phobos_lab        = "music/cde1m5.mp3",
 	deimos_lab        = "music/hells_weapons.mp3",

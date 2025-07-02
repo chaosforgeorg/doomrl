@@ -55,6 +55,8 @@ music = {
 	the_vaults        = "music/dark_secrets.mid",
 	house_of_pain     = "music/dark_secrets.mid",
 	the_lava_pits     = "music/too_hot_down_here.mid",
+	toxin_refinery    = "music/13 - toxin refinery.mid",
+	central_processing= "music/16 - central processing.mid",
 
 	phobos_lab        = "music/15 - phobos lab.mid",
 	deimos_lab        = "music/24 - deimos lab.mid",
