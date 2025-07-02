@@ -27,7 +27,7 @@ begin
   VTIG_EventClear;
   VTIG_ResetScroll( 'paged_view' );
   VTIG_ResetScroll( 'paged_view_inner' );
-  FSize      := Point( 80, 25 );
+  FSize      := VTIG_GetIOState.Size;
   FContent   := aPages;
   FPage      := 0;
   if aInitialPage <> '' then
@@ -51,7 +51,7 @@ begin
     begin
       VTIG_Text( FContent.Headers[ FPage ] );
       VTIG_PushStyle( @TIGStyleFrameless );
-      VTIG_Begin( 'paged_view_inner', FSize - Point(0,4), Point(1,4) );
+      VTIG_Begin( 'paged_view_inner', FSize - Point(1,4), Point(2,4) );
       VTIG_PopStyle;
     end;
 

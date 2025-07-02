@@ -336,7 +336,7 @@ begin
     iElement := FPlayerInfo.XML.GetElement('player/kills/killbeing[@id="'+LuaSystem.Get(['beings',cn,'id'])+'"]');
     if iElement = nil then Continue;
 
-    iString := ' '+Padded(LuaSystem.Get(['beings',cn,'name']),16);
+    iString := Padded(LuaSystem.Get(['beings',cn,'name']),16);
     iString += Padded(IsNone(StrToInt(iElement.GetAttribute('count'))),10);
 
     for cn2 := 1 to LuaSystem.Get([ 'diff', '__counter' ]) do
