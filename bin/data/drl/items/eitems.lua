@@ -1178,8 +1178,8 @@ function drl.register_exotic_items()
 			if not being:is_player() then return end
 			being:quick_weapon("bfg9000")
 			ui.blink(LIGHTBLUE,100)
-			ui.blink(WHITE,100)
-			ui.blink(LIGHTBLUE,100)
+			ui.blink(WHITE,100,100)
+			ui.blink(LIGHTBLUE,100,200)
 			ui.msg("HELL, NOW YOU'LL GET LOOSE!")
 		end,
 

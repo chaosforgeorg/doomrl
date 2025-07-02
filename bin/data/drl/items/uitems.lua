@@ -869,8 +869,8 @@ function drl.register_unique_items()
 
 		OnUse = function(self,being)
 			ui.blink(LIGHTRED,50)
-			ui.blink(RED,50)
-			ui.blink(LIGHTRED,50)
+			ui.blink(RED,50,50)
+			ui.blink(LIGHTRED,50,100)
 			level:explosion( being.position , 15, 80, 20, 10, RED, "barrel.explode", DAMAGE_FIRE, self, { EFSELFSAFE } )
 			return true
 		end,
@@ -1015,8 +1015,8 @@ function drl.register_unique_items()
 
 		OnPickup = function (self,being)
 			being:quick_weapon("udragon")
-			ui.blink(RED,20)
-			ui.blink(LIGHTRED,20)
+			ui.blink(RED,50)
+			ui.blink(LIGHTRED,50,50)
 			ui.msg("Release the power of the BERSERKER!")
 			being:set_affect( "berserk" )
 		end,

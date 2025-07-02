@@ -380,7 +380,7 @@ function drl.register_regular_items()
 				being:msg( "You have no armor that needs fixing! Nothing happens." )
 				return
 			end
-			ui.blink( YELLOW, 20 )
+			ui.blink( YELLOW, 50 )
 			if damaged_armor then
 				if armor:fix(25*diff[DIFFICULTY].powerfactor) then
 					being:msg( "Your armor looks like new!" )
@@ -1637,7 +1637,7 @@ function drl.register_regular_items()
 			local damaged_armor = armor and armor:is_damaged()
 			local damaged_boots = boots and boots:is_damaged()
 			self.charges = self.charges - 1
-			ui.blink( YELLOW, 20 )
+			ui.blink( YELLOW, 50 )
 			if damaged_armor then
 				if armor:fix(25) then
 					ui.msg( "Your armor looks like new!" )

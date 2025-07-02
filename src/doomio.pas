@@ -1083,7 +1083,7 @@ function lua_ui_blink(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
   State.Init(L);
-  IO.Blink(State.ToInteger(1),State.ToInteger(2));
+  IO.Blink( State.ToInteger(1), State.ToInteger(2), State.ToInteger(3));
   Result := 0;
 end;
 

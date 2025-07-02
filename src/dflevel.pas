@@ -31,6 +31,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure FullClear;
     procedure Tick;
     procedure NukeTick;
+    procedure NukeRun;
     procedure NukeCell( where : TCoord2D );
      
     function blocksVision( const aCoord : TCoord2D ) : boolean; override;
@@ -1227,24 +1228,32 @@ begin
         IO.WaitForLayer( False );
         Exit;
       end;
-      for cn := 1 to 10 do
-      begin
-        Explosion( cn*200, RandomCoord( [ EF_NOBLOCK ] ),8,10,NewDiceRoll(0,0,0),LightRed,IO.Audio.ResolveSoundID(['nuke','barrel.explode','explode']){}{}{}{}{}{}{}{}{}, Damage_Fire, nil);
-        IO.Blink(LightRed,40);
-        IO.Blink(White,40);
-      end;
-      IO.Blink(White,2000);
+
+      NukeRun;
 
       Include( FFlags, LF_NUKED );
-
-      FArea.ForAllCells( @NukeCell );
-
-
       Player.NukeActivated := 0;
       Player.ApplyDamage( 6000, Target_Internal, Damage_Plasma, nil, 0 );
+
       CallHook(Hook_OnNuked,[Player.CurrentLevel,FID]);
     end;
   end;
+end;
+
+procedure TLevel.NukeRun;
+var iCount : Integer;
+begin
+  for iCount := 1 to 10 do
+  begin
+    Explosion( iCount*200, RandomCoord( [ EF_NOBLOCK ] ),8,10,NewDiceRoll(0,0,0),LightRed,IO.Audio.ResolveSoundID(['nuke','barrel.explode','explode']), Damage_Fire, nil);
+    if iCount mod 2 = 0 then
+    begin
+      IO.Blink( LightRed, 50, (iCount-1) * 200 );
+      IO.Blink( White,    50, (iCount-1) * 200 + 50 );
+    end;
+  end;
+  IO.Blink(White,2000,2000);
+  FArea.ForAllCells( @NukeCell );
 end;
 
 procedure TLevel.NukeCell(where: TCoord2D);
@@ -1510,20 +1519,12 @@ begin
 end;
 
 function lua_level_nuke(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Count : Byte;
-    Level : TLevel;
+var iState : TDoomLuaState;
+    iLevel : TLevel;
 begin
-  State.Init(L);
-  Level := State.ToObject(1) as TLevel;
-  for Count := 1 to 10 do
-  begin
-    Level.Explosion(0,Level.RandomCoord( [ EF_NOBLOCK ] ),8,10,NewDiceRoll(0,0),LightRed,0{}{}{}{}{}{}{}{}{}, Damage_Fire, nil );
-    IO.Blink(LightRed,40);
-    IO.Blink(White,40);
-  end;
-  IO.Blink(White,1000);
-  Level.FArea.ForAllCells( @Level.NukeCell );
+  iState.Init(L);
+  iLevel := iState.ToObject(1) as TLevel;
+  iLevel.NukeRun;
   Result := 0;
 end;
 

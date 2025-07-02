@@ -254,7 +254,7 @@ function drl.register_base_data()
 				if i.flags[ IF_UNIQUE ] then
 					statistics.uniques_found = statistics.uniques_found + 1
 					self:add_history( 'On @1 he found the '..i.name..'!' )
-					ui.blink( LIGHTGREEN, 20 )
+					ui.blink( LIGHTGREEN, 50 )
 				end
 				if items[ i.id ].OnFirstPickup then
 					items[ i.id ].OnFirstPickup( i, self )

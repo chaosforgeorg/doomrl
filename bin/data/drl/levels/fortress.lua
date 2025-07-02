@@ -45,7 +45,7 @@ register_level "unholy_cathedral"
 				else
 					level:explosion( being.position , 3, 50, 10, 10, YELLOW, "soldier.phase", DAMAGE_FIRE, self, { EFSELFSAFE } )
 					ui.blink(YELLOW,50)
-					ui.blink(WHITE,50)
+					ui.blink(WHITE,50,50)
 					being:set_affect( "tired" )
 					being.scount = being.scount - 1000
 				end

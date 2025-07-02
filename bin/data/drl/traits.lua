@@ -192,7 +192,7 @@ function drl.register_traits()
 						self.berserkerlimit = self.berserkerlimit + 1
 						if self.berserkerlimit > 4 - math.min( math.floor( (player.enemiesinvision + 1) / 2), 3 ) then
 							level:play_sound( "bpack", "powerup", self.position )
-							ui.blink( RED, 30 )
+							ui.blink( RED, 50 )
 							if self:is_affect( "berserk" ) then
 								local berserk = self:get_affect_time( "berserk" )
 								if berserk > 0 then

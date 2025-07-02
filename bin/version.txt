@@ -2,6 +2,7 @@
 [mod] -- GH#293: weapon mods won't print the count if one (so (AP2) for example)
 [mod] -- GH#293: item names will be truncated to available space if too long
 [mod] -- GH#279: no-drop is now per item, not per-enemy, so rezzed enemies pickups will drop
+[mod] -- GH#274: improved nuke and nuke escape FX
 [fix] -- GH#294: improved filtering of WM/System events while multi-move stop
 [fix] -- RCFIX : House of Pain locks fixed [brisbang]
 [fix] -- GH#295: grappling armor assembly won't be affected by mod order
@@ -10,6 +11,8 @@
 [fix] -- GH#296: the UV+ barons in The Vaults spawn wearing red armor
 [fix] -- RCFIX : fix item seek case when standing on item (fixes item camping)
 [fix] -- RCFIX : fixed coloring (check your config.lua for color definition order!)
+[fix] -- GH#274: fixed consecutive flashes not queueing properly
+[fix] -- GH#274: fixed flashes not appearing if framerate is low
 
 0.9.9.9 BETA 8
 [new] -- GH#222: new L4 special level - Central Processing [brisbang]

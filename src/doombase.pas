@@ -990,6 +990,7 @@ var iRank       : THOFRank;
     iFullLoad   : Boolean;
     iChalAbbr   : Ansistring;
     iReport     : TPagedReport;
+    iEnterNuke  : Boolean;
 begin
   iResult    := TMenuResult.Create;
   Doom.Load;
@@ -1050,14 +1051,16 @@ repeat
   GameRealTime := MSecNow();
   try
   repeat
+    iEnterNuke := False;
     if State <> DSLoading then
     begin
+      iEnterNuke := False;
       if (Player.NukeActivated > 0) then
       begin
-        IO.Msg('You hear a gigantic explosion above!');
         Player.Score := Player.Score + 1000;
         Player.Statistics.Increase('levels_nuked');
         Player.NukeActivated := 0;
+        iEnterNuke := True;
       end;
 
       Player.Statistics.Update;
@@ -1103,6 +1106,12 @@ repeat
     SetState( DSPlaying );
     IO.BloodSlideDown(20);
     IO.Audio.PlayMusic( Iif( FLevel.Music_ID <> '', FLevel.Music_ID, FLevel.ID ) );
+
+    if iEnterNuke then
+    begin
+      IO.Msg('You hear a gigantic explosion above!');
+      IO.addScreenShakeAnimation( 1000, 100, 7 );
+    end;
 
     if not iFullLoad then
     begin
