@@ -99,9 +99,9 @@ function generator.scatter_cross_item(scatter_area,good,item_id,count)
 	end
 end
 
---brisbang: Recommend deprecation and replace with level:transmute_by_flag. This function wasn't working when I was invoking it in 2025-03-15.
 function generator.transmute_style( from, to, fstyle, tstyle, ar )
-	local a = ar or area.FULL
+	local a    = ar or area.FULL
+	local from = cells[from].nid
 	for c in a() do 
 		if level.map[ c ] == from and level:get_raw_style( c ) == fstyle then
 			level.map[ c ] = to
@@ -114,8 +114,8 @@ end
 
 function generator.transmute_to_object( from, object, ar, floor )
 	local a     = ar or area.FULL
+	local from  = cells[from].nid
 	local floor = floor or generator.styles[ level.style ].floor
-	if type(from) == "string" then from = cells[from].nid end
 	for c in a() do 
 		if level.map[ c ] == from then
 			level.map[ c ] = floor
