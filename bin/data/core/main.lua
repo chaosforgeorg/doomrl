@@ -177,9 +177,11 @@ register_being         = core.register_storage( "beings", "being", function( bp 
 
 		if bp.corpse then
 			if type(bp.corpse) == "number"  then bp.corpse = register_corpse(bp,bp.corpse)  end
-			if type(bp.corpse) == "boolean" then bp.corpse = register_corpse(bp)  end
+			if type(bp.corpse) == "boolean" then bp.corpse = register_corpse(bp) end
 			if type(bp.corpse) == "table"   then bp.corpse = register_corpse(bp,bp.corpse[1],bp.corpse[2]) end
 			if type(bp.corpse) == "string"  then bp.corpse = cells[bp.corpse].nid end
+		else
+			bp.corpse = 0
 		end
 
 		local OnCreate = function (self)

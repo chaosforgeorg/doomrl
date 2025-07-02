@@ -240,7 +240,7 @@ core.register_blueprint "being"
 	vision      = { false, core.TNUMBER , 0 },
 	min_lev     = { false, core.TNUMBER , 0 },
 	max_lev     = { false, core.TNUMBER , 10000 },
-	corpse      = { false, core.TANY, 0 },
+	corpse      = { true,  core.TANY },
 	danger      = { true,  core.TNUMBER },
 	weight      = { true,  core.TNUMBER },
 	xp          = { false, core.TNUMBER },
