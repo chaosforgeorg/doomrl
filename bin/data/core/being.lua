@@ -127,7 +127,7 @@ function being:flock_target( range, mind, maxd, parea )
 	local cdist   = range*2
 
 	for b in level:beings_in_range( pos, range ) do
-		if b.id == id and b ~= self and b:eye_contact( pos ) then
+		if b.id == id and b ~= self and self:in_sight( b ) then
 			local c = b.position
 			if closest then
 				local dist = coord.distance( c, pos )
