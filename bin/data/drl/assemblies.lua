@@ -157,7 +157,7 @@ function drl.register_assemblies()
 	{
 		name  = "high power weapon",
 		mods  = { P = 1, B = 1 },
-		desc  = "magazine > 5, non-shotgun",
+		desc  = "ranged, non-shotgun, magazine > 5",
 		request_type = ITEMTYPE_RANGED,
 
 		Match = function (item)

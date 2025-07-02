@@ -487,9 +487,13 @@ function core.mod_array_description( mod_array_proto )
 		first = false
 	end
 
-	if mod_array_proto.desc         then append(mod_array_proto.desc) end
-	if mod_array_proto.request_id   then append(items[mod_array_proto.request_id].name) end
-	if mod_array_proto.request_type then append(core.type_name[mod_array_proto.request_type]) end
+	if mod_array_proto.desc then 
+		append(mod_array_proto.desc)
+	elseif mod_array_proto.request_id then 
+		append(items[mod_array_proto.request_id].name)
+	elseif mod_array_proto.request_type then 
+		append(core.type_name[mod_array_proto.request_type])
+	end
 
 	local sig = ""
 	for char,val in pairs(mod_array_proto.mods) do
