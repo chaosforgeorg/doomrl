@@ -579,10 +579,12 @@ begin
 end;
 
 destructor TDoomAnimateKill.Destroy;
-var iBeing : TBeing;
+//var iBeing : TBeing;
 begin
-  iBeing := UIDs.Get( FUID ) as TBeing;
-  if iBeing <> nil then iBeing.AnimCount := Max( 0, iBeing.AnimCount - 1 );
+  // NOTE : we explicitly don't enable drawing of the dead enemy again
+
+  //iBeing := UIDs.Get( FUID ) as TBeing;
+  //if iBeing <> nil then iBeing.AnimCount := Max( 0, iBeing.AnimCount - 1 );
   Doom.Level.LightFlag[ FCoord, LFCORPSING ] := False;
   inherited Destroy;
 end;
