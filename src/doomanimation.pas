@@ -531,8 +531,9 @@ var iBeing : TBeing;
 begin
   inherited Create( aDuration, aDelay, aUID );
   iBeing  := UIDs.Get( FUID ) as TBeing;
-  FValue  := 2;
   if iBeing = nil then Exit;
+  FValue      := 2;
+  if iBeing.GetLuaProtoValue('corpse') = 0 then FValue := 3;
   FSprite     := iBeing.Sprite;
   FCoord      := iBeing.Position;
   FPlayerHack := iBeing.IsPlayer;
