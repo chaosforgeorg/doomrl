@@ -16,7 +16,7 @@
 [fix] -- RCFIX : fixed coloring (check your config.lua for color definition order!)
 [fix] -- GH#274: fixed consecutive flashes not queueing properly
 [fix] -- GH#274: fixed flashes not appearing if framerate is low
-[fix] -- RCFIX : Acid Spitter reload works again
+[fix] -- RCFIX : Acid Spitter reload and Lava Armor regen works again
 [fix] -- RCFIX : corpseless enemies no longer will leave invisible corpses
 [fix] -- RCFIX : assignment of music for the two new levels
 [fix] -- RCFIX : shotgun pumping will no longer happen in the prepared slot

@@ -783,7 +783,7 @@ function drl.register_unique_items()
 
 		OnEquipTick = function(self, being)
 			if self.durability < self.maxdurability then
-				if level.map[ being.position ] == "lava" then
+				if level.map[ being.position ] == cells[ "lava" ].nid then
 					self.durability = math.min( self.durability + 5, self.maxdurability )
 				end
 			end
