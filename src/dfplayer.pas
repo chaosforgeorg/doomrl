@@ -267,7 +267,7 @@ begin
   if BF_INV in FFlags then Exit;
   FMultiMove.Stop;
   Doom.DamagedLastTurn := True;
-  if ( aDamage >= Max( FHPNom div 3, 10 ) ) then
+  if ( aDamage >= Max( FHPMax div 3, 10 ) ) then
     IO.Blink( Red, 100 );
 
   if aDamage > 0 then FKills.DamageTaken;
