@@ -1357,7 +1357,7 @@ var iSlot : TEqSlot;
 begin
   for iSlot in TEqSlot do
     if FInv.Slot[ iSlot ] <> nil then
-      FInv.Slot[ iSlot ].CallHook( Hook_OnPostMove, [Self]  );
+      FInv.Slot[ iSlot ].CallHook( Hook_OnPostMove, [Self, iSlot <> efWeapon2 ]  );
   CallHook( Hook_OnPostMove, [] );
 end;
 

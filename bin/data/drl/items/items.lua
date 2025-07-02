@@ -635,7 +635,7 @@ function drl.register_regular_items()
 		end,
 
 		OnPostMove = function( self, being )
-			if not self.pump_action then return end
+			if not worn or not self.pump_action then return end
 			if self.chamber_empty and self.ammo > 0 then
 				level:play_sound( self.id, "pump", being.position )
 				self.chamber_empty = false
