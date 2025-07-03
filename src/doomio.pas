@@ -444,32 +444,45 @@ begin
     VTIG_GetIOState.EventState.AppendText( PWideChar( iWide ) );
   end;
 
-  if ( event.EType = VEVENT_KEYDOWN ) then
+  if ( event.EType = VEVENT_KEYDOWN ) or ( event.EType = VEVENT_KEYUP ) and ( not event.Key.Repeated ) then
     case event.Key.Code of
-      VKEY_UP     : VTIG_GetIOState.EventState.SetState( VTIG_IE_UP, True );
-      VKEY_DOWN   : VTIG_GetIOState.EventState.SetState( VTIG_IE_DOWN, True );
-      VKEY_LEFT   : VTIG_GetIOState.EventState.SetState( VTIG_IE_LEFT, True );
-      VKEY_RIGHT  : VTIG_GetIOState.EventState.SetState( VTIG_IE_RIGHT, True );
-      VKEY_HOME   : VTIG_GetIOState.EventState.SetState( VTIG_IE_HOME, True );
-      VKEY_END    : VTIG_GetIOState.EventState.SetState( VTIG_IE_END, True );
-      VKEY_PGUP   : VTIG_GetIOState.EventState.SetState( VTIG_IE_PGUP, True );
-      VKEY_PGDOWN : VTIG_GetIOState.EventState.SetState( VTIG_IE_PGDOWN, True );
-      VKEY_ESCAPE : VTIG_GetIOState.EventState.SetState( VTIG_IE_CANCEL, True );
-      VKEY_ENTER  : VTIG_GetIOState.EventState.SetState( VTIG_IE_CONFIRM, True );
-      VKEY_SPACE  : VTIG_GetIOState.EventState.SetState( VTIG_IE_SELECT, True );
-      VKEY_BACK   : VTIG_GetIOState.EventState.SetState( VTIG_IE_BACKSPACE, True );
-      VKEY_TAB    : VTIG_GetIOState.EventState.SetState( VTIG_IE_TAB, True );
-      VKEY_0      : VTIG_GetIOState.EventState.SetState( VTIG_IE_0, True );
-      VKEY_1      : VTIG_GetIOState.EventState.SetState( VTIG_IE_1, True );
-      VKEY_2      : VTIG_GetIOState.EventState.SetState( VTIG_IE_2, True );
-      VKEY_3      : VTIG_GetIOState.EventState.SetState( VTIG_IE_3, True );
-      VKEY_4      : VTIG_GetIOState.EventState.SetState( VTIG_IE_4, True );
-      VKEY_5      : VTIG_GetIOState.EventState.SetState( VTIG_IE_5, True );
-      VKEY_6      : VTIG_GetIOState.EventState.SetState( VTIG_IE_6, True );
-      VKEY_7      : VTIG_GetIOState.EventState.SetState( VTIG_IE_7, True );
-      VKEY_8      : VTIG_GetIOState.EventState.SetState( VTIG_IE_8, True );
-      VKEY_9      : VTIG_GetIOState.EventState.SetState( VTIG_IE_9, True );
+      VKEY_UP     : VTIG_GetIOState.EventState.SetState( VTIG_IE_UP, event.Key.Pressed );
+      VKEY_DOWN   : VTIG_GetIOState.EventState.SetState( VTIG_IE_DOWN, event.Key.Pressed );
+      VKEY_LEFT   : VTIG_GetIOState.EventState.SetState( VTIG_IE_LEFT, event.Key.Pressed );
+      VKEY_RIGHT  : VTIG_GetIOState.EventState.SetState( VTIG_IE_RIGHT, event.Key.Pressed );
+      VKEY_HOME   : VTIG_GetIOState.EventState.SetState( VTIG_IE_HOME, event.Key.Pressed );
+      VKEY_END    : VTIG_GetIOState.EventState.SetState( VTIG_IE_END, event.Key.Pressed );
+      VKEY_PGUP   : VTIG_GetIOState.EventState.SetState( VTIG_IE_PGUP, event.Key.Pressed );
+      VKEY_PGDOWN : VTIG_GetIOState.EventState.SetState( VTIG_IE_PGDOWN, event.Key.Pressed );
+      VKEY_ESCAPE : VTIG_GetIOState.EventState.SetState( VTIG_IE_CANCEL, event.Key.Pressed );
+      VKEY_ENTER  : VTIG_GetIOState.EventState.SetState( VTIG_IE_CONFIRM, event.Key.Pressed );
+      VKEY_SPACE  : VTIG_GetIOState.EventState.SetState( VTIG_IE_SELECT, event.Key.Pressed );
+      VKEY_BACK   : VTIG_GetIOState.EventState.SetState( VTIG_IE_BACKSPACE, event.Key.Pressed );
+      VKEY_TAB    : VTIG_GetIOState.EventState.SetState( VTIG_IE_TAB, event.Key.Pressed );
+      VKEY_0      : VTIG_GetIOState.EventState.SetState( VTIG_IE_0, event.Key.Pressed );
+      VKEY_1      : VTIG_GetIOState.EventState.SetState( VTIG_IE_1, event.Key.Pressed );
+      VKEY_2      : VTIG_GetIOState.EventState.SetState( VTIG_IE_2, event.Key.Pressed );
+      VKEY_3      : VTIG_GetIOState.EventState.SetState( VTIG_IE_3, event.Key.Pressed );
+      VKEY_4      : VTIG_GetIOState.EventState.SetState( VTIG_IE_4, event.Key.Pressed );
+      VKEY_5      : VTIG_GetIOState.EventState.SetState( VTIG_IE_5, event.Key.Pressed );
+      VKEY_6      : VTIG_GetIOState.EventState.SetState( VTIG_IE_6, event.Key.Pressed );
+      VKEY_7      : VTIG_GetIOState.EventState.SetState( VTIG_IE_7, event.Key.Pressed );
+      VKEY_8      : VTIG_GetIOState.EventState.SetState( VTIG_IE_8, event.Key.Pressed );
+      VKEY_9      : VTIG_GetIOState.EventState.SetState( VTIG_IE_9, event.Key.Pressed );
     end;
+
+  // TODO: auto-repeat
+  if ( event.EType = VEVENT_PADDOWN ) or ( event.EType = VEVENT_PADUP ) then
+  begin
+    case event.Pad.Button of
+      VPAD_BUTTON_DPAD_UP    : VTIG_GetIOState.EventState.SetState( VTIG_IE_UP, event.Pad.Pressed );
+      VPAD_BUTTON_DPAD_DOWN  : VTIG_GetIOState.EventState.SetState( VTIG_IE_DOWN, event.Pad.Pressed );
+      VPAD_BUTTON_DPAD_LEFT  : VTIG_GetIOState.EventState.SetState( VTIG_IE_LEFT, event.Pad.Pressed );
+      VPAD_BUTTON_DPAD_RIGHT : VTIG_GetIOState.EventState.SetState( VTIG_IE_RIGHT, event.Pad.Pressed );
+      VPAD_BUTTON_B          : VTIG_GetIOState.EventState.SetState( VTIG_IE_CANCEL, event.Pad.Pressed );
+      VPAD_BUTTON_A          : VTIG_GetIOState.EventState.SetState( VTIG_IE_CONFIRM, event.Pad.Pressed );
+    end;
+  end;
 
   if ( event.EType in [ VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
   begin
@@ -933,7 +946,8 @@ begin
 
   VTIG_EndFrame;
   VTIG_Render;
-  VTIG_EventClear;
+  if aMSec > 200 then
+    VTIG_EventClear;
 end;
 
 function TDoomIO.EventToInput( const aEvent : TIOEvent ) : TInputKey;
@@ -983,7 +997,7 @@ begin
       FIODriver.PollEvent( iEvent );
       Continue;
     end;
-    if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEUP, VEVENT_KEYUP, VEVENT_SYSTEM, VEVENT_TEXT ] then
+    if not ( iEvent.EType in [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN, VEVENT_PADDOWN ] ) then
     begin
       FIODriver.PollEvent( iEvent );
       OnEvent( iEvent );
@@ -992,7 +1006,7 @@ begin
     end;
     Break;
   until False;
-  Exit( iEvent.EType in [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN ] );
+  Exit( iEvent.EType in [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN, VEVENT_PADDOWN ] );
 end;
 
 procedure TDoomIO.Focus(aCoord: TCoord2D);
