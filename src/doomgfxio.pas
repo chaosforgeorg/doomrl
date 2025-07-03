@@ -43,7 +43,8 @@ type
     procedure SetAutoTarget( aTarget : TCoord2D ); override;
     procedure Focus( aCoord : TCoord2D ); override;
     procedure FinishTargeting; override;
-  protected
+
+ protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
     procedure ResetVideoMode;
@@ -66,6 +67,10 @@ type
     FFontSizeX   : Integer;
     FFontSizeY   : Integer;
     FFullscreen  : Boolean;
+
+    FGPLeft      : TVec2f;
+    FGPRight     : TVec2f;
+    FGPCamera    : Single;
 
     FLastMouseTime : QWord;
     FMouseLock     : Boolean;
@@ -176,6 +181,10 @@ begin
   FTileMult := 1;
   FMCursor  := nil;
   FTextures := nil;
+
+  FGPRight.Init();
+  FGPLeft.Init();
+  FGPCamera := 0.0;
 
   {$IFDEF WINDOWS}
   if not GodMode then
@@ -487,7 +496,7 @@ begin
 
   iMouse := Setting_Mouse and (FMCursor <> nil) and (FMCursor.Active) and FIODriver.GetMousePos( iMousePoint );
 
-  if iMouse and (not FMouseLock) and (not isModal) and (Setting_MouseEdgePan) then
+  if iMouse and (not FMouseLock) and (not isModal) and (Setting_MouseEdgePan) and (FGPCamera = 0.0) then
   begin
     iMousePos := Vec2i( iMousePoint.X, iMousePoint.Y );
     iMax      := Vec2i( FIODriver.GetSizeX, FIODriver.GetSizeY );
@@ -505,6 +514,27 @@ begin
         ((SpriteMap.NewShift.X = SpriteMap.MinShift.X) or (SpriteMap.NewShift.X = SpriteMap.MaxShift.X))
      and ((SpriteMap.NewShift.Y = SpriteMap.MinShift.Y) or (SpriteMap.NewShift.Y = SpriteMap.MaxShift.Y));
     end;
+  end;
+
+  // Lean mode
+  {
+  if (not isModal) and (( FGPRight.X <> 0.0 ) or (FGPRight.Y <> 0.0 )) then
+  begin
+    FGPCamera := Minf( FGPCamera + aMSec * 0.005, Maxf( Abs(FGPRight.X), Abs(FGPRight.Y) ) );
+    iActive := SpriteMap.ShiftValue( Player.Position );
+    iMax    := Vec2i( FIODriver.GetSizeX div 2, FIODriver.GetSizeX div 2 );
+    SpriteMap.NewShift := Clamp( iActive + Round(FGPRight * Vec2f(iMax).Scaled(FGPCamera)) , SpriteMap.MinShift, SpriteMap.MaxShift );
+  end
+  else if FGPCamera > 0.0 then
+  begin
+    SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
+    FGPCamera := 0.0;
+  end;
+  }
+  // Pan mode
+  if (not isModal) and (( FGPRight.X <> 0.0 ) or (FGPRight.Y <> 0.0 )) then
+  begin
+    SpriteMap.NewShift := Clamp( SpriteMap.Shift + Ceil( FGPRight.Scaled( aMSec ) ), SpriteMap.MinShift, SpriteMap.MaxShift );
   end;
 
   FAnimations.Update( aMSec );
@@ -592,8 +622,28 @@ begin
 end;
 
 function TDoomGFXIO.OnEvent( const iEvent : TIOEvent ) : Boolean;
-var iDiscardEvent : SDL_Event;
+var iValue : Integer;
 begin
+  if ( iEvent.EType = VEVENT_PADAXIS ) then
+  begin
+    iValue := iEvent.PadAxis.Value;
+    if iValue > 32000  then iValue := 32000;
+    if iValue < -32000 then iValue := -32000;
+    if ( iValue < 5000 ) and ( iValue > -5000 ) then iValue := 0;
+    case iEvent.PadAxis.Axis of
+      VPAD_AXIS_RIGHT_X : FGPRight.X := iValue / 32000;
+      VPAD_AXIS_RIGHT_Y : FGPRight.Y := iValue / 32000;
+      VPAD_AXIS_LEFT_X  : FGPLeft.X  := iValue / 32000;
+      VPAD_AXIS_LEFT_Y  : FGPLeft.Y  := iValue / 32000;
+    end;
+  end;
+
+  if ( iEvent.EType = VEVENT_PADDEVICE ) then
+  begin
+    FGPRight.Init();
+    FGPLeft.Init();
+  end;
+
   if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN ] then
   begin
     if ( FMCursor <> nil ) then FMCursor.Active := Setting_Mouse;
