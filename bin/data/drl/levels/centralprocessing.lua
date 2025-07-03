@@ -137,41 +137,46 @@ register_level "central_processing"
 		level:fill( "wall" )
 
 		level.data.trap11         = area(5,15,5,16)
-		level.data.trap12         = area(11,14,12,14)
+		level.data.trap12         = area(11,14,14,14)
 		level.data.trap13         = area(7,18,8,18)
 		level.data.trap14         = area(13,18,14,18)
-		level.data.door1          = area(8,8,9,8)
-		level.data.door1_coord    = coord(8,8)
-		level.data.trap2          = area(9,3,9,4)
+		level.data.door1          = area(7,6,8,6)
+		level.data.door1_coord    = coord(7,6)
+		level.data.trap2          = area(11,3,11,4)
 		level.data.trap21         = area(6,3,6,4)
-		level.data.trapSA         = area(13,3,13,3)
-		level.data.trapSA1        = area(14,3,14,3)
+		level.data.trapSA         = area(14,3,14,3)
+		level.data.trapSA1        = area(15,3,15,3)
 		level.data.trapSB         = area(4,3,4,3)
-		level.data.trapSB1        = area(4,12,4,12)
+		level.data.trapSB1        = area(4,11,4,11)
 		level.data.trapSB2        = area(3,3,3,3)
-		level.data.door2          = area(15,10,15,10)
-		level.data.door2_coord    = coord(15,10)
+		level.data.door2          = area(19,11,19,11)
+		level.data.door2_coord    = coord(19,11)
 		level.data.trap31         = area(32,13,32,13)
 		level.data.trap32         = area(34,11,34,11)
-		level.data.door3          = area(29,10,29,10)
-		level.data.door3_coord    = coord(29,10)
+		level.data.door3          = area(29,11,29,11)
+		level.data.door3_coord    = coord(29,11)
 		level.data.wall22         = area(36,19,36,19)
-		level.data.door4          = area(53,5,53,5)
-		level.data.door4_coord    = coord(53,5)
-		level.data.door5          = area(72,9,72,9)
-		level.data.door5_coord    = coord(72,9)
+		level.data.door4          = area(53,7,53,7)
+		level.data.door4_coord    = coord(53,7)
+		level.data.door5          = area(72,11,72,11)
+		level.data.door5_coord    = coord(72,11)
 		level.data.platform       = area(57,17,57,17)
 		level.data.platform_coord = coord(57,17)
 		level.data.trapSC         = area(57,16,57,16)
 		level.data.trapSC1        = area(57,15,57,15)
+		level.data.trap6          = area(64,8,64,8)
+		level.data.trap61         = area(52,6,52,8)
 		level.data.platform_up    = false
+		level.data.trap6_triggered = false
+		level.data.trap6_expiry   = 0
 
 		local translation = {
 			['.'] = "floor",
 			['#'] = { "wall",  flags = { LFPERMANENT } },
 			['='] = "acid",
 			['>'] = "stairs",
-			['+'] = { "floor", item = "lmed" },
+			['+'] = { "floor", item = "smed" },
+			['-'] = { "floor", item = "lmed" },
 			['~'] = { "floor", item = "barrel" },
 			['L'] = { "ldoor",  flags = { LFPERMANENT } },
 			['S'] = { "floor", item = "scglobe" },
@@ -179,6 +184,11 @@ register_level "central_processing"
 			['B'] = { "floor", item = "sboots" },
 			['M'] = { "floor", item = "mod_agility"},
 			['A'] = { "floor", item = "garmor"},
+			['D'] = { "floor", item = "phase"},
+			['V'] = { "floor", item = "uballisticarmor"},
+			['r'] = { "floor", item = "rocket"},
+			['a'] = { "floor", item = "ammo"},
+			['s'] = { "floor", item = "shell"},
 
 			['1'] = { "floor", item = "lever_centralprocessing1" },
 			['2'] = { "floor", item = "lever_centralprocessing2" },
@@ -196,24 +206,24 @@ register_level "central_processing"
 
 
 		local map = [=[
-################################################################.i#####..###
-=#h.#...2===#.#################...........i........#############..#####h.###
-=#i.#....===#.#################.#####...#####..==..#..........~...........##
-=####.###===#+#################.......#............L.#####.####...........##
-=####.##E===####.......########.#####...#####..==..#.......#5....i..........
-=####..#########.#####.########............i.......#.#####.####............H
-=#####LL#~+i####.#.i.#.########.##################.#..........~...........##
-=#####......####.#...#.#...#....####=.=######.####.###############.###L#..##
-=#####..#####L...........#.L.#####.....h.#=.=#...#.###############h###.#..##
-=+#..#.......###.#...#.#...###+h#..#=.=#......h#.#.......h.......#####.#####
-=A#.....########.#.i.#.#######.##.###.##.#=.=###.#...H......H....#####.#####
-###..#..#H.#####.#####.#########=.=#..##.##.##..3#..............4#####.M.###
-######.#########.......########......##=.=#.##...#...............#####+.B###
-##i#....~..#h.####.############.=.=#.....h..##.#######################.>.###
-##H#.......#.1####.############.#.##.##=.=#.##.########S####################
-####~...#~....####.............##....######....#...i..###h....##############
-##################==========####################.....h......O.##############
-#####h.####h.#####================#...........................##############
+############################################################################
+=#h.#....2===#.################...........i........#########################
+=#i.#.....===#.################.#####a..#####..==..#############.i#####..###
+=####.####===#+################.......#............#############..#####h.###
+=####LL##E===##################.#####...#####..==..#....................~.##
+=####=.=##########.....########............i.......L.#####.####......s....##
+=####=...~-#######.###.########.##################.#.......#5....i..........
+=####=.=#ai#######.#i#.#...#....####=.=######.####.#.#####.####.....~......H
+=+#.s=.=##########.#.#.#...#.#####...a.h.#=.=#...#.#......................##
+=A#......s.......L.......#.L.#+h#..#=.=#...s..h#.#.###############.###L#..##
+###.a=.=##########.#.#.#...###.##.###.##.#=.=###.#...H......H....#h###.#..##
+#####=.=#H...#####.#i#.#...#####=.=#..##.##.##..3#......a.......4#####.#####
+######.###########.###.########......##=.=#.##...#......h........#####.#####
+##i#....~....#ha##.....########.=.=#.....h..##.#######################.M.###
+##H#.........#.1####.##########.#.##.##=.=#.##.########S##############D.B###
+####~...#~......####...........##....######....#r..i..###h....########.>.###
+##################==========####################....Vh......O.##############
+#####h.####h.#####================#.......................r...##############
 ]=]
 
 
@@ -231,12 +241,12 @@ register_level "central_processing"
 			item.name  = ma.name.." schematics"
 		end
 
-		level:player(5,12)
+		level:player(5,11)
 	end,
 
 	OnKillAll = function ()
 		level.data.kill_all  = true
-		ui.msg("\"The machinery falls silent\"")
+		ui.msg("The machinery falls silent")
 		level.status = 4
 	end,
 
@@ -259,18 +269,25 @@ register_level "central_processing"
 			level.data.platform_up = platform_up
 		end
 
-		if level.data.trap2:contains(player.position) then 
+		if level.data.trap2:contains(player.position) then
 			level:transmute( "wall", "floor", level.data.trap21)
-		end
-		if level.data.trapSA:contains(player.position) then
+		elseif level.data.trapSA:contains(player.position) then
 			level:transmute( "wall", "floor", level.data.trapSA1)
-		end
-		if level.data.trapSB:contains(player.position) then
+		elseif level.data.trapSB:contains(player.position) then
 			level:transmute( "wall", "floor", level.data.trapSB1)
 			level:transmute( "wall", "floor", level.data.trapSB2)
-		end
-		if level.data.trapSC:contains(player.position) then
+		elseif level.data.trapSC:contains(player.position) then
 			level:transmute( "wall", "floor", level.data.trapSC1)
+		elseif level.data.trap6:contains(player.position) and not level.data.trap6_triggered then
+			level:transmute( "floor", "gwall", level.data.trap61)
+			level.data.trap6_expiry = core.game_time() + 300
+			level.data.trap6_triggered = true
+			level:play_sound("door.close", level.data.door4_coord)
+		end
+		if level.data.trap6_expiry > 0 and core.game_time() > level.data.trap6_expiry then
+			level:transmute( "gwall", "floor", level.data.trap61 )
+			level.data.trap6_expiry = 0
+			level:play_sound("door.open", level.data.door4_coord)
 		end
 	end,
 
