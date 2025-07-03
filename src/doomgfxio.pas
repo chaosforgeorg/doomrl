@@ -192,7 +192,7 @@ begin
   iWidth      := Configuration.GetInteger( 'screen_width' );
   iHeight     := Configuration.GetInteger( 'screen_height' );
 
-  iSDLFlags := [ SDLIO_OpenGL ];
+  iSDLFlags := [ SDLIO_OpenGL, SDLIO_Gamepad ];
   if FFullscreen then Include( iSDLFlags, SDLIO_Fullscreen );
   FIODriver := TSDLIODriver.Create( iWidth, iHeight, 32, iSDLFlags );
 
