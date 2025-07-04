@@ -72,6 +72,8 @@ TDoom = class(TSystem)
        procedure ResetAutoTarget;
        function HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
        function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
+       function HandlePadEvent( aEvent : TIOEvent ) : Boolean;
+       function MoveTargetEvent( aCoord : TCoord2D ) : Boolean;
        procedure PreAction;
        procedure LoadModule( Base : Boolean );
        procedure CreatePlayer( aResult : TMenuResult );
@@ -86,6 +88,8 @@ TDoom = class(TSystem)
        FTargeting       : TTargeting;
        FDamagedLastTurn : Boolean;
        FPlayerView      : TInterfaceLayer;
+       FPadMoveActive   : Boolean;
+       FPadMoveNext     : QWord;
      public
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
@@ -109,6 +113,9 @@ uses Classes, SysUtils,
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
      doompagedview, doomrankupview, doommainmenuview, doomhudviews, doommessagesview,
      doomconfiguration, doomhelp, doomconfig, dfplayer;
+
+const PAD_REPEAT_START = 400;
+      PAD_REPEAT       = 150;
 
 constructor TTargeting.Create;
 begin
@@ -287,6 +294,7 @@ begin
   NVersion := ArrayToVersion(VERSION_ARRAY);
   FLastInputTime := 0;
   FPlayerView := nil;
+  FPadMoveActive := False;
   Log( VersionToString( NVersion ) );
   Reconfigure;
 end;
@@ -879,6 +887,55 @@ begin
   Exit( False );
 end;
 
+function TDoom.HandlePadEvent( aEvent : TIOEvent ) : Boolean;
+var iTarget : TCoord2D;
+    iCell   : Integer;
+begin
+  if FPadMoveActive then
+  begin
+    if ( aEvent.EType = VEVENT_PADDEVICE ) or
+        ( (aEvent.EType = VEVENT_PADUP) and (aEvent.Pad.Button = VPAD_BUTTON_A) ) then
+        begin
+          FPadMoveActive := False;
+        end;
+  end;
+  if aEvent.EType <> VEVENT_PADDOWN then Exit( False );
+  case aEvent.Pad.Button of
+    VPAD_BUTTON_A : if IO.GetPadRTrigger then
+      begin
+        if IO.GetPadLDir.NotZero then
+          Exit( MoveTargetEvent( FTargeting.List.Current + IO.GetPadLDir ) );
+      end
+      else
+      begin
+        if aEvent.Pad.Pressed then // normal mode
+        begin
+          if IO.GetPadLDir.NotZero
+            then Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ) )
+            else Result := HandleCommand( TCommand.Create( COMMAND_WAIT ) );
+          FPadMoveNext := IO.Time + PAD_REPEAT_START;
+        end
+        else // repeat mode
+        begin
+          if IO.GetPadLDir.NotZero then
+          begin
+            iTarget := Player.Position + IO.GetPadLDir;
+            if Level.isProperCoord( iTarget ) then
+            begin
+              iCell := Level.getCell( iTarget );
+              if not ( ( CellHook_OnHazardQuery in Cells[ iCell ].Hooks ) and  Level.CallHook( CellHook_OnHazardQuery, iCell, Player ) ) then
+                Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ) );
+            end;
+          end;
+          FPadMoveNext := IO.Time + PAD_REPEAT;
+        end;
+        FPadMoveActive := ( State = DSPlaying ) and ( Player.EnemiesInVision = 0 ) and ( aEvent.Pad.Pressed or (not FDamagedLastTurn) );
+        Exit( Result );
+      end;
+  end;
+  Exit( False );
+end;
+
 function TDoom.HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
 var iInput : TInputKey;
     iCoord : TCoord2D;
@@ -915,14 +972,7 @@ begin
 
     if iInput in INPUT_TARGETMOVE then
     begin
-      iCoord := FTargeting.List.Current + InputDirection( iInput );
-      if FLevel.isProperCoord( iCoord ) then
-      begin
-        Player.TargetPos := iCoord;
-        FTargeting.OnTarget( iCoord );
-        FTargeting.Update( Player.Vision );
-        IO.SetAutoTarget( FTargeting.List.Current );
-      end;
+      MoveTargetEvent( FTargeting.List.Current + InputDirection( iInput ) );
       Exit;
     end;
 
@@ -979,6 +1029,19 @@ begin
       IO.Msg('Unknown command. Press {^"h"} for help.' );
     end;
 
+  Exit( False );
+end;
+
+function TDoom.MoveTargetEvent( aCoord : TCoord2D ) : Boolean;
+begin
+  if FLevel.isProperCoord( aCoord ) then
+  begin
+    Player.TargetPos := aCoord;
+    FTargeting.OnTarget( aCoord );
+    FTargeting.Update( Player.Vision );
+    IO.SetAutoTarget( FTargeting.List.Current );
+    Exit( True );
+  end;
   Exit( False );
 end;
 
@@ -1142,6 +1205,14 @@ repeat
 
       while ( not IO.Driver.EventPending ) and ( State = DSPlaying ) do
       begin
+        if FPadMoveActive and ( IO.Time >= FPadMoveNext ) then
+        begin
+          iEvent.EType       := VEVENT_PADDOWN;
+          iEvent.Pad.Button  := VPAD_BUTTON_A;
+          iEvent.Pad.Pressed := False; // To mark repeat!
+          HandlePadEvent( iEvent );
+          Continue;
+        end;
         IO.FullUpdate;
         IO.Driver.Sleep(10);
       end;
@@ -1162,6 +1233,8 @@ repeat
 
       if iEvent.EType = VEVENT_MOUSEDOWN then HandleMouseEvent( iEvent );
       if iEvent.EType = VEVENT_KEYDOWN   then HandleKeyEvent( iEvent );
+      if iEvent.EType in [ VEVENT_PADDOWN, VEVENT_PADUP, VEVENT_PADDEVICE] then
+        HandlePadEvent( iEvent );
     end;
 
     if State = DSNextLevel then

@@ -44,6 +44,11 @@ type
     procedure Focus( aCoord : TCoord2D ); override;
     procedure FinishTargeting; override;
 
+    // Gamepad
+    function GetPadLTrigger : Boolean; override;
+    function GetPadRTrigger : Boolean; override;
+    function GetPadLDir     : TCoord2D; override;
+
  protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
@@ -72,6 +77,8 @@ type
     FGPRight     : TVec2f;
     FGPLeftDir   : TCoord2D;
     FGPCamera    : Single;
+    FGPLTrigger  : Boolean;
+    FGPRTrigger  : Boolean;
 
     FLastMouseTime : QWord;
     FMouseLock     : Boolean;
@@ -186,6 +193,8 @@ begin
   FGPRight.Init();
   FGPLeft.Init();
   FGPLeftDir.Create(0,0);
+  FGPLTrigger := False;
+  FGPRTrigger := False;
   FGPCamera := 0.0;
 
   {$IFDEF WINDOWS}
@@ -465,6 +474,21 @@ begin
   SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
 end;
 
+function TDoomGFXIO.GetPadLTrigger : Boolean;
+begin
+  Exit( FGPLTrigger );
+end;
+
+function TDoomGFXIO.GetPadRTrigger : Boolean;
+begin
+  Exit( FGPRTrigger );
+end;
+
+function TDoomGFXIO.GetPadLDir     : TCoord2D;
+begin
+  Exit( FGPLeftDir );
+end;
+
 procedure TDoomGFXIO.Configure( aConfig : TLuaConfig; aReload : Boolean = False );
 begin
   inherited Configure( aConfig, aReload );
@@ -541,7 +565,9 @@ begin
 
   if (not isModal) and (( FGPLeftDir.X <> 0 ) or (FGPLeftDir.Y <> 0 )) then
   begin
-    SpriteMap.Marker := Player.Position + FGPLeftDir;
+    if FGPRTrigger
+      then SpriteMap.Marker := Doom.Targeting.List.Current + FGPLeftDir
+      else SpriteMap.Marker := Player.Position + FGPLeftDir;
   end
   else
     SpriteMap.Marker := NewCoord2D(-1,-1);
@@ -645,6 +671,8 @@ begin
       VPAD_AXIS_RIGHT_Y : FGPRight.Y := iValue / 32000;
       VPAD_AXIS_LEFT_X  : FGPLeft.X  := iValue / 32000;
       VPAD_AXIS_LEFT_Y  : FGPLeft.Y  := iValue / 32000;
+      VPAD_AXIS_TRIGGERLEFT  : FGPLTrigger := iValue > 10000;
+      VPAD_AXIS_TRIGGERRIGHT : FGPRTrigger := iValue > 10000;
     end;
 
     if iEvent.PadAxis.Axis in [ VPAD_AXIS_LEFT_X, VPAD_AXIS_LEFT_Y] then
@@ -656,6 +684,8 @@ begin
     FGPRight.Init();
     FGPLeft.Init();
     FGPLeftDir.Create(0,0);
+    FGPLTrigger := False;
+    FGPRTrigger := False;
   end;
 
   if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN ] then

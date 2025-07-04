@@ -95,6 +95,11 @@ type TDoomIO = class( TIO )
   procedure Clear;
   function OnEvent( const event : TIOEvent ) : Boolean; override;
 
+  // Gamepad
+  function GetPadLTrigger : Boolean; virtual;
+  function GetPadRTrigger : Boolean; virtual;
+  function GetPadLDir     : TCoord2D; virtual;
+
   function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
   function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
   procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); virtual;
@@ -518,6 +523,21 @@ begin
           Exit( True );
 
   Exit( False );
+end;
+
+function TDoomIO.GetPadLTrigger : Boolean;
+begin
+  Exit( False );
+end;
+
+function TDoomIO.GetPadRTrigger : Boolean;
+begin
+  Exit( False );
+end;
+
+function TDoomIO.GetPadLDir     : TCoord2D;
+begin
+  Result.Create(0,0);
 end;
 
 function TDoomIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;

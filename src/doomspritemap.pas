@@ -371,15 +371,24 @@ begin
   MarkerSprite.SpriteID[0] := HARDSPRITE_HIGHLIGHT;
   MarkerSprite.Color := ColorBlack;
   MarkerSprite.Color.A := 127;
-  if Doom.Level.cellFlagSet( FMarker, CF_BLOCKMOVE ) and ( not Doom.Level.cellFlagSet( FMarker, CF_OPENABLE ) ) then
-    MarkerSprite.Color.R := Floor(50*(Sin( FFluidTime*50 )+1)+100)
-  else if (Doom.Level.GetBeing( FMarker ) <> nil) or (not Doom.Level.isPassable( FMarker ) ) then
+  if IO.GetPadRTrigger then
   begin
     MarkerSprite.Color.R := Floor(50*(Sin( FFluidTime*50 )+1)+100);
-    MarkerSprite.Color.G := Floor(50*(Sin( FFluidTime*50 )+1)+100);
+    MarkerSprite.Color.G := MarkerSprite.Color.R;
+    MarkerSprite.Color.B := MarkerSprite.Color.R;
   end
   else
-    MarkerSprite.Color.G := Floor(50*(Sin( FFluidTime*50 )+1)+100);
+  begin
+    if Doom.Level.cellFlagSet( FMarker, CF_BLOCKMOVE ) and ( not Doom.Level.cellFlagSet( FMarker, CF_OPENABLE ) ) then
+      MarkerSprite.Color.R := Floor(50*(Sin( FFluidTime*50 )+1)+100)
+    else if (Doom.Level.GetBeing( FMarker ) <> nil) or (not Doom.Level.isPassable( FMarker ) ) then
+    begin
+      MarkerSprite.Color.R := Floor(50*(Sin( FFluidTime*50 )+1)+100);
+      MarkerSprite.Color.G := MarkerSprite.Color.R;
+    end
+    else
+      MarkerSprite.Color.G := Floor(50*(Sin( FFluidTime*50 )+1)+100);
+  end;
   SpriteMap.PushSpriteFX( FMarker, MarkerSprite );
 end;
 
