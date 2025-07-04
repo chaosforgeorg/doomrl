@@ -1492,9 +1492,19 @@ begin
 
   if not aOverkill then
   try
+    if Flags[ BF_UNLOADONKILL ] and Assigned( FInv.Slot[ efWeapon ] ) then
+    begin
+      iItem := FInv.Slot[ efWeapon ];
+      if ( not iItem.Flags[IF_NODROP] ) and ( not iItem.Flags[IF_NOUNLOAD] )
+        and iItem.isRanged and ( iItem.Ammo > 0 ) then
+        iItem.Ammo := FInv.AddAmmo(iItem.AmmoID,iItem.Ammo);
+    end;
+
     for iItem in FInv do
       if not iItem.Flags[IF_NODROP] then
+      begin
         iLevel.DropItem( iItem, FPosition );
+      end;
   except
     on e : EPlacementException do ;
   end;

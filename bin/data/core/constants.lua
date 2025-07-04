@@ -58,7 +58,7 @@ BF_BOSS         = 1;
 BF_ENVIROSAFE   = 2;
 BF_CHARGE       = 3;
 BF_OPENDOORS    = 4;
-
+BF_UNLOADONKILL = 5;
 BF_NOEXP        = 6;
 BF_QUICKSWAP    = 7;
 BF_HUNTING      = 8;
