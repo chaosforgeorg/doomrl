@@ -318,6 +318,7 @@ begin
       if (not FSwapMode) and ( FCommandMode in [0, COMMAND_USE] ) then
       begin
         VTIG_Text( '<{!Backspace}> drop' );
+        VTIG_Text( '<{!SHIFT+Backspace}>    unload and drop' );
         VTIG_Text( '<{!1-9}> mark quickslot' );
       end;
     end;
@@ -345,7 +346,7 @@ begin
         if VTIG_Event( VTIG_IE_BACKSPACE ) then
         begin
           FState := PLAYERVIEW_PENDING;
-          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item ) );
+          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item, VTIG_Event( VTIG_IE_SHIFT ) ) );
           if FState = PLAYERVIEW_PENDING
             then FState := PLAYERVIEW_DONE
             else begin ReadInv; FState := PLAYERVIEW_INVENTORY; end
@@ -537,7 +538,7 @@ begin
         begin
           if Cursed then Exit;
           FState := PLAYERVIEW_CLOSING;
-          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item ) );
+          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item, VTIG_Event( VTIG_IE_SHIFT ) ) );
           FState := PLAYERVIEW_DONE;
         end;
     end;

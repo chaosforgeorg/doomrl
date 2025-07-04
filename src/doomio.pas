@@ -445,6 +445,8 @@ begin
   end;
 
   if ( event.EType = VEVENT_KEYDOWN ) or ( event.EType = VEVENT_KEYUP ) and ( not event.Key.Repeated ) then
+  begin
+    VTIG_GetIOState.EventState.SetState( VTIG_IE_SHIFT, VKMOD_SHIFT in event.Key.ModState );
     case event.Key.Code of
       VKEY_UP     : VTIG_GetIOState.EventState.SetState( VTIG_IE_UP, event.Key.Pressed );
       VKEY_DOWN   : VTIG_GetIOState.EventState.SetState( VTIG_IE_DOWN, event.Key.Pressed );
@@ -470,6 +472,7 @@ begin
       VKEY_8      : VTIG_GetIOState.EventState.SetState( VTIG_IE_8, event.Key.Pressed );
       VKEY_9      : VTIG_GetIOState.EventState.SetState( VTIG_IE_9, event.Key.Pressed );
     end;
+  end;
 
   // TODO: auto-repeat
   if ( event.EType = VEVENT_PADDOWN ) or ( event.EType = VEVENT_PADUP ) then

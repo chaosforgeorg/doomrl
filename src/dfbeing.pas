@@ -83,7 +83,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionSwapWeapon : boolean;
     function ActionQuickKey( aIndex : Byte ) : Boolean;
     function ActionQuickWeapon( const aWeaponID : Ansistring ) : Boolean;
-    function ActionDrop( Item : TItem ) : boolean;
+    function ActionDrop( aItem : TItem; aUnload : Boolean ) : boolean;
     function ActionWear( aItem : TItem ) : boolean;
     function ActionSwap( aItem : TItem; aSlot : TEqSlot ) : boolean;
     function ActionTakeOff( aSlot : TEqSlot ) : boolean;
@@ -627,23 +627,49 @@ begin
     else Exit( Success( 'You swap your weapons.',[], Round(getWearCost*0.8) ) );
 end;
 
-function TBeing.ActionDrop ( Item : TItem ) : boolean;
+function TBeing.ActionDrop ( aItem : TItem; aUnload : Boolean ) : boolean;
 var iUnique : Boolean;
-begin
-  if Item = nil then Exit( false );
-  if not FInv.Contains( Item ) then Exit( False );
-  iUnique := Item.Flags[ IF_UNIQUE ] or Item.Flags[ IF_NODESTROY ];
-try
-  if TLevel(Parent).DropItem( Item, FPosition ) then
+    iAmmo   : Integer;
+    iAmmoID : DWord;
+  procedure HandleAmmo;
+  var iItem : TItem;
   begin
-    FInv.ClearSlot( Item );
-    Exit( Success( 'You dropped %s.',[Item.GetName(false)],ActionCostDrop ) )
+    if ( iAmmo = 0 ) or ( iAmmoID = 0 ) then Exit;
+    iAmmo := Inv.AddAmmo(iAmmoID,iAmmo);
+    if ( iAmmo > 0 ) then
+    try
+       iItem := TItem.Create(iAmmoID);
+       iItem.Ammo := iAmmo;
+       TLevel(Parent).DropItem( iItem, FPosition )
+    except
+    on e : EPlacementException do iItem.Free
+    end;
+  end;
+begin
+  if aItem = nil then Exit( false );
+  if not FInv.Contains( aItem ) then Exit( False );
+  iUnique := aItem.Flags[ IF_UNIQUE ] or aItem.Flags[ IF_NODESTROY ];
+  iAmmo   := 0;
+  iAmmoID := 0;
+  if aUnload and aItem.isRanged and (not aItem.Flags[ IF_NOUNLOAD ] ) then
+  begin
+    iAmmo      := aItem.Ammo;
+    iAmmoID    := aItem.AmmoID;
+    aItem.Ammo := 0;
+  end;
+try
+  if TLevel(Parent).DropItem( aItem, FPosition ) then
+  begin
+    FInv.ClearSlot( aItem );
+    HandleAmmo;
+    Exit( Success( 'You dropped %s.',[aItem.GetName(false)],ActionCostDrop ) )
   end
   else
     begin
-      FInv.ClearSlot( Item );
+      FInv.ClearSlot( aItem );
+      HandleAmmo;
       if iUnique then
-        Exit( Success( 'You dropped %s.',[Item.GetName(false)],ActionCostDrop ) )
+        Exit( Success( 'You dropped %s.',[aItem.GetName(false)],ActionCostDrop ) )
 	  else
         Exit( Success( 'The dropped item melts!',[],ActionCostDrop ) );
     end;
@@ -1378,7 +1404,7 @@ begin
   case aCommand.Command of
     COMMAND_MOVE         : Result := ActionMove( aCommand.Target );
     COMMAND_USE          : Result := ActionUse( aCommand.Item );
-    COMMAND_DROP         : Result := ActionDrop( aCommand.Item );
+    COMMAND_DROP         : Result := ActionDrop( aCommand.Item, aCommand.Alt );
     COMMAND_WEAR         : Result := ActionWear( aCommand.Item );
     COMMAND_TAKEOFF      : Result := ActionTakeOff( aCommand.Slot );
     COMMAND_SWAP         : Result := ActionSwap( aCommand.Item, aCommand.Slot );
@@ -2520,7 +2546,7 @@ var State  : TDoomLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionDrop( State.ToObjectOrNil( 2 ) as TItem ) );
+  State.Push( Being.ActionDrop( State.ToObjectOrNil( 2 ) as TItem, False ) );
   Result := 1;
 end;
 
