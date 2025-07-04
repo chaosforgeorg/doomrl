@@ -165,7 +165,31 @@ register_level "central_processing"
 		level.data.trapSC         = area(57,16,57,16)
 		level.data.trapSC1        = area(57,15,57,15)
 		level.data.trap6          = area(64,8,64,8)
-		level.data.trap61         = area(52,6,52,8)
+		level.data.trap6P         = area(52,6,52,8)
+		level.data.trap61         = area(66,5,67,5)
+		level.data.trap62         = area(73,5,74,5)
+		level.data.trap63         = area(76,8,76,9)
+		level.data.trap64         = area(74,11,75,11)
+		level.data.trap65         = area(68,11,69,11)
+		level.data.room1          = area(7,3,11,4)
+		level.data.room2          = area(4,3,5,4)
+		level.data.room3          = area(6,15,17,17)
+		level.data.room3a         = area(3,15,4,16)
+		level.data.room3b         = area(7,19,8,19)
+		level.data.room3c         = area(13,19,14,19)
+		level.data.room3d         = area(11,13,14,13)
+		level.data.room4          = area(20,7,24,15)
+		level.data.room5          = area(35,10,50,16)
+		level.data.room6          = area(55,17,64,19)
+		level.data.room7          = area(57,12,66,14)
+		level.data.room8          = area(33,3,57,7)
+		level.data.room9          = area(54,6,75,10)
+		level.data.room9a         = area(66,2,67,4)
+		level.data.room9b         = area(73,2,74,4)
+		level.data.room9c         = area(77,8,77,9)
+		level.data.room9d         = area(74,12,75,13)
+		level.data.room9e         = area(68,12,69,14)
+		level.data.roomExit       = area(72,15,74,19)
 		level.data.platform_up    = false
 		level.data.trap6_triggered = false
 		level.data.trap6_expiry   = 0
@@ -198,32 +222,31 @@ register_level "central_processing"
 			['6'] = { "floor", item = "level_centralprocessing6" },
 
 			['h'] = { "floor", being = "former" },
-			['H'] = { "floor", being = core.bydiff{ "former","former","sergeant","captain" } },
+			['H'] = { "floor", being = core.bydiff{ "former","former","sergeant" } },
 			['i'] = { "floor", being = "imp" },
+			['j'] = { "floor", being = core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp")},
 			['O'] = { "floor", being = core.bydiff{ "cacodemon","cacodemon","knight","baron" } },
 		}
-		
-
 
 		local map = [=[
-############################################################################
-=#h.#....2===#.################...........i........#########################
-=#i.#.....===#.################.#####a..#####..==..#############.i#####..###
-=####.####===#+################.......#............#############..#####h.###
+################################################################..#####..###
+=#h.#....2===#.################....................#############..#####h.###
+=#..#.....===#.################.#####a..#####..==..#############..#####..###
+=####.####===#+################.......#............#########################
 =####LL##E===##################.#####...#####..==..#....................~.##
 =####=.=##########.....########............i.......L.#####.####......s....##
-=####=...~-#######.###.########.##################.#.......#5....i..........
-=####=.=#ai#######.#i#.#...#....####=.=######.####.#.#####.####.....~......H
+=####=...~-#######.###.########.##################.#.......#5....i........#.
+=####=.=#ai#######.#i#.#...#....####=.=######.####.#.#####.####.....~.....#H
 =+#.s=.=##########.#.#.#...#.#####...a.h.#=.=#...#.#......................##
-=A#......s.......L.......#.L.#+h#..#=.=#...s..h#.#.###############.###L#..##
-###.a=.=##########.#.#.#...###.##.###.##.#=.=###.#...H......H....#h###.#..##
-#####=.=#H...#####.#i#.#...#####=.=#..##.##.##..3#......a.......4#####.#####
-######.###########.###.########......##=.=#.##...#......h........#####.#####
-##i#....~....#ha##.....########.=.=#.....h..##.#######################.M.###
-##H#.........#.1####.##########.#.##.##=.=#.##.########S##############D.B###
-####~...#~......####...........##....######....#r..i..###h....########.>.###
-##################==========####################....Vh......O.##############
-#####h.####h.#####================#.......................r...##############
+=A#......s.......L.......#.L.#+h#..#=.=#...s...#.#.###################L#####
+###.a=.=##########.#.#.#...###.##.###.##.#=.=###.#...H...........#h.##.#..##
+#####=.=#....#####.#.#.#...#####=.=#..##.##.##..3#......a.......4#..##.#..##
+######.###########.###.########......##=.=#.##...#......h........#..##.#####
+#..#....~....#ha##.....########.=.=#.....h..##.#######################...###
+#.H#.........#.1####.##########.#.##.##=.=#.##.########S##############...###
+####~...#~......####...........##....######....#r..j..###.....########.M.###
+##################==========####################....Vh......O.########D..###
+#####..####h.#####================#.......................r...########.>B###
 ]=]
 
 
@@ -239,6 +262,56 @@ register_level "central_processing"
 			local ma   = mod_arrays[id]
 			item.ammo  = ma.nid
 			item.name  = ma.name.." schematics"
+		end
+
+--R2-R1                    R9A R9B
+--   |                     |   |
+--   Entrance-R4---R8----R9....-R9C
+--    |       |     |     | | |
+--    | R3D   |-R5 R7   R9E | R9D
+--    | |     |     |       Exit
+--R3A-R3...   \----R6
+--    |   |
+--    R3B R3C
+
+		level:summon(core.ifdiff(DIFF_VERYHARD, "nimp", "imp"), level.data.room8)
+		if DIFFICULTY >= DIFF_MEDIUM then
+			level:summon(core.bydiff(nil, "imp", "imp", "demon", "nimp"), level.data.room2)
+			level:summon("former", level.data.room3d)
+			level:summon("imp", level.data.room4)
+			level:summon("former", level.data.room5)
+			level:summon("imp", level.data.room5)
+			level:summon("former", level.data.room6)
+			level:summon("former", level.data.room7)
+			level:summon(core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), level.data.room9a)
+			level:summon("former", level.data.room3b)
+			level:summon("demon", level.data.roomExit)
+			if DIFFICULTY >= DIFF_HARD then
+				level:summon("demon", level.data.roomExit, 2)
+				level:summon("former", level.data.room9d)
+				level:summon("former", level.data.room5)
+				level:summon(core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), level.data.room9a)
+				level:summon("demon", level.data.room3b)
+				level:summon("demon", level.data.room4)
+				level:summon("demon", level.data.room5)
+				level:summon("sergeant", level.data.room5)
+				level:summon("sergeant", level.data.room6)
+				level:summon(core.ifdiff(DIFF_VERHARD, "nimp", "imp"), level.data.room9)
+				level:summon("former", level.data.room9, 2)
+				if DIFFICULTY >= DIFF_VERYHARD then
+					level:summon("imp", level.data.room1)
+					level:summon(core.ifdiff(DIFF_NIGHTMARE, "ndemon", "demon"), level.data.roomExit, 2)
+					level:summon("demon", level.data.room3d, 2)
+					level:summon("demon", level.data.room9b)
+					level:summon("demon", level.data.room9d)
+					level:summon("demon", level.data.room9e)
+					level:summon("demon", level.data.room3)
+					level:summon("demon", level.data.room5)
+					level:summon("demon", level.data.room3)
+					level:summon("sergeant", level.data.room9)
+				end
+
+			end
 		end
 
 		level:player(5,11)
@@ -279,13 +352,18 @@ register_level "central_processing"
 		elseif level.data.trapSC:contains(player.position) then
 			level:transmute( "wall", "floor", level.data.trapSC1)
 		elseif level.data.trap6:contains(player.position) and not level.data.trap6_triggered then
-			level:transmute( "floor", "gwall", level.data.trap61)
+			level:transmute( "floor", "gwall", level.data.trap6P)
 			level.data.trap6_expiry = core.game_time() + 300
 			level.data.trap6_triggered = true
 			level:play_sound("door.close", level.data.door4_coord)
+			level:transmute( "wall", "floor", level.data.trap61)
+			level:transmute( "wall", "floor", level.data.trap62)
+			level:transmute( "wall", "floor", level.data.trap63)
+			level:transmute( "wall", "floor", level.data.trap64)
+			level:transmute( "wall", "floor", level.data.trap65)
 		end
 		if level.data.trap6_expiry > 0 and core.game_time() > level.data.trap6_expiry then
-			level:transmute( "gwall", "floor", level.data.trap61 )
+			level:transmute( "gwall", "floor", level.data.trap6P )
 			level.data.trap6_expiry = 0
 			level:play_sound("door.open", level.data.door4_coord)
 		end
