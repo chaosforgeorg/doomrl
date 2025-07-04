@@ -8,7 +8,7 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 unit dfdata;
 interface
 uses Classes, SysUtils, idea,
-     vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable, vioevent,
+     vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable, vioevent, vvector,
      doomconfig, doomkeybindings;
 
 const CoreModuleID      : AnsiString = '';
@@ -185,10 +185,11 @@ const
   Option_IntuitionChar    : Char = '.';
 
 var
-  HARDSPRITE_EXPL    : DWord = 0;
-  HARDSPRITE_SELECT  : DWord = 0;
-  HARDSPRITE_MARK    : DWord = 0;
-  HARDSPRITE_GRID    : DWord = 0;
+  HARDSPRITE_HIGHLIGHT : DWord = 0;
+  HARDSPRITE_EXPL      : DWord = 0;
+  HARDSPRITE_SELECT    : DWord = 0;
+  HARDSPRITE_MARK      : DWord = 0;
+  HARDSPRITE_GRID      : DWord = 0;
 
 var
   SoundOff  : boolean = False;
@@ -371,6 +372,7 @@ function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
 function ReadFileString( const aFileName : Ansistring ) : Ansistring;
 function WriteFileString( const aFileName, aText : Ansistring ) : Boolean;
 function ReadLineFromStream( aStream : TStream; aSize : Integer = -1 ) : AnsiString;
+function AxisToDirection( aAxis : TVec2f ) : TCoord2D;
 
 var ColorOverrides : TIntHashMap;
 
@@ -835,6 +837,32 @@ begin
     Result := ReadSprite( iTable, aSprite );
     iTable.Free;
   end;
+end;
+
+function AxisToDirection( aAxis : TVec2f ) : TCoord2D;
+const DeadZoneSquared = 0.4*0.4;
+const KDirection8: array[0..7] of TCoord2D = (
+    (x:  1; y:  0),  // Right
+    (x:  1; y: -1),  // Up-Right
+    (x:  0; y: -1),  // Up
+    (x: -1; y: -1),  // Up-Left
+    (x: -1; y:  0),  // Left
+    (x: -1; y:  1),  // Down-Left
+    (x:  0; y:  1),  // Down
+    (x:  1; y:  1)   // Down-Right
+  );
+var iAngle      : Single;
+    iSectorSize : Single;
+begin
+  if aAxis.X * aAxis.X + aAxis.Y * aAxis.Y < DeadZoneSquared then
+    Exit(NewCoord2D(0,0));
+
+  iAngle := ArcTan2(-aAxis.y, aAxis.x); // returns [-Pi..Pi]
+  if iAngle < 0 then
+    iAngle := iAngle + 2 * Pi;
+
+  iSectorSize := Pi / 4;
+  Result := KDirection8[Round(iAngle / iSectorSize) mod 8];
 end;
 
 end.

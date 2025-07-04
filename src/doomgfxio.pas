@@ -70,6 +70,7 @@ type
 
     FGPLeft      : TVec2f;
     FGPRight     : TVec2f;
+    FGPLeftDir   : TCoord2D;
     FGPCamera    : Single;
 
     FLastMouseTime : QWord;
@@ -184,6 +185,7 @@ begin
 
   FGPRight.Init();
   FGPLeft.Init();
+  FGPLeftDir.Create(0,0);
   FGPCamera := 0.0;
 
   {$IFDEF WINDOWS}
@@ -537,6 +539,13 @@ begin
     SpriteMap.NewShift := Clamp( SpriteMap.Shift + Ceil( FGPRight.Scaled( aMSec ) ), SpriteMap.MinShift, SpriteMap.MaxShift );
   end;
 
+  if (not isModal) and (( FGPLeftDir.X <> 0 ) or (FGPLeftDir.Y <> 0 )) then
+  begin
+    SpriteMap.Marker := Player.Position + FGPLeftDir;
+  end
+  else
+    SpriteMap.Marker := NewCoord2D(-1,-1);
+
   FAnimations.Update( aMSec );
 
   iSizeY    := FIODriver.GetSizeY-2*FVPadding;
@@ -554,6 +563,7 @@ begin
     if FConsoleWindow = nil then
        FConsole.HideCursor;
     //if not UI.AnimationsRunning then SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
+
     SpriteMap.Update( aMSec, FProjection );
     FAnimations.Draw;
     glEnable( GL_DEPTH_TEST );
@@ -636,12 +646,16 @@ begin
       VPAD_AXIS_LEFT_X  : FGPLeft.X  := iValue / 32000;
       VPAD_AXIS_LEFT_Y  : FGPLeft.Y  := iValue / 32000;
     end;
+
+    if iEvent.PadAxis.Axis in [ VPAD_AXIS_LEFT_X, VPAD_AXIS_LEFT_Y] then
+      FGPLeftDir := AxisToDirection( FGPLeft );
   end;
 
   if ( iEvent.EType = VEVENT_PADDEVICE ) then
   begin
     FGPRight.Init();
     FGPLeft.Init();
+    FGPLeftDir.Create(0,0);
   end;
 
   if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN ] then

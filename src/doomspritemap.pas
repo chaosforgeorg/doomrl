@@ -79,6 +79,7 @@ private
   FOffset         : TVec2i;
   FLastCoord      : TCoord2D;
   FAutoTarget     : TCoord2D;
+  FMarker         : TCoord2D;
   FSpriteEngine   : TSpriteEngine;
   FLightMap       : array[0..MAXX] of array[0..MAXY] of Byte;
   FFramebuffer    : TGLFramebuffer;
@@ -99,6 +100,7 @@ private
   procedure PushSpriteTerrainPart( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
   function GetSprite( aSprite : TSprite; aTime : Integer = -1 ) : TSprite;
   function GetSprite( aCell, aStyle : Byte ) : TSprite;
+  procedure DrawMarker;
 public
   property Engine : TSpriteEngine read FSpriteEngine;
   property MaxShift : TVec2i read FMaxShift;
@@ -106,6 +108,7 @@ public
   property Shift : TVec2i read FShift;
   property NewShift : TVec2i read FNewShift write FNewShift;
   property Offset : TVec2i read FOffset write FOffset;
+  property Marker : TCoord2D read FMarker write FMarker;
 end;
 
 var SpriteMap : TDoomSpriteMap = nil;
@@ -252,6 +255,7 @@ begin
   FGridActive     := False;
   FLastCoord.Create(0,0);
   FAutoTarget.Create(0,0);
+  FMarker.Create(-1,-1);
 
   iIO := (IO as TDoomGFXIO);
 
@@ -348,6 +352,35 @@ begin
   FSpriteEngine.Update( aProjection );
   PushTerrain;
   PushObjects;
+  DrawMarker;
+end;
+
+procedure TDoomSpriteMap.DrawMarker;
+const MarkerSprite : TSprite = (
+  Color     : (R:0;G:0;B:0;A:255);
+  GlowColor : (R:0;G:0;B:0;A:0);
+  SpriteID  : (0,0,0,0,0,0,0,0);
+  SCount    : 1;
+  Frames    : 0;
+  Frametime : 0;
+  Flags     : [ SF_COSPLAY ];
+);
+begin
+  if ( FMarker.X < 0 ) or ( FMarker.Y < 0 ) then Exit;
+  if not Doom.Level.isProperCoord( FMarker ) then Exit;
+  MarkerSprite.SpriteID[0] := HARDSPRITE_HIGHLIGHT;
+  MarkerSprite.Color := ColorBlack;
+  MarkerSprite.Color.A := 127;
+  if Doom.Level.cellFlagSet( FMarker, CF_BLOCKMOVE ) and ( not Doom.Level.cellFlagSet( FMarker, CF_OPENABLE ) ) then
+    MarkerSprite.Color.R := Floor(50*(Sin( FFluidTime*50 )+1)+100)
+  else if (Doom.Level.GetBeing( FMarker ) <> nil) or (not Doom.Level.isPassable( FMarker ) ) then
+  begin
+    MarkerSprite.Color.R := Floor(50*(Sin( FFluidTime*50 )+1)+100);
+    MarkerSprite.Color.G := Floor(50*(Sin( FFluidTime*50 )+1)+100);
+  end
+  else
+    MarkerSprite.Color.G := Floor(50*(Sin( FFluidTime*50 )+1)+100);
+  SpriteMap.PushSpriteFX( FMarker, MarkerSprite );
 end;
 
 procedure TDoomSpriteMap.Draw;
