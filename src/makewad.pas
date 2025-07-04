@@ -41,6 +41,7 @@ begin
     WAD.Add(Path+'help/intro.hlp',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'help' );
     WAD.Add(Path+'help/start.hlp',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'help' );
     WAD.Add(Path+'help/keys.hlp',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'help' );
+    WAD.Add(Path+'help/gamepad.hlp',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'help' );
     WAD.Add(Path+'help/feedback.hlp',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'help' );
     WAD.Add(Path+'help/disclaim.hlp',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'help' );
     WAD.Add(Path+'help/credits.hlp',FILETYPE_RAW,[vdfCompressed,vdfEncrypted], 'help' );
