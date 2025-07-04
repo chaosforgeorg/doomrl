@@ -489,6 +489,10 @@ begin
       VPAD_BUTTON_DPAD_RIGHT : VTIG_GetIOState.EventState.SetState( VTIG_IE_RIGHT, event.Pad.Pressed );
       VPAD_BUTTON_B          : VTIG_GetIOState.EventState.SetState( VTIG_IE_CANCEL, event.Pad.Pressed );
       VPAD_BUTTON_A          : VTIG_GetIOState.EventState.SetState( VTIG_IE_CONFIRM, event.Pad.Pressed );
+      VPAD_BUTTON_LEFTSHOULDER  : VTIG_GetIOState.EventState.SetState( VTIG_IE_LEFT, event.Pad.Pressed );
+      VPAD_BUTTON_RIGHTSHOULDER : VTIG_GetIOState.EventState.SetState( VTIG_IE_RIGHT, event.Pad.Pressed );
+      VPAD_BUTTON_Y          : VTIG_GetIOState.EventState.SetState( VTIG_IE_BACKSPACE, event.Pad.Pressed );
+      VPAD_BUTTON_X          : VTIG_GetIOState.EventState.SetState( VTIG_IE_TAB, event.Pad.Pressed );
     end;
   end;
 

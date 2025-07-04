@@ -346,7 +346,7 @@ begin
         if VTIG_Event( VTIG_IE_BACKSPACE ) then
         begin
           FState := PLAYERVIEW_PENDING;
-          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item, VTIG_Event( VTIG_IE_SHIFT ) ) );
+          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item, VTIG_Event( VTIG_IE_SHIFT ) or IO.GetPadRTrigger ) );
           if FState = PLAYERVIEW_PENDING
             then FState := PLAYERVIEW_DONE
             else begin ReadInv; FState := PLAYERVIEW_INVENTORY; end
@@ -538,7 +538,7 @@ begin
         begin
           if Cursed then Exit;
           FState := PLAYERVIEW_CLOSING;
-          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item, VTIG_Event( VTIG_IE_SHIFT ) ) );
+          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item, VTIG_Event( VTIG_IE_SHIFT ) or IO.GetPadRTrigger ) );
           FState := PLAYERVIEW_DONE;
         end;
     end;

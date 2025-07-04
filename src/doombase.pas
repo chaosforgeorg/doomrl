@@ -59,6 +59,7 @@ TDoom = class(TSystem)
        function HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean ) : Boolean;
        function HandleUnloadCommand( aItem : TItem ) : Boolean;
        function HandleSwapWeaponCommand : Boolean;
+       function HandlePickupCommand( aAlt : Boolean ) : Boolean;
        function HandleCommand( aCommand : TCommand ) : Boolean;
        procedure Run;
        destructor Destroy; override;
@@ -72,6 +73,7 @@ TDoom = class(TSystem)
        procedure ResetAutoTarget;
        function HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
        function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
+       function HandlePadMovement( aEvent : TIOEvent ) : Boolean;
        function HandlePadEvent( aEvent : TIOEvent ) : Boolean;
        function MoveTargetEvent( aCoord : TCoord2D ) : Boolean;
        procedure PreAction;
@@ -106,7 +108,7 @@ var Lua : TDoomLua;
 implementation
 
 uses Classes, SysUtils,
-     vdebug, viotypes, vuitypes,
+     vdebug, viotypes,
      dfmap, dfbeing,
      doomio, doomgfxio, doomtextio, zstream,
      doomspritemap, // remove
@@ -115,7 +117,7 @@ uses Classes, SysUtils,
      doomconfiguration, doomhelp, doomconfig, dfplayer;
 
 const PAD_REPEAT_START = 400;
-      PAD_REPEAT       = 150;
+      PAD_REPEAT       = 100;
 
 constructor TTargeting.Create;
 begin
@@ -396,16 +398,8 @@ begin
     INPUT_WAIT       : Exit( HandleCommand( TCommand.Create( COMMAND_WAIT ) ) );
     INPUT_RELOAD     : Exit( HandleCommand( TCommand.Create( COMMAND_RELOAD ) ) );
     INPUT_ALTRELOAD  : Exit( HandleCommand( TCommand.Create( COMMAND_ALTRELOAD ) ) );
-    INPUT_PICKUP     : Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) );
-    INPUT_ALTPICKUP  : begin
-      iItem := Level.Item[ Player.Position ];
-      if ( iItem = nil ) or (not (iItem.isPickupable or iItem.isPack or iItem.isWearable) ) then
-      begin
-        IO.Msg( 'There''s nothing to use on the ground!' );
-        Exit( False );
-      end;
-      Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
-    end;
+    INPUT_PICKUP     : Exit( HandlePickupCommand( False ) );
+    INPUT_ALTPICKUP  : Exit( HandlePickupCommand( True ) );
 
     INPUT_SWAPWEAPON  : Exit( HandleSwapWeaponCommand );
     INPUT_NONE        : Exit;
@@ -753,6 +747,19 @@ begin
   Exit( HandleCommand( TCommand.Create( COMMAND_SWAPWEAPON ) ) );
 end;
 
+function TDoom.HandlePickupCommand( aAlt : Boolean ) : Boolean;
+var iItem : TItem;
+begin
+  if not aAlt then Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) );
+  iItem := Level.Item[ Player.Position ];
+  if ( iItem = nil ) or (not (iItem.isPickupable or iItem.isPack or iItem.isWearable) ) then
+  begin
+    IO.Msg( 'There''s nothing to use on the ground!' );
+    Exit( False );
+  end;
+  Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
+end;
+
 function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
 begin
   if not ( aCommand.Command in [ COMMAND_FIRE, COMMAND_ALTFIRE, COMMAND_RELOAD ] ) then
@@ -887,58 +894,103 @@ begin
   Exit( False );
 end;
 
-function TDoom.HandlePadEvent( aEvent : TIOEvent ) : Boolean;
+function TDoom.HandlePadMovement( aEvent : TIOEvent ) : Boolean;
 var iTarget : TCoord2D;
     iCell   : Integer;
 begin
-  if FPadMoveActive then
+  if ( aEvent.EType <> VEVENT_PADDOWN ) then
   begin
-    if ( aEvent.EType = VEVENT_PADDEVICE ) or
-        ( (aEvent.EType = VEVENT_PADUP) and (aEvent.Pad.Button = VPAD_BUTTON_A) ) then
-        begin
-          FPadMoveActive := False;
-        end;
+    FPadMoveActive := False;
+    Exit( False );
   end;
-  if aEvent.EType <> VEVENT_PADDOWN then Exit( False );
-  case aEvent.Pad.Button of
-    VPAD_BUTTON_A : if IO.GetPadRTrigger then
+
+  Assert( aEvent.Pad.Button = VPAD_BUTTON_A );
+
+  if ( aEvent.EType = VEVENT_PADUP ) then
+  begin
+    FPadMoveActive := False;
+    Exit( False );
+  end;
+
+  if IO.GetPadRTrigger then
+  begin // Move target mode
+    if IO.GetPadLDir.NotZero then
+      Exit( MoveTargetEvent( FTargeting.List.Current + IO.GetPadLDir ) );
+    // TODO
+    Exit( False );
+  end;
+
+  if aEvent.Pad.Pressed then // normal mode
+  begin
+    if IO.GetPadLDir.NotZero
+      then Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ) )
+      else Result := HandleCommand( TCommand.Create( COMMAND_WAIT ) );
+    FPadMoveNext := IO.Time + PAD_REPEAT_START;
+  end
+  else // repeat mode
+  begin
+    if IO.GetPadLDir.NotZero then
+    begin
+      iTarget := Player.Position + IO.GetPadLDir;
+      if Level.isProperCoord( iTarget ) then
       begin
-        if IO.GetPadLDir.NotZero then
-          Exit( MoveTargetEvent( FTargeting.List.Current + IO.GetPadLDir ) );
-      end
-      else
-      begin
-        if aEvent.Pad.Pressed then // normal mode
-        begin
-          if IO.GetPadLDir.NotZero
-            then Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ) )
-            else Result := HandleCommand( TCommand.Create( COMMAND_WAIT ) );
-          FPadMoveNext := IO.Time + PAD_REPEAT_START;
-        end
-        else // repeat mode
-        begin
-          if IO.GetPadLDir.NotZero then
-          begin
-            iTarget := Player.Position + IO.GetPadLDir;
-            if Level.isProperCoord( iTarget ) then
-            begin
-              iCell := Level.getCell( iTarget );
-              if not ( ( CellHook_OnHazardQuery in Cells[ iCell ].Hooks ) and  Level.CallHook( CellHook_OnHazardQuery, iCell, Player ) ) then
-                Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ) );
-            end;
-          end;
-          FPadMoveNext := IO.Time + PAD_REPEAT;
-        end;
-        FPadMoveActive := ( State = DSPlaying ) and ( Player.EnemiesInVision = 0 ) and ( aEvent.Pad.Pressed or (not FDamagedLastTurn) );
-        Exit( Result );
+        iCell := Level.getCell( iTarget );
+        if not ( ( CellHook_OnHazardQuery in Cells[ iCell ].Hooks ) and  Level.CallHook( CellHook_OnHazardQuery, iCell, Player ) ) then
+          Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ) );
       end;
+    end;
+    FPadMoveNext := IO.Time + PAD_REPEAT;
+  end;
+  FPadMoveActive := ( State = DSPlaying ) and ( Player.EnemiesInVision = 0 ) and ( aEvent.Pad.Pressed or (not FDamagedLastTurn) );
+  Exit( Result );
+end;
+
+function TDoom.HandlePadEvent( aEvent : TIOEvent ) : Boolean;
+begin
+  if ( aEvent.EType = VEVENT_PADDEVICE ) then
+  begin
+    FPadMoveActive := False;
+    Exit( False );
+  end;
+
+  if ( aEvent.Pad.Button = VPAD_BUTTON_A ) then
+    Exit( HandlePadMovement( aEvent ) );
+
+  if aEvent.EType <> VEVENT_PADDOWN then
+    Exit( False );
+
+  case aEvent.Pad.Button of
+    VPAD_BUTTON_B : if IO.GetPadLDir.NotZero
+                      then Exit( HandleActionCommand( Player.Position + IO.GetPadLDir, 0 ) )
+                      else begin
+                        if Level.cellFlagSet( Player.Position, CF_STAIRS ) then
+                          Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) );
+                        Exit( HandlePickupCommand( IO.GetPadRTrigger ) )
+                      end;
+    VPAD_BUTTON_X : Exit( HandleFireCommand( IO.GetPadRTrigger, False, True ) );
+    VPAD_BUTTON_Y : Exit( HandleCommand( TCommand.Create( Iif( IO.GetPadRTrigger, COMMAND_ALTRELOAD, COMMAND_RELOAD ) ) ) );
+    VPAD_BUTTON_BACK          : begin ResetAutoTarget; IO.PushLayer( TInGameMenuView.Create ); Exit; end;
+    VPAD_BUTTON_GUIDE:;
+    VPAD_BUTTON_START         : begin
+      if IO.GetPadRTrigger
+        then FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_EQUIPMENT ) )
+        else FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_INVENTORY ) );
+      Exit( False );
+    end;
+    VPAD_BUTTON_LEFTSTICK  : Exit( HandleCommand( TCommand.Create( COMMAND_ACTIVE ) ) );
+    VPAD_BUTTON_RIGHTSTICK : Exit( HandleSwapWeaponCommand );
+    VPAD_BUTTON_LEFTSHOULDER  : begin IO.SetAutoTarget( FTargeting.List.Prev ); Exit( False ); end;
+    VPAD_BUTTON_RIGHTSHOULDER : begin IO.SetAutoTarget( FTargeting.List.Next ); Exit( False ); end;
+    VPAD_BUTTON_DPAD_UP    : Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0,-1 ) ) );
+    VPAD_BUTTON_DPAD_DOWN  : Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0, 1 ) ) );
+    VPAD_BUTTON_DPAD_LEFT  : Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D(-1, 0 ) ) );
+    VPAD_BUTTON_DPAD_RIGHT : Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 1, 0 ) ) );
   end;
   Exit( False );
 end;
 
 function TDoom.HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
 var iInput : TInputKey;
-    iCoord : TCoord2D;
 begin
   if aEvent.Key.Code = 0 then Exit( False );
   IO.KeyCode := IOKeyEventToIOKeyCode( aEvent.Key );
