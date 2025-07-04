@@ -389,6 +389,12 @@ end
 
 function level:drop_items( what )
 	for i in what:children("item") do
+		if i.itype == ITEMTYPE_RANGED and (not i.flags[ IF_NOUNLOAD ]) then
+			local ammo = i.ammo
+			i.ammo = 0
+			local ia = self:drop_item( items[ i.ammoid ].id, what.position, true, true )
+			ia.ammo = ammo
+		end
 		self:drop_item( i, what.position, true, true )
 	end
 end
