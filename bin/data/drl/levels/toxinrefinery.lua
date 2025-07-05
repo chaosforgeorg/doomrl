@@ -140,7 +140,7 @@ register_level "toxin_refinery"
 			['2'] = { "floor", item = "lever_toxinrefinery2" },
 			['3'] = { "floor", item = "lever_toxinrefinery3" },
 
-			['h'] = { "floor", being = "former" },  --12
+			['h'] = { "floor", being = "former" }, 
 			['H'] = { "floor", being = core.bydiff{ "former","former","sergeant" } },
 			['i'] = { "floor", being = core.bydiff{ "imp", "imp", "imp", "imp", "nimp" } },
 			['d'] = { "floor", being = core.bydiff{ nil, nil, nil, "demon"} },
@@ -186,35 +186,35 @@ register_level "toxin_refinery"
 		end
 		--The consequence of a roomier level is granular monster seeding
 		if (DIFFICULTY >= DIFF_MEDIUM) then
-			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 1, level.data.room2 }
-			level:summon{ "former",      1, level.data.room1 }
-			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 2, level.data.room3 }
-			level:summon{ "imp",         1, level.data.room_entry }
-			level:summon{ "sergeant",    1, level.data.room_entry }
-			level:summon{ "former",      1, level.data.secret_trap }
-			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 1, level.data.secret_trap }
-			level:summon{ "former",      1, level.data.room4 }
-			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 2, level.data.room4 }
-			level:summon{ "sergeant",    1, level.data.room4 }
-			level:summon{ "imp",         1, level.data.room5 }
+			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 1, area = level.data.room2 }
+			level:summon{ "former",      1, area = level.data.room1 }
+			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 2, area = level.data.room3 }
+			level:summon{ "imp",         1, area = level.data.room_entry }
+			level:summon{ "sergeant",    1, area = level.data.room_entry }
+			level:summon{ "former",      1, area = level.data.secret_trap }
+			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 1, area = level.data.secret_trap }
+			level:summon{ "former",      1, area = level.data.room4 }
+			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 2, area = level.data.room4 }
+			level:summon{ "sergeant",    1, area = level.data.room4 }
+			level:summon{ "imp",         1, area = level.data.room5 }
 			if (DIFFICULTY >= DIFF_HARD) then
-				level:summon{ "sergeant",    1, level.data.room1 }
-				level:summon{ "former",      2, level.data.room4 }
-				level:summon{ "sergeant",    1, level.data.room2 }
-				level:summon{ "imp",         1, level.data.room5 }
-				level:summon{ "sergeant",    1, level.data.room3 }
-				level:summon{ "imp",         2, level.data.secret2 }
-				level:summon{ "demon",       2, level.data.secret_trap }
-				level:summon{ "imp",         2, level.data.room6 }
+				level:summon{ "sergeant",    1, area = level.data.room1 }
+				level:summon{ "former",      2, area = level.data.room4 }
+				level:summon{ "sergeant",    1, area = level.data.room2 }
+				level:summon{ "imp",         1, area = level.data.room5 }
+				level:summon{ "sergeant",    1, area = level.data.room3 }
+				level:summon{ "imp",         2, area = level.data.secret2 }
+				level:summon{ "demon",       2, area = level.data.secret_trap }
+				level:summon{ "imp",         2, area = level.data.room6 }
 				if (DIFFICULTY >= DIFF_VERYHARD) then
-					level:summon{ "demon",    2, level.data.room_entry }
-					level:summon{ "demon",    2, level.data.secret_trap }
-					level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 2, level.data.secret_trap }
-					level:summon{ "imp",      1, level.data.room2 }
-					level:summon{ "sergeant", 1, level.data.room3 }
-					level:summon{ "imp",      2, level.data.room4 }
-					level:summon{ "former",   1, level.data.room6 }
-    				level:summon{ "imp",      2, level.data.room6 }
+					level:summon{ "demon",    2, area = level.data.room_entry }
+					level:summon{ "demon",    2, area = level.data.secret_trap }
+					level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 2, area = level.data.secret_trap }
+					level:summon{ "imp",      1, area = level.data.room2 }
+					level:summon{ "sergeant", 1, area = level.data.room3 }
+					level:summon{ "imp",      2, area = level.data.room4 }
+					level:summon{ "former",   1, area = level.data.room6 }
+    				level:summon{ "imp",      2, area = level.data.room6 }
 				end
 			end
 		end

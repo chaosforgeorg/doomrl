@@ -222,27 +222,28 @@ register_level "central_processing"
 			['6'] = { "floor", item = "level_centralprocessing6" },
 
 			['h'] = { "floor", being = "former" },
-			['H'] = { "floor", being = core.bydiff{ "former","former","sergeant" } },
+			['H'] = { "floor", being = core.bydiff{ "former","sergeant" } },
 			['i'] = { "floor", being = "imp" },
 			['j'] = { "floor", being = core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp")},
+			['k'] = { "floor", being = core.bydiff{ nil, "imp", "imp", "demon", "nimp" }},
 			['O'] = { "floor", being = core.bydiff{ "cacodemon","cacodemon","knight","baron" } },
 		}
 
 		local map = [=[
 ################################################################..#####..###
-=#h.#....2===#.################....................#############..#####h.###
-=#..#.....===#.################.#####a..#####..==..#############..#####..###
+=#h.#....2===#.################....................#############s.#####h.###
+=#k.#.....===#.################.#####a..#####..==..#############..#####..###
 =####.####===#+################.......#............#########################
 =####LL##E===##################.#####...#####..==..#....................~.##
 =####=.=##########.....########............i.......L.#####.####......s....##
 =####=...~-#######.###.########.##################.#.......#5....i........#.
 =####=.=#ai#######.#i#.#...#....####=.=######.####.#.#####.####.....~.....#H
-=+#.s=.=##########.#.#.#...#.#####...a.h.#=.=#...#.#......................##
+=.#.s=.=##########.#.#.#...#.#####...a.h.#=.=#...#.#......................##
 =A#......s.......L.......#.L.#+h#..#=.=#...s...#.#.###################L#####
-###.a=.=##########.#.#.#...###.##.###.##.#=.=###.#...H...........#h.##.#..##
-#####=.=#....#####.#.#.#...#####=.=#..##.##.##..3#......a.......4#..##.#..##
+###.a=.=##########.#.#.#...###.##.###.##.#=.=###.#...H.........s.#h.##.#..##
+#####=.=#....#####.#.#.#...#####=.=#..##.##.##..3#......a.......4#..##.#a.##
 ######.###########.###.########......##=.=#.##...#......h........#..##.#####
-#..#....~....#ha##.....########.=.=#.....h..##.#######################...###
+#..#....~s...#ha##.....########.=.=#.....h..##.#######################...###
 #.H#.........#.1####.##########.#.##.##=.=#.##.########S##############...###
 ####~...#~......####...........##....######....#r..j..###.....########.M.###
 ##################==========####################....Vh......O.########D..###
@@ -274,41 +275,40 @@ register_level "central_processing"
 --    |   |
 --    R3B R3C
 
-		level:summon(core.ifdiff(DIFF_VERYHARD, "nimp", "imp"), level.data.room8)
+		level:summon{core.ifdiff(DIFF_VERYHARD, "nimp", "imp"), 1, area = level.data.room8}
 		if DIFFICULTY >= DIFF_MEDIUM then
-			level:summon(core.bydiff(nil, "imp", "imp", "demon", "nimp"), level.data.room2)
-			level:summon("former", level.data.room3d)
-			level:summon("imp", level.data.room4)
-			level:summon("former", level.data.room5)
-			level:summon("imp", level.data.room5)
-			level:summon("former", level.data.room6)
-			level:summon("former", level.data.room7)
-			level:summon(core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), level.data.room9a)
-			level:summon("former", level.data.room3b)
-			level:summon("demon", level.data.roomExit)
+			level:summon{"sergeant", 1, area = level.data.room3b}
+			level:summon{"former",   1, area = level.data.room3d}
+			level:summon{"imp",      1, area = level.data.room4}
+			level:summon{"former",   1, area = level.data.room5}
+			level:summon{"imp",      1, area = level.data.room5}
+			level:summon{"former",   1, area = level.data.room6}
+			level:summon{"former",   1, area = level.data.room7}
+			level:summon{core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 1, area = level.data.room9a}
+			level:summon{"demon",  1, area = level.data.roomExit}
 			if DIFFICULTY >= DIFF_HARD then
-				level:summon("demon", level.data.roomExit, 2)
-				level:summon("former", level.data.room9d)
-				level:summon("former", level.data.room5)
-				level:summon(core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), level.data.room9a)
-				level:summon("demon", level.data.room3b)
-				level:summon("demon", level.data.room4)
-				level:summon("demon", level.data.room5)
-				level:summon("sergeant", level.data.room5)
-				level:summon("sergeant", level.data.room6)
-				level:summon(core.ifdiff(DIFF_VERHARD, "nimp", "imp"), level.data.room9)
-				level:summon("former", level.data.room9, 2)
+				level:summon{"demon",    1, area = level.data.room3b}
+				level:summon{"demon",    1, area = level.data.room4}
+				level:summon{"former",   1, area = level.data.room5}
+				level:summon{"demon",    1, area = level.data.room5}
+				level:summon{"sergeant", 1, area = level.data.room5}
+				level:summon{"sergeant", 1, area = level.data.room6}
+				level:summon{core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 1, area = level.data.room9a}
+				level:summon{core.ifdiff(DIFF_VERYHARD, "nimp", "imp"), 1, area = level.data.room9}
+				level:summon{"former",   2, area = level.data.room9}
+				level:summon{"former",   1, area = level.data.room9d}
+				level:summon{"demon",    2, area = level.data.roomExit}
 				if DIFFICULTY >= DIFF_VERYHARD then
-					level:summon("imp", level.data.room1)
-					level:summon(core.ifdiff(DIFF_NIGHTMARE, "ndemon", "demon"), level.data.roomExit, 2)
-					level:summon("demon", level.data.room3d, 2)
-					level:summon("demon", level.data.room9b)
-					level:summon("demon", level.data.room9d)
-					level:summon("demon", level.data.room9e)
-					level:summon("demon", level.data.room3)
-					level:summon("demon", level.data.room5)
-					level:summon("demon", level.data.room3)
-					level:summon("sergeant", level.data.room9)
+					level:summon{"imp",      1, area = level.data.room1}
+					level:summon{"demon",    1, area = level.data.room3}
+					level:summon{"demon",    1, area = level.data.room3}
+					level:summon{"demon",    2, area = level.data.room3d}
+					level:summon{"demon",    1, area = level.data.room5}
+					level:summon{"sergeant", 1, area = level.data.room9}
+					level:summon{"demon",    1, area = level.data.room9b}
+					level:summon{"demon",    1, area = level.data.room9d}
+					level:summon{"demon",    1, area = level.data.room9e}
+					level:summon{core.ifdiff(DIFF_NIGHTMARE, "ndemon", "demon"), 2, area = level.data.roomExit}
 				end
 
 			end
