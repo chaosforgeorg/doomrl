@@ -1080,14 +1080,21 @@ function generator.generate_rivers( settings )
 	end
 
 	if destroy_items then
+		local floor = generator.styles[ level.style ].floor
 		for c in level:each( cell ) do
 			local item = level:get_item(c)
-			if item then item:destroy() end
+			if item then
+				if item.flags[ IF_NODESTROY] then
+					item:destroy()
+				else
+					level:set_cell( c, floor )
+				end
+			end
 		end
 		if bridge then
 			for c in level:each( bridge ) do
 				local item = level:get_item(c)
-				if item then item:destroy() end
+				if item and ( not item.flags[ IF_NODESTROY] ) then item:destroy() end
 			end
 		end
 	end
