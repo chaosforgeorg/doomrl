@@ -124,8 +124,7 @@ register_level "central_processing"
 			sound_id = "lever",
 
 			OnUse = function(self,being)
-				level:transmute( "ldoor", "floor", level.data.door5 )
-				level:play_sound( "door.open", level.data.door5_coord )
+				level:transmute( "ldoor", "door", level.data.door5 )
 				ui.msg("Exit unlocked.")
 				return true
 			end,
@@ -200,6 +199,7 @@ register_level "central_processing"
 			['='] = "acid",
 			['>'] = "stairs",
 			['+'] = { "floor", item = "smed" },
+			['g'] = { "floor", item = "lhglobe" },
 			['-'] = { "floor", item = "lmed" },
 			['~'] = { "floor", item = "barrel" },
 			['L'] = { "ldoor",  flags = { LFPERMANENT } },
@@ -233,7 +233,7 @@ register_level "central_processing"
 ################################################################..#####..###
 =#h.#....2===#.################....................#############s.#####h.###
 =#k.#.....===#.################.#####a..#####..==..#############..#####..###
-=####.####===#+################.......#............#########################
+=####.####===#g################.......#............#########################
 =####LL##E===##################.#####...#####..==..#....................~.##
 =####=.=##########.....########............i.......L.#####.####......s....##
 =####=...~-#######.###.########.##################.#.......#5....i........#.
@@ -334,10 +334,10 @@ register_level "central_processing"
 				level:transmute( "wall", "floor", level.data.platform)
 				level:play_sound( "door.open", level.data.platform_coord )
 			elseif level.data.platform_up and not platform_up then
-				level:transmute( "floor", "wall", level.data.platform)
-				level:play_sound( "door.close", level.data.platform_coord )
-				--Actually, this 'wall' is a platform, so there is no need to kill the monster. However it will look unusual sitting atop a wall.
-				--If killing it is the preferred option, refer to toxinrefinery's code.
+				--Transmute fails if the wall is actually a bloodpool
+				--Actually, this 'wall' is a platform, so there is no need to kill the monster. However it will look unusual sitting atop a wall!
+				--If killing it is the preferred option, contrary to the intent of the square, refer to toxinrefinery's code.
+				level.map[level.data.platform_coord] = "wall"
 			end
 			level.data.platform_up = platform_up
 		end
@@ -352,7 +352,10 @@ register_level "central_processing"
 		elseif level.data.trapSC:contains(player.position) then
 			level:transmute( "wall", "floor", level.data.trapSC1)
 		elseif level.data.trap6:contains(player.position) and not level.data.trap6_triggered then
-			level:transmute( "floor", "gwall", level.data.trap6P)
+			--This avoids the transmute situation if the floor is actually a bloodpool
+			for iCoord in level.data.trap6P.coords(level.data.trap6P) do
+				level.map[iCoord] = "gwall"
+			end
 			level.data.trap6_expiry = core.game_time() + 300
 			level.data.trap6_triggered = true
 			level:play_sound("door.close", level.data.door4_coord)
