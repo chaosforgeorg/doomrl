@@ -156,7 +156,7 @@ register_level "the_vaults"
 		local result = level.status
 		player:add_badge("vaults1")
 		if result == 0 then
-			ui.msg("All these treasure left behind...")
+			ui.msg("All these treasures left behind...")
 			player:add_history("He came, he saw, but he left.")
 		elseif result == 1 or result == 3 then
 			ui.msg("At least I got something!")
