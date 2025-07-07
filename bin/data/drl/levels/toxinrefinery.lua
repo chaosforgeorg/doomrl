@@ -170,6 +170,8 @@ register_level "toxin_refinery"
 #############h....a..###########################################........D###
 ]=]
 
+
+
 		generator.place_tile( translation, map, 2, 2 )
 
 		generator.set_permanence( area.FULL )
@@ -188,7 +190,8 @@ register_level "toxin_refinery"
 		if (DIFFICULTY >= DIFF_MEDIUM) then
 			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 1, area = level.data.room2 }
 			level:summon{ "former",      1, area = level.data.room1 }
-			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 2, area = level.data.room3 }
+			level:summon{ core.ifdiff(DIFF_NIGHTMARE, "nimp", "imp"), 1, area = level.data.room3 }
+			level:summon{ "imp", 1, area = level.data.room3 }
 			level:summon{ "imp",         1, area = level.data.room_entry }
 			level:summon{ "sergeant",    1, area = level.data.room_entry }
 			level:summon{ "former",      1, area = level.data.secret_trap }
@@ -224,7 +227,7 @@ register_level "toxin_refinery"
 
 	OnKillAll = function ()
 		level.data.kill_all  = true
-		ui.msg("\"The acrid smell begins to dissipate\"")
+		ui.msg("The acrid smell begins to dissipate")
 		level.status = 4
 	end,
 
@@ -234,15 +237,16 @@ register_level "toxin_refinery"
 
 	OnTick = function ()
 		if (level.data.half_wall_down_time > 0) and (core.game_time() >= level.data.half_wall_down_time) and not level.data.half_wall:contains(player.position) then
-			level:transmute( "floor", "wall", level.data.half_wall)
 			local target = level:get_being(level.data.half_wall_coord)
 			if target then
 				if target:is_player() then return false end
 				target:kill()
 			end
+			--Transmuting fails if the square is actually a bloodpool
+			level.map[level.data.half_wall_coord] = "wall"
 			level.data.half_wall_down_time = 0
 		elseif level.data.half_wall_down_time == 0 and (level.data.half_wall_trigger:contains(player.position) or level.data.half_wall_trigger2:contains(player.position)) then
-			level:transmute( "wall", "floor", level.data.half_wall)
+			level:transmute("wall", "floor", level.data.half_wall)
 			level.data.half_wall_down_time = core.game_time() + 150
 		end
 		if level.data.darkness_end_time > 0 and level.data.darkness_end_time < core.game_time() then
