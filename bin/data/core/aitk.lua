@@ -476,6 +476,9 @@ function aitk.try_hunt( self )
         end
     end
     if self.retaliate then attackchance = 100 end
+    if self:has_property("attackrange") and self.attackrange < dist then
+        attackchance = math.floor( attackchance / 3 )
+    end
     if dist == 1 and (not self.nomelee) then
         self:attack( target )
         if sequential then self.sequence = 0 end
