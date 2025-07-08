@@ -533,6 +533,7 @@ begin
   iBeing  := UIDs.Get( FUID ) as TBeing;
   if iBeing = nil then Exit;
   FValue      := 2;
+  // TODO: remove hack!
   if iBeing.GetLuaProtoValue('corpse') = 0 then FValue := 3;
   FSprite     := iBeing.Sprite;
   FCoord      := iBeing.Position;
@@ -562,7 +563,7 @@ begin
   begin
     iPosition.Init( (iBeing.Position.X - 1)*SpriteMap.GetGridSize,(iBeing.Position.Y - 1)*SpriteMap.GetGridSize);
   end;
-  iSegment := ( FTime * FValue ) div FDuration;
+  iSegment := Min( ( FTime * FValue ) div FDuration, FValue - 1 );
   // TODO : remove hack!
   if FPlayerHack and ( iSegment > 0 ) then
   begin
