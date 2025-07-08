@@ -480,7 +480,7 @@ function aitk.try_hunt( self )
         self:attack( target )
         if sequential then self.sequence = 0 end
         return "hunt"
-    elseif has_ammo and sequence >= 0 and ( sequence > 0 or ( math.random(100) <= self.attackchance ) ) then
+    elseif has_ammo and sequence >= 0 and ( sequence > 0 or ( math.random(100) <= attackchance ) ) then
         self.retaliate = false
         if self:has_property("on_fire") then
             return self.on_fire
