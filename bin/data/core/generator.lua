@@ -1084,7 +1084,7 @@ function generator.generate_rivers( settings )
 		for c in level:each( cell ) do
 			local item = level:get_item(c)
 			if item then
-				if item.flags[ IF_NODESTROY] then
+				if not item.flags[ IF_NODESTROY] then
 					item:destroy()
 				else
 					level:set_cell( c, floor )
