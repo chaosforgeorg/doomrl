@@ -242,7 +242,6 @@ type
     Range      : Byte;
     Spread     : Byte;
     Reduce     : Real;
-    DamageType : TDamageType;
     HitSprite  : TSprite;
   end;
 
@@ -258,7 +257,6 @@ type
     ExplDelay  : Byte;
     ExplColor  : Byte;
     ExplFlags  : TExplosionFlags;
-    RayDelay   : Byte;
     Range      : Byte;
     Flags      : TFlags;
     Content    : Byte;

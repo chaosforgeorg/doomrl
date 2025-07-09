@@ -137,7 +137,6 @@ begin
       ExplDelay := getInteger('expl_delay');
       ExplColor := getInteger('expl_color');
       ExplFlags := ExplosionFlagsFromFlags( getFlags('expl_flags') );
-      RayDelay  := getInteger('ray_delay');
       Content   := getInteger('content');
     finally
       Free;
@@ -164,7 +163,6 @@ begin
       Range      := getInteger('range');
       Spread     := getInteger('spread');
       Reduce     := getFloat ('reduce');
-      DamageType := TDamageType( getInteger('damage') );
       ReadSprite( iTable, 'hitsprite', HitSprite );
     finally
       Free;

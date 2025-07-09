@@ -198,7 +198,6 @@ core.register_blueprint "shotgun"
 	range       = { true,  core.TNUMBER },
 	spread      = { true,  core.TNUMBER },
 	reduce      = { true,  core.TNUMBER },
-	damage      = { false, core.TNUMBER, 0 },
 	hitsprite   = { true,  core.TANY },
 }
 

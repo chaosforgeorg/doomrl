@@ -70,7 +70,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
     procedure Explosion( Sequence : Integer; coord : TCoord2D; aRange, aDelay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
-    procedure Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Single; Shotgun : TShotgunData; aItem : TItem );
+    procedure Shotgun( aSource, aTarget : TCoord2D; aDamage : TDiceRoll; aDamageMul : Single; aDamageType : TDamageType; aShotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
     function isEmpty( const coord : TCoord2D; EmptyFlags : TFlags32 = []) : Boolean; override;
@@ -951,86 +951,88 @@ begin
   if aContent <> 0 then RecalcFluids;
 end;
 
-procedure TLevel.Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamageMul : Single; Shotgun : TShotgunData; aItem : TItem );
-var a,b,tc  : TCoord2D;
-    d       : Single;
-    dmg     : Integer;
-    iRange  : Byte;
-    Spread  : Byte;
-    Reduce  : Single;
-    Dir     : TDirection;
+procedure TLevel.Shotgun( aSource, aTarget : TCoord2D; aDamage : TDiceRoll; aDamageMul : Single; aDamageType : TDamageType; aShotgun : TShotgunData; aItem : TItem );
+var iDiff,iC: TCoord2D;
+    iTC     : TCoord2D;
+    iDist   : Single;
+    iDmg    : Integer;
+    iRange  : Integer;
+    iSpread : Integer;
+    iReduce : Single;
+    iDir    : TDirection;
     iNode   : TNode;
     iItemUID: TUID;
-    procedure SendShotgunBeam( s : TCoord2D; tcc : TCoord2D );
-    var shb : TVisionRay;
-        cnt : byte;
+
+    procedure SendShotgunBeam( aSrc : TCoord2D; aTgt : TCoord2D );
+    var iSRay  : TVisionRay;
+        iCount : Integer;
     begin
-      shb.Init(Self,s,tcc,0.4);
-      cnt := 0;
+      iSRay.Init( Self, aSrc, aTgt, 0.4 );
+      iCount := 0;
       repeat
-        Inc(cnt);
-        shb.Next;
-        if not isProperCoord( shb.GetC ) then Exit;
-        LightFlag[ shb.GetC, lfDamage ] := True;
-        if not isEmpty( shb.GetC, [ EF_NOBLOCK ] ) then Exit;
-        if shb.Done then Exit;
-      until cnt = iRange;
+        Inc(iCount);
+        iSRay.Next;
+        if not isProperCoord( iSRay.GetC ) then Exit;
+        LightFlag[ iSRay.GetC, lfDamage ] := True;
+        if not isEmpty( iSRay.GetC, [ EF_NOBLOCK ] ) then Exit;
+        if iSRay.Done then Exit;
+      until iCount = iRange;
     end;
 begin
-  iRange := Shotgun.Range;
-  Spread := Shotgun.Spread;
-  Reduce := Shotgun.Reduce;
+  iRange  := aShotgun.Range;
+  iSpread := aShotgun.Spread;
+  iReduce := aShotgun.Reduce;
 
   iItemUID := 0;
   if aItem <> nil then iItemUID := aItem.uid;
 
-  d   := Distance( source, target );
-  if d = 0 then Exit;
-  a   := target - source;
-  d   := Sqrt(a.x*a.x+a.y*a.y);
-  b.x := Round((a.x*iRange)/d);
-  b.y := Round((a.y*iRange)/d);
-  b   += source;
+  iDist := Distance( aSource, aTarget );
+  if iDist = 0 then Exit;
+  iDiff := aTarget - aSource;
+  iDist := Sqrt( iDiff.x*iDiff.x+iDiff.y*iDiff.y);
+  iC.x := Round((iDiff.x*iRange)/iDist);
+  iC.y := Round((iDiff.y*iRange)/iDist);
+  iC   += aSource;
 
   for iNode in Self do
     if iNode is TBeing then
       TBeing(iNode).KnockBacked := False;
 
-  for tc in NewArea( b, Spread ) do
-    SendShotGunBeam( source, tc );
+  for iTC in NewArea( iC, iSpread ) do
+    SendShotGunBeam( aSource, iTC );
 
-  for tc in FArea do
-    if LightFlag[ tc, lfDamage ] then
+  for iTC in FArea do
+    if LightFlag[ iTC, lfDamage ] then
       begin
-        dmg := Round(Damage.Roll * (1.0-Reduce*Max(1,Distance( source, tc ))));
-        dmg := Floor( dmg * aDamageMul );
+        iDmg := Round( aDamage.Roll * (1.0-iReduce*Max(1,Distance( aSource, iTC ))) );
+        iDmg := Floor( iDmg * aDamageMul );
 
-        if (dmg < 1) then dmg := 1;
+        if iDmg < 1 then iDmg := 1;
         
-        if Being[ tc ] <> nil then
-        with Being[ tc ] do
+        if Being[ iTC ] <> nil then
+        with Being[ iTC ] do
         begin
           if KnockBacked then Continue;
           if isVisible then
           begin
-            if dmg > 10 then IO.addMarkAnimation( 199, 0, tc, Shotgun.HitSprite, Red, '*' )
-              else if dmg > 4 then IO.addMarkAnimation( 199, 0, tc, Shotgun.HitSprite, LightRed, '*' )
-                else IO.addMarkAnimation( 199, 0, tc, Shotgun.HitSprite, LightGray, '*' );
+            if iDmg > 10 then IO.addMarkAnimation( 199, 0, iTC, aShotgun.HitSprite, Red, '*' )
+              else if iDmg > 4 then IO.addMarkAnimation( 199, 0, iTC, aShotgun.HitSprite, LightRed, '*' )
+                else IO.addMarkAnimation( 199, 0, iTC, aShotgun.HitSprite, LightGray, '*' );
           end;
-          if dmg >= KnockBackValue then
+          if iDmg >= KnockBackValue then
           begin
-            dir.CreateSmooth(source, tc);
-            Knockback( dir, dmg div KnockBackValue );
+            iDir.CreateSmooth( aSource, iTC );
+            Knockback( iDir, iDmg div KnockBackValue );
           end;
           KnockBacked := True;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
-          ApplyDamage( dmg, Target_Torso, Shotgun.DamageType, aItem, 0 );
+          ApplyDamage( iDmg, Target_Torso, aDamageType, aItem, 0 );
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
         
-        DamageTile( tc, dmg, Shotgun.DamageType );
-        if isVisible( tc ) and ( not isPassable( tc ) ) then
-          IO.addMarkAnimation( 199, 0, tc, Shotgun.HitSprite, LightGray,'*' );
+        DamageTile( iTC, iDmg, aDamageType );
+        if isVisible( iTC ) and ( not isPassable( iTC ) ) then
+          IO.addMarkAnimation( 199, 0, iTC, aShotgun.HitSprite, LightGray,'*' );
       end;
   ClearLightMapBits([lfDamage]);
 end;

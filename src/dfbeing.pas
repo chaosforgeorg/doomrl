@@ -382,12 +382,13 @@ begin
 end;
 
 function TBeing.HandleShotgunFire( aTarget : TCoord2D; aShotGun : TItem; aAltFire : TAltFire; aShots : DWord ) : Boolean;
-var iThisUID  : DWord;
-    iDual     : Boolean;
-    iCount    : DWord;
-    iShotgun  : TShotgunData;
-    iDamageMul: Single;
-    iDamage   : TDiceRoll;
+var iThisUID   : DWord;
+    iDual      : Boolean;
+    iCount     : DWord;
+    iShotgun   : TShotgunData;
+    iDamageMul : Single;
+    iDamage    : TDiceRoll;
+    iDamageType: TDamageType;
 begin
   Assert( aShotGun <> nil );
   Assert( aShotGun.Flags[ IF_SHOTGUN ] );
@@ -403,9 +404,9 @@ begin
   begin
     if not iDual then aShotGun.PlaySound( 'fire', FPosition );
     iShotgun := Shotguns[ aShotGun.Missile ];
-    iShotgun.DamageType := aShotGun.DamageType;
-    if (BF_ARMYDEAD in FFlags) and (iShotgun.DamageType = DAMAGE_SHARPNEL) then iShotgun.DamageType := Damage_IgnoreArmor;
-    TLevel(Parent).ShotGun( FPosition, aTarget, iDamage, iDamageMul, iShotgun, aShotgun );
+    iDamageType := aShotGun.DamageType;
+    if (BF_ARMYDEAD in FFlags) and (iDamageType = DAMAGE_SHARPNEL) then iDamageType := Damage_IgnoreArmor;
+    TLevel(Parent).ShotGun( FPosition, aTarget, iDamage, iDamageMul, iDamageType, iShotgun, aShotgun );
     if UIDs[ iThisUID ] = nil then Exit( false );
     if (not iDual) and (aShotGun.Shots > 1) then IO.Delay(30);
   end;
