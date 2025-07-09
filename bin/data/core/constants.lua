@@ -88,7 +88,7 @@ BF_MASTERDODGE  = 31;
 BF_INV          = 32;
 BF_INVISIBLE    = 33;
 
-BF_PISTOLMAX    = 35;
+
 
 BF_HARDY        = 37;
 BF_SCAVENGER    = 38;

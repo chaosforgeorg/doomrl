@@ -57,24 +57,25 @@ const
   Hook_OnPreAction     = 48;   // Trait, Being
   Hook_OnPostAction    = 49;   // Trait, Being
   Hook_OnCanDualWield  = 50;   // Trait
+  Hook_OnCanMaxDamage  = 51;   // Trait
 
-  Hook_OnDescribe      = 51; // Item
+  Hook_OnDescribe      = 52; // Item
 
-  Hook_getDamageBonus  = 52; // Trait, Being, Affects
-  Hook_getToHitBonus   = 53; // Trait, Being, Affects
-  Hook_getShotsBonus   = 54; // Trait, Being, Affects
-  Hook_getFireCostBonus= 55; // Trait, Being, Affects
-  Hook_getDefenceBonus = 56; // Trait, Being, Affects
-  Hook_getDodgeBonus   = 57; // Trait, Being, Affects
-  Hook_getMoveBonus    = 58; // Trait, Being, Affects
-  Hook_getBodyBonus    = 59; // Trait, Being, Affects
-  Hook_getResistBonus  = 60; // Trait, Being, Affects
-  Hook_getDamageMul    = 61; // Trait, Being, Affects
-  Hook_getFireCostMul  = 62; // Trait, Being, Affects
-  Hook_getAmmoCostMul  = 63; // Trait, Being, Affects
-  Hook_getReloadCostMul= 64; // Trait, Being, Affects
+  Hook_getDamageBonus  = 53; // Trait, Being, Affects
+  Hook_getToHitBonus   = 54; // Trait, Being, Affects
+  Hook_getShotsBonus   = 55; // Trait, Being, Affects
+  Hook_getFireCostBonus= 56; // Trait, Being, Affects
+  Hook_getDefenceBonus = 57; // Trait, Being, Affects
+  Hook_getDodgeBonus   = 58; // Trait, Being, Affects
+  Hook_getMoveBonus    = 59; // Trait, Being, Affects
+  Hook_getBodyBonus    = 60; // Trait, Being, Affects
+  Hook_getResistBonus  = 61; // Trait, Being, Affects
+  Hook_getDamageMul    = 62; // Trait, Being, Affects
+  Hook_getFireCostMul  = 63; // Trait, Being, Affects
+  Hook_getAmmoCostMul  = 64; // Trait, Being, Affects
+  Hook_getReloadCostMul= 65; // Trait, Being, Affects
 
-  HookAmount           = 65;
+  HookAmount           = 66;
 
 const AllHooks      : TFlags = [ 0..HookAmount-1 ];
 
@@ -93,7 +94,8 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnLoad','OnLoaded','OnUnLoad', 'OnCreatePlayer', 'OnLevelUp','OnPreLevelUp',
       'OnWinGame', 'OnMortem', 'OnMortemPrint', 'OnCreateEpisode', 'OnIntro' , 'OnGenerate',
 
-      'OnPostMove', 'OnPreReload', 'OnDamage', 'OnReceiveDamage', 'OnPreAction', 'OnPostAction', 'OnCanDualWield',
+      'OnPostMove', 'OnPreReload', 'OnDamage', 'OnReceiveDamage', 'OnPreAction', 'OnPostAction',
+      'OnCanDualWield', 'OnCanMaxDamage',
       'OnDescribe',
       'getDamageBonus', 'getToHitBonus', 'getShotsBonus', 'getFireCostBonus',
       'getDefenceBonus', 'getDodgeBonus', 'getMoveBonus', 'getBodyBonus', 'getResistBonus',

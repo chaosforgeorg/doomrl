@@ -506,7 +506,13 @@ function drl.register_traits()
 		master = true,
 
 		OnPick = function (being)
-			being.flags[ BF_PISTOLMAX ] = true
+		end,
+
+		OnCanMaxDamage = function ( self, weapon, alt )
+			if weapon and ( weapon.group == "pistol" ) then
+				return true
+			end
+			return false
 		end,
 	}
 

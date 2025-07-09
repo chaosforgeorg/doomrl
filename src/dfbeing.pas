@@ -1984,7 +1984,7 @@ begin
 
   iMisslePath.Init( iLevel, iSource, aTarget );
 
-  iMaxDamage := (BF_MAXDAMAGE in FFlags) or (( aItem.Flags[ IF_PISTOL ]) and ( BF_PISTOLMAX in FFlags ) );
+  iMaxDamage := (BF_MAXDAMAGE in FFlags) or CallHookCan( Hook_OnCanMaxDamage, [ aItem, Integer( aAltFire ) ] );
   if iMaxDamage then
     iDamage := aItem.maxDamage
   else
