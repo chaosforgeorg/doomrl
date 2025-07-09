@@ -101,8 +101,8 @@ Keytable["F7"] = function()
 end
 
 Keytable["F8"] = function() 
-	ui.msg("+500 Experience!")
-	player:add_exp(500)
+	ui.msg("+5000 Experience!")
+	player:add_exp(5000)
 end
 Keytable["SHIFT+F8"] = function() 
 	ui.msg("ARMAGEDDON!")
