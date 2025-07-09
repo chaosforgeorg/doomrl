@@ -946,6 +946,7 @@ begin
 end;
 
 function TDoom.HandlePadEvent( aEvent : TIOEvent ) : Boolean;
+var iItem : TItem;
 begin
   if ( aEvent.EType = VEVENT_PADDEVICE ) then
   begin
@@ -965,6 +966,9 @@ begin
                       else begin
                         if Level.cellFlagSet( Player.Position, CF_STAIRS ) then
                           Exit( HandleCommand( TCommand.Create( COMMAND_ENTER ) ) );
+                        iItem := Level.Item[ Player.Position ];
+                        if ( iItem <> nil ) and ( iItem.isLever ) then
+                          Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
                         Exit( HandlePickupCommand( IO.GetPadRTrigger ) )
                       end;
     VPAD_BUTTON_X : Exit( HandleFireCommand( IO.GetPadRTrigger, False, True ) );
