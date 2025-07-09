@@ -266,6 +266,14 @@ begin
   Result := 1;
 end;
 
+function lua_core_time_ms(L: Plua_State): Integer; cdecl;
+var State : TDoomLuaState;
+begin
+  State.Init(L);
+  State.Push( LongInt(IO.Driver.GetMs) );
+  Result := 1;
+end;
+
 function lua_core_register_cell(L: Plua_State): Integer; cdecl;
 var State : TDoomLuaState;
 begin
@@ -458,9 +466,10 @@ const lua_player_data_lib : array[0..4] of luaL_Reg = (
 );
 
 
-const lua_core_lib : array[0..11] of luaL_Reg = (
+const lua_core_lib : array[0..12] of luaL_Reg = (
     ( name : 'add_to_cell_set';func : @lua_core_add_to_cell_set),
-    ( name : 'game_time';func : @lua_core_game_time),
+    ( name : 'game_time';      func : @lua_core_game_time),
+    ( name : 'time_ms';        func : @lua_core_time_ms),
     ( name : 'is_playing';func : @lua_core_is_playing),
     ( name : 'register_cell';   func : @lua_core_register_cell),
     ( name : 'register_missile';func : @lua_core_register_missile),
