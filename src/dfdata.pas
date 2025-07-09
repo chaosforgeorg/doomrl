@@ -240,7 +240,6 @@ const
 type
   TShotgunData = record
     Range      : Byte;
-    MaxRange   : Byte;
     Spread     : Byte;
     Reduce     : Real;
     DamageType : TDamageType;
@@ -261,7 +260,6 @@ type
     ExplFlags  : TExplosionFlags;
     RayDelay   : Byte;
     Range      : Byte;
-    MaxRange   : Byte;
     Flags      : TFlags;
     Content    : Byte;
   end;

@@ -147,7 +147,7 @@ function drl.register_missiles()
 
 	register_shotgun "snormal"
 	{
-		maxrange   = 15,
+		range      = 15,
 		spread     = 3,
 		reduce     = 0.07,
 		hitsprite  = SPRITE_BLAST,
@@ -155,7 +155,7 @@ function drl.register_missiles()
 
 	register_shotgun "swide"
 	{
-		maxrange   = 8,
+		range      = 8,
 		spread     = 3,
 		reduce     = 0.1,
 		hitsprite  = SPRITE_BLAST,
@@ -163,7 +163,7 @@ function drl.register_missiles()
 
 	register_shotgun "sfocused"
 	{
-		maxrange   = 15,
+		range      = 15,
 		spread     = 2,
 		reduce     = 0.05,
 		hitsprite  = SPRITE_BLAST,
@@ -171,7 +171,7 @@ function drl.register_missiles()
 
 	register_shotgun "splasma"
 	{
-		maxrange   = 15,
+		range      = 15,
 		spread     = 3,
 		reduce     = 0.05,
 		hitsprite  = SPRITE_BLAST,

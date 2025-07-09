@@ -955,7 +955,7 @@ procedure TLevel.Shotgun( source, target : TCoord2D; Damage : TDiceRoll; aDamage
 var a,b,tc  : TCoord2D;
     d       : Single;
     dmg     : Integer;
-    Range   : Byte;
+    iRange  : Byte;
     Spread  : Byte;
     Reduce  : Single;
     Dir     : TDirection;
@@ -974,10 +974,10 @@ var a,b,tc  : TCoord2D;
         LightFlag[ shb.GetC, lfDamage ] := True;
         if not isEmpty( shb.GetC, [ EF_NOBLOCK ] ) then Exit;
         if shb.Done then Exit;
-      until cnt = Range;
+      until cnt = iRange;
     end;
 begin
-  Range  := Shotgun.MaxRange;
+  iRange := Shotgun.Range;
   Spread := Shotgun.Spread;
   Reduce := Shotgun.Reduce;
 
@@ -988,8 +988,8 @@ begin
   if d = 0 then Exit;
   a   := target - source;
   d   := Sqrt(a.x*a.x+a.y*a.y);
-  b.x := Round((a.x*Range)/d);
-  b.y := Round((a.y*Range)/d);
+  b.x := Round((a.x*iRange)/d);
+  b.y := Round((a.y*iRange)/d);
   b   += source;
 
   for iNode in Self do

@@ -438,7 +438,7 @@ begin
   iSeqBase := 0;
   if not isPlayer then iSeqBase := 100;
   iSeqBase += aDelay;
-  iMissileRange := Missiles[aGun.Missile].MaxRange;
+  iMissileRange := 30; // aGun.Missile.MaxRange;
   iChaining := ( aAltFire = ALT_CHAIN ) and ( aShots > 1 );
 
   if aGun.Flags[ IF_SCATTER ] then
@@ -1911,7 +1911,6 @@ var iDirection  : TDirection;
     iDamage     : Integer;
     iBeing      : TBeing;
     iAimedBeing : TBeing;
-    iRange      : Byte;
     iMaxRange   : Byte;
     iRoll       : TDiceRoll;
     iRadius     : Byte;
@@ -1967,12 +1966,10 @@ begin
     else
       iColor := Color;
     end;
-    iRange := Range;
-    iMaxRange := MaxRange;
     iDelay := Delay;
   end;
-  
-  if iRange = 0 then iRange := 30;
+
+  iMaxRange := 30; //aGun.MaxRange
 
   iToHit := getToHit( aItem, aAltFire, False );
   if aAltFire = ALT_AIMED then iToHit += 3;

@@ -132,7 +132,6 @@ begin
       Delay     := getInteger('delay');
       Flags     := getFlags('flags');
       Range     := getInteger('range');
-      MaxRange  := getInteger('maxrange');
       MissBase  := getInteger('miss_base');
       MissDist  := getInteger('miss_dist');
       ExplDelay := getInteger('expl_delay');
@@ -163,7 +162,6 @@ begin
     with iTable do
     try
       Range      := getInteger('range');
-      MaxRange   := getInteger('maxrange');
       Spread     := getInteger('spread');
       Reduce     := getFloat ('reduce');
       DamageType := TDamageType( getInteger('damage') );

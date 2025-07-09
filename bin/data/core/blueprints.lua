@@ -183,7 +183,6 @@ core.register_blueprint "missile"
 	miss_dist   = { true,  core.TNUMBER },
 	firedesc    = { false, core.TSTRING, "" },
 	hitdesc     = { false, core.TSTRING, "" },
-	maxrange    = { false, core.TNUMBER, 30 },
 	flags       = { false, core.TFLAGS,  {} },
 	range       = { false, core.TNUMBER, 0 },
 	expl_delay  = { false, core.TNUMBER, 40 },
@@ -196,8 +195,7 @@ core.register_blueprint "missile"
 core.register_blueprint "shotgun"
 {
 	id          = { true,  core.TSTRING },
-	maxrange    = { true,  core.TNUMBER },
-	range       = { false, core.TNUMBER, 0 },
+	range       = { true,  core.TNUMBER },
 	spread      = { true,  core.TNUMBER },
 	reduce      = { true,  core.TNUMBER },
 	damage      = { false, core.TNUMBER, 0 },
