@@ -126,7 +126,7 @@ IF_NOAMMO         = 30;
 IF_NECROCHARGE    = 31;
 
 IF_SINGLERELOAD   = 33;
-IF_PISTOL         = 34;
+
 IF_SHOTGUN        = 35;
 
 IF_SPREAD         = 37;

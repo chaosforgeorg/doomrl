@@ -270,8 +270,6 @@ register_item          = core.register_storage( "items", "item", function( ip )
 			self:add_property( "group", ip.group or "" )
 			if ip.group == "shotgun" then
 				self.flags[ IF_SHOTGUN ] = true
-			elseif ip.group == "pistol" then
-				self.flags[ IF_PISTOL ] = true
 			end
 		end
 		ip.OnCreate = core.create_seq_function( OnCreate, ip.OnCreate )
