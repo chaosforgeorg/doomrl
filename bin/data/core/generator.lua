@@ -158,7 +158,12 @@ function generator.place_dungen_tile( code, tile_object, tile_pos )
 					b.eq.armor = tile_entry.armor
 				end
 			end
-			if tile_entry.item  then level:drop_item_ext( tile_entry.item, p ) end
+			if tile_entry.item  then 
+				local it = level:drop_item_ext( tile_entry.item, p )
+				if it and tile_entry.add then
+					it:add( item.new( tile_entry.add ) )
+				end
+			end
 			if tile_entry.flags then
 				for _, flag in ipairs(tile_entry.flags) do
 					level.light[p][flag] = true
