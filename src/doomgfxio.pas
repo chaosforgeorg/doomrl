@@ -261,6 +261,7 @@ begin
 
   CalculateConsoleParams;
   FConsole := TGLConsoleRenderer.Create( iFont, ConsoleSizeX, ConsoleSizeY, FLineSpace, [VIO_CON_CURSOR, VIO_CON_BGCOLOR, VIO_CON_EXTCOLOR ] );
+  TGLConsoleRenderer( FConsole ).GlyphStretch := True;
 
   TGLConsoleRenderer( FConsole ).SetPositionScale(
     (FIODriver.GetSizeX - ConsoleSizeX*FFontSizeX*FFontMult) div 2,
