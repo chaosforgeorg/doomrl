@@ -559,16 +559,18 @@ begin
   end;
   }
   // Pan mode
-  if (not isModal) and (( FGPRight.X <> 0.0 ) or (FGPRight.Y <> 0.0 )) then
+  if (FTargeting or ( not isModal)) and (( FGPRight.X <> 0.0 ) or (FGPRight.Y <> 0.0 )) then
   begin
     SpriteMap.NewShift := Clamp( SpriteMap.Shift + Ceil( FGPRight.Scaled( aMSec ) ), SpriteMap.MinShift, SpriteMap.MaxShift );
   end;
 
-  if (not isModal) and (( FGPLeftDir.X <> 0 ) or (FGPLeftDir.Y <> 0 )) then
+  if (FTargeting or ( not isModal)) and (( FGPLeftDir.X <> 0 ) or (FGPLeftDir.Y <> 0 )) then
   begin
-    if FGPRTrigger
-      then SpriteMap.Marker := Doom.Targeting.List.Current + FGPLeftDir
-      else SpriteMap.Marker := Player.Position + FGPLeftDir;
+    if FTargeting
+      then SpriteMap.Marker := SpriteMap.Target + FGPLeftDir
+      else if FGPRTrigger
+        then SpriteMap.Marker := Doom.Targeting.List.Current + FGPLeftDir
+        else SpriteMap.Marker := Player.Position + FGPLeftDir;
   end
   else
     SpriteMap.Marker := NewCoord2D(-1,-1);

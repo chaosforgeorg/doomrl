@@ -375,6 +375,8 @@ function TTargetModeView.HandleEvent( const aEvent : TIOEvent ) : Boolean;
 begin
   if aEvent.EType <> VEVENT_PADDOWN then Exit( True );
   case aEvent.Pad.Button of
+    VPAD_BUTTON_A : if IO.GetPadLDir.NotZero then
+      MoveTarget( FTarget + IO.GetPadLDir );
     VPAD_BUTTON_X : HandleFire;
     VPAD_BUTTON_Y : begin
       with Doom.Level do

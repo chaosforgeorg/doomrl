@@ -109,6 +109,7 @@ public
   property NewShift : TVec2i read FNewShift write FNewShift;
   property Offset : TVec2i read FOffset write FOffset;
   property Marker : TCoord2D read FMarker write FMarker;
+  property Target : TCoord2D read FTarget;
 end;
 
 var SpriteMap : TDoomSpriteMap = nil;
@@ -371,7 +372,7 @@ begin
   MarkerSprite.SpriteID[0] := HARDSPRITE_HIGHLIGHT;
   MarkerSprite.Color := ColorBlack;
   MarkerSprite.Color.A := 127;
-  if IO.GetPadRTrigger then
+  if IO.GetPadRTrigger or IO.Targeting then
   begin
     MarkerSprite.Color.R := Floor(50*(Sin( FFluidTime*50 )+1)+100);
     MarkerSprite.Color.G := MarkerSprite.Color.R;
