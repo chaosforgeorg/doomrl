@@ -979,7 +979,7 @@ end;
 
 function TDoomIO.EventToInput( const aEvent : TIOEvent ) : TInputKey;
 begin
-  if (aEvent.EType = VEVENT_SYSTEM) then
+  if ( aEvent.EType = VEVENT_SYSTEM ) and ( aEvent.System.Code = VIO_SYSEVENT_QUIT ) then
     if Option_LockClose
        then Exit( INPUT_QUIT )
        else Exit( INPUT_HARDQUIT );

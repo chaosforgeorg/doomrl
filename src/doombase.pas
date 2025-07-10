@@ -56,7 +56,7 @@ TDoom = class(TSystem)
        function HandleActionCommand( aInput : TInputKey ) : Boolean;
        function HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
        function HandleMoveCommand( aInput : TInputKey ) : Boolean;
-       function HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean ) : Boolean;
+       function HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean; aPad : Boolean ) : Boolean;
        function HandleUnloadCommand( aItem : TItem ) : Boolean;
        function HandleSwapWeaponCommand : Boolean;
        function HandlePickupCommand( aAlt : Boolean ) : Boolean;
@@ -376,10 +376,10 @@ begin
     Exit( HandleMoveCommand( aInput ) );
 
   case aInput of
-    INPUT_FIRE       : Exit( HandleFireCommand( False, False, Setting_AutoTarget ) );
-    INPUT_ALTFIRE    : Exit( HandleFireCommand( True, False, Setting_AutoTarget ) );
-    INPUT_TARGET     : Exit( HandleFireCommand( False, False, False ) );
-    INPUT_ALTTARGET  : Exit( HandleFireCommand( True, False, False ) );
+    INPUT_FIRE       : Exit( HandleFireCommand( False, False, Setting_AutoTarget, False ) );
+    INPUT_ALTFIRE    : Exit( HandleFireCommand( True, False, Setting_AutoTarget, False ) );
+    INPUT_TARGET     : Exit( HandleFireCommand( False, False, False, False ) );
+    INPUT_ALTTARGET  : Exit( HandleFireCommand( True, False, False, False ) );
     INPUT_ACTION     : Exit( HandleActionCommand( INPUT_ACTION ) );
     INPUT_LEGACYOPEN : Exit( HandleActionCommand( INPUT_LEGACYOPEN ) );
     INPUT_LEGACYCLOSE: Exit( HandleActionCommand( INPUT_LEGACYCLOSE ) );
@@ -551,7 +551,7 @@ begin
   Exit( False );
 end;
 
-function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean ) : Boolean;
+function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean; aPad : Boolean ) : Boolean;
 var iTarget     : TCoord2D;
     iItem       : TItem;
     iFireTitle  : AnsiString;
@@ -682,7 +682,7 @@ begin
     if iRange = 0 then iRange := Player.Vision;
     if iRange <> Player.Vision then
       FTargeting.Update( iRange );
-    IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, FTargeting.List, iChainFire ) );
+    IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, FTargeting.List, iChainFire, aPad ) );
     Exit( False );
   end;
 
@@ -880,8 +880,8 @@ begin
       else if (Player.Inv.Slot[ efWeapon ] <> nil) and (Player.Inv.Slot[ efWeapon ].isRanged) then
       begin
         if iAlt
-          then Exit( HandleFireCommand( True, True, False ) )
-          else Exit( HandleFireCommand( False, True, False ) );
+          then Exit( HandleFireCommand( True, True, False, False ) )
+          else Exit( HandleFireCommand( False, True, False, False ) );
       end
       else Exit( HandleCommand( TCommand.Create( COMMAND_MELEE,
         Player.Position + NewDirectionSmooth( Player.Position, IO.MTarget )
@@ -971,7 +971,7 @@ begin
                           Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
                         Exit( HandlePickupCommand( IO.GetPadRTrigger ) )
                       end;
-    VPAD_BUTTON_X : Exit( HandleFireCommand( IO.GetPadRTrigger, False, True ) );
+    VPAD_BUTTON_X : Exit( HandleFireCommand( IO.GetPadRTrigger, False, True, True ) );
     VPAD_BUTTON_Y : Exit( HandleCommand( TCommand.Create( Iif( IO.GetPadRTrigger, COMMAND_ALTRELOAD, COMMAND_RELOAD ) ) ) );
     VPAD_BUTTON_BACK          : begin ResetAutoTarget; IO.PushLayer( TInGameMenuView.Create ); Exit; end;
     VPAD_BUTTON_GUIDE:;

@@ -1,7 +1,7 @@
 {$INCLUDE doomrl.inc}
 unit doomhudviews;
 interface
-uses vutil, vgenerics, vcolor, vrltools, dfdata, dfitem, doomkeybindings;
+uses vutil, vgenerics, vcolor, vioevent, vrltools, dfdata, dfitem, doomkeybindings;
 
 type TLookModeView = class( TInterfaceLayer )
   constructor Create;
@@ -63,18 +63,22 @@ protected
 end;
 
 type TTargetModeView = class( TInterfaceLayer )
-  constructor Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );
+  constructor Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte; aPadMode : Boolean );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   function HandleInput( aInput : TInputKey ) : Boolean; override;
+  function HandleEvent( const aEvent : TIOEvent ) : Boolean; override;
 protected
+  procedure HandleFire;
+  function MoveTarget( aNew : TCoord2D ) : Boolean;
   procedure Finalize;
   procedure UpdateTarget;
 protected
   FFirst      : Boolean;
   FFinished   : Boolean;
   FLimitRange : Boolean;
+  FPadMode    : Boolean;
   FTarget     : TCoord2D;
   FPosition   : TCoord2D;
   FColor      : Byte;
@@ -274,9 +278,11 @@ end;
 
 
 constructor TTargetModeView.Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString;
-  aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );
+  aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte; aPadMode : Boolean );
 begin
   FFirst        := True;
+  FFinished     := False;
+  FPadMode      := aPadMode;
   FTargets      := aTargets;
   FTarget       := aTargets.Current;
   FActionName   := aActionName;
@@ -348,12 +354,7 @@ begin
   if aInput in INPUT_MOVE then
   begin
     iDir := InputDirection( aInput );
-    if Doom.Level.isProperCoord( FTarget + iDir )
-      and ((not FLimitRange) or (Distance((FTarget + iDir), FPosition) <= FRange-1)) then
-    begin
-      FTarget += iDir;
-      UpdateTarget;
-    end;
+    MoveTarget( FTarget + iDir );
   end;
 
   if aInput = INPUT_MORE then
@@ -365,21 +366,70 @@ begin
   end;
 
   if aInput in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_TARGET, INPUT_ALTTARGET, INPUT_MLEFT ] then
-  begin
-    Finalize;
-    if FTarget = FPosition then
-      IO.Msg( 'Find a more constructive way to commit suicide.' )
-    else
-    begin
-      Doom.Targeting.OnTarget( FTarget );
-      Player.TargetPos := FTarget;
-      Player.ChainFire := FChainFire;
-      Doom.HandleCommand( TCommand.Create( FCommand, FTarget, FItem ) );
-    end;
-    Exit( True );
-  end;
+    HandleFire;
 
   Exit( True );
+end;
+
+function TTargetModeView.HandleEvent( const aEvent : TIOEvent ) : Boolean;
+begin
+  if aEvent.EType <> VEVENT_PADDOWN then Exit( True );
+  case aEvent.Pad.Button of
+    VPAD_BUTTON_X : HandleFire;
+    VPAD_BUTTON_Y : begin
+      with Doom.Level do
+         if Being[FTarget] <> nil then
+           IO.FullLook( Being[FTarget].ID );
+      UpdateTarget;
+      Exit( True );
+    end;
+    VPAD_BUTTON_RIGHTSHOULDER : begin
+      FTarget := FTargets.Next;
+      UpdateTarget;
+    end;
+    VPAD_BUTTON_LEFTSHOULDER : begin
+      FTarget := FTargets.Prev;
+      UpdateTarget;
+    end;
+    VPAD_BUTTON_BACK,
+    VPAD_BUTTON_GUIDE,
+    VPAD_BUTTON_START,
+    VPAD_BUTTON_B : begin
+      Finalize;
+      Exit( True );
+    end;
+    VPAD_BUTTON_DPAD_UP    : MoveTarget( FTarget + NewCoord2D(0,-1) );
+    VPAD_BUTTON_DPAD_DOWN  : MoveTarget( FTarget + NewCoord2D(0,1) );
+    VPAD_BUTTON_DPAD_LEFT  : MoveTarget( FTarget + NewCoord2D(-1,0) );
+    VPAD_BUTTON_DPAD_RIGHT : MoveTarget( FTarget + NewCoord2D(1,0) );
+  end;
+  Exit( True );
+end;
+
+procedure TTargetModeView.HandleFire;
+begin
+  Finalize;
+  if FTarget = FPosition then
+    IO.Msg( 'Find a more constructive way to commit suicide.' )
+  else
+  begin
+    Doom.Targeting.OnTarget( FTarget );
+    Player.TargetPos := FTarget;
+    Player.ChainFire := FChainFire;
+    Doom.HandleCommand( TCommand.Create( FCommand, FTarget, FItem ) );
+  end;
+end;
+
+function TTargetModeView.MoveTarget( aNew : TCoord2D ) : Boolean;
+begin
+  if Doom.Level.isProperCoord( aNew )
+    and ((not FLimitRange) or (Distance((aNew), FPosition) <= FRange-1)) then
+  begin
+    FTarget := aNew;
+    UpdateTarget;
+    Exit( True );
+  end;
+  Exit( False );
 end;
 
 procedure TTargetModeView.Finalize;
