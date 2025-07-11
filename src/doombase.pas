@@ -370,7 +370,6 @@ begin
 end;
 
 function TDoom.Action( aInput : TInputKey ) : Boolean;
-var iItem : TItem;
 begin
   if aInput in INPUT_MOVE then
     Exit( HandleMoveCommand( aInput ) );
@@ -982,7 +981,9 @@ begin
       Exit( False );
     end;
     VPAD_BUTTON_LEFTSTICK  : Exit( HandleCommand( TCommand.Create( COMMAND_ACTIVE ) ) );
-    VPAD_BUTTON_RIGHTSTICK : Exit( HandleSwapWeaponCommand );
+    VPAD_BUTTON_RIGHTSTICK : if IO.GetPadRTrigger
+                                then Exit( HandleUnloadCommand( nil ) )
+                                else Exit( HandleSwapWeaponCommand );
     VPAD_BUTTON_LEFTSHOULDER  : begin IO.SetAutoTarget( FTargeting.List.Prev ); Exit( False ); end;
     VPAD_BUTTON_RIGHTSHOULDER : begin IO.SetAutoTarget( FTargeting.List.Next ); Exit( False ); end;
     VPAD_BUTTON_DPAD_UP    : Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0,-1 ) ) );

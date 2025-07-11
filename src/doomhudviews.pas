@@ -216,9 +216,12 @@ function TDirectionQueryLayer.HandleEvent( const aEvent : TIOEvent ) : Boolean;
 begin
   // Unless mixing input devices this will NEVER be called when using a Gamepad.
   // But we leave this code here for safety reasons.
+  // If need be in the future we can do direction detection here.
   if ( aEvent.EType = VEVENT_PADDOWN ) and ( aEvent.Pad.Button in [ VPAD_BUTTON_A, VPAD_BUTTON_B ] ) then
+  begin
     FFinished := True;
-  Exit( True );
+    Exit( True );
+  end;
 end;
 
 constructor TRunModeView.Create;

@@ -27,6 +27,7 @@ Holding the {!Right Trigger} will enable alternative actions as below.
 {!RShoulder}/{!LShoulder} - previous/next target
 press {!LStick} - use active class skill (i.e. {!Adrenaline})
 press {!RStick} - swap weapon with prepared weapon
+   (with {!RTrigger}) unload weapon from ground or inventory
 {!D-pad} -  move targeting reticule (might be removed in the future)
 
 Quickslots will come at a later date, so will DRL unload binds!
