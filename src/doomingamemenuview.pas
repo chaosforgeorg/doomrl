@@ -21,7 +21,8 @@ end;
 
 implementation
 
-uses vtig, vutil, vluasystem, dfplayer, doombase, doomhelpview, doomsettingsview;
+uses vtig, vutil, vluasystem, dfplayer,
+  doombase, doomhelpview, doomsettingsview, doommessagesview, doomassemblyview;
 
 constructor TInGameMenuView.Create;
 begin
@@ -36,7 +37,7 @@ var iRect : TRectangle;
 begin
   if IsFinished or (Doom.State <> DSPlaying) then Exit;
 
-  VTIG_Begin('ingame_menu', Point( 30, 9 ) );
+  VTIG_Begin('ingame_menu', Point( 30, 11 ) );
   iRect := VTIG_GetWindowRect;
   if VTIG_Selectable( 'Continue' ) then
   begin
@@ -50,6 +51,16 @@ begin
   if VTIG_Selectable( 'Settings' ) then
   begin
     IO.PushLayer( TSettingsView.Create );
+    FFinished := True;
+  end;
+  if VTIG_Selectable( 'Message history' ) then
+  begin
+    IO.PushLayer( TMessagesView.Create( IO.MsgGetRecent ) );
+    FFinished := True;
+  end;
+  if VTIG_Selectable( 'Assemblies' ) then
+  begin
+    IO.PushLayer( TAssemblyView.Create );
     FFinished := True;
   end;
   if VTIG_Selectable( 'Abandon Run' ) then
