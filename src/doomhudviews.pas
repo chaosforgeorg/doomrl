@@ -23,6 +23,7 @@ type TDirectionQueryLayer = class( TInterfaceLayer )
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   function HandleInput( aInput : TInputKey ) : Boolean; override;
+  function HandleEvent( const aEvent : TIOEvent ) : Boolean; override;
 protected
   procedure Finalize( aDir : TDirection ); virtual; abstract;
 protected
@@ -56,6 +57,7 @@ type TMoreLayer = class( TInterfaceLayer )
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   function HandleInput( aInput : TInputKey ) : Boolean; override;
+  function HandleEvent( const aEvent : TIOEvent ) : Boolean; override;
 protected
   FPrompt   : AnsiString;
   FLength   : Byte;
@@ -210,6 +212,15 @@ begin
   Exit( True );
 end;
 
+function TDirectionQueryLayer.HandleEvent( const aEvent : TIOEvent ) : Boolean;
+begin
+  // Unless mixing input devices this will NEVER be called when using a Gamepad.
+  // But we leave this code here for safety reasons.
+  if ( aEvent.EType = VEVENT_PADDOWN ) and ( aEvent.Pad.Button in [ VPAD_BUTTON_A, VPAD_BUTTON_B ] ) then
+    FFinished := True;
+  Exit( True );
+end;
+
 constructor TRunModeView.Create;
 begin
   inherited Create;
@@ -276,6 +287,12 @@ begin
   Exit( True );
 end;
 
+function TMoreLayer.HandleEvent( const aEvent : TIOEvent ) : Boolean;
+begin
+  if ( aEvent.EType = VEVENT_PADDOWN ) and ( aEvent.Pad.Button in [ VPAD_BUTTON_A, VPAD_BUTTON_B ] ) then
+    FFinished := True;
+  Exit( True );
+end;
 
 constructor TTargetModeView.Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString;
   aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte; aPadMode : Boolean );
