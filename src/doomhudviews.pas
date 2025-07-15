@@ -263,8 +263,8 @@ end;
 constructor TMoreLayer.Create( aMore : Boolean = True );
 begin
   if aMore
-    then FPrompt := '[more] press <{LEnter}>...'
-    else FPrompt := 'Press <{LEnter}>...';
+    then FPrompt := '[more] press <{L{$input_ok}}>...'
+    else FPrompt := 'Press <{L{$input_ok}}>...';
   FLength := VTIG_Length( FPrompt );
 end;
 

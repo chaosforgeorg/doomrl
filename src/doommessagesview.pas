@@ -40,7 +40,10 @@ begin
         VTIG_Text( FContent[i] );
   VTIG_Scrollbar( FFirst );
   FRect := VTIG_GetWindowRect;
-  VTIG_End('{l<{!Up,Down,PgUp,PgDown}> scroll, <{!Enter},{!Escape}> continue}');
+
+  if IO.IsGamepad
+    then VTIG_End('{l<{!{$input_up},{$input_down}}> scroll, <{!{$input_ok},{$input_escape}}> continue}')
+    else VTIG_End('{l<{!{$input_up},{$input_down},{$input_pgup},{$input_pgdn}}> scroll, <{!{$input_ok},{$input_escape}}> continue}');
 
   if FFirst then
   begin

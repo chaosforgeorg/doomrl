@@ -57,7 +57,7 @@ begin
   VTIG_End;
 
   FRect := VTIG_GetWindowRect;
-  VTIG_End('{l<{!Escape},{!Enter}> exit}');
+  VTIG_End('{l<{!{$input_escape}},{!{$input_ok}}> exit}');
   if VTIG_EventCancel or VTIG_EventConfirm then
     FFinished := True;
   IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );

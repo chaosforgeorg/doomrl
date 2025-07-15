@@ -48,10 +48,10 @@ begin
       then VTIG_FreeLabel( 'to {!{0}} rank!', Point( 12, 5 ), [ FSRName ] )
       else VTIG_FreeLabel( 'to {!{0}} rank!', Point( 12, 5 ), [ FERName ] );
 
-  VTIG_FreeLabel( 'Press <{!Enter}>...', Point( 12, 7 ) );
+  VTIG_FreeLabel( 'Press <{!{$input_ok}}>...', Point( 12, 7 ) );
 
   FRect := VTIG_GetWindowRect;
-  VTIG_End('{l<{!Enter},{!Escape}> continue}');
+  VTIG_End('{l<{!{$input_ok},{$input_escape}}> continue}');
   if VTIG_EventCancel or VTIG_EventConfirm then
     FFinished := True;
   IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );

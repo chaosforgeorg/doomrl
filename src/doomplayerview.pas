@@ -296,7 +296,7 @@ begin
     begin
       iSelected := -1;
       if FSwapMode
-        then VTIG_Text( 'No matching items, press <{!Enter}>.' )
+        then VTIG_Text( 'No matching items, press <{!{$input_ok}}>.' )
         else VTIG_Text( '{!No items in inventory!}' );
     end;
     if iSelected >= FInv.Size then
@@ -314,19 +314,20 @@ begin
       VTIG_FreeLabel( FInv[iSelected].Stats, Point( 0, 7 ) );
 
       VTIG_Ruler( 19 );
-      VTIG_Text( '<{!Enter}> {0}',[FAction] );
+      VTIG_Text( '<{!{$input_ok}}> {0}',[FAction] );
       if (not FSwapMode) and ( FCommandMode in [0, COMMAND_USE] ) then
       begin
-        VTIG_Text( '<{!Backspace}> drop' );
-        VTIG_Text( '<{!SHIFT+Backspace}>    unload and drop' );
-        VTIG_Text( '<{!1-9}> mark quickslot' );
+        VTIG_Text( '<{!{$input_uidrop}}> drop' );
+        VTIG_Text( '<{!{$input_uialtdrop}}>    unload and drop' );
+        if not IO.IsGamepad then
+          VTIG_Text( '<{!1-9}> mark quickslot' );
       end;
     end;
 
     VTIG_EndGroup;
   if FSwapMode or ( FCommandMode <> 0 )
-    then VTIG_End('{l<{!Up,Down}> select, <{!Escape}> exit}')
-    else VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit}');
+    then VTIG_End('{l<{!{$input_up},{$input_down}}> select, <{!{$input_escape}}> exit}')
+    else VTIG_End('{l<{!{$input_left},{$input_right}}> panels, <{!{$input_up},{$input_down}}> select, <{!{$input_escape}}> exit}');
 
   if (iSelected >= 0) then
   begin
@@ -485,10 +486,10 @@ begin
       end;
     end;
 
-     VTIG_FreeLabel( '<{!Enter}> take off/wear', Point(iK, 19) );
-     VTIG_FreeLabel( '<{!Tab}> swap item',       Point(iK, 20) );
-     VTIG_FreeLabel( '<{!Backspace}> drop item', Point(iK, 21) );
-  VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> select, <{!Escape}> exit}');
+     VTIG_FreeLabel( '<{!{$input_ok}}> take off/wear', Point(iK, 19) );
+     VTIG_FreeLabel( '<{!{$input_uiswap}}> swap item',       Point(iK, 20) );
+     VTIG_FreeLabel( '<{!{$input_uidrop}}> drop item', Point(iK, 21) );
+  VTIG_End('{l<{!{$input_left},{$input_right}}> panels, <{!{$input_up},{$input_down}}> select, <{!{$input_escape}}> exit}');
 
   if (iSelected >= 0) then
   begin
@@ -561,7 +562,7 @@ begin
     end;
   for iString in FCharacter do
     VTIG_Text( iString );
-  VTIG_End('{l<{!Left,Right}> panels, <{!Escape}> exit}');
+  VTIG_End('{l<{!{$input_left},{$input_right}}> panels, <{!{$input_escape}}> exit}');
 end;
 
 procedure TPlayerView.UpdateTraits;
@@ -603,8 +604,8 @@ begin
   VTIG_EndGroup;
 
   if FTraitMode
-    then VTIG_End('{l<{!Up,Down}> scroll, <{!Enter}> select}')
-    else VTIG_End('{l<{!Left,Right}> panels, <{!Up,Down}> scroll, <{!Escape}> exit}');
+    then VTIG_End('{l<{!{$input_up},{$input_down}}> scroll, <{!{$input_ok}}> select}')
+    else VTIG_End('{l<{!{$input_left},{$input_right}}> panels, <{!{$input_up},{$input_down}}> scroll, <{!{$input_escape}}> exit}');
 
   if (iSelected >= 0) and FTraitMode and FTraits[iSelected].Available then
     if VTIG_EventConfirm then

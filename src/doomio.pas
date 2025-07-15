@@ -29,6 +29,7 @@ type TCommandSet = set of Byte;
 type TDoomOnProgress      = procedure ( aProgress : DWord ) of object;
 type TASCIIImageMap       = specialize TGObjectHashMap<TUIStringArray>;
 type TInterfaceLayerStack = specialize TGArray<TInterfaceLayer>;
+type TStringHashMap       = specialize TGHashMap< AnsiString >;
 
 type TDoomIO = class( TIO )
   constructor Create; reintroduce;
@@ -96,9 +97,10 @@ type TDoomIO = class( TIO )
   function OnEvent( const event : TIOEvent ) : Boolean; override;
 
   // Gamepad
-  function GetPadLTrigger : Boolean; virtual;
-  function GetPadRTrigger : Boolean; virtual;
+  function GetPadLTrigger : Boolean;  virtual;
+  function GetPadRTrigger : Boolean;  virtual;
   function GetPadLDir     : TCoord2D; virtual;
+  function IsGamepad      : Boolean;  virtual;
 
   function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
   function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
@@ -106,6 +108,7 @@ type TDoomIO = class( TIO )
   procedure FullLook( aID : Ansistring );
   procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
   procedure SetAutoTarget( aTarget : TCoord2D ); virtual;
+  function ResolveSub( const aID : Ansistring ) : Ansistring;
 protected
   procedure UpdateStyles;
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
@@ -139,6 +142,10 @@ protected
   FTargetLast     : Boolean;
   FTargetEnabled  : Boolean;
 
+  // String subs
+  FKeySubMap      : TStringHashMap;
+  FPadSubMap      : TStringHashMap;
+
 public
   property KeyCode     : TIOKeyCode     read FKeyCode    write FKeyCode;
   property Audio       : TDoomAudio     read FAudio;
@@ -166,6 +173,11 @@ uses math, video, dateutils, variants,
      dflevel, dfplayer, dfitem,
      doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua,
      doomhudviews, doomplotview;
+
+function TIGSubCallback( const aID : Ansistring ) : Ansistring;
+begin
+  Exit( IO.ResolveSub( aID ) );
+end;
 
 {
 procedure OutPutRestore;
@@ -382,8 +394,12 @@ begin
   iStyle.Add('text','back_color', ColorNone );
 
   VTIG_Initialize( FConsole, FIODriver, False );
+  VTIG_SetSubCallback( @TIGSubCallback );
 
   UpdateStyles;
+
+  FKeySubMap := TStringHashMap.Create;
+  FPadSubMap := TStringHashMap.Create;
 
   inherited Create( FIODriver, FConsole, iStyle );
   LoadStart;
@@ -544,6 +560,11 @@ begin
   Result.Create(0,0);
 end;
 
+function TDoomIO.IsGamepad      : Boolean;
+begin
+  Exit( False );
+end;
+
 function TDoomIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
 begin
   Exit( aCoord );
@@ -572,6 +593,13 @@ begin
     FHintTarget := Doom.Level.GetLookDescription( aTarget, True );
 end;
 
+function TDoomIO.ResolveSub( const aID : Ansistring ) : Ansistring;
+begin
+  if IsGamepad
+    then Exit( FPadSubMap.Get(aID, '') )
+    else Exit( FKeySubMap.Get(aID, '') );
+end;
+
 procedure TDoomIO.Reconfigure( aConfig : TLuaConfig );
 var iInput : TInputKey;
     procedure CtrlAssign( aWhat : TInputKey; aFrom : TInputKey );
@@ -581,6 +609,12 @@ var iInput : TInputKey;
       if ( iKey and IOKeyCodeCtrlMask ) = 0
         then aConfig.Commands[ iKey + IOKeyCodeCtrlMask ] := Word(aWhat)
         else Log( LogWarn, 'Movement key assigned with Ctrl prevents targeting move assignemnt!' );
+    end;
+    function GetString( aWhat : TInputKey ) : Ansistring;
+    var iKey : TIOKeyCode;
+    begin
+      iKey := Configuration.GetInteger(KeyInfo[aWhat].ID);
+      Exit( IOKeyCodeToStringShort( iKey ) );
     end;
 begin
   FAudio.Reconfigure;
@@ -600,6 +634,44 @@ begin
   CtrlAssign( INPUT_TARGETUPRIGHT,   INPUT_WALKUPRIGHT );
   CtrlAssign( INPUT_TARGETDOWNLEFT,  INPUT_WALKDOWNLEFT );
   CtrlAssign( INPUT_TARGETDOWNRIGHT, INPUT_WALKDOWNRIGHT );
+
+  FKeySubMap.Clear;
+  FKeySubMap['input_ok']        := 'Enter';
+  FKeySubMap['input_escape']    := 'Escape';
+  FKeySubMap['input_uidrop']    := 'Backspace';
+  FKeySubMap['input_uialtdrop'] := 'SHIFT+Backspace';
+  FKeySubMap['input_uiswap']    := 'Tab';
+  FKeySubMap['input_left']      := 'Left';
+  FKeySubMap['input_right']     := 'Right';
+  FKeySubMap['input_up']        := 'Up';
+  FKeySubMap['input_down']      := 'Down';
+  FKeySubMap['input_pgup']      := 'PgUp';
+  FKeySubMap['input_pgdn']      := 'PgDn';
+  FKeySubMap['input_help']      := GetString( INPUT_HELP );
+  FKeySubMap['input_fire']      := GetString( INPUT_FIRE );
+  FKeySubMap['input_reload']    := GetString( INPUT_RELOAD );
+  FKeySubMap['input_pickup']    := GetString( INPUT_PICKUP );
+  FKeySubMap['input_action']    := GetString( INPUT_ACTION );
+  FKeySubMap['input_menu']      := 'Escape';
+
+  FPadSubMap.Clear;
+  FPadSubMap['input_ok']        := 'A';
+  FPadSubMap['input_escape']    := 'B';
+  FPadSubMap['input_uidrop']    := 'Y';
+  FPadSubMap['input_uialtdrop'] := 'RTrigger+Y';
+  FPadSubMap['input_uiswap']    := 'X';
+  FPadSubMap['input_left']      := 'Left';
+  FPadSubMap['input_right']     := 'Right';
+  FPadSubMap['input_up']        := 'Up';
+  FPadSubMap['input_down']      := 'Down';
+  FPadSubMap['input_help']      := 'Back';
+  FPadSubMap['input_menu']      := 'Back';
+  FPadSubMap['input_fire']      := 'X';
+  FPadSubMap['input_reload']    := 'Y';
+  FPadSubMap['input_pickup']    := 'B';
+  FPadSubMap['input_action']    := 'B';
+  FPadSubMap['input_pgup']      := 'PgUp';
+  FPadSubMap['input_pgdn']      := 'PgDn';
 end;
 
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
@@ -647,6 +719,9 @@ begin
   FreeAndNil( FAudio );
   FreeAndNil( FMessages );
   FreeAndNil( FASCII );
+  FreeAndNil( FKeySubMap );
+  FreeAndNil( FPadSubMap );
+
 
   if FLayers <> nil then
     for iLayer in FLayers do
@@ -1271,21 +1346,21 @@ begin
 end;
 
 function lua_ui_set_style_padding(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var iState : TDoomLuaState;
     iEntry : TTIGStylePaddingEntry;
 begin
-  State.Init(L);
-  if State.StackSize < 2 then Exit(0);
-  iEntry := TTIGStylePaddingEntry( State.ToInteger(1) );
-  VTIGDefaultStyle.Padding[iEntry] := State.ToPoint(2);
+  iState.Init(L);
+  if iState.StackSize < 2 then Exit(0);
+  iEntry := TTIGStylePaddingEntry( iState.ToInteger(1) );
+  VTIGDefaultStyle.Padding[iEntry] := iState.ToPoint(2);
   Result := 0;
 end;
 
 function lua_ui_set_narrow_mode(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var iState : TDoomLuaState;
 begin
-  State.Init(L);
-  IO.FNarrowMode := State.ToBoolean(1);
+  iState.Init(L);
+  IO.FNarrowMode := iState.ToBoolean(1);
   Result := 0;
 end;
 
@@ -1295,7 +1370,15 @@ begin
   Result := 0;
 end;
 
-const lua_ui_lib : array[0..15] of luaL_Reg = (
+function lua_ui_is_pad(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+begin
+  iState.Init(L);
+  iState.Push( IO.IsGamepad );
+  Result := 1;
+end;
+
+const lua_ui_lib : array[0..16] of luaL_Reg = (
       ( name : 'msg';           func : @lua_ui_msg ),
       ( name : 'msg_clear';     func : @lua_ui_msg_clear ),
       ( name : 'msg_enter';     func : @lua_ui_msg_enter ),
@@ -1311,6 +1394,7 @@ const lua_ui_lib : array[0..15] of luaL_Reg = (
       ( name : 'set_style_padding'; func : @lua_ui_set_style_padding ),
       ( name : 'set_narrow_mode';   func : @lua_ui_set_narrow_mode ),
       ( name : 'update_styles';     func : @lua_ui_update_styles ),
+      ( name : 'is_pad';            func : @lua_ui_is_pad ),
       ( name : nil;          func : nil; )
 );
 

@@ -641,7 +641,7 @@ Major changes since last version (see {yversion.txt} for full list)
   * tons of minor features, bugfixes and balance changes}
 
 {B facebook.com/ChaosForge  x.com/chaosforge_org  discord.gg/jupiterhell}
-                                          Press <{yEnter}> to continue...}
+                                       Press <{y{$input_ok}}> to continue...}
 ]]
 end
 
@@ -688,7 +688,7 @@ Also, if you enjoy this game, join the Discord and/or the forums:
 
 You can also follow me on X ({B@chaosforge_org}/{B@epyoncf}).
 
-Press {LEnter} to continue...}
+Press <{L{$input_ok}}> to continue...}
 ]]
 end
 

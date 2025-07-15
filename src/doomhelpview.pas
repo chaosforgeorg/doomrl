@@ -57,7 +57,7 @@ begin
     VTIG_Text( iText );
   VTIG_Scrollbar;
   FRect := VTIG_GetWindowRect;
-  VTIG_End('{l<{!Up},{!Down}> scroll, <{!Enter},{!Escape}> return}');
+  VTIG_End('{l<{!{$input_up},{$input_down}}> scroll, <{!{$input_ok},{$input_escape}}> return}');
   if VTIG_EventCancel or VTIG_EventConfirm then
     FMode := HELPVIEW_MENU;
 end;
@@ -76,20 +76,37 @@ begin
 
   VTIG_Ruler;
 
-  VTIG_Text('Select help topic above. Quick (default) keybindings primer:');
-  VTIG_Text('');
-  VTIG_Text('  {!Escape}    - game menu (Save, Quit, Settings, Help, etc)');
-  VTIG_Text('  {!Arrows}    - movement (Home,End,PgUp,PgDown - diagonals)');
-  VTIG_Text('  {!.}(period) - wait (pass turn)');
-  VTIG_Text('  {!SPACE}     - action (open,close,press button,descend stairs)');
-  VTIG_Text('  {!I},{!E},{!P},{!T}   - inventory, equipment etc (left/right to switch while open)');
-  VTIG_Text('  {!F}         - fire weapon (SHIFT for alternative mode)');
-  VTIG_Text('  {!R}         - reload weapon (SHIFT for alternative mode)');
-  VTIG_Text('  {!G}         - get item (pickup) from floor (SHIFT to use)');
-  VTIG_Text('  ...          see "Controls" entry for the rest');
+  if IO.IsGamepad then
+  begin
+    VTIG_Text('Select help topic above. Quick controls primer:');
+    VTIG_Text('');
+    VTIG_Text('Movement is done by moving the {!Left Stick} to the desired direction and confirming it with the {!A} button.');
+    VTIG_Text('  {!A}     -- move   ( with {!RTrigger} - move targeting reticule )' );
+    VTIG_Text('  {!B}     -- pickup item or activate stairs/lever');
+    VTIG_Text('           + {!RTrigger} - use item from ground');
+    VTIG_Text('           + {!LStick}   - direction action (open/close door)');
+    VTIG_Text('  {!X}     -- fire   ( with {!RTrigger} - alt-fire )' );
+    VTIG_Text('  {!Y}     -- reload ( with {!RTrigger} - alt-reload )' );
+    VTIG_Text('  {!Start} -- character screens (inventory, etc)' );
+    VTIG_Text('  ...      -- see "Controller" entry for the rest');
+  end
+  else
+  begin
+    VTIG_Text('Select help topic above. Quick (default) keybindings primer:');
+    VTIG_Text('');
+    VTIG_Text('  {!Escape}    - game menu (Save, Quit, Settings, Help, etc)');
+    VTIG_Text('  {!Arrows}    - movement (Home,End,PgUp,PgDown - diagonals)');
+    VTIG_Text('  {!.}(period) - wait (pass turn)');
+    VTIG_Text('  {!SPACE}     - action (open,close,press button,descend stairs)');
+    VTIG_Text('  {!I},{!E},{!P},{!T}   - inventory, equipment etc (left/right to switch while open)');
+    VTIG_Text('  {!F}         - fire weapon (SHIFT for alternative mode)');
+    VTIG_Text('  {!R}         - reload weapon (SHIFT for alternative mode)');
+    VTIG_Text('  {!G}         - get item (pickup) from floor (SHIFT to use)');
+    VTIG_Text('  ...          see "Controls" entry for the rest');
+  end;
 
   FRect := VTIG_GetWindowRect;
-  VTIG_End('{l<{!Up},{!Down}> select, <{!Enter}> open, <{!Escape}> exit}');
+  VTIG_End('{l<{!{$input_up},{$input_down}}> select, <{!{$input_ok}}> open, <{!{$input_escape}}> exit}');
   if iSelect > 0 then
   begin
     VTIG_ResetScroll( 'help_view_read' );

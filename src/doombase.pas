@@ -407,7 +407,7 @@ begin
     INPUT_NONE        : Exit;
   end;
   IO.MsgUpDate;
-  IO.Msg('Unknown command. Press {^"h"} for help.' );
+  IO.Msg('Unknown command. Press {^{$input_menu}} for menu and help.' );
   Exit( False );
 end;
 
@@ -1086,7 +1086,7 @@ begin
     else
     begin
       IO.MsgUpDate;
-      IO.Msg('Unknown command. Press {^"h"} for help.' );
+      IO.Msg('Unknown command. Press {^{$input_menu}} for menu and help.' );
     end;
 
   Exit( False );

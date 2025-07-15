@@ -48,7 +48,7 @@ type
     function GetPadLTrigger : Boolean; override;
     function GetPadRTrigger : Boolean; override;
     function GetPadLDir     : TCoord2D; override;
-
+    function IsGamepad      : Boolean; override;
  protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
@@ -79,6 +79,7 @@ type
     FGPCamera    : Single;
     FGPLTrigger  : Boolean;
     FGPRTrigger  : Boolean;
+    FGPDetected  : Boolean;
 
     FLastMouseTime : QWord;
     FMouseLock     : Boolean;
@@ -180,6 +181,7 @@ var iCoreData   : TVDataFile;
 begin
   FLastMouseTime := 0;
   FMouseLock     := True;
+  FGPDetected    := Doom.Store.IsSteamDeck;
 
   FLoading := nil;
   IO := Self;
@@ -490,6 +492,11 @@ begin
   Exit( FGPLeftDir );
 end;
 
+function TDoomGFXIO.IsGamepad      : Boolean;
+begin
+  Exit( FGPDetected );
+end;
+
 procedure TDoomGFXIO.Configure( aConfig : TLuaConfig; aReload : Boolean = False );
 begin
   inherited Configure( aConfig, aReload );
@@ -690,6 +697,9 @@ begin
     FGPLTrigger := False;
     FGPRTrigger := False;
   end;
+
+  if ( iEvent.EType = VEVENT_PADDOWN ) then FGPDetected := True;
+  if ( iEvent.EType = VEVENT_KEYDOWN ) then FGPDetected := False;
 
   if iEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN ] then
   begin

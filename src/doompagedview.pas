@@ -64,7 +64,7 @@ begin
     if FContent.Headers[ FPage ] <> '' then
       VTIG_End;
   FRect := VTIG_GetWindowRect;
-  VTIG_End('{l<{!Up},{!Down}> scroll, <{!Left},{!Right}> pages, <{!Enter},{!Escape}> return}');
+  VTIG_End('{l<{!{$input_up},{$input_down}}> scroll, <{!{$input_left},{$input_right}}> pages, <{!{$input_ok},{$input_escape}}> exit}');
   IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 
   if VTIG_EventCancel or VTIG_EventConfirm then

@@ -251,8 +251,8 @@ begin
 
 
   if FState in SETTINGSVIEW_KEYS
-    then VTIG_End('{l<{!Up,Down}> select, <{!Enter}> change/enter, <{!Escape}> back, <{!Backspace}> clear}')
-    else VTIG_End('{l<{!Up,Down}> select, <{!Enter}> change or enter submenu, <{!Escape}> back}');
+    then VTIG_End('{l<{!{$input_up},{$input_down}}> select, <{!{$input_ok}}> change/enter, <{!{$input_escape}}> back, <{!{$input_uidrop}}> clear}')
+    else VTIG_End('{l<{!{$input_up},{$input_down}}> select, <{!{$input_ok}}> change or enter submenu, <{!{$input_escape}}> back}');
 
   IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 
@@ -309,7 +309,7 @@ end;
 
 function TSettingsView.KeyCapture( aValue : PInteger; aSelected : Boolean ) : Boolean;
 begin
-  VTIG_InputField( IOKeyCodeToString( aValue^ ) );
+  VTIG_InputField( IOKeyCodeToStringShort( aValue^ ) );
   if aSelected then
   begin
     if FCapture then

@@ -228,7 +228,7 @@ end;
 procedure TMainMenuView.UpdateIntro;
 begin
   VTIG_FreeLabel( FIntro1, Point( 28, 9 ) );
-  VTIG_FreeLabel( FIntro2, Rectangle(2,14,77,11) );
+  VTIG_FreeLabel( FIntro2, Rectangle(2,14,77,12) );
 
   if VTIG_EventCancel or VTIG_EventConfirm then
     FMode := MAINMENU_DONE;
@@ -316,7 +316,7 @@ procedure TMainMenuView.UpdateBadSave;
 begin
   VTIG_BeginWindow('Corrupted save file', Point( 42, 13 ), Point(19,8) );
   VTIG_Text('Save file is {!corrupted}, or from a'+#10+'{!previous version}!'+#10+#10+'Version compatibility will be maintained between big versions.'+#10+#10+'{!Removed} corrupted save file, we''re sorry :(. Player and score data are {!intact}.');
-  VTIG_End('Press <{!Enter,Escape}> to continue...');
+  VTIG_End('Press <{!{$input_ok},{$input_escape}}> to continue...');
   IO.RenderUIBackground( Point(18,7), Point(60,20), 0.7 );
   if VTIG_EventCancel or VTIG_EventConfirm then
   begin
@@ -535,7 +535,7 @@ begin
       VTIG_EndGroup;
 
   FRect := VTIG_GetWindowRect;
-  VTIG_End('{l<{!Up},{!Down}> select, <{!Enter}> select, <{!Escape}> cancel}');
+  VTIG_End('{l<{!{$input_up}},{!{$input_down}}> select, <{!{$input_ok}}> select, <{!{$input_escape}}> cancel}');
 
   if VTIG_EventCancel then
   begin
