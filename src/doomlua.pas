@@ -548,12 +548,11 @@ begin
 
   doombase.Lua := Self;
 
-  LogProps( TThing );
-  LogProps( TItem );
-  LogProps( TBeing );
-  LogProps( TPlayer );
-  LogProps( TLevel );
-
+//  LogProps( TThing );
+//  LogProps( TItem );
+//  LogProps( TBeing );
+//  LogProps( TPlayer );
+//  LogProps( TLevel );
 
   RegisterType( TBeing,  'being', 'beings' );
   RegisterType( TPlayer, 'player', 'beings' );

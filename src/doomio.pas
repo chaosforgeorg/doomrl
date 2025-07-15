@@ -952,6 +952,8 @@ var iLayer  : TInterfaceLayer;
 begin
   if Assigned( Sound ) then
     Sound.Update;
+  if Assigned( Doom ) then
+    Doom.Store.Update;
 
   if FUIMouse <> FUIMouseLast then
   begin

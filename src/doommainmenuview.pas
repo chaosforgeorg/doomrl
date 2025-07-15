@@ -210,6 +210,7 @@ begin
             IO.Root.Console.ShowCursor;
             FName[0] := #0;
             IO.Driver.StartTextInput;
+            Doom.Store.StartText( 'Enter name', 30 );
             FMode := MAINMENU_NAME;
           end;
       end;
@@ -346,6 +347,8 @@ begin
 end;
 
 procedure TMainMenuView.UpdateName;
+var iStoreText   : Ansistring;
+    iStoreCancel : Boolean;
 begin
   VTIG_PushStyle( @TIGStyleFrameless );
   VTIG_Begin( 'mainmenu_name', Point( 34, 4 ), Point(25,18) );
@@ -358,6 +361,21 @@ begin
     IO.Driver.StopTextInput;
     IO.Root.Console.HideCursor;
     FMode := MAINMENU_DONE;
+  end;
+  if Doom.Store.GetText( iStoreText, @iStoreCancel ) then
+  begin
+    IO.Driver.StopTextInput;
+    IO.Root.Console.HideCursor;
+    if iStoreCancel then
+    begin
+      OnCancel;
+      FMode := MAINMENU_MENU;
+    end
+    else
+    begin
+      FResult.Name := iStoreText;
+      FMode := MAINMENU_DONE;
+    end;
   end;
   VTIG_PopStyle;
   VTIG_End();

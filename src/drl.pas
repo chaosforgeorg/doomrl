@@ -25,7 +25,7 @@ uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
      vdebug, doombase, vlog, vutil, vos, vparams,
-     dfdata, doomio, doomconfig, doomconfiguration;
+     dfdata, doomio, doomconfig, doomconfiguration, vstoreinterface;
 
 {$IFDEF WINDOWS}
 var Handle : HWND;

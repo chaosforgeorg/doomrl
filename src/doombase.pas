@@ -2,7 +2,7 @@
 unit doombase;
 interface
 
-uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent,
+uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent, vstoreinterface,
      dflevel, dfdata, dfhof, dfitem,
      doomhooks, doomlua, doomcommand, doomkeybindings;
 
@@ -92,7 +92,9 @@ TDoom = class(TSystem)
        FPlayerView      : TInterfaceLayer;
        FPadMoveActive   : Boolean;
        FPadMoveNext     : QWord;
+       FStore           : TStoreInterface;
      public
+       property Store : TStoreInterface read FStore;
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
        property ModuleHooks : TFlags read FModuleHooks;
@@ -298,6 +300,7 @@ begin
   FPlayerView := nil;
   FPadMoveActive := False;
   Log( VersionToString( NVersion ) );
+  FStore := TStoreInterface.Get;
   Reconfigure;
 end;
 
