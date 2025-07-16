@@ -23,6 +23,7 @@
 [fix] -- RCFIX : assignment of music for the two new levels
 [fix] -- RCFIX : shotgun pumping will no longer happen in the prepared slot
 [fix] -- RCFIX : cleaner Assemlies reqs
+[fix] -- RCFIX : fixed bug with animation blinking on high resolutions
 
 0.9.9.9 BETA 8
 [new] -- GH#222: new L4 special level - Central Processing [brisbang]
