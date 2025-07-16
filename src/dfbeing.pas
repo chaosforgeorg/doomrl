@@ -1689,7 +1689,9 @@ begin
   if not Second then
     IO.addMeleeAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aTarget.Position, Sprite );
 
-  Dec( FSpeedCount, iAttackCost );
+  if iDualAttack or Second
+    then Dec( FSpeedCount, iAttackCost div 2 )
+    else Dec( FSpeedCount, iAttackCost );
 
   // Get names
   iName         := GetName( true );
