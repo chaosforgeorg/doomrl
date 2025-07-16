@@ -669,9 +669,9 @@ begin
       if iAltFire = ALT_CHAIN then
       begin
         case iChainFire of
-          0 : iFireTitle := 'Chain fire ({Ginitial}):';
-          1 : iFireTitle := 'Chain fire ({Ywarming}):';
-          2 : iFireTitle := 'Chain fire ({Rfull}):';
+          0      : iFireTitle := 'Chain fire ({Ginitial}):';
+          1      : iFireTitle := 'Chain fire ({Ywarming}):';
+          2..255 : iFireTitle := 'Chain fire ({Rfull}):';
         end;
       end
     end

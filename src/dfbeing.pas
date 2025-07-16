@@ -1305,8 +1305,9 @@ begin
   if iChaining then
   begin
     case FChainFire of
-      0 : iShots -= aGun.Shots div 3;
-      2 : iShots += aGun.Shots div 2;
+      0      : iShots -= aGun.Shots div 3;
+      1      : ;
+      2..255 : iShots += aGun.Shots div 2;
     end;
   end;
 
@@ -1335,7 +1336,7 @@ begin
     aGun.Ammo := aGun.Ammo - iShotsCost;
   end;
 
-  if iChaining and ( FChainFire < 2 ) then Inc( FChainFire );
+  if iChaining and ( FChainFire < 255 ) then Inc( FChainFire );
 
   if iShots < 1 then Exit;
 
