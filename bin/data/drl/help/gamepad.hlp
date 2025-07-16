@@ -10,7 +10,8 @@ confirming it with the {!A} button.
 
 {rBasic actions}
 
-Holding the {!Right Trigger} will enable alternative actions as below.
+Holding the {!Right Trigger} will enable alternative actions as below 
+and add hint info on the targeted square.
 
 {!A} - move
    (with {!RTrigger}) move targeting reticule

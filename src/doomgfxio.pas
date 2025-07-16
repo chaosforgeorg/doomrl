@@ -521,7 +521,7 @@ var iMousePoint : TIOPoint;
 begin
   if not Assigned( FQuadRenderer ) then Exit;
 
-  if FTime - FLastMouseTime > 3000 then
+  if FMCursor.Active and (FTime - FLastMouseTime > 3000) then
   begin
     FMCursor.Active := False;
     if not isModal then

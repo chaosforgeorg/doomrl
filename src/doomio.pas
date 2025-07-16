@@ -123,6 +123,7 @@ protected
   FTime        : QWord;
   FLoading     : TLoadingView;
   FMTarget     : TCoord2D;
+  FLastTarget  : TCoord2D;
   FKeyCode     : TIOKeyCode;
   FASCII       : TASCIIImageMap;
   FLayers      : TInterfaceLayerStack;
@@ -416,6 +417,7 @@ begin
   FTargetEnabled := False;
   FTargetLast    := False;
   FCachedAmmo    := -1;
+  FLastTarget.Create(0,0);
 end;
 
 function TDoomIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
@@ -442,6 +444,7 @@ end;
 procedure TDoomIO.PreAction;
 begin
   FCachedAmmo := -1;
+  FLastTarget.Create(0,0);
 end;
 
 procedure TDoomIO.Clear;
@@ -1036,6 +1039,20 @@ begin
     iMEvent.MouseMove.Pos := FUIMouse;
     FUIMouseLast := FUIMouse;
     VTIG_GetIOState.MouseState.HandleEvent( iMEvent );
+  end;
+
+  if GetPadRTrigger and (Doom <> nil) and (Doom.State = DSPlaying)
+    and (FTargeting or ( not isModal)) and ( FLastTarget <> Doom.Targeting.List.Current ) then
+    begin
+      FLastTarget := Doom.Targeting.List.Current;
+      if (FLastTarget.X * FLastTarget.Y <> 0) and (FLastTarget <> Player.Position) then
+        LookDescription(FLastTarget);
+    end;
+
+  if not GetPadRTrigger and (FLastTarget.X * FLastTarget.Y <> 0) then
+  begin
+    FHintOverlay := '';
+    FLastTarget.Create(0,0);
   end;
 
   ClearFinished;
