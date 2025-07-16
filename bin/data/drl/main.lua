@@ -621,6 +621,10 @@ function drl.GetMOTD()
 	return "{BSupport the game by {Lwishlisting} the DRL expansion at {Ljupiterhellclassic.com}!}"
 end
 
+function drl.GetLogoTexture()
+	return "logo"
+end
+
 function drl.GetLogoBox()
 	return
 [[{rDRL version {R]]..VERSION_STRING..[[}

@@ -148,7 +148,7 @@ begin
   if GraphicsVersion then
   begin
     FBGTexture   := (IO as TDoomGFXIO).Textures.TextureID['background'];
-    FLogoTexture := (IO as TDoomGFXIO).Textures.TextureID['logo'];
+    FLogoTexture := (IO as TDoomGFXIO).Textures.TextureID[AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetLogoTexture'], [] ) )];
   end;
 
   if FMode = MAINMENU_MENU then
