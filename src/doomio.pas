@@ -85,6 +85,7 @@ type TDoomIO = class( TIO )
   procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); virtual; abstract;
   procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); virtual; abstract;
   procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); virtual; abstract;
+  procedure addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord ); virtual;
   procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word; aFlags : TExplosionFlags = [] ); virtual;
 
   class procedure RegisterLuaAPI( State : TLuaState );
@@ -269,6 +270,11 @@ begin
 
 end;
 
+procedure TDoomIO.addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
+begin
+  if (not Setting_GamepadRumble) or (not IsGamepad ) then Exit;
+    IO.Driver.Rumble( aLow, aHigh, aDuration );
+end;
 
 procedure TDoomIO.Explosion( aSequence : Integer; aWhere: TCoord2D; aRange, aDelay: Integer;
   aColor: byte; aExplSound: Word; aFlags: TExplosionFlags);
@@ -281,7 +287,10 @@ begin
   if not iLevel.isProperCoord( aWhere ) then Exit;
 
   if aRange > 0 then
+  begin
     addScreenShakeAnimation( Clamp( 100 * aRange, 300, 500 ), aSequence, Clampf( 2.0 * aRange, 2.0, 5.0 ) );
+    addRumbleAnimation( 0, Clamp( $2000 * aRange, $2000, $E000 ), $6000, Clamp( 100 * aRange, 100, 300 ) );
+  end;
 
   if aExplSound <> 0 then
     addSoundAnimation( aSequence, aWhere, aExplSound );

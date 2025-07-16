@@ -78,6 +78,17 @@ private
   FGColor   : TColor;
 end;
 
+{ TDoomMark }
+
+TDoomRumbleEvent = class(TAnimation)
+  constructor Create( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
+  procedure OnStart; override;
+private
+  FLow    : Word;
+  FHigh   : Word;
+  FDur    : DWord;
+end;
+
 { TDoomMove }
 
 TDoomMove = class(TAnimation)
@@ -331,6 +342,22 @@ begin
   if GraphicsVersion then
     (IO as TDoomGFXIO).PostSheet.PushColoredQuad( TVec2i.Create(0,0), TVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
 end;
+
+{ TDoomRumbleEvent }
+
+constructor TDoomRumbleEvent.Create( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
+begin
+  inherited Create( 1, aDelay, 0 );
+  FLow      := aLow;
+  FHigh     := aHigh;
+  FDur      := aDuration;
+end;
+
+procedure TDoomRumbleEvent.OnStart;
+begin
+  IO.Driver.Rumble( FLow, FHigh, FDur );
+end;
+
 
 { TDoomMove }
 

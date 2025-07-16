@@ -131,6 +131,14 @@ begin
     .SetName('Screen edge mouse scroll')
     .SetDescription('Setting to {!Enabled} will make the screen scroll if the mouse is at the edge.')
     ;
+  iGroup.AddToggle( 'enable_gamepad', True )
+    .SetName('Gamepad control')
+    .SetDescription('Setting to {!Disabled} will turn off interaction and visuals of the gamepad.')
+    ;
+  iGroup.AddToggle( 'enable_rumble', True )
+    .SetName('Gamepad rumble')
+    .SetDescription('Setting to {!Disabled} will turn off gamepad rumble effects.')
+    ;
 
   iGroup := AddGroup( 'keybindings_hidden' );
   iGroup.AddInteger( 'input_escape', VKEY_ESCAPE );

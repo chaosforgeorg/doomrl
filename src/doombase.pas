@@ -317,6 +317,7 @@ begin
   Setting_HideHints        := Configuration.GetBoolean( 'hide_hints' );
   Setting_EmptyConfirm     := Configuration.GetBoolean( 'empty_confirm' );
   Setting_Mouse            := Configuration.GetBoolean( 'enable_mouse' );
+  Setting_GamepadRumble    := Configuration.GetBoolean( 'enable_rumble' );
   Setting_MouseEdgePan     := Configuration.GetBoolean( 'mouse_edge_pan' );
   Setting_UnlockAll        := Configuration.GetBoolean( 'unlock_all' );
   Setting_MenuSound        := Configuration.GetBoolean( 'menu_sound' );
@@ -1237,6 +1238,7 @@ repeat
     begin
       IO.Msg('You hear a gigantic explosion above!');
       IO.addScreenShakeAnimation( 1000, 100, 7 );
+      IO.addRumbleAnimation( 0, $8000, $4000, 300 );
     end;
 
     if not iFullLoad then

@@ -146,6 +146,7 @@ const
   Setting_MenuSound        : Boolean = False;
   Setting_MouseEdgePan     : Boolean = False;
   Setting_Mouse            : Boolean = True;
+  Setting_GamepadRumble    : Boolean = True;
   Setting_Flash            : Boolean = True;
   Setting_Glow             : Boolean = True;
   Setting_ScreenShake      : Boolean = True;

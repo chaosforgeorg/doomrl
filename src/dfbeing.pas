@@ -1341,6 +1341,15 @@ begin
 
   if FTargetPos = Player.Position then Player.MultiMove.Stop;
 
+  if isPlayer then
+  begin
+    if aGun.Flags[ IF_SHOTGUN ] then
+      IO.addRumbleAnimation( aDelay, $2000, $8000, 100 )
+    else
+      IO.addRumbleAnimation( aDelay, $1000, $6000, 50 )
+  end;
+
+
   if aGun.Flags[ IF_SHOTGUN ] then
     iResult := HandleShotgunFire( aTarget, aGun, aAlt, iShots )
   else if aGun.Flags[ IF_SPREAD ] then

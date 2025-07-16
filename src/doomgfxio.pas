@@ -33,6 +33,7 @@ type
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
     procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); override;
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
+    procedure addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord ); override;
     function getUIDPosition( aUID : TUID; var aPosition : TVec2i ) : Boolean;
 
     procedure DeviceChanged;
@@ -214,7 +215,7 @@ begin
   iWidth      := Configuration.GetInteger( 'screen_width' );
   iHeight     := Configuration.GetInteger( 'screen_height' );
 
-  iSDLFlags := [ SDLIO_OpenGL, SDLIO_Gamepad ];
+  iSDLFlags := [ SDLIO_OpenGL ];
   if FFullscreen then Include( iSDLFlags, SDLIO_Fullscreen );
   FIODriver := TSDLIODriver.Create( iWidth, iHeight, 32, iSDLFlags );
 
@@ -308,6 +309,7 @@ begin
     RecalculateScaling( False );
   DeviceChanged;
   TGLConsoleRenderer( FConsole ).HideCursor;
+  TSDLIODriver(FIODriver).GamePadSupport := Doom.Store.IsSteamDeck or Configuration.GetBoolean( 'enable_gamepad' );
 
   inherited Reconfigure(aConfig);
 end;
@@ -435,6 +437,15 @@ procedure TDoomGFXIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoun
 begin
   if Doom.State <> DSPlaying then Exit;
   FAnimations.addAnimation( TDoomSoundEvent.Create( aDelay, aPosition, aSoundID ) )
+end;
+
+procedure TDoomGFXIO.addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
+begin
+  if Doom.State <> DSPlaying then Exit;
+  if (not Setting_GamepadRumble) or (not IsGamepad ) then Exit;
+  if aDelay = 0
+    then IO.Driver.Rumble( aLow, aHigh, aDuration )
+    else FAnimations.addAnimation( TDoomRumbleEvent.Create( aDelay, aLow, aHigh, aDuration ) );
 end;
 
 procedure TDoomGFXIO.ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord );

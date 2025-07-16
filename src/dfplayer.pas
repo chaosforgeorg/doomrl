@@ -268,9 +268,15 @@ begin
   FMultiMove.Stop;
   Doom.DamagedLastTurn := True;
   if ( aDamage >= Max( FHPMax div 3, 10 ) ) then
+  begin
     IO.Blink( Red, 100 );
+    IO.addRumbleAnimation( aDelay, $6000, $4000, 250 );
+  end
+  else
+    IO.addRumbleAnimation( aDelay, $4000, $2000, 100 );
 
   if aDamage > 0 then FKills.DamageTaken;
+
   inherited ApplyDamage(aDamage, aTarget, aDamageType, aSource, aDelay );
 end;
 
