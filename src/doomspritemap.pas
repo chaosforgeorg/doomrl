@@ -751,7 +751,7 @@ end;
 procedure TDoomSpriteMap.PushSpriteBeing( aPos : TVec2i; const aSprite : TSprite; aLight : Byte ) ;
 var z : Integer;
 begin
-  z := aPos.Y * DRL_Z_LINE;
+  z := ( aPos.Y div FSpriteEngine.Grid.Y ) * DRL_Z_LINE;
   if SF_LARGE in aSprite.Flags then
     z += DRL_Z_LARGE
   else
@@ -761,7 +761,7 @@ end;
 
 procedure TDoomSpriteMap.PushSpriteItem( aPos : TVec2i; const aSprite : TSprite; aLight : Byte ) ;
 begin
-  PushSprite( aPos, aSprite, aLight, aPos.Y * DRL_Z_LINE + DRL_Z_ITEMS + 500);
+  PushSprite( aPos, aSprite, aLight, ( aPos.Y div FSpriteEngine.Grid.Y ) * DRL_Z_LINE + DRL_Z_ITEMS + 500);
 end;
 
 procedure TDoomSpriteMap.PushSpriteDoodad( aCoord : TCoord2D; const aSprite: TSprite; aLight: Integer; aZOffset : Integer );
