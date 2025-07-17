@@ -50,21 +50,24 @@ begin
     ;
 
   iGroup.AddInteger( 'font_multiplier', 0 )
-    .SetRange(0,3)
+    .SetRange(0,4)
+    .SetNames(['Automatic','x1','x2','x3','x4'])
     .SetName('Font size multiplier')
-    .SetDescription('Control font size multiplier. Set to {!0} to pick one based on resolution.')
+    .SetDescription('Control font size multiplier. Set to {!Automatic} to pick one based on resolution.')
     ;
 
-  iGroup.AddInteger( 'tile_multiplier', 0 )
-    .SetRange(0,3)
+  iGroup.AddInteger( 'tile_multi', 0 )
+    .SetRange(0,5)
+    .SetNames(['Automatic','x1','x1.5(fuzzy)','x2','x3','x4'])
     .SetName('Tile size multiplier')
-    .SetDescription('Control tile size multiplier. Set to {!0} to pick one based on resolution.')
+    .SetDescription('Control tile size multiplier. Set to {!Automatic} to pick one based on resolution.')
     ;
 
-  iGroup.AddInteger( 'minimap_multiplier', 0 )
-    .SetRange(0,9)
+  iGroup.AddInteger( 'minimap_multi', 0 )
+    .SetRange(0,7)
+    .SetNames(['Automatic','x1','x2','x3','x4','x6','x8','x10'])
     .SetName('Minimap size multiplier')
-    .SetDescription('Control minimap size multiplier. Set to {!0} to pick one based on resolution.')
+    .SetDescription('Control minimap size multiplier. Set to {!Automatic} to pick one based on resolution.')
     ;
   iGroup.AddInteger( 'minimap_opacity', 2 )
     .SetRange(0,5)

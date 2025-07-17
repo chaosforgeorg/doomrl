@@ -42,10 +42,13 @@ protected
   FState       : TSettingsViewState;
   FSize        : TIOPoint;
   FRect        : TIORect;
+  FWSize       : TIOPoint;
+  FWRect       : TIORect;
   FCapture     : Boolean;
   FKey         : Word;
   FResInput    : Boolean;
   FResolutions : array of Ansistring;
+  FWarning     : Ansistring;
 end;
 
 implementation
@@ -87,9 +90,13 @@ begin
   inherited Create;
   VTIG_EventClear;
   VTIG_ResetSelect( 'settings' );
-  FSize := Point( 80, 25 );
+  FSize  := Point( 80, 25 );
+  FWSize := Point( 50, 10 );
+
   FCapture  := False;
   FResInput := False;
+  FWarning  := '';
+
 
   if GraphicsVersion then
   begin
@@ -107,6 +114,7 @@ var iSelected : Integer;
     iNext     : TSettingsViewState;
     iApply    : Boolean;
     iReset    : Boolean;
+    iResult   : Boolean;
     iGroup    : TConfigurationGroup;
     iEntry    : TConfigurationEntry;
     iHover    : TConfigurationEntry;
@@ -114,6 +122,19 @@ var iSelected : Integer;
     i         : Integer;
 begin
   if ( FState = SETTINGSVIEW_DONE ) then Exit;
+  if ( FWarning <> '' ) then
+  begin
+    VTIG_BeginWindow( 'Warning', 'settings_warning', FWSize );
+    FWRect := VTIG_GetWindowRect;
+    VTIG_Text(FWarning);
+    VTIG_End('{l<{!{$input_escape},{$input_ok}}> continue}');
+    IO.RenderUIBackground( FWRect.TopLeft, FWRect.BottomRight - PointUnit );
+
+    if VTIG_EventCancel or VTIG_EventConfirm then
+      FWarning := '';
+    Exit;
+  end;
+
   iNext  := SETTINGSVIEW_DONE;
   iHover := nil;
 
@@ -202,7 +223,11 @@ begin
               if iEntry is TIntegerConfigurationEntry then
               begin
                 with iEntry as TIntegerConfigurationEntry do
-                  if VTIG_IntInput( Access, iSelected = i, Min, Max, Step ) then
+                begin
+                  if Names = nil
+                    then iResult := VTIG_IntInput( Access, iSelected = i, Min, Max, Step )
+                    else iResult := VTIG_EnumInput( Access, iSelected = i, @FResInput, Names );
+                  if iResult then
                   begin
                     if FState = SETTINGSVIEW_AUDIO then
                     begin
@@ -211,8 +236,13 @@ begin
                          Sound.PlaySample('menu.change');
                     end;
                     if FState = SETTINGSVIEW_DISPLAY then
+                    begin
                       Doom.Reconfigure;
+                      if (ID = 'tile_multi') and ( Access^ = 2 ) then
+                         FWarning := 'Do note that the x1.5 multiplier is an accessability option, created mostly for SteamDeck readability - the pixel art will be distorted in this setting, and small artifacts may appear!';
+                    end;
                   end;
+                end;
               end
               else if iEntry is TToggleConfigurationEntry then
                  with iEntry as TToggleConfigurationEntry do

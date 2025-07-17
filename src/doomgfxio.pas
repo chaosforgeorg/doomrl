@@ -63,11 +63,15 @@ type
     FPostSheet   : TGLQuadList;
     FQuadRenderer: TGLQuadRenderer;
     FProjection  : TMatrix44;
+
     FFontMult    : Byte;
     FTileMult    : Byte;
     FMiniScale   : Byte;
     FLinespace   : Word;
     FVPadding    : DWord;
+    FTileScale   : Single;
+    FScaledScreen: TGLVec2i;
+
     FCellX       : Integer;
     FCellY       : Integer;
     FFontSizeX   : Integer;
@@ -90,13 +94,14 @@ type
     FAnimations     : TAnimationManager;
     FTextures       : TTextureManager;
   public
-    property QuadSheet : TGLQuadList read FQuadSheet;
-    property TextSheet : TGLQuadList read FTextSheet;
-    property PostSheet : TGLQuadList read FPostSheet;
-    property FontMult  : Byte read FFontMult;
-    property TileMult  : Byte read FTileMult;
-    property MCursor   : TDoomMouseCursor read FMCursor;
-    property Textures  : TTextureManager read FTextures;
+    property QuadSheet   : TGLQuadList read FQuadSheet;
+    property TextSheet   : TGLQuadList read FTextSheet;
+    property PostSheet   : TGLQuadList read FPostSheet;
+    property FontMult    : Byte        read FFontMult;
+    property TileScale   : Single      read FTileScale;
+    property ScaledScreen: TGLVec2i    read FScaledScreen;
+    property MCursor     : TDoomMouseCursor read FMCursor;
+    property Textures    : TTextureManager read FTextures;
   end;
 
 implementation
@@ -123,8 +128,8 @@ begin
   iOldFontMult  := FFontMult;
   iOldMiniScale := FMiniScale;
   FFontMult   := Configuration.GetInteger( 'font_multiplier' );
-  FTileMult   := Configuration.GetInteger( 'tile_multiplier' );
-  FMiniScale  := Configuration.GetInteger( 'minimap_multiplier' );
+  FTileMult   := Configuration.GetInteger( 'tile_multi' );
+  FMiniScale  := Configuration.GetInteger( 'minimap_multi' );
 
   if FFontMult = 0 then
   begin
@@ -141,14 +146,25 @@ begin
   end;
   if FTileMult  = 0 then
     if (iWidth >= 1050) and (iHeight >= 1050)
-      then FTileMult := 2
+      then FTileMult := 3
       else FTileMult := 1;
   if FMiniScale = 0 then
   begin
     FMiniScale := iWidth div 220;
     FMiniScale := Max( 3, FMiniScale );
-    FMiniScale := Min( 9, FMiniScale );
+    FMiniScale := Min(10, FMiniScale );
+  end
+  else
+  begin
+    if FMiniScale = 7 then FMiniScale := 10;
+    if FMiniScale = 6 then FMiniScale := 8;
+    if FMiniScale = 5 then FMiniScale := 6;
   end;
+
+  FTileScale   := Single(FTileMult - 1);
+  if FTileMult = 1 then FTileScale := 1.0;
+  if FTileMult = 2 then FTileScale := 1.5;
+  FScaledScreen.Init( Round( iWidth / FTileScale ), Round( iHeight / FTileScale ) );
 
   if aInitialize then Exit;
 

@@ -268,11 +268,11 @@ begin
 
   FHBFramebuffer := TGLFramebuffer.Create;
   FHBFramebuffer.AddAttachment( RGBA8, False );
-  FHBFramebuffer.Resize( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
+  FHBFramebuffer.Resize( iIO.ScaledScreen.X, iIO.ScaledScreen.Y );
 
   FVBFramebuffer:= TGLFramebuffer.Create;
   FVBFramebuffer.AddAttachment( RGBA8, False );
-  FVBFramebuffer.Resize( IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
+  FVBFramebuffer.Resize( iIO.ScaledScreen.X, iIO.ScaledScreen.Y );
 
   FPostProgram  := TGLProgram.Create(VCleanVertexShader, VPostFragmentShader);
   FHBlurProgram := TGLProgram.Create(VCleanVertexShader, VHorizBlurFragmentShader);
@@ -286,7 +286,7 @@ procedure TDoomSpriteMap.Recalculate;
 var iIO : TDoomGFXIO;
 begin
   iIO := (IO as TDoomGFXIO);
-  FSpriteEngine.SetScale( iIO.TileMult );
+  FSpriteEngine.SetScale( iIO.TileScale );
   FMinShift := Vec2i(0,0);
   FMaxShift := Vec2i(
     Max(FSpriteEngine.Grid.X*MAXX-iIO.Driver.GetSizeX,0),
@@ -304,8 +304,8 @@ begin
     FMaxShift.Y := FMaxShift.Y + 18*iIO.FontMult*3;
   end;
   FFramebuffer.Resize( iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
-  FHBFramebuffer.Resize( iIO.Driver.GetSizeX div iIO.TileMult, iIO.Driver.GetSizeY div iIO.TileMult );
-  FVBFramebuffer.Resize( iIO.Driver.GetSizeX div iIO.TileMult, iIO.Driver.GetSizeY div iIO.TileMult );
+  FHBFramebuffer.Resize( iIO.ScaledScreen.X, iIO.ScaledScreen.Y );
+  FVBFramebuffer.Resize( iIO.ScaledScreen.X, iIO.ScaledScreen.Y );
 
   FPostProgram.Bind;
     FPostProgram.SetUniformi( 'utexture', 0 );
@@ -319,12 +319,12 @@ begin
 
   FHBlurProgram.Bind;
     FHBlurProgram.SetUniformi( 'utexture', 0 );
-    FHBlurProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
+    FHBlurProgram.SetUniformf( 'screen_size', iIO.ScaledScreen.X, iIO.ScaledScreen.Y );
   FHBlurProgram.UnBind;
 
   FVBlurProgram.Bind;
     FVBlurProgram.SetUniformi( 'utexture', 0 );
-    FVBlurProgram.SetUniformf( 'screen_size', IO.Driver.GetSizeX div iIO.TileMult, IO.Driver.GetSizeY div iIO.TileMult );
+    FVBlurProgram.SetUniformf( 'screen_size', iIO.ScaledScreen.X, iIO.ScaledScreen.Y );
   FVBlurProgram.UnBind;
   glViewport( 0, 0, iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
 end;
@@ -344,8 +344,8 @@ begin
   // Technically this should smooth out fluids -_-
   FFluidTime := IO.Driver.GetMs*0.0001;
   iShift     := FFluidTime - Floor( FFluidTime );
-  iPixel     := Floor( iShift * ( 32*iIO.TileMult ) );
-  iShift     := iPixel / ( 32*iIO.TileMult );
+  iPixel     := Floor( iShift * ( 32*iIO.TileScale ) );
+  iShift     := iPixel / ( 32*iIO.TileScale );
   FFluidX := 1-iShift;
   FFluidY := iShift;
   ApplyEffect;
