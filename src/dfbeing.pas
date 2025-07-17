@@ -1711,6 +1711,7 @@ begin
 
   if not iMissed then
   begin
+    if ( iWeapon <> nil ) then IO.addSoundAnimation( Iif( Second, 100, 30 ), aTarget.Position, IO.Audio.ResolveSoundID(['flesh_blade_hit']) );
     // Damage roll
     iDamage := rollMeleeDamage( iWeaponSlot );
 
@@ -2151,7 +2152,10 @@ begin
     end;
     IO.addMissileAnimation( iDuration, aSequence,iSource,iMisslePath.GetC,iColor,Missiles[iMissile].Picture,iDelay,iSprite,MF_RAY in Missiles[iMissile].Flags);
     if iHit and iLevel.isVisible( iMisslePath.GetC ) then
+    begin
+      IO.addSoundAnimation( iMarkSeq, iMisslePath.GetC, IO.Audio.ResolveSoundID([Iif( iIsHit, 'flesh_bullet_hit', 'concrete_bullet_hit' )]) );
       IO.addMarkAnimation(199, iMarkSeq, iMisslePath.GetC, Missiles[iMissile].HitSprite, Iif( iIsHit, LightRed, LightGray ), '*' );
+    end;
   end;
 
   if aItem.Flags[ IF_THROWDROP ] then

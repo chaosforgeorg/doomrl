@@ -458,7 +458,8 @@ end;
 procedure TDoomGFXIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);
 begin
   if Doom.State <> DSPlaying then Exit;
-  FAnimations.addAnimation( TDoomSoundEvent.Create( aDelay, aPosition, aSoundID ) )
+  if aSoundID > 0 then
+    FAnimations.addAnimation( TDoomSoundEvent.Create( aDelay, aPosition, aSoundID ) )
 end;
 
 procedure TDoomGFXIO.addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
