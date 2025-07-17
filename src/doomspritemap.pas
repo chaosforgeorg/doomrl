@@ -823,7 +823,9 @@ end;
 function TDoomSpriteMap.ShiftValue ( aFocus : TCoord2D ) : TVec2i;
 const YFactor = 6;
 begin
-  ShiftValue.X := S5Interpolate(FMinShift.X,FMaxShift.X, (aFocus.X-2)/(MAXX-3));
+  if ( FMaxShift.X - FMinShift.X ) > 2 * IO.Driver.GetSizeX
+    then ShiftValue.X := S3Interpolate(FMinShift.X,FMaxShift.X, (aFocus.X-2)/(MAXX-3))
+    else ShiftValue.X := S5Interpolate(FMinShift.X,FMaxShift.X, (aFocus.X-2)/(MAXX-3));
   if FMaxShift.Y - FMinShift.Y > 4* FSpriteEngine.Grid.Y then
   begin
     if aFocus.Y < YFactor then

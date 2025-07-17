@@ -1,6 +1,6 @@
 0.9.9.9 BETA 9
 [new] -- GH#189: Gamepad support!
-[new] -- GH#189: x1.5 tile scaling added (fuzzy, but playable!)
+[new] -- GH#313: x1.5 tile scaling added (fuzzy, but playable!)
 [mod] -- GH#304: Shift-Backspace will drop and unload weapon from inv/eq
 [mod] -- GH#293: weapon mods won't print the count if one (so (AP2) for example)
 [mod] -- GH#293: item names will be truncated to available space if too long
@@ -28,6 +28,7 @@
 [fix] -- RCFIX : cleaner Assemlies reqs
 [fix] -- RCFIX : fixed bug with animation blinking on high resolutions
 [fix] -- RCFIX : fixed dual weapon action time
+[fix] -- GH#313: fixed X-interpolation for large tiles on smaller screens
 
 0.9.9.9 BETA 8
 [new] -- GH#222: new L4 special level - Central Processing [brisbang]
