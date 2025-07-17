@@ -1,6 +1,7 @@
 0.9.9.9 BETA 9
 [new] -- GH#189: Gamepad support!
 [new] -- GH#313: x1.5 tile scaling added (fuzzy, but playable!)
+[new] -- GH#224: low health and damage blood pulse effect
 [mod] -- GH#304: Shift-Backspace will drop and unload weapon from inv/eq
 [mod] -- GH#293: weapon mods won't print the count if one (so (AP2) for example)
 [mod] -- GH#293: item names will be truncated to available space if too long

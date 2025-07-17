@@ -82,6 +82,10 @@ begin
     .SetName('Screen flashing')
     .SetDescription('Setting to {!Disabled} will disable screen flash FX.')
     ;
+  iGroup.AddToggle( 'pulse_fx', True )
+    .SetName('Blood pulse')
+    .SetDescription('Setting to {!Disabled} will disable pulsing blood vignette.')
+    ;
   iGroup.AddToggle( 'glow_fx', True )
     .SetName('Emissive glow')
     .SetDescription('Setting to {!Disabled} will disable glow FX and improve performance.')

@@ -1897,7 +1897,17 @@ begin
     iOverKillValue := FHPMax * 4;
   end;
 
-  if IsPlayer then Player.Statistics.OnDamage( aDamage );
+  if IsPlayer then
+  begin
+    Player.Statistics.OnDamage( aDamage );
+    if ( aTarget = Target_Feet )
+      then IO.PulseBlood( 1.0 )
+      else
+      begin
+        if aDamage > (FHPMax div 5) then
+          IO.PulseBlood( Clampf( 4.0 * ( aDamage / FHPMax ), 0.5, 2.0 ) );
+      end;
+  end;
 
   FHP := Max( FHP - aDamage, 0 );
   if Dead and (not IsPlayer) then

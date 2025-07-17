@@ -312,6 +312,7 @@ begin
   Setting_NoIntro          := Configuration.GetBoolean( 'skip_intro' );
   Setting_Flash            := Configuration.GetBoolean( 'flashing_fx' );
   Setting_Glow             := Configuration.GetBoolean( 'glow_fx' );
+  Setting_BloodPulse       := Configuration.GetBoolean( 'pulse_fx' );
   Setting_ScreenShake      := Configuration.GetBoolean( 'screen_shake' );
   Setting_RunOverItems     := Configuration.GetBoolean( 'run_over_items' );
   Setting_HideHints        := Configuration.GetBoolean( 'hide_hints' );

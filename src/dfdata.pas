@@ -150,6 +150,7 @@ const
   Setting_Flash            : Boolean = True;
   Setting_Glow             : Boolean = True;
   Setting_ScreenShake      : Boolean = True;
+  Setting_BloodPulse       : Boolean = True;
   Setting_AutoTarget       : Boolean = True;
   Setting_MusicVolume      : Byte = 25;
   Setting_SoundVolume      : Byte = 25;

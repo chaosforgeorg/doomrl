@@ -35,6 +35,7 @@ type
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
     procedure addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord ); override;
     function getUIDPosition( aUID : TUID; var aPosition : TVec2i ) : Boolean;
+    procedure PulseBlood( aValue : Single ); override;
 
     procedure DeviceChanged;
     function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; override;
@@ -85,6 +86,9 @@ type
     FGPLTrigger  : Boolean;
     FGPRTrigger  : Boolean;
     FGPDetected  : Boolean;
+
+    FBloodValue       : Single;
+    FBloodValueTarget : Single;
 
     FLastMouseTime : QWord;
     FMouseLock     : Boolean;
@@ -208,6 +212,8 @@ begin
   FTileMult := 1;
   FMCursor  := nil;
   FTextures := nil;
+  FBloodValue       := 0;
+  FBloodValueTarget := 0;
 
   FGPRight.Init();
   FGPLeft.Init();
@@ -464,6 +470,12 @@ begin
     else FAnimations.addAnimation( TDoomRumbleEvent.Create( aDelay, aLow, aHigh, aDuration ) );
 end;
 
+procedure TDoomGFXIO.PulseBlood( aValue : Single );
+begin
+  if Setting_BloodPulse and ( aValue > FBloodValueTarget ) then
+    FBloodValueTarget := aValue;
+end;
+
 procedure TDoomGFXIO.ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord );
 begin
   FAnimations.AddAnimation( TDoomExplodeMark.Create(aDuration,aDelay,aCoord,aColor) )
@@ -545,6 +557,8 @@ var iMousePoint : TIOPoint;
     iAbsolute   : TIORect;
     iP1, iP2    : TIOPoint;
     iMouse      : Boolean;
+    iBloodValue : Single;
+    iBloodTarget: Single;
 begin
   if not Assigned( FQuadRenderer ) then Exit;
 
@@ -655,6 +669,37 @@ begin
   FQuadRenderer.Update( FProjection );
   FQuadRenderer.Render( FQuadSheet );
   inherited Update( aMSec );
+
+  if Setting_BloodPulse then
+  begin
+    iBloodTarget := FBloodValueTarget;
+    if (Doom <> nil) and (Doom.State = DSPlaying) then
+    begin
+      iBloodValue := 0;
+
+      if Player.HP < (Player.HPMax div 3) then
+        iBloodValue += ( 0.8 - ( Player.HP / (Player.HPMax div 2) ) ) + Sin( (FTime / 1000)*5 ) * 0.2;
+
+      if iBloodValue > 0.0 then
+        iBloodTarget := Maxf( iBloodValue, FBloodValueTarget );
+    end;
+
+    if iBloodTarget > FBloodValue then
+      FBloodValue += Minf( ( iBloodTarget - FBloodValue ), aMSec / 500 )
+    else if iBloodTarget < FBloodValue then
+      FBloodValue -= Minf( ( FBloodValue - iBloodTarget ), aMSec / 500 );
+
+    if FBloodValueTarget > 0 then
+      FBloodValueTarget -= Minf( FBloodValueTarget, aMSec / 500 );
+
+    if (Doom <> nil) and (Doom.State = DSPlaying) and (FBloodValue > 0.02) then
+    begin
+      FPostSheet.PushTexturedQuad(
+        GLVec2i(1,1), GLVec2i( FIODriver.GetSizeX, FIODriver.GetSizeY ),
+        GLVec4f(1,1,1,Clampf( FBloodValue, 0.0, 1.0 )),
+        GLVec2f(), GLVec2f(1,1), FTextures['low_life_glow'].GLTexture );
+    end;
+  end;
 
   if  FTextSheet <> nil             then FQuadRenderer.Render( FTextSheet );
   if (FPostSheet <> nil) and iMouse then FMCursor.Draw( iMousePoint, FLastUpdate, FPostSheet );

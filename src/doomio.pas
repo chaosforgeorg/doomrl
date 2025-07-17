@@ -87,6 +87,7 @@ type TDoomIO = class( TIO )
   procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); virtual; abstract;
   procedure addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord ); virtual;
   procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word; aFlags : TExplosionFlags = [] ); virtual;
+  procedure PulseBlood( aValue : Single ); virtual;
 
   class procedure RegisterLuaAPI( State : TLuaState );
 
@@ -314,6 +315,11 @@ begin
 
   if not iVisible then if aRange > 3 then
     IO.Msg( 'You hear an explosion!' );
+end;
+
+procedure TDoomIO.PulseBlood( aValue : Single );
+begin
+
 end;
 
 {
