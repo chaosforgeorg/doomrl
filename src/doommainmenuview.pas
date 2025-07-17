@@ -497,7 +497,7 @@ begin
     VTIG_PopStyle;
   VTIG_End;
 
-  IO.RenderUIBackground(  Point(7,17), Point(26,23), 0.7 );
+  IO.RenderUIBackground(  Point(8,17), Point(27,23), 0.7 );
   IO.RenderUIBackground( Point(28,15), Point(77,24), 0.7 );
   if VTIG_EventCancel then
   begin
