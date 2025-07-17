@@ -1367,10 +1367,13 @@ begin
 end;
 
 procedure TLevel.UpdateAutoTarget( aAutoTarget : TAutoTarget; aBeing : TBeing; aRange : Integer );
-var iCoord : TCoord2D;
-    iBeing : TBeing;
+var iCoord    : TCoord2D;
+    iBeing    : TBeing;
+    iLongMode : Boolean;
 begin
+  iLongMode := (aBeing = Player) and (LF_BEINGSVISIBLE in FFlags);
   aAutoTarget.Clear( aBeing.Position );
+  if iLongMode then aRange += 2;
   for iCoord in NewArea( aBeing.Position, aRange ).Clamped( Area ) do
   begin
     iBeing := Being[ iCoord ];
@@ -1378,8 +1381,17 @@ begin
     begin
       if ( aBeing = Player ) then
       begin
-        if not iBeing.isVisible then Continue;
         if iBeing.Flags[ BF_FRIENDLY ] then Continue;
+        if not iBeing.isVisible then
+        begin
+          if iLongMode then
+          begin
+            if ( Distance( aBeing.Position, iCoord ) > aRange ) or
+              ( not isEyeContact( aBeing.Position, iCoord ) ) then Continue;
+          end
+          else
+            Continue;
+        end;
       end;
       aAutoTarget.AddTarget( iCoord );
     end;

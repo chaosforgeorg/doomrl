@@ -8,6 +8,8 @@
 [mod] -- GH#274: 1/3rd hit flash will now base on MaxHP instead of nominal
 [mod] -- RCMOD : infighting won't happen between same enemies
 [mod] -- RCMOD : vile-likes and bosses won't trigger retaliation
+[mod] -- RCMOD : when beings are revealed, auto-target range is higher
+[mod] -- RCMOD : when beings are revealed, targeting remembers out of vision enemies
 [fix] -- GH#294: improved filtering of WM/System events while multi-move stop
 [fix] -- RCFIX : House of Pain locks fixed [brisbang]
 [fix] -- GH#295: grappling armor assembly won't be affected by mod order
