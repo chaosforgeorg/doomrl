@@ -120,6 +120,10 @@ begin
     .SetName('Run over items')
     .SetDescription('Setting to {!Enabled} will make the run command not stop on items.')
     ;
+  iGroup.AddToggle( 'group_messages', True )
+    .SetName('Group messages')
+    .SetDescription('Group repeated messages into (x{^3}) combos to save on doing "more...".')
+    ;
   iGroup.AddToggle( 'unlock_all', False )
     .SetName('Unlock all unlocks')
     .SetDescription('For returning players so they don''t have to unlock everything again. Otherwise a cheat!')

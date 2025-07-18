@@ -322,6 +322,7 @@ begin
   Setting_MouseEdgePan     := Configuration.GetBoolean( 'mouse_edge_pan' );
   Setting_UnlockAll        := Configuration.GetBoolean( 'unlock_all' );
   Setting_MenuSound        := Configuration.GetBoolean( 'menu_sound' );
+  Setting_GroupMessages    := Configuration.GetBoolean( 'group_messages' );
 end;
 
 procedure TDoom.CreateIO;

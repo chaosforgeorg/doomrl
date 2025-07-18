@@ -370,6 +370,7 @@ begin
   FTime := 0;
   FAudio    := TDoomAudio.Create;
   FMessages := TMessages.Create( 2, 77, @IO.EventMore, Option_MessageBuffer );
+  FMessages.GroupMultiple := Setting_GroupMessages;
   FASCII    := TASCIIImageMap.Create( True );
   FLayers   := TInterfaceLayerStack.Create;
 
