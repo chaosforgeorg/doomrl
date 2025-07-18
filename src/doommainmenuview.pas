@@ -54,6 +54,7 @@ protected
   FMOTD        : Ansistring;
   FResult      : TMenuResult;
   FSaveExists  : Boolean;
+  FJHCLink     : Boolean;
 
   FArrayCType  : TMainMEnuEntryArray;
   FArrayDiff   : TMainMEnuEntryArray;
@@ -113,6 +114,7 @@ begin
   FMode       := aInitial;
   FResult     := aResult;
   FSaveExists := False;
+  FJHCLink    := (CoreModuleID = 'drl') or LuaSystem.Get( ['DEMO'], False );
   FArrayCType := nil;
   FArrayDiff  := nil;
   FArrayKlass := nil;
@@ -249,10 +251,13 @@ const
   JHCURL = 'https://store.steampowered.com/app/3126530/Jupiter_Hell_Classic/';
 
 procedure TMainMenuView.UpdateMenu;
+var iSize : TIOPoint;
 begin
   IO.Root.Console.HideCursor;
   VTIG_PushStyle( @TIGStyleFrameless );
-  VTIG_Begin( 'mainmenu', Point( 24, 9 ), Point( 29, 14 ) );
+  iSize := Point(24,8);
+  if FJHCLink then Inc( iSize.X );
+  VTIG_Begin( 'mainmenu', iSize, Point( 29, 14 ) );
   VTIG_PopStyle;
     VTIG_PushStyle( @TIGStyleColored );
     if FSaveExists then
@@ -283,14 +288,17 @@ begin
     if VTIG_Selectable( TextShowPlayer )    then IO.PushLayer( TPagedView.Create( HOF.GetPagedPlayerReport ) );
     if VTIG_Selectable( TextHelp )          then IO.PushLayer( THelpView.Create );
     if VTIG_Selectable( TextSettings )      then IO.PushLayer( TSettingsView.Create );
-    if VTIG_Selectable( TextJHC ) then
+    if FJHCLink then
     begin
-      {$IFDEF UNIX}
-      fpSystem('xdg-open ' + JHCURL); // Unix-based systems
-      {$ENDIF}
-      {$IFDEF WINDOWS}
-        ShellExecute(0, 'open', PChar(JHCURL), nil, nil, SW_SHOWNORMAL); // Windows
-      {$ENDIF}
+      if VTIG_Selectable( TextJHC ) then
+      begin
+        {$IFDEF UNIX}
+        fpSystem('xdg-open ' + JHCURL); // Unix-based systems
+        {$ENDIF}
+        {$IFDEF WINDOWS}
+          ShellExecute(0, 'open', PChar(JHCURL), nil, nil, SW_SHOWNORMAL); // Windows
+        {$ENDIF}
+      end;
     end;
     if VTIG_Selectable( TextExit ) then
     begin
@@ -643,7 +651,9 @@ begin
         IO.RenderUIBackground( Point(1,14), Point(79,25), 0.7 );
       end;
       MAINMENU_MENU : begin
-        IO.RenderUIBackground( Point(23,13), Point(57,23), 0.7 );
+        if FJHCLink
+          then IO.RenderUIBackground( Point(23,13), Point(57,23), 0.7 )
+          else IO.RenderUIBackground( Point(23,13), Point(57,22), 0.7 );
         IO.RenderUIBackground( Point(0,24),  Point(80,25), 0.7 );
       end;
     end;
