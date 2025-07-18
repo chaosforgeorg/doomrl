@@ -1,10 +1,5 @@
 {rController}
 
-Controller support is work in progress - feedback is welcome! This
-message should be removed before release, ping me if it's still here :)
-
-{rMovement}
-
 Movement is done by moving the {!Left Stick} to the desired direction and
 confirming it with the {!A} button. 
 
@@ -30,8 +25,6 @@ press {!LStick} - use active class skill (i.e. {!Adrenaline})
 press {!RStick} - swap weapon with prepared weapon
    (with {!RTrigger}) unload weapon from ground or inventory
 {!D-pad} -  move targeting reticule (might be removed in the future)
-
-Quickslots will come at a later date, so will DRL unload binds!
 
 {rUI}
 
