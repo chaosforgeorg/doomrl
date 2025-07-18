@@ -1239,7 +1239,7 @@ function drl.register_regular_items()
 				if item.ammomax < 3 then
 					item.reloadtime = item.reloadtime * 0.75
 				else
-					item.ammomax = item.ammomax * 1.3
+					item.ammomax = math.floor(item.ammomax * 1.3 + 0.5)
 				end
 			elseif item.itype == ITEMTYPE_ARMOR or item.itype == ITEMTYPE_BOOTS then
 				item.durability    = item.durability + 100
