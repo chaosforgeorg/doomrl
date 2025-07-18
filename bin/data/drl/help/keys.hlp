@@ -33,43 +33,6 @@
   {!x}       -- change tactic
   {!1}..{!9} -- weapon quick keys, set them up in the inventory screen
 
-
-{rManual targeting (legacy option)}
-
-  {!t}       -- Manual targeting of equipped weapon
-  {!SHIFT-r} -- Alternative manual targeting of equipped weapon (if available)
-
-{rKeys while manual targeting}
-   
-  {!Arrows}      -- move target line
-  {!TAB}         -- toggle target
-  {!m}           -- more information
-  {!f},{!SPACE},{!LMB} -- fire
-  {!RMB},{!Escape}  -- cancel
-
-
-{rMouse (in graphics mode)}
-
-LMB, MMB, RMB is left/middle/right mouse button:
-
-  {!LMB}             -- travel to given destination, open door if next to it, 
-                     melee attack if on enemy and next to him. Travel needs
-                     to target explored square, and is automatic as long as
-                     there are no enemies in sight, otherwise just one move
-  {!LMB} on {!self}     -- if on stairs, descend, if on lever - pull, if on item
-                     then pickup, else inventory
-  {!Alt-LMB} on {!self} -- inventory
-
-  {!RMB}             -- fire at the targeted square or enemy, reload if 
-                     magazine empty
-  {!RMB} on {!self}     -- reload
-
-  {!MMB}             -- hold to pan view
-  {!MMB} on {!self}     -- swap weapons
-
-  {!SCROLLWHEEL}     -- change weapon (enters quick weapon choice)
-
-
 {rInventory screen}
 
   Select item and press Enter to do the default action on a given item.
@@ -87,3 +50,15 @@ LMB, MMB, RMB is left/middle/right mouse button:
   {!Backspace} -- drop selected item
   {!Tab}       -- swap item with item in inventory
   
+{rManual targeting (legacy option)}
+
+  {!t}       -- Manual targeting of equipped weapon
+  {!SHIFT-r} -- Alternative manual targeting of equipped weapon (if available)
+
+{rKeys while manual targeting}
+   
+  {!Arrows}      -- move target line
+  {!TAB}         -- toggle target
+  {!m}           -- more information
+  {!f},{!SPACE},{!LMB} -- fire
+  {!RMB},{!Escape}  -- cancel

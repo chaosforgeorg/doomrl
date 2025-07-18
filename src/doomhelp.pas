@@ -1,57 +1,83 @@
 {$INCLUDE doomrl.inc}
 unit doomhelp;
 interface
-uses classes, vnode, dfdata, vuitypes;
+uses classes, vnode, dfdata, vuitypes, vgenerics;
 
-const MaxHelpFiles = 20;
-const HLetters     : string[23] = 'abcdefghijklmnopqrstuvw';
-
-type
-THelpRecord = record
-  Text  : TUIStringArray;
-  Desc  : string[60];
+type THelpEntry = class(TVObject)
+  constructor Create;
+  destructor Destroy; override;
+private
+  FID    : Ansistring;
+  FDesc  : Ansistring;
+  FText  : TUIStringArray;
+public
+  property ID   : Ansistring     read FID;
+  property Desc : Ansistring     read FDesc;
+  property Text : TUIStringArray read FText;
 end;
-PHelpRecord = ^THelpRecord;
+
+type THelpArray = specialize TGObjectArray< THelpEntry >;
+     TGHashMap  = specialize TGHashMap< THelpEntry >;
 
 type THelp = class(TVObject)
-    RegHelps : array[1..MaxHelpFiles] of THelpRecord;
-    HNum     : byte;
-    constructor Create;
-    procedure StreamLoader(Stream : TStream; Name : Ansistring; Size : DWord);
-    destructor Destroy; override;
+  constructor Create;
+  procedure StreamLoader( aStream : TStream; aName : Ansistring; aSize : DWord );
+  function Get( const aID : Ansistring ) : THelpEntry;
+  destructor Destroy; override;
+private
+  FData : THelpArray;
+  FMap  : TGHashMap;
+public
+  property Data[ const aID : Ansistring ] : THelpEntry read Get; default;
 end;
 
 var Help : THelp;
-
 
 implementation
 
 uses SysUtils, vutil, vtig;
 
-constructor THelp.Create;
-var c : byte;
+constructor THelpEntry.Create;
 begin
-  for c := 1 to MaxHelpFiles do RegHelps[c].Text := nil;
-  HNum := 0;
+  FText := TUIStringArray.Create;
+end;
+
+destructor THelpEntry.Destroy;
+begin
+  FreeAndNil( FText );
+end;
+
+constructor THelp.Create;
+begin
+  FData := THelpArray.Create( True );
+  FMap  := TGHashMap.Create;
 end;
 
 {$HINTS OFF}
-procedure THelp.StreamLoader(Stream : TStream; Name : Ansistring; Size : DWord);
+procedure THelp.StreamLoader( aStream : TStream; aName : Ansistring; aSize : DWord);
+var iEntry : THelpEntry;
 begin
-  Log('Registering help file '+Name+'...');
-  Inc(HNum);
-  RegHelps[HNum].Text  := TUIStringArray.Create;
-  while Stream.Position < Size do
-    RegHelps[HNum].Text.Push( ReadLineFromStream( Stream, Size ) );
-  RegHelps[HNum].desc  := VTIG_StripTags( RegHelps[HNum].Text[0] );
+  Log( 'Registering help file '+aName+'...' );
+  iEntry := THelpEntry.Create;
+  iEntry.FText  := TUIStringArray.Create;
+  while aStream.Position < aSize do
+    iEntry.FText.Push( ReadLineFromStream( aStream, aSize ) );
+  iEntry.FDesc  := VTIG_StripTags( iEntry.FText[0] );
+  iEntry.FID    := ChangeFileExt( aName, '' );
+  FData.Push( iEntry );
+  FMap[ iEntry.FID ] := iEntry;
 end;
 {$HINTS ON}
 
-destructor THelp.Destroy;
-var c : byte;
+function THelp.Get( const aID : Ansistring ) : THelpEntry;
 begin
-  for c := 1 to MaxHelpFiles do
-    FreeAndNil(RegHelps[c].Text);
+  Exit( FMap.Get( aID, nil ) );
+end;
+
+destructor THelp.Destroy;
+begin
+  FreeAndNil( FData );
+  FreeAndNil( FMap );
 end;
 
 end.

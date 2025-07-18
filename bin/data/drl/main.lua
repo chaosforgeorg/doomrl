@@ -869,4 +869,14 @@ function drl.OnCreate( this )
 	end
 end
 
+drl.help = {
+	{ "intro", "Introduction" },
+	{ "start", "Getting started" },
+	{ "gamepad", "Gamepad controls" },
+	{ "keys", "Keyboard controls" },
+	{ "mouse", "Mouse controls" },
+	{ "feedback", "Feedback" },
+	{ "disclaim", "Disclaimer" },
+	{ "credits", "Credits" },
+}
 

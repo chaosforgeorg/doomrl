@@ -48,7 +48,7 @@ TInventory = class( TVObject )
 
 implementation
 
-uses vmath, vgenerics, vluasystem, doomio, doomkeybindings, dfplayer, doombase;
+uses vmath, vluasystem, doomio, doomkeybindings, dfplayer, doombase;
 
 { TInventoryEnumerator }
 
