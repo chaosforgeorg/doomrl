@@ -1165,7 +1165,10 @@ var LookDesc : string;
 begin
   LookDesc := Doom.Level.GetLookDescription( aWhere );
   if Option_BlindMode then LookDesc += ' | '+BlindCoord( aWhere - Player.Position );
-  if Doom.Level.isVisible(aWhere) and (Doom.Level.Being[aWhere] <> nil) then LookDesc += ' | [{Lm}]ore';
+  if Doom.Level.isVisible(aWhere) and (Doom.Level.Being[aWhere] <> nil) then
+    if isGamepad
+      then LookDesc += ' | <{LA}> more'
+      else LookDesc += ' | <{Lm}>ore';
   FHintOverlay := LookDesc;
 end;
 

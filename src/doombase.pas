@@ -921,7 +921,8 @@ begin
   begin // Move target mode
     if IO.GetPadLDir.NotZero then
       Exit( MoveTargetEvent( FTargeting.List.Current + IO.GetPadLDir ) );
-    // TODO
+    if (FTargeting.List.Current <> Player.Position) and (Level.Being[FTargeting.List.Current] <> nil) then
+      IO.FullLook( Level.Being[FTargeting.List.Current].ID );
     Exit( False );
   end;
 
