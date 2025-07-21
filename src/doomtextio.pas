@@ -16,7 +16,7 @@ type TDoomTextIO = class( TDoomIO )
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
     procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); override;
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
-    procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte ); override;
+    procedure Explosion( aDelay : Integer; aWhere : TCoord2D; aData : TExplosionData ); override;
 
     procedure SetTextMap( aMap : ITextMap );
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
@@ -200,16 +200,16 @@ begin
   FTextMap.SetMap( aMap );
 end;
 
-procedure TDoomTextIO.Explosion( aSequence : Integer; aWhere: TCoord2D; aRange, aDelay: Integer; aColor: byte );
+procedure TDoomTextIO.Explosion( aDelay : Integer; aWhere: TCoord2D; aData : TExplosionData );
 begin
   FTextMap.FreezeMarks;
   FExpl := nil;
   SetLength( FExpl, 4 );
-  FExpl[0].Time := aDelay;
-  FExpl[1].Time := aDelay;
-  FExpl[2].Time := aDelay;
-  FExpl[3].Time := aDelay;
-  case aColor of
+  FExpl[0].Time := aData.Delay;
+  FExpl[1].Time := aData.Delay;
+  FExpl[2].Time := aData.Delay;
+  FExpl[3].Time := aData.Delay;
+  case aData.Color of
     Blue    : begin FExpl[3].Color := Blue;    FExpl[0].Color := LightBlue;  FExpl[1].Color := White; end;
     Magenta : begin FExpl[3].Color := Magenta; FExpl[0].Color := Red;        FExpl[1].Color := Blue; end;
     Green   : begin FExpl[3].Color := Green;   FExpl[0].Color := LightGreen; FExpl[1].Color := White; end;
@@ -217,8 +217,8 @@ begin
      else     begin FExpl[3].Color := Red;     FExpl[0].Color := LightRed;   FExpl[1].Color := Yellow; end;
   end;
   FExpl[2].Color := FExpl[0].Color;
-  inherited Explosion( aSequence, aWhere, aRange, aDelay, aColor );
-  FTextMap.AddAnimation( TTextClearMarkAnimation.Create( aRange*aDelay+aSequence ) );
+  inherited Explosion( aDelay, aWhere, aData );
+  FTextMap.AddAnimation( TTextClearMarkAnimation.Create( aDelay + aData.Range*aData.Delay ) );
 end;
 
 end.

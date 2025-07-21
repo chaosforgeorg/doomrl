@@ -1958,6 +1958,7 @@ var iDirection  : TDirection;
     iDamageMod  : Integer;
     iDamageMul  : Single;
     iMaxDamage  : Boolean;
+    iExplosion  : TExplosionData;
 begin
   if aItem = nil then Exit( False );
   if not aItem.isWeapon then Exit( False );
@@ -2174,8 +2175,15 @@ begin
 
     iSound := IO.Audio.ResolveSoundID([aItem.ID+'.explode',Missiles[iMissile].soundID+'.explode','explode']);
     with Missiles[iMissile] do
-    iLevel.Explosion( iDelay*(iSteps+(aShotCount*2)), iCoord, iRadius, ExplDelay, iRoll, ExplColor,
-                    iSound, aItem.DamageType, aItem, ExplFlags, Content, iDirectHit, iDamageMul );
+    begin
+      iExplosion.Range   := iRadius;
+      iExplosion.Delay   := ExplDelay;
+      iExplosion.Flags   := ExplFlags;
+      iExplosion.Color   := ExplColor;
+      iExplosion.SoundID := iSound;
+      iLevel.Explosion( iDelay*(iSteps+(aShotCount*2)), iCoord, iExplosion, iRoll,
+                        aItem.DamageType, aItem, Content, iDirectHit, iDamageMul );
+    end;
   end;
   if (iAimedBeing = Player) and (iDodged) then Player.LastTurnDodge := True;
   Exit( UIDs[ iThisUID ] <> nil );

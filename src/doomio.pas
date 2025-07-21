@@ -86,7 +86,7 @@ type TDoomIO = class( TIO )
   procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); virtual; abstract;
   procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); virtual; abstract;
   procedure addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord ); virtual;
-  procedure Explosion( aDelay : Integer; aWhere : TCoord2D; aRange, aExplDelay : Integer; aColor : byte ); virtual;
+  procedure Explosion( aDelay : Integer; aWhere : TCoord2D; aData : TExplosionData ); virtual;
   procedure PulseBlood( aValue : Single ); virtual;
 
   class procedure RegisterLuaAPI( State : TLuaState );
@@ -277,7 +277,7 @@ begin
     IO.Driver.Rumble( aLow, aHigh, aDuration );
 end;
 
-procedure TDoomIO.Explosion( aDelay : Integer; aWhere: TCoord2D; aRange, aExplDelay : Integer; aColor: byte );
+procedure TDoomIO.Explosion( aDelay : Integer; aWhere: TCoord2D; aData : TExplosionData );
 var iCoord    : TCoord2D;
     iDistance : Byte;
     iVisible  : boolean;
@@ -286,23 +286,32 @@ begin
   iLevel := Doom.Level;
   if not iLevel.isProperCoord( aWhere ) then Exit;
 
-  if aRange > 0 then
+  if aData.SoundID <> 0 then
+    IO.addSoundAnimation( aDelay, aWhere, aData.SoundID );
+
+  if aData.Range > 0 then
   begin
-    addScreenShakeAnimation( Clamp( 100 * aRange, 300, 500 ), aDelay, Clampf( 2.0 * aRange, 2.0, 5.0 ) );
-    addRumbleAnimation( aDelay, Clamp( $2000 * aRange, $2000, $E000 ), $6000, Clamp( 100 * aRange, 100, 300 ) );
+    addScreenShakeAnimation( Clamp( 100 * aData.Range, 300, 500 ), aData.Delay, Clampf( 2.0 * aData.Range, 2.0, 5.0 ) );
+    addRumbleAnimation( aDelay, Clamp( $2000 * aData.Range, $2000, $E000 ), $6000, Clamp( 100 * aData.Range, 100, 300 ) );
   end;
 
-  for iCoord in NewArea( aWhere, aRange ).Clamped( iLevel.Area ) do
+  for iCoord in NewArea( aWhere, aData.Range ).Clamped( iLevel.Area ) do
     begin
-      if aRange < 10 then if iLevel.isVisible(iCoord) then iVisible := True else Continue;
-      if aRange < 10 then if not iLevel.isEyeContact( iCoord, aWhere ) then Continue;
+      if aData.Range < 10 then if iLevel.isVisible(iCoord) then iVisible := True else Continue;
+      if aData.Range < 10 then if not iLevel.isEyeContact( iCoord, aWhere ) then Continue;
       iDistance := Distance(iCoord, aWhere);
-      if iDistance > aRange then Continue;
-      ExplosionMark( iCoord, aColor, 3*aExplDelay, aDelay+iDistance*aExplDelay );
+      if iDistance > aData.Range then Continue;
+      ExplosionMark( iCoord, aData.Color, 3*aData.Delay, aDelay+iDistance*aData.Delay );
     end;
-  if aRange >= 10 then iVisible := True;
+  if aData.Range >= 10 then iVisible := True;
 
-  if not iVisible then if aRange > 3 then
+  if efAfterBlink in aData.Flags then
+  begin
+    Blink( LightGreen, 50, aDelay+aData.Delay*aData.Range);
+    Blink( White, 50,      aDelay+aData.Delay*aData.Range+60);
+  end;
+
+  if not iVisible then if aData.Range > 3 then
     IO.Msg( 'You hear an explosion!' );
 end;
 

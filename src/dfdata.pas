@@ -226,6 +226,13 @@ type TCellSet = set of Byte;
        Frametime : Word;
        Flags     : TFlags;
      end;
+     TExplosionData = record
+       Range   : Integer;
+       Delay   : Integer;
+       Color   : Byte;
+       SoundID : DWord;
+       Flags   : TExplosionFlags;
+     end;
 
 function NewSprite( ID : DWord ) : TSprite;
 function NewSprite( ID : DWord; Color : TColor ) : TSprite;
