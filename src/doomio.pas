@@ -86,7 +86,7 @@ type TDoomIO = class( TIO )
   procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); virtual; abstract;
   procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); virtual; abstract;
   procedure addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord ); virtual;
-  procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word ); virtual;
+  procedure Explosion( aDelay : Integer; aWhere : TCoord2D; aRange, aExplDelay : Integer; aColor : byte ); virtual;
   procedure PulseBlood( aValue : Single ); virtual;
 
   class procedure RegisterLuaAPI( State : TLuaState );
@@ -277,8 +277,7 @@ begin
     IO.Driver.Rumble( aLow, aHigh, aDuration );
 end;
 
-procedure TDoomIO.Explosion( aSequence : Integer; aWhere: TCoord2D; aRange, aDelay: Integer;
-  aColor: byte; aExplSound: Word );
+procedure TDoomIO.Explosion( aDelay : Integer; aWhere: TCoord2D; aRange, aExplDelay : Integer; aColor: byte );
 var iCoord    : TCoord2D;
     iDistance : Byte;
     iVisible  : boolean;
@@ -289,12 +288,9 @@ begin
 
   if aRange > 0 then
   begin
-    addScreenShakeAnimation( Clamp( 100 * aRange, 300, 500 ), aSequence, Clampf( 2.0 * aRange, 2.0, 5.0 ) );
-    addRumbleAnimation( 0, Clamp( $2000 * aRange, $2000, $E000 ), $6000, Clamp( 100 * aRange, 100, 300 ) );
+    addScreenShakeAnimation( Clamp( 100 * aRange, 300, 500 ), aDelay, Clampf( 2.0 * aRange, 2.0, 5.0 ) );
+    addRumbleAnimation( aDelay, Clamp( $2000 * aRange, $2000, $E000 ), $6000, Clamp( 100 * aRange, 100, 300 ) );
   end;
-
-  if aExplSound <> 0 then
-    addSoundAnimation( aSequence, aWhere, aExplSound );
 
   for iCoord in NewArea( aWhere, aRange ).Clamped( iLevel.Area ) do
     begin
@@ -302,7 +298,7 @@ begin
       if aRange < 10 then if not iLevel.isEyeContact( iCoord, aWhere ) then Continue;
       iDistance := Distance(iCoord, aWhere);
       if iDistance > aRange then Continue;
-      ExplosionMark( iCoord, aColor, 3*aDelay, aSequence+iDistance*aDelay );
+      ExplosionMark( iCoord, aColor, 3*aExplDelay, aDelay+iDistance*aExplDelay );
     end;
   if aRange >= 10 then iVisible := True;
 

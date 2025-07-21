@@ -69,7 +69,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
-    procedure Explosion( aSequence : Integer; aCoord : TCoord2D; aRange, aDelay : Integer; aDamage : TDiceRoll; aColor : byte; aExplSound : Word; aDamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+    procedure Explosion( aDelay : Integer; aCoord : TCoord2D; aRange, aExplDelay : Integer; aDamage : TDiceRoll; aColor : byte; aExplSound : Word; aDamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
     procedure Shotgun( aSource, aTarget : TCoord2D; aDamage : TDiceRoll; aDamageMul : Single; aDamageType : TDamageType; aShotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
@@ -887,7 +887,7 @@ begin
   end;
 end;
 
-procedure TLevel.Explosion( aSequence : Integer; aCoord : TCoord2D; aRange, aDelay : Integer; aDamage : TDiceRoll; aColor : byte; aExplSound : Word; aDamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+procedure TLevel.Explosion( aDelay : Integer; aCoord : TCoord2D; aRange, aExplDelay : Integer; aDamage : TDiceRoll; aColor : byte; aExplSound : Word; aDamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
 var iC         : TCoord2D;
     iDamage    : Integer;
     iDir       : TDirection;
@@ -898,11 +898,13 @@ begin
   if not isProperCoord( aCoord ) then Exit;
   if aItem <> nil then iItemUID := aItem.uid;
 
-  IO.Explosion( aSequence, aCoord, aRange, aDelay, aColor, aExplSound );
+  if aExplSound <> 0 then
+    IO.addSoundAnimation( aDelay, aCoord, aExplSound );
+  IO.Explosion( aDelay, aCoord, aRange, aExplDelay, aColor );
   if efAfterBlink in aFlags then
   begin
-    IO.Blink(LightGreen,50,aSequence+aDelay*aRange);
-    IO.Blink(White,50,aSequence+aDelay*aRange+60);
+    IO.Blink(LightGreen,50,aDelay+aExplDelay*aRange);
+    IO.Blink(White,50,aDelay+aExplDelay*aRange+60);
   end;
 
   for iNode in Self do
@@ -927,7 +929,7 @@ begin
           if KnockBacked then Continue;
           if (efSelfSafe in aFlags) and isActive then Continue;
           if efChain in aFlags then
-            Explosion( aSequence + Distance( iC, aCoord ) * aDelay, iC, Max( aRange div 2 - 1, 1 ), aDelay, NewDiceRoll(0,0,0), color, 0, aDamageType, nil );
+            Explosion( aDelay + Distance( iC, aCoord ) * aExplDelay, iC, Max( aRange div 2 - 1, 1 ), aExplDelay, NewDiceRoll(0,0,0), color, 0, aDamageType, nil );
           iKnockback := KnockBackValue;
           if (efHalfKnock in aFlags) then iKnockback *= 2;
           if (efSelfKnockback in aFlags) and isActive then iKnockback := 2;
@@ -940,12 +942,12 @@ begin
           if (Flags[BF_SPLASHIMMUNE]) and (not aDirectHit) then Continue;
           if (efSelfHalf in aFlags) and isActive then iDamage := iDamage div 2;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
-          ApplyDamage( iDamage, Target_Torso, aDamageType, aItem, aDelay );
+          ApplyDamage( iDamage, Target_Torso, aDamageType, aItem, aExplDelay );
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
         if ( iDamage > 10 ) and ( Item[iC] <> nil ) and (not Item[iC].isFeature) then
         begin
-          if efChain in aFlags then Explosion( aSequence + Distance( iC, aCoord ) * aDelay,iC,Max( aRange div 2 - 1, 1 ), aDelay, NewDiceRoll(0,0,0), aColor, 0, aDamageType, nil );
+          if efChain in aFlags then Explosion( aDelay + Distance( iC, aCoord ) * aExplDelay,iC,Max( aRange div 2 - 1, 1 ), aExplDelay, NewDiceRoll(0,0,0), aColor, 0, aDamageType, nil );
           DestroyItem( iC );
         end;
         if (aContent <> 0) and isEmpty( iC, [ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM ] ) then
