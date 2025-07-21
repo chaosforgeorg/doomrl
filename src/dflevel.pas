@@ -69,7 +69,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
-    procedure Explosion( Sequence : Integer; coord : TCoord2D; aRange, aDelay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+    procedure Explosion( aSequence : Integer; aCoord : TCoord2D; aRange, aDelay : Integer; aDamage : TDiceRoll; aColor : byte; aExplSound : Word; aDamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
     procedure Shotgun( aSource, aTarget : TCoord2D; aDamage : TDiceRoll; aDamageMul : Single; aDamageType : TDamageType; aShotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
@@ -887,18 +887,23 @@ begin
   end;
 end;
 
-procedure TLevel.Explosion( Sequence : Integer; coord : TCoord2D; aRange, aDelay : Integer; Damage : TDiceRoll; color : byte; ExplSound : Word; DamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
-var a     : TCoord2D;
-    iDamage : Integer;
-    dir   : TDirection;
-    iKnockbackValue : Byte;
-    iItemUID : TUID;
-    iNode : TNode;
+procedure TLevel.Explosion( aSequence : Integer; aCoord : TCoord2D; aRange, aDelay : Integer; aDamage : TDiceRoll; aColor : byte; aExplSound : Word; aDamageType : TDamageType; aItem : TItem; aFlags : TExplosionFlags = []; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+var iC         : TCoord2D;
+    iDamage    : Integer;
+    iDir       : TDirection;
+    iKnockback : Byte;
+    iItemUID   : TUID;
+    iNode      : TNode;
 begin
-  if not isProperCoord( coord ) then Exit;
+  if not isProperCoord( aCoord ) then Exit;
   if aItem <> nil then iItemUID := aItem.uid;
 
-  IO.Explosion( Sequence, coord, aRange, aDelay, Color, ExplSound, aFlags );
+  IO.Explosion( aSequence, aCoord, aRange, aDelay, aColor, aExplSound );
+  if efAfterBlink in aFlags then
+  begin
+    IO.Blink(LightGreen,50,aSequence+aDelay*aRange);
+    IO.Blink(White,50,aSequence+aDelay*aRange+60);
+  end;
 
   for iNode in Self do
     if iNode is TBeing then
@@ -906,46 +911,47 @@ begin
 
   ClearLightMapBits( [lfFresh] );
 
-  if Damage.max > 0 then
-  for a in NewArea( Coord, aRange ).Clamped( FArea ) do
-    if Distance( a, coord ) <= aRange then
+  if aDamage.max > 0 then
+  for iC in NewArea( aCoord, aRange ).Clamped( FArea ) do
+    if Distance( iC, aCoord ) <= aRange then
       begin
-        if not isEyeContact( a, coord ) then Continue;
-        iDamage := Damage.Roll;
+        if not isEyeContact( iC, aCoord ) then Continue;
+        iDamage := aDamage.Roll;
         if not (efNoDistanceDrop in aFlags) then
-          iDamage := iDamage div Max(1,(Distance(a,coord)+1) div 2);
+          iDamage := iDamage div Max(1,(Distance( iC, aCoord )+1) div 2);
         iDamage := Floor( iDamage * aDamageMult );
-        DamageTile( a, iDamage, DamageType );
-        if Being[a] <> nil then
-        with Being[a] do
+        DamageTile( iC, iDamage, aDamageType );
+        if Being[iC] <> nil then
+        with Being[iC] do
         begin
           if KnockBacked then Continue;
           if (efSelfSafe in aFlags) and isActive then Continue;
-          if efChain in aFlags then Explosion( Sequence + Distance( a, coord ) * aDelay, a,Max( aRange div 2 - 1, 1 ), aDelay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
-          iKnockbackValue := KnockBackValue;
-          if (efHalfKnock in aFlags) then iKnockbackValue *= 2;
-          if (efSelfKnockback in aFlags) and isActive then iKnockbackValue := 2;
-          if (iDamage >= iKnockBackValue) and (not (efNoKnock in aFlags) ) then
+          if efChain in aFlags then
+            Explosion( aSequence + Distance( iC, aCoord ) * aDelay, iC, Max( aRange div 2 - 1, 1 ), aDelay, NewDiceRoll(0,0,0), color, 0, aDamageType, nil );
+          iKnockback := KnockBackValue;
+          if (efHalfKnock in aFlags) then iKnockback *= 2;
+          if (efSelfKnockback in aFlags) and isActive then iKnockback := 2;
+          if (iDamage >= iKnockBack) and (not (efNoKnock in aFlags) ) then
           begin
-            dir.CreateSmooth( coord, a );
-            Knockback( dir, iDamage div iKnockbackValue );
+            iDir.CreateSmooth( aCoord, iC );
+            Knockback( iDir, iDamage div iKnockback );
           end;
           KnockBacked := True;
           if (Flags[BF_SPLASHIMMUNE]) and (not aDirectHit) then Continue;
           if (efSelfHalf in aFlags) and isActive then iDamage := iDamage div 2;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
-          ApplyDamage( iDamage, Target_Torso, DamageType, aItem, aDelay );
+          ApplyDamage( iDamage, Target_Torso, aDamageType, aItem, aDelay );
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
-        if ( iDamage > 10 ) and ( Item[a] <> nil ) and (not Item[a].isFeature) then
+        if ( iDamage > 10 ) and ( Item[iC] <> nil ) and (not Item[iC].isFeature) then
         begin
-          if efChain in aFlags then Explosion(Sequence + Distance( a, coord ) * aDelay,a,Max( aRange div 2 - 1, 1 ), aDelay, NewDiceRoll(0,0,0), color, 0, DamageType, nil );
-          DestroyItem( a );
+          if efChain in aFlags then Explosion( aSequence + Distance( iC, aCoord ) * aDelay,iC,Max( aRange div 2 - 1, 1 ), aDelay, NewDiceRoll(0,0,0), aColor, 0, aDamageType, nil );
+          DestroyItem( iC );
         end;
-        if (aContent <> 0) and isEmpty( a, [ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM ] ) then
+        if (aContent <> 0) and isEmpty( iC, [ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM ] ) then
         begin
           if (iDamage > 20) or ((efRandomContent in aFlags) and (Random(2) = 1)) then
-            Cell[a] := aContent;
+            Cell[iC] := aContent;
         end;
       end;
   if aContent <> 0 then RecalcFluids;

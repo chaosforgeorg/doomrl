@@ -16,7 +16,7 @@ type TDoomTextIO = class( TDoomIO )
     procedure addMissileAnimation( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aColor : Byte; aPic : Char; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False ); override;
     procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); override;
     procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); override;
-    procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word; aFlags : TExplosionFlags = [] ); override;
+    procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word ); override;
 
     procedure SetTextMap( aMap : ITextMap );
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
@@ -201,7 +201,7 @@ begin
 end;
 
 procedure TDoomTextIO.Explosion( aSequence : Integer; aWhere: TCoord2D; aRange, aDelay: Integer;
-  aColor: byte; aExplSound: Word; aFlags: TExplosionFlags);
+  aColor: byte; aExplSound: Word );
 begin
   FTextMap.FreezeMarks;
   FExpl := nil;
@@ -218,7 +218,7 @@ begin
      else     begin FExpl[3].Color := Red;     FExpl[0].Color := LightRed;   FExpl[1].Color := Yellow; end;
   end;
   FExpl[2].Color := FExpl[0].Color;
-  inherited Explosion( aSequence, aWhere, aRange, aDelay, aColor, aExplSound, aFlags );
+  inherited Explosion( aSequence, aWhere, aRange, aDelay, aColor, aExplSound );
   FTextMap.AddAnimation( TTextClearMarkAnimation.Create( aRange*aDelay+aSequence ) );
 end;
 

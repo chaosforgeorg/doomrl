@@ -86,7 +86,7 @@ type TDoomIO = class( TIO )
   procedure addMarkAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aColor : Byte; aPic : Char ); virtual; abstract;
   procedure addSoundAnimation( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord ); virtual; abstract;
   procedure addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord ); virtual;
-  procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word; aFlags : TExplosionFlags = [] ); virtual;
+  procedure Explosion( aSequence : Integer; aWhere : TCoord2D; aRange, aDelay : Integer; aColor : byte; aExplSound : Word ); virtual;
   procedure PulseBlood( aValue : Single ); virtual;
 
   class procedure RegisterLuaAPI( State : TLuaState );
@@ -278,7 +278,7 @@ begin
 end;
 
 procedure TDoomIO.Explosion( aSequence : Integer; aWhere: TCoord2D; aRange, aDelay: Integer;
-  aColor: byte; aExplSound: Word; aFlags: TExplosionFlags);
+  aColor: byte; aExplSound: Word );
 var iCoord    : TCoord2D;
     iDistance : Byte;
     iVisible  : boolean;
@@ -305,13 +305,6 @@ begin
       ExplosionMark( iCoord, aColor, 3*aDelay, aSequence+iDistance*aDelay );
     end;
   if aRange >= 10 then iVisible := True;
-
-  // TODO : events
-  if efAfterBlink in aFlags then
-  begin
-    Blink(LightGreen,50,aSequence+aDelay*aRange);
-    Blink(White,50,aSequence+aDelay*aRange+60);
-  end;
 
   if not iVisible then if aRange > 3 then
     IO.Msg( 'You hear an explosion!' );
