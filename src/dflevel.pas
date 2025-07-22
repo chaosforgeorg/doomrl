@@ -69,7 +69,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
-    procedure Explosion( aDelay : Integer; aCoord : TCoord2D; aData : TExplosionData; aDamage : TDiceRoll; aDamageType : TDamageType; aItem : TItem; aContent : Byte = 0; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+    procedure Explosion( aDelay : Integer; aCoord : TCoord2D; aData : TExplosionData; aItem : TItem; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
     procedure Shotgun( aSource, aTarget : TCoord2D; aDamage : TDiceRoll; aDamageMul : Single; aDamageType : TDamageType; aShotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
@@ -887,7 +887,7 @@ begin
   end;
 end;
 
-procedure TLevel.Explosion( aDelay : Integer; aCoord : TCoord2D; aData : TExplosionData; aDamage : TDiceRoll; aDamageType : TDamageType; aItem : TItem; aContent : Byte = 0 ; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+procedure TLevel.Explosion( aDelay : Integer; aCoord : TCoord2D; aData : TExplosionData; aItem : TItem; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
 var iC          : TCoord2D;
     iDamage     : Integer;
     iDir        : TDirection;
@@ -913,21 +913,23 @@ begin
   begin
     iChain         := aData;
     iChain.Range   := Max( aData.Range div 2 - 1, 1 );
-    iChain.SoundID := 0;
+    iChain.SoundID := '';
     iChain.Flags   := [];
+    iChain.Damage.Reset;
+    iChain.ContentID := 0;
   end;
 
-  if aDamage.max > 0 then
+  if not aData.Damage.IsZero then
   for iC in NewArea( aCoord, aData.Range ).Clamped( FArea ) do
     if Distance( iC, aCoord ) <= aData.Range then
       begin
         if not isEyeContact( iC, aCoord ) then Continue;
-        iDamage   := aDamage.Roll;
+        iDamage   := aData.Damage.Roll;
         iDistance := Distance( iC, aCoord );
         if not (efNoDistanceDrop in aData.Flags) then
           iDamage := iDamage div Max(1,(iDistance+1) div 2);
         iDamage := Floor( iDamage * aDamageMult );
-        DamageTile( iC, iDamage, aDamageType );
+        DamageTile( iC, iDamage, aData.DamageType );
         if Being[iC] <> nil then
         with Being[iC] do
         begin
@@ -935,7 +937,7 @@ begin
           if (efSelfSafe in aData.Flags) and isActive then Continue;
           iPointDelay := aDelay + iDistance * aData.Delay;
           if efChain in aData.Flags then
-            Explosion( iPointDelay, iC, iChain, NewDiceRoll(0,0,0), aDamageType, nil );
+            Explosion( iPointDelay, iC, iChain, nil );
           iKnockback := KnockBackValue;
           if (efHalfKnock in aData.Flags) then iKnockback *= 2;
           if (efSelfKnockback in aData.Flags) and isActive then iKnockback := 2;
@@ -948,21 +950,21 @@ begin
           if (Flags[BF_SPLASHIMMUNE]) and (not aDirectHit) then Continue;
           if (efSelfHalf in aData.Flags) and isActive then iDamage := iDamage div 2;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
-          ApplyDamage( iDamage, Target_Torso, aDamageType, aItem, iPointDelay );
+          ApplyDamage( iDamage, Target_Torso, aData.DamageType, aItem, iPointDelay );
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
         end;
         if ( iDamage > 10 ) and ( Item[iC] <> nil ) and (not Item[iC].isFeature) then
         begin
-          if efChain in aData.Flags then Explosion( iPointDelay, iC, iChain, NewDiceRoll(0,0,0), aDamageType, nil );
+          if efChain in aData.Flags then Explosion( iPointDelay, iC, iChain, nil );
           DestroyItem( iC );
         end;
-        if (aContent <> 0) and isEmpty( iC, [ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM ] ) then
+        if (aData.ContentID <> 0) and isEmpty( iC, [ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM ] ) then
         begin
           if (iDamage > 20) or ((efRandomContent in aData.Flags) and (Random(2) = 1)) then
-            Cell[iC] := aContent;
+            Cell[iC] := aData.ContentID;
         end;
       end;
-  if aContent <> 0 then RecalcFluids;
+  if aData.ContentID <> 0 then RecalcFluids;
 end;
 
 procedure TLevel.Shotgun( aSource, aTarget : TCoord2D; aDamage : TDiceRoll; aDamageMul : Single; aDamageType : TDamageType; aShotgun : TShotgunData; aItem : TItem );
@@ -1264,10 +1266,13 @@ begin
   iExplosion.Delay   := 10;
   iExplosion.Flags   := [];
   iExplosion.Color   := LightRed;
-  iExplosion.SoundID := IO.Audio.ResolveSoundID(['nuke','barrel.explode','explode']);
+  iExplosion.SoundID := 'nuke';
+  iExplosion.Damage.Reset;
+  iExplosion.DamageType := Damage_Fire;
+  iExplosion.ContentID := 0;
   for iCount := 1 to 10 do
   begin
-    Explosion( iCount*200, RandomCoord( [ EF_NOBLOCK ] ),iExplosion, NewDiceRoll(0,0,0), Damage_Fire, nil);
+    Explosion( iCount*200, RandomCoord( [ EF_NOBLOCK ] ),iExplosion, nil );
     if iCount mod 2 = 0 then
     begin
       IO.Blink( LightRed, 50, (iCount-1) * 200 );
@@ -1565,30 +1570,27 @@ end;
 
 function lua_level_explosion(L: Plua_State): Integer; cdecl;
 var iState   : TDoomLuaState;
-    iContent : Word;
     iLevel   : TLevel;
     iData    : TExplosionData;
 begin
   iState.Init(L);
   iLevel := iState.ToObject(1) as TLevel;
   if iState.IsNil(2) then Exit(0);
-  iContent := 0;
   if iState.StackSize < 7 then Exit(0);
 
-  iData.Range   := iState.ToInteger(3);
-  iData.Delay   := iState.ToInteger(4);
-  iData.Flags   := ExplosionFlagsFromFlags(iState.ToFlags(11));
-  iData.Color   := iState.ToInteger(7);
-  iData.SoundID := IO.Audio.ResolveSoundID(['nuke','barrel.explode','explode']);
+  iData.Range      := iState.ToInteger(3);
+  iData.Delay      := iState.ToInteger(4);
+  iData.Flags      := ExplosionFlagsFromFlags(iState.ToFlags(11));
+  iData.Color      := iState.ToInteger(7);
+  iData.Damage     := NewDiceRoll(iState.ToInteger(5),iState.ToInteger(6));
+  iData.DamageType := TDamageType(iState.ToInteger(9,Byte(Damage_Fire)));
+  iData.SoundID    := '';
+  iData.ContentID  := 0;
 
-  if (iState.StackSize >= 12) and (not iState.IsNil(12)) then iContent := iState.ToId(12);
-  if (iState.StackSize >= 8 ) and (not iState.IsNil(8))  then iData.SoundID := IO.Audio.ResolveSoundID( [iState.ToString(8)] );
+  if (iState.StackSize >= 12) and (not iState.IsNil(12)) then iData.ContentID := iState.ToId(12);
+  if (iState.StackSize >= 8 ) and (not iState.IsNil(8))  then iData.SoundID   := iState.ToString(8);
 
-  iLevel.Explosion(0, iState.ToPosition(2), iData,
-                  NewDiceRoll(iState.ToInteger(5),iState.ToInteger(6)),
-                  TDamageType(iState.ToInteger(9,Byte(Damage_Fire))),
-                  iState.ToObjectOrNil(10) as TItem,
-                  iContent);
+  iLevel.Explosion( 0, iState.ToPosition(2), iData, iState.ToObjectOrNil(10) as TItem );
   Result := 0;
 end;
 

@@ -531,8 +531,10 @@ function drl.register_unique_items()
 			miss_base  = 30,
 			miss_dist  = 5,
 			flags      = { MF_EXACT },
-			expl_delay = 40,
-			expl_color = RED,
+			explosion  = {
+				delay = 40,
+				color = RED,
+			},
 		},
 	}
 
@@ -568,9 +570,11 @@ function drl.register_unique_items()
 			delay      = 10,
 			miss_base  = 30,
 			miss_dist  = 5,
-			expl_delay = 80,
-			expl_color = GREEN,
-			content    = "acid",
+			explosion  = {
+				delay = 80,
+				color = GREEN,
+				content = "acid",
+			},
 		},
 
 		OnCreate = function( self )
@@ -629,9 +633,11 @@ function drl.register_unique_items()
 			miss_base  = 30,
 			miss_dist  = 5,
 			flags      = { MF_EXACT },
-			expl_delay = 25,
-			expl_color = GREEN,
-			expl_flags = { EFHALFKNOCK, EFNODISTANCEDROP },
+			explosion  = {
+				delay = 25,
+				color = GREEN,
+				flags = { EFHALFKNOCK, EFNODISTANCEDROP },
+			},
 		},
 	}
 

@@ -53,8 +53,10 @@ register_level "the_asmos_den"
 					miss_dist  = 0,
 					hitdesc    = "You feel an intense pain!",
 					flags      = { MF_EXACT },
-					expl_delay = 100,
-					expl_color = LIGHTBLUE,
+					explosion = {
+						delay = 100,
+						color = LIGHTBLUE,
+					},
 				},
 			},
 

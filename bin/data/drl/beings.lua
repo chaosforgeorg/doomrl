@@ -154,8 +154,10 @@ function drl.register_beings()
 				delay      = 30,
 				miss_base  = 50,
 				miss_dist  = 5,
-				expl_delay = 40,
-				expl_color = RED,
+				explosion  = {
+					delay = 40,
+					color = RED,
+				},
 			},
 		},
 	}
@@ -252,8 +254,10 @@ function drl.register_beings()
 				delay      = 30,
 				miss_base  = 50,
 				miss_dist  = 4,
-				expl_delay = 40,
-				expl_color = MAGENTA,
+				explosion  = {
+					delay = 40,
+					color = MAGENTA,
+				},
 			},
 		},
 	}
@@ -300,8 +304,10 @@ function drl.register_beings()
 				delay      = 30,
 				miss_base  = 50,
 				miss_dist  = 5,
-				expl_delay = 40,
-				expl_color = MAGENTA,
+				explosion  = {
+					delay = 40,
+					color = MAGENTA,
+				},
 			},
 		},
 	}
@@ -347,8 +353,10 @@ function drl.register_beings()
 				delay      = 35,
 				miss_base  = 50,
 				miss_dist  = 3,
-				expl_delay = 40,
-				expl_color = GREEN,
+				explosion  = {
+					delay = 40,
+					color = GREEN,
+				},
 			},
 		},
 	}
@@ -474,8 +482,10 @@ function drl.register_beings()
 				miss_base  = 30,
 				miss_dist  = 6,
 				flags = { MF_EXACT },
-				expl_delay = 40,
-				expl_color = RED,
+				explosion  = {
+					delay = 40,
+					color = RED,
+				},
 			},
 		},
 
@@ -524,8 +534,10 @@ function drl.register_beings()
 				delay      = 20,
 				miss_base  = 1,
 				miss_dist  = 3,
-				expl_delay = 40,
-				expl_color = RED,
+				explosion  = {
+					delay = 40,
+					color = RED,
+				},
 			},
 		},
 
@@ -573,9 +585,11 @@ function drl.register_beings()
 				miss_dist  = 10,
 				hitdesc    = "You are engulfed in flames!",
 				flags      = { MF_EXACT, MF_IMMIDATE },
-				expl_delay = 50,
-				expl_color = YELLOW,
-				expl_flags = { EFNOKNOCK, EFSELFSAFE },
+				explosion  = {
+					delay = 50,
+					color = YELLOW,
+					flags = { EFNOKNOCK, EFSELFSAFE },
+				},
 			},
 		},
 
@@ -781,8 +795,10 @@ function drl.register_beings()
 				delay      = 15,
 				miss_base  = 20,
 				miss_dist  = 4,
-				expl_delay = 40,
-				expl_color = MAGENTA,
+				explosion  = {
+					delay = 40,
+					color = MAGENTA,
+				},
 			},
 		}
 	}
@@ -879,8 +895,10 @@ function drl.register_beings()
 				delay      = 30,
 				miss_base  = 30,
 				miss_dist  = 4,
-				expl_delay = 40,
-				expl_color = MAGENTA,
+				explosion  = {
+					delay = 40,
+					color = MAGENTA,
+				},
 			},
 		},
 	}
@@ -928,8 +946,10 @@ function drl.register_beings()
 				delay      = 30,
 				miss_base  = 30,
 				miss_dist  = 4,
-				expl_delay = 40,
-				expl_color = MAGENTA,
+				explosion  = {
+					delay = 40,
+					color = MAGENTA,
+				},
 			},
 		},
 	}
@@ -1054,8 +1074,10 @@ function drl.register_beings()
 				miss_base  = 30,
 				miss_dist  = 5,
 				flags = { MF_EXACT },
-				expl_delay = 40,
-				expl_color = RED,
+				explosion  = {
+					delay = 40,
+					color = RED,
+				},
 			},
 		},
 
@@ -1106,9 +1128,11 @@ function drl.register_beings()
 				delay      = 20,
 				miss_base  = 1,
 				miss_dist  = 3,
-				expl_delay = 40,
-				expl_color = GREEN,
-				content    = "acid",
+				explosion  = {
+					delay   = 40,
+					color   = GREEN,
+					content = "acid",
+				},
 			},
 		},
 
@@ -1157,9 +1181,11 @@ function drl.register_beings()
 				miss_dist  = 10,
 				hitdesc    = "You are engulfed in flames!",
 				flags      = { MF_EXACT, MF_IMMIDATE },
-				expl_delay = 50,
-				expl_color = BLUE,
-				expl_flags = { EFNOKNOCK, EFSELFSAFE },
+				explosion  = {
+					delay = 50,
+					color = BLUE,
+					flags = { EFNOKNOCK, EFSELFSAFE },
+				},
 			},
 		},
 
@@ -1212,8 +1238,10 @@ function drl.register_beings()
 				delay      = 35,
 				miss_base  = 40,
 				miss_dist  = 3,
-				expl_delay = 40,
-				expl_color = GREEN,
+				explosion  = {
+					delay   = 40,
+					color   = GREEN,
+				},
 			},
 		},
 
@@ -1326,10 +1354,12 @@ function drl.register_beings()
 				miss_base  = 30,
 				miss_dist  = 4,
 				flags      = { MF_EXACT },
-				expl_delay = 40,
-				expl_color = RED,
-				expl_flags = { EFRANDOMCONTENT },
-				content    = "lava",
+				explosion  = {
+					delay = 40,
+					color = RED,
+					flags = { EFRANDOMCONTENT },
+					content = "lava",
+				},
 			},
 		},
 
@@ -1644,9 +1674,11 @@ function drl.register_beings()
 				miss_base  = 10,
 				miss_dist  = 10,
 				flags      = { MF_EXACT, MF_IMMIDATE },
-				expl_delay = 50,
-				expl_color = YELLOW,
-				expl_flags = { EFNOKNOCK, EFSELFSAFE },
+				explosion  = {
+					delay = 50,
+					color = YELLOW,
+					flags = { EFNOKNOCK, EFSELFSAFE },
+				},
 			},
 		},
 

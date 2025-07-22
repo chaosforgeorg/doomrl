@@ -2173,17 +2173,14 @@ begin
     if iMaxDamage then
       iRoll.Init( 0,0, iRoll.Max );
 
-    iSound := IO.Audio.ResolveSoundID([aItem.ID+'.explode',Missiles[iMissile].soundID+'.explode','explode']);
-    with Missiles[iMissile] do
-    begin
-      iExplosion.Range   := iRadius;
-      iExplosion.Delay   := ExplDelay;
-      iExplosion.Flags   := ExplFlags;
-      iExplosion.Color   := ExplColor;
-      iExplosion.SoundID := iSound;
-      iLevel.Explosion( iDelay*(iSteps+(aShotCount*2)), iCoord, iExplosion, iRoll,
-                        aItem.DamageType, aItem, Content, iDirectHit, iDamageMul );
-    end;
+    iExplosion            := Missiles[iMissile].Explosion;
+    iExplosion.Range      := iRadius;
+    if IO.Audio.GetSampleID(aItem.ID+'.explode') > 0
+      then iExplosion.SoundID := aItem.ID
+      else iExplosion.SoundID := Missiles[iMissile].soundID;
+    iExplosion.Damage     := iRoll;
+    iExplosion.DamageType := aItem.DamageType;
+    iLevel.Explosion( iDelay*(iSteps+(aShotCount*2)), iCoord, iExplosion, aItem, iDirectHit, iDamageMul );
   end;
   if (iAimedBeing = Player) and (iDodged) then Player.LastTurnDodge := True;
   Exit( UIDs[ iThisUID ] <> nil );

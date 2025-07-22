@@ -134,10 +134,7 @@ begin
       Range     := getInteger('range');
       MissBase  := getInteger('miss_base');
       MissDist  := getInteger('miss_dist');
-      ExplDelay := getInteger('expl_delay');
-      ExplColor := getInteger('expl_color');
-      ExplFlags := ExplosionFlagsFromFlags( getFlags('expl_flags') );
-      Content   := getInteger('content');
+      ReadExplosion( iTable, 'explosion', Explosion );
     finally
       Free;
     end;

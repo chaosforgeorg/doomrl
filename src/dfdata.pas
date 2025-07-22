@@ -227,11 +227,14 @@ type TCellSet = set of Byte;
        Flags     : TFlags;
      end;
      TExplosionData = record
-       Range   : Integer;
-       Delay   : Integer;
-       Color   : Byte;
-       SoundID : DWord;
-       Flags   : TExplosionFlags;
+       Range     : Integer;
+       Delay     : Integer;
+       Color     : Byte;
+       Flags     : TExplosionFlags;
+       Damage    : TDiceRoll;
+       DamageType: TDamageType;
+       ContentID : Word;
+       SoundID   : string[16];
      end;
 
 function NewSprite( ID : DWord ) : TSprite;
@@ -264,12 +267,9 @@ type
     Delay      : Byte;
     MissBase   : Byte;
     MissDist   : Byte;
-    ExplDelay  : Byte;
-    ExplColor  : Byte;
-    ExplFlags  : TExplosionFlags;
     Range      : Byte;
     Flags      : TFlags;
-    Content    : Byte;
+    Explosion  : TExplosionData;
   end;
 
   TAffectData = record
@@ -373,7 +373,9 @@ function BlindCoord( const where : TCoord2D ) : string;
 function SlotName(slot : TEqSlot) : string;
 function DamageTypeName( aDamageType : TDamageType ) : Ansistring;
 function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
-function ReadSprite( aTable : TLuaTable; aName : Ansistring; var aSprite : TSprite ) : Boolean;
+function ReadSprite( aTable : TLuaTable; const aName : Ansistring; var aSprite : TSprite ) : Boolean;
+function ReadExplosion( aTable : TLuaTable; const aName : Ansistring; var aExplosion : TExplosionData ) : Boolean;
+function ReadExplosion( aTable : TLuaTable; var aExplosion : TExplosionData ) : Boolean;
 function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
 function ReadFileString( const aFileName : Ansistring ) : Ansistring;
 function WriteFileString( const aFileName, aText : Ansistring ) : Boolean;
@@ -827,7 +829,7 @@ begin
   end;
 end;
 
-function ReadSprite( aTable : TLuaTable; aName : Ansistring; var aSprite : TSprite ) : Boolean;
+function ReadSprite( aTable : TLuaTable; const aName : Ansistring; var aSprite : TSprite ) : Boolean;
 var iTable : TLuaTable;
 begin
   ReadSprite := False;
@@ -844,6 +846,32 @@ begin
     iTable.Free;
   end;
 end;
+
+function ReadExplosion( aTable : TLuaTable; var aExplosion : TExplosionData ) : Boolean;
+begin
+  aExplosion.Range      := aTable.getInteger('range',0);
+  aExplosion.Delay      := aTable.getInteger('delay',0);
+  aExplosion.Color      := aTable.getInteger('color',0);
+  aExplosion.SoundID    := aTable.getString('sound_id','');
+  aExplosion.Flags      := ExplosionFlagsFromFlags( aTable.getFlags('flags') );
+  aExplosion.Damage     := NewDiceRoll( aTable.getString('damage','') );
+  aExplosion.DamageType := DAMAGE_FIRE;
+  aExplosion.ContentID  := aTable.getInteger('content',0);
+  ReadExplosion := aExplosion.Color > 0;
+end;
+
+function ReadExplosion( aTable : TLuaTable; const aName : Ansistring; var aExplosion : TExplosionData ) : Boolean;
+var iTable : TLuaTable;
+begin
+  ReadExplosion      := False;
+  if aTable.IsTable( aName ) then
+  begin
+    iTable := aTable.GetTable( aName );
+    Result := ReadExplosion( iTable, aExplosion );
+    iTable.Free;
+  end;
+end;
+
 
 function AxisToDirection( aAxis : TVec2f ) : TCoord2D;
 const DeadZoneSquared = 0.4*0.4;

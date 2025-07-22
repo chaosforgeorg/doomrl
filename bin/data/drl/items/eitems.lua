@@ -250,8 +250,10 @@ function drl.register_exotic_items()
 			delay      = 20,
 			miss_base  = 1,
 			miss_dist  = 3,
-			expl_delay = 40,
-			expl_color = LIGHTBLUE,
+			explosion  = {
+				delay = 40,
+				color = LIGHTBLUE,
+			},
 		},
 	}
 
@@ -486,9 +488,11 @@ function drl.register_exotic_items()
 			delay      = 10,
 			miss_base  = 30,
 			miss_dist  = 5,
-			expl_delay = 80,
-			expl_color = RED,
-			content    = "lava",
+			explosion  = {
+				delay = 80,
+				color = RED,
+				content = "lava",
+			},
 		},
 	}
 

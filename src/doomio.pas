@@ -282,12 +282,17 @@ var iCoord    : TCoord2D;
     iDistance : Byte;
     iVisible  : boolean;
     iLevel    : TLevel;
+    iSound    : Word;
 begin
   iLevel := Doom.Level;
   if not iLevel.isProperCoord( aWhere ) then Exit;
 
-  if aData.SoundID <> 0 then
-    IO.addSoundAnimation( aDelay, aWhere, aData.SoundID );
+  if aData.SoundID <> '' then
+  begin
+    iSound := IO.Audio.ResolveSoundID([aData.SoundID+'.explode',aData.SoundID,'explode']);
+    if iSound <> 0 then
+      IO.addSoundAnimation( aDelay, aWhere, iSound );
+  end;
 
   if aData.Range > 0 then
   begin

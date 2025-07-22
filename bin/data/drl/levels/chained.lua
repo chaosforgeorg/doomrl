@@ -189,9 +189,11 @@ register_level "the_chained_court"
 					miss_dist  = 10,
 					hitdesc    = "You are engulfed in flames!",
 					flags      = { MF_EXACT, MF_IMMIDATE },
-					expl_delay = 50,
-					expl_color = YELLOW,
-					expl_flags = { EFNOKNOCK, EFSELFSAFE },
+					explosion  = {
+						delay = 50,
+						color = YELLOW,
+						flags = { EFNOKNOCK, EFSELFSAFE },
+					},
 				},
 			},
 

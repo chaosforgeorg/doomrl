@@ -186,11 +186,8 @@ core.register_blueprint "missile"
 	hitdesc     = { false, core.TSTRING, "" },
 	flags       = { false, core.TFLAGS,  {} },
 	range       = { false, core.TNUMBER, 0 },
-	expl_delay  = { false, core.TNUMBER, 40 },
-	expl_color  = { false, core.TNUMBER, RED },
-	expl_flags  = { false, core.TFLAGS,  {} },
+	explosion   = { false, core.TTABLE },
 	ray_delay   = { false, core.TNUMBER, 0 },
-	content     = { false, core.TIDIN("cells"), 0 },
 }
 
 core.register_blueprint "shotgun"

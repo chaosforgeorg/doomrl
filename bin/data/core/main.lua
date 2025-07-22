@@ -79,8 +79,8 @@ register_itemset    = core.register_storage( "itemsets", "itemset" )
 register_shotgun    = core.register_storage( "shotguns", "shotgun", function (s) core.register_shotgun( s.nid ) end )
 register_missile    = core.register_storage( "missiles", "missile", function (m)
 		m.sound_id = m.sound_id or m.id
-		if m.content ~= 0 then
-			m.content = cells[m.content].nid
+		if m.explosion and m.explosion.content then
+			m.explosion.content = cells[m.explosion.content].nid
 		end
 		core.register_missile(m.nid)
 		return m.nid

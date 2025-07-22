@@ -36,6 +36,7 @@ type TDoomAudio = class
   procedure PlayMusic( const MusicID : Ansistring; aNotFound : Boolean = False );
   procedure PlayMusicOnce( const MusicID : Ansistring );
   function ResolveSoundID( const ResolveIDs: array of AnsiString ) : Word;
+  function GetSampleID( const aID: AnsiString ) : Word;
   destructor Destroy; override;
 private
   procedure Register( const aID, aFileName : AnsiString; aMusic : Boolean; const aRoot : AnsiString );
@@ -324,6 +325,12 @@ begin
       if Result <> 0 then Exit( Result );
     end;
   Exit(0);
+end;
+
+function TDoomAudio.GetSampleID( const aID: AnsiString ) : Word;
+begin
+  if (not SoundVersion) or (not Option_Sound) or SoundOff then Exit(0);
+  Exit( Sound.GetSampleID( aID ) );
 end;
 
 procedure TDoomAudio.PlayMusic(const MusicID : Ansistring; aNotFound : Boolean = False );

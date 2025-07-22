@@ -43,8 +43,10 @@ function drl.register_missiles()
 		delay      = 30,
 		miss_base  = 30,
 		miss_dist  = 5,
-		expl_delay = 40,
-		expl_color = RED,
+		explosion  = {
+			delay 	= 40,
+			color 	= RED,
+		},
 	}
 
 	register_missile "mrocketjump"
@@ -58,9 +60,11 @@ function drl.register_missiles()
 		miss_dist  = 5,
 		flags      = { MF_EXACT },
 		range      = 1,
-		expl_delay = 40,
-		expl_color = RED,
-		expl_flags = { EFSELFKNOCKBACK, EFSELFHALF },
+		explosion  = {
+			delay = 40,
+			color = RED,
+			flags = { EFSELFKNOCKBACK, EFSELFHALF },
+		},
 	}
 
 	register_missile "mexplround"
@@ -72,8 +76,10 @@ function drl.register_missiles()
 		delay      = 15,
 		miss_base  = 10,
 		miss_dist  = 3,
-		expl_delay = 40,
-		expl_color = RED,
+		explosion  = {
+			delay = 40,
+			color = RED,
+		},
 	}
 
 	register_missile "mexplground"
@@ -85,8 +91,11 @@ function drl.register_missiles()
 		delay      = 15,
 		miss_base  = 10,
 		miss_dist  = 3,
-		expl_delay = 40,
-		expl_color = GREEN,
+		explosion  = {
+			delay = 40,
+			color = GREEN,
+		},
+
 	}
 
 	register_missile "mbfg"
@@ -100,9 +109,11 @@ function drl.register_missiles()
 		miss_base  = 50,
 		miss_dist  = 10,
 		flags      = { MF_EXACT },
-		expl_delay = 33,
-		expl_color = GREEN,
-		expl_flags = { EFSELFSAFE, EFAFTERBLINK, EFCHAIN, EFHALFKNOCK, EFNODISTANCEDROP },
+		explosion  = {
+			delay = 33,
+			color = GREEN,
+			flags = { EFSELFSAFE, EFAFTERBLINK, EFCHAIN, EFHALFKNOCK, EFNODISTANCEDROP },
+		},
 	}
 
 	register_missile "mbfgover"
@@ -116,9 +127,11 @@ function drl.register_missiles()
 		miss_base  = 50,
 		miss_dist  = 10,
 		flags      = { MF_EXACT },
-		expl_delay = 33,
-		expl_color = GREEN,
-		expl_flags = { EFSELFSAFE, EFAFTERBLINK, EFCHAIN, EFHALFKNOCK, EFNODISTANCEDROP },
+		explosion  = {
+			delay = 33,
+			color = GREEN,
+			flags = { EFSELFSAFE, EFAFTERBLINK, EFCHAIN, EFHALFKNOCK, EFNODISTANCEDROP },
+		},
 	}
 
 	register_missile "mblaster"
