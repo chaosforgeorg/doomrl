@@ -118,10 +118,11 @@ core.register_blueprint "medal"
 
 core.register_blueprint "badge"
 {
-	id        = { true,  core.TSTRING },
-	name      = { true,  core.TSTRING },
-	desc      = { true,  core.TSTRING },
-	level     = { true,  core.TNUMBER },
+	id          = { true,  core.TSTRING },
+	name        = { true,  core.TSTRING },
+	desc        = { true,  core.TSTRING },
+	level       = { true,  core.TNUMBER },
+	achievement = { false, core.TSTRING, "" },
 }
 
 core.register_blueprint "award_level"

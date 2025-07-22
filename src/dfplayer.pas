@@ -836,7 +836,17 @@ begin
   Result := 1;
 end;
 
-const lua_player_lib : array[0..13] of luaL_Reg = (
+function lua_player_set_achievement(L: Plua_State): Integer; cdecl;
+var iState   : TDoomLuaState;
+begin
+  iState.Init(L);
+  if (iState.ToObject(1) as TPlayer) = nil then Exit(0);
+  Doom.Store.SetAchievement( iState.ToString(2) );
+  Result := 0;
+end;
+
+const lua_player_lib : array[0..14] of luaL_Reg = (
+      ( name : 'set_achievement'; func : @lua_player_set_achievement),
       ( name : 'add_exp';         func : @lua_player_add_exp),
       ( name : 'has_won';         func : @lua_player_has_won),
       ( name : 'get_trait';       func : @lua_player_get_trait),

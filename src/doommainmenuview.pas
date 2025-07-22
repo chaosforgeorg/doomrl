@@ -251,12 +251,18 @@ const
   JHCURL = 'https://store.steampowered.com/app/3126530/Jupiter_Hell_Classic/';
 
 procedure TMainMenuView.UpdateMenu;
-var iSize : TIOPoint;
+var iSize  : TIOPoint;
+    iCount : Byte;
 begin
   IO.Root.Console.HideCursor;
   VTIG_PushStyle( @TIGStyleFrameless );
   iSize := Point(24,8);
-  if FJHCLink then Inc( iSize.X );
+  iCount := 6;
+  if FJHCLink then
+  begin
+    Inc( iSize.X );
+    Inc( iCount );
+  end;
   VTIG_Begin( 'mainmenu', iSize, Point( 29, 14 ) );
   VTIG_PopStyle;
     VTIG_PushStyle( @TIGStyleColored );
@@ -314,9 +320,9 @@ begin
   if VTIG_EventCancel then
   begin
     OnCancel;
-    if VTIG_Selected( MAINMENU_ID ) = 7
+    if VTIG_Selected( MAINMENU_ID ) = iCount
       then begin FMode := MAINMENU_DONE; FResult.Quit := True; end
-      else VTIG_ResetSelect( MAINMENU_ID, 7 );
+      else VTIG_ResetSelect( MAINMENU_ID, iCount );
   end;
 end;
 

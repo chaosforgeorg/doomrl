@@ -39,7 +39,14 @@ function player:remove_badge( badge )
 end
 
 function player:add_badge( badge )
+	if badges[ badge ].achievement then
+		player:set_achievement( badges[ badge ].achievement )
+	end
 	self.__props.badges[badge] = true
+end
+
+function player:add_klass_badge( badge )
+	player:add_badge( klasses[player.klass].id.."_"..badge )
 end
 
 function player:has_badge( badge )
