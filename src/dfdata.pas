@@ -390,7 +390,7 @@ var TIGStyleColored   : TTIGStyle;
     TIGStyleFrameless : TTIGStyle;
 
 implementation
-uses typinfo, strutils, math, vdebug;
+uses typinfo, strutils, math, vdebug, vluasystem;
 
 function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
 begin
@@ -855,8 +855,17 @@ begin
   aExplosion.SoundID    := aTable.getString('sound_id','');
   aExplosion.Flags      := ExplosionFlagsFromFlags( aTable.getFlags('flags') );
   aExplosion.Damage     := NewDiceRoll( aTable.getString('damage','') );
-  aExplosion.DamageType := DAMAGE_FIRE;
-  aExplosion.ContentID  := aTable.getInteger('content',0);
+  aExplosion.DamageType := TDamageType( aTable.getInteger('damage_type',LongInt( DAMAGE_FIRE ) ) );
+  if aTable.IsNumber('content') then
+    aExplosion.ContentID  := aTable.getInteger('content',0)
+  else if aTable.IsString('content') then
+  begin
+    aExplosion.ContentID := LuaSystem.Defines[ aTable.getString( 'content' ) ];
+    if aExplosion.ContentID = 0 then
+      Log( LOGERROR, 'unknown define ('+aTable.getString( 'content' ) +')!' );
+  end
+  else
+    aExplosion.ContentID := 0;
   ReadExplosion := aExplosion.Color > 0;
 end;
 

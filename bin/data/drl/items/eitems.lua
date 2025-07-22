@@ -440,7 +440,7 @@ function drl.register_exotic_items()
 		OnHitBeing = function(self,being,target)
 			target:play_sound("phasing")
 			being:msg("Suddenly "..target:get_name(true,false).." blinks away!")
-			level:explosion( target.position, 2, 50, 0, 0, LIGHTBLUE )
+			level:explosion( target.position, { range = 2, delay = 50, color = LIGHTBLUE } )
 			target:phase()
 			return false
 		end,
@@ -451,7 +451,7 @@ function drl.register_exotic_items()
 			else
 				self.ammo = self.ammo - 30
 				being:msg("You feel yanked in a non-descript direction!")
-				level:explosion( being.position, 2, 50, 0, 0, LIGHTBLUE )
+				level:explosion( being.position, { range = 2, delay = 50, color = LIGHTBLUE } )
 				being:phase();
 				being.scount = being.scount - 1000
 			end
@@ -1022,7 +1022,7 @@ function drl.register_exotic_items()
 
 		OnUse = function(self,being)
 			ui.blink(LIGHTRED,50)
-			level:explosion( being.position , 6, 50, 10, 10, RED, "barrel.explode", DAMAGE_FIRE, self, { EFSELFSAFE } )
+			level:explosion( being.position , { range = 6, delay = 50, damage = "10d10", color = RED, sound_id = "barrel.explode", flags = { EFSELFSAFE } }, self )
 			return true
 		end,
 	}
@@ -1079,7 +1079,7 @@ function drl.register_exotic_items()
 				if coord.distance( c, p ) <= 8 and level:is_corpse( c ) then
 					level.map[ c ] = "bloodpool"
 					being:play_sound( "gib" )
-					level:explosion( c , 3, 50, 7, 7, RED, "barrel.explode", DAMAGE_FIRE, self, { EFSELFSAFE } )
+					level:explosion( c , { range = 3, delay = 50, damage = "7d7", color = RED, sound_id = "barrel.explode", flags = { EFSELFSAFE } }, self )
 				end
 			end
 			return true

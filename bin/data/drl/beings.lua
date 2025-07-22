@@ -1496,7 +1496,7 @@ function drl.register_beings()
 
 		OnDie = function (self)
 			if level.id == "tower_of_babel" then
-				level:explosion( self.position, 17, 40, 0, 0, RED, "barrel.explode")
+				level:explosion( self.position, { range = 17, delay = 40, color = RED, sound_id = "barrel.explode" } )
 				ui.msg_enter("The Cyberdemon is dead!")
 				if not level.flags[ LF_NUKED ] and statistics.damage_on_level == 0 then
 					player:add_medal("cyberdemon1")
@@ -1562,7 +1562,7 @@ function drl.register_beings()
 
 		OnDie = function (self)
 			if self.flags[ BF_BOSS ] then
-				level:explosion( self.position, 17, 40, 0, 0, RED, "barrel.explode")
+				level:explosion( self.position, { range = 17, delay = 40, color = RED, sound_id = "barrel.explode" } )
 				ui.msg_enter("Congratulations! You defeated the Spider Mastermind!")
 				self.expvalue = 0
 				if not level.flags[ LF_NUKED ] and statistics.damage_on_level == 0 then
@@ -1612,7 +1612,7 @@ function drl.register_beings()
 
 		OnDie = function (self)
 			if self.flags[BF_BOSS] then
-				level:explosion( self.position, 17, 40, 0, 0, BLUE, "barrel.explode")
+				level:explosion( self.position, { range = 17, delay = 40, color = BLUE, sound_id = "barrel.explode" } )
 				for b in level:beings() do
 					if not ( b:is_player() ) and b.id ~= "jc" then
 						b:kill()
@@ -1694,9 +1694,9 @@ function drl.register_beings()
 			end
 			if math.random(20) == 1 then
 				self:play_sound("phasing")
-				level:explosion( self.position, 1, 50, 0, 0, LIGHTBLUE )
+				level:explosion( self.position, { range = 1, delay = 50, color = LIGHTBLUE } )
 				self:phase()
-				level:explosion( self.position, 1, 50, 0, 0, LIGHTBLUE )
+				level:explosion( self.position, { range = 1, delay = 50, color = LIGHTBLUE } )
 			end
 			if math.random(10) == 1 then
 				self:play_sound("act")
@@ -1708,7 +1708,7 @@ function drl.register_beings()
 			if CHALLENGE == "challenge_a100" then
 				level.map[ self.position ] = "stairs"
 			elseif self.flags[BF_BOSS] then
-				level:explosion( self.position, 17, 40, 0, 0, RED, "barrel.explode")
+				level:explosion( self.position, { range = 17, delay = 40, color = RED, sound_id = "barrel.explode" } )
 				for b in level:beings() do
 					if not ( b:is_player() ) and b.id ~= "apostle" then
 						b:kill()

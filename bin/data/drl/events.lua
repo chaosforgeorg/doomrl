@@ -203,7 +203,7 @@ function drl.register_events()
 				b:relocate( c )
 				b:play_sound("phasing")
 				b.scount = b.scount - math.max( 1000 - DIFFICULTY * 50, 500 )
-				level:explosion( b.position, 1, 50, 0, 0, LIGHTBLUE )
+				level:explosion( b.position, { range = 1, delay = 50, color = LIGHTBLUE } )
 			end
 		end
 
@@ -283,7 +283,7 @@ function generator.events_explosion_tick()
 		if type( data.size ) == "table" then
 			range = math.random( data.size[1], data.size[2] )
 		end
-		level:explosion( c, range, 50, data.dice, 6, LIGHTRED, "barrel.explode", DAMAGE_FIRE, nil, { EFRANDOMCONTENT }, data.content )
+		level:explosion( c, { range = range, delay = 50, damage = data.dice.. "d6", color = LIGHTRED, sound_id = "barrel.explode", flags = { EFRANDOMCONTENT }, content = data.content } )
 	end
 end
 

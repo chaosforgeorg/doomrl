@@ -68,9 +68,9 @@ register_level "the_asmos_den"
 				if self:distance_to(player) > self.vision-1 then
 					local target = level:drop_coord( self.position, {EF_NOBEINGS,EF_NOBLOCK} )
 					self:play_sound("phasing")
-					level:explosion( player, 2, 50, 0, 0, YELLOW )
+					level:explosion( player, { range = 2, delay = 50, color = YELLOW } )
 					player:relocate( target )
-					level:explosion( player, 1, 50, 0, 0, YELLOW )
+					level:explosion( player, { range = 1, delay = 50, color = YELLOW } )
 				end
 
 			end,

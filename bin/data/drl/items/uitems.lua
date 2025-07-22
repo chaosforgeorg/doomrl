@@ -91,7 +91,7 @@ function drl.register_unique_items()
 			else
 				target.scount = math.max( target.scount - 1000, 1000 )
 			end
-			level:explosion( target.position, 1, 50, 10, 1, LIGHTBLUE, "soldier.phase", DAMAGE_SPLASMA, self )
+			level:explosion( target.position, { range = 1, delay = 50, damage = "10d1", color = LIGHTBLUE, sound_id = "soldier.phase", damage_type = DAMAGE_SPLASMA }, self )
 			return false
 		end,
 	}
@@ -222,7 +222,7 @@ function drl.register_unique_items()
 				being.scount = being.scount - 1000
 				for b in level:beings() do
 					if not b:is_player() and b:is_visible() then
-						level:explosion( b.position, 1, 50, 0, 0, BLUE, "none", DAMAGE_SPLASMA, self, { EFSELFSAFE } )
+						level:explosion( b.position, { range = 1, delay = 50, color = BLUE, damage_type = DAMAGE_SPLASMA }, self )
 						b:apply_damage( 15, TARGET_INTERNAL, DAMAGE_SPLASMA, self )
 					end
 				end
@@ -877,7 +877,7 @@ function drl.register_unique_items()
 			ui.blink(LIGHTRED,50)
 			ui.blink(RED,50,50)
 			ui.blink(LIGHTRED,50,100)
-			level:explosion( being.position , 15, 80, 20, 10, RED, "barrel.explode", DAMAGE_FIRE, self, { EFSELFSAFE } )
+			level:explosion( being.position , { range = 15, delay = 80, damage = "20d10", color = RED, sound_id = "barrel.explode", damage_type = DAMAGE_FIRE, flags = { EFSELFSAFE } }, self )
 			return true
 		end,
 	}

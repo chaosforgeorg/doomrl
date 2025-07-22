@@ -382,9 +382,9 @@ register_ai "jc_ai"
 					end
 				end
 				self:play_sound("phasing")
-				level:explosion( self.position, 2, 50, 0, 0, LIGHTBLUE )
+				level:explosion( self.position, { range = 2, delay = 50, color = LIGHTBLUE } )
 				self:relocate( tp )
-				level:explosion( self.position, 4, 50, 0, 0, LIGHTBLUE )
+				level:explosion( self.position, { range = 4, delay = 50, color = LIGHTBLUE } )
 				self.scount = self.scount - 1000
 				return "hunt"
 			end
@@ -482,10 +482,10 @@ register_ai "teleboss_ai"
 			end
 
 			self:play_sound("phasing")
-			level:explosion( self, 2, 50, 0, 0, YELLOW )
+			level:explosion( self, { range = 2, delay = 50, color = YELLOW } )
 			local target = level:drop_coord( phase, { EF_NOBEINGS, EF_NOBLOCK } )
 			self:relocate( target )
-			level:explosion( self, 1, 50, 0, 0, YELLOW )
+			level:explosion( self, { range = 1, delay = 50, color = YELLOW } )
 			self.scount = self.scount - 1000
 			return true
 		end,

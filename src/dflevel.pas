@@ -1572,25 +1572,30 @@ function lua_level_explosion(L: Plua_State): Integer; cdecl;
 var iState   : TDoomLuaState;
     iLevel   : TLevel;
     iData    : TExplosionData;
+    iTable   : TLuaTable;
 begin
   iState.Init(L);
   iLevel := iState.ToObject(1) as TLevel;
   if iState.IsNil(2) then Exit(0);
-  if iState.StackSize < 7 then Exit(0);
-
-  iData.Range      := iState.ToInteger(3);
-  iData.Delay      := iState.ToInteger(4);
-  iData.Flags      := ExplosionFlagsFromFlags(iState.ToFlags(11));
-  iData.Color      := iState.ToInteger(7);
-  iData.Damage     := NewDiceRoll(iState.ToInteger(5),iState.ToInteger(6));
-  iData.DamageType := TDamageType(iState.ToInteger(9,Byte(Damage_Fire)));
-  iData.SoundID    := '';
-  iData.ContentID  := 0;
-
-  if (iState.StackSize >= 12) and (not iState.IsNil(12)) then iData.ContentID := iState.ToId(12);
-  if (iState.StackSize >= 8 ) and (not iState.IsNil(8))  then iData.SoundID   := iState.ToString(8);
-
-  iLevel.Explosion( 0, iState.ToPosition(2), iData, iState.ToObjectOrNil(10) as TItem );
+  if iState.IsTable(3) or iState.IsTable(4) then
+  begin
+    if iState.IsTable(3) then
+    begin
+      iTable := iState.ToTable( 3 );
+      ReadExplosion( iTable, iData );
+      iTable.Free;
+      iLevel.Explosion( 0, iState.ToPosition(2), iData, iState.ToObjectOrNil(4) as TItem );
+    end
+    else
+    begin
+      iTable := iState.ToTable( 4 );
+      ReadExplosion( iTable, iData );
+      iTable.Free;
+      iLevel.Explosion( iState.ToInteger(3), iState.ToPosition(2), iData, iState.ToObjectOrNil(5) as TItem );
+    end;
+  end
+  else
+    iState.Error('Malformed level:explosion!');
   Result := 0;
 end;
 

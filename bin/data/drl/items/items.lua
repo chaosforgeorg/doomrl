@@ -883,9 +883,9 @@ function drl.register_regular_items()
 		OnUse = function(self,being)
 			being:play_sound("phasing")
 			being:msg("You feel yanked in a non-existing direction!","Suddenly "..being:get_name(true,false).." blinks away!")
-			level:explosion( being.position, 2, 50, 0, 0, LIGHTBLUE )
+			level:explosion( being.position, { range = 2, delay = 50, color = LIGHTBLUE } )
 			being:phase()
-			level:explosion( being.position, 1, 50, 0, 0, LIGHTBLUE )
+			level:explosion( being.position, { range = 1, delay = 50, color = LIGHTBLUE } )
 			being:msg(nil,"Suddenly "..being:get_name(false,false).." appears out of nowhere!")
 			return true
 		end,
@@ -909,13 +909,13 @@ function drl.register_regular_items()
 		OnUse = function(self,being)
 			being:play_sound("phasing")
 			being:msg("You feel yanked in a non-existing direction!","Suddenly "..being:get_name(true,false).." blinks away!")
-			level:explosion( being.position, 2, 50, 0, 0, GREEN )
+			level:explosion( being.position, { range = 2, delay = 50, color = GREEN } )
 			if level.flags[ LF_NOHOMING ] then
 				being:phase()
 			else
 				being:phase( "stairs" )
 			end
-			level:explosion( being.position, 1, 50, 0, 0, GREEN )
+			level:explosion( being.position, { range = 1, delay = 50, color = GREEN } )
 			being:msg(nil,"Suddenly "..being:get_name(false,false).." appears out of nowhere!")
 			return true
 		end,
@@ -1274,7 +1274,7 @@ function drl.register_regular_items()
 
 		OnDestroy = function(self,c)
 			if level:is_visible(c) then ui.msg('The barrel explodes!') end
-			level:explosion(c,4,40,5,5,RED, "barrel.explode" )
+			level:explosion(c, { range = 4, delay = 40, damage = "5d5", color = RED, sound_id = "barrel.explode" } )
 		end
 	}
 
@@ -1301,7 +1301,7 @@ function drl.register_regular_items()
 		OnDestroy = function(self,c)
 			if level:is_visible(c) then ui.msg('The barrel explodes!') end
 			level:destroy_to( c, "acid" )
-			level:explosion(c,3,40,6,6,GREEN, "barrel.explode", DAMAGE_ACID, nil, {}, "acid")
+			level:explosion(c, { range = 3, delay = 40, damage = "6d6", color = GREEN, damage_type = DAMAGE_ACID, sound_id = "barrel.explode", flags = { EFRANDOMCONTENT }, content = "acid" } )
 		end
 	}
 
@@ -1328,7 +1328,7 @@ function drl.register_regular_items()
 		OnDestroy = function(self,c)
 			if level:is_visible(c) then ui.msg('The barrel explodes!') end
 			level:destroy_to( c, "lava" )
-			level:explosion(c,2,40,7,7,RED, "barrel.explode", DAMAGE_FIRE, nil, {}, "lava")
+			level:explosion(c, { range = 2, delay = 40, damage = "7d7", color = RED, sound_id = "barrel.explode", damage_type = DAMAGE_FIRE, content = "lava" })
 		end
 	}
 

@@ -43,7 +43,7 @@ register_level "unholy_cathedral"
 				if being:is_affect( "tired" ) then
 					ui.msg("You are too tired to invoke the Spear!");
 				else
-					level:explosion( being.position , 3, 50, 10, 10, YELLOW, "soldier.phase", DAMAGE_FIRE, self, { EFSELFSAFE } )
+					level:explosion( being.position , { range = 3, delay = 50, damage = "10d10", color = YELLOW, sound_id = "soldier.phase", damage_type = DAMAGE_FIRE, flags = { EFSELFSAFE } }, self )
 					ui.blink(YELLOW,50)
 					ui.blink(WHITE,50,50)
 					being:set_affect( "tired" )
