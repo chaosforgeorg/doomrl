@@ -837,11 +837,14 @@ begin
 end;
 
 function lua_player_set_achievement(L: Plua_State): Integer; cdecl;
-var iState   : TDoomLuaState;
+var iState : TDoomLuaState;
+    iID    : Ansistring;
 begin
   iState.Init(L);
   if (iState.ToObject(1) as TPlayer) = nil then Exit(0);
-  Doom.Store.SetAchievement( iState.ToString(2) );
+  iID := iState.ToString(2);
+  if Doom.Store.SetAchievement( iID ) then
+    Log( LOGINFO, 'lua: set_achievement('+iID+') succeeded!');
   Result := 0;
 end;
 
