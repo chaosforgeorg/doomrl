@@ -306,7 +306,9 @@ begin
       if aData.Range < 10 then if not iLevel.isEyeContact( iCoord, aWhere ) then Continue;
       iDistance := Distance(iCoord, aWhere);
       if iDistance > aData.Range then Continue;
-      ExplosionMark( iCoord, aData.Color, 3*aData.Delay, aDelay+iDistance*aData.Delay );
+      if GraphicsVersion and ( aData.Sprite.SpriteID[0] <> 0 )
+        then addMarkAnimation( aData.Sprite.Frametime * aData.Sprite.Frames - 1, aDelay+iDistance*aData.Delay, iCoord, aData.Sprite, 0, ' ' )
+        else ExplosionMark( iCoord, aData.Color, 3*aData.Delay, aDelay+iDistance*aData.Delay );
     end;
   if aData.Range >= 10 then iVisible := True;
 

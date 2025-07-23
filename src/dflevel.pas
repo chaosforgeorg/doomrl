@@ -1262,14 +1262,12 @@ procedure TLevel.NukeRun;
 var iCount     : Integer;
     iExplosion : TExplosionData;
 begin
+  FillChar( iExplosion, SizeOf( TExplosionData ), 0 );
   iExplosion.Range   := 8;
   iExplosion.Delay   := 10;
-  iExplosion.Flags   := [];
   iExplosion.Color   := LightRed;
   iExplosion.SoundID := 'nuke';
-  iExplosion.Damage.Reset;
   iExplosion.DamageType := Damage_Fire;
-  iExplosion.ContentID := 0;
   for iCount := 1 to 10 do
   begin
     Explosion( iCount*200, RandomCoord( [ EF_NOBLOCK ] ),iExplosion, nil );

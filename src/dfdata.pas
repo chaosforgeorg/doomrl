@@ -235,6 +235,7 @@ type TCellSet = set of Byte;
        DamageType: TDamageType;
        ContentID : Word;
        SoundID   : string[16];
+       Sprite    : TSprite;
      end;
 
 function NewSprite( ID : DWord ) : TSprite;
@@ -866,13 +867,16 @@ begin
   end
   else
     aExplosion.ContentID := 0;
+  FillChar( aExplosion.Sprite, SizeOf( TSprite ), 0 );
+  ReadSprite( aTable, 'sprite', aExplosion.Sprite );
   ReadExplosion := aExplosion.Color > 0;
 end;
 
 function ReadExplosion( aTable : TLuaTable; const aName : Ansistring; var aExplosion : TExplosionData ) : Boolean;
 var iTable : TLuaTable;
 begin
-  ReadExplosion      := False;
+  ReadExplosion                 := False;
+  FillChar( aExplosion, SizeOf(TExplosionData), 0 );
   if aTable.IsTable( aName ) then
   begin
     iTable := aTable.GetTable( aName );
