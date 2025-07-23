@@ -1263,11 +1263,12 @@ var iCount     : Integer;
     iExplosion : TExplosionData;
 begin
   FillChar( iExplosion, SizeOf( TExplosionData ), 0 );
-  iExplosion.Range   := 8;
-  iExplosion.Delay   := 10;
-  iExplosion.Color   := LightRed;
-  iExplosion.SoundID := 'nuke';
+  iExplosion.Range      := 8;
+  iExplosion.Delay      := 10;
+  iExplosion.Color      := LightRed;
+  iExplosion.SoundID    := 'nuke';
   iExplosion.DamageType := Damage_Fire;
+  iExplosion.Flags      := [ efAlwaysVisible ];
   for iCount := 1 to 10 do
   begin
     Explosion( iCount*200, RandomCoord( [ EF_NOBLOCK ] ),iExplosion, nil );
@@ -1574,6 +1575,7 @@ var iState   : TDoomLuaState;
 begin
   iState.Init(L);
   iLevel := iState.ToObject(1) as TLevel;
+  Log( iState.ToPosition(2).ToString );
   if iState.IsNil(2) then Exit(0);
   if iState.IsTable(3) or iState.IsTable(4) then
   begin

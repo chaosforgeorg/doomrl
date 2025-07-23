@@ -302,8 +302,11 @@ begin
 
   for iCoord in NewArea( aWhere, aData.Range ).Clamped( iLevel.Area ) do
     begin
-      if aData.Range < 10 then if iLevel.isVisible(iCoord) then iVisible := True else Continue;
-      if aData.Range < 10 then if not iLevel.isEyeContact( iCoord, aWhere ) then Continue;
+      if not ( efAlwaysVisible in aData.Flags ) then
+      begin
+        if iLevel.isVisible(iCoord) then iVisible := True else Continue;
+        if not iLevel.isEyeContact( iCoord, aWhere ) then Continue;
+      end;
       iDistance := Distance(iCoord, aWhere);
       if iDistance > aData.Range then Continue;
       if GraphicsVersion and ( aData.Sprite.SpriteID[0] <> 0 )
