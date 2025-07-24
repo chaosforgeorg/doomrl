@@ -30,7 +30,6 @@ register_level "the_asmos_den"
 			corpse       = "corpse",
 			danger       = 0,
 			weight       = 0,
-			bulk         = 100,
 			sound_id     = "baron",
 			flags        = { BF_KNOCKIMMUNE, BF_INV, BF_ENVIROSAFE },
 			desc         = "It's from your worst nightmares. You don't like to think about it.",

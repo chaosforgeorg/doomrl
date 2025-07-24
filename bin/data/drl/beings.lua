@@ -16,7 +16,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 1,
 		weight       = 10,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "smart_evasive_ai",
 
@@ -42,7 +41,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 2,
 		weight       = 10,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "smart_evasive_ai",
 
@@ -69,7 +67,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 3,
 		weight       = 10,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "smart_evasive_ai",
 
@@ -99,7 +96,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 7,
 		weight       = 6,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "smart_evasive_ai",
 
@@ -131,7 +127,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 2,
 		weight       = 8,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "melee_ranged_ai",
 
@@ -180,7 +175,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 4,
 		weight       = 6,
-		bulk         = 100,
 		flags        = { BF_CHARGE },
 		ai_type      = "flock_ai",
 
@@ -206,7 +200,6 @@ function drl.register_beings()
 		max_lev      = 16,
 		danger       = 3,
 		weight       = 10,
-		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "charger_ai",
 
@@ -234,7 +227,6 @@ function drl.register_beings()
 		danger       = 6,
 		weight       = 6,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
-		bulk         = 100,
 		ai_type      = "melee_ranged_ai",
 
 		desc            = "Big flying red horned heads. They spit huge explosive plasma balls. If you don't have the weapon to handle them, better run...",
@@ -280,7 +272,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 6,
 		weight       = 6,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "smart_hybrid_ai",
 
@@ -329,7 +320,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 10,
 		weight       = 6,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "smart_hybrid_ai",
 
@@ -379,7 +369,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 9,
 		weight       = 4,
-		bulk         = 100,
 		ai_type      = "ranged_ai",
 
 		resist = { melee = -100 },
@@ -424,7 +413,6 @@ function drl.register_beings()
 		max_lev      = 40,
 		danger       = 6,
 		weight       = 4,
-		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "spawner_ai",
 
@@ -459,7 +447,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 12,
 		weight       = 5,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "ranged_ai",
 
@@ -512,7 +499,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 12,
 		weight       = 7,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "sequential_ai",
 
@@ -563,7 +549,6 @@ function drl.register_beings()
 		corpse       = "corpse",
 		danger       = 14,
 		weight       = 4,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_SELFIMMUNE },
 		ai_type      = "archvile_ai",
 
@@ -619,7 +604,6 @@ function drl.register_beings()
 		corpse       = false,
 		danger       = 6,
 		weight       = 4,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "smart_evasive_ai",
 
@@ -655,7 +639,6 @@ function drl.register_beings()
 		corpse       = false,
 		danger       = 8,
 		weight       = 3,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "smart_evasive_ai",
 
@@ -694,7 +677,6 @@ function drl.register_beings()
 		corpse       = false,
 		danger       = 10,
 		weight       = 3,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS },
 		ai_type      = "smart_evasive_ai",
 
@@ -731,7 +713,6 @@ function drl.register_beings()
 		corpse       = false,
 		danger       = 14,
 		weight       = 2,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
 		ai_type      = "smart_evasive_ai",
 
@@ -771,7 +752,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 6,
 		weight       = 8,
-		bulk         = 100,
 		speed        = 120,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
 		ai_type      = "melee_ranged_ai",
@@ -820,7 +800,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 8,
 		weight       = 6,
-		bulk         = 100,
 		flags        = { BF_CHARGE, BF_ENVIROSAFE },
 		ai_type      = "flock_ai",
 
@@ -845,7 +824,6 @@ function drl.register_beings()
 		danger       = 4,
 		weight       = 0,
 		min_lev      = 200,
-		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "charger_ai",
 
@@ -873,7 +851,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 10,
 		weight       = 6,
-		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "ranged_ai",
 		resist       = { acid = 50, fire = 50, plasma = 50 },
@@ -922,7 +899,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 12,
 		weight       = 4,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
 		ai_type      = "smart_hybrid_ai",
 
@@ -972,7 +948,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 12,
 		weight       = 4,
-		bulk         = 100,
 		ai_type      = "sequential_ai",
 		flags        = { BF_ENVIROSAFE },
 
@@ -1016,7 +991,6 @@ function drl.register_beings()
 		min_lev      = 70,
 		danger       = 16,
 		weight       = 3,
-		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "spawner_ai",
 
@@ -1051,7 +1025,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 15,
 		weight       = 6,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE },
 		ai_type      = "ranged_ai",
 
@@ -1105,7 +1078,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 15,
 		weight       = 4,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_KNOCKIMMUNE, BF_ENVIROSAFE },
 		ai_type      = "sequential_ai",
 		resist 	     = { melee = 50, acid = 50 },
@@ -1159,7 +1131,6 @@ function drl.register_beings()
 		corpse       = "corpse",
 		danger       = 20,
 		weight       = 3,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_SELFIMMUNE, BF_ENVIROSAFE },
 		ai_type      = "archvile_ai",
 
@@ -1214,7 +1185,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 14,
 		weight       = 6,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE, BF_HUNTING},
 		ai_type      = "smart_hybrid_ai",
 
@@ -1269,7 +1239,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 14,
 		weight       = 3,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE, BF_HUNTING },
 		ai_type      = "teleboss_ai",
 
@@ -1330,7 +1299,6 @@ function drl.register_beings()
 		min_lev      = 70,
 		danger       = 16,
 		weight       = 1,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "teleboss_ai",
 
@@ -1394,7 +1362,6 @@ function drl.register_beings()
 		min_lev      = 80,
 		danger       = 20,
 		weight       = 1,
-		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_FLY },
 		ai_type      = "spawner_ai",
 
@@ -1436,7 +1403,6 @@ function drl.register_beings()
 		danger       = 40,
 		weight       = 0,
 		xp           = 1000,
-		bulk         = 100,
 		flags        = { BF_CHARGE, BF_ENVIROSAFE ,BF_HUNTING },
 		ai_type      = "angel_ai",
 
@@ -1475,7 +1441,6 @@ function drl.register_beings()
 		min_lev      = 70,
 		danger       = 30,
 		weight       = 1,
-		bulk         = 300,
 		flags        = { BF_OPENDOORS, BF_ENVIROSAFE, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
 		ai_type      = "cyberdemon_ai",
 
@@ -1529,7 +1494,6 @@ function drl.register_beings()
 		corpse       = true,
 		danger       = 50,
 		weight       = 0,
-		bulk         = 100,
 		flags        = { BF_ENVIROSAFE, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
 		ai_type      = "mastermind_ai",
 
@@ -1591,7 +1555,6 @@ function drl.register_beings()
 		danger       = 50,
 		weight       = 0,
 		xp           = 0,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_UNIQUENAME, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
 		ai_type      = "jc_ai",
 
@@ -1649,7 +1612,6 @@ function drl.register_beings()
 		corpse       = "corpse",
 		danger       = 0,
 		weight       = 0,
-		bulk         = 100,
 		flags        = { BF_OPENDOORS, BF_SELFIMMUNE, BF_KNOCKIMMUNE },
 		ai_type      = "archvile_ai",
 		sound_id     = "arch",

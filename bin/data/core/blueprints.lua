@@ -240,7 +240,6 @@ core.register_blueprint "being"
 	danger      = { true,  core.TNUMBER },
 	weight      = { true,  core.TNUMBER },
 	xp          = { false, core.TNUMBER },
-	bulk        = { false, core.TNUMBER , 100 },
 	tags        = { false, core.TTABLE, {} },
 	flags       = { false, core.TFLAGS, {} },
 	ai_type     = { true,  core.TSTRING }, -- TIDIN("ais")
