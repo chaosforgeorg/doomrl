@@ -171,9 +171,9 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 implementation
 
 uses math, video, dateutils, variants,
-     vsound, vluasystem, vlog, vdebug, vuiconsole, vmath, vtigstyle,
+     vsound, vluasystem, vuid, vlog, vdebug, vuiconsole, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vtigio, vvector,
-     dflevel, dfplayer, dfitem,
+     dflevel, dfplayer, dfitem, dfbeing,
      doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua,
      doomhudviews, doomplotview;
 
@@ -809,6 +809,7 @@ var iCon        : TUIConsole;
     iCBold      : DWord;
     iCurrent    : DWord;
     iOffset     : Integer;
+    iBoss       : TBeing;
 
   function ArmorColor( aValue : Integer ) : TUIColor;
   begin
@@ -932,6 +933,19 @@ begin
       then VTIG_FreeLabel( ' '+FHint+' ', Point( iOffset-Length( FHint ), 2 ), Yellow )
       else if (FHintTarget <> '') and Setting_AutoTarget
         then VTIG_FreeLabel( ' '+FHintTarget+' ', Point( iOffset-Length( FHintTarget ), 2 ), Brown );
+
+  if Doom.Level.Boss <> 0 then
+  begin
+    iBoss := UIDs.Get( Doom.Level.Boss ) as TBeing;
+    if iBoss <> nil then
+    begin
+      VTIG_FreeLabel( iBoss.Name, Point( 40 - Ceil(Length( iBoss.Name ) / 2), 3 ), iCBold );
+      iOffset := Round(iBoss.HPMax / 5);
+      i       := Round(iBoss.HP / 5);
+      if (i = 0) and (iBoss.HP > 0) then i := 1;
+      VTIG_FreeLabel( '[{R'+StringOfChar('#',i)+'}{r'+StringOfChar('-',iOffset-i)+'}]', Point( 40 - Ceil(iOffset / 2), 4 ), iCBold );
+    end;
+  end;
 
   iOffset := 2;
   for i := 1 to 2 do

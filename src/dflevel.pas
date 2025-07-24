@@ -127,6 +127,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     FMap           : TMap;
     FStatus        : Word; // level result
     FStyle         : Byte;
+    FBoss          : TUID;
 
     FLNum          : Word;
     FLTime         : DWord;
@@ -169,6 +170,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     property SpriteTop    [ Index : TCoord2D ] : TSprite read getSpriteTop;
     property SpriteBottom [ Index : TCoord2D ] : TSprite read getSpriteBottom;
   published
+    property Boss         : TUID       read FBoss        write FBoss;
     property Empty        : Boolean    read FEmpty;
     property Status       : Word       read FStatus      write FStatus;
     property Name         : AnsiString read FName        write FName;
@@ -206,6 +208,7 @@ begin
       FFeeling := GetString('welcome');
     end;
     FStatus := 0;
+    FBoss   := 0;
     FName   := GetString( 'name' );
     FSName  := GetString( 'sname','' );
     FAbbr   := GetString( 'abbr','' );
@@ -435,6 +438,7 @@ begin
   FStyle  := Stream.ReadByte();
   FLNum   := Stream.ReadWord();
   FLTime  := Stream.ReadDWord();
+  Stream.Read( FBoss, SizeOf( FBoss ) );
   Stream.Read( FEmpty, SizeOf( FEmpty ) );
   FDangerLevel := Stream.ReadWord();
   Stream.Read( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
@@ -463,6 +467,7 @@ begin
   Stream.WriteByte( FStyle );
   Stream.WriteWord( FLNum );
   Stream.WriteDWord( FLTime );
+  Stream.Write( FBoss, SizeOf( FBoss ) );
   Stream.Write( FEmpty, SizeOf( FEmpty ) );
   Stream.WriteWord( FDangerLevel );
   Stream.Write( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
@@ -506,6 +511,7 @@ begin
   FActiveBeing := nil;
   FNextNode    := nil;
 
+  FBoss := 0;
   FLTime  := 0;
   FStyle := nstyle;
   FullClear;
