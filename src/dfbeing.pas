@@ -473,6 +473,7 @@ begin
        begin
             if not SendMissile( aTarget, aGun, aAltFire, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, iCount-1 ) then Exit( False );
        end;
+    if Doom.State <> DSPlaying then Exit( False );
   end;
   Exit( True );
 end;
@@ -1293,6 +1294,7 @@ var iShots       : Integer;
     iResult      : Boolean;
     iSecond      : Boolean;
 begin
+  if Doom.State <> DSPlaying then Exit( False );
   if aTarget = FPosition then Exit( False );
   if aGun = nil then Exit( False );
 
@@ -1960,6 +1962,7 @@ var iDirection  : TDirection;
     iMaxDamage  : Boolean;
     iExplosion  : TExplosionData;
 begin
+  if Doom.State <> DSPlaying then Exit( False );
   if aItem = nil then Exit( False );
   if not aItem.isWeapon then Exit( False );
   if FHP <= 0 then Exit( False );
