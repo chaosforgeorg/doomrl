@@ -1813,6 +1813,8 @@ begin
 
   CallHook( Hook_OnReceiveDamage, [ aDamage, aSource, iActive ] );
 
+  if BF_INV in FFlags then Exit;
+
   if aDamageType <> Damage_IgnoreArmor then
   begin
     case aDamageType of
