@@ -212,7 +212,8 @@ begin
             IO.Root.Console.ShowCursor;
             FName[0] := #0;
             IO.Driver.StartTextInput;
-            Doom.Store.StartText( 'Enter name', 30 );
+            if IO.IsGamepad then
+              Doom.Store.StartText( 'Enter name', 30 );
             FMode := MAINMENU_NAME;
           end;
       end;
