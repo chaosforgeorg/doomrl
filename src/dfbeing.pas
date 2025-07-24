@@ -1915,7 +1915,7 @@ begin
   end;
 
   FHP := Max( FHP - aDamage, 0 );
-  if Dead and (not IsPlayer) then
+  if Dead and (not IsPlayer) and (not (BF_NODEATHMESSAGE in FFlags)) then
     if isVisible then IO.Msg(Capitalized(GetName(true))+' dies.')
                  else IO.Msg('You hear the scream of a freed soul!');
   if Dead
