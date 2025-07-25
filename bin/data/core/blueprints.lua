@@ -624,6 +624,7 @@ core.register_blueprint "event"
 	id         = { true,  core.TSTRING },
 	min_dlevel = { false, core.TNUMBER, 0 },
 	weight     = { true,  core.TNUMBER },
+	tags       = { false, core.TTABLE, {} },
 	min_diff   = { false, core.TNUMBER, 0 },
 	history    = { false, core.TSTRING },
 	message    = { false, core.TSTRING },

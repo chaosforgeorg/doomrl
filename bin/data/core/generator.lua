@@ -530,14 +530,19 @@ function generator.handle_rooms( room_list, settings )
 	end
 end
 
-
-function generator.roll_event()
+function generator.roll_event( weights )
 	core.log("generator.roll_event()")
 
 	local lvl = level.danger_level
 	local choice = weight_table.new()
 	for _,e in ipairs(events) do
-		if lvl >= e.min_dlevel and DIFFICULTY >= e.min_diff then choice:add( e ) end
+		if lvl >= e.min_dlevel and DIFFICULTY >= e.min_diff then 
+			local weight = e.weight or 1
+			if type( weights ) == "table" then
+				weight = core.proto_weight( e, weights )
+			end
+			choice:add( e, weight )
+		end
 	end
 	if choice:size() == 0 then return end
 	local event = choice:roll()
