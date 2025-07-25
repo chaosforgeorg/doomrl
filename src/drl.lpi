@@ -32,7 +32,7 @@
     </PublishOptions>
     <RunParams>
       <local>
-        <CommandLineParams Value="-god -nosound"/>
+        <CommandLineParams Value="-god"/>
         <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
         <WorkingDirectory Value="D:\doomrl\bin"/>
       </local>
@@ -40,7 +40,7 @@
       <Modes Count="1">
         <Mode0 Name="default">
           <local>
-            <CommandLineParams Value="-god -nosound"/>
+            <CommandLineParams Value="-god"/>
             <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
             <WorkingDirectory Value="D:\doomrl\bin"/>
           </local>
@@ -52,7 +52,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="47">
+    <Units Count="48">
       <Unit0>
         <Filename Value="drl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -241,6 +241,10 @@
         <Filename Value="drlmultimove.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit46>
+      <Unit47>
+        <Filename Value="drlmarkers.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit47>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
