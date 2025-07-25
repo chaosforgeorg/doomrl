@@ -2996,7 +2996,43 @@ begin
   Result := 1;
 end;
 
-const lua_being_lib : array[0..35] of luaL_Reg = (
+function lua_being_wipe_marker( L: Plua_State ): Integer; cdecl;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  if iBeing = nil then Exit( 0 );
+  if iState.IsCoord( 2 )
+    then Doom.Level.Markers.Wipe( iBeing.uid, iState.ToCoord(2) )
+    else Doom.Level.Markers.Wipe( iBeing.uid );
+  Result := 0;
+end;
+
+function lua_being_set_marker( L: Plua_State ): Integer; cdecl;
+var iState  : TDoomLuaState;
+    iBeing  : TBeing;
+    iCoord  : TCoord2D;
+    iSprite : TSprite;
+    iTable  : TLuaTable;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  if iBeing = nil then Exit( 0 );
+  iCoord := iState.ToPosition( 2 );
+  if not iState.IsTable( 3 ) then Exit( 0 );
+  FillChar( iSprite, SizeOf( iSprite ), 0 );
+  iTable := iState.ToTable( 3 );
+  try
+    if ReadSprite( iTable, iSprite )
+      then Doom.Level.Markers.Add( iCoord, iSprite, iBeing.UID )
+      else iState.Error('bad sprite data passed to being:set_marker');
+  finally
+    FreeAndNil ( iTable );
+  end;
+end;
+
+const lua_being_lib : array[0..37] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -3036,6 +3072,9 @@ const lua_being_lib : array[0..35] of luaL_Reg = (
       ( name : 'get_auto_target'; func : @lua_being_get_auto_target),
       ( name : 'get_tohit';       func : @lua_being_get_tohit),
       ( name : 'get_todam';       func : @lua_being_get_todam),
+
+      ( name : 'set_marker';   func : @lua_being_set_marker),
+      ( name : 'wipe_marker';  func : @lua_being_wipe_marker),
 
       ( name : nil;             func : nil; )
 );

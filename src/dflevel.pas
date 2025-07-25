@@ -8,10 +8,11 @@ Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
 unit dflevel;
 interface
 uses SysUtils, Classes,
-     vluaentitynode, vutil, vvision, vmath, viotypes, vrltools, vnode,
+     vluaentitynode, vutil, vvision, viotypes, vrltools, vnode,
      vluamapnode, vtextmap,
      dfdata, dfmap, dfthing, dfbeing, dfitem,
-     doomhooks;
+     doomhooks,
+     drlmarkers;
 
 const CellWalls   : TCellSet = [];
       CellFloors  : TCellSet = [];
@@ -100,12 +101,12 @@ TLevel = class(TLuaMapNode, ITextMap)
     function ActiveBeing : TBeing;
     procedure CalculateVision( coord : TCoord2D );
 
-    procedure Place( Thing : TThing; Coord : TCoord2D );
+    procedure Place( aThing : TThing; aCoord : TCoord2D );
     procedure RevealBeings;
     function getGylph( const aCoord : TCoord2D ) : TIOGylph;
     function EntityFromStream( aStream : TStream; aEntityID : Byte ) : TLuaEntityNode; override;
-    constructor CreateFromStream( Stream: TStream ); override;
-    procedure WriteToStream( Stream: TStream ); override;
+    constructor CreateFromStream( aStream : TStream ); override;
+    procedure WriteToStream( aStream : TStream ); override;
 
     function EnemiesLeft( aUnique : Boolean = False ) : DWord;
     function GetLookDescription( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : Ansistring;
@@ -146,6 +147,8 @@ TLevel = class(TLuaMapNode, ITextMap)
     FMusicID       : AnsiString;
     FSName         : AnsiString;
     FAbbr          : AnsiString;
+
+    FMarkers       : TMarkerStore;
   private
     function getCellBottom( Index : TCoord2D ): Byte;
     function getCellTop( Index : TCoord2D ): Byte;
@@ -155,6 +158,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function getSpriteTop( Index : TCoord2D ): TSprite;
     function getSpriteBottom( Index : TCoord2D ): TSprite;
   public
+    property Markers : TMarkerStore                 read FMarkers;
     property AccuracyBonus : Integer                read FAccuracyBonus;
     property Hooks : TFlags                         read FHooks;
     property FloorCell : Word                       read FFloorCell;
@@ -301,10 +305,10 @@ begin
   Exit( FindChild( aUID ) <> nil );
 end;
 
-procedure TLevel.Place(Thing: TThing; Coord: TCoord2D);
+procedure TLevel.Place( aThing: TThing; aCoord: TCoord2D);
 begin
-  Thing.Position := Coord;
-  Add( Thing, Coord );
+  aThing.Position := aCoord;
+  Add( aThing, aCoord );
 end;
 
 procedure TLevel.RevealBeings;
@@ -429,56 +433,60 @@ begin
   end;
 end;
 
-constructor TLevel.CreateFromStream( Stream: TStream );
+constructor TLevel.CreateFromStream( aStream: TStream );
 begin
-  inherited CreateFromStream( Stream );
+  inherited CreateFromStream( aStream );
 
-  Stream.Read( FMap, SizeOf( FMap ) );
-  FStatus := Stream.ReadWord();
-  FStyle  := Stream.ReadByte();
-  FLNum   := Stream.ReadWord();
-  FLTime  := Stream.ReadDWord();
-  Stream.Read( FBoss, SizeOf( FBoss ) );
-  Stream.Read( FEmpty, SizeOf( FEmpty ) );
-  FDangerLevel := Stream.ReadWord();
-  Stream.Read( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
-  FFloorCell   := Stream.ReadWord();
-  FFloorStyle  := Stream.ReadByte();
-  FID          := Stream.ReadAnsiString();
-  FFeeling     := Stream.ReadAnsiString();
-  FSpecExit    := Stream.ReadAnsiString();
-  FMusicID     := Stream.ReadAnsiString();
-  FSName       := Stream.ReadAnsiString();
-  FAbbr        := Stream.ReadAnsiString();
+  aStream.Read( FMap, SizeOf( FMap ) );
+  FStatus := aStream.ReadWord();
+  FStyle  := aStream.ReadByte();
+  FLNum   := aStream.ReadWord();
+  FLTime  := aStream.ReadDWord();
+  aStream.Read( FBoss, SizeOf( FBoss ) );
+  aStream.Read( FEmpty, SizeOf( FEmpty ) );
+  FDangerLevel := aStream.ReadWord();
+  aStream.Read( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
+  FFloorCell   := aStream.ReadWord();
+  FFloorStyle  := aStream.ReadByte();
+  FID          := aStream.ReadAnsiString();
+  FFeeling     := aStream.ReadAnsiString();
+  FSpecExit    := aStream.ReadAnsiString();
+  FMusicID     := aStream.ReadAnsiString();
+  FSName       := aStream.ReadAnsiString();
+  FAbbr        := aStream.ReadAnsiString();
+
+  FMarkers     := TMarkerStore.CreateFromStream( aStream );
 
   FActiveBeing := nil;
   FNextNode    := nil;
 end;
 
-procedure TLevel.WriteToStream( Stream: TStream );
+procedure TLevel.WriteToStream( aStream : TStream );
 var aID : Ansistring;
 begin
   aID := FID;
   FID := 'default';
-  inherited WriteToStream( Stream );
+  inherited WriteToStream( aStream );
 
-  Stream.Write( FMap, SizeOf( FMap ) );
-  Stream.WriteWord( FStatus );
-  Stream.WriteByte( FStyle );
-  Stream.WriteWord( FLNum );
-  Stream.WriteDWord( FLTime );
-  Stream.Write( FBoss, SizeOf( FBoss ) );
-  Stream.Write( FEmpty, SizeOf( FEmpty ) );
-  Stream.WriteWord( FDangerLevel );
-  Stream.Write( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
-  Stream.WriteWord( FFloorCell );
-  Stream.WriteByte( FFloorStyle );
-  Stream.WriteAnsiString( aID );
-  Stream.WriteAnsiString( FFeeling );
-  Stream.WriteAnsiString( FSpecExit );
-  Stream.WriteAnsiString( FMusicID );
-  Stream.WriteAnsiString( FSName );
-  Stream.WriteAnsiString( FAbbr );
+  aStream.Write( FMap, SizeOf( FMap ) );
+  aStream.WriteWord( FStatus );
+  aStream.WriteByte( FStyle );
+  aStream.WriteWord( FLNum );
+  aStream.WriteDWord( FLTime );
+  aStream.Write( FBoss, SizeOf( FBoss ) );
+  aStream.Write( FEmpty, SizeOf( FEmpty ) );
+  aStream.WriteWord( FDangerLevel );
+  aStream.Write( FAccuracyBonus, SizeOf( FAccuracyBonus ) );
+  aStream.WriteWord( FFloorCell );
+  aStream.WriteByte( FFloorStyle );
+  aStream.WriteAnsiString( aID );
+  aStream.WriteAnsiString( FFeeling );
+  aStream.WriteAnsiString( FSpecExit );
+  aStream.WriteAnsiString( FMusicID );
+  aStream.WriteAnsiString( FSName );
+  aStream.WriteAnsiString( FAbbr );
+
+  FMarkers.WriteToStream( aStream );
 
 //    FActiveBeing : TBeing;
 //    FNextNode    : TNode;
@@ -504,6 +512,8 @@ begin
   Assert( dfdata.EF_NOBLOCK  = vluamapnode.EF_NOBLOCK );
   Assert( dfdata.EF_NOITEMS  = vluamapnode.EF_NOITEMS );
   Assert( dfdata.EF_NOBEINGS = vluamapnode.EF_NOBEINGS );
+
+  FMarkers := TMarkerStore.Create;
 end;
 
 procedure TLevel.Init(nStyle : byte; nLNum : Word; nName : string; nSpecExit : string; nDepth : Word; nDangerLevel : Word);
@@ -646,6 +656,7 @@ begin
   if Player <> nil then Player.Detach;
   DestroyChildren;
   ClearEntities;
+  FMarkers.Clear;
 end;
 
 procedure TLevel.FullClear;
@@ -653,6 +664,7 @@ var x,y : Byte;
 begin
   ClearAll;
   ClearEntities;
+  FMarkers.Clear;
   with FMap do
   for x := 1 to MaxX do
     for y := 1 to MaxY do
@@ -836,6 +848,7 @@ end;
 destructor TLevel.Destroy;
 begin
   Clear;
+  FreeAndNil( FMarkers );
   inherited Destroy;
 end;
 
@@ -1125,7 +1138,7 @@ begin
   begin
     CallHook(Hook_OnKill,[ aBeing ]);
   end;
-
+  FMarkers.Wipe( aBeing.UID );
   FreeAndNil(aBeing);
   if Doom.State <> DSPlaying then Exit;
 

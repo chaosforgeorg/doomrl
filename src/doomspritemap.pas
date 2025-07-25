@@ -49,7 +49,7 @@ type
   procedure PushSpriteBeing( aPos : TVec2i; const aSprite : TSprite; aLight : Byte );
   procedure PushSpriteItem( aPos : TVec2i; const aSprite : TSprite; aLight : Byte );
   procedure PushSpriteDoodad( aCoord : TCoord2D; const aSprite : TSprite; aLight : Integer = -1; aZOffset : Integer = 0 );
-  procedure PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite; aTime : Integer = -1 );
+  procedure PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite; aTime : Integer = -1; aZOffset : Integer = 0 );
   procedure PushSpriteFXRotated( aPos : TVec2i; const aSprite : TSprite; aRotation : Single );
   procedure PushSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aTSX : Single = 0; aTSY : Single = 0 );
   function ShiftValue( aFocus : TCoord2D ) : TVec2i;
@@ -118,7 +118,7 @@ implementation
 
 uses math, vmath, viotypes, vvision, vgl3library,
      doomio, doomgfxio, doombase,
-     dfmap, dfitem, dfplayer;
+     dfmap, dfitem, dfplayer, drlmarkers;
 
 function SpritePartSetFill( aPart : TSpritePart ) : TSpritePartSet;
 begin
@@ -333,6 +333,7 @@ procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
 var iShift : Single;
     iPixel : Integer;
     iIO    : TDoomGFXIO;
+    iMark  : TMarker;
 begin
   iIO := IO as TDoomGFXIO;
   FShift := FNewShift;
@@ -353,6 +354,11 @@ begin
   FSpriteEngine.Update( aProjection );
   PushTerrain;
   PushObjects;
+
+  for iMark in Doom.Level.Markers.Data do
+    if Doom.Level.isVisible( iMark.Coord ) then
+      PushSpriteFX( iMark.Coord, iMark.Sprite, FTimer, -1 );
+
   DrawMarker;
 end;
 
@@ -787,9 +793,9 @@ begin
   end;
 end;
 
-procedure TDoomSpriteMap.PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite; aTime : Integer = -1 ) ;
+procedure TDoomSpriteMap.PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite; aTime : Integer = -1; aZOffset : Integer = 0 ) ;
 begin
-  PushSprite( Vec2i( (aCoord.X-1) * FSpriteEngine.Grid.X, (aCoord.Y-1) * FSpriteEngine.Grid.Y ), GetSprite( aSprite, aTime ), 255, DRL_Z_FX );
+  PushSprite( Vec2i( (aCoord.X-1) * FSpriteEngine.Grid.X, (aCoord.Y-1) * FSpriteEngine.Grid.Y ), GetSprite( aSprite, aTime ), 255, DRL_Z_FX + aZOffset );
 end;
 
 procedure TDoomSpriteMap.PushSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aTSX : Single; aTSY : Single ) ;
