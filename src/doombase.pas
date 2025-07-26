@@ -1403,7 +1403,9 @@ end;
 
 function TDoom.LoadSaveFile: Boolean;
 var Stream    : TStream;
+    Recreate  : Boolean;
 begin
+  Recreate := False;
   try
     try
       Stream := TGZFileStream.Create( ModuleUserPath + 'save',gzOpenRead );
@@ -1423,6 +1425,7 @@ begin
       if not CrashSave then
       begin
         FreeAndNil( FLevel );
+        Recreate := True;
         FLevel := TLevel.CreateFromStream( Stream );
         FLevel.Place( Player, Player.Position );
         LuaSystem.SetValue('level', FLevel );
@@ -1445,8 +1448,15 @@ begin
       Log('Save file corrupted! Error while loading : '+ e.message );
       DeleteFile( ModuleUserPath + 'save' );
       LoadSaveFile := False;
+      if Recreate then
+      begin
+        FreeAndNil( FLevel );
+        FLevel := TLevel.Create;
+      end;
     end;
   end;
+  if not GraphicsVersion then
+    (IO as TDoomTextIO).SetTextMap( FLevel );
 end;
 
 procedure TDoom.WriteSaveFile( aCrash : Boolean );
