@@ -14,6 +14,7 @@ require( "core:mortem" )
 
 core.options = {
 	auto_glow_items = true,
+	klass_achievements = false,
 }
 
 module = false
@@ -95,6 +96,7 @@ register_mod_array = core.register_storage( "mod_arrays", "mod_array", function 
 	end
 )
 register_klass      = core.register_storage( "klasses", "klass", function(k)
+		k.sname = k.sname or k.name
 		k.trait = {}
 		for i,t in ipairs(k.traits) do
 			assert(t.id, "id undefined!")
@@ -123,6 +125,50 @@ register_klass      = core.register_storage( "klasses", "klass", function(k)
 		end
 	end
 )
+
+function register_klass_badge( id )
+	return function( b )
+		local acid = b.achievement or ""
+		if acid ~= "" then 
+			acid = acid:gsub("^jhc_", "")
+		end
+		local function acv_id( sub )
+			if acid ~= "" then 
+				return "jhc_"..sub.."_"..acid
+			end
+			return ""
+		end
+		register_badge( "any_"..id )  {
+			name = b.name,
+			desc = b.desc.." as any class",
+			level = b.level,
+			set   = id,
+			klass = "any",
+			achievement = acv_id( "any" ),
+		}
+		for _,k in ipairs(klasses) do
+			if k.OnPick then
+				register_badge( k.id.."_"..id ) {
+					name = k.sname.." "..b.name,
+					desc = b.desc.." as "..k.sname,
+					level = b.level,
+					set   = id,
+					klass = k.id,
+					achievement = acv_id( k.id ),
+				}
+			end
+		end
+		register_badge( "all_"..id )  {
+			name = "Master "..b.name,
+			desc = b.desc.." w/each class",
+			level = b.level,
+			set   = id,
+			klass = "all",
+			achievement = acv_id( "all" ),
+		}
+	end
+end
+ 
 
 register_level   = core.register_storage( "levels", "level" )
 levels.default = {}

@@ -95,6 +95,7 @@ core.register_blueprint "klass"
 {
 	id          = { true,  core.TSTRING },
 	name        = { true,  core.TSTRING },
+	sname       = { false, core.TSTRING },
 	char        = { true,  core.TSTRING },
 	desc        = { true,  core.TSTRING },
 	hidden      = { false, core.TBOOL, false },
@@ -122,6 +123,9 @@ core.register_blueprint "badge"
 	name        = { true,  core.TSTRING },
 	desc        = { true,  core.TSTRING },
 	level       = { true,  core.TNUMBER },
+	set         = { false, core.TSTRING, "" },
+	klass       = { false, core.TSTRING, "" },
+	group       = { false, core.TSTRING, "" },
 	achievement = { false, core.TSTRING, "" },
 }
 
