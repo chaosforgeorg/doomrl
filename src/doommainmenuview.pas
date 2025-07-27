@@ -114,7 +114,9 @@ begin
   FMode       := aInitial;
   FResult     := aResult;
   FSaveExists := False;
-  FJHCLink    := (CoreModuleID = 'drl') or LuaSystem.Get( ['DEMO'], False );
+  FJHCLink    := (CoreModuleID = 'drl');
+  if (not FJHCLink) and LuaSystem.Defined('DEMO') then
+    FJHCLink := LuaSystem.Get( 'DEMO', False );
   FArrayCType := nil;
   FArrayDiff  := nil;
   FArrayKlass := nil;
@@ -261,7 +263,7 @@ begin
   iCount := 6;
   if FJHCLink then
   begin
-    Inc( iSize.X );
+    Inc( iSize.Y );
     Inc( iCount );
   end;
   VTIG_Begin( 'mainmenu', iSize, Point( 29, 14 ) );
