@@ -309,7 +309,6 @@ WWWWWWWWWWWWWWWWWWWWW...............####...............WWWWWWWWWWWWWWWWWWWWW
 			ui.msg("But... something's wrong!")
 			ui.msg("You sense a menace, a threat so evil it kills your mind!")
 			ui.msg("Was not all evil destroyed???")
-			player.score = player.score + 10000
 			player:continue_game()
 		end
 	end,

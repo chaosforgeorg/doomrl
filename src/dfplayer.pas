@@ -508,12 +508,12 @@ var iCopyText   : Text;
     iMortemText : Text;
     iString     : AnsiString;
 
-procedure ScoreCRC(var Score : LongInt);
+procedure ScoreCRC(var aScore : LongInt);
 begin
-  if Score < 2000 then Exit;
-  while not ((Score mod 277) = 0) do Inc(Score);
-  Inc(Score,FExpLevel);
-  Inc(Score,FLevelIndex*3);
+  if aScore < 2000 then Exit;
+  while not ((aScore mod 277) = 0) do Inc(aScore);
+  Inc(aScore,FExpLevel);
+  Inc(aScore,FLevelIndex*3);
 end;
 
 begin
@@ -521,22 +521,27 @@ begin
   MemorialWritten := True;
   if FScore = -1000 then Exit;
 
-  FScore += Max(FExp + (FLevelIndex * 1000) + Max(FHP,0) * 20,0);
-  if FScore < 0 then FScore := 0;
-  if GodMode   then FScore := 0;
-  if Doom.Difficulty = DIFF_NIGHTMARE then FScore -= FStatistics.GameTime div 500;
-
-  if Doom.GameWon then FScore += FScore div 4;
-
   FStatistics.Update;
-
-  FScore := Round( FScore * Double(LuaSystem.Get([ 'diff', Doom.Difficulty, 'scorefactor' ])) );
-
   Doom.CallHook(Hook_OnMortem,[ not NoPlayerRecord ]);
-  LuaSystem.ProtectedCall([CoreModuleID,'RunAwards'],[NoPlayerRecord]);
+  if LuaSystem.Defined([CoreModuleID,'RunAwards']) then
+    LuaSystem.ProtectedCall([CoreModuleID,'RunAwards'],[NoPlayerRecord]);
 
-  // FScore
-  ScoreCRC(FScore);
+  if LuaSystem.Defined([CoreModuleID,'GetScore']) then
+  begin
+    FScore := LuaSystem.ProtectedCall([CoreModuleID,'GetScore'],[])
+  end
+  else
+  begin
+    FScore += Max(FExp + (FLevelIndex * 1000) + Max(FHP,0) * 20,0);
+    if FScore < 0 then FScore := 0;
+    if Doom.Difficulty = DIFF_NIGHTMARE then FScore -= FStatistics.GameTime div 500;
+
+    if Doom.GameWon then FScore += FScore div 4;
+    FScore := Round( FScore * Double(LuaSystem.Get([ 'diff', Doom.Difficulty, 'scorefactor' ])) );
+    // FScore
+    ScoreCRC(FScore);
+  end;
+  if GodMode then FScore := 0;
 
   HOF.Add(Name,FScore,FKilledBy,FExpLevel,FLevelIndex,Doom.Challenge,Doom.Level.Abbr);
 
