@@ -53,6 +53,7 @@ begin
   FMap        := TIntHashMap.Create( HashMap_NoRaise );
   FGameTime   := 0;
   FRealTime   := 0;
+  FMap['min_health'] := 100;
 end;
 
 procedure TStatistics.Increase( const aStatisticID: AnsiString; aAmount: Integer = 1);
@@ -82,9 +83,9 @@ procedure TStatistics.OnDamage( aAmount : Integer );
 begin
   if aAmount < 0 then Exit;
   aAmount := Min( aAmount, 200 );
-  FMap['damage_taken']    := FMap['damage_taken']    + aAmount;
-  FMap['damage_on_level'] := FMap['damage_on_level'] + aAmount;
-
+  FMap['damage_taken']     := FMap['damage_taken']    + aAmount;
+  FMap['damage_on_level']  := FMap['damage_on_level'] + aAmount;
+  FMap['min_health']       := Max( Player.HP - aAmount, 0 );
   FMap['kills_non_damage'] := Max( FMap['kills_non_damage'], Player.FKills.BestNoDamageSequence );
 end;
 
