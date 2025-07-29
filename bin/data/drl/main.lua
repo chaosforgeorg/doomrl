@@ -334,9 +334,9 @@ function drl.GetResultId()
 	return result
 end
 
-function drl.GetShortResultId( result, depth )
+function drl.GetShortResultId( result, level_index )
 	if result == "win" or result == "final" or result == "sacrifice" then return result end
-	return "level:"..depth
+	return "level:"..level_index
 end
 
 function drl.GetResultDescription( result, highscore )
@@ -419,8 +419,8 @@ function drl.RunPrintMortem()
 			player:mortem_print(" {!"..player.name.."},")
 			player:mortem_print(" "..player_description)
 		end
-		local epi_name = player.episode[player.depth].deathname or player.episode[player.depth].name or "an Unknown Location"
-		local depth    = player.episode[player.depth].number or 0
+		local epi_name = player.episode[player.level_index].deathname or player.episode[player.level_index].name or "an Unknown Location"
+		local depth    = player.episode[player.level_index].number or 0
 		if depth ~= 0 then
 			player:mortem_print( " "..death_reason.." on level {!"..depth.."} of {!"..epi_name.."}." )
 		else
@@ -517,7 +517,7 @@ function drl.RunPrintMortem()
 		if kills.get("jc") > 0 then
 			player:mortem_print( "  Then finally in Hell itself, he killed the final EVIL." )
 		else
-			player:mortem_print( "  On level {!"..player.depth.."} he finally "..death_reason..".")
+			player:mortem_print( "  On level {!"..player.level_index.."} he finally "..death_reason..".")
 		end
 	end
 	player:mortem_print()
@@ -652,8 +652,8 @@ end
 function drl.OnWinGame()
 	if kills.get("jc") > 0 then
 		drl.plot_outro_final()
-	elseif player.depth >= 24 then
-		if player.hp > 0 or player.depth > 24 then
+	elseif player.level_index >= 24 then
+		if player.hp > 0 or player.level_index > 24 then
 			drl.plot_outro_3()
 		else
 			drl.plot_outro_partial()

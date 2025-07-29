@@ -116,7 +116,7 @@ function drl.register_challenges()
 		end,
 
 		OnMortem = function ()
-			if player.depth >= 9  then player:add_badge("berserker1") end
+			if player.level_index >= 9  then player:add_badge("berserker1") end
 			if player:has_won() then
 
 				if statistics.unique_kills == statistics.max_unique_kills then
@@ -220,7 +220,7 @@ function drl.register_challenges()
 		end,
 
 		OnMortem = function ()
-			if player.depth >= 16 then player:add_badge("marksman1") end
+			if player.level_index >= 16 then player:add_badge("marksman1") end
 			if player:has_won() then
 				player:add_badge("marksman2")
 				if DIFFICULTY >= DIFF_VERYHARD  then
@@ -324,7 +324,7 @@ function drl.register_challenges()
 		end,
 
 		OnMortem = function ()
-			if player.depth >= 16 then player:add_badge("shotgun1") end
+			if player.level_index >= 16 then player:add_badge("shotgun1") end
 			if player:has_won() then
 				player:add_badge("shotgun2")
 				if DIFFICULTY >= DIFF_VERYHARD  then player:add_badge("shotgun3") end
@@ -435,7 +435,7 @@ function drl.register_challenges()
 					melee_tot = melee_tot + kills.get_type(items[index].id)
 				end
 			end
-			if player.depth >= 9 then player:add_badge("lightfoot1") end
+			if player.level_index >= 9 then player:add_badge("lightfoot1") end
 			if player:has_won() then
 				player:add_badge("lightfoot2")
 				if DIFFICULTY >= DIFF_HARD                                        then player:add_badge("lightfoot3") end
@@ -525,7 +525,7 @@ function drl.register_challenges()
 		end,
 		
 		OnMortem = function ()
-			if player.depth >= 9 then player:add_badge("impatient1") end
+			if player.level_index >= 9 then player:add_badge("impatient1") end
 			if player:has_won() then
 				player:add_badge("impatient2")
 				if DIFFICULTY >= DIFF_HARD                                                   then player:add_badge("impatient3") end
@@ -630,7 +630,7 @@ function drl.register_challenges()
 		end,
 
 		OnMortem = function ()
-			if player.depth >= 9 then player:add_badge("confident1") end
+			if player.level_index >= 9 then player:add_badge("confident1") end
 			if player:has_won() then
 				player:add_badge("confident2")
 				if statistics.unique_kills == statistics.max_unique_kills and DIFFICULTY >= DIFF_VERYHARD then player:add_badge("confident4") end
@@ -784,7 +784,7 @@ function drl.register_challenges()
 		end,
 
 		OnMortem = function ()
-			if player.depth >= 16 then player:add_badge("redalert1") end
+			if player.level_index >= 16 then player:add_badge("redalert1") end
 			if player:has_won() then
 				player:add_badge("redalert2")
 				if DIFFICULTY >= DIFF_NIGHTMARE then player:add_badge("redalert4") end
@@ -864,7 +864,7 @@ function drl.register_challenges()
 		end,
 
 		OnMortem = function ()
-			if player.depth >= 9 then player:add_badge("darkness1") end
+			if player.level_index >= 9 then player:add_badge("darkness1") end
 			if player:has_won() then
 				player:add_badge("darkness2")
 				if DIFFICULTY >= DIFF_HARD and statistics.unique_kills >= statistics.max_unique_kills * 0.8 then player:add_badge("darkness3") end
@@ -934,7 +934,7 @@ function drl.register_challenges()
 		end,
 
 		OnMortem = function ()
-			if player.depth >= 16 then player:add_badge("carnage1") end
+			if player.level_index >= 16 then player:add_badge("carnage1") end
 			if player:has_won() then
 				player:add_badge("carnage2")
 				if DIFFICULTY >= DIFF_HARD and statistics.damage_taken < 500 then player:add_badge("carnage3") end
@@ -1214,8 +1214,8 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 		end,
 
 		OnMortem = function ()
-			if player.depth >= 16 then player:add_badge("century1") end
-			if player.depth >= 51 then player:add_badge("century2") end
+			if player.level_index >= 16 then player:add_badge("century1") end
+			if player.level_index >= 51 then player:add_badge("century2") end
 			if player:has_won() then
 				player:add_badge("century3")
 				if DIFFICULTY >= DIFF_VERYHARD then player:add_badge("century4") end
@@ -1313,7 +1313,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 		end,
 
 		OnMortem = function ()
-			if player.depth >= 16 then player:add_badge("pacifism1") end
+			if player.level_index >= 16 then player:add_badge("pacifism1") end
 			if player:has_won() then
 				player:add_badge("pacifism2")
 				if statistics.real_time <= 10*60 then
@@ -1648,7 +1648,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 		end,
 
 		OnMortem = function ()
-			if player.depth >= 8 then player:add_badge("haste1") end
+			if player.level_index >= 8 then player:add_badge("haste1") end
 			if player:has_won() then
 				player:add_badge("haste2")
 				if statistics.unique_kills == statistics.max_unique_kills and DIFFICULTY >= DIFF_VERYHARD then player:add_badge("haste3") end

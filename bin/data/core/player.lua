@@ -39,7 +39,7 @@ function player:remove_badge( badge )
 end
 
 function player:add_badge( badge )
-	if badges[ badge ].achievement then
+	if badges[ badge ].achievement ~= "" then
 		player:set_achievement( badges[ badge ].achievement )
 	end
 	self.__props.badges[badge] = true
@@ -79,7 +79,7 @@ end
 
 function player:add_history( history )
 	if history then
-		local name = "level "..self.depth
+		local name = "level "..self.level_index
 		table.insert( self.__props.history, (string.gsub( history, "@1", name ):gsub("^%l", string.upper)) )
 	end
 end

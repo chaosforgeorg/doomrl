@@ -92,7 +92,7 @@ published
   property SkillRank       : Word       read GetSkillRank;
   property ExpRank         : Word       read GetExpRank;
   property Score           : LongInt    read FScore         write FScore;
-  property Depth           : Word       read CurrentLevel;
+  property Level_Index     : Word       read CurrentLevel;
   property EnemiesInVision : Word       read FEnemiesInVision;
 end;
 
