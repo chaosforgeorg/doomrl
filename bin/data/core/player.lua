@@ -79,7 +79,7 @@ end
 
 function player:add_history( history )
 	if history then
-		local name = "level "..self.level_index
+		local name = "level "..level.index
 		table.insert( self.__props.history, (string.gsub( history, "@1", name ):gsub("^%l", string.upper)) )
 	end
 end

@@ -23,7 +23,7 @@ type
 
 TLevel = class(TLuaMapNode, ITextMap)
     constructor Create; reintroduce;
-    procedure Init( nStyle : byte; nLNum : Word;nName : string; nSpecExit : string; nDepth : Word; nDangerLevel : Word);
+    procedure Init( nStyle : byte; nLNum : Word;nName : string; nSpecExit : string; aIndex : Integer; nDangerLevel : Word);
     procedure AfterGeneration( aGenerated : Boolean );
     procedure PreEnter;
     procedure RecalcFluids;
@@ -126,6 +126,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function  getItem( const coord : TCoord2D ) : TItem; override;
   private
     FMap           : TMap;
+    FIndex         : Integer;
     FStatus        : Word; // level result
     FStyle         : Byte;
     FBoss          : TUID;
@@ -187,6 +188,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     property Feeling      : AnsiString read FFeeling     write FFeeling;
     property id           : AnsiString read FID;
     property Music_ID     : AnsiString read FMusicID     write FMusicID;
+    property Index        : Integer    read FIndex;
   end;
 
 implementation
@@ -437,7 +439,8 @@ constructor TLevel.CreateFromStream( aStream: TStream );
 begin
   inherited CreateFromStream( aStream );
 
-  aStream.Read( FMap, SizeOf( FMap ) );
+  aStream.Read( FMap,   SizeOf( FMap ) );
+  aStream.Read( FIndex, SizeOf( FIndex ) );
   FStatus := aStream.ReadWord();
   FStyle  := aStream.ReadByte();
   FLNum   := aStream.ReadWord();
@@ -469,6 +472,7 @@ begin
   inherited WriteToStream( aStream );
 
   aStream.Write( FMap, SizeOf( FMap ) );
+  aStream.Write( FIndex, SizeOf( FIndex ) );
   aStream.WriteWord( FStatus );
   aStream.WriteByte( FStyle );
   aStream.WriteWord( FLNum );
@@ -514,13 +518,15 @@ begin
   Assert( dfdata.EF_NOBEINGS = vluamapnode.EF_NOBEINGS );
 
   FMarkers := TMarkerStore.Create;
+  FIndex   := 0;
 end;
 
-procedure TLevel.Init(nStyle : byte; nLNum : Word; nName : string; nSpecExit : string; nDepth : Word; nDangerLevel : Word);
+procedure TLevel.Init(nStyle : byte; nLNum : Word; nName : string; nSpecExit : string; aIndex : Integer; nDangerLevel : Word);
 begin
   FActiveBeing := nil;
   FNextNode    := nil;
 
+  FIndex := aIndex;
   FBoss := 0;
   FLTime  := 0;
   FStyle := nstyle;
@@ -531,7 +537,7 @@ begin
   FAbbr  := '';
   FDangerLevel := nDangerLevel;
   FSpecExit := nSpecExit;
-  FID := 'level'+IntToStr(nDepth);
+  FID := 'level'+IntToStr(FIndex);
   FFlags := [];
   FEmpty := False;
   FHooks := [];
@@ -585,8 +591,8 @@ begin
     SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
   end;
 
-  CallHook( Hook_OnEnterLevel,[Player.CurrentLevel,FID] );
-  Player.CallHook( Hook_OnEnterLevel,[Player.CurrentLevel,FID] );
+  CallHook( Hook_OnEnterLevel,[FIndex,FID] );
+  Player.CallHook( Hook_OnEnterLevel,[FIndex,FID] );
 
   if GraphicsVersion then
   begin
@@ -630,7 +636,7 @@ end;
 procedure TLevel.Leave;
 var TimeDiff : LongInt;
 begin
-  CallHook(Hook_OnExit,[Player.CurrentLevel,FID, FStatus]);
+  CallHook(Hook_OnExit,[FIndex,FID, FStatus]);
   if LF_BONUS in FFlags then
     if Hook_OnCompletedCheck in FHooks then
     begin
@@ -1272,7 +1278,7 @@ begin
       Player.NukeActivated := 0;
       Player.ApplyDamage( 6000, Target_Internal, Damage_Plasma, nil, 0 );
 
-      CallHook(Hook_OnNuked,[Player.CurrentLevel,FID]);
+      CallHook(Hook_OnNuked,[FIndex,FID]);
     end;
   end;
 end;

@@ -44,7 +44,7 @@ function level:get_item_table( dlevel, weights, reqs, global )
 	local greqs        = nil
 	local gweights	   = nil
 	if global then
-		local linfo = player.episode[ player.level_index ]
+		local linfo = player.episode[ level.index ]
 		if linfo then
 			greqs    = linfo.reqs
 			gweights = linfo.weights

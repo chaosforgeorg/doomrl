@@ -1194,17 +1194,17 @@ repeat
       Player.Statistics.Update;
 
       if Player.SpecExit = '' then
-        Inc(Player.CurrentLevel)
+        Player.NextLevelIndex
       else
         Player.Statistics.Increase('bonus_levels_visited');
 
-      with LuaSystem.GetTable(['player','episode',Player.CurrentLevel]) do
+      with LuaSystem.GetTable(['player','episode',Player.Level_Index]) do
       try
         FLevel.Init(getInteger('style',0),
                    getInteger('number',0),
                    getString('name',''),
                    getString('special',''),
-                   Player.CurrentLevel,
+                   Player.Level_Index,
                    getInteger('danger',0));
         if IsString('sname') then FLevel.SName := getString('sname');
         if IsString('abbr')  then FLevel.Abbr  := getString('abbr');
@@ -1321,7 +1321,7 @@ repeat
     EXCEPTEMMITED := True;
     if Option_SaveOnCrash and ((Player.Statistics['crash_count'] = 0) or{thelaptop: Vengeance is MINE} (Doom.Difficulty < DIFF_NIGHTMARE)) then
     begin
-      if Player.CurrentLevel <> 1 then Dec(Player.CurrentLevel);
+      if Player.Level_Index <> 1 then Player.NextLevelIndex;
       Player.Statistics.Increase('crash_count');
       Player.SpecExit := '';
       WriteSaveFile( True );

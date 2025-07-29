@@ -16,8 +16,6 @@ end;
 { TPlayer }
 
 type TPlayer = class(TBeing)
-  CurrentLevel    : Word;
-
   SpecExit        : string[20];
   NukeActivated   : Word;
 
@@ -59,7 +57,9 @@ type TPlayer = class(TBeing)
   function RunPath( const aCoord : TCoord2D ) : Boolean;
   procedure ExamineNPC;
   procedure ExamineItem;
+  procedure NextLevelIndex;
 private
+  FLevelIndex     : Integer;
   FExp            : LongInt;
   FExpLevel       : Byte;
   FKlass          : Byte;
@@ -92,7 +92,7 @@ published
   property SkillRank       : Word       read GetSkillRank;
   property ExpRank         : Word       read GetExpRank;
   property Score           : LongInt    read FScore         write FScore;
-  property Level_Index     : Word       read CurrentLevel;
+  property Level_Index     : Integer    read FLevelIndex;
   property EnemiesInVision : Word       read FEnemiesInVision;
 end;
 
@@ -117,7 +117,7 @@ begin
   FKillMax   := 0;
   FKillCount := 0;
 
-  CurrentLevel  := 0;
+  FLevelIndex   := 0;
   StatusEffect  := StatusNormal;
   FStatistics   := TStatistics.Create;
   FScore        := 0;
@@ -158,7 +158,7 @@ begin
   inherited WriteToStream( Stream );
 
   Stream.WriteAnsiString( SpecExit );
-  Stream.WriteWord( CurrentLevel );
+  Stream.Write( FLevelIndex, SizeOf( FLevelIndex ) );
   Stream.WriteWord( NukeActivated );
   Stream.WriteByte( InventorySize );
   Stream.WriteByte( FExpLevel );
@@ -182,7 +182,7 @@ begin
   inherited CreateFromStream( Stream );
 
   SpecExit       := Stream.ReadAnsiString();
-  CurrentLevel   := Stream.ReadWord();
+  Stream.Read( FLevelIndex, SizeOf( FLevelIndex ) );
   NukeActivated  := Stream.ReadWord();
   InventorySize  := Stream.ReadByte();
   FExpLevel      := Stream.ReadByte();
@@ -443,6 +443,11 @@ begin
   if iCount = 0 then IO.Msg('There are no items in sight.');
 end;
 
+procedure TPlayer.NextLevelIndex;
+begin
+  Inc(FLevelIndex);
+end;
+
 // pieczarki oliwki szynka kielbasa peperoni motzarella //
 
 destructor TPlayer.Destroy;
@@ -508,7 +513,7 @@ begin
   if Score < 2000 then Exit;
   while not ((Score mod 277) = 0) do Inc(Score);
   Inc(Score,FExpLevel);
-  Inc(Score,CurrentLevel*3);
+  Inc(Score,FLevelIndex*3);
 end;
 
 begin
@@ -516,7 +521,7 @@ begin
   MemorialWritten := True;
   if FScore = -1000 then Exit;
 
-  FScore += Max(FExp + (CurrentLevel * 1000) + Max(FHP,0) * 20,0);
+  FScore += Max(FExp + (FLevelIndex * 1000) + Max(FHP,0) * 20,0);
   if FScore < 0 then FScore := 0;
   if GodMode   then FScore := 0;
   if Doom.Difficulty = DIFF_NIGHTMARE then FScore -= FStatistics.GameTime div 500;
@@ -533,7 +538,7 @@ begin
   // FScore
   ScoreCRC(FScore);
 
-  HOF.Add(Name,FScore,FKilledBy,FExpLevel,CurrentLevel,Doom.Challenge,Doom.Level.Abbr);
+  HOF.Add(Name,FScore,FKilledBy,FExpLevel,FLevelIndex,Doom.Challenge,Doom.Level.Abbr);
 
   if Assigned( MortemData ) then
   begin
@@ -763,7 +768,7 @@ begin
   if State.IsNumber(2) then
   begin
     Player.SpecExit     := '';
-    Player.CurrentLevel := State.ToInteger(2)-1;
+    Player.FLevelIndex := State.ToInteger(2)-1;
     Exit(0);
   end;
   if State.IsString(2) then
