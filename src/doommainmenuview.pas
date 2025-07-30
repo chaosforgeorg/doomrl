@@ -708,7 +708,6 @@ begin
     iEntry.Allow := True;
     if (FResult.Challenge <> '') and (not GetBoolean( 'challenge' )) then Continue;
     if GetInteger('req_skill',0) > HOF.SkillRank then iEntry.Allow := Setting_UnlockAll;
-    if GetInteger('req_exp',0)   > HOF.ExpRank   then iEntry.Allow := Setting_UnlockAll;
     iEntry.Name := GetString('name');
     iEntry.Desc := '';
     iEntry.Extra:= '';

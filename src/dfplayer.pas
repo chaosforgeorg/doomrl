@@ -73,9 +73,6 @@ private
   FTraits         : TTraits;
   FStatistics     : TStatistics;
   FMultiMove      : TMultiMove;
-private
-  function GetSkillRank : Word;
-  function GetExpRank : Word;
 public
   property MultiMove       : TMultiMove  read FMultiMove;
   property Statistics      : TStatistics read FStatistics;
@@ -89,8 +86,6 @@ published
   property NukeTime        : Word       read NukeActivated  write NukeActivated;
   property Klass           : Byte       read FKlass         write FKlass;
   property ExpFactor       : Real       read FExpFactor     write FExpFactor;
-  property SkillRank       : Word       read GetSkillRank;
-  property ExpRank         : Word       read GetExpRank;
   property Score           : LongInt    read FScore         write FScore;
   property Level_Index     : Integer    read FLevelIndex;
   property EnemiesInVision : Word       read FEnemiesInVision;
@@ -635,16 +630,6 @@ begin
   if (Inv.Slot[efTorso] <> nil) and (IO.ASCII.Exists(Inv.Slot[efTorso].ID)) then
     exit(Inv.Slot[efTorso].ID);
   Exit('player');
-end;
-
-function TPlayer.GetSkillRank: Word;
-begin
-  Exit( HOF.SkillRank );
-end;
-
-function TPlayer.GetExpRank: Word;
-begin
-  Exit( HOF.ExpRank );
 end;
 
 procedure TPlayer.doUpgradeTrait;

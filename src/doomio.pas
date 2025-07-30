@@ -173,7 +173,7 @@ implementation
 uses math, video, dateutils, variants,
      vsound, vluasystem, vuid, vlog, vdebug, vuiconsole, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vtigio, vvector,
-     dflevel, dfplayer, dfitem, dfbeing,
+     dflevel, dfplayer, dfitem, dfbeing, dfhof,
      doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua,
      doomhudviews, doomplotview;
 
@@ -1436,7 +1436,15 @@ begin
   Result := 1;
 end;
 
-const lua_ui_lib : array[0..16] of luaL_Reg = (
+function lua_ui_get_rank(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+begin
+  iState.Init(L);
+  iState.Push( HOF.GetRank( iState.ToString( 1 ) ) );
+  Result := 1;
+end;
+
+const lua_ui_lib : array[0..17] of luaL_Reg = (
       ( name : 'msg';           func : @lua_ui_msg ),
       ( name : 'msg_clear';     func : @lua_ui_msg_clear ),
       ( name : 'msg_enter';     func : @lua_ui_msg_enter ),
@@ -1453,6 +1461,7 @@ const lua_ui_lib : array[0..16] of luaL_Reg = (
       ( name : 'set_narrow_mode';   func : @lua_ui_set_narrow_mode ),
       ( name : 'update_styles';     func : @lua_ui_update_styles ),
       ( name : 'is_pad';            func : @lua_ui_is_pad ),
+      ( name : 'get_rank';          func : @lua_ui_get_rank ),
       ( name : nil;          func : nil; )
 );
 

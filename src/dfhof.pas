@@ -20,7 +20,6 @@ const RankArray : array[1..2] of AnsiString = ('exp_ranks','skill_ranks');
 
 type THOF = object
   SkillRank  : Word;
-  ExpRank    : Word;
 
   procedure Init;
   procedure Add( const Name : AnsiString; aScore : LongInt; const aKillerID : AnsiString; Level, DLev : Word; nChal, nAbbr : AnsiString );
@@ -34,10 +33,12 @@ type THOF = object
 
   function AddCounted( const aRootID, aLeafID, aElementID : AnsiString; aAmount : DWord = 1 ) : Boolean;
   function GetCounted( const aRootID, aLeafID, aElementID : AnsiString ) : DWord;
+  function GetRank( const aRankName : Ansistring ) : Integer;
 private
   FScore      : TScoreFile;
   FPlayerInfo : TVXMLDataFile;
 
+  procedure SetRank( const aRankName: Ansistring; aValue : Integer );
   procedure Save; overload;
   // TODO : remove
   function GetBadgeCount( aBadgeLevel : DWord ) : DWord;
@@ -59,8 +60,6 @@ private
   function GetCountStr( aXPathQuery : string; aContext : TDOMNode = nil ) : String;
   function IncreaseXMLCount( aContainer : TDOMElement; const aElementID : string; const aID : string; aAmount : DWord ) : TDOMElement;
   function IncreaseXMLCount( aContainer : TDOMElement; const aElementID : string; aAmount : DWord ) : TDOMElement;
-  function  GetRank( aRankName : string ) : Word;
-  procedure SetRank( aRankName: string; aValue : Byte );
 
   function GameResultBetter( const ResultOld, ResultNew : String ) : boolean;
   function GameResultAtLeast( const ResultAtLeast, ResultNew : String ) : boolean;
@@ -197,14 +196,14 @@ begin
   if GetCountStr = '' then Exit('1');
 end;
 
-function THOF.GetRank(aRankName: string): Word;
+function THOF.GetRank( const aRankName : Ansistring ): Integer;
 var iXMLElement  : TDOMElement;
 begin
   iXMLElement := FPlayerInfo.XML.GetElement( 'player/ranks/rank[@id="'+aRankName+'"]' );
   if (iXMLElement = nil) then Exit(0) else Exit( StrToInt(iXMLElement.GetAttribute('value') ));
 end;
 
-procedure THOF.SetRank(aRankName: string; aValue: Byte);
+procedure THOF.SetRank( const aRankName: Ansistring; aValue: Integer );
 var iXMLElement  : TDOMElement;
     iXMLEntry    : TDOMElement;
 begin
@@ -257,6 +256,8 @@ var
 
    iExpRanks   : Boolean;
    iSkillRanks : Boolean;
+   iExpRank    : Integer;
+   iSkillRank  : Integer;
 
   function IsNone(l : LongInt) : string;
   begin
@@ -297,8 +298,11 @@ begin
 
   iPage := Result.Add( '' );
 
-  if iExpRanks   then iPage.Push('Experience rank: {!'+LuaSystem.Get([ 'exp_ranks', ExpRank+1, 'name' ])+'}' );
-  if iSkillRanks then iPage.Push('Skill rank     : {!'+LuaSystem.Get([ 'skill_ranks', SkillRank+1, 'name' ])+'}' );
+  iExpRank    := GetRank('exp');
+  iSkillRank  := GetRank('skill');
+
+  if iExpRanks   then iPage.Push('Experience rank: {!'+LuaSystem.Get([ 'exp_ranks', iExpRank+1, 'name' ])+'}' );
+  if iSkillRanks then iPage.Push('Skill rank     : {!'+LuaSystem.Get([ 'skill_ranks', iSkillRank+1, 'name' ])+'}' );
   iPage.Push('Games won      : {!'+IntToStr(GetCount('player/games/win[@id="total"]'))+
            '  (' +IntToStr(GetCount('player/games/win[@id="sacrifice"]')) + ' partial, ' +
                  IntToStr(GetCount('player/games/win[@id="win"]')) + ' standard, ' +
@@ -309,8 +313,8 @@ begin
   iPage.Push('Total game time: {!'+DurationString(GetCount('player/time'))+'}');
   iPage.Push('');
 
-  if iSkillRanks then PushRank( RankArray[RANKSKILL], SkillRank );
-  if iExpRanks   then PushRank( RankArray[RANKEXP],   ExpRank );
+  if iSkillRanks then PushRank( RankArray[RANKSKILL], iSkillRank );
+  if iExpRanks   then PushRank( RankArray[RANKEXP],   iExpRank );
 
   //Page.Push('');
 
@@ -702,7 +706,6 @@ end;
 procedure THOF.Init;
 begin
   SkillRank := 0;
-  ExpRank   := 0;
 
   FScore := TScoreFile.Create( ScorePath + ScoreFile, MaxHOFEntries );
   FScore.SetCRC( '344ef'+{ModuleID+}'3321', '738af'+{ModuleID+}'92-5' );
@@ -720,7 +723,6 @@ begin
   FPlayerInfo.Load;
 
   SkillRank := GetRank('skill');
-  ExpRank   := GetRank('exp');
   HOFOpen := True;
 end;
 
@@ -927,26 +929,32 @@ begin
 end;
 
 function THOF.RankCheck( out aResult : THOFRank ) : Boolean;
+var iExpRank   : Integer;
+    iSkillRank : Integer;
 begin
   if NoPlayerRecord then Exit( False );
 
+  iSkillRank := GetRank('skill');
+  iExpRank   := GetRank('exp');
+
     // check self-imposed challanges!
-  aResult.SkillRank := SkillRank;
-  aResult.ExpRank   := ExpRank;
+  aResult.SkillRank := iSkillRank;
+  aResult.ExpRank   := iExpRank;
 
   try
-    while CheckRank(RANKEXP,ExpRank)     do Inc(ExpRank);
-    while CheckRank(RANKSKILL,SkillRank) do Inc(SkillRank);
+    while CheckRank(RANKEXP,iExpRank)     do Inc(iExpRank);
+    while CheckRank(RANKSKILL,iSkillRank) do Inc(iSkillRank);
   except
     on e : EDOMError do
       Log( e.Message );
   end;
 
-  if aResult.SkillRank = SkillRank then aResult.SkillRank := 0 else aResult.SkillRank := SkillRank;
-  if aResult.ExpRank   = ExpRank   then aResult.ExpRank := 0   else aResult.ExpRank := ExpRank;
+  if aResult.SkillRank = iSkillRank then aResult.SkillRank := 0 else aResult.SkillRank := iSkillRank;
+  if aResult.ExpRank   = iExpRank   then aResult.ExpRank := 0   else aResult.ExpRank   := iExpRank;
 
-  SetRank('skill', SkillRank);
-  SetRank('exp', ExpRank);
+  SetRank('skill', iSkillRank);
+  SetRank('exp',   iExpRank);
+  SkillRank := iSkillRank;
 
   Exit( (aResult.SkillRank <> 0) or (aResult.ExpRank <> 0) );
 end;
