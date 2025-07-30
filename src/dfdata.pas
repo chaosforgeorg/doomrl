@@ -81,11 +81,14 @@ type TInterfaceLayer = class
   function HandleInput( aInput : TInputKey ) : Boolean; virtual;
 end;
 
-type
-  THOFRank = record
-    ExpRank   : DWord;
-    SkillRank : DWord;
-  end;
+type THOFRankEntry = record
+  ID    : Ansistring;
+  Value : Integer;
+end;
+
+type THOFRank = record
+  Data : array of THOFRankEntry;
+end;
 
 const
   DEBUG           : Boolean = False;

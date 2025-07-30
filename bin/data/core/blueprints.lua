@@ -10,6 +10,7 @@ core.register_blueprint "rank_req"
 	req    = { true, core.TIDIN("requirements") },
 	amount = { false, core.TNUMBER, 1 }, 
 	param  = { false, core.TANY },
+	param2 = { false, core.TANY },
 }
 
 core.register_blueprint "rank"

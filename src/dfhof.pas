@@ -246,14 +246,11 @@ var
    iPages   : DWord;
    iElement : TDOMElement;
    iBadges  : LongInt;
+   iID      : AnsiString;
    iString  : AnsiString;
    iDesc    : AnsiString;
    iPair    : TLuaIndexVariant;
-
-   iExpRanks   : Boolean;
-   iSkillRanks : Boolean;
-   iExpRank    : Integer;
-   iSkillRank  : Integer;
+   iRank    : Integer;
 
   function IsNone(l : LongInt) : string;
   begin
@@ -288,17 +285,23 @@ begin
   iDiffCnt := LuaSystem.Get([ 'diff', '__counter' ], 0 );
   iChalCnt := LuaSystem.Get( ['chal','__counter'], 0 );
 
-  iExpRanks   := LuaSystem.Defined([ 'ranks', 'exp' ]);
-  iSkillRanks := LuaSystem.Defined([ 'ranks', 'skill' ]);
   // ---------------------------------------------------------------------------
 
   iPage := Result.Add( '' );
 
-  iExpRank    := GetRank('exp');
-  iSkillRank  := GetRank('skill');
+  with LuaSystem.GetTable(['ranks']) do
+  try
+    for iPair in IndexVariants do
+    begin
+      iID     := iPair.Value;
+      iRank   := GetRank( iID );
+      iString := LuaSystem.Get([ 'ranks', iID, 'name' ], '' );
+      iPage.Push(Padded( iString + ' rank',15)+': {!'+LuaSystem.Get([ 'ranks', iID, iRank+1, 'name' ])+'}' );
+    end;
+  finally
+    Free;
+  end;
 
-  if iExpRanks   then iPage.Push('Experience rank: {!'+LuaSystem.Get([ 'ranks', 'exp', iExpRank+1, 'name' ])+'}' );
-  if iSkillRanks then iPage.Push('Skill rank     : {!'+LuaSystem.Get([ 'ranks', 'skill', iSkillRank+1, 'name' ])+'}' );
   iPage.Push('Games won      : {!'+IntToStr(GetCount('player/games/win[@id="total"]'))+
            '  (' +IntToStr(GetCount('player/games/win[@id="sacrifice"]')) + ' partial, ' +
                  IntToStr(GetCount('player/games/win[@id="win"]')) + ' standard, ' +
@@ -929,33 +932,51 @@ begin
 end;
 
 function THOF.RankCheck( out aResult : THOFRank ) : Boolean;
-var iExpRank   : Integer;
-    iSkillRank : Integer;
+var iSize   : Integer;
+    iValues : array of Integer;
+    i       : Integer;
+    iPair   : TLuaIndexVariant;
 begin
   if NoPlayerRecord then Exit( False );
 
-  iSkillRank := GetRank('skill');
-  iExpRank   := GetRank('exp');
+  iSize := LuaSystem.GetTableSize( 'ranks' );
+  SetLength( aResult.Data, iSize );
+  SetLength( iValues, iSize );
 
-    // check self-imposed challanges!
-  aResult.SkillRank := iSkillRank;
-  aResult.ExpRank   := iExpRank;
+  i := 0;
+  with LuaSystem.GetTable(['ranks']) do
+  try
+    for iPair in IndexVariants do
+    begin
+      aResult.Data[i].ID    := iPair.Value;
+      iValues[i]            := GetRank( aResult.Data[i].ID );
+      aResult.Data[i].Value := iValues[i];
+      Inc( i );
+    end;
+  finally
+    Free;
+  end;
 
   try
-    while CheckRank('exp',iExpRank)     do Inc(iExpRank);
-    while CheckRank('skill',iSkillRank) do Inc(iSkillRank);
+    for i := 0 to iSize-1 do
+      while CheckRank(aResult.Data[i].ID,iValues[i]) do
+        Inc(iValues[i]);
   except
     on e : EDOMError do
       Log( e.Message );
   end;
 
-  if aResult.SkillRank = iSkillRank then aResult.SkillRank := 0 else aResult.SkillRank := iSkillRank;
-  if aResult.ExpRank   = iExpRank   then aResult.ExpRank := 0   else aResult.ExpRank   := iExpRank;
-
-  SetRank('skill', iSkillRank);
-  SetRank('exp',   iExpRank);
-
-  Exit( (aResult.SkillRank <> 0) or (aResult.ExpRank <> 0) );
+  RankCheck := False;
+  for i := 0 to iSize-1 do
+  begin
+    if iValues[i] = aResult.Data[i].Value
+      then aResult.Data[i].Value := 0
+      else begin
+        aResult.Data[i].Value := iValues[i];
+        RankCheck := True;
+      end;
+    SetRank(aResult.Data[i].ID,iValues[i]);
+  end;
 end;
 
 procedure THOF.Done;
@@ -987,47 +1008,56 @@ end;
 function THOF.GetRankReqDescription(const aRankArray: AnsiString; aRankLevel: DWord; aRankReq: DWord): AnsiString;
 var iAmount : DWord;
     iParam  : Variant;
+    iParam2 : Variant;
     iReq    : AnsiString;
 begin
   with LuaSystem.GetTable( [ 'ranks', aRankArray, aRankLevel+1, 'reqs', aRankReq ] ) do
   try
     iParam  := GetField( 'param' );
+    if not IsNil( 'param2' ) then
+      iParam2 := GetField( 'param2' );
     iAmount := GetInteger( 'amount', 1 );
     iReq    := GetString( 'req' );
   finally
     Free;
   end;
-  Exit( LuaSystem.ProtectedCall( ['requirements', iReq, 'description'], [iAmount, iParam] ) );
+  Exit( LuaSystem.ProtectedCall( ['requirements', iReq, 'description'], [iAmount, iParam, iParam2] ) );
 end;
 
 function THOF.IsRankReqCompleted(const aRankArray: AnsiString; aRankLevel: DWord; aRankReq: DWord): Boolean;
 var iAmount : DWord;
     iParam  : Variant;
+    iParam2 : Variant;
     iReq    : AnsiString;
 begin
   with LuaSystem.GetTable( [ 'ranks', aRankArray, aRankLevel+1, 'reqs', aRankReq ] ) do
   try
     iParam  := GetField( 'param' );
+    if not IsNil( 'param2' ) then
+      iParam2 := GetField( 'param2' );
     iAmount := GetInteger( 'amount', 1 );
     iReq    := GetString( 'req' );
   finally
     Free;
   end;
-  Exit( LuaSystem.ProtectedCall( ['requirements', iReq, 'progress'], [iParam] ) >= iAmount );
+  Exit( LuaSystem.ProtectedCall( ['requirements', iReq, 'progress'], [iParam,iParam2] ) >= iAmount );
 end;
 
 function THOF.GetRankReqCurrent(const aRankArray: AnsiString; aRankLevel: DWord; aRankReq: DWord): DWord;
 var iParam  : Variant;
+    iParam2 : Variant;
     iReq    : AnsiString;
 begin
   with LuaSystem.GetTable( [ 'ranks', aRankArray, aRankLevel+1, 'reqs', aRankReq ] ) do
   try
     iParam  := GetField( 'param' );
+    if not IsNil( 'param2' ) then
+      iParam2 := GetField( 'param2' );
     iReq    := GetString( 'req' );
   finally
     Free;
   end;
-  Exit( LuaSystem.ProtectedCall( ['requirements', iReq, 'progress'], [iParam] ) );
+  Exit( LuaSystem.ProtectedCall( ['requirements', iReq, 'progress'], [iParam,iParam2] ) );
 end;
 
 function THOF.GetRankReqTotal(const aRankArray: AnsiString; aRankLevel: DWord; aRankReq: DWord): DWord;
