@@ -686,6 +686,7 @@ procedure TMainMenuView.ReloadArrays;
 var iEntry : TMainMenuEntry;
     iTable : TLuaTable;
     iCount : Word;
+    iSkill : Integer;
 begin
   if FArrayCType = nil then FArrayCType := TMainMenuEntryArray.Create;
   if FArrayDiff  = nil then FArrayDiff  := TMainMenuEntryArray.Create;
@@ -694,9 +695,11 @@ begin
   FArrayDiff.Clear;
   FArrayKlass.Clear;
 
-  ChallengeType[1].Allow := (HOF.SkillRank > 0) or (GodMode) or (Setting_UnlockAll);
-  ChallengeType[2].Allow := (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll);
-  ChallengeType[3].Allow := (HOF.SkillRank > 3) or (GodMode) or (Setting_UnlockAll);
+  iSkill := HOF.GetRank('skill');
+
+  ChallengeType[1].Allow := (iSkill > 0) or (GodMode) or (Setting_UnlockAll);
+  ChallengeType[2].Allow := (iSkill > 3) or (GodMode) or (Setting_UnlockAll);
+  ChallengeType[3].Allow := (iSkill > 3) or (GodMode) or (Setting_UnlockAll);
   FArrayCType.Push( ChallengeType[1] );
   FArrayCType.Push( ChallengeType[2] );
   FArrayCType.Push( ChallengeType[3] );
@@ -707,7 +710,7 @@ begin
     FillChar( iEntry, Sizeof(iEntry), 0 );
     iEntry.Allow := True;
     if (FResult.Challenge <> '') and (not GetBoolean( 'challenge' )) then Continue;
-    if GetInteger('req_skill',0) > HOF.SkillRank then iEntry.Allow := Setting_UnlockAll;
+    if GetInteger('req_skill',0) > iSkill then iEntry.Allow := Setting_UnlockAll;
     iEntry.Name := GetString('name');
     iEntry.Desc := '';
     iEntry.Extra:= '';
@@ -808,7 +811,7 @@ begin
       if iEntry.Extra = '' then iEntry.Extra := 'UNRATED';
       iEntry.ID    := GetString('id');
       iEntry.NID   := iChallenges[iCount];
-      iEntry.Allow := (HOF.SkillRank >= GetInteger(iPrefix+'rank',0)) or (GodMode) or (Setting_UnlockAll);
+      iEntry.Allow := (HOF.GetRank('skill') >= GetInteger(iPrefix+'rank',0)) or (GodMode) or (Setting_UnlockAll);
       FArrayChal.Push( iEntry );
     finally
       Free;

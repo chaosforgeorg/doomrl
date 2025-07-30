@@ -10,17 +10,10 @@ const MaxHofEntries = 500;
      
 const PlayerFile = 'player.wad';
       ScoreFile  = 'score.wad';
-      RANKEXP    = 1;
-      RANKSKILL  = 2;
-
-
-const RankArray : array[1..2] of AnsiString = ('exp_ranks','skill_ranks');
 
 { THOF }
 
 type THOF = object
-  SkillRank  : Word;
-
   procedure Init;
   procedure Add( const Name : AnsiString; aScore : LongInt; const aKillerID : AnsiString; Level, DLev : Word; nChal, nAbbr : AnsiString );
   function RankCheck( out aResult : THOFRank ) : Boolean;
@@ -72,6 +65,12 @@ implementation
 uses math, sysutils, strutils, variants, vluasystem, doombase, dfplayer, vdebug, vtig, vutil, vrltools;
 
 const HOFOpen : Boolean = False;
+      RANKEXP    = 1;
+      RANKSKILL  = 2;
+
+
+const RankArray : array[1..2] of AnsiString = ('exp_ranks','skill_ranks');
+
 
 function THOF.GetBadgeCount( aBadgeLevel : DWord ): DWord;
 var iCount   : DWord;
@@ -705,8 +704,6 @@ end;
 
 procedure THOF.Init;
 begin
-  SkillRank := 0;
-
   FScore := TScoreFile.Create( ScorePath + ScoreFile, MaxHOFEntries );
   FScore.SetCRC( '344ef'+{ModuleID+}'3321', '738af'+{ModuleID+}'92-5' );
   FScore.SetBackup(  ScorePath+'backup'+PathDelim, Option_ScoreBackups );
@@ -722,7 +719,6 @@ begin
   FPlayerInfo.SetBackup(  ModuleUserPath + 'backup'+PathDelim, Option_PlayerBackups );
   FPlayerInfo.Load;
 
-  SkillRank := GetRank('skill');
   HOFOpen := True;
 end;
 
@@ -954,7 +950,6 @@ begin
 
   SetRank('skill', iSkillRank);
   SetRank('exp',   iExpRank);
-  SkillRank := iSkillRank;
 
   Exit( (aResult.SkillRank <> 0) or (aResult.ExpRank <> 0) );
 end;
