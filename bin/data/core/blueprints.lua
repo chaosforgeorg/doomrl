@@ -126,8 +126,8 @@ core.register_blueprint "badge"
 	level       = { true,  core.TNUMBER },
 	set         = { false, core.TSTRING, "" },
 	klass       = { false, core.TSTRING, "" },
-	group       = { false, core.TSTRING, "" },
 	achievement = { false, core.TSTRING, "" },
+	condition   = { false, core.TFUNC },
 }
 
 core.register_blueprint "award_level"

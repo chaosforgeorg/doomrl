@@ -168,7 +168,84 @@ function register_klass_badge( id )
 		}
 	end
 end
+
+function check_condition( t )
+	if t.challenge then
+		local id = "challenge_"..t.challenge
+		if not ( CHALLENGE == id or SCHALLENGE == id ) then
+			return false
+		end
+	end
+	if t.kills then
+		if statistics.unique_kills < statistics.max_unique_kills * t.kills then
+			return false
+		end
+	end
+	if t.difficulty then
+		if DIFFICULTY < t.difficulty then
+			return false
+		end
+	end
+	return true
+end
  
+function register_master_badge( id )
+	return function( b )
+		assert( b.mid )
+		assert( b.klass, "Master badge '"..id.."' has no klass!" )
+		assert( traits[b.mid], "Master trait '"..b.mid.."' not found!" )
+		assert( traits[b.mid].master, "'"..b.mid.."' not a master trait!" )
+		local name = traits[b.mid].name
+
+		register_badge ( id.."_1" )
+		{
+			name  = name.." Bronze",
+			desc  = "Reach {!Io} with {!"..name.."} master trait",
+			level = 1,
+			set   = id,
+			klass = b.klass,
+		}
+		register_badge ( id.."_2" )
+		{
+			name = name.." Silver",
+			desc = "Win game with {!"..name.."} master trait",
+			level = 2,
+			set   = id,
+			klass = b.klass,
+		}
+		register_badge ( id.."_3" )
+		{
+			name = name.." Gold",
+			desc = "Win game with {!"..name.."} on Hard+",
+			level = 3,
+			set   = id,
+			klass = b.klass,
+		}
+		register_badge ( id.."_4" )
+		{
+			name = name.." Platinum",
+			desc = b.platinum.description.. " with {!"..name.."} master",
+			level = 4,
+			set   = id,
+			klass = b.klass,
+			condition = function()
+				return player:get_trait( traits[b.mid].nid ) > 0 and check_condition( b.platinum )
+			end
+		}
+		register_badge ( id.."_5" )
+		{
+			name = name.." Diamond",
+			desc = b.diamond.description.. " with {!"..name.."} master",
+			level = 5,
+			set   = id,
+			klass = b.klass,
+			condition = function()
+				return player:get_trait( traits[b.mid].nid ) > 0 and check_condition( b.diamond )
+			end
+		}
+	end
+end
+
 
 register_level   = core.register_storage( "levels", "level" )
 levels.default = {}
