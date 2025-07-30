@@ -419,6 +419,7 @@ core.register_blueprint "item"
 	sframes        = { false, core.TNUMBER, 0 },
 	sftime         = { false, core.TNUMBER, FRAME_TIME },
 	level          = { false, core.TNUMBER, 0 },
+	max_level      = { false, core.TNUMBER , 10000 },
 	weight         = { true, core.TNUMBER },
 	set            = { false, core.TIDIN("itemsets") },
 	flags          = { false, core.TFLAGS, {} },

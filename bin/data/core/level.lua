@@ -51,7 +51,7 @@ function level:get_item_table( dlevel, weights, reqs, global )
 		end
 	end
 	for _,i in ipairs(items) do
-		if i.weight > 0 and danger >= i.level then
+		if i.weight > 0 and danger >= i.level and danger <= i.max_level then
 			if (not i.is_exotic or allow_exotic) and (not i.is_unique or allow_unique) then
 				if core.proto_reqs_met( i, reqs ) and ( ( not greqs ) or core.proto_reqs_met( i, greqs ) ) then
 					if (not i.is_unique or not player.__props.items_found[i.id]) then
