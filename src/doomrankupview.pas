@@ -26,8 +26,8 @@ begin
   FSize      := Point( 80, 25 );
   FSRName := '';
   FERName := '';
-  if aRank.SkillRank <> 0 then FSRName := LuaSystem.Get(['skill_ranks',aRank.SkillRank+1,'name'],'');
-  if aRank.ExpRank   <> 0 then FERName := LuaSystem.Get(['exp_ranks',aRank.ExpRank+1,'name'],'');
+  if aRank.SkillRank <> 0 then FSRName := LuaSystem.Get(['ranks','skill',aRank.SkillRank+1,'name'],'');
+  if aRank.ExpRank   <> 0 then FERName := LuaSystem.Get(['ranks','exp',  aRank.ExpRank+1,  'name'],'');
 end;
 
 procedure TRankUpView.Update( aDTime : Integer );

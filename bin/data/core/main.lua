@@ -246,13 +246,27 @@ function register_master_badge( id )
 	end
 end
 
-
 register_level   = core.register_storage( "levels", "level" )
 levels.default = {}
 
 register_requirement   = core.register_storage( "requirements", "requirement" )
-register_exp_rank      = core.register_array_storage( "exp_ranks",   "rank" )
-register_skill_rank    = core.register_array_storage( "skill_ranks", "rank" )
+register_rank_impl     = core.register_array_storage( "rank_storage", "rank" )
+
+ranks = {}
+register_rank = function( typ )
+	return function( tab )
+		tab.type = typ
+		if not ranks[ typ ] then
+			ranks[ typ ] = {}
+			core.log("Registering rank type '"..typ.."'")
+			table.insert( ranks, typ )
+		end
+		table.insert( ranks[ typ ], tab )
+		register_rank_impl( tab )
+		ranks[ typ ].__counter = #ranks[ typ ]
+	end
+end
+
 register_being_group   = core.register_array_storage( "being_groups", "being_group", function( bgp )
 	bgp.tags = table.toset( bgp.tags )
 end

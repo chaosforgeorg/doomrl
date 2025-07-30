@@ -42,7 +42,7 @@ private
   function GetRankReqCurrent( const aRankArray : AnsiString; aRankLevel : DWord; aRankReq : DWord ) : DWord;
   function GetRankReqTotal( const aRankArray : AnsiString; aRankLevel : DWord; aRankReq : DWord ) : DWord;
 
-  function CheckRank(rank,current : Byte) : boolean;
+  function CheckRank( const aRankArray : Ansistring; aCurrent : Integer ) : boolean;
 
   function GetDiffKills( aDiff : AnsiString ) : string;
   function GetDiffScore( aDiff : AnsiString ) : string;
@@ -62,15 +62,11 @@ var HOF : THOF;
 
 implementation
 
-uses math, sysutils, strutils, variants, vluasystem, doombase, dfplayer, vdebug, vtig, vutil, vrltools;
+uses math, sysutils, strutils, variants,
+     vluasystem, vluatable, vdebug, vtig, vutil, vrltools,
+     doombase, dfplayer;
 
 const HOFOpen : Boolean = False;
-      RANKEXP    = 1;
-      RANKSKILL  = 2;
-
-
-const RankArray : array[1..2] of AnsiString = ('exp_ranks','skill_ranks');
-
 
 function THOF.GetBadgeCount( aBadgeLevel : DWord ): DWord;
 var iCount   : DWord;
@@ -252,6 +248,7 @@ var
    iBadges  : LongInt;
    iString  : AnsiString;
    iDesc    : AnsiString;
+   iPair    : TLuaIndexVariant;
 
    iExpRanks   : Boolean;
    iSkillRanks : Boolean;
@@ -269,9 +266,9 @@ var
       iCurrent : DWord;
       iTotal   : DWord;
   begin
-    if aCurrent+1 < LuaSystem.Get([aRankID,'__counter']) then
+    if aCurrent+1 < LuaSystem.Get(['ranks', aRankID,'__counter']) then
     begin
-      iPage.Push('To achieve {!'+LuaSystem.Get([aRankID,aCurrent+2,'name'])+'} rank:');
+      iPage.Push('To achieve {!'+LuaSystem.Get(['ranks', aRankID, aCurrent+2,'name'])+'} rank:');
       for iReq := 1 to GetRankReqCount(aRankID,aCurrent+1) do
       begin
         iCurrent := GetRankReqCurrent( aRankID,aCurrent+1,iReq );
@@ -291,8 +288,8 @@ begin
   iDiffCnt := LuaSystem.Get([ 'diff', '__counter' ], 0 );
   iChalCnt := LuaSystem.Get( ['chal','__counter'], 0 );
 
-  iExpRanks   := LuaSystem.Defined([ 'exp_ranks', '__counter' ]);
-  iSkillRanks := LuaSystem.Defined([ 'skill_ranks', '__counter' ]);
+  iExpRanks   := LuaSystem.Defined([ 'ranks', 'exp' ]);
+  iSkillRanks := LuaSystem.Defined([ 'ranks', 'skill' ]);
   // ---------------------------------------------------------------------------
 
   iPage := Result.Add( '' );
@@ -300,8 +297,8 @@ begin
   iExpRank    := GetRank('exp');
   iSkillRank  := GetRank('skill');
 
-  if iExpRanks   then iPage.Push('Experience rank: {!'+LuaSystem.Get([ 'exp_ranks', iExpRank+1, 'name' ])+'}' );
-  if iSkillRanks then iPage.Push('Skill rank     : {!'+LuaSystem.Get([ 'skill_ranks', iSkillRank+1, 'name' ])+'}' );
+  if iExpRanks   then iPage.Push('Experience rank: {!'+LuaSystem.Get([ 'ranks', 'exp', iExpRank+1, 'name' ])+'}' );
+  if iSkillRanks then iPage.Push('Skill rank     : {!'+LuaSystem.Get([ 'ranks', 'skill', iSkillRank+1, 'name' ])+'}' );
   iPage.Push('Games won      : {!'+IntToStr(GetCount('player/games/win[@id="total"]'))+
            '  (' +IntToStr(GetCount('player/games/win[@id="sacrifice"]')) + ' partial, ' +
                  IntToStr(GetCount('player/games/win[@id="win"]')) + ' standard, ' +
@@ -312,8 +309,15 @@ begin
   iPage.Push('Total game time: {!'+DurationString(GetCount('player/time'))+'}');
   iPage.Push('');
 
-  if iSkillRanks then PushRank( RankArray[RANKSKILL], iSkillRank );
-  if iExpRanks   then PushRank( RankArray[RANKEXP],   iExpRank );
+  with LuaSystem.GetTable(['ranks']) do
+  try
+    for iPair in IndexVariants do
+    begin
+      PushRank( iPair.Value, GetRank( iPair.Value ) );
+    end;
+  finally
+    Free;
+  end;
 
   //Page.Push('');
 
@@ -938,8 +942,8 @@ begin
   aResult.ExpRank   := iExpRank;
 
   try
-    while CheckRank(RANKEXP,iExpRank)     do Inc(iExpRank);
-    while CheckRank(RANKSKILL,iSkillRank) do Inc(iSkillRank);
+    while CheckRank('exp',iExpRank)     do Inc(iExpRank);
+    while CheckRank('skill',iSkillRank) do Inc(iSkillRank);
   except
     on e : EDOMError do
       Log( e.Message );
@@ -977,7 +981,7 @@ end;
 
 function THOF.GetRankReqCount(const aRankArray: AnsiString; aRankLevel: DWord ): DWord;
 begin
-  Exit( LuaSystem.GetTableSize( [ aRankArray, aRankLevel+1, 'reqs' ] ) );
+  Exit( LuaSystem.GetTableSize( [ 'ranks', aRankArray, aRankLevel+1, 'reqs' ] ) );
 end;
 
 function THOF.GetRankReqDescription(const aRankArray: AnsiString; aRankLevel: DWord; aRankReq: DWord): AnsiString;
@@ -985,7 +989,7 @@ var iAmount : DWord;
     iParam  : Variant;
     iReq    : AnsiString;
 begin
-  with LuaSystem.GetTable( [ aRankArray, aRankLevel+1, 'reqs', aRankReq ] ) do
+  with LuaSystem.GetTable( [ 'ranks', aRankArray, aRankLevel+1, 'reqs', aRankReq ] ) do
   try
     iParam  := GetField( 'param' );
     iAmount := GetInteger( 'amount', 1 );
@@ -1001,7 +1005,7 @@ var iAmount : DWord;
     iParam  : Variant;
     iReq    : AnsiString;
 begin
-  with LuaSystem.GetTable( [ aRankArray, aRankLevel+1, 'reqs', aRankReq ] ) do
+  with LuaSystem.GetTable( [ 'ranks', aRankArray, aRankLevel+1, 'reqs', aRankReq ] ) do
   try
     iParam  := GetField( 'param' );
     iAmount := GetInteger( 'amount', 1 );
@@ -1016,7 +1020,7 @@ function THOF.GetRankReqCurrent(const aRankArray: AnsiString; aRankLevel: DWord;
 var iParam  : Variant;
     iReq    : AnsiString;
 begin
-  with LuaSystem.GetTable( [ aRankArray, aRankLevel+1, 'reqs', aRankReq ] ) do
+  with LuaSystem.GetTable( [ 'ranks', aRankArray, aRankLevel+1, 'reqs', aRankReq ] ) do
   try
     iParam  := GetField( 'param' );
     iReq    := GetString( 'req' );
@@ -1028,17 +1032,17 @@ end;
 
 function THOF.GetRankReqTotal(const aRankArray: AnsiString; aRankLevel: DWord; aRankReq: DWord): DWord;
 begin
-  Exit( LuaSystem.Get( [ aRankArray, aRankLevel+1, 'reqs', aRankReq, 'amount' ], 1 ) );
+  Exit( LuaSystem.Get( [ 'ranks', aRankArray, aRankLevel+1, 'reqs', aRankReq, 'amount' ], 1 ) );
 end;
 
-function THOF.CheckRank(rank, current : Byte) : Boolean;
+function THOF.CheckRank( const aRankArray : Ansistring; aCurrent : Integer ) : boolean;
 var iCount : DWord;
 begin
-  if Current+1 >= LuaSystem.Get([RankArray[ rank ],'__counter'],0) then Exit( False );
-  iCount := GetRankReqCount( RankArray[ rank ], Current+1 );
+  if aCurrent+1 >= LuaSystem.Get(['ranks', aRankArray, '__counter'],0) then Exit( False );
+  iCount := GetRankReqCount( aRankArray, aCurrent+1 );
   if iCount = 0 then Exit( True );
   for iCount := 1 to iCount do
-    if not IsRankReqCompleted( RankArray[ rank ], Current+1, iCount ) then Exit( False );
+    if not IsRankReqCompleted( aRankArray, aCurrent+1, iCount ) then Exit( False );
   Exit( True );
 end;
 

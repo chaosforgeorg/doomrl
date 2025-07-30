@@ -411,7 +411,7 @@ function drl.RunPrintMortem()
 
 	if not game_module then
 		local player_description = "level {!"..player.explevel.." "
-			..exp_ranks[ ui.get_rank("exp") + 1].name.." "..skill_ranks[ui.get_rank("skill") + 1].name
+			..ranks.exp[ ui.get_rank("exp") + 1].name.." "..ranks.skill[ui.get_rank("skill") + 1].name
 			.." "..klasses[player.klass].name.."},"
 		if string.len(player.name) <= 12 then
 			player:mortem_print(" {!"..player.name.."}, "..player_description)
