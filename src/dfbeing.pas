@@ -648,7 +648,7 @@ var iUnique : Boolean;
     try
        iItem := TItem.Create(iAmmoID);
        iItem.Ammo := iAmmo;
-       TLevel(Parent).DropItem( iItem, FPosition )
+       TLevel(Parent).DropItem( iItem, FPosition, False, True )
     except
     on e : EPlacementException do iItem.Free
     end;
@@ -666,7 +666,7 @@ begin
     aItem.Ammo := 0;
   end;
 try
-  if TLevel(Parent).DropItem( aItem, FPosition ) then
+  if TLevel(Parent).DropItem( aItem, FPosition, False, True ) then
   begin
     FInv.ClearSlot( aItem );
     HandleAmmo;
@@ -1067,7 +1067,7 @@ begin
     aItem.PlaySound('reload', FPosition );
     if not Inv.isFull
        then Inv.Add( aItem )
-       else TLevel(Parent).DropItem( aItem, FPosition );
+       else TLevel(Parent).DropItem( aItem, FPosition, False, True );
     Exit( Success( 'You disassemble the %s.',[iName], ActionCostReload ) );
   end;
 
@@ -1547,9 +1547,7 @@ begin
 
     for iItem in FInv do
       if not iItem.Flags[IF_NODROP] then
-      begin
-        iLevel.DropItem( iItem, FPosition );
-      end;
+        iLevel.DropItem( iItem, FPosition, False, True );
   except
     on e : EPlacementException do ;
   end;
@@ -2172,7 +2170,7 @@ begin
 
   if aItem.Flags[ IF_THROWDROP ] then
   try
-    iLevel.DropItem( aItem, iCoord )
+    iLevel.DropItem( aItem, iCoord, False, True )
   except
     FreeAndNil( aItem );
   end;

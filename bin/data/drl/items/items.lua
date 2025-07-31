@@ -634,7 +634,7 @@ function drl.register_regular_items()
 			self:add_property( "chamber_empty", false )
 		end,
 
-		OnPostMove = function( self, being )
+		OnPostMove = function( self, being, worn )
 			if not worn or not self.pump_action then return end
 			if self.chamber_empty and self.ammo > 0 then
 				level:play_sound( self.id, "pump", being.position )
@@ -1737,7 +1737,7 @@ function drl.register_regular_items()
 			ui.msg("Ammo dispenser. Dispensing requested ammo...")
 			self.charges = self.charges - 1
 			local ammo_id = items[being.eq.weapon.ammoid].id
-			level:drop_item( ammo_id, being.position, true )
+			level:drop_item( ammo_id, being.position, true, true, true )
 			return self.charges == 0
 		end,
 

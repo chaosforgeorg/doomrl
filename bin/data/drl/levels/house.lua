@@ -121,7 +121,7 @@ register_level "house_of_pain"
 				ui.msg("The voice laughs: \"Allow me to present you your just reward!\"")
 				local id = core.get_unknown_assembly( 2 )
 				if id then
-					local item = level:drop_item("schematic_2",coord(14,10))
+					local item = level:drop_item("schematic_2",coord(14,10), true, true, true)
 					local ma   = mod_arrays[id]
 					item.ammo  = ma.nid
 					item.name  = ma.name.." schematics"
@@ -130,8 +130,8 @@ register_level "house_of_pain"
 				level:summon{ core.ifdiff( 3, "narch", "arch" ), core.bydiff{ 0, 2, 1, 2, 2 }, area = room_1 }
 				if DIFFICULTY > 4 then level:summon{ "baron" , 4, area = room_1 } end
 				for i=1,8 do
-					level:area_drop( room_1, level:roll_item{ level = 20, type = ITEMTYPE_RANGED, unique_mod = 5 } )
-					level:area_drop( room_1, level:roll_item{ level = 20, type = {ITEMTYPE_ARMOR,ITEMTYPE_BOOTS}, unique_mod = 5 } )
+					level:area_drop( room_1, level:roll_item{ level = 20, type = ITEMTYPE_RANGED, unique_mod = 5 }, 1, false, true )
+					level:area_drop( room_1, level:roll_item{ level = 20, type = {ITEMTYPE_ARMOR,ITEMTYPE_BOOTS}, unique_mod = 5 }, 1, false, true )
 				end
 				level:set_cell( 14, 11, "stairs" )
 				level.status = 6

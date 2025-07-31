@@ -90,6 +90,10 @@ begin
     .SetName('Emissive glow')
     .SetDescription('Setting to {!Disabled} will disable glow FX and improve performance.')
     ;
+  iGroup.AddToggle( 'item_drop_animation', True )
+    .SetName('Item drop animation')
+    .SetDescription('Setting to {!Disabled} will disable the drop bump animation.')
+    ;
 
   iGroup := AddGroup( 'audio' );
   iGroup.AddInteger( 'sound_volume', 25 )

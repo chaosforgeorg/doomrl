@@ -94,7 +94,7 @@ private
   procedure ApplyEffect;
   procedure UpdateLightMap;
   procedure PushTerrain;
-  procedure PushObjects;
+  procedure PushObjects( aDTime : Integer );
   procedure PushSprite( aPos : TVec2i; const aSprite : TSprite; aLight : Byte; aZ : Integer );
   procedure PushMultiSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
   procedure PushSpriteTerrainPart( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
@@ -353,7 +353,7 @@ begin
   UpdateLightMap;
   FSpriteEngine.Update( aProjection );
   PushTerrain;
-  PushObjects;
+  PushObjects( aTime );
 
   for iMark in Doom.Level.Markers.Data do
     if Doom.Level.isVisible( iMark.Coord ) then
@@ -1043,7 +1043,7 @@ begin
     end;
 end;
 
-procedure TDoomSpriteMap.PushObjects;
+procedure TDoomSpriteMap.PushObjects( aDTime : Integer );
 var iDMinX   : Word;
     iDMaxX   : Word;
     iY,iX    : DWord;
@@ -1057,6 +1057,10 @@ var iDMinX   : Word;
     iDeco    : Byte;
     iCell    : TCell;
     iVisible : Boolean;
+    iD       : Single;
+    iRange   : Single;
+    iOff     : Integer;
+    iSprite  : TSprite;
 begin
   iDMinX := FShift.X div FSpriteEngine.Grid.X + 1;
   iDMaxX := Min(FShift.X div FSpriteEngine.Grid.X + (IO.Driver.GetSizeX div FSpriteEngine.Grid.X + 1),MAXX);
@@ -1091,13 +1095,26 @@ begin
       if iVisible or Doom.Level.ItemExplored(iCoord, iItem) then
         if (iItem.AnimCount = 0) then
         begin
+          iSprite := GetSprite( iItem.Sprite );
+          iOff := 0;
+          if iItem.Appear > 0 then
+          begin
+            if ( iItem.Appear < 500 ) and Setting_ItemDropAnimation then
+            begin
+              iRange := 6.0 * FSpriteEngine.Scale;
+              iItem.Appear := Min( iItem.Appear + aDTime, 500 );
+              iD := iItem.Appear / 500;
+              iOff := Round( -iRange + iRange * ( 1.0 - Exp( -5.0 * iD ) * Cos( 4.0 * Pi * iD ) ) );
+            end
+            else iItem.Appear := 0;
+          end;
           iL := 70;
           if iVisible then
           begin
             iL := 255;
             if iItem.isFeature then iL := VariableLight( iCoord );
           end;
-          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetSprite( iItem.Sprite ), iL, iZ + DRL_Z_ITEMS );
+          PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid + Vec2i( 0, iOff ), iSprite, iL, iZ + DRL_Z_ITEMS );
         end;
     end;
 

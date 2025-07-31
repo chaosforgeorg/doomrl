@@ -81,7 +81,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure playSound( const BaseID,SoundID : string; coord : TCoord2D ); overload;
     function EnemiesVisible : Word;
 
-    function DropItem ( aItem  : TItem;  aCoord : TCoord2D; aNoHazard : Boolean = False ) : boolean;  // raises EPlacementException
+    function DropItem ( aItem  : TItem;  aCoord : TCoord2D; aNoHazard : Boolean; aDropAnim : Boolean ) : boolean;  // raises EPlacementException
     procedure DropBeing( aBeing : TBeing; aCoord : TCoord2D ); // raises EPlacementException
 
     procedure Remove( Node : TNode ); override;
@@ -844,7 +844,7 @@ begin
       iFeature.Detach;
       iFeature.CallHook( Hook_OnDestroy, [ LuaCoord( aCoord ) ] );
       for iNode in iFeature do
-        DropItem( iNode as TItem, aCoord );
+        DropItem( iNode as TItem, aCoord, False, True );
       FreeAndNil( iFeature );
     end;
   end;
@@ -858,13 +858,14 @@ begin
   inherited Destroy;
 end;
 
-function TLevel.DropItem( aItem : TItem; aCoord : TCoord2D; aNoHazard : Boolean ) : boolean;
+function TLevel.DropItem( aItem : TItem; aCoord : TCoord2D; aNoHazard : Boolean; aDropAnim : Boolean ) : boolean;
 begin
   DropItem := true;
   if aItem = nil then Exit;
   if aNoHazard
     then aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOHARM,EF_NOSTAIRS ] )
     else aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS ] );
+  if aDropAnim then aItem.Appear := 1;
   Add( aItem, aCoord );
 
   if cellFlagSet(aCoord,CF_HAZARD) then
@@ -1547,7 +1548,7 @@ begin
     if State.IsTable(2)
       then iItem := State.ToObject(2) as TItem
       else iItem := TItem.Create( State.ToId(2), State.ToBoolean( 4, False ) );
-    Level.DropItem( iItem, State.ToPosition(3), State.ToBoolean( 5, False ) );
+    Level.DropItem( iItem, State.ToPosition(3), State.ToBoolean( 5, False ), State.ToBoolean( 6, False ) );
     State.Push( iItem );
   except
     on EPlacementException do

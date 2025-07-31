@@ -261,19 +261,19 @@ function level:drop(iid,count)
 	if type(iid) == "string" then iid = items[iid].nid end
 	local last_item = nil
 	for i=1,count or 1 do
-		last_item = self:drop_item(iid,level:random_empty_coord{ EF_NOITEMS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN })
+		last_item = self:drop_item(iid,level:random_empty_coord{ EF_NOITEMS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }, true, true, true )
 	end
 	return last_item
 end
 
-function level:area_drop(where,iid,count,onfloor)
+function level:area_drop(where,iid,count,onfloor,appear)
 	if type(iid) == "string" then iid = items[iid].nid end
 	onfloor = onfloor or false
 	local last_item = nil
 	for i=1,count or 1 do
 		local pos = level:random_empty_coord( { EF_NOITEMS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN }, where )
 		if not pos then break end
-		last_item = self:drop_item(iid,pos,onfloor)
+		last_item = self:drop_item(iid,pos,onfloor,true,appear or false)
 	end
 	return last_item
 end
@@ -392,10 +392,10 @@ function level:drop_items( what )
 		if i.itype == ITEMTYPE_RANGED and (not i.flags[ IF_NOUNLOAD ]) then
 			local ammo = i.ammo
 			i.ammo = 0
-			local ia = self:drop_item( items[ i.ammoid ].id, what.position, true, true )
+			local ia = self:drop_item( items[ i.ammoid ].id, what.position, true, true, true )
 			ia.ammo = ammo
 		end
-		self:drop_item( i, what.position, true, true )
+		self:drop_item( i, what.position, true, true, true )
 	end
 end
 

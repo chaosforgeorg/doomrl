@@ -323,6 +323,7 @@ begin
   Setting_UnlockAll        := Configuration.GetBoolean( 'unlock_all' );
   Setting_MenuSound        := Configuration.GetBoolean( 'menu_sound' );
   Setting_GroupMessages    := Configuration.GetBoolean( 'group_messages' );
+  Setting_ItemDropAnimation:= Configuration.GetBoolean( 'item_drop_animation' );
 end;
 
 procedure TDoom.CreateIO;

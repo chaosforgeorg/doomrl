@@ -241,6 +241,7 @@ function drl.register_base_data()
 
 			self:add_property( "runningtime", 30 )
 			self:add_property( "techbonus", 0 )
+			self:set_coscolor{ 0.8, 0.7, 0.7, 1.0 }
 		end,
 
 		--These stubs exist so that modders can hijack them properly

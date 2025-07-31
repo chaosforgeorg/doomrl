@@ -92,7 +92,7 @@ register_level "spiders_lair"
 			level:drop("scglobe")
 			level:drop("pcell")
 
-			level:drop_item("bfg9000", coord(41,10) )
+			level:drop_item("bfg9000", coord(41,10), true, true, true )
 			level.status = 1
 			if CHALLENGE == "challenge_aohu" then
 				player:add_medal("everyspider")

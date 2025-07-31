@@ -62,6 +62,7 @@ TItem  = class( TThing )
     FNID      : Byte;
     FProps    : TItemProperties;
     FMods     : array[Ord('A')..Ord('Z')] of Byte;
+    FAppear   : Integer;
     procedure LuaLoad( Table : TLuaTable; onFloor: boolean ); reintroduce;
     public
     property PGlowColor     : TColor      read FProps.PGlowColor     write FProps.PGlowColor;
@@ -94,6 +95,7 @@ TItem  = class( TThing )
     property DamageType     : TDamageType read FProps.DamageType     write FProps.DamageType;
     property AltFire        : TAltFire    read FProps.AltFire        write FProps.AltFire;
     property AltReload      : TAltReload  read FProps.AltReload      write FProps.AltReload;
+    property Appear         : Integer     read FAppear               write FAppear;
     property Desc           : AnsiString  read Description;
   end;
 
@@ -165,6 +167,7 @@ begin
   aStream.Read( FRecharge, SizeOf( FRecharge ) );
   aStream.Read( FMods,     SizeOf( FMods ) );
   aStream.Read( FProps,    SizeOf( FProps ) );
+  aStream.Read( FAppear,   SizeOf( FAppear ) );
 
   FNID   := aStream.ReadByte();
   iCount := aStream.ReadWord();
@@ -181,6 +184,7 @@ begin
   aStream.Write( FRecharge, SizeOf( FRecharge ) );
   aStream.Write( FMods,     SizeOf( FMods ) );
   aStream.Write( FProps,    SizeOf( FProps ) );
+  aStream.Write( FAppear,   SizeOf( FAppear ) );
 
   aStream.WriteByte( FNID );
 
@@ -202,6 +206,7 @@ begin
 
   for i := Ord('A') to Ord('Z') do FMods[i] := 0;
 
+  FAppear          := 0;
   FNID             := Table.getInteger('nid');
   FRecharge.Delay  := Table.getInteger('rechargedelay',0);
   FRecharge.Amount := Table.getInteger('rechargeamount',0);
