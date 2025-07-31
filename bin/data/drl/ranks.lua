@@ -404,7 +404,7 @@ function drl.register_ranks()
 	}
 
     ranks.skill.name  = "Skill"
-	ranks.skill.award = "You have amazing skill and advanced to {!%s} rank!"
+	ranks.skill.award = "You have amazing skill and advance to {!%s} rank!"
     ranks.exp.name    = "Experience"
-	ranks.exp.award   = "You have fierceful determination and advanced to {!%s} rank!"
+	ranks.exp.award   = "You have fierceful determination and advance to {!%s} rank!"
 end

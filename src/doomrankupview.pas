@@ -28,7 +28,7 @@ begin
   VTIG_EventClear;
   FSize      := Point( 80, 25 );
   iSize := 0;
-  SetLength( FLines, High( aRank.Data ) );
+  SetLength( FLines, High( aRank.Data )+1 );
   for i := 0 to High( aRank.Data ) do
     if aRank.Data[i].Value <> 0 then
     begin
