@@ -595,7 +595,7 @@ begin
   if FPlayerHack and ( iSegment > 0 ) then
   begin
     iSprite.SpriteID[0] -= iSprite.SpriteID[0] mod 1000;
-    iSprite.SpriteID[0] += DRL_COLS * 18 + 1;
+    iSprite.SpriteID[0] += DRL_COLS * 24 + 1;
   end
   else
   begin
