@@ -770,7 +770,7 @@ end;
 
 procedure TPlayerView.ReadCharacter;
 var iKillRecord   : Integer;
-    iDodgeBonus   : Word;
+    iDodgeBonus   : Integer;
     iKnockMod     : Integer;
     iLeft, iULeft : DWord;
   function Percent( aCurrent, aMax : Integer ) : Integer;
