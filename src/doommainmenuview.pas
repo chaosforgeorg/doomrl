@@ -91,7 +91,7 @@ var ChallengeType : array[1..4] of TMainMenuEntry =
    Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Archangel Game';
-   Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach {ySergeant} rank to unlock!';
+   Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach {ySergeant Major} rank to unlock!';
    Allow : True; Extra : ''; ID : ''; NID : 0;
 ),(
    Name : 'Custom Challenge';
