@@ -7,7 +7,7 @@ type TMainMenuViewMode = (
   MAINMENU_FIRST, MAINMENU_INTRO, MAINMENU_MENU,
   MAINMENU_DIFFICULTY, MAINMENU_FAIR, MAINMENU_KLASS, MAINMENU_TRAIT, MAINMENU_CTYPE, MAINMENU_NAME,
   MAINMENU_CPICK, MAINMENU_CFIRST, MAINMENU_CSECOND,
-  MAINMENU_BADSAVE, MAINMENU_DONE );
+  MAINMENU_BADSAVE, MAINMENU_SAVECOMPAT, MAINMENU_DONE );
 
 type TMainMenuEntry = record
   Name  : Ansistring;
@@ -32,6 +32,7 @@ protected
   procedure UpdateIntro;
   procedure UpdateMenu;
   procedure UpdateBadSave;
+  procedure UpdateSaveCompat;
   procedure UpdateFair;
   procedure UpdateName;
   procedure UpdateDifficulty;
@@ -190,6 +191,7 @@ begin
     MAINMENU_INTRO      : UpdateIntro;
     MAINMENU_MENU       : UpdateMenu;
     MAINMENU_BADSAVE    : UpdateBadSave;
+    MAINMENU_SAVECOMPAT : UpdateSaveCompat;
     MAINMENU_DIFFICULTY : UpdateDifficulty;
     MAINMENU_KLASS      : UpdateKlass;
     MAINMENU_FAIR       : UpdateFair;
@@ -278,7 +280,11 @@ begin
           FMode := MAINMENU_DONE;
         end
         else
-          FMode := MAINMENU_BADSAVE;
+        begin
+          if SaveVersionModule = ''
+            then FMode := MAINMENU_BADSAVE
+            else FMode := MAINMENU_SAVECOMPAT;
+        end;
       end;
     if not FSaveExists then
       if VTIG_Selectable( TextNewGame ) then
@@ -341,6 +347,44 @@ begin
     FMode := MAINMENU_MENU;
   end;
 end;
+
+procedure TMainMenuView.UpdateSaveCompat;
+begin
+  VTIG_BeginWindow('Incompatible save file!', Point( 42, 20 ), Point(19,4) );
+  if SaveVersionModule <> VersionModule then
+  begin
+    VTIG_Text('Save file is from a {!previous version} of the game!');
+    VTIG_Text('Save game version : {!'+SaveVersionModule+'}' );
+    VTIG_Text('This game version : {!'+VersionModule+'}' );
+    VTIG_Text('');
+    if Doom.Store.IsSteam
+      then VTIG_Text('You can try to download the direct previous version from {!Steam} Betas tab and finish the game, or delete the save file now.')
+      else VTIG_Text('You can try downloading the previous version from the web and finish the game, or delete the save file now.');
+  end
+  else
+  begin
+    VTIG_Text('Save file uses different mods!');
+    VTIG_Text('Save file IDs : {!'+SaveModString+'}' );
+    VTIG_Text('Current IDs   : {!'+ModString+'}' );
+    VTIG_Text('');
+    VTIG_Text('You can exit the game and try to match the mods or delete the save file now.');
+  end;
+  VTIG_Text('');
+  if VTIG_Selectable( '  Cancel loading, keep save' ) then
+    FMode := MAINMENU_MENU;
+  if VTIG_Selectable( '  Delete save file' ) then
+  begin
+    FSaveExists := False;
+    DeleteFile( ModuleUserPath + 'save' );
+    FMode := MAINMENU_MENU;
+  end;
+
+  VTIG_End;
+  IO.RenderUIBackground( Point(18,3), Point(60,23), 0.7 );
+  if VTIG_EventCancel then
+    FMode := MAINMENU_MENU;
+end;
+
 
 procedure TMainMenuView.UpdateFair;
 begin

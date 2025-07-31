@@ -1,5 +1,7 @@
 core.declare( "drl", {} )
 core.declare( "core_module", "drl" )
+core.declare( "VERSION_MODULE",      "0.10.0" )
+core.declare( "VERSION_MODULE_SAVE", "0.10.0" )
 
 require( "drl:generator" )
 require( "drl:generators" )

@@ -1403,37 +1403,47 @@ begin
 end;
 
 function TDoom.LoadSaveFile: Boolean;
-var Stream    : TStream;
-    Recreate  : Boolean;
+var iStream    : TStream;
+    iRecreate  : Boolean;
 begin
-  Recreate := False;
+  SaveVersionModule := '';
+  SaveModString     := '';
+  iRecreate := False;
   try
     try
-      Stream := TGZFileStream.Create( ModuleUserPath + 'save',gzOpenRead );
+      iStream := TGZFileStream.Create( ModuleUserPath + 'save',gzOpenRead );
       //      Stream := TDebugStream.Create( Stream );
+      ModuleID          := iStream.ReadAnsiString;
+      SaveVersionModule := iStream.ReadAnsiString;
+      SaveModString     := iStream.ReadAnsiString;
+      if ( SaveVersionModule <> VersionModule ) or ( SaveModString <> ModString ) then
+      begin
+        Exit( False );
+      end;
+      SaveVersionModule := '';
+      SaveModString     := '';
 
-      ModuleID        := Stream.ReadAnsiString;
-      UIDs            := TUIDStore.CreateFromStream( Stream );
-      GameWon         := Stream.ReadByte <> 0;
-      Difficulty      := Stream.ReadByte;
-      Challenge       := Stream.ReadAnsiString;
-      ArchAngel       := Stream.ReadByte <> 0;
-      SChallenge      := Stream.ReadAnsiString;
+      UIDs            := TUIDStore.CreateFromStream( iStream );
+      GameWon         := iStream.ReadByte <> 0;
+      Difficulty      := iStream.ReadByte;
+      Challenge       := iStream.ReadAnsiString;
+      ArchAngel       := iStream.ReadByte <> 0;
+      SChallenge      := iStream.ReadAnsiString;
 
-      Player := TPlayer.CreateFromStream( Stream );
-      CrashSave := Stream.ReadByte <> 0;
+      Player := TPlayer.CreateFromStream( iStream );
+      CrashSave := iStream.ReadByte <> 0;
 
       if not CrashSave then
       begin
         FreeAndNil( FLevel );
-        Recreate := True;
-        FLevel := TLevel.CreateFromStream( Stream );
+        iRecreate := True;
+        FLevel := TLevel.CreateFromStream( iStream );
         FLevel.Place( Player, Player.Position );
         LuaSystem.SetValue('level', FLevel );
         LuaSystem.ProtectedCall( [ 'generator', 'on_load' ], [] );
       end;
     finally
-      Stream.Destroy;
+      iStream.Destroy;
     end;
     DeleteFile( ModuleUserPath + 'save' );
 
@@ -1449,7 +1459,7 @@ begin
       Log('Save file corrupted! Error while loading : '+ e.message );
       DeleteFile( ModuleUserPath + 'save' );
       LoadSaveFile := False;
-      if Recreate then
+      if iRecreate then
       begin
         FreeAndNil( FLevel );
         FLevel := TLevel.Create;
@@ -1471,6 +1481,8 @@ begin
   //      Stream := TDebugStream.Create( Stream );
 
   Stream.WriteAnsiString( ModuleID );
+  Stream.WriteAnsiString( VersionModuleSave );
+  Stream.WriteAnsiString( ModString );
   UIDs.WriteToStream( Stream );
   if GameWon   then Stream.WriteByte( 1 ) else Stream.WriteByte( 0 );
   Stream.WriteByte( Difficulty );

@@ -384,6 +384,8 @@ begin
 
   IO.LoadProgress(iProgBase + 50);
   IO.Audio.Load;
+  VersionModule     := LuaSystem.Get( 'VERSION_MODULE' );
+  VersionModuleSave := LuaSystem.Get( 'VERSION_MODULE_SAVE' );
 end;
 
 procedure TDoomLua.LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
