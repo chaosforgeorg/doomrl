@@ -222,6 +222,7 @@ type TCellSet = set of Byte;
      TExplosionFlags = set of TExplosionFlag;
      TSprite = record
        Color     : TColor;
+       OverColor : TColor;
        GlowColor : TColor;
        SpriteID  : array[0..7] of DWord;
        SCount    : Word;
@@ -814,7 +815,7 @@ begin
   if not aTable.isNil( 'overlay' ) then
   begin
     Include( aSprite.Flags, SF_OVERLAY );
-    aSprite.Color := NewColor( aTable.GetVec4f('overlay' ) );
+    aSprite.OverColor := NewColor( aTable.GetVec4f('overlay' ) );
   end;
   if not aTable.isNil( 'coscolor' ) then
   begin

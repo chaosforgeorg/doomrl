@@ -2933,12 +2933,12 @@ begin
   iBeing := iState.ToObject(1) as TBeing;
   if iState.IsNil(2) then
   begin
-    iBeing.FSprite.Color := ColorBlack;
+    iBeing.FSprite.OverColor := ColorBlack;
     Exclude( iBeing.FSprite.Flags, SF_OVERLAY );
   end
   else
   begin
-    iBeing.FSprite.Color := NewColor( iState.ToVec4f(2) );
+    iBeing.FSprite.OverColor := NewColor( iState.ToVec4f(2) );
     Include( iBeing.FSprite.Flags, SF_OVERLAY );
   end;
   Result := 0;

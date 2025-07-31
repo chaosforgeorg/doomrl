@@ -365,6 +365,7 @@ end;
 procedure TDoomSpriteMap.DrawMarker;
 const MarkerSprite : TSprite = (
   Color     : (R:0;G:0;B:0;A:255);
+  OverColor : (R:0;G:0;B:0;A:0);
   GlowColor : (R:0;G:0;B:0;A:0);
   SpriteID  : (0,0,0,0,0,0,0,0);
   SCount    : 1;
@@ -405,6 +406,7 @@ var iPoint   : TPoint;
     iIO      : TDoomGFXIO;
 const TargetSprite : TSprite = (
   Color     : (R:0;G:0;B:0;A:255);
+  OverColor : (R:0;G:0;B:0;A:0);
   GlowColor : (R:0;G:0;B:0;A:0);
   SpriteID  : (0,0,0,0,0,0,0,0);
   SCount    : 1;
@@ -535,7 +537,7 @@ begin
   with iLayer do
   begin
     iColor.FillAll( 255 );
-    if SF_OVERLAY in iSprite.Flags then iColor.SetAll( ColorToGL( iSprite.Color ) );
+    if SF_OVERLAY in iSprite.Flags then iColor.SetAll( ColorToGL( iSprite.OverColor ) );
     Push( @iCoord, @iTex, @iColor, iSprite.Color, iSprite.GlowColor, DRL_Z_FX );
   end;
 end;
@@ -564,7 +566,7 @@ begin
       iCosColor := aSprite.Color;
 
     if SF_OVERLAY in aSprite.Flags
-      then PushXY( iSpriteID, iSize, aPos, aSprite.Color, iCosColor, aSprite.GlowColor, aZ )
+      then PushXY( iSpriteID, iSize, aPos, aSprite.OverColor, iCosColor, aSprite.GlowColor, aZ )
       else PushXY( iSpriteID, iSize, aPos, NewColor( aLight, aLight, aLight ), iCosColor, aSprite.GlowColor, aZ );
 
     if ( not Setting_Glow ) and ( aSprite.GlowColor.A > 0 ) then

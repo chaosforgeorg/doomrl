@@ -307,10 +307,10 @@ begin
   iMarkSprite.SpriteID[0] := HARDSPRITE_EXPL;
 
   case (( FTime * 3 ) div FDuration) of
-    0 : iMarkSprite.Color    := FGColor1;
-    1 : iMarkSprite.Color    := FGColor2;
-    2 : iMarkSprite.Color    := FGColor3;
-  else iMarkSprite.Color    := FGColor2;
+    0 : iMarkSprite.OverColor    := FGColor1;
+    1 : iMarkSprite.OverColor    := FGColor2;
+    2 : iMarkSprite.OverColor    := FGColor3;
+  else iMarkSprite.OverColor    := FGColor2;
   end;
   SpriteMap.PushSpriteFX( FCoord, iMarkSprite );
 end;
