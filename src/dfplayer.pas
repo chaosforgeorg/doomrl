@@ -58,6 +58,7 @@ type TPlayer = class(TBeing)
   procedure ExamineNPC;
   procedure ExamineItem;
   procedure NextLevelIndex;
+  function GetSprite: TSprite; override;
 private
   FLevelIndex     : Integer;
   FExp            : LongInt;
@@ -73,6 +74,7 @@ private
   FTraits         : TTraits;
   FStatistics     : TStatistics;
   FMultiMove      : TMultiMove;
+  FCSprite        : TSprite;
 public
   property MultiMove       : TMultiMove  read FMultiMove;
   property Statistics      : TStatistics read FStatistics;
@@ -166,6 +168,7 @@ begin
   Stream.Write( FLastTurnDodge, SizeOf( FLastTurnDodge ) );
   Stream.Write( FExpFactor,     SizeOf( FExpFactor ) );
   Stream.Write( FQuickSlots,    SizeOf( FQuickSlots ) );
+  Stream.Write( FCSprite,       SizeOf( FCSprite ) );
 
   FTraits.WriteToStream( Stream );
   FKills.WriteToStream( Stream );
@@ -190,6 +193,7 @@ begin
   Stream.Read( FLastTurnDodge, SizeOf( FLastTurnDodge ) );
   Stream.Read( FExpFactor,     SizeOf( FExpFactor ) );
   Stream.Read( FQuickSlots,    SizeOf( FQuickSlots ) );
+  Stream.Read( FCSprite,       SizeOf( FCSprite ) );
 
   FTraits         := TTraits.CreateFromStream( Stream );
   FKills          := TKillTable.CreateFromStream( Stream );
@@ -443,6 +447,11 @@ begin
   Inc(FLevelIndex);
 end;
 
+function TPlayer.GetSprite : TSprite;
+begin
+  Exit(FCSprite);
+end;
+
 // pieczarki oliwki szynka kielbasa peperoni motzarella //
 
 destructor TPlayer.Destroy;
@@ -589,40 +598,46 @@ var Spr       : LongInt;
 begin
   Color  := LightGray;
   iSpMod := 0;
+  FCSprite := FSprite;
   if Inv.Slot[ efTorso ] <> nil then
     Color := Inv.Slot[ efTorso ].Color;
   Gray := NewColor( 200,200,200 );
-  Include( FSprite.Flags, SF_COSPLAY );
-  FSprite.GlowColor := ColorZero;
-  FSprite.Color     := GRAY;
+  Include( FCSprite.Flags, SF_COSPLAY );
+  FCSprite.GlowColor := ColorZero;
+  FCSprite.Color     := GRAY;
   if Inv.Slot[ efTorso ] <> nil then
   begin
     if Inv.Slot[ efTorso ].PGlowColor.A > 0 then
-      FSprite.GlowColor := Inv.Slot[ efTorso ].PGlowColor;
-    FSprite.Color     := Inv.Slot[ efTorso ].PCosColor;
+      FCSprite.GlowColor := Inv.Slot[ efTorso ].PGlowColor;
+    FCSprite.Color     := Inv.Slot[ efTorso ].PCosColor;
     iSpMod            := Inv.Slot[ efTorso ].SpriteMod;
+  end
+  else
+  begin
+    iSpMod := FSpriteMod;
+    FCSprite.Color := FSprite.Color;
   end;
   iWeapon := Inv.Slot[ efWeapon ];
   if iWeapon <> nil then
   begin
     iPDSprite := LuaSystem.Get( ['items', iWeapon.ID, 'pdsprite'], 0 );
     if ( iPDSprite <> 0 ) and ( canDualWield )
-      then FSprite.SpriteID[0] := iPDSprite
-      else FSprite.SpriteID[0] := LuaSystem.Get( ['items', iWeapon.ID, 'psprite'], 0 );
-    if FSprite.SpriteID[0] <> 0 then
+      then FCSprite.SpriteID[0] := iPDSprite
+      else FCSprite.SpriteID[0] := LuaSystem.Get( ['items', iWeapon.ID, 'psprite'], 0 );
+    if FCSprite.SpriteID[0] <> 0 then
     begin
-      FSprite.SpriteID[0] += iSpMod;
+      FCSprite.SpriteID[0] := FCSprite.SpriteID[0] + iSpMod;
       Exit;
     end;
     // HACK via the spritesheet
     Spr := Inv.Slot[ efWeapon ].Sprite.SpriteID[0] - SpriteCellRow;
     if (Spr <= 12) and (Spr >= 1) then
-      FSprite.SpriteID[0] := Spr
+      FCSprite.SpriteID[0] := Spr
     else
-      if Inv.Slot[ efWeapon ].isMelee then FSprite.SpriteID[0] := 2 else FSprite.SpriteID[0] := 11;
+      if Inv.Slot[ efWeapon ].isMelee then FCSprite.SpriteID[0] := 2 else FCSprite.SpriteID[0] := 11;
   end
   else
-    FSprite.SpriteID[0] := LuaSystem.Get( ['beings', ID, 'sprite'], 0 ) + iSpMod;
+    FCSprite.SpriteID[0] := LuaSystem.Get( ['beings', ID, 'sprite'], 0 ) + iSpMod;
 end;
 
 function TPlayer.ASCIIMoreCode : AnsiString;

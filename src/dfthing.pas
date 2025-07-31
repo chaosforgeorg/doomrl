@@ -33,7 +33,7 @@ protected
   FAnimCount : Word;
   {$TYPEINFO ON}
 public
-  property Sprite     : TSprite  read FSprite             write FSprite;
+  property Sprite     : TSprite  read GetSprite           write FSprite;
   property AnimCount  : Word     read FAnimCount          write FAnimCount;
 published
   property SpriteID   : DWord    read FSprite.SpriteID[0] write FSprite.SpriteID[0];

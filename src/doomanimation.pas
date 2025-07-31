@@ -156,7 +156,7 @@ private
   FLight      : Byte;
   FPosition   : TVec2i;
   FCoord      : TCoord2D;
-  FPlayerHack : Boolean;
+  FPlayerHack : Integer;
 end;
 
 
@@ -564,7 +564,12 @@ begin
   if iBeing.GetLuaProtoValue('corpse') = 0 then FValue := 3;
   FSprite     := iBeing.Sprite;
   FCoord      := iBeing.Position;
-  FPlayerHack := iBeing.IsPlayer;
+  FPlayerHack := 0;
+  if iBeing.IsPlayer then
+  begin
+    FPlayerHack := 1;
+    if iBeing.SpriteMod > 0 then FPlayerHack := 2;
+  end;
   FPosition.Init( (iBeing.Position.X - 1)*SpriteMap.GetGridSize,(iBeing.Position.Y - 1)*SpriteMap.GetGridSize);
   FLight      := Iif( Doom.Level.isVisible(iBeing.Position), SpriteMap.VariableLight( iBeing.Position, 30 ), 0 );
 end;
@@ -592,10 +597,10 @@ begin
   end;
   iSegment := Min( ( FTime * FValue ) div FDuration, FValue - 1 );
   // TODO : remove hack!
-  if FPlayerHack and ( iSegment > 0 ) then
+  if ( FPlayerHack > 0 ) and ( iSegment > 0 ) then
   begin
     iSprite.SpriteID[0] -= iSprite.SpriteID[0] mod 1000;
-    iSprite.SpriteID[0] += DRL_COLS * 24 + 1;
+    iSprite.SpriteID[0] += DRL_COLS * 24 + FPlayerHack;
   end
   else
   begin

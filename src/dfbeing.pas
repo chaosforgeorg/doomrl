@@ -144,6 +144,7 @@ TBeing = class(TThing,IPathQuery)
     FSpeedCount    : LongInt;
     FAccuracy      : Integer;
     FStrength      : Integer;
+    FSpriteMod     : Integer;
     FSpeed         : Byte;
     FExpValue      : Word;
 
@@ -188,6 +189,8 @@ TBeing = class(TThing,IPathQuery)
 
     property Accuracy     : Integer    read FAccuracy      write FAccuracy;
     property Strength     : Integer    read FStrength      write FStrength;
+    property SpriteMod    : Integer    read FSpriteMod     write FSpriteMod;
+
     property Speed        : Byte       read FSpeed         write FSpeed;
     property ExpValue     : Word       read FExpValue      write FExpValue;
 
@@ -269,6 +272,7 @@ begin
   Stream.Read( FLastCommand, SizeOf( FLastCommand ) );
   Stream.Read( FAccuracy,    SizeOf( FAccuracy ) );
   Stream.Read( FStrength,    SizeOf( FStrength ) );
+  Stream.Read( FSpriteMod,   SizeOf( FSpriteMod ) );
 
   FVisionRadius := Stream.ReadByte();
   FSpeedCount   := Stream.ReadWord();
@@ -299,6 +303,7 @@ begin
   Stream.Write( FLastCommand, SizeOf( FLastCommand ) );
   Stream.Write( FAccuracy,    SizeOf( FAccuracy ) );
   Stream.Write( FStrength,    SizeOf( FStrength ) );
+  Stream.Write( FSpriteMod,   SizeOf( FSpriteMod ) );
 
   Stream.WriteByte( FVisionRadius );
   Stream.WriteWord( FSpeedCount );
@@ -333,6 +338,7 @@ begin
 
   FBloodBoots   := 0;
   FChainFire    := 0;
+  FSpriteMod    := 0;
 
   FSilentAction := False;
   FKnockBacked  := False;
@@ -2944,6 +2950,25 @@ begin
   Result := 0;
 end;
 
+function lua_being_set_coscolor(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  if iState.IsNil(2) then
+  begin
+    iBeing.FSprite.Color := ColorBlack;
+    Exclude( iBeing.FSprite.Flags, SF_COSPLAY );
+  end
+  else
+  begin
+    iBeing.FSprite.Color := NewColor( iState.ToVec4f(2) );
+    Include( iBeing.FSprite.Flags, SF_COSPLAY );
+  end;
+  Result := 0;
+end;
+
 function lua_being_get_auto_target(L: Plua_State): Integer; cdecl;
 var iState : TDoomLuaState;
     iBeing : TBeing;
@@ -3032,7 +3057,7 @@ begin
   end;
 end;
 
-const lua_being_lib : array[0..37] of luaL_Reg = (
+const lua_being_lib : array[0..38] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -3069,6 +3094,7 @@ const lua_being_lib : array[0..37] of luaL_Reg = (
       ( name : 'is_affect';       func : @lua_being_is_affect),
 
       ( name : 'set_overlay';     func : @lua_being_set_overlay),
+      ( name : 'set_coscolor';    func : @lua_being_set_coscolor),
       ( name : 'get_auto_target'; func : @lua_being_get_auto_target),
       ( name : 'get_tohit';       func : @lua_being_get_tohit),
       ( name : 'get_todam';       func : @lua_being_get_todam),
