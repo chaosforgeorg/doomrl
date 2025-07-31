@@ -743,7 +743,7 @@ begin
 
   ChallengeType[1].Allow := (iSkill > 0) or (GodMode) or (Setting_UnlockAll);
   ChallengeType[2].Allow := (iSkill > 3) or (GodMode) or (Setting_UnlockAll);
-  ChallengeType[3].Allow := (iSkill > 3) or (GodMode) or (Setting_UnlockAll);
+  ChallengeType[3].Allow := (iSkill > 4) or (GodMode) or (Setting_UnlockAll);
   FArrayCType.Push( ChallengeType[1] );
   FArrayCType.Push( ChallengeType[2] );
   FArrayCType.Push( ChallengeType[3] );

@@ -396,7 +396,7 @@ function drl.register_challenges()
 		arch_name        = "Archangel of Travel",
 		arch_description = "Who needs all that junk? Try to complete the game only using 2 inventory slots! You get a +30% speed bonus this time.",
 		arch_rating      = "BLADE",
-		arch_rank        = 4,
+		arch_rank        = 5,
 
 		OnCreatePlayer = function ()
 			if ARCHANGEL then
