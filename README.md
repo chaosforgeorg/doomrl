@@ -1,6 +1,6 @@
-# doomrl
+# drl
 
-DRL a.k.a. doomrl, a.k.a, D**m, the Roguelike, version 0.9.9.8
+DRL a.k.a. That Trademark, the Roguelike, version 0.9.9.8
 http://drl.chaosforge.org/
 
 This release is dedicated to Jupiter Hell Classic, the newly announced commercial remake/expansion to DRL:
