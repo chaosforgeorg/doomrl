@@ -12,7 +12,7 @@ uses SysUtils, Classes,
      vluamapnode, vtextmap,
      dfdata, dfmap, dfthing, dfbeing, dfitem,
      doomhooks,
-     drlmarkers;
+     drlmarkers, drldecals;
 
 const CellWalls   : TCellSet = [];
       CellFloors  : TCellSet = [];
@@ -150,6 +150,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     FAbbr          : AnsiString;
 
     FMarkers       : TMarkerStore;
+    FDecals        : TDecalStore;
   private
     function getCellBottom( Index : TCoord2D ): Byte;
     function getCellTop( Index : TCoord2D ): Byte;
@@ -160,6 +161,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function getSpriteBottom( Index : TCoord2D ): TSprite;
   public
     property Markers : TMarkerStore                 read FMarkers;
+    property Decals  : TDecalStore                  read FDecals;
     property AccuracyBonus : Integer                read FAccuracyBonus;
     property Hooks : TFlags                         read FHooks;
     property FloorCell : Word                       read FFloorCell;
@@ -459,6 +461,7 @@ begin
   FAbbr        := aStream.ReadAnsiString();
 
   FMarkers     := TMarkerStore.CreateFromStream( aStream );
+  FDecals      := TDecalStore.CreateFromStream( aStream );
 
   FActiveBeing := nil;
   FNextNode    := nil;
@@ -491,6 +494,7 @@ begin
   aStream.WriteAnsiString( FAbbr );
 
   FMarkers.WriteToStream( aStream );
+  FDecals.WriteToStream( aStream );
 
 //    FActiveBeing : TBeing;
 //    FNextNode    : TNode;
@@ -518,6 +522,7 @@ begin
   Assert( dfdata.EF_NOBEINGS = vluamapnode.EF_NOBEINGS );
 
   FMarkers := TMarkerStore.Create;
+  FDecals  := TDecalStore.Create;
   FIndex   := 0;
 end;
 
@@ -663,6 +668,7 @@ begin
   DestroyChildren;
   ClearEntities;
   FMarkers.Clear;
+  FDecals.Clear;
 end;
 
 procedure TLevel.FullClear;
@@ -671,6 +677,7 @@ begin
   ClearAll;
   ClearEntities;
   FMarkers.Clear;
+  FDecals.Clear;
   with FMap do
   for x := 1 to MaxX do
     for y := 1 to MaxY do
@@ -855,6 +862,7 @@ destructor TLevel.Destroy;
 begin
   Clear;
   FreeAndNil( FMarkers );
+  FreeAndNil( FDecals );
   inherited Destroy;
 end;
 

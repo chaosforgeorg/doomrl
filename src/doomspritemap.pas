@@ -13,6 +13,7 @@ const DRL_Z_FX     = 16000;
       DRL_Z_LINE   = 10;
       DRL_Z_ZERO   = 0;
       DRL_Z_ENVIRO = DRL_Z_LAYER;
+      DRL_Z_DECAL  = DRL_Z_LAYER + DRL_Z_LAYER div 2;
       DRL_Z_DOODAD = DRL_Z_LAYER * 2;
       DRL_Z_ITEMS  = DRL_Z_LAYER * 3;
       DRL_Z_BEINGS = DRL_Z_LAYER * 4;
@@ -94,6 +95,7 @@ private
   procedure ApplyEffect;
   procedure UpdateLightMap;
   procedure PushTerrain;
+  procedure PushDecals;
   procedure PushObjects( aDTime : Integer );
   procedure PushSprite( aPos : TVec2i; const aSprite : TSprite; aLight : Byte; aZ : Integer );
   procedure PushMultiSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
@@ -118,7 +120,7 @@ implementation
 
 uses math, vmath, viotypes, vvision, vgl3library,
      doomio, doomgfxio, doombase,
-     dfmap, dfitem, dfplayer, drlmarkers;
+     dfmap, dfitem, dfplayer, drlmarkers, drldecals;
 
 function SpritePartSetFill( aPart : TSpritePart ) : TSpritePartSet;
 begin
@@ -353,6 +355,7 @@ begin
   UpdateLightMap;
   FSpriteEngine.Update( aProjection );
   PushTerrain;
+  PushDecals;
   PushObjects( aTime );
 
   for iMark in Doom.Level.Markers.Data do
@@ -1169,6 +1172,46 @@ begin
     with FSpriteEngine.Layers[ HARDSPRITE_GRID div 100000 ] do
       Push( HARDSPRITE_GRID mod 100000, NewCoord2D( iX, iY ), NewColor( 50, 50, 50, 50 ), ColorBlack, ColorZero, DRL_Z_ITEMS );
 
+end;
+
+procedure TDoomSpriteMap.PushDecals;
+var iData  : TDecalArray;
+    iDecal : TDecal;
+    iPos   : TVec2i;
+    iLight : Byte;
+//    iLQuad : TGLRawQColor;
+  function GetLight( aPos : TVec2i ) : Byte;
+  var iCoord   : TCoord2D;
+  var iX1, iX2 : Single;
+      iFPos     : TVec2f;
+  begin
+    iCoord.X := aPos.X div 32;
+    iCoord.Y := aPos.Y div 32;
+    iFPos.Init( ( aPos.X mod 32 ) / 32.0, ( aPos.Y mod 32 ) / 32.0 );
+    iX1 := ( 1 - iFPos.X ) * FLightMap[ iCoord.X-1,iCoord.Y-1 ] + iFPos.X * FLightMap[ iCoord.X  ,iCoord.Y-1 ];
+    iX2 := ( 1 - iFPos.X ) * FLightMap[ iCoord.X-1,iCoord.Y   ] + iFPos.X * FLightMap[ iCoord.X  ,iCoord.Y   ];
+    Exit( Round( ( 1 - iFPos.Y ) * iX1 + iFPos.Y * iX2 ) );
+  end;
+
+  begin
+  iData := Doom.Level.Decals.Data;
+  for iDecal in iData do
+  begin
+    iPos.Init( Floor( ( iDecal.Position.X - 32 ) * FSpriteEngine.Scale ), Floor( ( iDecal.Position.Y - 32 ) * FSpriteEngine.Scale ) );
+    iLight := GetLight( Vec2i( iDecal.Position.X + 16, iDecal.Position.Y + 16 ) );
+
+//  iColors.Data[0] := BilinearLight( iStart );
+//  iColors.Data[1] := BilinearLight( TVec2f.Create( iStart.X, iEnd.Y ) );
+//  iColors.Data[2] := BilinearLight( iEnd );
+//  iColors.Data[3] := BilinearLight( TVec2f.Create( iEnd.X, iStart.Y ) );
+//    iLQuad.Data[0] := TVec3b.Create( iLight, iLight, iLight );
+//    iLQuad.Data[1] := TVec3b.Create( iLight, iLight, iLight );
+//    iLQuad.Data[2] := TVec3b.Create( iLight, iLight, iLight );
+//    iLQuad.Data[3] := TVec3b.Create( iLight, iLight, iLight );
+
+    with FSpriteEngine.Layers[ iDecal.Sprite div 100000 ] do
+      PushXY( iDecal.Sprite mod 100000, 1, iPos, NewColor( iLight, iLight, iLight ), ColorZero, ColorBlack, DRL_Z_DECAL )
+  end;
 end;
 
 function TDoomSpriteMap.VariableLight( aWhere: TCoord2D; aBonus : ShortInt = 0 ): Byte;

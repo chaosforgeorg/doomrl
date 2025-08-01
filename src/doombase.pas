@@ -228,6 +228,7 @@ end;
 
 procedure TDoom.Load;
 var iDoomLua : TDoomLua;
+    i        : Integer;
 begin
   FreeAndNil( Config );
   IO.LoadStart;
@@ -267,6 +268,9 @@ begin
   HARDSPRITE_SELECT    := Lua.Get( 'HARDSPRITE_SELECT' );
   HARDSPRITE_MARK      := Lua.Get( 'HARDSPRITE_MARK' );
   HARDSPRITE_GRID      := Lua.Get( 'HARDSPRITE_GRID' );
+  if Lua.Defined( 'HARDSPRITE_DECAL_BLOOD_1' ) then
+    for i := 0 to 3 do
+      HARDSPRITE_DECAL_BLOOD[i] := Lua.Get( 'HARDSPRITE_DECAL_BLOOD_'+IntToStr(i+1), 0 );
 
   DataLoaded := True;
   IO.LoadStop;

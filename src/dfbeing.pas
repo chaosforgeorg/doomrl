@@ -124,6 +124,7 @@ TBeing = class(TThing,IPathQuery)
     class procedure RegisterLuaAPI();
 
   protected
+    procedure BloodDecal( aFrom : TDirection; aAmount : LongInt );
     procedure LuaLoad( Table : TLuaTable ); override;
     // private
     function FireRanged( aTarget : TCoord2D; aGun : TItem; aAlt : TAltFire = ALT_NONE; aDelay : Integer = 0 ) : Boolean;
@@ -206,7 +207,8 @@ TBeing = class(TThing,IPathQuery)
 
 implementation
 
-uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vluasystem, vluatools, vcolor,
+uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vluasystem,
+     vluatools, vcolor, vvector,
      dfplayer, dflevel, dfmap, doomhooks,
      doomlua, doombase, doomio;
 
@@ -1492,22 +1494,77 @@ end;
 
 
 procedure TBeing.Blood( aFrom : TDirection; aAmount : LongInt );
-var iCount : byte;
+var iCount : Integer;
     iCoord : TCoord2D;
     iLevel : TLevel;
 begin
   if BF_NOBLEED in FFlags then Exit;
   iLevel := TLevel(Parent);
-  for iCount := 1 to Min( aAmount, 20 ) do
+  if aAmount > 0 then
+    for iCount := 1 to Min( aAmount, 20 ) do
+    begin
+      repeat
+        case Random(5) of
+          0..1 : iCoord := FPosition;
+          2..3 : iCoord := FPosition + aFrom;
+          4    : iCoord := FPosition + NewCoord2D( Random(3)-1, Random(3)-1);
+        end;
+      until iLevel.isProperCoord( iCoord );
+      iLevel.Blood( iCoord );
+    end;
+  BloodDecal( aFrom, Clamp( aAmount + Random( aAmount ), 1, 12 ) );
+end;
+
+procedure TBeing.BloodDecal( aFrom : TDirection; aAmount : LongInt );
+var iCount    : Integer;
+    iLevel    : TLevel;
+    iPosition : TVec2i;
+    iOffset   : TVec2f;
+    iDirOffset: TVec2f;
+    iTCoord   : TCoord2D;
+    iRange    : Single;
+    iCanBleed : Boolean;
+
+  function RandomNorm : Single;
+  var iU1, iU2 : Single;
+  begin
+    repeat iU1 := Random until iU1 <> 0.0;
+    iU2 := Random;
+    RandomNorm := Sqrt( -2.0 * Ln( iU1 ) ) * Cos( 2.0 * Pi * iU2 );
+  end;
+
+  function RandGuassian( aRadius : Single ) : TVec2f;
   begin
     repeat
-      case Random(5) of
-        0..1 : iCoord := FPosition;
-        2..3 : iCoord := FPosition + aFrom;
-        4    : iCoord := FPosition + NewCoord2D( Random(3)-1, Random(3)-1);
-      end;
-    until iLevel.isProperCoord( iCoord );
-    iLevel.Blood( iCoord );
+      Result.X := RandomNorm * aRadius * 0.3;
+      Result.Y := RandomNorm * aRadius * 0.3;
+    until ( Result.X * Result.X + Result.Y * Result.Y ) < aRadius * aRadius;
+  end;
+
+  function CanBleedOn( aCoord : TCoord2D ) : Boolean;
+  var iCell : TCell;
+  begin
+    iCell := Cells[ iLevel.CellBottom[ aCoord ] ];
+    if CF_LIQUID    in iCell.Flags then Exit( False );
+    if CF_BLOCKMOVE in iCell.Flags then Exit( False ); // TODO: Wall bleed check for BLOCKLOS for void!
+    Exit( True );
+  end;
+
+begin
+  iLevel := TLevel(Parent);
+  iRange := Clampf( aAmount / 3.0, 0.75, 2.5 );
+  iCanBleed := CanBleedOn( FPosition );
+  iDirOffset.Init( aFrom.X * 0.5, aFrom.Y * 0.5 );
+  for iCount := 1 to aAmount do
+  begin
+    iOffset := RandGuassian( iRange );
+    iPosition.Init(
+      Floor( ( FPosition.X + iOffset.X + iDirOffset.X ) * 32.0 ),
+      Floor( ( FPosition.Y + iOffset.Y + iDirOffset.Y ) * 32.0 )
+    );
+    iTCoord := NewCoord2D( ( iPosition.X + 16 ) div 32, ( iPosition.Y + 16 ) div 32 );
+    if ( iCanBleed and ( iTCoord = FPosition ) ) or ( CanBleedOn( iTCoord ) ) then
+      iLevel.Decals.Add( iPosition, HARDSPRITE_DECAL_BLOOD[1+Random(3)] );
   end;
 end;
 
@@ -1889,12 +1946,12 @@ begin
     aDamage := Max( 1, aDamage - iArmorValue );
   end;
 
-  if aDamage > 8 then
+  if aDamage > 2 then
   begin
     if iActive <> nil then
       iDirection.Create( iActive.FPosition, FPosition )
     else iDirection.code := 5;
-    Blood( iDirection, aDamage div 6 );
+    Blood( iDirection, aDamage div 7 );
   end;
 
   case aDamageType of
@@ -2208,6 +2265,7 @@ begin
   if (iLevel.cellFlagSet(FPosition,CF_VBLOODY)) or
      (iLevel.LightFlag[ FPosition, LFBLOOD ]) then Exit;
   iLevel.Blood(FPosition);
+  BloodDecal( NewDirection(0), 1 );
 end;
 
 procedure TBeing.Knockback( aDir : TDirection; aStrength : Integer );
