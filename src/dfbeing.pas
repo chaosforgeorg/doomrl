@@ -1246,7 +1246,7 @@ begin
   iMoveCost   := getMoveCost;
   FSpeedCount := FSpeedCount - iMoveCost;
   if GraphicsVersion then
-    if iLevel.BeingExplored( FPosition, Self ) or iLevel.BeingExplored( LastMove, Self ) or iLevel.BeingVisible( FPosition, Self ) or iLevel.BeingVisible( LastMove, Self ) then
+    if iLevel.AnimationVisible( FPosition, Self ) or iLevel.AnimationVisible( LastMove, Self ) then
     begin
       iVisualMult := ( 100.0 / FSpeed ) * ( iMoveCost / 1000.0 ) * aVisualMultiplier;
       IO.addMoveAnimation( Ceil( iVisualMult * 100 ), 0, FUID,Position,LastMove,Sprite, True);
@@ -1695,7 +1695,8 @@ begin
     // Attack cost
     iAttackCost := getFireCost( ALT_NONE, True );
 
-    IO.addMeleeAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aWhere, Sprite );
+    if Doom.Level.AnimationVisible( Position, Self ) then
+      IO.addBumpAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aWhere, Sprite, 0.5 );
 
     TLevel(Parent).DamageTile( aWhere, rollMeleeDamage( iSlot ), Damage_Melee );
     Dec( FSpeedCount, iAttackCost )
@@ -1750,7 +1751,8 @@ begin
   iAttackCost := getFireCost( ALT_NONE, True );
 
   if not Second then
-    IO.addMeleeAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aTarget.Position, Sprite );
+    if Doom.Level.AnimationVisible( FPosition, Self ) then
+      IO.addBumpAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aTarget.Position, Sprite, 0.5 );
 
   if iDualAttack or Second
     then Dec( FSpeedCount, iAttackCost div 2 )
@@ -2301,7 +2303,7 @@ begin
     begin
       if isPlayer then
         IO.addScreenMoveAnimation(100, iKnock );
-      if isVisible then
+      if iLevel.AnimationVisible( FPosition, Self ) or iLevel.AnimationVisible( iKnock, Self ) then
         IO.addMoveAnimation(100,0,FUID,Position,iKnock,Sprite,True);
     end;
     Displace( iKnock );
@@ -3113,7 +3115,24 @@ begin
   end;
 end;
 
-const lua_being_lib : array[0..38] of luaL_Reg = (
+function lua_being_animate_bump( L: Plua_State ): Integer; cdecl;
+var iState  : TDoomLuaState;
+    iBeing  : TBeing;
+    iCoord  : TCoord2D;
+    iAmount : Single;
+begin
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  if iBeing = nil then Exit( 0 );
+  iCoord  := iState.ToPosition( 2 );
+  iAmount := iState.ToFloat( 3, 0.5 );
+  with iBeing do
+    if Doom.Level.AnimationVisible( Position, iBeing ) then
+      IO.addBumpAnimation( VisualTime( iState.ToInteger( 4, 1000 ) ) , 0, UID, Position, iCoord, Sprite, iAmount );
+end;
+
+
+const lua_being_lib : array[0..39] of luaL_Reg = (
       ( name : 'new';           func : @lua_being_new),
       ( name : 'kill';          func : @lua_being_kill),
       ( name : 'ressurect';     func : @lua_being_ressurect),
@@ -3157,6 +3176,8 @@ const lua_being_lib : array[0..38] of luaL_Reg = (
 
       ( name : 'set_marker';   func : @lua_being_set_marker),
       ( name : 'wipe_marker';  func : @lua_being_wipe_marker),
+
+      ( name : 'animate_bump';  func : @lua_being_animate_bump),
 
       ( name : nil;             func : nil; )
 );

@@ -56,7 +56,9 @@ TLevel = class(TLuaMapNode, ITextMap)
     
     { Determines if the coord has a being that the player can sense by Intuition. }
     function BeingIntuited( coord: TCoord2D; aBeing: TBeing ) : boolean;
-    
+
+    function AnimationVisible( aCoord: TCoord2D; aBeing: TBeing ) : boolean;
+
     {$IFDEF CORNERMAP}
     function  Corner( coord : TCoord2D ) : boolean;
     {$ENDIF}
@@ -733,6 +735,14 @@ begin
   if aBeing = nil then Exit(False);
   if not Player.Flags[ BF_BEINGSENSE ] then Exit(False);
   Exit(Distance( Player.Position, coord ) <= Player.Vision + 2);
+end;
+
+function TLevel.AnimationVisible( aCoord : TCoord2D; aBeing : TBeing ) : boolean;
+begin
+   if aBeing = nil then Exit(False);
+   if isVisible( aCoord ) then Exit( True );
+   if Player.Flags[ BF_DARKNESS ] then Exit(False);
+   Exit(LF_BEINGSVISIBLE in FFlags);
 end;
 
 {$IFDEF CORNERMAP}
