@@ -1,6 +1,6 @@
-# doomrl
+# drl
 
-DRL a.k.a. doomrl, a.k.a, D**m, the Roguelike, version 0.9.9.8
+DRL a.k.a. "That Trademark", the Roguelike, version 0.9.9.8
 http://drl.chaosforge.org/
 
 ## Foreword
@@ -40,7 +40,7 @@ There are two IDEs available: Visual Studio Code and Lazarus. You should only ne
   * (if referencing v0.9.9.9 or higher) data\\drlhq\sounds\\* to (bin\\)data\\drlhq\\sound
   * (if referencing v0.9.9.9 or higher) data\\drlhq\sounds\\* to (bin\\)data\\drllq\\sound
 4. Download fpcvalkyrie from https://github.com/ChaosForge/fpcvalkyrie/ to a folder at the same level as the DRL source
-5. Ensure doomrl and fpcvalkyrie are on the same release branch (e.g. master or development)
+5. Ensure drl and fpcvalkyrie are on the same release branch (e.g. master or development)
 
 #### Dependency notes
 DRL uses a few sophisticated Lua tricks however v5.1 specifically is compulsory:
