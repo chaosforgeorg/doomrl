@@ -865,7 +865,7 @@ begin
   if aNoHazard
     then aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOHARM,EF_NOSTAIRS ] )
     else aCoord := DropCoord( aCoord, [ EF_NOITEMS,EF_NOBLOCK,EF_NOSTAIRS ] );
-  if aDropAnim then aItem.Appear := 1;
+  if aDropAnim and isVisible( aCoord ) then aItem.Appear := 1;
   Add( aItem, aCoord );
 
   if cellFlagSet(aCoord,CF_HAZARD) then
