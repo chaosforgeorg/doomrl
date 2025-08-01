@@ -199,6 +199,11 @@ const
   Option_IntuitionChar    : Char = '.';
 
 var
+  ModuleOption_KlassAchievements : Boolean = False;
+  ModuleOption_NewMenu           : Boolean = False;
+
+
+var
   HARDSPRITE_HIGHLIGHT : DWord = 0;
   HARDSPRITE_EXPL      : DWord = 0;
   HARDSPRITE_SELECT    : DWord = 0;

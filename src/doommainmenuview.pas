@@ -16,6 +16,7 @@ type TMainMenuEntry = record
   Extra : Ansistring;
   ID    : Ansistring;
   NID   : Byte;
+  Req   : Byte;
 end;
 
 type TMainMenuEntryArray = specialize TGArray< TMainMenuEntry >;
@@ -84,19 +85,19 @@ var ChallengeType : array[1..4] of TMainMenuEntry =
 ((
    Name : 'Angel Game';
    Desc : 'Play one of the DRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach {yPrivate FC} rank to unlock!';
-   Allow : True; Extra : ''; ID : ''; NID : 0;
+   Allow : True; Extra : ''; ID : ''; NID : 0; Req : 0;
 ),(
    Name : 'Dual-angel Game';
    Desc : 'Mix two DRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach {ySergeant} rank to unlock!';
-   Allow : True; Extra : ''; ID : ''; NID : 0;
+   Allow : True; Extra : ''; ID : ''; NID : 0; Req : 0;
 ),(
    Name : 'Archangel Game';
    Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach {ySergeant Major} rank to unlock!';
-   Allow : True; Extra : ''; ID : ''; NID : 0;
+   Allow : True; Extra : ''; ID : ''; NID : 0; Req : 0;
 ),(
    Name : 'Custom Challenge';
    Desc : 'Play one of many custom DRL challenge levels and episodes. Download new ones from the {yCustom game/Download Mods} option in the main menu.';
-   Allow : True; Extra : ''; ID : ''; NID : 0;
+   Allow : True; Extra : ''; ID : ''; NID : 0; Req : 0;
 ));
 
 const CTYPE_ANGEL  = 1;
@@ -452,24 +453,68 @@ begin
 end;
 
 procedure TMainMenuView.UpdateDifficulty;
-var i : Integer;
+var iSelected, i, iLines : Integer;
 begin
-  VTIG_PushStyle( @TIGStyleFrameless );
-  VTIG_Begin( 'mainmenu_difficulty', Point( 26, 9 ), Point( 29, 16 ) );
-  VTIG_PopStyle;
-    VTIG_PushStyle( @TIGStyleColored );
-    for i := 0 to FArrayDiff.Size - 1 do
-      if VTIG_Selectable( FArrayDiff[i].Name, FArrayDiff[i].Allow ) then
-      begin
-        FResult.Difficulty := FArrayDiff[i].NID;
-        if FResult.Difficulty >= 5
-          then FMode := MAINMENU_FAIR
-          else FMode := MAINMENU_KLASS;
-      end;
+  if FArrayDiff.Size < 2 then
+  begin
+    FResult.Difficulty := 0;
+    FMode := MAINMENU_KLASS;
+    Exit;
+  end;
+  if ModuleOption_NewMenu then
+  begin
+    iLines := 12;
+    if FArrayDiff[FArrayDiff.Size-1].Allow then iLines -= 2;
+    iSelected := VTIG_Selected('mainmenu_difficulty');
+    if iSelected < 0 then iSelected := 0;
+    VTIG_PushStyle( @TIGStyleFrameless );
+    VTIG_Begin( 'mainmenu_difficulty_desc', Point( 47, iLines ), Point( 30, 16 ) );
     VTIG_PopStyle;
-  VTIG_End;
+      VTIG_PushStyle( @TIGStyleColored );
+      VTIG_Text( Padded( '- {!' + FArrayDiff[iSelected].Name + ' }', 48, '-' ) );
+      VTIG_PopStyle;
+      VTIG_Text( FArrayDiff[iSelected].Desc );
+      if not FArrayDiff[iSelected].Allow then VTIG_Text( FArrayDiff[iSelected].Extra );
+    VTIG_End;
 
-  IO.RenderUIBackground( Point(23,15), Point(57,22), 0.7 );
+    VTIG_PushStyle( @TIGStyleFrameless );
+    VTIG_Begin( 'mainmenu_difficulty', Point( 17, 2+FArrayDiff.Size ), Point( 9, 16 ) );
+    VTIG_PopStyle;
+      VTIG_PushStyle( @TIGStyleColored );
+      for i := 0 to FArrayDiff.Size - 1 do
+        if VTIG_Selectable( FArrayDiff[i].Name, FArrayDiff[i].Allow ) then
+        begin
+          FResult.Difficulty := FArrayDiff[i].NID;
+          if FResult.Difficulty >= 5
+            then FMode := MAINMENU_FAIR
+            else FMode := MAINMENU_KLASS;
+        end;
+      iSelected := VTIG_Selected;
+      VTIG_PopStyle;
+    VTIG_End;
+
+    IO.RenderUIBackground(  Point(8,15), Point(25,17+FArrayDiff.Size), 0.7 );
+    IO.RenderUIBackground( Point(28,15), Point(77,16+iLines), 0.7 );
+  end
+  else
+  begin
+    VTIG_PushStyle( @TIGStyleFrameless );
+    VTIG_Begin( 'mainmenu_difficulty', Point( 26, 9 ), Point( 29, 16 ) );
+    VTIG_PopStyle;
+      VTIG_PushStyle( @TIGStyleColored );
+      for i := 0 to FArrayDiff.Size - 1 do
+        if VTIG_Selectable( FArrayDiff[i].Name, FArrayDiff[i].Allow ) then
+        begin
+          FResult.Difficulty := FArrayDiff[i].NID;
+          if FResult.Difficulty >= 5
+            then FMode := MAINMENU_FAIR
+            else FMode := MAINMENU_KLASS;
+        end;
+      VTIG_PopStyle;
+    VTIG_End;
+    IO.RenderUIBackground( Point(23,15), Point(57,22), 0.7 );
+  end;
+
   if VTIG_EventCancel then
   begin
     FMode := MAINMENU_MENU;
@@ -571,6 +616,7 @@ procedure TMainMenuView.UpdateChallenge;
 var iSelect : Integer;
     iCount  : Byte;
     iPick   : Integer;
+    iRank   : AnsiString;
 begin
   VTIG_BeginWindow( FTitleChal, 'challenges_view', FSize );
     iSelect := -1;
@@ -592,6 +638,12 @@ begin
           VTIG_Text( FArrayChal[iSelect].Name, VTIGDefaultStyle.Color[ VTIG_TITLE_COLOR ] );
           VTIG_Ruler;
           VTIG_Text( 'Rating: {!'+FArrayChal[iSelect].Extra+'}'#10#10+FArrayChal[iSelect].Desc );
+          if not FArrayChal[iSelect].Allow then
+          begin
+            iRank := LuaSystem.Get( ['ranks','skill',FArrayChal[iSelect].Req,'name'] );
+            VTIG_Text('');
+            VTIG_Text( 'Reach {y'+iRank+'} rank to unlock!' );
+          end;
       end;
       VTIG_EndGroup;
 
@@ -756,10 +808,11 @@ begin
     if (FResult.Challenge <> '') and (not GetBoolean( 'challenge' )) then Continue;
     if GetInteger('req_skill',0) > iSkill then iEntry.Allow := Setting_UnlockAll;
     iEntry.Name := GetString('name');
-    iEntry.Desc := '';
-    iEntry.Extra:= '';
+    iEntry.Desc := GetString('desc','');
+    iEntry.Extra:= GetString('desc_unlock','');
     iEntry.ID   := GetString('id');
     iEntry.NID  := GetInteger('nid');
+    iEntry.Req  := 0;
     FArrayDiff.Push( iEntry );
   end;
 
@@ -774,6 +827,7 @@ begin
         iEntry.Extra := '';
         iEntry.NID   := GetInteger('nid');
         iEntry.Allow := IsFunction('OnPick');
+        iEntry.Req  := 0;
         FArrayKlass.Push( iEntry );
       end;
     finally
@@ -855,7 +909,8 @@ begin
       if iEntry.Extra = '' then iEntry.Extra := 'UNRATED';
       iEntry.ID    := GetString('id');
       iEntry.NID   := iChallenges[iCount];
-      iEntry.Allow := (HOF.GetRank('skill') >= GetInteger(iPrefix+'rank',0)) or (GodMode) or (Setting_UnlockAll);
+      iEntry.Req   := GetInteger(iPrefix+'rank',0);
+      iEntry.Allow := (HOF.GetRank('skill') >= iEntry.Req) or (GodMode) or (Setting_UnlockAll);
       FArrayChal.Push( iEntry );
     finally
       Free;

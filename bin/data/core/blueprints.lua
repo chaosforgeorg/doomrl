@@ -24,6 +24,8 @@ core.register_blueprint "difficulty"
 {
 	id            = { true,  core.TSTRING },
 	name          = { true,  core.TSTRING },
+	desc          = { false, core.TSTRING, "" },
+	desc_unlock   = { false, core.TSTRING, "" },
 	description   = { true,  core.TSTRING },
 	code          = { true,  core.TSTRING },
 	accuracybonus = { false, core.TNUMBER, 0 },

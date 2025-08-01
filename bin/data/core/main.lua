@@ -15,6 +15,7 @@ require( "core:mortem" )
 core.options = {
 	auto_glow_items = true,
 	klass_achievements = false,
+	new_menu = false,
 }
 
 module = false
