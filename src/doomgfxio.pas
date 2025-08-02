@@ -40,7 +40,9 @@ type
     procedure DeviceChanged;
     function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; override;
     function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; override;
-    procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); override;
+    procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 ); override;
+    procedure RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 ); override;
+
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
     procedure SetAutoTarget( aTarget : TCoord2D ); override;
     procedure Focus( aCoord : TCoord2D ); override;
@@ -123,7 +125,7 @@ type
 implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
-     classes, sysutils,
+     classes, sysutils, math,
      vdebug, vlog, vmath, vdf, vgl3library, vsdl2library,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfplayer,
@@ -647,7 +649,7 @@ begin
 
     if (iValue.X <> 0) or (iValue.Y <> 0) then
     begin
-      SpriteMap.NewShift := Clamp( SpriteMap.Shift + Ceil( iValue.Scaled( aMSec ) ), SpriteMap.MinShift, SpriteMap.MaxShift );
+      SpriteMap.NewShift := Clamp( SpriteMap.Shift + vvector.Ceil( iValue.Scaled( aMSec ) ), SpriteMap.MinShift, SpriteMap.MaxShift );
       FMouseLock :=
         ((SpriteMap.NewShift.X = SpriteMap.MinShift.X) or (SpriteMap.NewShift.X = SpriteMap.MaxShift.X))
      and ((SpriteMap.NewShift.Y = SpriteMap.MinShift.Y) or (SpriteMap.NewShift.Y = SpriteMap.MaxShift.Y));
@@ -672,7 +674,7 @@ begin
   // Pan mode
   if (FTargeting or ( not isModal)) and (( FGPRight.X <> 0.0 ) or (FGPRight.Y <> 0.0 )) then
   begin
-    SpriteMap.NewShift := Clamp( SpriteMap.Shift + Ceil( FGPRight.Scaled( aMSec ) ), SpriteMap.MinShift, SpriteMap.MaxShift );
+    SpriteMap.NewShift := Clamp( SpriteMap.Shift + vvector.Ceil( FGPRight.Scaled( aMSec ) ), SpriteMap.MinShift, SpriteMap.MaxShift );
   end;
 
   if (FTargeting or ( not isModal)) and (( FGPLeftDir.X <> 0 ) or (FGPLeftDir.Y <> 0 )) then
@@ -930,14 +932,48 @@ begin
   Exit( FConsole.GetDeviceArea.Pos + aCoord );
 end;
 
-procedure TDoomGFXIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 );
+procedure TDoomGFXIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
 var iP1,iP2 : TIOPoint;
 begin
   iP1 := ConsoleCoordToDeviceCoord( aUL + PointUnit );
   iP2 := ConsoleCoordToDeviceCoord( aBR + PointUnit );
-  QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,aOpacity ) );
+  QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,aOpacity ), aZ );
 end;
 
+procedure TDoomGFXIO.RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 );
+var iImage          : TImage;
+    iMin, iMax      : TGLVec2f;
+    iSize, iSz, iTC : TGLVec2f;
+begin
+  if aTexture = 0 then Exit;
+  iImage := FTextures.Texture[ aTexture ].Image;
+  iTC.Init( iImage.RawX / iImage.SizeX, iImage.RawY / iImage.SizeY );
+
+  iSize.Init( Driver.GetSizeX, Driver.GetSizeY );
+  iMin.Init( 0,0 );
+  iMax := iSize - GLVec2f( 1, 1 );
+
+  if (iImage.RawX / iImage.RawY) > (iSize.X / iSize.Y) then
+  begin
+    iSz.X  := iImage.RawX * (IO.Driver.GetSizeY / iImage.RawY);
+    iMin.X := ( IO.Driver.GetSizeX - iSz.X ) / 2;
+    iMax.X := iMin.X + iSz.X;
+  end
+  else
+  begin
+    iSz.Y  := iImage.RawY * (IO.Driver.GetSizeX / iImage.RawX);
+    iMin.Y := ( IO.Driver.GetSizeY - iSz.Y ) / 2;
+    iMax.Y := iMin.Y + iSz.Y;
+  end;
+
+  QuadSheet.PushTexturedQuad(
+    GLVec2i(Floor(iMin.X), Floor(iMin.Y)),
+    GLVec2i(Floor(iMax.X), Floor(iMax.Y)),
+    GLVec2f(0,0),iTC,
+    FTextures.Texture[ aTexture ].GLTexture,
+    aZ
+  );
+end;
 
 end.
 

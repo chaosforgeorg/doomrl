@@ -702,32 +702,8 @@ var iIO             : TDoomGFXIO;
 begin
   iIO := IO as TDoomGFXIO;
   Assert( iIO <> nil );
-
-  iImage := iIO.Textures.Texture[ FBGTexture ].Image;
-  iTC.Init( iImage.RawX / iImage.SizeX, iImage.RawY / iImage.SizeY );
   iSize.Init( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
-  iMin.Init( 0,0 );
-  iMax := iSize - GLVec2f( 1, 1 );
-
-  if (iImage.RawX / iImage.RawY) > (iSize.X / iSize.Y) then
-  begin
-    iSz.X  := iImage.RawX * (IO.Driver.GetSizeY / iImage.RawY);
-    iMin.X := ( IO.Driver.GetSizeX - iSz.X ) / 2;
-    iMax.X := iMin.X + iSz.X;
-  end
-  else
-  begin
-    iSz.Y  := iImage.RawY * (IO.Driver.GetSizeX / iImage.RawX);
-    iMin.Y := ( IO.Driver.GetSizeY - iSz.Y ) / 2;
-    iMax.Y := iMin.Y + iSz.Y;
-  end;
-
-  iIO.QuadSheet.PushTexturedQuad(
-    GLVec2i(Floor(iMin.X), Floor(iMin.Y)),
-    GLVec2i(Floor(iMax.X), Floor(iMax.Y)),
-    GLVec2f(0,0),iTC,
-    iIO.Textures.Texture[ FBGTexture ].GLTexture
-  );
+  iIO.RenderUIBackground( FBGTexture );
 
   if FMode = MAINMENU_FIRST then
     IO.RenderUIBackground( Point(4,1), Point(76,24), 0.7 );

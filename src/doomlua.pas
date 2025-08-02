@@ -3,7 +3,7 @@ unit doomlua;
 interface
 
 uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil,
-     vcolor, vdf, vgenerics, dfitem, dfbeing, dfthing, dfdata, doommodule;
+     vcolor, vdf, viotypes, vgenerics, dfitem, dfbeing, dfthing, dfdata, doommodule;
 
 var LuaPlayerX : Byte = 2;
     LuaPlayerY : Byte = 2;
@@ -30,8 +30,9 @@ type
 { TDoomLuaState }
 
 TDoomLuaState = object(TLuaState)
-  function ToId( Index : Integer) : DWord;
-  function ToPosition( Index : Integer ) : TCoord2D;
+  function ToId( aIndex : Integer) : DWord;
+  function ToPosition( aIndex : Integer ) : TCoord2D;
+  function ToIOColor( aIndex : Integer ) : TIOColor;
 end;
 
 // published functions
@@ -39,8 +40,8 @@ end;
 implementation
 
 uses typinfo, variants,
-     vnode, vdebug, viotypes, vluatools, vsystems, vluadungen, vluaentitynode,
-     vmath, vtextures, vimage, vtigstyle,
+     vnode, vdebug, vluatools, vsystems, vluadungen, vluaentitynode,
+     vmath, vtextures, vimage, vtigstyle, vvector,
      dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, doomgfxio, doomspritemap;
 
 var SpriteSheetCounter : Integer = -1;
@@ -571,19 +572,32 @@ end;
 
 { TDoomLuaState }
 
-function TDoomLuaState.ToId(Index: Integer ): DWord;
+function TDoomLuaState.ToId( aIndex: Integer ): DWord;
 begin
-  if IsNumber( Index ) then Exit( ToInteger( Index ) );
-  ToId := LuaSystem.Defines[ToString( Index )];
-  if ToId = 0 then Error( 'unknown define ('+ToString( Index ) +')!' );
+  if IsNumber( aIndex ) then Exit( ToInteger( aIndex ) );
+  ToId := LuaSystem.Defines[ToString( aIndex )];
+  if ToId = 0 then Error( 'unknown define ('+ToString( aIndex ) +')!' );
 end;
 
-function TDoomLuaState.ToPosition( Index : Integer ) : TCoord2D;
+function TDoomLuaState.ToPosition( aIndex : Integer ) : TCoord2D;
 begin
-  if IsCoord( Index ) then
-     Exit( ToCoord( Index ) )
+  if IsCoord( aIndex ) then
+     Exit( ToCoord( aIndex ) )
   else
-     Exit( (ToObject( Index ) as TThing).Position );
+     Exit( (ToObject( aIndex ) as TThing).Position );
+end;
+
+function TDoomLuaState.ToIOColor( aIndex : Integer ) : TIOColor;
+var iC4b : TVec4b;
+begin
+  Result := 0;
+  if IsNumber( aIndex )
+    then Exit( ToInteger( aIndex ) )
+    else if IsTable( aIndex ) then
+    begin
+      iC4b := ToVec4b( aIndex );
+      Exit( IOColor( iC4b.X, iC4b.Y, iC4b.Z, iC4b.W ) );
+    end;
 end;
 
 end.

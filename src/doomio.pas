@@ -2,7 +2,7 @@
 unit doomio;
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
-     vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vmessages,
+     vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vmessages, vtextures,
      vuitypes, vluastate,  viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
      dfdata, dfthing, doomspritemap, doomaudio, doomkeybindings, doomloadingview;
 
@@ -112,7 +112,8 @@ type TDoomIO = class( TIO )
 
   function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
   function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
-  procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); virtual;
+  procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 ); virtual;
+  procedure RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 ); virtual;
   procedure FullLook( aID : Ansistring );
   procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
   procedure SetAutoTarget( aTarget : TCoord2D ); virtual;
@@ -181,7 +182,7 @@ uses math, video, dateutils, variants,
      vsdlio, vglconsole, vtig, vtigio, vvector,
      dflevel, dfplayer, dfitem, dfbeing, dfhof,
      doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua,
-     doomhudviews, doomplotview;
+     doomhudviews, drlplotview;
 
 function TIGSubCallback( const aID : Ansistring ) : Ansistring;
 begin
@@ -628,7 +629,12 @@ begin
   Exit( aCoord );
 end;
 
-procedure TDoomIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 );
+procedure TDoomIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
+begin
+  // noop
+end;
+
+procedure TDoomIO.RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 );
 begin
   // noop
 end;
@@ -1290,10 +1296,10 @@ begin
 end;
 
 function lua_ui_plot_screen(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var iState : TDoomLuaState;
 begin
-  State.Init(L);
-  IO.PushLayer( TPlotView.Create( State.ToString(1), State.ToInteger(2) ) );
+  iState.Init(L);
+  IO.PushLayer( TPlotView.Create( iState.ToString(1), iState.ToIOColor(2), iState.ToString(3,'') ) );
   IO.WaitForLayer( True );
   Result := 0;
 end;
@@ -1398,34 +1404,24 @@ begin
 end;
 
 function lua_ui_set_style_color(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var iState : TDoomLuaState;
     iEntry : TTIGStyleColorEntry;
-    iColor : TIOColor;
-    iC4b   : TVec4b;
 begin
-  State.Init(L);
-  if State.StackSize < 2 then Exit(0);
-  iEntry := TTIGStyleColorEntry( State.ToInteger(1) );
-  iColor := 0;
-  if State.IsNumber(2) then
-    iColor := State.ToInteger(2);
-  if State.IsTable(2) then
-  begin
-    iC4b   := State.ToVec4b(2);
-    iColor := IOColor( iC4b.X, iC4b.Y, iC4b.Z, iC4b.W );
-  end;
-  VTIGDefaultStyle.Color[iEntry] := iColor;
+  iState.Init(L);
+  if iState.StackSize < 2 then Exit(0);
+  iEntry := TTIGStyleColorEntry( iState.ToInteger(1) );
+  VTIGDefaultStyle.Color[iEntry] := iState.ToIOColor( 2 );
   Result := 0;
 end;
 
 function lua_ui_set_style_frame(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var iState : TDoomLuaState;
     iEntry : TTIGStyleFrameEntry;
 begin
-  State.Init(L);
-  if State.StackSize < 2 then Exit(0);
-  iEntry := TTIGStyleFrameEntry( State.ToInteger(1) );
-  VTIGDefaultStyle.Frame[iEntry] := State.ToString(2);
+  iState.Init(L);
+  if iState.StackSize < 2 then Exit(0);
+  iEntry := TTIGStyleFrameEntry( iState.ToInteger(1) );
+  VTIGDefaultStyle.Frame[iEntry] := iState.ToString(2);
   Result := 0;
 end;
 
