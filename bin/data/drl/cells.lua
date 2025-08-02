@@ -320,7 +320,7 @@ function drl.register_cells()
 		end,
 
 		OnExit = function(c)
-			player:exit()
+			player:exit( nil, 0.5 )
 		end,
 	}
 
@@ -338,7 +338,7 @@ function drl.register_cells()
 		end,
 
 		OnExit = function(c)
-			player:exit( level.special_exit )
+			player:exit( level.special_exit, 0.5 )
 		end,
 
 		OnDescribe = function(c)

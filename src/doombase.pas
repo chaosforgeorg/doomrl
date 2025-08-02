@@ -67,7 +67,7 @@ TDoom = class(TSystem)
        procedure CallHook( Hook : Byte; const Params : array of Const );
        function  CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
        procedure LoadChallenge;
-       procedure SetState( NewState : TDoomState );
+       procedure SetState( aNewState : TDoomState );
        procedure ClearPlayerView;
      private
        procedure ResetAutoTarget;
@@ -209,9 +209,15 @@ begin
     FSChallengeHooks := LoadHooks( ['chal',SChallenge] ) * GlobalHooks;
 end;
 
-procedure TDoom.SetState(NewState: TDoomState);
+procedure TDoom.SetState( aNewState: TDoomState );
 begin
-  FState := NewState;
+  if ( FState = aNewState ) then Exit;
+  if ( FState = DSPlaying ) then
+  begin
+    IO.FadeWait;
+    if ( aNewState <> DSQuit) then IO.FadeReset;
+  end;
+  FState := aNewState;
 end;
 
 procedure TDoom.ClearPlayerView;
@@ -328,6 +334,7 @@ begin
   Setting_MenuSound        := Configuration.GetBoolean( 'menu_sound' );
   Setting_GroupMessages    := Configuration.GetBoolean( 'group_messages' );
   Setting_ItemDropAnimation:= Configuration.GetBoolean( 'item_drop_animation' );
+  Setting_Fade             := Configuration.GetBoolean( 'fade_fx' );
 end;
 
 procedure TDoom.CreateIO;
@@ -1239,6 +1246,7 @@ repeat
     FLevel.CalculateVision( Player.Position );
     SetState( DSPlaying );
     IO.BloodSlideDown(20);
+    IO.FadeIn( True );
     IO.Audio.PlayMusic( Iif( FLevel.Music_ID <> '', FLevel.Music_ID, FLevel.ID ) );
 
     if iEnterNuke then
@@ -1333,6 +1341,8 @@ repeat
     raise;
   end;
   end;
+
+  IO.FadeReset;
 
   if State = DSSaving then
     WriteSaveFile( False );

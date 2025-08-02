@@ -718,6 +718,7 @@ begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
+  IO.FadeOut(1.0);
   Doom.SetState( DSFinished );
   Doom.GameWon := True;
   Result := 0;
@@ -746,42 +747,47 @@ begin
 end;
 
 function lua_player_level_up(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
-    Being   : TBeing;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
 begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  if not (Being is TPlayer) then Exit(0);
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  if not (iBeing is TPlayer) then Exit(0);
   Player.LevelUp();
   Result := 0;
 end;
 
 function lua_player_exit(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
-    Being   : TBeing;
+var iState : TDoomLuaState;
+    iBeing : TBeing;
 begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  if not (Being is TPlayer) then Exit(0);
-  if Doom.State <> DSSaving then Doom.SetState( DSNextLevel );
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  if not (iBeing is TPlayer) then Exit(0);
+  if Doom.State <> DSSaving then
+  begin
+    if iState.IsNumber(3) then
+      IO.FadeOut( iState.ToFloat(3) );
+    Doom.SetState( DSNextLevel );
+  end;
   Player.FSpeedCount := 4000;
-  if State.StackSize < 2 then
+  if iState.IsNil(2) then
   begin
     Player.SpecExit   := '';
     Exit(0);
   end;
-  if State.IsNumber(2) then
+  if iState.IsNumber(2) then
   begin
-    Player.SpecExit     := '';
-    Player.FLevelIndex := State.ToInteger(2)-1;
+    Player.SpecExit    := '';
+    Player.FLevelIndex := iState.ToInteger(2)-1;
     Exit(0);
   end;
-  if State.IsString(2) then
+  if iState.IsString(2) then
   begin
-    Player.SpecExit    := State.ToString(2);
+    Player.SpecExit    := iState.ToString(2);
     Exit(0);
   end;
-  State.Error('Player.exit - bad parameters!');
+  iState.Error('Player.exit - bad parameters!');
   Result := 0;
 end;
 

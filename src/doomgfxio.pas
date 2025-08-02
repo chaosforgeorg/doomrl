@@ -51,6 +51,13 @@ type
     function GetPadRTrigger : Boolean; override;
     function GetPadLDir     : TCoord2D; override;
     function IsGamepad      : Boolean; override;
+
+    // Fade control
+    procedure FadeIn( aForce : Boolean = False ); override;
+    procedure FadeOut( aTime : Single = 0.5; aWait : Boolean = False ); override;
+    procedure FadeReset; override;
+    procedure FadeWait; override;
+
  protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
@@ -97,6 +104,11 @@ type
 
     FAnimations     : TAnimationManager;
     FTextures       : TTextureManager;
+
+    FFadeDirection  : Integer;
+    FFadeAlpha      : Single;
+    FFadeTime       : Single;
+    FFadeTimer      : Single;
   public
     property QuadSheet   : TGLQuadList read FQuadSheet;
     property TextSheet   : TGLQuadList read FTextSheet;
@@ -119,7 +131,6 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
 
 var ConsoleSizeX : Integer = 80;
     ConsoleSizeY : Integer = 25;
-
 
 procedure TDoomGFXIO.RecalculateScaling( aInitialize : Boolean );
 var iWidth        : Integer;
@@ -200,6 +211,7 @@ var iCoreData   : TVDataFile;
     iHeight     : Integer;
 
 begin
+  FadeReset;
   FLastMouseTime := 0;
   FMouseLock     := True;
   FGPDetected    := Doom.Store.IsSteamDeck;
@@ -315,6 +327,7 @@ var iWidth   : Integer;
     iHeight  : Integer;
     iOpacity : Integer;
 begin
+  FadeReset;
   iWidth  := Configuration.GetInteger('screen_width');
   iHeight := Configuration.GetInteger('screen_height');
   iOpacity:= Configuration.GetInteger( 'minimap_opacity' );
@@ -537,6 +550,55 @@ begin
   Exit( FGPDetected );
 end;
 
+procedure TDoomGFXIO.FadeIn( aForce : Boolean = False );
+begin
+  if not Setting_Fade then
+  begin
+    FadeReset;
+    Exit;
+  end;
+  FFadeTimer     := 0.0;
+  FFadeTime      := 0.5;
+  FFadeDirection := 1;
+  if aForce then FFadeAlpha := 0.0;
+end;
+
+procedure TDoomGFXIO.FadeOut( aTime : Single = 0.5; aWait : Boolean = False );
+begin
+  if not Setting_Fade then
+  begin
+    FadeReset;
+    Exit;
+  end;
+  FFadeTimer     := 0.0;
+  FFadeTime      := aTime;
+  FFadeDirection := -1;
+  if aWait then
+  begin
+    FadeWait;
+    FadeReset;
+  end;
+end;
+
+procedure TDoomGFXIO.FadeReset;
+begin
+  FFadeTimer     := 0.0;
+  FFadeDirection := 0;
+  FFadeAlpha     := 1.0;
+  FFadeTime      := 0.5;
+end;
+
+procedure TDoomGFXIO.FadeWait;
+var iTime : DWord;
+begin
+  if FFadeDirection < 0 then
+  begin
+    iTime := IO.Driver.GetMs;
+    while ( FFadeAlpha > 0.0 ) and ( IO.Driver.GetMs - iTime < 3000 ) do
+      IO.Delay(5);
+  end;
+end;
+
 procedure TDoomGFXIO.Configure( aConfig : TLuaConfig; aReload : Boolean = False );
 begin
   inherited Configure( aConfig, aReload );
@@ -666,7 +728,6 @@ begin
     QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.8 ) );
   end;
 
-
   FQuadRenderer.Update( FProjection );
   FQuadRenderer.Render( FQuadSheet );
   inherited Update( aMSec );
@@ -700,6 +761,24 @@ begin
         GLVec4f(1,1,1,Clampf( FBloodValue, 0.0, 1.0 )),
         GLVec2f(), GLVec2f(1,1), FTextures['low_life_glow'].GLTexture );
     end;
+  end;
+
+  if FFadeDirection <> 0 then
+  begin
+    FFadeTimer += ( 0.001 * aMSec );
+    FFadeAlpha := SmoothFade( FFadeTimer, FFadeTime, FFadeDirection > 0 );
+    if FFadeTimer > FFadeTime then
+    begin
+      if FFadeDirection > 0 then FFadeAlpha := 1.0 else FFadeAlpha := 0.0;
+      FFadeDirection := 0;
+    end;
+  end;
+
+  if FFadeAlpha < 1.0 then
+  begin
+    FPostSheet.PushColoredQuad(
+      GLVec2i(1,1), GLVec2i( FIODriver.GetSizeX, FIODriver.GetSizeY ),
+      GLVec4f(0,0,0,Clampf( 1.0-FFadeAlpha, 0.0, 1.0 )), 16001 );
   end;
 
   if  FTextSheet <> nil             then FQuadRenderer.Render( FTextSheet );
@@ -829,6 +908,7 @@ end;
 
 procedure TDoomGFXIO.DeviceChanged;
 begin
+  FadeReset;
   FUIRoot.DeviceChanged;
   FCellX := (FConsole.GetDeviceArea.Dim.X) div (FConsole.SizeX);
   FCellY := (FConsole.GetDeviceArea.Dim.Y) div (FConsole.SizeY);

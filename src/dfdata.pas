@@ -160,6 +160,7 @@ const
   Setting_GamepadRumble    : Boolean = True;
   Setting_Flash            : Boolean = True;
   Setting_Glow             : Boolean = True;
+  Setting_Fade             : Boolean = True;
   Setting_ScreenShake      : Boolean = True;
   Setting_BloodPulse       : Boolean = True;
   Setting_ItemDropAnimation: Boolean = True;
@@ -401,6 +402,7 @@ function ReadFileString( const aFileName : Ansistring ) : Ansistring;
 function WriteFileString( const aFileName, aText : Ansistring ) : Boolean;
 function ReadLineFromStream( aStream : TStream; aSize : Integer = -1 ) : AnsiString;
 function AxisToDirection( aAxis : TVec2f ) : TCoord2D;
+function SmoothFade( aElapsed, aDuration : Single; aFadeIn : Boolean ) : Single;
 
 var ColorOverrides : TIntHashMap;
 
@@ -410,7 +412,7 @@ var TIGStyleColored   : TTIGStyle;
     TIGStyleFrameless : TTIGStyle;
 
 implementation
-uses typinfo, strutils, math, vdebug, vluasystem;
+uses typinfo, strutils, math, vmath, vdebug, vluasystem;
 
 function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
 begin
@@ -929,6 +931,21 @@ begin
 
   iSectorSize := Pi / 4;
   Result := KDirection8[Round(iAngle / iSectorSize) mod 8];
+end;
+
+function SmoothFade( aElapsed, aDuration : Single; aFadeIn : Boolean ) : Single;
+var iNorm  : Single;
+    iEased : Single;
+begin
+  if aDuration <= 0.0 then
+    if aFadeIn then Exit( 1.0 ) else Exit( 0.0 );
+
+  iNorm  := Clampf( aElapsed / aDuration, 0.0, 1.0 );
+  iEased := iNorm * iNorm * (3.0 - 2.0 * iNorm);
+
+  if aFadeIn
+    then Exit( iEased )
+    else Exit( 1.0 - iEased );
 end;
 
 end.

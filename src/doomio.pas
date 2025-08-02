@@ -104,6 +104,12 @@ type TDoomIO = class( TIO )
   function GetPadLDir     : TCoord2D; virtual;
   function IsGamepad      : Boolean;  virtual;
 
+  // Fade control
+  procedure FadeIn( aForce : Boolean = False ); virtual;
+  procedure FadeOut( aTime : Single = 0.5; aWait : Boolean = False ); virtual;
+  procedure FadeReset; virtual;
+  procedure FadeWait; virtual;
+
   function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
   function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
   procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85 ); virtual;
@@ -590,6 +596,26 @@ end;
 function TDoomIO.IsGamepad      : Boolean;
 begin
   Exit( False );
+end;
+
+procedure TDoomIO.FadeIn( aForce : Boolean = False );
+begin
+  // noop
+end;
+
+procedure TDoomIO.FadeOut( aTime : Single = 0.5; aWait : Boolean = False );
+begin
+  // noop
+end;
+
+procedure TDoomIO.FadeReset;
+begin
+  // noop
+end;
+
+procedure TDoomIO.FadeWait;
+begin
+  // noop
 end;
 
 function TDoomIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;

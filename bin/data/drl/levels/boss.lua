@@ -58,7 +58,7 @@ register_level "hellgate"
 				if not being:is_player() then return end
 				level:explosion( being.position, { range = 4, delay = 50, color = GREEN, sound_id = "hellgate.use" } )
 				ui.msg_enter("You feel yanked in a non-existing direction!")
-				player:exit()
+				player:exit( nil, 1.0 )
 				drl.plot_outro_1()
 			end,
 		}
@@ -213,7 +213,7 @@ register_level "tower_of_babel"
 
 	OnKillAll = function ()
 		if not (level.flags[ LF_NUKED ] and not player.flags[BF_INV]) then
-			player:exit()
+			player:exit( nil, 1.0 )
 			drl.plot_outro_2()
 			if not level.flags[ LF_NUKED ] and statistics.damage_on_level == 0 then
 				if DIFFICULTY >= DIFF_MEDIUM then player:add_badge("hellgate3") end
