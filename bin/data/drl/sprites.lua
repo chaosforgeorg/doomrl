@@ -217,4 +217,5 @@ function drl.register_sprites()
 	core.declare( "HARDSPRITE_SELECT", SPRITE_SELECT )
 	core.declare( "HARDSPRITE_MARK",   SPRITE_MARK )
 	core.declare( "HARDSPRITE_GRID",   SPRITE_GRID )
+    core.declare( "HARDSPRITE_DECAL_BLOOD_1", 0 )
 end
