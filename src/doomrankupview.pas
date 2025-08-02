@@ -20,15 +20,16 @@ implementation
 uses sysutils, vluasystem, vtig;
 
 constructor TRankUpView.Create( aRank : THOFRank );
-var i     : Integer;
+var i, i2 : Integer;
     iSize : Integer;
+    iUnl  : Integer;
     iRank : Ansistring;
     iDesc : Ansistring;
 begin
   VTIG_EventClear;
   FSize      := Point( 80, 25 );
   iSize := 0;
-  SetLength( FLines, High( aRank.Data )+1 );
+  SetLength( FLines, 200 );
   for i := 0 to High( aRank.Data ) do
     if aRank.Data[i].Value <> 0 then
     begin
@@ -36,6 +37,19 @@ begin
       iDesc := LuaSystem.Get(['ranks',aRank.Data[i].ID,'award'],'');
       FLines[iSize] := Format( iDesc, [iRank] );
       Inc( iSize );
+      iUnl := LuaSystem.GetTableSize(['ranks',aRank.Data[i].ID,aRank.Data[i].Value+1,'unlocks']);
+      if iUnl > 0 then
+      begin
+        FLines[iSize] := 'This unlocks the following features:';
+        Inc( iSize );
+        for i2 := 1 to iUnl do
+        begin
+          FLines[iSize] := ' * '+LuaSystem.Get(['ranks',aRank.Data[i].ID,aRank.Data[i].Value+1,'unlocks',i2]);
+          Inc( iSize );
+        end;
+        FLines[iSize] := '';
+        Inc( iSize );
+      end;
     end;
 
   SetLength( FLines, iSize );
@@ -49,7 +63,7 @@ begin
   for i := 0 to High( FLines ) do
     VTIG_FreeLabel( FLines[i], Point( 4, 6+i ) );
 
-  VTIG_FreeLabel( 'Press <{!{$input_ok}}>...', Point( 12, 8+i ) );
+  VTIG_FreeLabel( 'Press <{!{$input_ok}}>...', Point( 12, 8+High( FLines ) ) );
 
   FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!{$input_ok},{$input_escape}}> continue}');

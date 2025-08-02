@@ -15,9 +15,10 @@ core.register_blueprint "rank_req"
 
 core.register_blueprint "rank"
 {
-	name           = { true, core.TSTRING },
-	type           = { true, core.TSTRING },
-	reqs           = { true, core.TARRAY("rank_req") },
+	name           = { true,  core.TSTRING },
+	type           = { true,  core.TSTRING },
+	reqs           = { true,  core.TARRAY("rank_req") },
+	unlocks        = { false, core.TARRAY(core.TSTRING), {} },
 }
 
 core.register_blueprint "difficulty"

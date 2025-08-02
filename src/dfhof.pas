@@ -259,20 +259,31 @@ var
   end;
 
   procedure PushRank( const aRankID : AnsiString; aCurrent : Byte );
-  var iReq     : DWord;
+  var iReq, i  : DWord;
       iCurrent : DWord;
       iTotal   : DWord;
+      iName    : Ansistring;
   begin
     if aCurrent+1 < LuaSystem.Get(['ranks', aRankID,'__counter']) then
     begin
-      iPage.Push('To achieve {!'+LuaSystem.Get(['ranks', aRankID, aCurrent+2,'name'])+'} rank:');
+      iName := '{!'+LuaSystem.Get(['ranks', aRankID, aCurrent+2,'name'])+'}';
+      iPage.Push('To achieve '+iName+' rank:');
       for iReq := 1 to GetRankReqCount(aRankID,aCurrent+1) do
       begin
         iCurrent := GetRankReqCurrent( aRankID,aCurrent+1,iReq );
         iTotal   := GetRankReqTotal  ( aRankID,aCurrent+1,iReq );
         if iCurrent < iTotal
-          then iPage.Push('   -- '+GetRankReqDescription( aRankID,aCurrent+1,iReq )+' ({!'+IntToStr(iCurrent)+'}/{!'+IntToStr(iTotal)+'})' )
-          else iPage.Push('   {d-- '+StripEncoding( GetRankReqDescription( aRankID,aCurrent+1,iReq ) ) + '}' );
+          then iPage.Push('   * '+GetRankReqDescription( aRankID,aCurrent+1,iReq )+' ({!'+IntToStr(iCurrent)+'}/{!'+IntToStr(iTotal)+'})' )
+          else iPage.Push('   {d* '+StripEncoding( GetRankReqDescription( aRankID,aCurrent+1,iReq ) ) + '}' );
+      end;
+      iTotal := LuaSystem.GetTableSize(['ranks', aRankID, aCurrent+2, 'unlocks' ]);
+      if iTotal > 0 then
+      begin
+        iPage.Push(iName+' rank unlocks:');
+        for i := 1 to iTotal do
+        begin
+          iPage.Push('   * '+ LuaSystem.Get(['ranks', aRankID, aCurrent+2, 'unlocks', i ]) );
+        end;
       end;
     end;
     iPage.Push('');
