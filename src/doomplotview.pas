@@ -25,7 +25,7 @@ uses vtig;
 constructor TPlotView.Create( aMessage : AnsiString; aColor : DWord  );
 begin
   VTIG_EventClear;
-  FSize      := Point( 80, 25 );
+  FSize      := Point( 80, IO.Console.SizeY );
   FFinished  := False;
   FPosition  := 0;
   FTime      := 0;
