@@ -143,6 +143,7 @@ const
 
 const
   COMMAND_NONE     = 0;
+  COMMAND_SKIP     = 250;
 
   KnockbackValue = 7;
 

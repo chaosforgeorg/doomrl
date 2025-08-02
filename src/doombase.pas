@@ -1023,8 +1023,7 @@ begin
   if ( Byte(iInput) = 255 ) then // GodMode Keys
   begin
     Config.RunKey( IO.KeyCode );
-    Action( INPUT_NONE );
-    Exit( True );
+    Exit( HandleCommand( TCommand.Create( COMMAND_SKIP ) ) );
   end;
   if iInput <> INPUT_NONE then
   begin
