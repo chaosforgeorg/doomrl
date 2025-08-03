@@ -712,6 +712,7 @@ begin
   FKeySubMap['input_pickup']    := GetString( INPUT_PICKUP );
   FKeySubMap['input_action']    := GetString( INPUT_ACTION );
   FKeySubMap['input_menu']      := 'Escape';
+  FKeySubMap['input_inventory'] := GetString( INPUT_INVENTORY );
 
   FPadSubMap.Clear;
   FPadSubMap['input_ok']        := 'A';
@@ -731,6 +732,7 @@ begin
   FPadSubMap['input_action']    := 'B';
   FPadSubMap['input_pgup']      := 'PgUp';
   FPadSubMap['input_pgdn']      := 'PgDn';
+  FPadSubMap['input_inventory'] := 'Start';
 end;
 
 procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
@@ -961,10 +963,13 @@ begin
 
   if FHintOverlay <> ''
     then VTIG_FreeLabel( ' '+FHintOverlay+' ', Point( iOffset-Length( FHintOverlay ), 2 ), Yellow )
-    else if FHint <> ''
+    else if ( (FHint <> '') and ( not GraphicsVersion ) )
       then VTIG_FreeLabel( ' '+FHint+' ', Point( iOffset-Length( FHint ), 2 ), Yellow )
       else if (FHintTarget <> '') and Setting_AutoTarget
         then VTIG_FreeLabel( ' '+FHintTarget+' ', Point( iOffset-Length( FHintTarget ), 2 ), Brown );
+
+  if GraphicsVersion and ( FHint <> '' ) then
+    VTIG_FreeLabel( ' '+FHint+' ', Point( 20, 4 ), Yellow );
 
   if Doom.Level.Boss <> 0 then
   begin
