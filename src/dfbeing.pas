@@ -1550,6 +1550,7 @@ var iCount    : Integer;
   function CanBleedOn( aCoord : TCoord2D ) : Boolean;
   var iCell : TCell;
   begin
+    if not iLevel.isProperCoord( aCoord ) then Exit( False );
     iCell := Cells[ iLevel.CellBottom[ aCoord ] ];
     if CF_LIQUID    in iCell.Flags then Exit( False );
     if CF_BLOCKMOVE in iCell.Flags then Exit( False ); // TODO: Wall bleed check for BLOCKLOS for void!
