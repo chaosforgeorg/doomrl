@@ -1906,8 +1906,12 @@ begin
       aDamage := Max( Round( aDamage * ( (100-iResist) / 100 ) ), 1 );
   end;
 
-  if not isPlayer then
-    PlaySound( 'hit' );
+  if isPlayer then
+  begin
+    if ( aTarget = Target_Torso ) and ( aDamage > 4 ) then
+      PlaySound( 'pain' )
+  end
+  else PlaySound( 'hit' );
 
   iArmor := nil;
   iSlot := efWeapon;
