@@ -653,9 +653,7 @@ end;
 
 procedure TDoomIO.SetAutoTarget( aTarget : TCoord2D );
 begin
-  FHintTarget := '';
-  if (aTarget.X * aTarget.Y <> 0) and (aTarget <> Player.Position) and (Doom.Level.Being[aTarget] <> nil) then
-    FHintTarget := Doom.Level.GetLookDescription( aTarget, True );
+  FHintTarget := Doom.Level.GetTargetDescription( aTarget );
 end;
 
 function TDoomIO.ResolveSub( const aID : Ansistring ) : Ansistring;

@@ -431,7 +431,9 @@ begin
       if (FLastCoord <> iCoord) and (not IO.AnimationsRunning) then
       begin
         if not IO.IsModal then
-          IO.HintOverlay := Doom.Level.GetLookDescription(iCoord);
+          if Doom.Level.isVisible(iCoord) and ( Doom.Level.Being[ iCoord ] <> nil )
+            then IO.HintOverlay := Doom.Level.GetTargetDescription(iCoord)
+            else IO.HintOverlay := Doom.Level.GetLookDescription(iCoord);
         FLastCoord := iCoord;
       end;
 

@@ -49,6 +49,7 @@ TBeing = class(TThing,IPathQuery)
     function meleeWeaponSlot : TEqSlot;
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
     procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem; aDelay : Integer ); virtual;
+    function calculateToHit( aBeing : TBeing ) : Integer;
     function SendMissile( aTarget : TCoord2D; aItem : TItem; aAltFire : TAltFire; aSequence : DWord; aShotCount : Integer ) : Boolean;
     function  isActive : boolean;
     function  WoundStatus : string;
@@ -2001,6 +2002,35 @@ begin
       // TODO: handle Delay?
       FOverlayUntil := Max( FOverlayUntil, IO.Time + aDelay + PAIN_DURATION );
     end;
+end;
+
+function TBeing.calculateToHit( aBeing : TBeing ) : Integer;
+var iWeapon : TItem;
+    iToHit  : Integer;
+begin
+  if aBeing = nil then Exit( 0 );
+  iWeapon := FInv.Slot[ efWeapon ];
+  if (iWeapon = nil) or (iWeapon.isMelee) then
+  begin
+    if Distance( FPosition, aBeing.Position ) > 1 then Exit( 0 );
+    iToHit := getToHit( iWeapon, ALT_NONE, True ) - aBeing.GetBonus( Hook_getDefenceBonus, [True] );
+    Exit( toHitToChance( 12 + iToHit ) );
+  end;
+
+  if iWeapon.Flags[ IF_SHOTGUN ]
+   or ( MF_IMMIDATE in Missiles[iWeapon.Missile].Flags )
+   or ( MF_EXACT in Missiles[iWeapon.Missile].Flags )
+   or ( iWeapon.Flags[ IF_AUTOHIT ] ) then Exit( 100 );
+
+  iToHit := getToHit( iWeapon, ALT_NONE, False );
+  iToHit -= aBeing.GetBonus( Hook_getDefenceBonus, [False] );
+  if not iWeapon.Flags[ IF_FARHIT ] then
+    iToHit -= Distance( FPosition, aBeing.Position ) div 3;
+
+  Result := toHitToChance( 10 + iToHit );
+
+  if ( not aBeing.isVisible ) and ( not iWeapon.Flags[ IF_UNSEENHIT ] ) then
+    Result := Result div 2;
 end;
 
 function TBeing.SendMissile( aTarget : TCoord2D; aItem : TItem; aAltFire : TAltFire; aSequence : DWord; aShotCount : Integer ) : Boolean;

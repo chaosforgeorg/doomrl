@@ -111,7 +111,8 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure WriteToStream( aStream : TStream ); override;
 
     function EnemiesLeft( aUnique : Boolean = False ) : DWord;
-    function GetLookDescription( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : Ansistring;
+    function GetLookDescription( aWhere : TCoord2D ) : Ansistring;
+    function GetTargetDescription( aWhere : TCoord2D ) : Ansistring;
     procedure UpdateAutoTarget( aAutoTarget : TAutoTarget; aBeing : TBeing; aRange : Integer );
     function PushItem( aWho : TBeing; aWhat : TItem; aFrom, aTo : TCoord2D ) : Boolean;
     function SwapBeings( aA, aB : TCoord2D ) : Boolean;
@@ -1501,7 +1502,7 @@ begin
   Exit( True );
 end;
 
-function TLevel.GetLookDescription ( aWhere : TCoord2D; aBeingOnly : Boolean = False ) : AnsiString;
+function TLevel.GetLookDescription ( aWhere : TCoord2D ) : AnsiString;
 var iCellID : DWord;
   procedure AddInfo( const what : AnsiString );
   begin
@@ -1515,7 +1516,6 @@ begin
     if Being[ aWhere ] <> nil then
     with Being[ aWhere ] do
       AddInfo( GetName( false ) + ' (' + WoundStatus + ')' );
-    if aBeingOnly then Exit;
     if Item[ aWhere ] <> nil then AddInfo( Item[ aWhere ].GetExtName( False ) );
     if CellHook_OnDescribe in Cells[ Cell[ aWhere ] ].Hooks then
        AddInfo( CallHook( aWhere, CellHook_OnDescribe ) )
@@ -1529,6 +1529,28 @@ begin
   end
   else Result := 'out of vision';
   if GodMode then AddInfo( aWhere.ToString );
+end;
+
+function TLevel.GetTargetDescription( aWhere : TCoord2D ) : Ansistring;
+var iBeing : TBeing;
+    iToHit : Integer;
+  function THColor : Char;
+  begin
+    if iToHit >= 100 then Exit( 'G' );
+    if iToHit >= 75  then Exit( 'g' );
+    if iToHit >= 50  then Exit( 'y' );
+    if iToHit >= 25  then Exit( 'R' );
+    Exit( 'r' );
+  end;
+
+begin
+  if (aWhere.X * aWhere.Y = 0) or (aWhere = Player.Position) then Exit('');
+  if not isVisible( aWhere ) then Exit( 'out of vision' );
+  iBeing := Being[aWhere];
+  if iBeing = nil then Exit('');
+  Result := iBeing.Name + ' (' + iBeing.WoundStatus + ')';
+  iToHit := Player.calculateToHit( iBeing );
+  if iToHit > 0 then Result += ' {'+THColor+IntToStr( iToHit )+'}%';
 end;
 
 function lua_level_drop_being(L: Plua_State): Integer; cdecl;

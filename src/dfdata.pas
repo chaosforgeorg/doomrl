@@ -380,6 +380,7 @@ function InputDirection( aInput : TInputKey ) : TDirection;
 function DirectionToInput(Dir : TDirection) : TInputKey;
 function TwoInt(x : integer) : string;
 function ToProperFilename(s : string) : string;
+function toHitToChance( aEffSkill : Integer ) : Integer;
 function toHitPercent( aEffSkill : Integer ) : string;
 function BonusStr(i : integer) : string;
 function UnitsToPercent(Value : Integer) : string;
@@ -790,6 +791,26 @@ begin
    13 : Exit('84%');
    14 : Exit('91%');
    15 : Exit('95%');
+  end;
+end;
+
+function toHitToChance( aEffSkill : Integer ) : Integer;
+begin
+  if aEffSkill <= 3  then Exit(1);
+  if aEffSkill >= 16 then Exit(98);
+  case aEffSkill of
+    4 : Exit(2);
+    5 : Exit(5);
+    6 : Exit(9);
+    7 : Exit(16);
+    8 : Exit(26);
+    9 : Exit(38);
+   10 : Exit(50);
+   11 : Exit(62);
+   12 : Exit(74);
+   13 : Exit(84);
+   14 : Exit(91);
+   15 : Exit(95);
   end;
 end;
 
