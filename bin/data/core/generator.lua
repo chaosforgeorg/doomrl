@@ -585,7 +585,29 @@ end
 
 function generator.place_player()
 	core.log("generator.place_player()")
-	local pos = generator.safe_empty_coord()
+	local safe_zone = 3
+	if DIFFICULTY <= DIFF_EASY then
+		safe_zone = 7
+	elseif DIFFICULTY <= DIFF_MEDIUM then
+		safe_zone = 6
+	elseif DIFFICULTY <= DIFF_HARD then
+		safe_zone = 4
+	end
+
+	local pos
+	local attempts = 12
+	repeat
+		pos = generator.safe_empty_coord()
+		attempts = attempts - 1
+		if attempts % 3 == 0 then
+			safe_zone = safe_zone - 1
+		end
+		local safe = true
+		for b in level:beings_in_range( pos, safe_zone ) do
+			safe = false
+			break
+		end
+	until safe or attempts == 0 or safe_zone < 2
 	level:drop_being( player, pos )
 	return pos
 end

@@ -15,6 +15,7 @@
 [mod] -- RCMOD : vile-likes and bosses won't trigger retaliation
 [mod] -- RCMOD : when beings are revealed, auto-target range is higher
 [mod] -- RCMOD : when beings are revealed, targeting remembers out of vision enemies
+[mod] -- GH#000: difficulty dependent attempt for a safe zone for spawning
 [fix] -- GH#294: improved filtering of WM/System events while multi-move stop
 [fix] -- RCFIX : House of Pain locks fixed [brisbang]
 [fix] -- GH#295: grappling armor assembly won't be affected by mod order
