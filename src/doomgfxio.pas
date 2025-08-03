@@ -23,7 +23,7 @@ type
     function AnimationsRunning : Boolean; override;
     procedure AnimationWipe; override;
     procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); override;
-    procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single ); override;
+    procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection ); override;
     procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean ); override;
     procedure addBumpAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aAmount : Single ); override;
     procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); override;
@@ -391,12 +391,12 @@ begin
     FAnimations.AddAnimation( TDoomBlink.Create(aDuration,aDelay,aColor) );
 end;
 
-procedure TDoomGFXIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single );
+procedure TDoomGFXIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
 begin
   if Doom.State <> DSPlaying then Exit;
   if Setting_ScreenShake then
-    if not TDoomScreenShake.Update( aDuration, aDelay, aStrength ) then
-      FAnimations.addAnimation( TDoomScreenShake.Create( aDuration, aDelay, aStrength ) );
+    if not TDoomScreenShake.Update( aDuration, aDelay, aStrength, aDirection ) then
+      FAnimations.addAnimation( TDoomScreenShake.Create( aDuration, aDelay, aStrength, aDirection ) );
 end;
 
 procedure TDoomGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean );

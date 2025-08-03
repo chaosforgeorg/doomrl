@@ -163,8 +163,8 @@ end;
 { TDoomScreenShake }
 
 TDoomScreenShake = class(TAnimation)
-  constructor Create( aDuration : DWord; aDelay : DWord; aStrength : Single );
-  class function Update( aDuration : DWord; aDelay : DWord; aStrength : Single ) : Boolean;
+  constructor Create( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
+  class function Update( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection ) : Boolean;
   procedure OnUpdate( aTime : DWord ); override;
   procedure OnDraw; override;
   destructor Destroy; override;
@@ -172,6 +172,7 @@ private
   FStrength   : Single;
   FFrequencyX : Single;
   FFrequencyY : Single;
+  FDirection  : TDirection;
 protected
   class var CCurrent : TDoomScreenShake;
 end;
@@ -621,20 +622,23 @@ begin
   Doom.Level.LightFlag[ FCoord, LFCORPSING ] := False;
   inherited Destroy;
 end;
-constructor TDoomScreenShake.Create( aDuration : DWord; aDelay : DWord; aStrength : Single );
+constructor TDoomScreenShake.Create( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
 begin
   inherited Create( aDuration, aDelay, 0 );
   FStrength   := aStrength;
-  FFrequencyX := 0.05 + Random;
-  FFrequencyY := 0.05 + Random;
+  FFrequencyX := 0.05 + 0.8*Random;
+  FFrequencyY := 0.05 + 0.8*Random;
+  FDirection  := aDirection;
 end;
 
-class function TDoomScreenShake.Update( aDuration : DWord; aDelay : DWord; aStrength : Single ) : Boolean;
+class function TDoomScreenShake.Update( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection ) : Boolean;
 begin
   if CCurrent = nil then Exit( False );
   CCurrent.FStrength := Maxf( CCurrent.FStrength, aStrength );
   CCurrent.FDelay    := Min( CCurrent.FDelay, aDelay );
   CCurrent.FDuration := Max( CCurrent.FDuration, aDuration );
+  if CCurrent.FDirection.code <> 0 then
+    CCurrent.FDirection := aDirection;
   Exit( True );
 end;
 
@@ -654,8 +658,16 @@ begin
     iMaxX   := FStrength * iFade * 2.0; // X-bias
     iMaxY   := FStrength * iFade;
 
-    iOffset.X := Round(iMaxX * Sin( FTime * FFrequencyX * 2 * Pi ) );
-    iOffset.Y := Round(iMaxY * Cos( FTime * FFrequencyY * 1 * Pi ) );
+    if FDirection.code = 0 then
+    begin
+      iOffset.X := Round(iMaxX * Sin( FTime * FFrequencyX * 2 * Pi ) );
+      iOffset.Y := Round(iMaxY * Cos( FTime * FFrequencyY * 2 * Pi ) );
+    end
+    else
+    begin
+      iOffset.X := Round( FDirection.X * iMaxY * Sin( FTime * FFrequencyX * 2 * Pi ) );
+      iOffset.Y := Round( FDirection.Y * iMaxY * Sin( FTime * FFrequencyX * 2 * Pi ) );
+    end;
   end;
   if Assigned( SpriteMap ) then SpriteMap.Offset := iOffset;
 end;

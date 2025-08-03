@@ -410,6 +410,9 @@ begin
   iDamage.Init( aShotGun.Damage_Dice, aShotGun.Damage_Sides, aShotGun.Damage_Add + getToDam( aShotgun, aAltFire, False ) );
   if BF_MAXDAMAGE in FFlags then iDamage.Init( 0, 0, iDamage.Max );
   iDamageMul := GetBonusMul( Hook_getDamageMul, [ aShotgun, False, aAltFire ] );
+
+  if isPlayer then
+    IO.addScreenShakeAnimation( 200+aShots*100, 0, Clampf( iDamage.max / 10, 2.0, 10.0 ), NewDirection( FPosition, aTarget ) );
   for iCount := 1 to aShots do
   begin
     if not iDual then aShotGun.PlaySound( 'fire', FPosition );
@@ -1784,6 +1787,10 @@ begin
     // Damage roll
     iDamage := rollMeleeDamage( iWeaponSlot );
 
+    // Shake
+    if isPlayer or aTarget.IsPlayer then
+      IO.addScreenShakeAnimation( 150, Iif( Second, 50, 0 ), Clampf( iDamage / 4, 3.0, 10.0 ), NewDirection( FPosition, aTarget.FPosition ) );
+
     // Hit message
     if IsPlayer then iResult := ' hit ' else iResult := ' hits ';
     if isVisible then IO.Msg( Capitalized(iName) + iResult + iDefenderName + '.' );
@@ -2307,6 +2314,8 @@ begin
         IO.addScreenMoveAnimation(100, iKnock );
       if iLevel.AnimationVisible( FPosition, Self ) or iLevel.AnimationVisible( iKnock, Self ) then
         IO.addMoveAnimation(100,0,FUID,Position,iKnock,Sprite,True);
+      if isPlayer then
+        IO.addScreenShakeAnimation( 400, 0, Clampf( aStrength * 1.0, 2.0, 10.0 ) );
     end;
     Displace( iKnock );
     HandlePostDisplace;
