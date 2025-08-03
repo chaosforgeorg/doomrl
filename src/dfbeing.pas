@@ -162,6 +162,7 @@ TBeing = class(TThing,IPathQuery)
     FPathClear     : TFlags;
     FKnockBacked   : Boolean;
     FAffects       : TAffects;
+    FDying         : Boolean;
 
     FOverlayUntil  : QWord;
   public
@@ -345,6 +346,7 @@ begin
   FSilentAction := False;
   FKnockBacked  := False;
   FMeleeAttack  := False;
+  FDying        := False;
 
   FOverlayUntil := 0;
 end;
@@ -1576,11 +1578,13 @@ var iItem      : TItem;
     iLevel     : TLevel;
 begin
   iLevel := TLevel(Parent);
+  if FDying then Exit;
   if not CallHookCheck( Hook_OnDieCheck, [ aOverkill ] ) then
   begin
     HP := Max(1,HP);
     Exit;
   end;
+  FDying := True;
 
   // TODO: Change to Player.RegisterKill(kill)
   if not ( BF_FRIENDLY in FFlags ) then
@@ -1855,10 +1859,8 @@ var iDirection     : TDirection;
     iOverKillValue : LongInt;
     iResist        : LongInt;
 begin
-  if aDamage < 0 then Exit;
-  
-  if BF_INV in FFlags then Exit;
-  
+  if ( aDamage < 0 ) or (BF_INV in FFlags) or FDying then Exit;
+
   if BF_SELFIMMUNE in FFlags then
     if ( ( aSource <> nil ) and Self.Inv.Equipped( aSource ) ) then Exit;
 

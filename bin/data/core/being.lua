@@ -46,6 +46,14 @@ being.inv = {
 		end
 		return ammo
 	end,
+	has = function( self, item_id ) 
+		for i in being.inv.items(self) do
+			if i.id == item_id then
+				return true
+			end
+		end
+		return false
+	end,
 }
 
 setmetatable(being.inv, {
