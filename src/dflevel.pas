@@ -81,7 +81,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     procedure playSound( const aSoundID : DWord; aCoord : TCoord2D; aDelay : DWord = 0 ); overload;
     procedure playSound( const SoundID : string; coord : TCoord2D ); overload;
     procedure playSound( const BaseID,SoundID : string; coord : TCoord2D ); overload;
-    function EnemiesVisible : Word;
+    function GetEnemiesVisible : Word;
 
     function DropItem ( aItem  : TItem;  aCoord : TCoord2D; aNoHazard : Boolean; aDropAnim : Boolean ) : boolean;  // raises EPlacementException
     procedure DropBeing( aBeing : TBeing; aCoord : TCoord2D ); // raises EPlacementException
@@ -193,6 +193,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     property id           : AnsiString read FID;
     property Music_ID     : AnsiString read FMusicID     write FMusicID;
     property Index        : Integer    read FIndex;
+    property EnemiesVisible: Word      read GetEnemiesVisible;
   end;
 
 implementation
@@ -294,16 +295,16 @@ begin
   IO.Audio.PlaySound(IO.Audio.ResolveSoundID([BaseID+'.'+SoundID,SoundID]), coord );
 end;
 
-function TLevel.EnemiesVisible : Word;
+function TLevel.GetEnemiesVisible : Word;
 var iNode  : TNode;
 begin
-  EnemiesVisible := 0;
+  GetEnemiesVisible := 0;
   for iNode in Self do
     if iNode is TBeing then
       if TBeing(iNode).isVisible then
         if not TBeing(iNode).isPlayer then
           if not TBeing(iNode).Flags[ BF_FRIENDLY ] then
-            Inc(EnemiesVisible);
+            Inc(GetEnemiesVisible);
 end;
 
 function TLevel.isAlive ( aUID : TUID ) : boolean;

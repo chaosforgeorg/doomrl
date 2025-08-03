@@ -365,7 +365,7 @@ begin
       IO.Msg( iLevel.Item[ FPosition ].GetExtName( True ) );
   end;
 
-  FEnemiesInVision := iLevel.EnemiesVisible;
+  FEnemiesInVision := iLevel.GetEnemiesVisible;
   if FEnemiesInVision > 0
     then FMultiMove.Stop
     else FChainFire := 0;
