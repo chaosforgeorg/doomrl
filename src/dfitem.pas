@@ -472,6 +472,7 @@ begin
   case FProps.IType of
     ITEMTYPE_AMMO : if FProps.Ammo > 1 then Exit(Description);
   end;
+  if Flags[ IF_UNIQUENAME ] then Exit( Description );
   if known then Exit('the '+Description)
            else Exit(Preposition(Description)+Description);
 end;

@@ -1884,6 +1884,7 @@ begin
      else if iActive.MeleeAttack then
        iActive.CallHook( Hook_OnDamage, [ Self, aDamage, aSource, True ] );
   end;
+  if FDying then Exit;
 
   CallHook( Hook_OnReceiveDamage, [ aDamage, aSource, iActive ] );
 
