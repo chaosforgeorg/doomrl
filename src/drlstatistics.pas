@@ -85,7 +85,7 @@ begin
   aAmount := Min( aAmount, 200 );
   FMap['damage_taken']     := FMap['damage_taken']    + aAmount;
   FMap['damage_on_level']  := FMap['damage_on_level'] + aAmount;
-  FMap['min_health']       := Max( Player.HP - aAmount, 0 );
+  FMap['min_health']       := Min( FMap['min_health'], Max( Player.HP - aAmount, 0 ) );
   FMap['kills_non_damage'] := Max( FMap['kills_non_damage'], Player.FKills.BestNoDamageSequence );
 end;
 
