@@ -1180,7 +1180,9 @@ procedure TDoomSpriteMap.PushDecals;
 var iData  : TDecalArray;
     iDecal : TDecal;
     iPos   : TVec2i;
+    iCoord : TCoord2D;
     iLight : Byte;
+    iDark  : Boolean;
 //    iLQuad : TGLRawQColor;
   function GetLight( aPos : TVec2i ) : Byte;
   var iCoord   : TCoord2D;
@@ -1197,8 +1199,14 @@ var iData  : TDecalArray;
 
   begin
   iData := Doom.Level.Decals.Data;
+  iDark := Player.Flags[ BF_DARKNESS ];
   for iDecal in iData do
   begin
+    iCoord := NewCoord2D( ( iDecal.Position.X + 16 ) div 32, ( iDecal.Position.Y + 16 ) div 32 );
+    with Doom.Level do
+      if ( not isProperCoord( iCoord ) ) or ( iDark and ( not isVisible( iCoord ) ) ) or ( not isExplored( iCoord ) ) then
+          Continue;
+
     iPos.Init( Floor( ( iDecal.Position.X - 32 ) * FSpriteEngine.Scale ), Floor( ( iDecal.Position.Y - 32 ) * FSpriteEngine.Scale ) );
     iLight := GetLight( Vec2i( iDecal.Position.X + 16, iDecal.Position.Y + 16 ) );
 
