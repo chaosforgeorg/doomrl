@@ -454,6 +454,7 @@ end;
 
 procedure TMainMenuView.UpdateDifficulty;
 var iSelected, i, iLines : Integer;
+    iWindowID            : AnsiString;
 begin
   if FArrayDiff.Size < 2 then
   begin
@@ -465,8 +466,12 @@ begin
   begin
     iLines := 12;
     if FArrayDiff[FArrayDiff.Size-1].Allow then iLines -= 2;
-    iSelected := VTIG_Selected('mainmenu_difficulty');
-    if iSelected < 0 then iSelected := 0;
+
+    if FResult.Challenge = ''
+      then iWindowID := 'mainmenu_difficulty'
+      else iWindowID := 'mainmenu_difficulty_chal';
+    iSelected := VTIG_Selected(iWindowID);
+    if ( iSelected < 0 ) or (iSelected >= FArrayDiff.Size) then iSelected := 0;
     VTIG_PushStyle( @TIGStyleFrameless );
     VTIG_Begin( 'mainmenu_difficulty_desc', Point( 47, iLines ), Point( 30, 16 ) );
     VTIG_PopStyle;
@@ -478,7 +483,7 @@ begin
     VTIG_End;
 
     VTIG_PushStyle( @TIGStyleFrameless );
-    VTIG_Begin( 'mainmenu_difficulty', Point( 17, 2+FArrayDiff.Size ), Point( 9, 16 ) );
+    VTIG_Begin( iWindowID, Point( 17, 2+FArrayDiff.Size ), Point( 9, 16 ) );
     VTIG_PopStyle;
       VTIG_PushStyle( @TIGStyleColored );
       for i := 0 to FArrayDiff.Size - 1 do
@@ -526,7 +531,7 @@ procedure TMainMenuView.UpdateKlass;
 var iSelected, i, iLines : Integer;
 begin
   iSelected := VTIG_Selected('mainmenu_klass');
-  if iSelected < 0 then iSelected := 0;
+  if ( iSelected < 0 ) or (iSelected >= FArrayKlass.Size) then iSelected := 0;
   iLines := 8;
   if Length( FArrayKlass[iSelected].Desc ) > 200 then iLines := 13;
   VTIG_PushStyle( @TIGStyleFrameless );
@@ -577,7 +582,7 @@ procedure TMainMenuView.UpdateChallengeType;
 var iSelected, i : Integer;
 begin
   iSelected := VTIG_Selected('mainmenu_ctype');
-  if iSelected < 0 then iSelected := 0;
+  if ( iSelected < 0 ) or (iSelected >= FArrayCType.Size) then iSelected := 0;
   VTIG_PushStyle( @TIGStyleFrameless );
   VTIG_Begin( 'mainmenu_ctype_desc', Point( 47, 8 ), Point( 30, 16 ) );
   VTIG_PopStyle;
