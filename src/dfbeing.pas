@@ -1529,7 +1529,8 @@ var iCount    : Integer;
     iDirOffset: TVec2f;
     iTCoord   : TCoord2D;
     iRange    : Single;
-    iCanBleed : Boolean;
+    iCanBleed : DWord;
+    iSprite   : DWord;
 
   function RandomNorm : Single;
   var iU1, iU2 : Single;
@@ -1547,14 +1548,23 @@ var iCount    : Integer;
     until ( Result.X * Result.X + Result.Y * Result.Y ) < aRadius * aRadius;
   end;
 
-  function CanBleedOn( aCoord : TCoord2D ) : Boolean;
+  function CanBleedOn( aCoord : TCoord2D ) : DWord;
   var iCell : TCell;
   begin
-    if not iLevel.isProperCoord( aCoord ) then Exit( False );
+    if not iLevel.isProperCoord( aCoord ) then Exit( 0 );
     iCell := Cells[ iLevel.CellBottom[ aCoord ] ];
-    if CF_LIQUID    in iCell.Flags then Exit( False );
-    if CF_BLOCKMOVE in iCell.Flags then Exit( False ); // TODO: Wall bleed check for BLOCKLOS for void!
-    Exit( True );
+    if CF_LIQUID    in iCell.Flags then Exit( 0 );
+    if CF_BLOCKMOVE in iCell.Flags then
+    begin
+      if aCoord.y >= FPosition.y then Exit( 0 );
+      if not ( CF_BLOCKLOS in iCell.Flags ) then Exit( 0 ); // void check
+      aCoord.y := aCoord.y + 1;
+      if not iLevel.isProperCoord( aCoord ) then Exit( 0 );
+      iCell := Cells[ iLevel.CellBottom[ aCoord ] ];
+      if ( CF_BLOCKMOVE in iCell.Flags ) then Exit( 0 );
+      Exit( HARDSPRITE_DECAL_WALL_BLOOD[1+Random(3)] );
+    end;
+    Exit( HARDSPRITE_DECAL_BLOOD[1+Random(3)] );
   end;
 
 begin
@@ -1570,8 +1580,15 @@ begin
       Floor( ( FPosition.Y + iOffset.Y + iDirOffset.Y ) * 32.0 )
     );
     iTCoord := NewCoord2D( ( iPosition.X + 16 ) div 32, ( iPosition.Y + 16 ) div 32 );
-    if ( iCanBleed and ( iTCoord = FPosition ) ) or ( CanBleedOn( iTCoord ) ) then
-      iLevel.Decals.Add( iPosition, HARDSPRITE_DECAL_BLOOD[1+Random(3)] );
+    if iTCoord = FPosition then
+    begin
+      if ( iCanBleed <> 0 ) then
+        iLevel.Decals.Add( iPosition, iCanBleed );
+      Continue;
+    end;
+    iSprite := CanBleedOn( iTCoord );
+    if iSprite <> 0 then
+      iLevel.Decals.Add( iPosition, iSprite );
   end;
 end;
 

@@ -278,6 +278,10 @@ begin
     for i := 0 to 3 do
       HARDSPRITE_DECAL_BLOOD[i] := Lua.Get( 'HARDSPRITE_DECAL_BLOOD_'+IntToStr(i+1), 0 );
 
+  if Lua.Get( 'HARDSPRITE_DECAL_WALL_BLOOD_1' ) <> 0 then
+    for i := 0 to 3 do
+      HARDSPRITE_DECAL_WALL_BLOOD[i] := Lua.Get( 'HARDSPRITE_DECAL_WALL_BLOOD_'+IntToStr(i+1), 0 );
+
   DataLoaded := True;
   IO.LoadStop;
 end;

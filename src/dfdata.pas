@@ -206,12 +206,13 @@ var
 
 
 var
-  HARDSPRITE_HIGHLIGHT   : DWord = 0;
-  HARDSPRITE_EXPL        : DWord = 0;
-  HARDSPRITE_SELECT      : DWord = 0;
-  HARDSPRITE_MARK        : DWord = 0;
-  HARDSPRITE_GRID        : DWord = 0;
-  HARDSPRITE_DECAL_BLOOD : array[0..3] of DWord = ( 0,0,0,0 );
+  HARDSPRITE_HIGHLIGHT        : DWord = 0;
+  HARDSPRITE_EXPL             : DWord = 0;
+  HARDSPRITE_SELECT           : DWord = 0;
+  HARDSPRITE_MARK             : DWord = 0;
+  HARDSPRITE_GRID             : DWord = 0;
+  HARDSPRITE_DECAL_BLOOD      : array[0..3] of DWord = ( 0,0,0,0 );
+  HARDSPRITE_DECAL_WALL_BLOOD : array[0..3] of DWord = ( 0,0,0,0 );
 
 var
   SoundOff  : boolean = False;
