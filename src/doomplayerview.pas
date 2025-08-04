@@ -688,15 +688,29 @@ var iEntry    : TTraitViewEntry;
     iValue    : Word;
     iSize     : Word;
     iCount    : Word;
-    iTable  : TLuaTable;
+    iTable    : TLuaTable;
+    iReqLen   : Integer;
 const RG : array[Boolean] of Char = ('G','R');
       RL : array[Boolean] of Char = ('L','R');
+const MaxReqLength = 38;
   function Value( aTrait : Byte ) : Byte;
   begin
     if FTraitFirst then Exit(0);
     Exit( Player.Traits[aTrait] );
   end;
 
+  procedure AddRequires( aStr : Ansistring );
+  var iLS : Integer;
+  begin
+    iLS := VTIG_Length( aStr );
+    if iReqLen + iLS > MaxReqLength then
+    begin
+      iEntry.Requires += #10+'           ';
+      iReqLen := 0;
+    end;
+    iEntry.Requires += aStr;
+    iReqLen += iLS;
+  end;
 begin
   if FTraits = nil then FTraits := TTraitViewArray.Create;
   FTraits.Clear;
@@ -721,6 +735,7 @@ begin
       Free;
     end;
 
+    iReqLen := 0;
     iEntry.Requires := '';
     iEntry.Blocks   := '';
     with LuaSystem.GetTable(['klasses',iKlass,'trait',iTrait]) do
@@ -731,14 +746,15 @@ begin
         iNID            := iTable.GetValue( 1 );
         iName           := LuaSystem.Get(['traits',iNID,'name']);
         iValue          := iTable.GetValue( 2 );
-        iEntry.Requires += '{'+RG[Value(iNID) < iValue]+iName+'} ({!'+IntToStr(iValue)+'}), ';
+        AddRequires( '{'+RG[Value(iNID) < iValue]+iName+'} ({!'+IntToStr(iValue)+'}), ' );
       end;
 
       iValue := GetInteger('reqlevel',0);
       if iValue > 0 then iValue += Value(iTrait)*3;
-      if iValue > 0
-        then iEntry.Requires += '{'+RG[iLevel < iValue]+'Level }({!'+IntToStr(iValue)+'})'
-        else Delete( iEntry.Requires, Length(iEntry.Requires) - 1, 2 );
+      if iValue > 0 then AddRequires( '{'+RG[iLevel < iValue]+'Level }({!'+IntToStr(iValue)+'}), ' );
+      if Length( iEntry.Requires ) > 0 then
+        Delete( iEntry.Requires, Length(iEntry.Requires) - 1, 2 );
+
 
       iSize   := GetTableSize('blocks');
       if iSize > 0 then
