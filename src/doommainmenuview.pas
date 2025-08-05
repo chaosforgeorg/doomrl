@@ -352,11 +352,11 @@ end;
 procedure TMainMenuView.UpdateSaveCompat;
 begin
   VTIG_BeginWindow('Incompatible save file!', Point( 42, 20 ), Point(19,4) );
-  if SaveVersionModule <> VersionModule then
+  if SaveVersionModule <> VersionModuleSave then
   begin
     VTIG_Text('Save file is from a {!previous version} of the game!');
     VTIG_Text('Save game version : {!'+SaveVersionModule+'}' );
-    VTIG_Text('This game version : {!'+VersionModule+'}' );
+    VTIG_Text('This game version : {!'+VersionModuleSave+'}' );
     VTIG_Text('');
     if Doom.Store.IsSteam
       then VTIG_Text('You can try to download the direct previous version from {!Steam} Betas tab and finish the game, or delete the save file now.')

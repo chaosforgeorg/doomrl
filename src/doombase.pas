@@ -1433,7 +1433,7 @@ begin
       ModuleID          := iStream.ReadAnsiString;
       SaveVersionModule := iStream.ReadAnsiString;
       SaveModString     := iStream.ReadAnsiString;
-      if ( SaveVersionModule <> VersionModule ) or ( SaveModString <> ModString ) then
+      if ( SaveVersionModule <> VersionModuleSave ) or ( SaveModString <> ModString ) then
       begin
         Exit( False );
       end;
