@@ -56,6 +56,7 @@ private
 
   function GameResultBetter( const ResultOld, ResultNew : String ) : boolean;
   function GameResultAtLeast( const ResultAtLeast, ResultNew : String ) : boolean;
+  procedure HandleAchievements( const aRankArray : Ansistring; aRankLevel : Integer );
 end;
 
 var HOF : THOF;
@@ -984,6 +985,8 @@ begin
       then aResult.Data[i].Value := 0
       else begin
         aResult.Data[i].Value := iValues[i];
+        if Doom.Store.IsInitialized then
+          HandleAchievements( aResult.Data[i].ID, iValues[i] );
         RankCheck := True;
       end;
     SetRank(aResult.Data[i].ID,iValues[i]);
@@ -1085,6 +1088,19 @@ begin
   for iCount := 1 to iCount do
     if not IsRankReqCompleted( aRankArray, aCurrent+1, iCount ) then Exit( False );
   Exit( True );
+end;
+
+procedure THOF.HandleAchievements( const aRankArray : Ansistring; aRankLevel : Integer );
+var i    : Integer;
+    iAch : AnsiString;
+begin
+  for i := 1 to aRankLevel do
+  begin
+    iAch := LuaSystem.Get( [ 'ranks', aRankArray, aRankLevel+1, 'achievement' ], '' );
+    if iAch <> '' then
+        if Doom.Store.SetAchievement( iAch ) then
+          Log( LOGINFO, iAch+' awarded!');
+  end;
 end;
 
 end.
