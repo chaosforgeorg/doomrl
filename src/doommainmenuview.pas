@@ -84,16 +84,16 @@ const MAINMENU_ID = 'mainmenu';
 var ChallengeType : array[1..4] of TMainMenuEntry =
 ((
    Name : 'Angel Game';
-   Desc : 'Play one of the DRL classic challenge games that place restrictions on play style or modify play behaviour.'#10#10'Reach {yPrivate FC} rank to unlock!';
-   Allow : True; Extra : ''; ID : ''; NID : 0; Req : 0;
+   Desc : 'Play one of the DRL classic challenge games that place restrictions on play style or modify play behaviour.';
+   Allow : True; Extra : 'Reach {yPrivate FC} rank to unlock!'; ID : ''; NID : 0; Req : 0;
 ),(
    Name : 'Dual-angel Game';
-   Desc : 'Mix two DRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!'#10#10'Reach {ySergeant} rank to unlock!';
-   Allow : True; Extra : ''; ID : ''; NID : 0; Req : 0;
+   Desc : 'Mix two DRL challenge game types. Only the first counts highscore-wise - the latter is your own challenge!';
+   Allow : True; Extra : 'Reach {ySergeant} rank to unlock!'; ID : ''; NID : 0; Req : 0;
 ),(
    Name : 'Archangel Game';
-   Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!'#10#10'Reach {ySergeant Major} rank to unlock!';
-   Allow : True; Extra : ''; ID : ''; NID : 0; Req : 0;
+   Desc : 'Play one of the DRL challenge in its ultra hard form. Do not expect fairness here!';
+   Allow : True; Extra : 'Reach {ySergeant Major} rank to unlock!'; ID : ''; NID : 0; Req : 0;
 ),(
    Name : 'Custom Challenge';
    Desc : 'Play one of many custom DRL challenge levels and episodes. Download new ones from the {yCustom game/Download Mods} option in the main menu.';
@@ -590,6 +590,11 @@ begin
     VTIG_Text( Padded( '- {!' + FArrayCType[iSelected].Name + ' }', 48, '-' ) );
     VTIG_PopStyle;
     VTIG_Text( FArrayCType[iSelected].Desc );
+    if not FArrayCType[iSelected].Allow then
+    begin
+      VTIG_Text('');
+      VTIG_Text(FArrayCType[iSelected].Extra);
+    end;
   VTIG_End;
 
   VTIG_PushStyle( @TIGStyleFrameless );
@@ -645,7 +650,7 @@ begin
           VTIG_Text( 'Rating: {!'+FArrayChal[iSelect].Extra+'}'#10#10+FArrayChal[iSelect].Desc );
           if not FArrayChal[iSelect].Allow then
           begin
-            iRank := LuaSystem.Get( ['ranks','skill',FArrayChal[iSelect].Req,'name'] );
+            iRank := LuaSystem.Get( ['ranks','skill',FArrayChal[iSelect].Req+1,'name'] );
             VTIG_Text('');
             VTIG_Text( 'Reach {y'+iRank+'} rank to unlock!' );
           end;
