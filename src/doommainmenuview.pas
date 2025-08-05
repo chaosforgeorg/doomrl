@@ -73,13 +73,10 @@ end;
 
 implementation
 
-uses {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
-     math, sysutils,
+uses math, sysutils,
      vutil, vtig, vtigstyle, vtigio, vimage, vgltypes, vluasystem, vluavalue, vsound,
      dfhof,
      doombase, doomgfxio, doomplayerview, doomhelpview, doomsettingsview, doompagedview;
-
-const MAINMENU_ID = 'mainmenu';
 
 var ChallengeType : array[1..4] of TMainMenuEntry =
 ((
@@ -100,6 +97,8 @@ var ChallengeType : array[1..4] of TMainMenuEntry =
    Allow : True; Extra : ''; ID : ''; NID : 0; Req : 0;
 ));
 
+const MAINMENU_ID = 'mainmenu';
+
 const CTYPE_ANGEL  = 1;
       CTYPE_DANGEL = 2;
       CTYPE_AANGEL = 3;
@@ -117,15 +116,15 @@ begin
   FResult     := aResult;
   FSaveExists := False;
   FJHCLink    := (CoreModuleID = 'drl');
-  if (not FJHCLink) and LuaSystem.Defined('DEMO') then
-    FJHCLink := LuaSystem.Get( 'DEMO', False );
+  if (not FJHCLink) and DemoVersion then
+    FJHCLink := True;
   FArrayCType := nil;
   FArrayDiff  := nil;
   FArrayKlass := nil;
   FArrayChal  := nil;
   FTitleChal  := '';
   FSize       := Point( 80, 25 );
-  FChallenges := LuaSystem.Get( ['chal','__counter'], 0 ) > 0;
+  FChallenges := ( LuaSystem.Get( ['chal','__counter'], 0 ) > 0 ) and (not DemoVersion);
 
   if not ( FMode in [MAINMENU_FIRST,MAINMENU_INTRO] ) then
     Assert( aResult <> nil, 'nil result passed!' );
@@ -246,15 +245,12 @@ const
   TextContinueGame  = '{b--} Continue game {b---}';
   TextNewGame       = '{b-----} New game {b-----}';
   TextChallengeGame = '{b--} Challenge game {b--}';
-  TextJHC           = '{B==} Wishlist JHC! {B===}';
+  TextJHC           = '{B=}{^ Buy JHC on Steam!}{B=}';
   TextShowHighscore = '{b-} Show highscores {b--}';
   TextShowPlayer    = '{b---} Show player {b----}';
   TextExit          = '{b------} Exit {b--------}';
   TextHelp          = '{b------} Help {b--------}';
   TextSettings      = '{b----} Settings {b------}';
-
-const
-  JHCURL = 'https://store.steampowered.com/app/3126530/Jupiter_Hell_Classic/';
 
 procedure TMainMenuView.UpdateMenu;
 var iSize  : TIOPoint;
@@ -269,7 +265,7 @@ begin
     Inc( iSize.Y );
     Inc( iCount );
   end;
-  VTIG_Begin( 'mainmenu', iSize, Point( 29, 14 ) );
+  VTIG_Begin( MAINMENU_ID, iSize, Point( 29, 14 ) );
   VTIG_PopStyle;
     VTIG_PushStyle( @TIGStyleColored );
     if FSaveExists then
@@ -307,14 +303,7 @@ begin
     if FJHCLink then
     begin
       if VTIG_Selectable( TextJHC ) then
-      begin
-        {$IFDEF UNIX}
-        fpSystem('xdg-open ' + JHCURL); // Unix-based systems
-        {$ENDIF}
-        {$IFDEF WINDOWS}
-          ShellExecute(0, 'open', PChar(JHCURL), nil, nil, SW_SHOWNORMAL); // Windows
-        {$ENDIF}
-      end;
+        Doom.OpenJHCPage;
     end;
     if VTIG_Selectable( TextExit ) then
     begin

@@ -101,6 +101,7 @@ const
   DEBUG           : Boolean = False;
   CRASHMODE       : Boolean = False;
   EXCEPTEMMITED   : Boolean = False;
+  DemoVersion     : Boolean = False;
   GraphicsVersion : Boolean = True;
   SoundVersion    : Boolean = True;
   ForceNoAudio    : Boolean = False;

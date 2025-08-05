@@ -69,6 +69,7 @@ TDoom = class(TSystem)
        procedure LoadChallenge;
        procedure SetState( aNewState : TDoomState );
        procedure ClearPlayerView;
+       procedure OpenJHCPage;
      private
        procedure ResetAutoTarget;
        function HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
@@ -109,7 +110,8 @@ var Lua : TDoomLua;
 
 implementation
 
-uses Classes, SysUtils,
+uses  {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
+     Classes, SysUtils,
      vdebug, viotypes,
      dfmap, dfbeing,
      doomio, doomgfxio, doomtextio, zstream,
@@ -223,6 +225,30 @@ end;
 procedure TDoom.ClearPlayerView;
 begin
   FPlayerView := nil;
+end;
+
+procedure TDoom.OpenJHCPage;
+const JHCURL      = 'https://store.steampowered.com/app/3126530/Jupiter_Hell_Classic/';
+      JHCSTEAMURL = 'steam://store/3126530';
+      JHCID       = 3126530;
+var iSteam : Boolean;
+    iURL   : Ansistring;
+begin
+  iSteam := DemoVersion and FStore.IsInitialized;
+  if iSteam and FStore.IsOverlayEnabled then
+  begin
+    FStore.OpenStorePage( JHCID );
+    Exit;
+  end;
+  if iSteam
+    then iURL := JHCSTEAMURL
+    else iURL := JHCURL;
+  {$IFDEF UNIX}
+  fpSystem('xdg-open ' + iURL); // Unix-based systems
+  {$ENDIF}
+  {$IFDEF WINDOWS}
+    ShellExecute(0, 'open', PChar(iURL), nil, nil, SW_SHOWNORMAL); // Windows
+  {$ENDIF}
 end;
 
 procedure TDoom.LoadModule( Base : Boolean );

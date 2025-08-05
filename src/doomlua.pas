@@ -387,6 +387,7 @@ begin
   IO.Audio.Load;
   VersionModule     := LuaSystem.Get( 'VERSION_MODULE' );
   VersionModuleSave := LuaSystem.Get( 'VERSION_MODULE_SAVE' );
+  DemoVersion       := LuaSystem.Get( 'DEMO', False );
 
   ModuleOption_KlassAchievements := LuaSystem.Get( ['core','options','klass_achievements'], False );
   ModuleOption_NewMenu           := LuaSystem.Get( ['core','options','new_menu'], False );
