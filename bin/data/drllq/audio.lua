@@ -1,8 +1,8 @@
--- You can get much higher quality Doom MP3 tracks from
+-- You can get much higher quality D MP3 tracks from
 -- http://www.sirgalahad.org/paul/doom/
 -- See musicmp3.lua
 --
--- All tracks are from original Doom except:
+-- All tracks are from original D except:
 -- Unholy Cathedral, Final Showdown, Hells Weapons, Something Wicked,
 -- Of Skull And Bone, The Brick Song, and Too Hot Down Here tracks composed 
 -- by Simon Volpert (thanks!)

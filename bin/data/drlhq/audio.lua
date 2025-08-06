@@ -1,13 +1,13 @@
 
--- High quality remixes of the original Doom music are a courtesy of Sonic 
+-- High quality remixes of the original D music are a courtesy of Sonic 
 -- Clang ( http://sonicclang.ringdev.com/ ) used with permission.
 
--- Doom the Roguelike theme, Unholy Cathedral, Final Showdown, Hells 
+-- D the Roguelike theme, Unholy Cathedral, Final Showdown, Hells 
 -- Weapons, Something Wicked, Of Skull And Bone, The Brick Song, and 
 -- Too Hot Down Here tracks composed by Simon Volpert (thanks!)
 
 music = {
-	start     = "music/doom_the_roguelike.mp3",
+	start     = "music/d_the_roguelike.mp3",
 	interlude = "music/d1inter.mp3",
 	bunny     = "music/d1end.mp3",
 	intro     = "music/cde1m1.mp3",

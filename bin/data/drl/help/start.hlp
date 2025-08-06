@@ -56,7 +56,7 @@ be greeted with something like this (ASCII map is present if playing in
 ASCII mode):
 
 {d---------------------------------------------------------------------------}
- Welcome to the Doom Roguelike...
+ Welcome to DRL...
  ##########
  #@.........
  #..........
@@ -77,7 +77,7 @@ ASCII mode):
 
 
 
- {bDoomguy}{d                    Armor : }{lnone}
+ {bDRLguy}{d                     Armor : }{lnone}
  {dHealth:}{r 100%}{d Exp:}{l  1}{d/}{l0%}{l    Weapon: }{lpistol (2d4) [6/6]}
  cautious                                                  {rPhobos Base Entry}
 {d---------------------------------------------------------------------------}
@@ -144,7 +144,7 @@ inventory screen to drop items.
 
 Along the way, you're bound to run into levers ("&") and barrels ("0"). To
 pull a lever, stand on it and press "SPACE" to use them. The effects are
-random, so pull them at your own peril!  And if you've ever played Doom,
+random, so pull them at your own peril! And if you've ever played a shooter
 you know what to expect with barrels: They all explode quite nicely, but
 with varying effects depending on the barrel. (Be aware that levers are
 activated with the same button as using items -- in this case, open up

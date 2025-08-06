@@ -11,7 +11,7 @@ function drl.register_sprites()
     local DRL_SDOODAD = core.register_sprite_sheet( "doors_and_decorations", "doors_and_decorations_mask", "doors_and_decorations_shadow", "doors_and_decorations_emissive",100 )
     local DRL_SITEMS  = core.register_sprite_sheet( "guns_and_pickups", "guns_and_pickups_mask", "guns_and_pickups_shadow", "guns_and_pickups_emissive", 200 )
     local DRL_SBEINGS = core.register_sprite_sheet( "enemies", nil, "enemies_shadow", "enemies_emissive", 300 )
-    local DRL_SPLAYER = core.register_sprite_sheet( "doomguy", "doomguy_mask", "doomguy_shadow", "doomguy_emissive", 300 )
+    local DRL_SPLAYER = core.register_sprite_sheet( "dguy", "dguy_mask", "dguy_shadow", "dguy_emissive", 300 )
     local DRL_SLARGE  = core.register_sprite_sheet( "enemies_big", nil, "enemies_big_shadow", "enemies_big_emissive", 500 )
     local DRL_SFX     = core.register_sprite_sheet( "fx", "fx_mask", nil, "fx_emissive", 1000 )
 

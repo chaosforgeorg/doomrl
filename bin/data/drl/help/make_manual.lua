@@ -1,5 +1,5 @@
 local manual_file = io.open( "../manual.txt", "w" )
-local help_files = { "doomrl.txt", "intro.hlp", "start.hlp", "keys.hlp", "feedback.hlp", "credits.hlp", "disclaim.hlp" }
+local help_files = { "drl.txt", "intro.hlp", "start.hlp", "keys.hlp", "feedback.hlp", "credits.hlp", "disclaim.hlp" }
 
 function write_to_manual( file_name )
 	local file = io.open( file_name )

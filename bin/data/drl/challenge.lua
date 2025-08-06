@@ -1206,7 +1206,7 @@ function drl.register_challenges()
 			  level_count = 666
 			end
 			ui.plot_screen(string.gsub([[
-You've completed @1 levels of Doom!
+You've completed @1 levels of DRL!
 
 You can rest easy knowing that you're Boss. Yet at the last level you sensed something missing... was there something you've not accomplished? The secret of the Dragonslayer and the Berserk Armor is left unsolved...]],
 				"@1", tostring(level_count)),RED)

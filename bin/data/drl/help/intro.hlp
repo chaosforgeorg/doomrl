@@ -1,10 +1,10 @@
 {rIntroduction}
 
-{rDRL} (abbr. for Doom, the Roguelike) is, as the name implies, a
+{rDRL} (abbr. for D, the Roguelike) is, as the name implies, a
 roguelike game. If you don't know what a roguelike is... checkout 
 wikipedia -- {Bhttp://en.wikipedia.org/wiki/Roguelike}.
 
-DRL is based on the world from id Software's(tm) game Doom(tm). You're
+DRL is inspired by a famous 1993 FPS hellish shooter. You're
 the sole surviving marine from a squad sent to investigate a distress call
 from the moonbase of Phobos.  It turns out that all hell has broken loose
 on the plant... literally.
