@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomspritemap;
+unit drlspritemap;
 interface
 uses Classes, SysUtils,
      vutil, vgltypes, vrltools, vgenerics, vvector, vcolor, vglquadrenderer, vglprogram,
@@ -24,7 +24,7 @@ const DRL_Z_FX     = 16000;
       DRL_Z_BEINGS = DRL_Z_LAYER * 4;
       DRL_Z_LARGE  = DRL_Z_LAYER * 5;
 
-type TDoomMouseCursor = class( TVObject )
+type TDRLMouseCursor = class( TVObject )
   constructor Create;
   procedure SetTextureID( aTexture : TTextureID; aSize : DWord );
   procedure Draw( aPoint : TPoint; aTicks : DWord; aTarget : TGLQuadList );
@@ -44,9 +44,9 @@ type TSpritePart = ( F, T, B, L, R, TL, TR, BL, BR );
 
 type
 
-{ TDoomSpriteMap }
+{ TDRLSpriteMap }
 
- TDoomSpriteMap = class( TVObject )
+ TDRLSpriteMap = class( TVObject )
   constructor Create;
   procedure Recalculate;
   procedure Update( aTime : DWord; aProjection : TMatrix44 );
@@ -119,7 +119,7 @@ public
   property Target : TCoord2D read FTarget;
 end;
 
-var SpriteMap : TDoomSpriteMap = nil;
+var SpriteMap : TDRLSpriteMap = nil;
 
 implementation
 
@@ -149,22 +149,22 @@ begin
   ColorToGL.Z := aColor.B;
 end;
 
-{ TDoomMouseCursor }
+{ TDRLMouseCursor }
 
-constructor TDoomMouseCursor.Create;
+constructor TDRLMouseCursor.Create;
 begin
   inherited Create;
   FActive := True;
   FSize   := 0;
 end;
 
-procedure TDoomMouseCursor.SetTextureID ( aTexture : TTextureID; aSize : DWord ) ;
+procedure TDRLMouseCursor.SetTextureID ( aTexture : TTextureID; aSize : DWord ) ;
 begin
   FTextureID := aTexture;
   FSize      := aSize;
 end;
 
-procedure TDoomMouseCursor.Draw( aPoint : TPoint; aTicks : DWord; aTarget : TGLQuadList ) ;
+procedure TDRLMouseCursor.Draw( aPoint : TPoint; aTicks : DWord; aTarget : TGLQuadList ) ;
 var iColor : TVec4f;
 begin
   if ( FSize = 0 ) or ( not FActive ) then Exit;
@@ -249,9 +249,9 @@ VVerticBlurFragmentShader : Ansistring =
 '    frag_color = vec4( result, w );'+#10+
 '}'+#10;
 
-{ TDoomSpriteMap }
+{ TDRLSpriteMap }
 
-constructor TDoomSpriteMap.Create;
+constructor TDRLSpriteMap.Create;
 var iIO : TDRLGFXIO;
 begin
   FTargeting := False;
@@ -289,7 +289,7 @@ begin
   Recalculate;
 end;
 
-procedure TDoomSpriteMap.Recalculate;
+procedure TDRLSpriteMap.Recalculate;
 var iIO : TDRLGFXIO;
 begin
   iIO := (IO as TDRLGFXIO);
@@ -336,7 +336,7 @@ begin
   glViewport( 0, 0, iIO.Driver.GetSizeX, iIO.Driver.GetSizeY );
 end;
 
-procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
+procedure TDRLSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
 var iShift : Single;
     iPixel : Integer;
     iIO    : TDRLGFXIO;
@@ -370,7 +370,7 @@ begin
   DrawMarker;
 end;
 
-procedure TDoomSpriteMap.DrawMarker;
+procedure TDRLSpriteMap.DrawMarker;
 const MarkerSprite : TSprite = (
   Color     : (R:0;G:0;B:0;A:255);
   OverColor : (R:0;G:0;B:0;A:0);
@@ -408,7 +408,7 @@ begin
   SpriteMap.PushSpriteFX( FMarker, MarkerSprite );
 end;
 
-procedure TDoomSpriteMap.Draw;
+procedure TDRLSpriteMap.Draw;
 var iPoint   : TPoint;
     iCoord   : TCoord2D;
     iIO      : TDRLGFXIO;
@@ -504,13 +504,13 @@ begin
     FSpriteEngine.Draw;
 end;
 
-function TDoomSpriteMap.DevicePointToCoord ( aPoint : TPoint ) : TCoord2D;
+function TDRLSpriteMap.DevicePointToCoord ( aPoint : TPoint ) : TCoord2D;
 begin
   Result.x := Floor((aPoint.x + FShift.X) / FSpriteEngine.Grid.X)+1;
   Result.y := Floor((aPoint.y + FShift.Y) / FSpriteEngine.Grid.Y)+1;
 end;
 
-procedure TDoomSpriteMap.PushSpriteFXRotated ( aPos : TVec2i;
+procedure TDRLSpriteMap.PushSpriteFXRotated ( aPos : TVec2i;
   const aSprite : TSprite; aRotation : Single ) ;
 var iSprite   : TSprite;
     iCoord    : TGLRawQCoord;
@@ -552,7 +552,7 @@ begin
   end;
 end;
 
-procedure TDoomSpriteMap.PushSprite( aPos : TVec2i; const aSprite : TSprite; aLight : Byte; aZ : Integer ) ;
+procedure TDRLSpriteMap.PushSprite( aPos : TVec2i; const aSprite : TSprite; aLight : Byte; aZ : Integer ) ;
 var iSize     : Byte;
     iLayer    : TSpriteDataSet;
     iSpriteID : DWord;
@@ -588,7 +588,7 @@ begin
   end;
 end;
 
-procedure TDoomSpriteMap.PushMultiSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
+procedure TDRLSpriteMap.PushMultiSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aRotation : Byte );
 var iSprite   : TSprite;
     iSpriteID : DWord;
     iPart     : TSpritePart;
@@ -701,7 +701,7 @@ begin
   Exit;
 end;
 
-procedure TDoomSpriteMap.PushSpriteTerrainPart( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
+procedure TDRLSpriteMap.PushSpriteTerrainPart( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aPart : TSpritePart = F );
 var iColors   : TGLRawQColor;
     iGridF    : TVec2f;
     iPosition : TVec2i;
@@ -766,7 +766,7 @@ begin
 end;
 
 
-procedure TDoomSpriteMap.PushSpriteBeing( aPos : TVec2i; const aSprite : TSprite; aLight : Byte ) ;
+procedure TDRLSpriteMap.PushSpriteBeing( aPos : TVec2i; const aSprite : TSprite; aLight : Byte ) ;
 var z : Integer;
 begin
   z := ( aPos.Y div FSpriteEngine.Grid.Y ) * DRL_Z_LINE;
@@ -777,12 +777,12 @@ begin
   PushSprite( aPos, aSprite, aLight, z );
 end;
 
-procedure TDoomSpriteMap.PushSpriteItem( aPos : TVec2i; const aSprite : TSprite; aLight : Byte ) ;
+procedure TDRLSpriteMap.PushSpriteItem( aPos : TVec2i; const aSprite : TSprite; aLight : Byte ) ;
 begin
   PushSprite( aPos, aSprite, aLight, ( aPos.Y div FSpriteEngine.Grid.Y ) * DRL_Z_LINE + DRL_Z_ITEMS + 500);
 end;
 
-procedure TDoomSpriteMap.PushSpriteDoodad( aCoord : TCoord2D; const aSprite: TSprite; aLight: Integer; aZOffset : Integer );
+procedure TDRLSpriteMap.PushSpriteDoodad( aCoord : TCoord2D; const aSprite: TSprite; aLight: Integer; aZOffset : Integer );
 var iLight  : Byte;
     iSprite : TSprite;
     iZ      : DWord;
@@ -805,12 +805,12 @@ begin
   end;
 end;
 
-procedure TDoomSpriteMap.PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite; aTime : Integer = -1; aZOffset : Integer = 0 ) ;
+procedure TDRLSpriteMap.PushSpriteFX( aCoord : TCoord2D; const aSprite : TSprite; aTime : Integer = -1; aZOffset : Integer = 0 ) ;
 begin
   PushSprite( Vec2i( (aCoord.X-1) * FSpriteEngine.Grid.X, (aCoord.Y-1) * FSpriteEngine.Grid.Y ), GetSprite( aSprite, aTime ), 255, DRL_Z_FX + aZOffset );
 end;
 
-procedure TDoomSpriteMap.PushSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aTSX : Single; aTSY : Single ) ;
+procedure TDRLSpriteMap.PushSpriteTerrain( aCoord : TCoord2D; const aSprite : TSprite; aZ : Integer; aTSX : Single; aTSY : Single ) ;
 var i         : Byte;
     iColors   : TGLRawQColor;
     ip        : TVec2i;
@@ -838,7 +838,7 @@ begin
   end;
 end;
 
-function TDoomSpriteMap.ShiftValue ( aFocus : TCoord2D ) : TVec2i;
+function TDRLSpriteMap.ShiftValue ( aFocus : TCoord2D ) : TVec2i;
 const YFactor = 6;
 begin
   if ( FMaxShift.X - FMinShift.X ) > 2 * IO.Driver.GetSizeX
@@ -858,7 +858,7 @@ begin
     ShiftValue.Y := S3Interpolate(FMinShift.Y,FMaxShift.Y,(aFocus.Y-2)/(MAXY-3));
 end;
 
-procedure TDoomSpriteMap.SetTarget ( aTarget : TCoord2D; aColor : TColor; aDrawPath : Boolean ) ;
+procedure TDRLSpriteMap.SetTarget ( aTarget : TCoord2D; aColor : TColor; aDrawPath : Boolean ) ;
 var iTargetLine : TVisionRay;
     iCurrent    : TCoord2D;
 begin
@@ -882,24 +882,24 @@ begin
   FTargetList.Push( FTarget );
 end;
 
-procedure TDoomSpriteMap.SetAutoTarget( aTarget : TCoord2D );
+procedure TDRLSpriteMap.SetAutoTarget( aTarget : TCoord2D );
 begin
   if aTarget = Player.Position
     then FAutoTarget.Create(0,0)
     else FAutoTarget := aTarget;
 end;
 
-procedure TDoomSpriteMap.ClearTarget;
+procedure TDRLSpriteMap.ClearTarget;
 begin
   FTargeting := False;
 end;
 
-procedure TDoomSpriteMap.ToggleGrid;
+procedure TDRLSpriteMap.ToggleGrid;
 begin
   FGridActive     := not FGridActive;
 end;
 
-destructor TDoomSpriteMap.Destroy;
+destructor TDRLSpriteMap.Destroy;
 begin
   FreeAndNil( FSpriteEngine );
   FreeAndNil( FTargetList );
@@ -913,7 +913,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TDoomSpriteMap.ApplyEffect;
+procedure TDRLSpriteMap.ApplyEffect;
 begin
   case StatusEffect of
     StatusRed    : FLutTexture := (IO as TDRLGFXIO).Textures['lut_berserk'].GLTexture;
@@ -930,7 +930,7 @@ begin
   end;
 end;
 
-procedure TDoomSpriteMap.UpdateLightMap;
+procedure TDRLSpriteMap.UpdateLightMap;
 var Y,X : DWord;
   function Get( X, Y : Byte ) : Byte;
   var c : TCoord2D;
@@ -951,7 +951,7 @@ begin
       end;
 end;
 
-function TDoomSpriteMap.GetCellRotationMask(cell: TCoord2D): Byte;
+function TDRLSpriteMap.GetCellRotationMask(cell: TCoord2D): Byte;
 var iT,iB,iL,iR : Boolean;
   function StickyCode( Coord : TCoord2D ) : Boolean;
   begin
@@ -982,7 +982,7 @@ begin
     AddIf( ( iB and iR ) and StickyCode( cell.ifInc(  1,1) ),  128 );
 end;
 
-procedure TDoomSpriteMap.PushTerrain;
+procedure TDRLSpriteMap.PushTerrain;
 var iDMinX  : Word;
     iDMaxX  : Word;
     iBottom : Word;
@@ -1053,7 +1053,7 @@ begin
     end;
 end;
 
-procedure TDoomSpriteMap.PushObjects( aDTime : Integer );
+procedure TDRLSpriteMap.PushObjects( aDTime : Integer );
 var iDMinX   : Word;
     iDMaxX   : Word;
     iY,iX    : DWord;
@@ -1181,7 +1181,7 @@ begin
 
 end;
 
-procedure TDoomSpriteMap.PushDecals;
+procedure TDRLSpriteMap.PushDecals;
 var iData  : TDecalArray;
     iDecal : TDecal;
     iPos   : TVec2i;
@@ -1229,13 +1229,13 @@ var iData  : TDecalArray;
   end;
 end;
 
-function TDoomSpriteMap.VariableLight( aWhere: TCoord2D; aBonus : ShortInt = 0 ): Byte;
+function TDRLSpriteMap.VariableLight( aWhere: TCoord2D; aBonus : ShortInt = 0 ): Byte;
 begin
   if not DRL.Level.isVisible( aWhere ) then Exit( 70 ); //20
   Exit( Min( 100+aBonus+DRL.Level.Vision.getLight(aWhere)*20, 255 ) );
 end;
 
-function TDoomSpriteMap.GetBeingSprite( aBeing : TBeing ) : TSprite;
+function TDRLSpriteMap.GetBeingSprite( aBeing : TBeing ) : TSprite;
 begin
   Assert( Assigned( aBeing ) );
   Result := aBeing.Sprite;
@@ -1249,7 +1249,7 @@ begin
   else Exit( GetSprite( Result ) );
 end;
 
-function TDoomSpriteMap.GetSprite( aSprite : TSprite; aTime : Integer = -1 ) : TSprite;
+function TDRLSpriteMap.GetSprite( aSprite : TSprite; aTime : Integer = -1 ) : TSprite;
 var iFrame : DWord;
     iTime  : DWord;
 begin
@@ -1267,7 +1267,7 @@ begin
   end;
 end;
 
-function TDoomSpriteMap.GetSprite( aCell, aStyle : Byte ) : TSprite;
+function TDRLSpriteMap.GetSprite( aCell, aStyle : Byte ) : TSprite;
 var iCell  : TCell;
 begin
   iCell   := Cells[ aCell ];
@@ -1276,7 +1276,7 @@ begin
   Exit( iCell.Sprite[ 0 ] );
 end;
 
-function TDoomSpriteMap.GetGridSize: Word;
+function TDRLSpriteMap.GetGridSize: Word;
 begin
   Exit( FSpriteEngine.Grid.X );
 end;

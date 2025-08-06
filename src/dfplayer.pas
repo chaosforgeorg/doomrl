@@ -105,7 +105,7 @@ implementation
 uses math, vuid, variants, vioevent, vgenerics,
      vnode, vcolor, vdebug, vluasystem, vluastate, vtig,
      dfmap, dflevel,
-     drlhooks, drlio, doomspritemap, drlbase,
+     drlhooks, drlio, drlspritemap, drlbase,
      drlua, drlinventory, drlplayerview, drlhudviews;
 
 constructor TPlayer.Create;

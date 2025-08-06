@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomanimation;
+unit drlanimation;
 interface
 uses
   Classes, SysUtils, math,
@@ -14,9 +14,9 @@ uses
 type TAnimation        = vanimation.TAnimation;
      TAnimationManager = vanimation.TAnimations;
 
-{ TDoomMissile }
+{ TGFXMissileAnimation }
 
-TDoomMissile = class(TAnimation)
+TGFXMissileAnimation = class(TAnimation)
   constructor Create( aDuration : DWord; aDelay : DWord; aSource, aTarget : TCoord2D; aDrawDelay : Word; aSprite : TSprite; aRay : Boolean = False );
   procedure OnUpdate( aTime : DWord ); override;
   procedure OnDraw; override;
@@ -31,18 +31,18 @@ private
   FStep     : Word;
 end;
 
-{ TDoomMessage }
+{ TMessageAnimation }
 
-{TDoomMessage = class(TAnimation)
+{TMessageAnimation = class(TAnimation)
   constructor Create( aMessage : Ansistring );
   procedure OnDraw; override;
 private
   FMessage : AnsiString;
 end;}
 
-{ TDoomMark }
+{ TGFXMarkAnimation }
 
-TDoomMark = class(TAnimation)
+TGFXMarkAnimation = class(TAnimation)
   constructor Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite );
   procedure OnDraw; override;
 private
@@ -50,9 +50,9 @@ private
   FCoord  : TCoord2D;
 end;
 
-{ TDoomExplodeMark }
+{ TGFXExplodeMarkAnimation }
 
-TDoomExplodeMark = class(TAnimation)
+TGFXExplodeMarkAnimation = class(TAnimation)
   constructor Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aColor : Byte );
   procedure OnDraw; override;
 private
@@ -62,9 +62,9 @@ private
   FGColor3  : TColor;
 end;
 
-{ TDoomSoundEvent }
+{ TSoundEventAnimation }
 
-TDoomSoundEvent = class(TAnimation)
+TSoundEventAnimation = class(TAnimation)
   constructor Create( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord );
   procedure OnStart; override;
 private
@@ -72,9 +72,9 @@ private
   FSoundID  : DWord;
 end;
 
-{ TDoomBlink }
+{ TGFXBlinkAnimation }
 
-TDoomBlink = class(TAnimation)
+TGFXBlinkAnimation = class(TAnimation)
   constructor Create( aDuration : DWord; aDelay : DWord; aColor : Word );
   procedure OnDraw; override;
 private
@@ -83,7 +83,7 @@ end;
 
 { TDoomMark }
 
-TDoomRumbleEvent = class(TAnimation)
+TRumbleEventAnimation = class(TAnimation)
   constructor Create( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
   procedure OnStart; override;
 private
@@ -92,9 +92,9 @@ private
   FDur    : DWord;
 end;
 
-{ TDoomMove }
+{ TGFXMoveAnimation }
 
-TDoomMove = class(TAnimation)
+TGFXMoveAnimation = class(TAnimation)
   constructor Create( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean; aPartial : Single = 0.0 );
   procedure OnStart; override;
   procedure OnDraw; override;
@@ -111,9 +111,9 @@ public
   property LastPosition : TVec2i read FPosition;
 end;
 
-{ TDoomScreenMove }
+{ TGFXScreenMoveAnimation }
 
-TDoomScreenMove = class(TAnimation)
+TGFXScreenMoveAnimation = class(TAnimation)
   constructor Create( aDuration : DWord; aTo : TCoord2D );
   class function Update( aDuration : DWord; aTo : TCoord2D ) : Boolean;
   procedure OnUpdate( aTime : DWord ); override;
@@ -123,11 +123,11 @@ private
   FSource : TVec2i;
   FDest   : TVec2i;
 protected
-  class var CCurrent : TDoomScreenMove;
+  class var CCurrent : TGFXScreenMoveAnimation;
 end;
 
 
-TDoomAnimateCell = class(TAnimation)
+TGFXCellAnimation = class(TAnimation)
   constructor Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
   procedure OnStart; override;
   procedure OnDraw; override;
@@ -138,7 +138,7 @@ private
   FValue  : Integer;
 end;
 
-TDoomAnimateItem = class(TAnimation)
+TGFXItemAnimation = class(TAnimation)
   constructor Create( aDuration : DWord; aDelay : DWord; aUID : TUID; aValue : Integer );
   procedure OnStart; override;
   procedure OnDraw; override;
@@ -148,7 +148,7 @@ private
   FValue  : Integer;
 end;
 
-TDoomAnimateKill = class(TAnimation)
+TGFXKillAnimation = class(TAnimation)
   constructor Create( aDuration : DWord; aDelay : DWord; aUID : TUID );
   procedure OnStart; override;
   procedure OnDraw; override;
@@ -163,9 +163,9 @@ private
 end;
 
 
-{ TDoomScreenShake }
+{ TGFXScreenShakeAnimation }
 
-TDoomScreenShake = class(TAnimation)
+TGFXScreenShakeAnimation = class(TAnimation)
   constructor Create( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
   class function Update( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection ) : Boolean;
   procedure OnUpdate( aTime : DWord ); override;
@@ -177,7 +177,7 @@ private
   FFrequencyY : Single;
   FDirection  : TDirection;
 protected
-  class var CCurrent : TDoomScreenShake;
+  class var CCurrent : TGFXScreenShakeAnimation;
 end;
 
 
@@ -185,11 +185,11 @@ implementation
 
 uses viotypes, vuid, vlog, vdebug,
      dfbeing, dfthing,
-     drlbase, drlgfxio, drlio, doomspritemap;
+     drlbase, drlgfxio, drlio, drlspritemap;
 
-{ TDoomMissile }
+{ TGFXMissileAnimation }
 
-constructor TDoomMissile.Create(aDuration : DWord; aDelay : DWord; aSource, aTarget: TCoord2D; aDrawDelay: Word; aSprite : TSprite;
+constructor TGFXMissileAnimation.Create(aDuration : DWord; aDelay : DWord; aSource, aTarget: TCoord2D; aDrawDelay: Word; aSprite : TSprite;
   aRay: Boolean);
 var iSize : Word;
 begin
@@ -209,7 +209,7 @@ begin
   if FHeading < 0 then FHeading := FHeading + 2*PI;
 end;
 
-procedure TDoomMissile.OnUpdate( aTime : DWord );
+procedure TGFXMissileAnimation.OnUpdate( aTime : DWord );
 var iOldStep : Word;
 begin
   inherited OnUpdate( aTime );
@@ -226,7 +226,7 @@ begin
   end;
 end;
 
-procedure TDoomMissile.OnDraw;
+procedure TGFXMissileAnimation.OnDraw;
 var iPos    : TVec2i;
     iLength : Single;
     iStep   : Single;
@@ -252,15 +252,15 @@ begin
   end;
 end;
 
-{ TDoomMessage }
+{ TMessageAnimation }
 
-{constructor TDoomMessage.Create(aMessage: Ansistring);
+{constructor TMessageAnimation.Create(aMessage: Ansistring);
 begin
   inherited Create;
   FMessage := aMessage;
 end;
 
-procedure TDoomMessage.Draw;
+procedure TMessageAnimation.Draw;
 begin
   if (not FExpired) and (not UI.isMsgWaiting) then ;
   begin
@@ -269,23 +269,23 @@ begin
   end;
 end;}
 
-{ TDoomMark }
+{ TGFXMarkAnimation }
 
-constructor TDoomMark.Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite );
+constructor TGFXMarkAnimation.Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite );
 begin
   inherited Create( aDuration, aDelay, 0 );
   FCoord  := aCoord;
   FSprite := aSprite;
 end;
 
-procedure TDoomMark.OnDraw;
+procedure TGFXMarkAnimation.OnDraw;
 begin
   SpriteMap.PushSpriteFX( FCoord, FSprite, FTime )
 end;
 
-{ TDoomExplodeMark }
+{ TGFXExplodeMarkAnimation }
 
-constructor TDoomExplodeMark.Create( aDuration : DWord; aDelay : DWord; aCoord: TCoord2D; aColor: Byte );
+constructor TGFXExplodeMarkAnimation.Create( aDuration : DWord; aDelay : DWord; aCoord: TCoord2D; aColor: Byte );
 var c1, c2, c3 : Byte;
 begin
   inherited Create( Max( aDuration, 1 ), aDelay, 0 );
@@ -304,7 +304,7 @@ begin
   FCoord    := aCoord;
 end;
 
-procedure TDoomExplodeMark.OnDraw;
+procedure TGFXExplodeMarkAnimation.OnDraw;
 var iMarkSprite : TSprite;
 begin
   iMarkSprite.Flags       := [ SF_OVERLAY ];
@@ -319,37 +319,37 @@ begin
   SpriteMap.PushSpriteFX( FCoord, iMarkSprite );
 end;
 
-{ TDoomSoundEvent }
+{ TSoundEventAnimation }
 
-constructor TDoomSoundEvent.Create( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord );
+constructor TSoundEventAnimation.Create( aDelay : DWord; aPosition : TCoord2D; aSoundID : DWord );
 begin
   inherited Create( 1, aDelay, 0 );
   FPosition := aPosition;
   FSoundID  := aSoundID;
 end;
 
-procedure TDoomSoundEvent.OnStart;
+procedure TSoundEventAnimation.OnStart;
 begin
   IO.Audio.PlaySound( FSoundID, FPosition );
 end;
 
-{ TDoomBlink }
+{ TGFXBlinkAnimation }
 
-constructor TDoomBlink.Create( aDuration : DWord; aDelay : DWord; aColor: Word );
+constructor TGFXBlinkAnimation.Create( aDuration : DWord; aDelay : DWord; aColor: Word );
 begin
   inherited Create( aDuration, aDelay, 0 );
   FGColor   := NewColor( aColor );
 end;
 
-procedure TDoomBlink.OnDraw;
+procedure TGFXBlinkAnimation.OnDraw;
 begin
   if GraphicsVersion then
     (IO as TDRLGFXIO).PostSheet.PushColoredQuad( TVec2i.Create(0,0), TVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
 end;
 
-{ TDoomRumbleEvent }
+{ TRumbleEventAnimation }
 
-constructor TDoomRumbleEvent.Create( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
+constructor TRumbleEventAnimation.Create( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
 begin
   inherited Create( 1, aDelay, 0 );
   FLow      := aLow;
@@ -357,15 +357,15 @@ begin
   FDur      := aDuration;
 end;
 
-procedure TDoomRumbleEvent.OnStart;
+procedure TRumbleEventAnimation.OnStart;
 begin
   IO.Driver.Rumble( FLow, FHigh, FDur );
 end;
 
 
-{ TDoomMove }
+{ TGFXMoveAnimation }
 
-constructor TDoomMove.Create ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D;
+constructor TGFXMoveAnimation.Create ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D;
   aSprite : TSprite; aBeing : Boolean; aPartial : Single ) ;
 var iSize  : Word;
 begin
@@ -398,14 +398,14 @@ begin
   FPosition := FSource;
 end;
 
-procedure TDoomMove.OnStart;
+procedure TGFXMoveAnimation.OnStart;
 var iThing : TThing;
 begin
   iThing := UIDs.Get( FUID ) as TThing;
   if iThing <> nil then iThing.AnimCount := iThing.AnimCount + 1;
 end;
 
-procedure TDoomMove.OnDraw;
+procedure TGFXMoveAnimation.OnDraw;
 var iValue : Single;
     iLight : Byte;
     iBeing : TBeing;
@@ -424,7 +424,7 @@ begin
     else SpriteMap.PushSpriteItem( FPosition, FSprite, iLight );
 end;
 
-destructor TDoomMove.Destroy;
+destructor TGFXMoveAnimation.Destroy;
 var iThing : TThing;
 begin
   iThing := UIDs.Get( FUID ) as TThing;
@@ -432,9 +432,9 @@ begin
   inherited Destroy;
 end;
 
-{ TDoomScreenMove }
+{ TGFXScreenMoveAnimation }
 
-constructor TDoomScreenMove.Create( aDuration : DWord; aTo: TCoord2D );
+constructor TGFXScreenMoveAnimation.Create( aDuration : DWord; aTo: TCoord2D );
 begin
   inherited Create( aDuration, 0, 0 );
   FSource   := SpriteMap.Shift;
@@ -443,7 +443,7 @@ begin
   CCurrent  := Self;
 end;
 
-class function TDoomScreenMove.Update( aDuration : DWord; aTo : TCoord2D ) : Boolean;
+class function TGFXScreenMoveAnimation.Update( aDuration : DWord; aTo : TCoord2D ) : Boolean;
 begin
   if CCurrent = nil then Exit( False );
   CCurrent.OnUpdate( 0 );
@@ -454,24 +454,24 @@ begin
   Exit( True );
 end;
 
-procedure TDoomScreenMove.OnUpdate( aTime : DWord );
+procedure TGFXScreenMoveAnimation.OnUpdate( aTime : DWord );
 begin
   inherited OnUpdate( aTime );
   SpriteMap.NewShift := Lerp( FSource, FDest, Minf(FTime/FDuration,1.0) );
 end;
 
-procedure TDoomScreenMove.OnDraw;
+procedure TGFXScreenMoveAnimation.OnDraw;
 begin
 end;
 
-destructor TDoomScreenMove.Destroy;
+destructor TGFXScreenMoveAnimation.Destroy;
 begin
   SpriteMap.NewShift := FDest;
   CCurrent := nil;
   inherited Destroy;
 end;
 
-constructor TDoomAnimateCell.Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+constructor TGFXCellAnimation.Create( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
 begin
   inherited Create( aDuration, aDelay, 0 );
   FCoord := aCoord;
@@ -479,12 +479,12 @@ begin
   FValue  := aValue;
 end;
 
-procedure TDoomAnimateCell.OnStart;
+procedure TGFXCellAnimation.OnStart;
 begin
   DRL.Level.LightFlag[ FCoord, LFANIMATING ] := True;
 end;
 
-procedure TDoomAnimateCell.OnDraw;
+procedure TGFXCellAnimation.OnDraw;
 var iSprite  : TSprite;
     iSegment : Integer;
 begin
@@ -502,13 +502,13 @@ begin
   SpriteMap.PushSpriteDoodad( FCoord, iSprite );
 end;
 
-destructor TDoomAnimateCell.Destroy;
+destructor TGFXCellAnimation.Destroy;
 begin
   DRL.Level.LightFlag[ FCoord, LFANIMATING ] := False;
   inherited Destroy;
 end;
 
-constructor TDoomAnimateItem.Create( aDuration : DWord; aDelay : DWord; aUID : TUID; aValue : Integer );
+constructor TGFXItemAnimation.Create( aDuration : DWord; aDelay : DWord; aUID : TUID; aValue : Integer );
 var iThing : TThing;
 begin
   inherited Create( aDuration, aDelay, aUID );
@@ -518,14 +518,14 @@ begin
   FSprite := iThing.Sprite;
 end;
 
-procedure TDoomAnimateItem.OnStart;
+procedure TGFXItemAnimation.OnStart;
 var iThing : TThing;
 begin
   iThing := UIDs.Get( FUID ) as TThing;
   if iThing <> nil then iThing.AnimCount := iThing.AnimCount + 1;
 end;
 
-procedure TDoomAnimateItem.OnDraw;
+procedure TGFXItemAnimation.OnDraw;
 var iThing    : TThing;
     iSprite   : TSprite;
     iSegment  : Integer;
@@ -549,7 +549,7 @@ begin
   SpriteMap.PushSpriteItem( iPosition, iThing.Sprite, 255 );
 end;
 
-destructor TDoomAnimateItem.Destroy;
+destructor TGFXItemAnimation.Destroy;
 var iThing : TThing;
 begin
   iThing := UIDs.Get( FUID ) as TThing;
@@ -557,7 +557,7 @@ begin
   inherited Destroy;
 end;
 
-constructor TDoomAnimateKill.Create( aDuration : DWord; aDelay : DWord; aUID : TUID );
+constructor TGFXKillAnimation.Create( aDuration : DWord; aDelay : DWord; aUID : TUID );
 var iBeing : TBeing;
 begin
   inherited Create( aDuration, aDelay, aUID );
@@ -578,7 +578,7 @@ begin
   FLight      := Iif( DRL.Level.isVisible(iBeing.Position), SpriteMap.VariableLight( iBeing.Position, 30 ), 0 );
 end;
 
-procedure TDoomAnimateKill.OnStart;
+procedure TGFXKillAnimation.OnStart;
 var iBeing : TBeing;
 begin
   iBeing := UIDs.Get( FUID ) as TBeing;
@@ -586,7 +586,7 @@ begin
   DRL.Level.LightFlag[ FCoord, LFCORPSING ] := True;
 end;
 
-procedure TDoomAnimateKill.OnDraw;
+procedure TGFXKillAnimation.OnDraw;
 var iBeing    : TBeing;
     iSprite   : TSprite;
     iSegment  : Integer;
@@ -615,7 +615,7 @@ begin
   SpriteMap.PushSpriteBeing( iPosition, iSprite, FLight );
 end;
 
-destructor TDoomAnimateKill.Destroy;
+destructor TGFXKillAnimation.Destroy;
 //var iBeing : TBeing;
 begin
   // NOTE : we explicitly don't enable drawing of the dead enemy again
@@ -625,7 +625,7 @@ begin
   DRL.Level.LightFlag[ FCoord, LFCORPSING ] := False;
   inherited Destroy;
 end;
-constructor TDoomScreenShake.Create( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
+constructor TGFXScreenShakeAnimation.Create( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
 begin
   inherited Create( aDuration, aDelay, 0 );
   FStrength   := aStrength;
@@ -634,7 +634,7 @@ begin
   FDirection  := aDirection;
 end;
 
-class function TDoomScreenShake.Update( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection ) : Boolean;
+class function TGFXScreenShakeAnimation.Update( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection ) : Boolean;
 begin
   if CCurrent = nil then Exit( False );
   CCurrent.FStrength := Maxf( CCurrent.FStrength, aStrength );
@@ -645,7 +645,7 @@ begin
   Exit( True );
 end;
 
-procedure TDoomScreenShake.OnUpdate( aTime : DWord );
+procedure TGFXScreenShakeAnimation.OnUpdate( aTime : DWord );
 var iFactor : Single;
     iFade   : Single;
     iOffset : TVec2i;
@@ -675,11 +675,11 @@ begin
   if Assigned( SpriteMap ) then SpriteMap.Offset := iOffset;
 end;
 
-procedure TDoomScreenShake.OnDraw;
+procedure TGFXScreenShakeAnimation.OnDraw;
 begin
 end;
 
-destructor TDoomScreenShake.Destroy;
+destructor TGFXScreenShakeAnimation.Destroy;
 begin
   if Assigned( SpriteMap ) then SpriteMap.Offset := Vec2i(0,0);
   inherited Destroy;

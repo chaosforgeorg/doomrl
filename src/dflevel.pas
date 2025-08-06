@@ -201,7 +201,7 @@ implementation
 
 uses math, typinfo, vluatools, vluasystem,
      vdebug, vuid, dfplayer, drlua, drlbase, drlio, drlgfxio,
-     doomspritemap, drlhudviews;
+     drlspritemap, drlhudviews;
 
 procedure TLevel.ScriptLevel(script : string);
 begin

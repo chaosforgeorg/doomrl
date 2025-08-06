@@ -47,7 +47,7 @@ uses sysutils,
      vcursesio, vcursesconsole,
      {$ENDIF}
      vioconsole, vtig, vvision, vutil,
-     drlbase, doomanimation,
+     drlbase, drlanimation,
      dflevel, dfplayer;
 
 constructor TDRLTextIO.Create;
@@ -127,7 +127,7 @@ end;
 procedure TDRLTextIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);
 begin
   if DRL.State <> DSPlaying then Exit;
-  FTextMap.AddAnimation( TDoomSoundEvent.Create( aDelay, aPosition, aSoundID ) )
+  FTextMap.AddAnimation( TSoundEventAnimation.Create( aDelay, aPosition, aSoundID ) )
 end;
 
 procedure TDRLTextIO.ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord );

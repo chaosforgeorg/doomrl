@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doommodule;
+unit drlmodule;
 interface
 uses vlua, vutil, vnode, vgenerics;
 
@@ -28,9 +28,9 @@ type TModuleArray = specialize TGObjectArray< TDRLModule >;
 
 type
 
-{ TDoomModules }
+{ TDRLModules }
 
-TDoomModules = class(TVObject)
+TDRLModules = class(TVObject)
   constructor Create;
   procedure ScanModules( const aCoreModuleID : Ansistring );
   destructor Destroy; override;
@@ -48,7 +48,7 @@ public
   property CoreModuleID  : Ansistring  read FCoreModuleID;
 end;
 
-var Modules : TDoomModules;
+var Modules : TDRLModules;
 
 implementation
 
@@ -59,7 +59,7 @@ begin
   Exit( B.LoadPriority - A.LoadPriority );
 end;
 
-constructor TDoomModules.Create;
+constructor TDRLModules.Create;
 begin
   FModules       := TModuleArray.Create( True );
   FModuleMap     := TModuleHash.Create;
@@ -67,7 +67,7 @@ begin
   FCoreModuleID  := '';
 end;
 
-procedure TDoomModules.ScanModules( const aCoreModuleID : Ansistring );
+procedure TDRLModules.ScanModules( const aCoreModuleID : Ansistring );
 var iInfo   : TSearchRec;
     iModule : TDRLModule;
     iLua    : TLua;
@@ -109,7 +109,7 @@ begin
     end;
 end;
 
-function TDoomModules.ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDRLModule;
+function TDRLModules.ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDRLModule;
 var iModule : TDRLModule;
     i       : Integer;
 begin
@@ -162,7 +162,7 @@ begin
   Exit( iModule );
 end;
 
-procedure TDoomModules.ReadMetaFromWAD( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
+procedure TDRLModules.ReadMetaFromWAD( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
 var iData   : TVDataFile;
     iModule : TDRLModule;
 begin
@@ -182,7 +182,7 @@ begin
   end;
 end;
 
-procedure TDoomModules.ReadMetaFromFolder( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
+procedure TDRLModules.ReadMetaFromFolder( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
 var iModule : TDRLModule;
 begin
   Log( LOGINFO, 'found module "%s"...', [aPath] );
@@ -195,7 +195,7 @@ begin
   end;
 end;
 
-destructor TDoomModules.Destroy;
+destructor TDRLModules.Destroy;
 begin
   FreeAndNil( FModules );
   FreeAndNil( FModuleMap );

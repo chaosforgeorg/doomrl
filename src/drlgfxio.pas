@@ -8,7 +8,7 @@ unit drlgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
      vrltools, vutil, vtextures, vvector,
-     drlio, doomspritemap, doomanimation, drlminimap, dfdata, dfthing;
+     drlio, drlspritemap, drlanimation, drlminimap, dfdata, dfthing;
 
 type
 
@@ -106,7 +106,7 @@ type
 
     FLastMouseTime : QWord;
     FMouseLock     : Boolean;
-    FMCursor       : TDoomMouseCursor;
+    FMCursor       : TDRLMouseCursor;
     FMinimap       : TMinimap;
 
     FAnimations     : TAnimationManager;
@@ -123,7 +123,7 @@ type
     property FontMult    : Byte        read FFontMult;
     property TileScale   : Single      read FTileScale;
     property ScaledScreen: TGLVec2i    read FScaledScreen;
-    property MCursor     : TDoomMouseCursor read FMCursor;
+    property MCursor     : TDRLMouseCursor read FMCursor;
     property Textures    : TTextureManager read FTextures;
   end;
 
@@ -313,11 +313,11 @@ begin
     FLineSpace,
     FFontMult
   );
-  SpriteMap  := TDoomSpriteMap.Create;
+  SpriteMap  := TDRLSpriteMap.Create;
   TSDLIODriver( FIODriver ).ShowMouse( False );
                                                     //RRGGBBAA
   inherited Create;
-  FMCursor      := TDoomMouseCursor.Create;
+  FMCursor      := TDRLMouseCursor.Create;
 
   FQuadSheet := TGLQuadList.Create;
   FTextSheet := TGLQuadList.Create;
@@ -393,28 +393,28 @@ end;
 procedure TDRLGFXIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
 begin
   if Setting_Flash then
-    FAnimations.AddAnimation( TDoomBlink.Create(aDuration,aDelay,aColor) );
+    FAnimations.AddAnimation( TGFXBlinkAnimation.Create(aDuration,aDelay,aColor) );
 end;
 
 procedure TDRLGFXIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
 begin
   if DRL.State <> DSPlaying then Exit;
   if Setting_ScreenShake then
-    if not TDoomScreenShake.Update( aDuration, aDelay, aStrength, aDirection ) then
-      FAnimations.addAnimation( TDoomScreenShake.Create( aDuration, aDelay, aStrength, aDirection ) );
+    if not TGFXScreenShakeAnimation.Update( aDuration, aDelay, aStrength, aDirection ) then
+      FAnimations.addAnimation( TGFXScreenShakeAnimation.Create( aDuration, aDelay, aStrength, aDirection ) );
 end;
 
 procedure TDRLGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean );
 begin
   if DRL.State <> DSPlaying then Exit;
-  FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, aBeing ));
+  FAnimations.AddAnimation(TGFXMoveAnimation.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, aBeing ));
 end;
 
 procedure TDRLGFXIO.addBumpAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aAmount : Single );
 begin
   if DRL.State <> DSPlaying then Exit;
-  FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, True, aAmount ));
-  FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aTo, aFrom, aSprite, True, -aAmount ));
+  FAnimations.AddAnimation(TGFXMoveAnimation.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, True, aAmount ));
+  FAnimations.AddAnimation(TGFXMoveAnimation.Create(aDuration, aDelay, aUID, aTo, aFrom, aSprite, True, -aAmount ));
   if Player.UID = aUID then WaitForAnimation;
 end;
 
@@ -423,9 +423,9 @@ var iAnimation : TAnimation;
 begin
   for iAnimation in FAnimations.Animations do
     if ( iAnimation.UID = aUID ) and ( iAnimation.Delay = 0 ) then
-      if iAnimation is TDoomMove then
+      if iAnimation is TGFXMoveAnimation then
       begin
-        aPosition := ( iAnimation as TDoomMove ).LastPosition;
+        aPosition := ( iAnimation as TGFXMoveAnimation ).LastPosition;
         Exit( True );
       end;
   Exit( False );
@@ -434,27 +434,27 @@ end;
 procedure TDRLGFXIO.addScreenMoveAnimation(aDuration: DWord; aTo: TCoord2D);
 begin
   if DRL.State <> DSPlaying then Exit;
-  if not TDoomScreenMove.Update( aDuration, aTo ) then
-    FAnimations.addAnimation( TDoomScreenMove.Create( aDuration, aTo ) );
+  if not TGFXScreenMoveAnimation.Update( aDuration, aTo ) then
+    FAnimations.addAnimation( TGFXScreenMoveAnimation.Create( aDuration, aTo ) );
 end;
 
 procedure TDRLGFXIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
 begin
   if DRL.State <> DSPlaying then Exit;
-  FAnimations.addAnimation( TDoomAnimateCell.Create( aDuration, aDelay, aCoord, aSprite, aValue ) );
+  FAnimations.addAnimation( TGFXCellAnimation.Create( aDuration, aDelay, aCoord, aSprite, aValue ) );
 end;
 
 procedure TDRLGFXIO.addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer );
 begin
   if DRL.State <> DSPlaying then Exit;
-  FAnimations.addAnimation( TDoomAnimateItem.Create( aDuration, aDelay, aItem.UID, aValue ) );
+  FAnimations.addAnimation( TGFXItemAnimation.Create( aDuration, aDelay, aItem.UID, aValue ) );
 end;
 
 procedure TDRLGFXIO.addKillAnimation( aDuration : DWord; aDelay : DWord; aBeing : TThing );
 begin
   if DRL.State <> DSPlaying then Exit;
   if SF_PAINANIM in aBeing.Sprite.Flags then
-    FAnimations.addAnimation( TDoomAnimateKill.Create( aDuration, aDelay, aBeing.UID ) );
+    FAnimations.addAnimation( TGFXKillAnimation.Create( aDuration, aDelay, aBeing.UID ) );
 end;
 
 
@@ -464,7 +464,7 @@ procedure TDRLGFXIO.addMissileAnimation(aDuration: DWord; aDelay: DWord; aSource
 begin
   if DRL.State <> DSPlaying then Exit;
   FAnimations.addAnimation(
-    TDoomMissile.Create( aDuration, aDelay, aSource,
+    TGFXMissileAnimation.Create( aDuration, aDelay, aSource,
       aTarget, aDrawDelay, aSprite, aRay ) );
 end;
 
@@ -472,14 +472,14 @@ procedure TDRLGFXIO.addMarkAnimation(aDuration: DWord; aDelay: DWord;
   aCoord: TCoord2D; aSprite : TSprite; aColor: Byte; aPic: Char);
 begin
   if DRL.State <> DSPlaying then Exit;
-  FAnimations.addAnimation( TDoomMark.Create(aDuration, aDelay, aCoord, aSprite ) )
+  FAnimations.addAnimation( TGFXMarkAnimation.Create(aDuration, aDelay, aCoord, aSprite ) )
 end;
 
 procedure TDRLGFXIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);
 begin
   if DRL.State <> DSPlaying then Exit;
   if aSoundID > 0 then
-    FAnimations.addAnimation( TDoomSoundEvent.Create( aDelay, aPosition, aSoundID ) )
+    FAnimations.addAnimation( TSoundEventAnimation.Create( aDelay, aPosition, aSoundID ) )
 end;
 
 procedure TDRLGFXIO.addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
@@ -488,7 +488,7 @@ begin
   if (not Setting_GamepadRumble) or (not IsGamepad ) then Exit;
   if aDelay = 0
     then IO.Driver.Rumble( aLow, aHigh, aDuration )
-    else FAnimations.addAnimation( TDoomRumbleEvent.Create( aDelay, aLow, aHigh, aDuration ) );
+    else FAnimations.addAnimation( TRumbleEventAnimation.Create( aDelay, aLow, aHigh, aDuration ) );
 end;
 
 procedure TDRLGFXIO.PulseBlood( aValue : Single );
@@ -499,7 +499,7 @@ end;
 
 procedure TDRLGFXIO.ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord );
 begin
-  FAnimations.AddAnimation( TDoomExplodeMark.Create(aDuration,aDelay,aCoord,aColor) )
+  FAnimations.AddAnimation( TGFXExplodeMarkAnimation.Create(aDuration,aDelay,aCoord,aColor) )
 end;
 
 procedure TDRLGFXIO.SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte );

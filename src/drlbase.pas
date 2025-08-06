@@ -121,7 +121,7 @@ uses  {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
      vdebug, viotypes,
      dfmap, dfbeing,
      drlio, drlgfxio, drltextio, zstream,
-     doomspritemap, // remove
+     drlspritemap, // remove
      drlplayerview, drlingamemenuview, drlhelpview, drlassemblyview,
      drlpagedview, drlrankupview, drlmainmenuview, drlhudviews, drlmessagesview,
      drlconfiguration, drlhelp, drlconfig, dfplayer;

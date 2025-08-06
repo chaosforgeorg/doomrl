@@ -8,7 +8,7 @@ unit drlua;
 interface
 
 uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil,
-     vdf, viotypes, dfitem, dfbeing, dfthing, dfdata, doommodule;
+     vdf, viotypes, dfitem, dfbeing, dfthing, dfdata, drlmodule;
 
 var LuaPlayerX : Byte = 2;
     LuaPlayerY : Byte = 2;
@@ -27,7 +27,7 @@ TDRLLua = class(TLuaSystem)
        procedure LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
      private
        FOpenData : TVDataFileArray;
-       FModules  : TDoomModules;
+       FModules  : TDRLModules;
      end;
 
 type
@@ -47,7 +47,7 @@ implementation
 uses typinfo, variants,
      vnode, vdebug, vluatools, vsystems, vluadungen, vluaentitynode,
      vmath, vtextures, vimage, vtigstyle, vvector,
-     dfplayer, dflevel, dfmap, drlhooks, drlhelp, dfhof, drlbase, drlio, drlgfxio, doomspritemap;
+     dfplayer, dflevel, dfmap, drlhooks, drlhelp, dfhof, drlbase, drlio, drlgfxio, drlspritemap;
 
 var SpriteSheetCounter : Integer = -1;
 
@@ -497,7 +497,7 @@ begin
     then inherited Create( Config.Raw )
     else inherited Create( nil );
 
-  FModules := TDoomModules.Create;
+  FModules := TDRLModules.Create;
   FModules.ScanModules( CoreModuleID );
 
   FOpenData := TVDataFileArray.Create;

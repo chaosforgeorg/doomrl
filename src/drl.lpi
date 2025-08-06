@@ -34,7 +34,7 @@
       <local>
         <CommandLineParams Value="-god"/>
         <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
-        <WorkingDirectory Value="D:\doomrl\bin"/>
+        <WorkingDirectory Value="..\bin"/>
       </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
@@ -42,7 +42,7 @@
           <local>
             <CommandLineParams Value="-god"/>
             <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
-            <WorkingDirectory Value="D:\doomrl\bin"/>
+            <WorkingDirectory Value="..\bin"/>
           </local>
         </Mode0>
       </Modes>
@@ -118,7 +118,7 @@
         <IsPartOfProject Value="True"/>
       </Unit15>
       <Unit16>
-        <Filename Value="doomanimation.pas"/>
+        <Filename Value="drlanimation.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit16>
       <Unit17>
@@ -142,7 +142,7 @@
         <IsPartOfProject Value="True"/>
       </Unit21>
       <Unit22>
-        <Filename Value="doomspritemap.pas"/>
+        <Filename Value="drlspritemap.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit22>
       <Unit23>
@@ -226,7 +226,7 @@
         <IsPartOfProject Value="True"/>
       </Unit42>
       <Unit43>
-        <Filename Value="doommodule.pas"/>
+        <Filename Value="drlmodule.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit43>
       <Unit44>
