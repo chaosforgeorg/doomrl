@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomloadingview;
+unit drlloadingview;
 interface
 uses vutil, dfdata;
        

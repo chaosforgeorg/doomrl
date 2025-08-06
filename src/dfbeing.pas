@@ -10,7 +10,7 @@ interface
 uses Classes, SysUtils,
      vluatable, vnode, vpath, vmath, vutil, vrltools,
      dfdata, dfthing, dfitem, dfaffect,
-     doominventory, doomcommand;
+     drlinventory, doomcommand;
 
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
 
@@ -211,7 +211,7 @@ implementation
 
 uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vluasystem,
      vluatools, vcolor, vvector,
-     dfplayer, dflevel, dfmap, doomhooks,
+     dfplayer, dflevel, dfmap, drlhooks,
      drlua, drlbase, drlio;
 
 const PAIN_DURATION = 500;

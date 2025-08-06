@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doommessagesview;
+unit drlmessagesview;
 interface
 uses vutil, vmessages, drlio, dfdata;
 

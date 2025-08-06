@@ -9,7 +9,7 @@ interface
 
 uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent, vstoreinterface,
      dflevel, dfdata, dfhof, dfitem,
-     doomhooks, drlua, doomcommand, drlkeybindings;
+     drlhooks, drlua, doomcommand, drlkeybindings;
 
 type TTargeting = class
   constructor Create;
@@ -122,9 +122,9 @@ uses  {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
      dfmap, dfbeing,
      drlio, drlgfxio, drltextio, zstream,
      doomspritemap, // remove
-     doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
-     doompagedview, doomrankupview, doommainmenuview, doomhudviews, doommessagesview,
-     drlconfiguration, doomhelp, doomconfig, dfplayer;
+     drlplayerview, drlingamemenuview, drlhelpview, drlassemblyview,
+     drlpagedview, drlrankupview, drlmainmenuview, drlhudviews, drlmessagesview,
+     drlconfiguration, drlhelp, doomconfig, dfplayer;
 
 const PAD_REPEAT_START = 400;
       PAD_REPEAT       = 100;

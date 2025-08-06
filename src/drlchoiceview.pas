@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomchoiceview;
+unit drlchoiceview;
 interface
 uses vgenerics, vutil, dfdata;
 

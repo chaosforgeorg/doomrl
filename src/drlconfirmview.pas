@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomconfirmview;
+unit drlconfirmview;
 interface
 uses vutil, dfdata;
 

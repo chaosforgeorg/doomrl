@@ -102,7 +102,7 @@
         <IsPartOfProject Value="True"/>
       </Unit11>
       <Unit12>
-        <Filename Value="doomhelp.pas"/>
+        <Filename Value="drlhelp.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit12>
       <Unit13>
@@ -110,7 +110,7 @@
         <IsPartOfProject Value="True"/>
       </Unit13>
       <Unit14>
-        <Filename Value="doomtrait.pas"/>
+        <Filename Value="drltraits.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
       <Unit15>
@@ -130,11 +130,11 @@
         <IsPartOfProject Value="True"/>
       </Unit18>
       <Unit19>
-        <Filename Value="doominventory.pas"/>
+        <Filename Value="drlinventory.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit19>
       <Unit20>
-        <Filename Value="doomhooks.pas"/>
+        <Filename Value="drlhooks.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit20>
       <Unit21>
@@ -158,27 +158,27 @@
         <IsPartOfProject Value="True"/>
       </Unit25>
       <Unit26>
-        <Filename Value="doomplayerview.pas"/>
+        <Filename Value="drlplayerview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit26>
       <Unit27>
-        <Filename Value="doomingamemenuview.pas"/>
+        <Filename Value="drlingamemenuview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit27>
       <Unit28>
-        <Filename Value="doommoreview.pas"/>
+        <Filename Value="drlmoreview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit28>
       <Unit29>
-        <Filename Value="doomhelpview.pas"/>
+        <Filename Value="drlhelpview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit29>
       <Unit30>
-        <Filename Value="doomassemblyview.pas"/>
+        <Filename Value="drlassemblyview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit30>
       <Unit31>
-        <Filename Value="doomconfirmview.pas"/>
+        <Filename Value="drlconfirmview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit31>
       <Unit32>
@@ -186,7 +186,7 @@
         <IsPartOfProject Value="True"/>
       </Unit32>
       <Unit33>
-        <Filename Value="doomsettingsview.pas"/>
+        <Filename Value="drlsettingsview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit33>
       <Unit34>
@@ -194,27 +194,27 @@
         <IsPartOfProject Value="True"/>
       </Unit34>
       <Unit35>
-        <Filename Value="doompagedview.pas"/>
+        <Filename Value="drlpagedview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit35>
       <Unit36>
-        <Filename Value="doomrankupview.pas"/>
+        <Filename Value="drlrankupview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit36>
       <Unit37>
-        <Filename Value="doommainmenuview.pas"/>
+        <Filename Value="drlmainmenuview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit37>
       <Unit38>
-        <Filename Value="doomloadingview.pas"/>
+        <Filename Value="drlloadingview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit38>
       <Unit39>
-        <Filename Value="doomchoiceview.pas"/>
+        <Filename Value="drlchoiceview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit39>
       <Unit40>
-        <Filename Value="doomhudviews.pas"/>
+        <Filename Value="drlhudviews.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit40>
       <Unit41>
@@ -222,7 +222,7 @@
         <IsPartOfProject Value="True"/>
       </Unit41>
       <Unit42>
-        <Filename Value="doommessagesview.pas"/>
+        <Filename Value="drlmessagesview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit42>
       <Unit43>

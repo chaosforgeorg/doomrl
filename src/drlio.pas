@@ -9,7 +9,7 @@ interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vmessages, vtextures,
      vuitypes, vluastate,  viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
-     dfdata, dfthing, doomspritemap, doomaudio, drlkeybindings, doomloadingview;
+     dfdata, dfthing, doomspritemap, doomaudio, drlkeybindings, drlloadingview;
 
 const TIG_EV_NONE      = 0;
       TIG_EV_DROP      = 1;
@@ -187,8 +187,8 @@ uses math, video, dateutils, variants,
      vsound, vluasystem, vuid, vlog, vdebug, vuiconsole, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vtigio, vvector,
      dflevel, dfplayer, dfitem, dfbeing, dfhof,
-     drlconfiguration, drlbase, doommoreview, doomchoiceview, drlua,
-     doomhudviews, drlplotview;
+     drlconfiguration, drlbase, drlmoreview, drlchoiceview, drlua,
+     drlhudviews, drlplotview;
 
 function TIGSubCallback( const aID : Ansistring ) : Ansistring;
 begin

@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomhelp;
+unit drlhelp;
 interface
 uses classes, vnode, dfdata, vuitypes, vgenerics;
 

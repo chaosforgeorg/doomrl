@@ -33,7 +33,7 @@ end;
 
 implementation
 
-uses vdebug, vluasystem, vuid, dfbeing, dfplayer, drlio, doomhooks;
+uses vdebug, vluasystem, vuid, dfbeing, dfplayer, drlio, drlhooks;
 
 constructor TAffects.Create( aOwner : TThing );
 var iAff : Word;

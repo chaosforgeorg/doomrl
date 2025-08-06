@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doommainmenuview;
+unit drlmainmenuview;
 interface
 uses viotypes, vgenerics, vtextures, dfdata, drlio;
 
@@ -81,7 +81,7 @@ implementation
 uses math, sysutils,
      vutil, vtig, vtigstyle, vtigio, vimage, vgltypes, vluasystem, vluavalue, vsound,
      dfhof,
-     drlbase, drlgfxio, doomplayerview, doomhelpview, doomsettingsview, doompagedview;
+     drlbase, drlgfxio, drlplayerview, drlhelpview, drlsettingsview, drlpagedview;
 
 var ChallengeType : array[1..4] of TMainMenuEntry =
 ((

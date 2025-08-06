@@ -4,11 +4,11 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomplayerview;
+unit drlplayerview;
 interface
 uses viotypes, vgenerics,
      dfitem, dfdata,
-     drlio, doomtrait, doomconfirmview;
+     drlio, drltraits, drlconfirmview;
 
 type TPlayerViewState = (
   PLAYERVIEW_INVENTORY,
@@ -115,7 +115,7 @@ implementation
 uses sysutils, math, variants,
      vutil, vtig, vtigio, vluasystem,
      dfplayer,
-     doomcommand, drlbase, doominventory;
+     doomcommand, drlbase, drlinventory;
 
 constructor TPlayerView.Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
 begin

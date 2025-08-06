@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomsettingsview;
+unit drlsettingsview;
 interface
 uses viotypes, vioevent, vconfiguration, drlio, dfdata;
 

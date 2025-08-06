@@ -11,7 +11,7 @@ uses SysUtils, Classes,
      vluaentitynode, vutil, vvision, viotypes, vrltools, vnode,
      vluamapnode, vtextmap,
      dfdata, dfmap, dfthing, dfbeing, dfitem,
-     doomhooks,
+     drlhooks,
      drlmarkers, drldecals;
 
 const CellWalls   : TCellSet = [];
@@ -201,7 +201,7 @@ implementation
 
 uses math, typinfo, vluatools, vluasystem,
      vdebug, vuid, dfplayer, drlua, drlbase, drlio, drlgfxio,
-     doomspritemap, doomhudviews;
+     doomspritemap, drlhudviews;
 
 procedure TLevel.ScriptLevel(script : string);
 begin

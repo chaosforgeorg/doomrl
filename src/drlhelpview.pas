@@ -4,9 +4,9 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomhelpview;
+unit drlhelpview;
 interface
-uses vutil, drlio, doomhelp, dfdata;
+uses vutil, drlio, drlhelp, dfdata;
 
 type THelpView = class( TInterfaceLayer )
   constructor Create;

@@ -9,7 +9,7 @@ interface
 uses classes, sysutils,
      vuielement,vpath, vutil, vrltools, vuitypes,
      dfbeing, dfhof, dfdata, dfitem, dfaffect,
-     doomtrait, drlkeybindings, drlstatistics, drlmultimove;
+     drltraits, drlkeybindings, drlstatistics, drlmultimove;
 
 
 type TQuickSlotInfo = record
@@ -105,8 +105,8 @@ implementation
 uses math, vuid, variants, vioevent, vgenerics,
      vnode, vcolor, vdebug, vluasystem, vluastate, vtig,
      dfmap, dflevel,
-     doomhooks, drlio, doomspritemap, drlbase,
-     drlua, doominventory, doomplayerview, doomhudviews;
+     drlhooks, drlio, doomspritemap, drlbase,
+     drlua, drlinventory, drlplayerview, drlhudviews;
 
 constructor TPlayer.Create;
 var iState : TLuaState;

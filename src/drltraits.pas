@@ -4,9 +4,9 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomtrait;
+unit drltraits;
 interface
-uses classes, sysutils, vutil, vnode, dfdata, doomhooks;
+uses classes, sysutils, vutil, vnode, dfdata, drlhooks;
 
 const   MAXTRAITS  = 50;
         MAXKLASS   = 10;

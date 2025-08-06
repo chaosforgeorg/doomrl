@@ -4,12 +4,12 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doominventory;
+unit drlinventory;
 interface
 uses SysUtils,
      vnode,
      dfitem, dfthing, dfdata,
-     doomcommand, doomhooks;
+     drlhooks;
 
 type
   TItemList      = array[TItemSlot] of TItem;

@@ -4,9 +4,9 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomingamemenuview;
+unit drlingamemenuview;
 interface
-uses drlio, doomconfirmview, dfdata;
+uses drlio, drlconfirmview, dfdata;
 
 type TInGameMenuView = class( TInterfaceLayer )
   constructor Create;
@@ -27,7 +27,7 @@ end;
 implementation
 
 uses vtig, vutil, vluasystem, dfplayer,
-  drlbase, doomhelpview, doomsettingsview, doommessagesview, doomassemblyview;
+  drlbase, drlhelpview, drlsettingsview, drlmessagesview, drlassemblyview;
 
 constructor TInGameMenuView.Create;
 begin

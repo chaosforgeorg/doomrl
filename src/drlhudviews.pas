@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomhudviews;
+unit drlhudviews;
 interface
 uses vutil, vgenerics, vcolor, vioevent, vrltools, dfdata, dfitem, drlkeybindings;
 

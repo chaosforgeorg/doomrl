@@ -47,7 +47,7 @@ implementation
 uses typinfo, variants,
      vnode, vdebug, vluatools, vsystems, vluadungen, vluaentitynode,
      vmath, vtextures, vimage, vtigstyle, vvector,
-     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, drlbase, drlio, drlgfxio, doomspritemap;
+     dfplayer, dflevel, dfmap, drlhooks, drlhelp, dfhof, drlbase, drlio, drlgfxio, doomspritemap;
 
 var SpriteSheetCounter : Integer = -1;
 
