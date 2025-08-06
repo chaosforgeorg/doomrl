@@ -1,4 +1,4 @@
-0.9.9.9 BETA 9
+0.10 RC
 [new] -- GH#189: Gamepad support!
 [new] -- GH#313: x1.5 tile scaling added (fuzzy, but playable!)
 [new] -- GH#224: low health and damage blood pulse effect
