@@ -9,7 +9,7 @@ interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vmessages, vtextures,
      vuitypes, vluastate,  viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
-     dfdata, dfthing, doomspritemap, doomaudio, doomkeybindings, doomloadingview;
+     dfdata, dfthing, doomspritemap, doomaudio, drlkeybindings, doomloadingview;
 
 const TIG_EV_NONE      = 0;
       TIG_EV_DROP      = 1;
@@ -187,7 +187,7 @@ uses math, video, dateutils, variants,
      vsound, vluasystem, vuid, vlog, vdebug, vuiconsole, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vtigio, vvector,
      dflevel, dfplayer, dfitem, dfbeing, dfhof,
-     doomconfiguration, doombase, doommoreview, doomchoiceview, doomlua,
+     drlconfiguration, drlbase, doommoreview, doomchoiceview, drlua,
      doomhudviews, drlplotview;
 
 function TIGSubCallback( const aID : Ansistring ) : Ansistring;
@@ -233,7 +233,7 @@ procedure TDoomIO.WaitForAnimation;
 var iTime : DWord;
 begin
   if FWaiting then Exit;
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   FWaiting := True;
   iTime := IO.Driver.GetMs;
   while AnimationsRunning do
@@ -246,7 +246,7 @@ begin
       end;
   end;
   FWaiting := False;
-  Doom.Level.RevealBeings;
+  DRL.Level.RevealBeings;
 end;
 
 procedure TDoomIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
@@ -302,7 +302,7 @@ var iCoord    : TCoord2D;
     iLevel    : TLevel;
     iSound    : Word;
 begin
-  iLevel := Doom.Level;
+  iLevel := DRL.Level;
   if not iLevel.isProperCoord( aWhere ) then Exit;
 
   if aData.SoundID <> '' then
@@ -658,7 +658,7 @@ end;
 
 procedure TDoomIO.SetAutoTarget( aTarget : TCoord2D );
 begin
-  FHintTarget := Doom.Level.GetTargetDescription( aTarget );
+  FHintTarget := DRL.Level.GetTargetDescription( aTarget );
 end;
 
 function TDoomIO.ResolveSub( const aID : Ansistring ) : Ansistring;
@@ -946,14 +946,14 @@ begin
       else VTIG_FreeLabel( Player.Inv.Slot[efTorso].Description,  iPos + Point(31,0), ArmorColor(Player.Inv.Slot[efTorso].Durability) );
 
     iColor := Red;
-    if Doom.Level.Empty
+    if DRL.Level.Empty
       then iColor := Blue
-      else if Doom.Level.Flags[ LF_ENRAGE ]
+      else if DRL.Level.Flags[ LF_ENRAGE ]
         then iColor := LightMagenta;
 
-    iLevelName := Doom.Level.Name;
-    if Doom.Level.Name_Number > 0 then
-      iLevelName += ' Lev '+IntToStr( Doom.Level.Name_Number );
+    iLevelName := DRL.Level.Name;
+    if DRL.Level.Name_Number > 0 then
+      iLevelName += ' Lev '+IntToStr( DRL.Level.Name_Number );
     VTIG_FreeLabel( iLevelName, Point( -2-Length( iLevelName), iBottom ), iColor );
 
     iP := 0;
@@ -980,9 +980,9 @@ begin
   if GraphicsVersion and ( FHint <> '' ) then
     VTIG_FreeLabel( ' '+FHint+' ', Point( 20, 4 ), Yellow );
 
-  if Doom.Level.Boss <> 0 then
+  if DRL.Level.Boss <> 0 then
   begin
-    iBoss := UIDs.Get( Doom.Level.Boss ) as TBeing;
+    iBoss := UIDs.Get( DRL.Level.Boss ) as TBeing;
     if iBoss <> nil then
     begin
       VTIG_FreeLabel( iBoss.Name, Point( 40 - Ceil(Length( iBoss.Name ) / 2), 3 ), iCBold );
@@ -1114,8 +1114,8 @@ var iLayer  : TInterfaceLayer;
 begin
   if Assigned( Sound ) then
     Sound.Update;
-  if Assigned( Doom ) then
-    Doom.Store.Update;
+  if Assigned( DRL ) then
+    DRL.Store.Update;
 
   if FUIMouse <> FUIMouseLast then
   begin
@@ -1125,10 +1125,10 @@ begin
     VTIG_GetIOState.MouseState.HandleEvent( iMEvent );
   end;
 
-  if GetPadRTrigger and (Doom <> nil) and (Doom.State = DSPlaying)
-    and (FTargeting or ( not isModal)) and ( FLastTarget <> Doom.Targeting.List.Current ) then
+  if GetPadRTrigger and (DRL <> nil) and (DRL.State = DSPlaying)
+    and (FTargeting or ( not isModal)) and ( FLastTarget <> DRL.Targeting.List.Current ) then
     begin
-      FLastTarget := Doom.Targeting.List.Current;
+      FLastTarget := DRL.Targeting.List.Current;
       if (FLastTarget.X * FLastTarget.Y <> 0) and (FLastTarget <> Player.Position) then
         LookDescription(FLastTarget);
     end;
@@ -1165,14 +1165,14 @@ begin
   begin
     if not Setting_Mouse then Exit( INPUT_NONE );
     FMTarget := SpriteMap.DevicePointToCoord( aEvent.MouseMove.Pos );
-    if Doom.Level.isProperCoord( FMTarget ) then
+    if DRL.Level.isProperCoord( FMTarget ) then
       Exit( INPUT_MMOVE );
   end;
   if aEvent.EType = VEVENT_MOUSEDOWN then
   begin
     if not Setting_Mouse then Exit( INPUT_NONE );
     FMTarget := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
-    if Doom.Level.isProperCoord( FMTarget ) then
+    if DRL.Level.isProperCoord( FMTarget ) then
     begin
       case aEvent.Mouse.Button of
         VMB_BUTTON_LEFT     : Exit( INPUT_MLEFT );
@@ -1231,9 +1231,9 @@ end;
 procedure TDoomIO.LookDescription(aWhere: TCoord2D);
 var LookDesc : string;
 begin
-  LookDesc := Doom.Level.GetLookDescription( aWhere );
+  LookDesc := DRL.Level.GetLookDescription( aWhere );
   if Option_BlindMode then LookDesc += ' | '+BlindCoord( aWhere - Player.Position );
-  if Doom.Level.isVisible(aWhere) and (Doom.Level.Being[aWhere] <> nil) then
+  if DRL.Level.isVisible(aWhere) and (DRL.Level.Being[aWhere] <> nil) then
     if isGamepad
       then LookDesc += ' | <{LA}> more'
       else LookDesc += ' | <{Lm}>ore';
@@ -1283,7 +1283,7 @@ end;
 (**************************** LUA UI *****************************)
 
 function lua_ui_set_hint(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   if not Setting_HideHints then
@@ -1302,7 +1302,7 @@ end;
 {$HINTS ON}
 
 function lua_ui_blink(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   IO.Blink( State.ToInteger(1), State.ToInteger(2), State.ToInteger(3));
@@ -1310,7 +1310,7 @@ begin
 end;
 
 function lua_ui_plot_screen(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
 begin
   iState.Init(L);
   IO.PushLayer( TPlotView.Create( iState.ToString(1), iState.ToIOColor(2), iState.ToString(3,'') ) );
@@ -1319,7 +1319,7 @@ begin
 end;
 
 function lua_ui_msg(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   IO.Msg(State.ToString(1));
@@ -1333,7 +1333,7 @@ begin
 end;
 
 function lua_ui_msg_enter(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   if State.StackSize = 0 then Exit(0);
@@ -1345,7 +1345,7 @@ begin
 end;
 
 function lua_ui_msg_history(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     Idx   : Integer;
     Msg   : AnsiString;
 begin
@@ -1366,7 +1366,7 @@ begin
 end;
 
 function lua_ui_strip_encoding(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   if State.StackSize = 0 then Exit(0);
@@ -1375,7 +1375,7 @@ begin
 end;
 
 function lua_ui_choice(L: Plua_State): Integer; cdecl;
-var State     : TDoomLuaState;
+var State     : TDRLLuaState;
     iView     : TChoiceView;
     i, iCount : Integer;
     iEntry    : TChoiceViewChoice;
@@ -1419,7 +1419,7 @@ begin
 end;
 
 function lua_ui_set_style_color(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iEntry : TTIGStyleColorEntry;
 begin
   iState.Init(L);
@@ -1430,7 +1430,7 @@ begin
 end;
 
 function lua_ui_set_style_frame(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iEntry : TTIGStyleFrameEntry;
 begin
   iState.Init(L);
@@ -1441,7 +1441,7 @@ begin
 end;
 
 function lua_ui_set_style_padding(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iEntry : TTIGStylePaddingEntry;
 begin
   iState.Init(L);
@@ -1452,7 +1452,7 @@ begin
 end;
 
 function lua_ui_set_narrow_mode(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
 begin
   iState.Init(L);
   IO.FNarrowMode := iState.ToBoolean(1);
@@ -1466,7 +1466,7 @@ begin
 end;
 
 function lua_ui_is_pad(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
 begin
   iState.Init(L);
   iState.Push( IO.IsGamepad );
@@ -1474,7 +1474,7 @@ begin
 end;
 
 function lua_ui_get_rank(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
 begin
   iState.Init(L);
   iState.Push( HOF.GetRank( iState.ToString( 1 ) ) );
@@ -1482,12 +1482,12 @@ begin
 end;
 
 function lua_ui_save_and_quit(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
 begin
   iState.Init(L);
   ForceShop := iState.ToBoolean(1);
   IO.FadeOut(0.5);
-  Doom.SetState( DSSaving );
+  DRL.SetState( DSSaving );
   Result := 0;
 end;
 

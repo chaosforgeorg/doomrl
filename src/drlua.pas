@@ -4,20 +4,20 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomlua;
+unit drlua;
 interface
 
 uses SysUtils, Classes, vluastate, vluasystem, vlualibrary, vrltools, vutil,
-     vcolor, vdf, viotypes, vgenerics, dfitem, dfbeing, dfthing, dfdata, doommodule;
+     vdf, viotypes, dfitem, dfbeing, dfthing, dfdata, doommodule;
 
 var LuaPlayerX : Byte = 2;
     LuaPlayerY : Byte = 2;
 
 type
 
-{ TDoomLua }
+{ TDRLLua }
 
-TDoomLua = class(TLuaSystem)
+TDRLLua = class(TLuaSystem)
        constructor Create; reintroduce;
        procedure OnError(const ErrorString : Ansistring); override;
        procedure RegisterPlayer(Thing: TThing);
@@ -32,9 +32,9 @@ TDoomLua = class(TLuaSystem)
 
 type
 
-{ TDoomLuaState }
+{ TDRLLuaState }
 
-TDoomLuaState = object(TLuaState)
+TDRLLuaState = object(TLuaState)
   function ToId( aIndex : Integer) : DWord;
   function ToPosition( aIndex : Integer ) : TCoord2D;
   function ToIOColor( aIndex : Integer ) : TIOColor;
@@ -47,20 +47,20 @@ implementation
 uses typinfo, variants,
      vnode, vdebug, vluatools, vsystems, vluadungen, vluaentitynode,
      vmath, vtextures, vimage, vtigstyle, vvector,
-     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, doombase, doomio, doomgfxio, doomspritemap;
+     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, drlbase, doomio, doomgfxio, doomspritemap;
 
 var SpriteSheetCounter : Integer = -1;
 
 function lua_core_is_playing(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
-  State.Push( Doom.State = DSPlaying );
+  State.Push( DRL.State = DSPlaying );
   Result := 1;
 end;
 
 function lua_statistics_get(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   Player.Statistics.Update;
@@ -70,7 +70,7 @@ begin
 end;
 
 function lua_statistics_set(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   // Unused parameter #1 is self
@@ -79,7 +79,7 @@ begin
 end;
 
 function lua_statistics_inc(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   Player.Statistics.Increase( State.ToString( 1 ), State.ToInteger( 2 ) );
@@ -87,7 +87,7 @@ begin
 end;
 
 function lua_statistics_get_date(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     Curr : TSystemTime;
     DOW  : integer;
 begin
@@ -116,7 +116,7 @@ begin
 end;
 
 function lua_core_register_missile(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iTable : TLuaTable;
     iMID   : Integer;
 begin
@@ -149,7 +149,7 @@ begin
 end;
 
 function lua_core_register_shotgun(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iTable : TLuaTable;
     iMID   : Integer;
 begin
@@ -175,7 +175,7 @@ begin
 end;
 
 function lua_core_register_affect(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     mID : Integer;
 begin
   State.Init(L);
@@ -203,7 +203,7 @@ begin
 end;
 
 function lua_core_add_to_cell_set(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   case State.ToInteger(1) of
@@ -215,7 +215,7 @@ begin
 end;
 
 function lua_core_player_data_count(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   State.Push( LongInt(HOF.GetCount( State.ToString( 1 ) )) );
@@ -223,7 +223,7 @@ begin
 end;
 
 function lua_core_player_data_child_count(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   State.Push( LongInt(HOF.GetChildCount( State.ToString( 1 ) )) );
@@ -231,7 +231,7 @@ begin
 end;
 
 function lua_core_player_data_get_counted(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   State.Push( LongInt(HOF.GetCounted( State.ToString( 1 ), State.ToString( 2 ), State.ToString( 3 ) ) ) );
@@ -239,7 +239,7 @@ begin
 end;
 
 function lua_core_player_data_add_counted(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   State.Push( Boolean(HOF.AddCounted( State.ToString( 1 ), State.ToString( 2 ), State.ToString( 3 ), State.ToInteger( 4,1 ) ) ) );
@@ -247,7 +247,7 @@ begin
 end;
 
 function lua_core_play_music(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   IO.Audio.PlayMusic(State.ToString(1));
@@ -258,7 +258,7 @@ end;
 // ************************************************************************ //
 
 function lua_core_game_time(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   State.Push(Player.Statistics.GameTime);
@@ -266,7 +266,7 @@ begin
 end;
 
 function lua_core_time_ms(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   State.Push( LongInt(IO.Driver.GetMs) );
@@ -274,7 +274,7 @@ begin
 end;
 
 function lua_core_register_cell(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   Cells.RegisterCell(State.ToInteger(1));
@@ -282,7 +282,7 @@ begin
 end;
 
 function lua_core_texture_upload(L: Plua_State): Integer; cdecl;
-var State    : TDoomLuaState;
+var State    : TDRLLuaState;
     iTexture : TTexture;
 begin
   State.Init(L);
@@ -298,7 +298,7 @@ begin
 end;
 
 function lua_core_register_sprite_sheet(L: Plua_State): Integer; cdecl;
-var State     : TDoomLuaState;
+var State     : TDRLLuaState;
     iNormal   : TTexture;
     iCosplay  : TTexture;
     iGlow     : TTexture;
@@ -332,14 +332,14 @@ begin
 end;
 
 function lua_core_set_vision_base_value(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   VisionBaseValue := State.ToInteger(1,8);
   Result := 0;
 end;
 
-procedure TDoomLua.ReadWad;
+procedure TDRLLua.ReadWad;
 var iProgBase    : DWord;
     iModule      : TDoomModule;
     iData        : TVDataFile;
@@ -398,7 +398,7 @@ begin
   ModuleOption_NewMenu           := LuaSystem.Get( ['core','options','new_menu'], False );
 end;
 
-procedure TDoomLua.LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
+procedure TDRLLua.LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
 var iSearchRec : TSearchRec;
     iStream    : TStream;
 begin
@@ -413,9 +413,9 @@ begin
   until (FindNext(iSearchRec) <> 0);
 end;
 
-procedure TDoomLua.OnError(const ErrorString : Ansistring);
+procedure TDRLLua.OnError(const ErrorString : Ansistring);
 begin
-  if (IO <> nil) and (Doom.State = DSPlaying) then
+  if (IO <> nil) and (DRL.State = DSPlaying) then
   begin
     IO.ErrorReport( ErrorString );
   end
@@ -424,13 +424,13 @@ begin
   Log('LuaError: '+ErrorString);
 end;
 
-procedure TDoomLua.RegisterPlayer(Thing: TThing);
+procedure TDRLLua.RegisterPlayer(Thing: TThing);
 begin
   LuaSystem.SetValue('player',Thing);
   RegisterKillsClass( Raw, (Thing as TPlayer).FKills );
 end;
 
-destructor TDoomLua.Destroy;
+destructor TDRLLua.Destroy;
 var iData : TVDataFile;
 begin
   for iData in FOpenData do
@@ -490,7 +490,7 @@ const lua_core_lib : array[0..12] of luaL_Reg = (
     ( name : nil;          func : nil; )
 );
 
-constructor TDoomLua.Create;
+constructor TDRLLua.Create;
 var Count : Byte;
 begin
   if GodMode
@@ -555,7 +555,7 @@ begin
   TPlayer.RegisterLuaAPI();
   RegisterDungenClass( LuaSystem.Raw, 'generator' );
 
-  doombase.Lua := Self;
+  drlbase.Lua := Self;
 
 //  LogProps( TThing );
 //  LogProps( TItem );
@@ -576,16 +576,16 @@ begin
 
 end;
 
-{ TDoomLuaState }
+{ TDRLLuaState }
 
-function TDoomLuaState.ToId( aIndex: Integer ): DWord;
+function TDRLLuaState.ToId( aIndex: Integer ): DWord;
 begin
   if IsNumber( aIndex ) then Exit( ToInteger( aIndex ) );
   ToId := LuaSystem.Defines[ToString( aIndex )];
   if ToId = 0 then Error( 'unknown define ('+ToString( aIndex ) +')!' );
 end;
 
-function TDoomLuaState.ToPosition( aIndex : Integer ) : TCoord2D;
+function TDRLLuaState.ToPosition( aIndex : Integer ) : TCoord2D;
 begin
   if IsCoord( aIndex ) then
      Exit( ToCoord( aIndex ) )
@@ -593,7 +593,7 @@ begin
      Exit( (ToObject( aIndex ) as TThing).Position );
 end;
 
-function TDoomLuaState.ToIOColor( aIndex : Integer ) : TIOColor;
+function TDRLLuaState.ToIOColor( aIndex : Integer ) : TIOColor;
 var iC4b : TVec4b;
 begin
   Result := 0;

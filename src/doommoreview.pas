@@ -25,7 +25,7 @@ end;
 
 implementation
 
-uses vluasystem, vtig, dfplayer, doombase;
+uses vluasystem, vtig, dfplayer, drlbase;
 
 constructor TMoreView.Create( aSid : Ansistring );
 begin
@@ -71,7 +71,7 @@ end;
 
 function TMoreView.IsFinished : Boolean;
 begin
-  Exit( FFinished or ( Doom.State <> DSPlaying ) );
+  Exit( FFinished or ( DRL.State <> DSPlaying ) );
 end;
 
 function TMoreView.IsModal : Boolean;

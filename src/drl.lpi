@@ -58,7 +58,7 @@
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="doomlua.pas"/>
+        <Filename Value="drlua.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit1>
       <Unit2>
@@ -98,7 +98,7 @@
         <IsPartOfProject Value="True"/>
       </Unit10>
       <Unit11>
-        <Filename Value="doombase.pas"/>
+        <Filename Value="drlbase.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit11>
       <Unit12>
@@ -182,7 +182,7 @@
         <IsPartOfProject Value="True"/>
       </Unit31>
       <Unit32>
-        <Filename Value="doomconfiguration.pas"/>
+        <Filename Value="drlconfiguration.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit32>
       <Unit33>
@@ -190,7 +190,7 @@
         <IsPartOfProject Value="True"/>
       </Unit33>
       <Unit34>
-        <Filename Value="doomkeybindings.pas"/>
+        <Filename Value="drlkeybindings.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit34>
       <Unit35>

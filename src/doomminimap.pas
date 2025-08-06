@@ -28,7 +28,7 @@ end;
 
 implementation
 
-uses math, sysutils, viotypes, vglimage, dfdata, dfitem, dfbeing, dfmap, doombase;
+uses math, sysutils, viotypes, vglimage, dfdata, dfitem, dfbeing, dfmap, drlbase;
 
 constructor TDoomMinimap.Create;
 begin
@@ -43,7 +43,7 @@ end;
 procedure TDoomMinimap.Redraw;
 var x, y : DWord;
 begin
-  if Doom.State = DSPlaying then
+  if DRL.State = DSPlaying then
   begin
     for x := 0 to MAXX+1 do
       for y := 0 to MAXY+1 do
@@ -92,7 +92,7 @@ var iColor : Byte;
     iBeing : TBeing;
     iOMult : Byte;
 begin
-  with Doom.Level do
+  with DRL.Level do
   begin
     if not isProperCoord( aCoord ) then Exit( DefColor );
     iOMult := 1;

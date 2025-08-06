@@ -34,7 +34,7 @@ end;
 
 implementation
 
-uses vtig, doombase, doomio;
+uses vtig, drlbase, doomio;
  
 constructor TConfirmView.Create;
 begin
@@ -80,7 +80,7 @@ end;
 
 function TConfirmView.IsFinished : Boolean;
 begin
-  Exit( FFinished or ( Doom.State <> DSPlaying ) );
+  Exit( FFinished or ( DRL.State <> DSPlaying ) );
 end;
 
 function TConfirmView.IsModal : Boolean;

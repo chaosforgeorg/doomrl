@@ -212,7 +212,7 @@ implementation
 uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vluasystem,
      vluatools, vcolor, vvector,
      dfplayer, dflevel, dfmap, doomhooks,
-     doomlua, doombase, doomio;
+     drlua, drlbase, doomio;
 
 const PAIN_DURATION = 500;
 
@@ -487,7 +487,7 @@ begin
        begin
             if not SendMissile( aTarget, aGun, aAltFire, iSeqBase+(iCount-1)*Missiles[aGun.Missile].Delay*3, iCount-1 ) then Exit( False );
        end;
-    if Doom.State <> DSPlaying then Exit( False );
+    if DRL.State <> DSPlaying then Exit( False );
   end;
   Exit( True );
 end;
@@ -907,7 +907,7 @@ begin
   if (iAltFire = ALT_CHAIN) then
   begin
     if ( iChainFire > 0 )
-      then FTargetPos := Doom.Targeting.PrevPos
+      then FTargetPos := DRL.Targeting.PrevPos
       else FTargetPos := aTarget;
   end;
   FChainFire := iChainFire;
@@ -1308,7 +1308,7 @@ var iShots       : Integer;
     iResult      : Boolean;
     iSecond      : Boolean;
 begin
-  if Doom.State <> DSPlaying then Exit( False );
+  if DRL.State <> DSPlaying then Exit( False );
   if aTarget = FPosition then Exit( False );
   if aGun = nil then Exit( False );
 
@@ -1664,8 +1664,8 @@ begin
   if BF_BOSS in FFlags then
   begin
     iLevel.Kill( Self );
-    Doom.GameWon := True;
-    Doom.SetState( DSFinished );
+    DRL.GameWon := True;
+    DRL.SetState( DSFinished );
     Exit;
   end;
   iLevel.Kill( Self );
@@ -1721,7 +1721,7 @@ begin
     // Attack cost
     iAttackCost := getFireCost( ALT_NONE, True );
 
-    if Doom.Level.AnimationVisible( Position, Self ) then
+    if DRL.Level.AnimationVisible( Position, Self ) then
       IO.addBumpAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aWhere, Sprite, 0.5 );
 
     TLevel(Parent).DamageTile( aWhere, rollMeleeDamage( iSlot ), Damage_Melee );
@@ -1777,7 +1777,7 @@ begin
   iAttackCost := getFireCost( ALT_NONE, True );
 
   if not Second then
-    if Doom.Level.AnimationVisible( FPosition, Self ) then
+    if DRL.Level.AnimationVisible( FPosition, Self ) then
       IO.addBumpAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aTarget.Position, Sprite, 0.5 );
 
   if iDualAttack or Second
@@ -1837,10 +1837,10 @@ begin
   begin
     if (Inv.Slot[meleeWeaponSlot] <> nil) and Inv.Slot[meleeWeaponSlot].isMelee then
     begin
-      if not Doom.CallHookCheck(Hook_OnFire,[Inv.Slot[meleeWeaponSlot], Self]) then Exit(efTorso);
+      if not DRL.CallHookCheck(Hook_OnFire,[Inv.Slot[meleeWeaponSlot], Self]) then Exit(efTorso);
     end
     else
-      if not Doom.CallHookCheck(Hook_OnFire,[nil, Self]) then Exit(efTorso);
+      if not DRL.CallHookCheck(Hook_OnFire,[nil, Self]) then Exit(efTorso);
   end;
 end;
 
@@ -2089,7 +2089,7 @@ var iDirection  : TDirection;
     iMaxDamage  : Boolean;
     iExplosion  : TExplosionData;
 begin
-  if Doom.State <> DSPlaying then Exit( False );
+  if DRL.State <> DSPlaying then Exit( False );
   if aItem = nil then Exit( False );
   if not aItem.isWeapon then Exit( False );
   if FHP <= 0 then Exit( False );
@@ -2569,7 +2569,7 @@ begin
 end;
 
 function lua_being_new(L: Plua_State): Integer; cdecl;
-var State       : TDoomLuaState;
+var State       : TDRLLuaState;
     Being       : TBeing;
 begin
   State.Init( L );
@@ -2579,7 +2579,7 @@ begin
 end;
 
 function lua_being_kill(L: Plua_State): Integer; cdecl;
-var State       : TDoomLuaState;
+var State       : TDRLLuaState;
     Being       : TBeing;
 begin
   State.Init(L);
@@ -2589,7 +2589,7 @@ begin
 end;
 
 function lua_being_get_name(L: Plua_State): Integer; cdecl;
-var State       : TDoomLuaState;
+var State       : TDRLLuaState;
     Being       : TBeing;
     Res         : AnsiString;
 begin
@@ -2602,7 +2602,7 @@ begin
 end;
 
 function lua_being_ressurect(L: Plua_State): Integer; cdecl;
-var State       : TDoomLuaState;
+var State       : TDRLLuaState;
     Being       : TBeing;
 begin
   State.Init(L);
@@ -2612,7 +2612,7 @@ begin
 end;
 
 function lua_being_apply_damage(L: Plua_State): Integer; cdecl;
-var State       : TDoomLuaState;
+var State       : TDRLLuaState;
     Being       : TBeing;
 begin
   State.Init(L);
@@ -2622,7 +2622,7 @@ begin
 end;
 
 function lua_being_get_eq_item(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
@@ -2632,7 +2632,7 @@ begin
 end;
 
 function lua_being_set_eq_item(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
     slot    : TEqSlot;
     Item    : TItem;
@@ -2654,7 +2654,7 @@ begin
 end;
 
 function lua_being_add_inv_item(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
     Item    : TItem;
 begin
@@ -2673,7 +2673,7 @@ begin
 end;
 
 function lua_being_get_total_resistance(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     Being  : TBeing;
 begin
   State.Init(L);
@@ -2683,7 +2683,7 @@ begin
 end;
 
 function lua_being_play_sound(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     Being : TBeing;
 begin
   State.Init(L);
@@ -2693,7 +2693,7 @@ begin
 end;
 
 function lua_being_quick_swap(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     Being  : TBeing;
 begin
   State.Init(L);
@@ -2703,7 +2703,7 @@ begin
 end;
 
 function lua_being_drop(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     Being  : TBeing;
 begin
   State.Init(L);
@@ -2713,7 +2713,7 @@ begin
 end;
 
 function lua_being_attack(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     Being  : TBeing;
 begin
   State.Init(L);
@@ -2729,7 +2729,7 @@ begin
 end;
 
 function lua_being_action_fire(L: Plua_State): Integer; cdecl;
-var iState  : TDoomLuaState;
+var iState  : TDRLLuaState;
     iBeing  : TBeing;
     iWeapon : TItem;
     iTarget : TCoord2D;
@@ -2748,7 +2748,7 @@ begin
 end;
 
 function lua_being_reload(L: Plua_State): Integer; cdecl;
-var iState  : TDoomLuaState;
+var iState  : TDRLLuaState;
     iBeing  : TBeing;
     iWeapon : TItem;
     iItem   : TItem;
@@ -2783,7 +2783,7 @@ begin
 end;
 
 function lua_being_action_reload(L: Plua_State): Integer; cdecl;
-var iState  : TDoomLuaState;
+var iState  : TDRLLuaState;
     iBeing  : TBeing;
 begin
   iState.Init(L);
@@ -2793,7 +2793,7 @@ begin
 end;
 
 function lua_being_action_alt_reload(L: Plua_State): Integer; cdecl;
-var iState  : TDoomLuaState;
+var iState  : TDRLLuaState;
     iBeing  : TBeing;
 begin
   iState.Init(L);
@@ -2803,7 +2803,7 @@ begin
 end;
 
 function lua_being_action_dual_reload(L: Plua_State): Integer; cdecl;
-var iState  : TDoomLuaState;
+var iState  : TDRLLuaState;
     iBeing  : TBeing;
 begin
   iState.Init(L);
@@ -2813,7 +2813,7 @@ begin
 end;
 
 function lua_being_direct_seek(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     Being  : TBeing;
 begin
   State.Init(L);
@@ -2825,7 +2825,7 @@ begin
 end;
 
 function lua_being_use(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     Being  : TBeing;
 begin
   State.Init(L);
@@ -2835,7 +2835,7 @@ begin
 end;
 
 function lua_being_wear(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     Being  : TBeing;
     Item   : TItem;
     LRes   : Boolean;
@@ -2858,7 +2858,7 @@ begin
 end;
 
 function lua_being_pickup(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     Being  : TBeing;
 begin
   State.Init(L);
@@ -2868,7 +2868,7 @@ begin
 end;
 
 function lua_being_unload(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     Being  : TBeing;
 begin
   State.Init(L);
@@ -2878,7 +2878,7 @@ begin
 end;
 
 function lua_being_path_find(L: Plua_State): Integer; cdecl;
-var iState  : TDoomLuaState;
+var iState  : TDRLLuaState;
     iBeing  : TBeing;
 begin
   iState.Init(L);
@@ -2897,7 +2897,7 @@ begin
 end;
 
 function lua_being_path_next(L: Plua_State): Integer; cdecl;
-var iState  : TDoomLuaState;
+var iState  : TDRLLuaState;
     iBeing  : TBeing;
     iMoveR  : TMoveResult;
     iSuccess: Boolean;
@@ -2943,7 +2943,7 @@ begin
 end;
 
 function lua_being_inv_items_closure(L: Plua_State): Integer; cdecl;
-var State     : TDoomLuaState;
+var State     : TDRLLuaState;
     Parent    : TBeing;
     Next      : TItem;
     Current   : TItem;
@@ -2971,7 +2971,7 @@ end;
 
 // iterator
 function lua_being_inv_items(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
@@ -2986,7 +2986,7 @@ begin
 end;
 
 function lua_being_inv_size(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
@@ -2996,7 +2996,7 @@ begin
 end;
 
 function lua_being_relocate(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     Thing  : TThing;
     Target : TCoord2D;
 begin
@@ -3014,7 +3014,7 @@ end;
 
 
 function lua_being_set_affect(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
@@ -3024,7 +3024,7 @@ begin
 end;
 
 function lua_being_get_affect_time(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
@@ -3034,7 +3034,7 @@ begin
 end;
 
 function lua_being_remove_affect(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
@@ -3044,7 +3044,7 @@ begin
 end;
 
 function lua_being_is_affect(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
@@ -3054,7 +3054,7 @@ begin
 end;
 
 function lua_being_set_overlay(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
@@ -3073,7 +3073,7 @@ begin
 end;
 
 function lua_being_set_coscolor(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
@@ -3092,7 +3092,7 @@ begin
 end;
 
 function lua_being_get_auto_target(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
     iAuto  : TAutoTarget;
     iRange : Integer;
@@ -3122,7 +3122,7 @@ begin
 end;
 
 function lua_being_get_tohit(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
@@ -3133,7 +3133,7 @@ begin
 end;
 
 function lua_being_get_todam(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
@@ -3144,20 +3144,20 @@ begin
 end;
 
 function lua_being_wipe_marker( L: Plua_State ): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
   iBeing := iState.ToObject(1) as TBeing;
   if iBeing = nil then Exit( 0 );
   if iState.IsCoord( 2 )
-    then Doom.Level.Markers.Wipe( iBeing.uid, iState.ToCoord(2) )
-    else Doom.Level.Markers.Wipe( iBeing.uid );
+    then DRL.Level.Markers.Wipe( iBeing.uid, iState.ToCoord(2) )
+    else DRL.Level.Markers.Wipe( iBeing.uid );
   Result := 0;
 end;
 
 function lua_being_set_marker( L: Plua_State ): Integer; cdecl;
-var iState  : TDoomLuaState;
+var iState  : TDRLLuaState;
     iBeing  : TBeing;
     iCoord  : TCoord2D;
     iSprite : TSprite;
@@ -3172,7 +3172,7 @@ begin
   iTable := iState.ToTable( 3 );
   try
     if ReadSprite( iTable, iSprite )
-      then Doom.Level.Markers.Add( iCoord, iSprite, iBeing.UID )
+      then DRL.Level.Markers.Add( iCoord, iSprite, iBeing.UID )
       else iState.Error('bad sprite data passed to being:set_marker');
   finally
     FreeAndNil ( iTable );
@@ -3180,7 +3180,7 @@ begin
 end;
 
 function lua_being_animate_bump( L: Plua_State ): Integer; cdecl;
-var iState  : TDoomLuaState;
+var iState  : TDRLLuaState;
     iBeing  : TBeing;
     iCoord  : TCoord2D;
     iAmount : Single;
@@ -3191,7 +3191,7 @@ begin
   iCoord  := iState.ToPosition( 2 );
   iAmount := iState.ToFloat( 3, 0.5 );
   with iBeing do
-    if Doom.Level.AnimationVisible( Position, iBeing ) then
+    if DRL.Level.AnimationVisible( Position, iBeing ) then
       IO.addBumpAnimation( VisualTime( iState.ToInteger( 4, 1000 ) ) , 0, UID, Position, iCoord, Sprite, iAmount );
 end;
 

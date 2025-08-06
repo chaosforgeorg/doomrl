@@ -115,7 +115,7 @@ implementation
 uses sysutils, math, variants,
      vutil, vtig, vtigio, vluasystem,
      dfplayer,
-     doomcommand, doombase, doominventory;
+     doomcommand, drlbase, doominventory;
 
 constructor TPlayerView.Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
 begin
@@ -179,7 +179,7 @@ begin
   if IsFinished or (FState = PLAYERVIEW_CLOSING) or (FState = PLAYERVIEW_PENDING) then Exit;
 
   iTraitFirst := FTraitFirst;
-  if ( Doom.State <> DSPlaying ) and ( not iTraitFirst ) then
+  if ( DRL.State <> DSPlaying ) and ( not iTraitFirst ) then
   begin
     FState := PLAYERVIEW_DONE;
     Exit;
@@ -192,7 +192,7 @@ begin
     PLAYERVIEW_TRAITS    : UpdateTraits;
   end;
 
-  if (( Doom.State <> DSPlaying ) and ( not iTraitFirst )) or IsFinished or (FState = PLAYERVIEW_CLOSING) or (FState = PLAYERVIEW_PENDING) then Exit;
+  if (( DRL.State <> DSPlaying ) and ( not iTraitFirst )) or IsFinished or (FState = PLAYERVIEW_CLOSING) or (FState = PLAYERVIEW_PENDING) then Exit;
 
   if ( not FSwapMode ) and ( not FTraitMode ) and ( FCommandMode = 0 ) then
   begin
@@ -241,7 +241,7 @@ end;
 
 destructor TPlayerView.Destroy;
 begin
-  Doom.ClearPlayerView;
+  DRL.ClearPlayerView;
   FreeAndNil( FEq );
   FreeAndNil( FInv );
   FreeAndNil( FTraits );
@@ -341,7 +341,7 @@ begin
       if VTIG_EventConfirm then
       begin
         FState := PLAYERVIEW_CLOSING;
-        Doom.HandleCommand( TCommand.Create( COMMAND_SWAP, FInv[iSelected].Item, FSSlot ) );
+        DRL.HandleCommand( TCommand.Create( COMMAND_SWAP, FInv[iSelected].Item, FSSlot ) );
         FState := PLAYERVIEW_DONE;
       end;
     end
@@ -352,7 +352,7 @@ begin
         if VTIG_Event( VTIG_IE_BACKSPACE ) then
         begin
           FState := PLAYERVIEW_PENDING;
-          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item, VTIG_Event( VTIG_IE_SHIFT ) or IO.GetPadRTrigger ) );
+          DRL.HandleCommand( TCommand.Create( COMMAND_DROP, FInv[iSelected].Item, VTIG_Event( VTIG_IE_SHIFT ) or IO.GetPadRTrigger ) );
           if FState = PLAYERVIEW_PENDING
             then FState := PLAYERVIEW_DONE
             else begin ReadInv; FState := PLAYERVIEW_INVENTORY; end
@@ -365,7 +365,7 @@ begin
           if FInv[iSelected].Item.isPack     then iCommand := COMMAND_USE;
           FState := PLAYERVIEW_CLOSING;
           if iCommand <> COMMAND_NONE then
-            Doom.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
+            DRL.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
           FState := PLAYERVIEW_DONE;
         end;
         if VTIG_Event( VTIG_IE_1 ) then MarkQSlot( iSelected, 1 );
@@ -385,9 +385,9 @@ begin
           iCommand := FCommandMode;
           FState := PLAYERVIEW_CLOSING;
                if iCommand = COMMAND_UNLOAD then
-            Doom.HandleUnloadCommand( FInv[iSelected].Item )
+            DRL.HandleUnloadCommand( FInv[iSelected].Item )
           else if iCommand <> COMMAND_NONE then
-            Doom.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
+            DRL.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
           FState := PLAYERVIEW_DONE;
         end;
       end;
@@ -513,14 +513,14 @@ begin
           end;
           if Cursed then Exit;
           FState := PLAYERVIEW_CLOSING;
-          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item ) );
+          DRL.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item ) );
           FState := PLAYERVIEW_DONE;
         end
         else
         begin
           if Cursed then Exit;
           FState := PLAYERVIEW_CLOSING;
-          Doom.HandleCommand( TCommand.Create( COMMAND_TAKEOFF, nil, TEqSlot(iSelected) ) );
+          DRL.HandleCommand( TCommand.Create( COMMAND_TAKEOFF, nil, TEqSlot(iSelected) ) );
           FState := PLAYERVIEW_DONE;
         end;
       end
@@ -544,7 +544,7 @@ begin
         begin
           if Cursed then Exit;
           FState := PLAYERVIEW_CLOSING;
-          Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item, VTIG_Event( VTIG_IE_SHIFT ) or IO.GetPadRTrigger ) );
+          DRL.HandleCommand( TCommand.Create( COMMAND_DROP, FEq[iSelected].Item, VTIG_Event( VTIG_IE_SHIFT ) or IO.GetPadRTrigger ) );
           FState := PLAYERVIEW_DONE;
         end;
     end;
@@ -802,9 +802,9 @@ begin
   if FCharacter = nil then FCharacter := TStringGArray.Create;
   FCharacter.Clear;
 
-  FCTitle := LuaSystem.Get([ 'diff', Doom.Difficulty, 'code' ]);
-  if Doom.Challenge <> ''  then FCTitle += ' / ' + LuaSystem.Get(['chal',Doom.Challenge,'abbr']);
-  if Doom.SChallenge <> '' then FCTitle += ' + ' + LuaSystem.Get(['chal',Doom.SChallenge,'abbr']);
+  FCTitle := LuaSystem.Get([ 'diff', DRL.Difficulty, 'code' ]);
+  if DRL.Challenge <> ''  then FCTitle += ' / ' + LuaSystem.Get(['chal',DRL.Challenge,'abbr']);
+  if DRL.SChallenge <> '' then FCTitle += ' + ' + LuaSystem.Get(['chal',DRL.SChallenge,'abbr']);
   FCTitle := 'Character ( '+FCTitle+' )';
 
   with Player do
@@ -814,9 +814,9 @@ begin
     if FKills.NoDamageSequence > iKillRecord then iKillRecord := FKills.NoDamageSequence;
 
     FCharacter.Push( Format( '{!%s}, level {!%d} {!%s},',[ Name, ExpLevel, AnsiString(LuaSystem.Get(['klasses',Klass,'name']))] ) );
-    if Doom.Level.Name_Number > 0
-      then FCharacter.Push( Format( 'currently on level {!%d} of {!%s}. ', [ Doom.Level.Name_Number, Doom.Level.Name ] ) )
-      else FCharacter.Push( Format( 'currently at {!%s}. ', [ Doom.Level.Name ] ) );
+    if DRL.Level.Name_Number > 0
+      then FCharacter.Push( Format( 'currently on level {!%d} of {!%s}. ', [ DRL.Level.Name_Number, DRL.Level.Name ] ) )
+      else FCharacter.Push( Format( 'currently at {!%s}. ', [ DRL.Level.Name ] ) );
     FCharacter.Push( Format( 'He survived {!%d} turns, which took him {!%d} seconds. ', [ Statistics['game_time'], Statistics['real_time'] ] ) );
     FCharacter.Push( Format( 'He took {!%d} damage, {!%d} on this floor alone. ', [ Statistics['damage_taken'], Statistics['damage_on_level'] ] ) );
     FCharacter.Push( Format( 'He killed {!%d} out of {!%d} enemies ({!%d%%}). ', [ Statistics['unique_kills'], Statistics['max_unique_kills'], Percent( Statistics['unique_kills'], Statistics['max_unique_kills'] ) ] ) );
@@ -848,14 +848,14 @@ begin
     else
       FCharacter.Push( 'He has no resistance to knockback.' );
     FCharacter.Push( '' );
-    iLeft  := Doom.Level.EnemiesLeft;
-    iULeft := Doom.Level.EnemiesLeft( True );
+    iLeft  := DRL.Level.EnemiesLeft;
+    iULeft := DRL.Level.EnemiesLeft( True );
     if iLeft = iULeft
-      then FCharacter.Push( Format( 'Enemies left : {!%d}', [Doom.Level.EnemiesLeft] ) )
+      then FCharacter.Push( Format( 'Enemies left : {!%d}', [DRL.Level.EnemiesLeft] ) )
       else FCharacter.Push( Format( 'Enemies left : {!%d} (%d respawned)', [iLeft, iLeft-iULeft] ) );
 
-    if Doom.Level.Feeling <> '' then
-      FCharacter.Push( Format( 'Level feel : {!%s}', [Doom.Level.Feeling] ) )
+    if DRL.Level.Feeling <> '' then
+      FCharacter.Push( Format( 'Level feel : {!%s}', [DRL.Level.Feeling] ) )
   end;
 
 end;
@@ -946,7 +946,7 @@ end;
 
 procedure TUnloadConfirmView.OnConfirm;
 begin
-  Doom.HandleCommand( TCommand.Create( COMMAND_UNLOAD, FItem, FID ) );
+  DRL.HandleCommand( TCommand.Create( COMMAND_UNLOAD, FItem, FID ) );
 end;
 
 constructor TNoRoomConfirmView.Create( aItem : TItem; aID : Ansistring = '' );
@@ -963,7 +963,7 @@ procedure TNoRoomConfirmView.OnConfirm;
 begin
   if FItem.Flags[ IF_CURSED ]
     then IO.Msg('You can''t, it''s cursed!')
-    else Doom.HandleCommand( TCommand.Create( COMMAND_DROP, FItem ) );
+    else DRL.HandleCommand( TCommand.Create( COMMAND_DROP, FItem ) );
 end;
 
 

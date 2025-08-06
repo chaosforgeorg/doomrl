@@ -23,8 +23,8 @@ program drl;
 uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
-     vdebug, doombase, vlog, vutil, vos, vparams,
-     dfdata, doomio, doomconfig, doomconfiguration, vstoreinterface;
+     vdebug, drlbase, vlog, vutil, vos, vparams,
+     dfdata, doomio, doomconfig, drlconfiguration, vstoreinterface;
 
 {$IFDEF WINDOWS}
 var Handle : HWND;
@@ -44,7 +44,7 @@ var RootPath : AnsiString = '';
 begin
 try
   try
-    Configuration := TDoomConfiguration.Create;
+    Configuration := TDRLConfiguration.Create;
 
     {$IFDEF Darwin}
     {$IFDEF OSX_APP_BUNDLE}
@@ -139,10 +139,10 @@ try
 
     ErrorLogFileName := WritePath + 'error.log';
 
-    Doom := Systems.Add(TDoom.Create) as TDoom;
+    drlbase.DRL := Systems.Add(TDRL.Create) as TDRL;
 
     Randomize;
-    Doom.CreateIO;
+    drlbase.DRL.CreateIO;
     {$IFDEF WINDOWS}
     if not GraphicsVersion then
     begin
@@ -159,7 +159,7 @@ try
       end;
     end;
     {$ENDIF}
-    Doom.Run;
+    drlbase.DRL.Run;
   finally
     FreeAndNil( Configuration );
     FreeAndNil( Systems );

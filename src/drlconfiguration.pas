@@ -4,21 +4,21 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomconfiguration;
+unit drlconfiguration;
 interface
 uses vconfiguration;
 
-type TDoomConfiguration = class( TConfigurationManager )
+type TDRLConfiguration = class( TConfigurationManager )
   constructor Create;
 end;
 
-var Configuration : TDoomConfiguration;
+var Configuration : TDRLConfiguration;
 
 implementation
 
-uses vioevent, doomkeybindings;
+uses vioevent, drlkeybindings;
 
-constructor TDoomConfiguration.Create;
+constructor TDRLConfiguration.Create;
 var iGroup : TConfigurationGroup;
     iInput : TInputKey;
     iID    : Ansistring;

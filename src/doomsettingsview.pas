@@ -59,7 +59,7 @@ end;
 implementation
 
 uses math, sysutils, vutil, vdebug, vtig, vtigio, vsound,
-     doomconfiguration, doombase;
+     drlconfiguration, drlbase;
 
 const CStates : array[ TSettingsViewState ] of record Title, ID : Ansistring; end = (
    ( Title : 'Settings'; ID : 'general' ),
@@ -213,7 +213,7 @@ begin
                   Configuration.AccessInteger( 'screen_width' )^  := Width;
                   Configuration.AccessInteger( 'screen_height' )^ := Height;
                 end;
-                Doom.Reconfigure;
+                DRL.Reconfigure;
               end;
             end
             else
@@ -242,7 +242,7 @@ begin
                     end;
                     if FState = SETTINGSVIEW_DISPLAY then
                     begin
-                      Doom.Reconfigure;
+                      DRL.Reconfigure;
                       if (ID = 'tile_multi') and ( Access^ = 2 ) then
                          FWarning := 'Do note that the x1.5 multiplier is an accessability option, created mostly for SteamDeck readability - the pixel art will be distorted in this setting, and small artifacts may appear!';
                     end;
@@ -391,7 +391,7 @@ end;
 
 procedure TSettingsView.Reconfigure;
 begin
-  Doom.Reconfigure;
+  DRL.Reconfigure;
 end;
 
 end.

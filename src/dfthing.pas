@@ -45,7 +45,7 @@ implementation
 
 uses typinfo, variants,
      vluasystem, vdebug,
-     doombase, doomio;
+     drlbase, doomio;
 
 constructor TThing.Create( const aID : AnsiString );
 begin
@@ -95,12 +95,12 @@ function TThing.CallHook ( aHook : Byte; const aParams : array of const ) : Bool
 begin
   CallHook := False;
   if aHook in FHooks         then begin CallHook := True; LuaSystem.ProtectedRunHook(Self, HookNames[aHook], aParams ); end;
-  if aHook in ChainedHooks   then begin CallHook := True; Doom.Level.CallHook( aHook, ConcatConstArray( [ Self ], aParams ) ); end;
+  if aHook in ChainedHooks   then begin CallHook := True; DRL.Level.CallHook( aHook, ConcatConstArray( [ Self ], aParams ) ); end;
 end;
 
 function TThing.CallHookCheck ( aHook : Byte; const aParams : array of const ) : Boolean;
 begin
-  if aHook in ChainedHooks then if not Doom.Level.CallHookCheck( aHook, ConcatConstArray( [ Self ], aParams ) ) then Exit( False );
+  if aHook in ChainedHooks then if not DRL.Level.CallHookCheck( aHook, ConcatConstArray( [ Self ], aParams ) ) then Exit( False );
   if aHook in FHooks then if not LuaSystem.ProtectedRunHook(Self, HookNames[aHook], aParams ) then Exit( False );
   Exit( True );
 end;

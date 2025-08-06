@@ -70,7 +70,7 @@ implementation
 
 uses math, sysutils, strutils, variants,
      vluasystem, vluatable, vdebug, vtig, vutil, vrltools,
-     doombase, dfplayer;
+     drlbase, dfplayer;
 
 const HOFOpen : Boolean = False;
 
@@ -841,7 +841,7 @@ begin
   iGameResultID := LuaSystem.ProtectedCall([CoreModuleID,'GetResultId'],[]);
   if not NoPlayerRecord then
   begin
-    iDiffID       := LuaSystem.Get([ 'diff', Doom.Difficulty, 'id' ]);
+    iDiffID       := LuaSystem.Get([ 'diff', DRL.Difficulty, 'id' ]);
     iChalInc      := 0;
     iChalAbbr     := 'unchallenged';
     if nChal <> '' then
@@ -884,7 +884,7 @@ begin
     // GAMES
     iGameResult := LuaSystem.ProtectedCall([CoreModuleID,'GetShortResultId'],[iGameResultID,DLev]);
     XMLEntry := IncreaseXMLCount( FPlayerInfo.XML.DocumentElement, 'games', 1 );
-    if Doom.GameWon then
+    if DRL.GameWon then
     begin
       IncreaseXMLCount( XMLEntry, 'win', iGameResult, 1 );
       IncreaseXMLCount( XMLEntry, 'win', 'total', 1 );
@@ -892,7 +892,7 @@ begin
     XMLElement := IncreaseXMLCount( XMLEntry, 'game', iDiffID, 1 );
     iString := XMLElement.GetAttribute('max');
     if GameResultBetter( iString, iGameResult ) then XMLElement.SetAttribute('max',iGameResult);
-    if Doom.GameWon then
+    if DRL.GameWon then
     begin
       IncreaseXMLCount( XMLElement, 'win', iGameResult, 1 );
       IncreaseXMLCount( XMLElement, 'win', 'total', 1 );
@@ -903,7 +903,7 @@ begin
     XMLElement := IncreaseXMLCount( XMLEntry, 'challenge', iChalAbbr, 1 );
     iString := XMLElement.GetAttribute('max');
     if GameResultBetter( iGameResult, iString ) then XMLElement.SetAttribute('max',iGameResult);
-    if Doom.GameWon then
+    if DRL.GameWon then
     begin
       IncreaseXMLCount( XMLElement, 'win', iGameResult, 1 );
       IncreaseXMLCount( XMLElement, 'win', 'total', 1 );
@@ -911,7 +911,7 @@ begin
     XMLSubElement := IncreaseXMLCount( XMLElement, 'game', iDiffID, 1 );
     iString := XMLSubElement.GetAttribute('max');
     if GameResultBetter( iString, iGameResult ) then XMLSubElement.SetAttribute('max',iGameResult);
-    if Doom.GameWon then
+    if DRL.GameWon then
     begin
       IncreaseXMLCount( XMLSubElement, 'win', iGameResult, 1 );
       IncreaseXMLCount( XMLSubElement, 'win', 'total', 1 );
@@ -928,7 +928,7 @@ begin
       iScoreEntry := FScore.Add( aScore );
       if iScoreEntry <> nil then
       begin
-        //Score.Add(Name,aScore,Level,DLev,Doom.Difficulty,VS,VSS,LuaSystem.Get(['klasses',Player.Klass,'id']));
+        //Score.Add(Name,aScore,Level,DLev,DRL.Difficulty,VS,VSS,LuaSystem.Get(['klasses',Player.Klass,'id']));
         iScoreEntry.SetAttribute('name', Name );
         iScoreEntry.SetAttribute('level', IntToStr(Level) );
         if nAbbr <> ''
@@ -936,7 +936,7 @@ begin
           else iScoreEntry.SetAttribute('depth', IntToStr(DLev) );
         iScoreEntry.SetAttribute('klass', LuaSystem.Get(['klasses',Player.Klass,'id']) );
         iScoreEntry.SetAttribute('killed', VS );
-        iScoreEntry.SetAttribute('difficulty', IntToStr(Doom.Difficulty) );
+        iScoreEntry.SetAttribute('difficulty', IntToStr(DRL.Difficulty) );
         if nChal <> '' then
           iScoreEntry.SetAttribute('challenge', LuaSystem.Get(['chal',nChal,'abbr']) );
         FScore.Save;
@@ -990,7 +990,7 @@ begin
       then aResult.Data[i].Value := 0
       else begin
         aResult.Data[i].Value := iValues[i];
-        if Doom.Store.IsInitialized then
+        if DRL.Store.IsInitialized then
           HandleAchievements( aResult.Data[i].ID, iValues[i] );
         RankCheck := True;
       end;
@@ -1103,7 +1103,7 @@ begin
   begin
     iAch := LuaSystem.Get( [ 'ranks', aRankArray, aRankLevel+1, 'achievement' ], '' );
     if iAch <> '' then
-        if Doom.Store.SetAchievement( iAch ) then
+        if DRL.Store.SetAchievement( iAch ) then
           Log( LOGINFO, iAch+' awarded!');
   end;
 end;

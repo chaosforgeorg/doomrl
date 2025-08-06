@@ -124,7 +124,7 @@ var SpriteMap : TDoomSpriteMap = nil;
 implementation
 
 uses math, vmath, viotypes, vvision, vgl3library,
-     doomio, doomgfxio, doombase,
+     doomio, doomgfxio, drlbase,
      dfmap, dfitem, dfplayer, drlmarkers, drldecals;
 
 function SpritePartSetFill( aPart : TSpritePart ) : TSpritePartSet;
@@ -363,8 +363,8 @@ begin
   PushDecals;
   PushObjects( aTime );
 
-  for iMark in Doom.Level.Markers.Data do
-    if Doom.Level.isVisible( iMark.Coord ) then
+  for iMark in DRL.Level.Markers.Data do
+    if DRL.Level.isVisible( iMark.Coord ) then
       PushSpriteFX( iMark.Coord, iMark.Sprite, FTimer, -1 );
 
   DrawMarker;
@@ -383,7 +383,7 @@ const MarkerSprite : TSprite = (
 );
 begin
   if ( FMarker.X < 0 ) or ( FMarker.Y < 0 ) then Exit;
-  if not Doom.Level.isProperCoord( FMarker ) then Exit;
+  if not DRL.Level.isProperCoord( FMarker ) then Exit;
   MarkerSprite.SpriteID[0] := HARDSPRITE_HIGHLIGHT;
   MarkerSprite.Color := ColorBlack;
   MarkerSprite.Color.A := 127;
@@ -395,9 +395,9 @@ begin
   end
   else
   begin
-    if Doom.Level.cellFlagSet( FMarker, CF_BLOCKMOVE ) and ( not Doom.Level.cellFlagSet( FMarker, CF_OPENABLE ) ) then
+    if DRL.Level.cellFlagSet( FMarker, CF_BLOCKMOVE ) and ( not DRL.Level.cellFlagSet( FMarker, CF_OPENABLE ) ) then
       MarkerSprite.Color.R := Floor(50*(Sin( FFluidTime*50 )+1)+100)
-    else if (Doom.Level.GetBeing( FMarker ) <> nil) or (not Doom.Level.isPassable( FMarker ) ) then
+    else if (DRL.Level.GetBeing( FMarker ) <> nil) or (not DRL.Level.isPassable( FMarker ) ) then
     begin
       MarkerSprite.Color.R := Floor(50*(Sin( FFluidTime*50 )+1)+100);
       MarkerSprite.Color.G := MarkerSprite.Color.R;
@@ -431,19 +431,19 @@ begin
   if iIO.MCursor.Active and iIO.Driver.GetMousePos( iPoint ) then
   begin
     iCoord := DevicePointToCoord( iPoint );
-    if Doom.Level.isProperCoord( iCoord ) then
+    if DRL.Level.isProperCoord( iCoord ) then
     begin
       if (FLastCoord <> iCoord) and (not IO.AnimationsRunning) then
       begin
         if not IO.IsModal then
-          if Doom.Level.isVisible(iCoord) and ( Doom.Level.Being[ iCoord ] <> nil )
-            then IO.HintOverlay := Doom.Level.GetTargetDescription(iCoord)
-            else IO.HintOverlay := Doom.Level.GetLookDescription(iCoord);
+          if DRL.Level.isVisible(iCoord) and ( DRL.Level.Being[ iCoord ] <> nil )
+            then IO.HintOverlay := DRL.Level.GetTargetDescription(iCoord)
+            else IO.HintOverlay := DRL.Level.GetLookDescription(iCoord);
         FLastCoord := iCoord;
       end;
 
       TargetSprite.Color := ColorBlack;
-      if Doom.Level.isVisible( iCoord ) then
+      if DRL.Level.isVisible( iCoord ) then
         TargetSprite.Color.G := Floor(100*(Sin( FFluidTime*50 )+1)+50)
       else
         TargetSprite.Color.R := Floor(100*(Sin( FFluidTime*50 )+1)+50);
@@ -870,7 +870,7 @@ begin
 
   if (Player.Position <> FTarget) and (aDrawPath) then
   begin
-    iTargetLine.Init( Doom.Level, Player.Position, FTarget );
+    iTargetLine.Init( DRL.Level, Player.Position, FTarget );
     repeat
       iTargetLine.Next;
       iCurrent := iTargetLine.GetC;
@@ -936,7 +936,7 @@ var Y,X : DWord;
   var c : TCoord2D;
   begin
     c.Create( X, Y );
-    if not Doom.Level.isExplored( c ) then Exit( 0 );
+    if not DRL.Level.isExplored( c ) then Exit( 0 );
     Exit( VariableLight(c) );
   end;
 
@@ -955,10 +955,10 @@ function TDoomSpriteMap.GetCellRotationMask(cell: TCoord2D): Byte;
 var iT,iB,iL,iR : Boolean;
   function StickyCode( Coord : TCoord2D ) : Boolean;
   begin
-    if not Doom.Level.isProperCoord( Coord ) then Exit(True);
-    if ((CF_STICKWALL in Cells[Doom.Level.CellBottom[ Coord ]].Flags) or
-      ((Doom.Level.CellTop[ Coord ] <> 0) and
-      (CF_STICKWALL in Cells[Doom.Level.CellTop[ Coord ]].Flags))) then Exit( True );
+    if not DRL.Level.isProperCoord( Coord ) then Exit(True);
+    if ((CF_STICKWALL in Cells[DRL.Level.CellBottom[ Coord ]].Flags) or
+      ((DRL.Level.CellTop[ Coord ] <> 0) and
+      (CF_STICKWALL in Cells[DRL.Level.CellTop[ Coord ]].Flags))) then Exit( True );
     Exit( False );
   end;
   function AddIf( aBool : Boolean; aValue : Byte ) : Byte;
@@ -1008,34 +1008,34 @@ begin
     for iX := iDMinX to iDMaxX do
     begin
       iCoord.Create(iX,iY);
-      if not Doom.Level.CellExplored(iCoord) then Continue;
-      iBottom := Doom.Level.CellBottom[iCoord];
+      if not DRL.Level.CellExplored(iCoord) then Continue;
+      iBottom := DRL.Level.CellBottom[iCoord];
       if iBottom <> 0 then
       begin
         iZ     := iY * DRL_Z_LINE;
-        iStyle := Doom.Level.CStyle[ iCoord ];
+        iStyle := DRL.Level.CStyle[ iCoord ];
         iSpr   := GetSprite( iBottom, iStyle );
         if SF_FLOW in iSpr.Flags
           then PushSpriteTerrain( iCoord, iSpr, iZ, FFluidX, FFluidY )
           else
           begin
             if SF_MULTI in iSpr.Flags then
-              PushMultiSpriteTerrain( iCoord, iSpr, iZ, Doom.Level.Rotation[ iCoord ] )
+              PushMultiSpriteTerrain( iCoord, iSpr, iZ, DRL.Level.Rotation[ iCoord ] )
             else
               PushSpriteTerrain( iCoord, iSpr, iZ );
           end;
-        if (SF_FLUID in iSpr.Flags) and (Doom.Level.Rotation[ iCoord ] <> 0) then
+        if (SF_FLUID in iSpr.Flags) and (DRL.Level.Rotation[ iCoord ] <> 0) then
         begin
-          iFSpr := GetSprite( Doom.Level.FloorCell, Doom.Level.FloorStyle );
+          iFSpr := GetSprite( DRL.Level.FloorCell, DRL.Level.FloorStyle );
           if SF_HASALTEDGE in iFSpr.Flags then
             if SF_USEALTEDGE in iSpr.Flags then
               iFSpr.SpriteID[0] += DRL_COLS;
-          iFSpr.SpriteID[0] += Doom.Level.Rotation[iCoord];
+          iFSpr.SpriteID[0] += DRL.Level.Rotation[iCoord];
           PushSpriteTerrain( iCoord, iFSpr, iZ + DRL_Z_ENVIRO );
         end;
-        if Doom.Level.LightFlag[ iCoord, LFBLOOD ] and (Cells[iBottom].BloodSprite.SpriteID[0] <> 0) then
+        if DRL.Level.LightFlag[ iCoord, LFBLOOD ] and (Cells[iBottom].BloodSprite.SpriteID[0] <> 0) then
           PushSpriteDoodad( iCoord, Cells[iBottom].BloodSprite );
-        iDeco := Doom.Level.Deco[iCoord];
+        iDeco := DRL.Level.Deco[iCoord];
         if iDeco <> 0then
         begin
           iCell := Cells[ iBottom ];
@@ -1046,7 +1046,7 @@ begin
         end;
         if (SF_FLOOR in iSpr.Flags) then
         begin
-          iSpr := GetSprite( Doom.Level.FloorCell, Doom.Level.FloorStyle );
+          iSpr := GetSprite( DRL.Level.FloorCell, DRL.Level.FloorStyle );
           PushSpriteTerrain( iCoord, iSpr, iZ - 1 );
         end;
       end;
@@ -1080,16 +1080,16 @@ begin
     begin
       iCoord.Create(iX,iY);
       iZ   := iY * DRL_Z_LINE;
-      iTop := Doom.Level.CellTop[iCoord];
-      if (iTop <> 0) and Doom.Level.CellExplored(iCoord) and ( not Doom.Level.LightFlag[ iCoord, LFANIMATING ] ) then
+      iTop := DRL.Level.CellTop[iCoord];
+      if (iTop <> 0) and DRL.Level.CellExplored(iCoord) and ( not DRL.Level.LightFlag[ iCoord, LFANIMATING ] ) then
       begin
         if CF_STAIRS in Cells[iTop].Flags then
           PushSpriteDoodad( iCoord, Cells[iTop].Sprite[0], 255 )
         else
         begin
-          if not ( ( CF_CORPSE in Cells[iTop].Flags ) and ( Doom.Level.LightFlag[ iCoord, LFCORPSING ] ) ) then
-            PushSpriteDoodad( iCoord, GetSprite( iTop, Doom.Level.CStyle[iCoord] ) );
-          iDeco := Doom.Level.Deco[iCoord];
+          if not ( ( CF_CORPSE in Cells[iTop].Flags ) and ( DRL.Level.LightFlag[ iCoord, LFCORPSING ] ) ) then
+            PushSpriteDoodad( iCoord, GetSprite( iTop, DRL.Level.CStyle[iCoord] ) );
+          iDeco := DRL.Level.Deco[iCoord];
           if iDeco <> 0 then
           begin
             iCell := Cells[ iTop ];
@@ -1100,9 +1100,9 @@ begin
         end;
       end;
 
-      iItem    := Doom.Level.Item[ iCoord ];
-      iVisible := Doom.Level.ItemVisible( iCoord, iItem );
-      if iVisible or Doom.Level.ItemExplored(iCoord, iItem) then
+      iItem    := DRL.Level.Item[ iCoord ];
+      iVisible := DRL.Level.ItemVisible( iCoord, iItem );
+      if iVisible or DRL.Level.ItemExplored(iCoord, iItem) then
         if (iItem.AnimCount = 0) then
         begin
           iSprite := GetSprite( iItem.Sprite );
@@ -1133,13 +1133,13 @@ begin
     begin
       iCoord.Create(iX,iY);
       iZ     := iY * DRL_Z_LINE;
-      iBeing := Doom.Level.Being[iCoord];
+      iBeing := DRL.Level.Being[iCoord];
       if (iBeing <> nil) and (iBeing.AnimCount = 0) then
-        if Doom.Level.BeingVisible(iCoord, iBeing) then
+        if DRL.Level.BeingVisible(iCoord, iBeing) then
           PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetBeingSprite( iBeing ), VariableLight( iCoord, 30 ), iZ + DRL_Z_BEINGS )
-        else if Doom.Level.BeingExplored(iCoord, iBeing) then
+        else if DRL.Level.BeingExplored(iCoord, iBeing) then
           PushSprite( Vec2i( iX-1, iY-1 ) * FSpriteEngine.Grid, GetBeingSprite( iBeing ), 40, iZ + DRL_Z_BEINGS )
-        else if Doom.Level.BeingIntuited(iCoord, iBeing) then
+        else if DRL.Level.BeingIntuited(iCoord, iBeing) then
         begin
           with FSpriteEngine.Layers[ HARDSPRITE_MARK div 100000 ] do
             Push( HARDSPRITE_MARK mod 100000, iCoord, ColorWhite, NewColor( Magenta ), ColorZero, DRL_Z_FX-1 );
@@ -1152,8 +1152,8 @@ begin
       if FTargetList.Size > 0 then
       for iL := 0 to FTargetList.Size-1 do
       begin
-        if (not Doom.Level.isVisible( FTargetList[iL] )) or
-           (not Doom.Level.isEmpty( FTargetList[iL], [ EF_NOBLOCK, EF_NOVISION ] )) then
+        if (not DRL.Level.isVisible( FTargetList[iL] )) or
+           (not DRL.Level.isEmpty( FTargetList[iL], [ EF_NOBLOCK, EF_NOVISION ] )) then
           iColor := NewColor( 128, 0, 0 );
         with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
           Push( HARDSPRITE_SELECT mod 100000, FTargetList[iL], ColorWhite, iColor, ColorZero, DRL_Z_FX );
@@ -1165,7 +1165,7 @@ begin
   else
     if Setting_AutoTarget and ( FAutoTarget.X * FAutoTarget.Y <> 0 ) then
     begin
-      iBeing := Doom.Level.Being[FAutoTarget];
+      iBeing := DRL.Level.Being[FAutoTarget];
       iV     := Vec2i( FAutoTarget.X-1, FAutoTarget.Y-1 ) * FSpriteEngine.Grid;
       if ( iBeing <> nil ) and ( iBeing.AnimCount > 0 ) then
          (IO as TDoomGFXIO).getUIDPosition( iBeing.UID, iV );
@@ -1203,12 +1203,12 @@ var iData  : TDecalArray;
   end;
 
   begin
-  iData := Doom.Level.Decals.Data;
+  iData := DRL.Level.Decals.Data;
   iDark := Player.Flags[ BF_DARKNESS ];
   for iDecal in iData do
   begin
     iCoord := NewCoord2D( ( iDecal.Position.X + 16 ) div 32, ( iDecal.Position.Y + 16 ) div 32 );
-    with Doom.Level do
+    with DRL.Level do
       if ( not isProperCoord( iCoord ) ) or ( iDark and ( not isVisible( iCoord ) ) ) or ( not isExplored( iCoord ) ) then
           Continue;
 
@@ -1231,8 +1231,8 @@ end;
 
 function TDoomSpriteMap.VariableLight( aWhere: TCoord2D; aBonus : ShortInt = 0 ): Byte;
 begin
-  if not Doom.Level.isVisible( aWhere ) then Exit( 70 ); //20
-  Exit( Min( 100+aBonus+Doom.Level.Vision.getLight(aWhere)*20, 255 ) );
+  if not DRL.Level.isVisible( aWhere ) then Exit( 70 ); //20
+  Exit( Min( 100+aBonus+DRL.Level.Vision.getLight(aWhere)*20, 255 ) );
 end;
 
 function TDoomSpriteMap.GetBeingSprite( aBeing : TBeing ) : TSprite;

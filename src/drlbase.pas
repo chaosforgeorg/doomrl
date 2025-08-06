@@ -4,12 +4,12 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doombase;
+unit drlbase;
 interface
 
 uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent, vstoreinterface,
      dflevel, dfdata, dfhof, dfitem,
-     doomhooks, doomlua, doomcommand, doomkeybindings;
+     doomhooks, drlua, doomcommand, drlkeybindings;
 
 type TTargeting = class
   constructor Create;
@@ -28,15 +28,15 @@ public
   property PrevPos : TCoord2D read FPrevPos;
 end;
 
-type TDoomState = ( DSStart,      DSMenu,    DSLoading,   DSCrashLoading,
+type TDRLState = ( DSStart,      DSMenu,    DSLoading,   DSCrashLoading,
                     DSPlaying,    DSSaving,  DSNextLevel,
                     DSQuit,       DSFinished );
 
 type
 
-{ TDoom }
+{ TDRL }
 
-TDoom = class(TSystem)
+TDRL = class(TSystem)
        Difficulty    : Byte;
        Challenge     : AnsiString;
        SChallenge    : AnsiString;
@@ -72,7 +72,7 @@ TDoom = class(TSystem)
        procedure CallHook( Hook : Byte; const Params : array of Const );
        function  CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
        procedure LoadChallenge;
-       procedure SetState( aNewState : TDoomState );
+       procedure SetState( aNewState : TDRLState );
        procedure ClearPlayerView;
        procedure OpenJHCPage;
      private
@@ -86,7 +86,7 @@ TDoom = class(TSystem)
        procedure LoadModule( Base : Boolean );
        procedure CreatePlayer( aResult : TMenuResult );
      private
-       FState           : TDoomState;
+       FState           : TDRLState;
        FLevel           : TLevel;
        FCoreHooks       : TFlags;
        FChallengeHooks  : TFlags;
@@ -105,13 +105,13 @@ TDoom = class(TSystem)
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
        property ModuleHooks : TFlags read FModuleHooks;
-       property State : TDoomState read FState;
+       property State : TDRLState read FState;
        property Targeting : TTargeting read FTargeting;
        property DamagedLastTurn : Boolean read FDamagedLastTurn write FDamagedLastTurn;
      end;
 
-var Doom : TDoom;
-var Lua : TDoomLua;
+var DRL : TDRL;
+var Lua : TDRLLua;
 
 
 implementation
@@ -124,7 +124,7 @@ uses  {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
      doompagedview, doomrankupview, doommainmenuview, doomhudviews, doommessagesview,
-     doomconfiguration, doomhelp, doomconfig, dfplayer;
+     drlconfiguration, doomhelp, doomconfig, dfplayer;
 
 const PAD_REPEAT_START = 400;
       PAD_REPEAT       = 100;
@@ -149,10 +149,10 @@ end;
 procedure TTargeting.Update( aRange : Integer );
 var iBeing : TBeing;
 begin
-  Doom.Level.UpdateAutoTarget( FList, Player, aRange );
-  if (FLastUID <> 0) and Doom.Level.isAlive( FLastUID ) then
+  DRL.Level.UpdateAutoTarget( FList, Player, aRange );
+  if (FLastUID <> 0) and DRL.Level.isAlive( FLastUID ) then
   begin
-    iBeing := Doom.Level.FindChild( FLastUID ) as TBeing;
+    iBeing := DRL.Level.FindChild( FLastUID ) as TBeing;
     if iBeing <> nil then
       if iBeing.isVisible then
         if Distance( iBeing.Position, Player.Position ) <= aRange then
@@ -161,7 +161,7 @@ begin
 
   if FLastPos.X*FLastPos.Y <> 0 then
     if FLastUID = 0 then
-//    if Doom.Level.isVisible( FLastPos ) then
+//    if DRL.Level.isVisible( FLastPos ) then
 //      if Distance( FLastPos, Player.Position ) <= aRange then
           FList.PriorityTarget( FLastPos );
 end;
@@ -172,8 +172,8 @@ begin
     then FPrevPos := FLastPos
     else FPrevPos := aTarget;
   FLastUID := 0;
-  if (Doom.Level.Being[ aTarget ] <> nil) and ( Doom.Level.Flags[ LF_BEINGSVISIBLE ] or Doom.Level.isVisible(aTarget) ) then
-    FLastUID := Doom.Level.Being[ aTarget ].UID;
+  if (DRL.Level.Being[ aTarget ] <> nil) and ( DRL.Level.Flags[ LF_BEINGSVISIBLE ] or DRL.Level.isVisible(aTarget) ) then
+    FLastUID := DRL.Level.Being[ aTarget ].UID;
   FLastPos := aTarget;
 end;
 
@@ -183,14 +183,14 @@ begin
   inherited Destroy;
 end;
 
-procedure TDoom.ModuleMainHook(Hook: AnsiString; const Params: array of const);
+procedure TDRL.ModuleMainHook(Hook: AnsiString; const Params: array of const);
 begin
   if not LuaSystem.Defined([ ModuleID, Hook ]) then Exit;
   Lua.ProtectedCall( [ ModuleID, Hook ], Params );
 end;
 
 
-procedure TDoom.CallHook( Hook : Byte; const Params : array of const ) ;
+procedure TDRL.CallHook( Hook : Byte; const Params : array of const ) ;
 begin
   if (Hook in FModuleHooks) then LuaSystem.ProtectedCall([ModuleID,HookNames[Hook]],Params);
   if (Challenge <> '')  and (Hook in FChallengeHooks) then LuaSystem.ProtectedCall(['chal',Challenge,HookNames[Hook]],Params);
@@ -198,7 +198,7 @@ begin
   if (Hook in FCoreHooks) then LuaSystem.ProtectedCall(['core',HookNames[Hook]],Params);
 end;
 
-function TDoom.CallHookCheck ( Hook : Byte; const Params : array of const ) : Boolean;
+function TDRL.CallHookCheck ( Hook : Byte; const Params : array of const ) : Boolean;
 begin
   if (Hook in FCoreHooks) then if not LuaSystem.ProtectedCall(['core',HookNames[Hook]],Params) then Exit( False );
   if (Challenge <> '') and (Hook in FChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',Challenge,HookNames[Hook]],Params) then Exit( False );
@@ -207,7 +207,7 @@ begin
   Exit( True );
 end;
 
-procedure TDoom.LoadChallenge;
+procedure TDRL.LoadChallenge;
 begin
   FChallengeHooks := [];
   FSChallengeHooks := [];
@@ -217,7 +217,7 @@ begin
     FSChallengeHooks := LoadHooks( ['chal',SChallenge] ) * GlobalHooks;
 end;
 
-procedure TDoom.SetState( aNewState: TDoomState );
+procedure TDRL.SetState( aNewState: TDRLState );
 begin
   if ( FState = aNewState ) then Exit;
   if ( FState = DSPlaying ) then
@@ -228,12 +228,12 @@ begin
   FState := aNewState;
 end;
 
-procedure TDoom.ClearPlayerView;
+procedure TDRL.ClearPlayerView;
 begin
   FPlayerView := nil;
 end;
 
-procedure TDoom.OpenJHCPage;
+procedure TDRL.OpenJHCPage;
 const JHCURL      = 'https://store.steampowered.com/app/3126530/Jupiter_Hell_Classic/';
       JHCSTEAMURL = 'steam://store/3126530';
       JHCID       = 3126530;
@@ -257,15 +257,15 @@ begin
   {$ENDIF}
 end;
 
-procedure TDoom.LoadModule( Base : Boolean );
+procedure TDRL.LoadModule( Base : Boolean );
 begin
 //  if ModuleID <> 'drl' then Lua.LoadModule( Module );
   FModuleHooks := LoadHooks( [CoreModuleID] ) * GlobalHooks;
   CallHook( Hook_OnLoad, [] );
 end;
 
-procedure TDoom.Load;
-var iDoomLua : TDoomLua;
+procedure TDRL.Load;
+var iDoomLua : TDRLLua;
     i        : Integer;
 begin
   FreeAndNil( Config );
@@ -281,7 +281,7 @@ begin
   Help := THelp.Create;
 
   SetState( DSLoading );
-  iDoomLua   := TDoomLua.Create();
+  iDoomLua   := TDRLLua.Create();
   LuaSystem := Systems.Add( iDoomLua ) as TLuaSystem;
   LuaSystem.CallDefaultResult := True;
 //  Modules.RegisterAwards( LuaSystem.Raw );
@@ -318,7 +318,7 @@ begin
   IO.LoadStop;
 end;
 
-procedure TDoom.UnLoad;
+procedure TDRL.UnLoad;
 begin
   DataLoaded := False;
   HOF.Done;
@@ -330,7 +330,7 @@ begin
   FreeAndNil(Cells);
 end;
 
-constructor TDoom.Create;
+constructor TDRL.Create;
 begin
   inherited Create;
   ModuleID   := CoreModuleID;
@@ -351,7 +351,7 @@ begin
   Reconfigure;
 end;
 
-procedure TDoom.Reconfigure;
+procedure TDRL.Reconfigure;
 begin
   if Assigned( IO ) then
     (IO as TDoomIO).Reconfigure( Config );
@@ -374,7 +374,7 @@ begin
   Setting_Fade             := Configuration.GetBoolean( 'fade_fx' );
 end;
 
-procedure TDoom.CreateIO;
+procedure TDRL.CreateIO;
 begin
   if GraphicsVersion
     then IO := TDoomGFXIO.Create
@@ -384,7 +384,7 @@ begin
   (IO as TDoomIO).Reconfigure( Config );
 end;
 
-procedure TDoom.Apply ( aResult : TMenuResult ) ;
+procedure TDRL.Apply ( aResult : TMenuResult ) ;
 begin
   if aResult.Quit   then SetState( DSQuit );
   if aResult.Loaded then Exit;
@@ -408,7 +408,7 @@ begin
   // Set Name    Name       : AnsiString;
 end;
 
-procedure TDoom.PreAction;
+procedure TDRL.PreAction;
 begin
   FLevel.CalculateVision( Player.Position );
   StatusEffect := Player.Affects.getEffect;
@@ -424,7 +424,7 @@ begin
      (FPlayerView as TPlayerView).Retain;
 end;
 
-function TDoom.Action( aInput : TInputKey ) : Boolean;
+function TDRL.Action( aInput : TInputKey ) : Boolean;
 begin
   if aInput in INPUT_MOVE then
     Exit( HandleMoveCommand( aInput ) );
@@ -463,7 +463,7 @@ begin
   Exit( False );
 end;
 
-function TDoom.HandleActionCommand( aInput : TInputKey ) : Boolean;
+function TDRL.HandleActionCommand( aInput : TInputKey ) : Boolean;
 var iItem   : TItem;
     iID     : AnsiString;
     iFlag   : Byte;
@@ -534,7 +534,7 @@ begin
   Exit( HandleActionCommand( iTarget, iFlag ) );
 end;
 
-function TDoom.HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
+function TDRL.HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
 begin
   if Level.isProperCoord( aTarget ) then
   begin
@@ -554,7 +554,7 @@ begin
   Exit( False );
 end;
 
-function TDoom.HandleMoveCommand( aInput : TInputKey ) : Boolean;
+function TDRL.HandleMoveCommand( aInput : TInputKey ) : Boolean;
 var iDir        : TDirection;
     iTarget     : TCoord2D;
     iMoveResult : TMoveResult;
@@ -605,7 +605,7 @@ begin
   Exit( False );
 end;
 
-function TDoom.HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean; aPad : Boolean ) : Boolean;
+function TDRL.HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean; aPad : Boolean ) : Boolean;
 var iTarget     : TCoord2D;
     iItem       : TItem;
     iFireTitle  : AnsiString;
@@ -755,7 +755,7 @@ begin
 end;
 
 
-function TDoom.HandleUnloadCommand( aItem : TItem ) : Boolean;
+function TDRL.HandleUnloadCommand( aItem : TItem ) : Boolean;
 var iID         : AnsiString;
     iItemTypes  : TItemTypeSet;
 begin
@@ -794,14 +794,14 @@ begin
   Exit( HandleCommand( TCommand.Create( COMMAND_UNLOAD, aItem, iID ) ) );
 end;
 
-function TDoom.HandleSwapWeaponCommand : Boolean;
+function TDRL.HandleSwapWeaponCommand : Boolean;
 begin
   if ( Player.Inv.Slot[ efWeapon ] <> nil )  and ( Player.Inv.Slot[ efWeapon ].Flags[ IF_CURSED ] ) then begin IO.Msg('You can''t!'); Exit( False ); end;
   if ( Player.Inv.Slot[ efWeapon2 ] <> nil ) and ( Player.Inv.Slot[ efWeapon2 ].isAmmoPack )        then begin IO.Msg('Nothing to swap!'); Exit( False ); end;
   Exit( HandleCommand( TCommand.Create( COMMAND_SWAPWEAPON ) ) );
 end;
 
-function TDoom.HandlePickupCommand( aAlt : Boolean ) : Boolean;
+function TDRL.HandlePickupCommand( aAlt : Boolean ) : Boolean;
 var iItem : TItem;
 begin
   if not aAlt then Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) );
@@ -814,7 +814,7 @@ begin
   Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
 end;
 
-function TDoom.HandleCommand( aCommand : TCommand ) : Boolean;
+function TDRL.HandleCommand( aCommand : TCommand ) : Boolean;
 begin
   if not ( aCommand.Command in [ COMMAND_FIRE, COMMAND_ALTFIRE, COMMAND_RELOAD ] ) then
     FTargeting.ClearPosition;
@@ -852,20 +852,20 @@ end;
   Exit( True );
 end;
 
-procedure TDoom.ResetAutoTarget;
+procedure TDRL.ResetAutoTarget;
 begin
   FTargeting.Clear;
   FTargeting.Update( Player.Vision );
   IO.SetAutoTarget( FTargeting.List.Current );
 end;
 
-function TDoom.HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
+function TDRL.HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
 var iAlt     : Boolean;
     iButton  : TIOMouseButton;
 begin
   if not Setting_Mouse then Exit( False );
   IO.MTarget := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
-  if Doom.Level.isProperCoord( IO.MTarget ) then
+  if DRL.Level.isProperCoord( IO.MTarget ) then
   begin
     iButton  := aEvent.Mouse.Button;
     iAlt     := False;
@@ -948,7 +948,7 @@ begin
   Exit( False );
 end;
 
-function TDoom.HandlePadMovement( aEvent : TIOEvent ) : Boolean;
+function TDRL.HandlePadMovement( aEvent : TIOEvent ) : Boolean;
 var iTarget : TCoord2D;
     iCell   : Integer;
 begin
@@ -1000,7 +1000,7 @@ begin
   Exit( Result );
 end;
 
-function TDoom.HandlePadEvent( aEvent : TIOEvent ) : Boolean;
+function TDRL.HandlePadEvent( aEvent : TIOEvent ) : Boolean;
 var iItem : TItem;
 begin
   if ( aEvent.EType = VEVENT_PADDEVICE ) then
@@ -1050,7 +1050,7 @@ begin
   Exit( False );
 end;
 
-function TDoom.HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
+function TDRL.HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
 var iInput : TInputKey;
 begin
   if aEvent.Key.Code = 0 then Exit( False );
@@ -1089,7 +1089,7 @@ begin
     end;
 
     case iInput of
-//      INPUT_ESCAPE     : begin if GodMode then Doom.SetState( DSQuit ); Exit; end;
+//      INPUT_ESCAPE     : begin if GodMode then DRL.SetState( DSQuit ); Exit; end;
       INPUT_TARGETNEXT : begin IO.SetAutoTarget( FTargeting.List.Next ); Exit; end;
       INPUT_ESCAPE     : begin ResetAutoTarget; IO.PushLayer( TInGameMenuView.Create ); Exit; end;
       INPUT_QUIT       : begin IO.PushLayer( TAbandonView.Create ); Exit; end;
@@ -1107,12 +1107,12 @@ begin
 
       INPUT_HARDQUIT   : begin
         Option_MenuReturn := False;
-        Doom.SetState( DSQuit );
+        DRL.SetState( DSQuit );
         Player.Score := -100000;
         Exit;
       end;
 
-      INPUT_LEGACYSAVE: begin Doom.SetState( DSSaving ); Exit; end;
+      INPUT_LEGACYSAVE: begin DRL.SetState( DSSaving ); Exit; end;
       INPUT_TRAITS    : begin FPlayerView := IO.PushLayer( TPlayerView.Create( PLAYERVIEW_TRAITS ) ); Exit; end;
       INPUT_RUN       : begin
         Player.MultiMove.Stop;
@@ -1144,7 +1144,7 @@ begin
   Exit( False );
 end;
 
-function TDoom.MoveTargetEvent( aCoord : TCoord2D ) : Boolean;
+function TDRL.MoveTargetEvent( aCoord : TCoord2D ) : Boolean;
 begin
   if FLevel.isProperCoord( aCoord ) then
   begin
@@ -1158,7 +1158,7 @@ begin
 end;
 
 
-procedure TDoom.Run;
+procedure TDRL.Run;
 var iRank       : THOFRank;
     iResult     : TMenuResult;
     iEvent      : TIOEvent;
@@ -1169,14 +1169,14 @@ var iRank       : THOFRank;
     iEnterNuke  : Boolean;
 begin
   iResult    := TMenuResult.Create;
-  Doom.Load;
+  DRL.Load;
 
   IO.PushLayer( TMainMenuView.Create );
   IO.WaitForLayer( True );
   if FState <> DSQuit then
 repeat
   if not DataLoaded then
-    Doom.Load;
+    DRL.Load;
   IO.LoadStop;
 
   StatusEffect   := StatusNormal;
@@ -1368,7 +1368,7 @@ repeat
   begin
     EmitCrashInfo( e.Message, True );
     EXCEPTEMMITED := True;
-    if Option_SaveOnCrash and ((Player.Statistics['crash_count'] = 0) or{thelaptop: Vengeance is MINE} (Doom.Difficulty < DIFF_NIGHTMARE)) then
+    if Option_SaveOnCrash and ((Player.Statistics['crash_count'] = 0) or{thelaptop: Vengeance is MINE} (DRL.Difficulty < DIFF_NIGHTMARE)) then
     begin
       if Player.Level_Index <> 1 then Player.NextLevelIndex;
       Player.Statistics.Increase('crash_count');
@@ -1423,7 +1423,7 @@ until not Option_MenuReturn;
   FreeAndNil( iResult );
 end;
 
-procedure TDoom.CreatePlayer ( aResult : TMenuResult ) ;
+procedure TDRL.CreatePlayer ( aResult : TMenuResult ) ;
 var iTraitID : AnsiString;
     iTrait   : Byte;
 begin
@@ -1452,7 +1452,7 @@ begin
   Player.UpdateVisual;
 end;
 
-function TDoom.LoadSaveFile: Boolean;
+function TDRL.LoadSaveFile: Boolean;
 var iStream    : TStream;
     iRecreate  : Boolean;
 begin
@@ -1544,7 +1544,7 @@ begin
 end;
 
 
-procedure TDoom.WriteSaveFile( aCrash : Boolean );
+procedure TDRL.WriteSaveFile( aCrash : Boolean );
 var Stream : TStream;
 begin
   LuaSystem.ProtectedCall( [ 'generator', 'on_save' ], [] );
@@ -1579,12 +1579,12 @@ begin
     CopyFileSimple( ModuleUserPath + 'save', ModuleUserPath + 'savedemo' );
 end;
 
-function TDoom.SaveExists : Boolean;
+function TDRL.SaveExists : Boolean;
 begin
   Exit( FileExists( ModuleUserPath + 'save' ) );
 end;
 
-procedure TDoom.SetupLuaConstants;
+procedure TDRL.SetupLuaConstants;
 begin
   LuaSystem.SetValue('DIFFICULTY', Difficulty);
   LuaSystem.SetValue('CHALLENGE',  Challenge);
@@ -1592,7 +1592,7 @@ begin
   LuaSystem.SetValue('ARCHANGEL', ArchAngel);
 end;
 
-destructor TDoom.Destroy;
+destructor TDRL.Destroy;
 begin
   UnLoad;
   Log('Doom destroyed.');

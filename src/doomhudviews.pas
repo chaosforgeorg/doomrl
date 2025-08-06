@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit doomhudviews;
 interface
-uses vutil, vgenerics, vcolor, vioevent, vrltools, dfdata, dfitem, doomkeybindings;
+uses vutil, vgenerics, vcolor, vioevent, vrltools, dfdata, dfitem, drlkeybindings;
 
 type TLookModeView = class( TInterfaceLayer )
   constructor Create;
@@ -115,7 +115,7 @@ end;
 
 implementation
 
-uses sysutils, vtig, vvision, dfplayer, dflevel, doombase, doomio, doomcommand, doomspritemap;
+uses sysutils, vtig, vvision, dfplayer, dflevel, drlbase, doomio, doomcommand, doomspritemap;
 
 constructor TLookModeView.Create;
 begin
@@ -153,7 +153,7 @@ begin
 
   if (aInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
   if aInput in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then FTarget := IO.MTarget;
-  iLevel := Doom.Level;
+  iLevel := DRL.Level;
   if aInput <> INPUT_MORE then
   begin
     iDir := InputDirection( aInput );
@@ -249,7 +249,7 @@ end;
 procedure TMeleeDirView.Finalize( aDir : TDirection );
 begin
   if aDir.code <> DIR_CENTER then
-    Doom.HandleCommand( TCommand.Create( COMMAND_MELEE, Player.Position + aDir ) );
+    DRL.HandleCommand( TCommand.Create( COMMAND_MELEE, Player.Position + aDir ) );
 end;
 
 constructor TActionDirView.Create( aAction : Ansistring; aFlag : Byte );
@@ -262,7 +262,7 @@ end;
 procedure TActionDirView.Finalize( aDir : TDirection );
 begin
   if aDir.code = DIR_CENTER then Exit;
-  Doom.HandleActionCommand( Player.Position + aDir, FFlag );
+  DRL.HandleActionCommand( Player.Position + aDir, FFlag );
 end;
 
 constructor TMoreLayer.Create( aMore : Boolean = True );
@@ -364,7 +364,7 @@ begin
     if FLimitRange and ( iDist > FRange - 1 ) then
     begin
       iDist := 0;
-      iTargetLine.Init( Doom.Level, FPosition, FTarget);
+      iTargetLine.Init( DRL.Level, FPosition, FTarget);
       while iDist < (FRange - 1) do
       begin
         iTargetLine.Next;
@@ -384,7 +384,7 @@ begin
 
   if aInput = INPUT_MORE then
   begin
-    with Doom.Level do
+    with DRL.Level do
      if Being[FTarget] <> nil then
        IO.FullLook( Being[FTarget].ID );
     UpdateTarget;
@@ -404,7 +404,7 @@ begin
       MoveTarget( FTarget + IO.GetPadLDir );
     VPAD_BUTTON_X : HandleFire;
     VPAD_BUTTON_Y : begin
-      with Doom.Level do
+      with DRL.Level do
          if Being[FTarget] <> nil then
            IO.FullLook( Being[FTarget].ID );
       UpdateTarget;
@@ -440,16 +440,16 @@ begin
     IO.Msg( 'Find a more constructive way to commit suicide.' )
   else
   begin
-    Doom.Targeting.OnTarget( FTarget );
+    DRL.Targeting.OnTarget( FTarget );
     Player.TargetPos := FTarget;
     Player.ChainFire := FChainFire;
-    Doom.HandleCommand( TCommand.Create( FCommand, FTarget, FItem ) );
+    DRL.HandleCommand( TCommand.Create( FCommand, FTarget, FItem ) );
   end;
 end;
 
 function TTargetModeView.MoveTarget( aNew : TCoord2D ) : Boolean;
 begin
-  if Doom.Level.isProperCoord( aNew )
+  if DRL.Level.isProperCoord( aNew )
     and ((not FLimitRange) or (Distance((aNew), FPosition) <= FRange-1)) then
   begin
     FTarget := aNew;
@@ -472,7 +472,7 @@ var iBlock      : Boolean;
     iTargetLine : TVisionRay;
     iLevel      : TLevel;
 begin
-  iLevel := Doom.Level;
+  iLevel := DRL.Level;
   if FTarget <> FPosition then
   begin
     iTargetLine.Init(iLevel, FPosition, FTarget);
@@ -565,10 +565,10 @@ begin
     IO.HintOverlay := '';
     FFinished      := True;
     if FArray[ FIndex ] = Player.Inv.Slot[ efWeapon2 ] then
-      Doom.HandleCommand( TCommand.Create( COMMAND_SWAPWEAPON ) )
+      DRL.HandleCommand( TCommand.Create( COMMAND_SWAPWEAPON ) )
     else
       if FArray[ FIndex ] <> Player.Inv.Slot[ efWeapon ] then
-        Doom.HandleCommand( TCommand.Create( COMMAND_WEAR, FArray[FIndex] ) );
+        DRL.HandleCommand( TCommand.Create( COMMAND_WEAR, FArray[FIndex] ) );
     Exit( True );
   end;
 

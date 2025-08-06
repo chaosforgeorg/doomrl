@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlmultimove;
 interface
-uses classes, vnode, vrltools, vpath, doomkeybindings;
+uses classes, vnode, vrltools, vpath, drlkeybindings;
 
 type TMultiMove = class( TVObject )
   constructor Create;

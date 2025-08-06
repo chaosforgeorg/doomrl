@@ -47,7 +47,7 @@ uses sysutils,
      vcursesio, vcursesconsole,
      {$ENDIF}
      vioconsole, vtig, vvision, vutil,
-     doombase, doomanimation,
+     drlbase, doomanimation,
      dflevel, dfplayer;
 
 constructor TDoomTextIO.Create;
@@ -90,7 +90,7 @@ end;
 
 function TDoomTextIO.AnimationsRunning : Boolean;
 begin
-  if Doom.State <> DSPlaying then Exit(False);
+  if DRL.State <> DSPlaying then Exit(False);
   Exit( not FTextMap.AnimationsFinished );
 end;
 
@@ -111,22 +111,22 @@ procedure TDoomTextIO.addMissileAnimation(aDuration: DWord; aDelay: DWord; aSour
   aTarget: TCoord2D; aColor: Byte; aPic: Char; aDrawDelay: Word;
   aSprite: TSprite; aRay: Boolean);
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   if aRay
-    then FTextMap.AddAnimation( TTextRayAnimation.Create( Doom.Level, aSource, aTarget, IOGylph( aPic, aColor ), aDuration, aDelay, Player.Vision ) )
-    else FTextMap.AddAnimation( TTextBulletAnimation.Create( Doom.Level, aSource, aTarget, IOGylph( aPic, aColor ), aDuration, aDelay, Player.Vision ) );
+    then FTextMap.AddAnimation( TTextRayAnimation.Create( DRL.Level, aSource, aTarget, IOGylph( aPic, aColor ), aDuration, aDelay, Player.Vision ) )
+    else FTextMap.AddAnimation( TTextBulletAnimation.Create( DRL.Level, aSource, aTarget, IOGylph( aPic, aColor ), aDuration, aDelay, Player.Vision ) );
 end;
 
 procedure TDoomTextIO.addMarkAnimation(aDuration: DWord; aDelay: DWord;
   aCoord: TCoord2D; aSprite : TSprite; aColor: Byte; aPic: Char);
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   FTextMap.AddAnimation( TTextMarkAnimation.Create( aCoord, IOGylph( aPic, aColor ), aDuration, aDelay ) );
 end;
 
 procedure TDoomTextIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   FTextMap.AddAnimation( TDoomSoundEvent.Create( aDelay, aPosition, aSoundID ) )
 end;
 
@@ -179,7 +179,7 @@ begin
 
   if FTargetEnabled then
   begin
-    iLevel := Doom.Level;
+    iLevel := DRL.Level;
     if FTargetLast then
       Paint( Player.TargetPos, Yellow );
     if ( Player.Position <> FTarget ) then

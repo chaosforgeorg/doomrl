@@ -48,7 +48,7 @@ end;
 
 implementation
 
-uses sysutils, vdebug, vtig, doombase, doomio;
+uses sysutils, vdebug, vtig, drlbase, doomio;
 
 constructor TChoiceView.Create;
 begin
@@ -104,7 +104,7 @@ end;
 
 function TChoiceView.IsFinished : Boolean;
 begin
-  Exit( FFinished or ( Doom.State <> DSPlaying ) );
+  Exit( FFinished or ( DRL.State <> DSPlaying ) );
 end;
 
 function TChoiceView.IsModal : Boolean;

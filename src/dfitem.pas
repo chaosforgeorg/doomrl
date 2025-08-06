@@ -103,7 +103,7 @@ procedure SwapItem(var a, b: TItem);
 
 implementation
 
-uses vnode, doomlua, doomio, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, dfplayer, doombase, vmath, doomhooks;
+uses vnode, drlua, doomio, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, dfplayer, drlbase, vmath, doomhooks;
 
 procedure SwapItem(var a, b: TItem);
 var c : TItem;
@@ -271,7 +271,7 @@ begin
   end;
 
   if onFloor and isAmmo then
-    FProps.Ammo := Round( FProps.Ammo * Double(LuaSystem.Get([ 'diff', Doom.Difficulty, 'ammofactor' ])) );
+    FProps.Ammo := Round( FProps.Ammo * Double(LuaSystem.Get([ 'diff', DRL.Difficulty, 'ammofactor' ])) );
 
   CallHook( Hook_OnCreate, [] );
 end;
@@ -602,7 +602,7 @@ begin
 end;
 
 function lua_item_new(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     Item  : TItem;
 begin
   State.Init(L);
@@ -612,7 +612,7 @@ begin
 end;
 
 function lua_item_get_mod(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iItem  : TItem;
 begin
   iState.Init(L);
@@ -622,7 +622,7 @@ begin
 end;
 
 function lua_item_set_mod(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iItem  : TItem;
 begin
   iState.Init(L);

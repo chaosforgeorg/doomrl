@@ -185,7 +185,7 @@ implementation
 
 uses viotypes, vuid, vlog, vdebug,
      dfbeing, dfthing,
-     doombase, doomgfxio, doomio, doomspritemap;
+     drlbase, doomgfxio, doomio, doomspritemap;
 
 { TDoomMissile }
 
@@ -194,7 +194,7 @@ constructor TDoomMissile.Create(aDuration : DWord; aDelay : DWord; aSource, aTar
 var iSize : Word;
 begin
   inherited Create( aDuration, aDelay, 0 );
-  FPath.Init(Doom.Level,aSource,aTarget);
+  FPath.Init(DRL.Level,aSource,aTarget);
   FSprite := aSprite;
   FStepDelay := Max( FDuration div Max( ( aSource - aTarget ).LargerLength, 1 ), 1 );
   FRay    := aRay;
@@ -231,7 +231,7 @@ var iPos    : TVec2i;
     iLength : Single;
     iStep   : Single;
 begin
-  if ( not Doom.Level.isProperCoord( FPath.GetC ) ) or (not Doom.Level.isVisible( FPath.GetC ) ) then
+  if ( not DRL.Level.isProperCoord( FPath.GetC ) ) or (not DRL.Level.isVisible( FPath.GetC ) ) then
     Exit;
   if FRay then
   begin
@@ -378,10 +378,10 @@ begin
 
   if aBeing then
   begin
-    FLightStart := Iif( Doom.Level.isVisible(aFrom), SpriteMap.VariableLight( aFrom, 30 ), 0 );
-    FLightEnd   := Iif( Doom.Level.isVisible(aTo),   SpriteMap.VariableLight( aTo, 30 ), 0 );
+    FLightStart := Iif( DRL.Level.isVisible(aFrom), SpriteMap.VariableLight( aFrom, 30 ), 0 );
+    FLightEnd   := Iif( DRL.Level.isVisible(aTo),   SpriteMap.VariableLight( aTo, 30 ), 0 );
 
-    if Doom.Level.Flags[ LF_BEINGSVISIBLE ] then
+    if DRL.Level.Flags[ LF_BEINGSVISIBLE ] then
     begin
       FLightStart := Max( FLightStart, 40 );
       FLightEnd   := Max( FLightEnd, 40 );
@@ -481,7 +481,7 @@ end;
 
 procedure TDoomAnimateCell.OnStart;
 begin
-  Doom.Level.LightFlag[ FCoord, LFANIMATING ] := True;
+  DRL.Level.LightFlag[ FCoord, LFANIMATING ] := True;
 end;
 
 procedure TDoomAnimateCell.OnDraw;
@@ -504,7 +504,7 @@ end;
 
 destructor TDoomAnimateCell.Destroy;
 begin
-  Doom.Level.LightFlag[ FCoord, LFANIMATING ] := False;
+  DRL.Level.LightFlag[ FCoord, LFANIMATING ] := False;
   inherited Destroy;
 end;
 
@@ -575,7 +575,7 @@ begin
     if iBeing.SpriteMod > 0 then FPlayerHack := 2;
   end;
   FPosition.Init( (iBeing.Position.X - 1)*SpriteMap.GetGridSize,(iBeing.Position.Y - 1)*SpriteMap.GetGridSize);
-  FLight      := Iif( Doom.Level.isVisible(iBeing.Position), SpriteMap.VariableLight( iBeing.Position, 30 ), 0 );
+  FLight      := Iif( DRL.Level.isVisible(iBeing.Position), SpriteMap.VariableLight( iBeing.Position, 30 ), 0 );
 end;
 
 procedure TDoomAnimateKill.OnStart;
@@ -583,7 +583,7 @@ var iBeing : TBeing;
 begin
   iBeing := UIDs.Get( FUID ) as TBeing;
   if iBeing <> nil then iBeing.AnimCount := iBeing.AnimCount + 1;
-  Doom.Level.LightFlag[ FCoord, LFCORPSING ] := True;
+  DRL.Level.LightFlag[ FCoord, LFCORPSING ] := True;
 end;
 
 procedure TDoomAnimateKill.OnDraw;
@@ -622,7 +622,7 @@ begin
 
   //iBeing := UIDs.Get( FUID ) as TBeing;
   //if iBeing <> nil then iBeing.AnimCount := Max( 0, iBeing.AnimCount - 1 );
-  Doom.Level.LightFlag[ FCoord, LFCORPSING ] := False;
+  DRL.Level.LightFlag[ FCoord, LFCORPSING ] := False;
   inherited Destroy;
 end;
 constructor TDoomScreenShake.Create( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );

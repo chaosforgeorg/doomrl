@@ -200,7 +200,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 implementation
 
 uses math, typinfo, vluatools, vluasystem,
-     vdebug, vuid, dfplayer, doomlua, doombase, doomio, doomgfxio,
+     vdebug, vuid, dfplayer, drlua, drlbase, doomio, doomgfxio,
      doomspritemap, doomhudviews;
 
 procedure TLevel.ScriptLevel(script : string);
@@ -555,8 +555,8 @@ begin
 
   FFloorCell     := LuaSystem.Defines[LuaSystem.Get(['generator','styles',FStyle,'floor'])];
   FFloorStyle    := LuaSystem.Get(['generator','styles',FStyle,'style'],0);
-  if LuaSystem.Get(['diff',Doom.Difficulty,'respawn']) then Include( FFlags, LF_RESPAWN );
-  FAccuracyBonus := LuaSystem.Get(['diff',Doom.Difficulty,'accuracybonus']);
+  if LuaSystem.Get(['diff',DRL.Difficulty,'respawn']) then Include( FFlags, LF_RESPAWN );
+  FAccuracyBonus := LuaSystem.Get(['diff',DRL.Difficulty,'accuracybonus']);
 end;
 
 procedure TLevel.AfterGeneration( aGenerated : Boolean );
@@ -801,12 +801,12 @@ end;
 procedure TLevel.CallHook( Hook : Byte; const Params : array of const ) ;
 begin
   if Hook in FHooks           then RawCallHook( Hook, Params );
-  Doom.CallHook( Hook, Params );
+  DRL.CallHook( Hook, Params );
 end;
 
 function TLevel.CallHookCheck( Hook : Byte; const Params : array of const ) : Boolean;
 begin
-  if not Doom.CallHookCheck( Hook, Params ) then Exit( False );
+  if not DRL.CallHookCheck( Hook, Params ) then Exit( False );
   if Hook in FHooks then if not RawCallHookCheck( Hook, Params ) then Exit( False );
   Exit( True );
 end;
@@ -1161,13 +1161,13 @@ begin
   if Being[ aBeing.Position ] = aBeing then
     SetBeing( aBeing.Position, nil );
 
-  if (Doom.State = DSPlaying) and (not Silent) then
+  if (DRL.State = DSPlaying) and (not Silent) then
   begin
     CallHook(Hook_OnKill,[ aBeing ]);
   end;
   FMarkers.Wipe( aBeing.UID );
   FreeAndNil(aBeing);
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
 
   iEnemiesLeft := EnemiesLeft();
   if ( iEnemiesLeft < 4 ) and ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
@@ -1233,14 +1233,14 @@ begin
 
     NukeTick;
 
-    if Doom.State = DSPlaying then
+    if DRL.State = DSPlaying then
     begin
       for iNode in Self do
         if iNode is TBeing then
             TBeing(iNode).Tick;
     end;
 
-    if Doom.State = DSPlaying then
+    if DRL.State = DSPlaying then
     begin
       iNode := Child;
       if iNode <> nil then
@@ -1254,14 +1254,14 @@ begin
                 FActiveBeing := TBeing(iNode);
                 FActiveBeing.Action;
               end;
-        if Doom.State <> DSPlaying then Break;
+        if DRL.State <> DSPlaying then Break;
         iNode := FNextNode;
       until (iNode = Child) or (iNode = nil);
     end;
     FActiveBeing := nil;
 
-  until ( Doom.State <> DSPlaying ) or ( Player.SCount > 5000 );
-  if Doom.State = DSPlaying then
+  until ( DRL.State <> DSPlaying ) or ( Player.SCount > 5000 );
+  if DRL.State = DSPlaying then
   begin
     CRASHMODE    := False;
     FActiveBeing := Player;
@@ -1285,7 +1285,7 @@ begin
     else
     begin
       Player.Statistics.Increase('levels_nuked');
-      if Doom.State in [DSNextLevel,DSSaving] then
+      if DRL.State in [DSNextLevel,DSSaving] then
       begin
         IO.Msg('Right in the nick of time!');
         IO.PushLayer( TMoreLayer.Create( False ) );
@@ -1554,7 +1554,7 @@ begin
 end;
 
 function lua_level_drop_being(L: Plua_State): Integer; cdecl;
-var State  : TDoomLuaState;
+var State  : TDRLLuaState;
     iBeing : TBeing;
     Level  : TLevel;
 begin
@@ -1578,7 +1578,7 @@ begin
 end;
 
 function lua_level_drop_item(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     iItem : TItem;
     Level : TLevel;
 begin
@@ -1602,7 +1602,7 @@ begin
 end;
 
 function lua_level_player(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
 begin
   State.Init(L);
   if State.StackSize < 3 then Exit(0);
@@ -1612,7 +1612,7 @@ begin
 end;
 
 function lua_level_play_sound(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iLevel : TLevel;
 begin
   iState.Init(L);
@@ -1624,7 +1624,7 @@ begin
 end;
 
 function lua_level_nuke(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iLevel : TLevel;
 begin
   iState.Init(L);
@@ -1635,7 +1635,7 @@ end;
 
 
 function lua_level_explosion(L: Plua_State): Integer; cdecl;
-var iState   : TDoomLuaState;
+var iState   : TDRLLuaState;
     iLevel   : TLevel;
     iData    : TExplosionData;
     iTable   : TLuaTable;
@@ -1667,7 +1667,7 @@ begin
 end;
 
 function lua_level_clear_being(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     c  : TCoord2D;
     Level : TLevel;
 begin
@@ -1681,7 +1681,7 @@ begin
 end;
 
 function lua_level_recalc_fluids(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     Level : TLevel;
 begin
   State.Init(L);
@@ -1692,7 +1692,7 @@ begin
 end;
 
 function lua_level_animate_cell(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     iCoord  : TCoord2D;
     iLevel  : TLevel;
     iValue  : Integer;
@@ -1712,7 +1712,7 @@ begin
 end;
 
 function lua_level_animate_item(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     iItem   : TItem;
     iLevel  : TLevel;
     iValue  : Integer;
@@ -1728,7 +1728,7 @@ begin
 end;
 
 function lua_level_set_generator_style(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     iCoord  : TCoord2D;
     iLevel  : TLevel;
 begin
@@ -1746,7 +1746,7 @@ begin
 end;
 
 function lua_level_set_raw_style(L: Plua_State): Integer; cdecl;
-var iState  : TDoomLuaState;
+var iState  : TDRLLuaState;
     iCoord  : TCoord2D;
     iArea   : TArea;
     iLevel  : TLevel;
@@ -1771,7 +1771,7 @@ begin
 end;
 
 function lua_level_get_raw_style(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     iCoord  : TCoord2D;
     iLevel  : TLevel;
 begin
@@ -1785,7 +1785,7 @@ end;
 
 
 function lua_level_set_raw_deco(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iCoord : TCoord2D;
     iArea  : TArea;
     iLevel : TLevel;
@@ -1810,7 +1810,7 @@ begin
 end;
 
 function lua_level_get_raw_deco(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     iCoord  : TCoord2D;
     iLevel  : TLevel;
 begin
@@ -1823,7 +1823,7 @@ begin
 end;
 
 function lua_level_damage_tile(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     Level : TLevel;
 begin
   State.Init(L);
@@ -1833,7 +1833,7 @@ begin
 end;
 
 function lua_level_push_item(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     Level : TLevel;
 begin
   State.Init(L);
@@ -1843,7 +1843,7 @@ begin
 end;
 
 function lua_level_reset(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     Level : TLevel;
 begin
   State.Init(L);
@@ -1854,7 +1854,7 @@ begin
 end;
 
 function lua_level_post_generate(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     Level : TLevel;
 begin
   State.Init(L);

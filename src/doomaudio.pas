@@ -64,7 +64,7 @@ implementation
 
 uses sysutils, math,
      vdebug, vutil, vsystems, vmath, vsound, vfmodsound, vsdlsound,
-     doomio, doomconfiguration, dfplayer, dfdata;
+     doomio, drlconfiguration, dfplayer, dfdata;
 
 function DoomSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
 begin

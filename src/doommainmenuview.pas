@@ -81,7 +81,7 @@ implementation
 uses math, sysutils,
      vutil, vtig, vtigstyle, vtigio, vimage, vgltypes, vluasystem, vluavalue, vsound,
      dfhof,
-     doombase, doomgfxio, doomplayerview, doomhelpview, doomsettingsview, doompagedview;
+     drlbase, doomgfxio, doomplayerview, doomhelpview, doomsettingsview, doompagedview;
 
 var ChallengeType : array[1..4] of TMainMenuEntry =
 ((
@@ -173,7 +173,7 @@ begin
 
   if FMode = MAINMENU_MENU then
   begin
-    FSaveExists := Doom.SaveExists;
+    FSaveExists := DRL.SaveExists;
   end;
 end;
 
@@ -232,7 +232,7 @@ begin
             FName[0] := #0;
             IO.Driver.StartTextInput;
             if IO.IsGamepad then
-              Doom.Store.StartText( 'Enter name', 30 );
+              DRL.Store.StartText( 'Enter name', 30 );
             FMode := MAINMENU_NAME;
           end;
       end;
@@ -286,7 +286,7 @@ begin
     if FSaveExists then
       if VTIG_Selectable( TextContinueGame ) then
       begin
-        if Doom.LoadSaveFile then
+        if DRL.LoadSaveFile then
         begin
           FResult.Loaded := True;
           FMode := MAINMENU_DONE;
@@ -318,7 +318,7 @@ begin
     if FJHCLink then
     begin
       if VTIG_Selectable( TextJHC ) then
-        Doom.OpenJHCPage;
+        DRL.OpenJHCPage;
     end;
     if VTIG_Selectable( TextExit ) then
     begin
@@ -341,7 +341,7 @@ begin
 
   if ForceShop then
   begin
-    Doom.OpenJHCPage;
+    DRL.OpenJHCPage;
     ForceShop := False;
   end;
 
@@ -369,7 +369,7 @@ begin
     VTIG_Text('Save game version : {!'+SaveVersionModule+'}' );
     VTIG_Text('This game version : {!'+VersionModuleSave+'}' );
     VTIG_Text('');
-    if Doom.Store.IsSteam
+    if DRL.Store.IsSteam
       then VTIG_Text('You can try to download the direct previous version from {!Steam} Betas tab and finish the game, or delete the save file now.')
       else VTIG_Text('You can try downloading the previous version from the web and finish the game, or delete the save file now.');
   end
@@ -435,7 +435,7 @@ begin
     IO.Root.Console.HideCursor;
     FMode := MAINMENU_DONE;
   end;
-  if Doom.Store.GetText( iStoreText, @iStoreCancel ) then
+  if DRL.Store.GetText( iStoreText, @iStoreCancel ) then
   begin
     IO.Driver.StopTextInput;
     IO.Root.Console.HideCursor;

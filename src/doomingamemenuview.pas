@@ -27,7 +27,7 @@ end;
 implementation
 
 uses vtig, vutil, vluasystem, dfplayer,
-  doombase, doomhelpview, doomsettingsview, doommessagesview, doomassemblyview;
+  drlbase, doomhelpview, doomsettingsview, doommessagesview, doomassemblyview;
 
 constructor TInGameMenuView.Create;
 begin
@@ -40,7 +40,7 @@ end;
 procedure TInGameMenuView.Update( aDTime : Integer );
 var iRect : TRectangle;
 begin
-  if IsFinished or (Doom.State <> DSPlaying) then Exit;
+  if IsFinished or (DRL.State <> DSPlaying) then Exit;
 
   VTIG_Begin('ingame_menu', Point( 30, 11 ) );
   iRect := VTIG_GetWindowRect;
@@ -77,7 +77,7 @@ begin
   begin
     FFinished := True;
     IO.FadeOut(0.5);
-    Doom.SetState( DSSaving );
+    DRL.SetState( DSSaving );
   end;
   VTIG_End;
 
@@ -88,7 +88,7 @@ end;
 
 function TInGameMenuView.IsFinished : Boolean;
 begin
-  Exit( FFinished or ( Doom.State <> DSPlaying ) );
+  Exit( FFinished or ( DRL.State <> DSPlaying ) );
 end;
 
 function TInGameMenuView.IsModal : Boolean;
@@ -109,7 +109,7 @@ end;
 procedure TAbandonView.OnConfirm;
 begin
   IO.FadeOut(0.5);
-  Doom.SetState( DSQuit );
+  DRL.SetState( DSQuit );
   Player.Score := -100000;
 end;
 

@@ -9,7 +9,7 @@ unit dfdata;
 interface
 uses Classes, SysUtils, idea,
      vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable, vioevent, vvector,
-     doomconfig, doomkeybindings;
+     doomconfig, drlkeybindings;
 
 const CoreModuleID      : AnsiString = '';
       ConfigurationPath : AnsiString = 'config.lua';

@@ -9,7 +9,7 @@ interface
 uses classes, sysutils,
      vuielement,vpath, vutil, vrltools, vuitypes,
      dfbeing, dfhof, dfdata, dfitem, dfaffect,
-     doomtrait, doomkeybindings, drlstatistics, drlmultimove;
+     doomtrait, drlkeybindings, drlstatistics, drlmultimove;
 
 
 type TQuickSlotInfo = record
@@ -105,8 +105,8 @@ implementation
 uses math, vuid, variants, vioevent, vgenerics,
      vnode, vcolor, vdebug, vluasystem, vluastate, vtig,
      dfmap, dflevel,
-     doomhooks, doomio, doomspritemap, doombase,
-     doomlua, doominventory, doomplayerview, doomhudviews;
+     doomhooks, doomio, doomspritemap, drlbase,
+     drlua, doominventory, doomplayerview, doomhudviews;
 
 constructor TPlayer.Create;
 var iState : TLuaState;
@@ -132,7 +132,7 @@ begin
   FExpFactor := 1.0;
 
   Initialize;
-  iState.Init( doombase.Lua.Raw );
+  iState.Init( drlbase.Lua.Raw );
   iState.ClearLuaProperties( Self );
 
   FillChar( FQuickSlots, SizeOf(FQuickSlots), 0 );
@@ -151,7 +151,7 @@ begin
   MasterDodge     := False;
   FLastTurnDodge  := False;
 
-  doombase.Lua.RegisterPlayer(Self);
+  drlbase.Lua.RegisterPlayer(Self);
 end;
 
 procedure TPlayer.WriteToStream ( Stream : TStream ) ;
@@ -246,10 +246,10 @@ begin
   IO.PushLayer( TMoreLayer.Create( False ) );
   IO.WaitForLayer( False );
 
-  if not Doom.CallHookCheck( Hook_OnPreLevelUp, [ FExpLevel ] ) then Exit;
+  if not DRL.CallHookCheck( Hook_OnPreLevelUp, [ FExpLevel ] ) then Exit;
   IO.BloodSlideDown( 20 );
   doUpgradeTrait();
-  Doom.CallHook( Hook_OnLevelUp, [ FExpLevel ] );
+  DRL.CallHook( Hook_OnLevelUp, [ FExpLevel ] );
 end;
 
 procedure TPlayer.AddExp( aAmount : LongInt );
@@ -269,7 +269,7 @@ begin
   if aDamage < 0 then Exit;
   if BF_INV in FFlags then Exit;
   FMultiMove.Stop;
-  Doom.DamagedLastTurn := True;
+  DRL.DamagedLastTurn := True;
   if ( aDamage >= Max( FHPMax div 3, 10 ) ) then
   begin
     IO.Blink( Red, 100 );
@@ -317,7 +317,7 @@ begin
 
   MasterDodge := False;
   FAffects.OnUpdate;
-  if Doom.State <> DSPlaying then Exit( False );
+  if DRL.State <> DSPlaying then Exit( False );
   Inv.EqTick;
   FLastPos := FPosition;
   FMeleeAttack := False;
@@ -395,7 +395,7 @@ end;
 procedure TPlayer.PostAction;
 begin
   CallHook(Hook_OnPostAction,[]);
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   FLastTurnDodge := False;
   UpdateVisual;
 end;
@@ -470,7 +470,7 @@ procedure TPlayer.Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBe
 var iLevel : TLevel;
 begin
   iLevel := TLevel(Parent);
-  if (Doom.State <> DSPlaying) and IsPlayer then Exit;
+  if (DRL.State <> DSPlaying) and IsPlayer then Exit;
 
   if not CallHookCheck( Hook_OnDieCheck, [ aOverkill ] ) then
   begin
@@ -478,7 +478,7 @@ begin
     Exit;
   end;
 
-  if (aKiller <> nil) and (not Doom.GameWon) then
+  if (aKiller <> nil) and (not DRL.GameWon) then
   begin
     FKilledBy          := aKiller.ID;
     FKilledMelee       := aKiller.MeleeAttack;
@@ -500,7 +500,7 @@ begin
     IO.PushLayer( TMoreLayer.Create( False ) );
     IO.WaitForLayer( False );
   end;
-  Doom.SetState( DSFinished );
+  DRL.SetState( DSFinished );
 
   if NukeActivated > 0 then
   begin
@@ -530,7 +530,7 @@ begin
   if FScore = -1000 then Exit;
 
   FStatistics.Update;
-  Doom.CallHook(Hook_OnMortem,[ not NoPlayerRecord ]);
+  DRL.CallHook(Hook_OnMortem,[ not NoPlayerRecord ]);
   if LuaSystem.Defined([CoreModuleID,'RunAwards']) then
     LuaSystem.ProtectedCall([CoreModuleID,'RunAwards'],[NoPlayerRecord]);
 
@@ -542,16 +542,16 @@ begin
   begin
     FScore += Max(FExp + (FLevelIndex * 1000) + Max(FHP,0) * 20,0);
     if FScore < 0 then FScore := 0;
-    if Doom.Difficulty = DIFF_NIGHTMARE then FScore -= FStatistics.GameTime div 500;
+    if DRL.Difficulty = DIFF_NIGHTMARE then FScore -= FStatistics.GameTime div 500;
 
-    if Doom.GameWon then FScore += FScore div 4;
-    FScore := Round( FScore * Double(LuaSystem.Get([ 'diff', Doom.Difficulty, 'scorefactor' ])) );
+    if DRL.GameWon then FScore += FScore div 4;
+    FScore := Round( FScore * Double(LuaSystem.Get([ 'diff', DRL.Difficulty, 'scorefactor' ])) );
     // FScore
     ScoreCRC(FScore);
   end;
   if GodMode then FScore := 0;
 
-  HOF.Add(Name,FScore,FKilledBy,FExpLevel,FLevelIndex,Doom.Challenge,Doom.Level.Abbr);
+  HOF.Add(Name,FScore,FKilledBy,FExpLevel,FLevelIndex,DRL.Challenge,DRL.Level.Abbr);
 
   if Assigned( MortemData ) then
   begin
@@ -658,7 +658,7 @@ begin
 end;
 
 function lua_player_add_exp(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
@@ -670,15 +670,15 @@ end;
 
 
 function lua_player_has_won(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
 begin
   State.Init(L);
-  State.Push(Doom.GameWon);
+  State.Push(DRL.GameWon);
   Result := 1;
 end;
 
 function lua_player_resort_ammo(L: Plua_State): Integer; cdecl;
-var State     : TDoomLuaState;
+var State     : TDRLLuaState;
     Being     : TBeing;
     Item      : TItem;
     Node, Temp: TNode;
@@ -716,31 +716,31 @@ begin
 end;
 
 function lua_player_win(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
   IO.FadeOut(1.0);
-  Doom.SetState( DSFinished );
-  Doom.GameWon := True;
+  DRL.SetState( DSFinished );
+  DRL.GameWon := True;
   Result := 0;
 end;
 
 function lua_player_continue_game(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
   if not (Being is TPlayer) then Exit(0);
-  Doom.SetState( DSPlaying );
+  DRL.SetState( DSPlaying );
   Result := 0;
 end;
 
 function lua_player_choose_trait(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
@@ -751,7 +751,7 @@ begin
 end;
 
 function lua_player_level_up(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
@@ -762,17 +762,17 @@ begin
 end;
 
 function lua_player_exit(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iBeing : TBeing;
 begin
   iState.Init(L);
   iBeing := iState.ToObject(1) as TBeing;
   if not (iBeing is TPlayer) then Exit(0);
-  if Doom.State <> DSSaving then
+  if DRL.State <> DSSaving then
   begin
     if iState.IsNumber(3) then
       IO.FadeOut( iState.ToFloat(3) );
-    Doom.SetState( DSNextLevel );
+    DRL.SetState( DSNextLevel );
   end;
   Player.FSpeedCount := 4000;
   if iState.IsNil(2) then
@@ -796,7 +796,7 @@ begin
 end;
 
 function lua_player_quick_weapon(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
@@ -807,7 +807,7 @@ begin
 end;
 
 function lua_player_set_inv_size(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
     n : byte;
 begin
@@ -823,7 +823,7 @@ end;
 
 
 function lua_player_mortem_print(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
@@ -835,7 +835,7 @@ begin
 end;
 
 function lua_player_get_trait(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
@@ -846,7 +846,7 @@ begin
 end;
 
 function lua_player_get_trait_hist(L: Plua_State): Integer; cdecl;
-var State   : TDoomLuaState;
+var State   : TDRLLuaState;
     Being   : TBeing;
 begin
   State.Init(L);
@@ -857,39 +857,39 @@ begin
 end;
 
 function lua_player_set_achievement(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iID    : Ansistring;
 begin
   iState.Init(L);
   if (iState.ToObject(1) as TPlayer) = nil then Exit(0);
   iID := iState.ToString(2);
-  if Doom.Store.SetAchievement( iID ) then
+  if DRL.Store.SetAchievement( iID ) then
     Log( LOGINFO, 'lua: set_achievement('+iID+') succeeded!');
   Result := 0;
 end;
 
 function lua_player_store_inc_stat(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iID    : Ansistring;
 begin
   if GodMode then Exit(0);
   iState.Init(L);
   if (iState.ToObject(1) as TPlayer) = nil then Exit(0);
   iID := iState.ToString(2);
-  if Doom.Store.IncStat( iID ) then
+  if DRL.Store.IncStat( iID ) then
     Log( LOGINFO, 'lua: store_inc_stat('+iID+') succeeded!');
   Result := 0;
 end;
 
 function lua_player_store_mark_stat(L: Plua_State): Integer; cdecl;
-var iState : TDoomLuaState;
+var iState : TDRLLuaState;
     iID    : Ansistring;
 begin
   if GodMode then Exit(0);
   iState.Init(L);
   if (iState.ToObject(1) as TPlayer) = nil then Exit(0);
   iID := iState.ToString(2);
-  if Doom.Store.MarkStat( iID ) then
+  if DRL.Store.MarkStat( iID ) then
     Log( LOGINFO, 'lua: store_mark_stat('+iID+') succeeded!');
   Result := 0;
 end;

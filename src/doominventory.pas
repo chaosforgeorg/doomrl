@@ -53,7 +53,7 @@ TInventory = class( TVObject )
 
 implementation
 
-uses vmath, vluasystem, doomio, doomkeybindings, dfplayer, doombase;
+uses vmath, vluasystem, doomio, drlkeybindings, dfplayer, drlbase;
 
 { TInventoryEnumerator }
 
@@ -160,8 +160,8 @@ var iAmount   : Word;
     iAmmoItem : TItem;
     iAmmoMax  : Word;
 begin
-  if LuaSystem.Defined([ Doom.ModuleID, 'GetAmmoMax' ])
-    then iAmmoMax := LuaSystem.ProtectedCall([ Doom.ModuleID, 'GetAmmoMax' ], [aAmmoID] )
+  if LuaSystem.Defined([ DRL.ModuleID, 'GetAmmoMax' ])
+    then iAmmoMax := LuaSystem.ProtectedCall([ DRL.ModuleID, 'GetAmmoMax' ], [aAmmoID] )
     else iAmmoMax := LuaSystem.Get(['items',aAmmoID,'ammomax']);
   iAmmoItem := SeekAmmo(aAmmoID);
 

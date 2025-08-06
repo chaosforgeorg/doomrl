@@ -134,7 +134,7 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
      vdebug, vlog, vmath, vdf, vgl3library, vsdl2library,
      vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
      dfplayer,
-     doombase, doomconfiguration;
+     drlbase, drlconfiguration;
 
 var ConsoleSizeX : Integer = 80;
     ConsoleSizeY : Integer = 25;
@@ -221,7 +221,7 @@ begin
   FadeReset;
   FLastMouseTime := 0;
   FMouseLock     := True;
-  FGPDetected    := Doom.Store.IsSteamDeck;
+  FGPDetected    := DRL.Store.IsSteamDeck;
 
   FLoading := nil;
   IO := Self;
@@ -351,7 +351,7 @@ begin
     RecalculateScaling( False );
   DeviceChanged;
   TGLConsoleRenderer( FConsole ).HideCursor;
-  TSDLIODriver(FIODriver).GamePadSupport := Doom.Store.IsSteamDeck or Configuration.GetBoolean( 'enable_gamepad' );
+  TSDLIODriver(FIODriver).GamePadSupport := DRL.Store.IsSteamDeck or Configuration.GetBoolean( 'enable_gamepad' );
 
   inherited Reconfigure(aConfig);
 end;
@@ -381,7 +381,7 @@ end;
 
 function TDoomGFXIO.AnimationsRunning : Boolean;
 begin
-  if Doom.State <> DSPlaying then Exit(False);
+  if DRL.State <> DSPlaying then Exit(False);
   Exit( not FAnimations.Finished );
 end;
 
@@ -398,7 +398,7 @@ end;
 
 procedure TDoomGFXIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   if Setting_ScreenShake then
     if not TDoomScreenShake.Update( aDuration, aDelay, aStrength, aDirection ) then
       FAnimations.addAnimation( TDoomScreenShake.Create( aDuration, aDelay, aStrength, aDirection ) );
@@ -406,13 +406,13 @@ end;
 
 procedure TDoomGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean );
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, aBeing ));
 end;
 
 procedure TDoomGFXIO.addBumpAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aAmount : Single );
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, True, aAmount ));
   FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aTo, aFrom, aSprite, True, -aAmount ));
   if Player.UID = aUID then WaitForAnimation;
@@ -433,26 +433,26 @@ end;
 
 procedure TDoomGFXIO.addScreenMoveAnimation(aDuration: DWord; aTo: TCoord2D);
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   if not TDoomScreenMove.Update( aDuration, aTo ) then
     FAnimations.addAnimation( TDoomScreenMove.Create( aDuration, aTo ) );
 end;
 
 procedure TDoomGFXIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   FAnimations.addAnimation( TDoomAnimateCell.Create( aDuration, aDelay, aCoord, aSprite, aValue ) );
 end;
 
 procedure TDoomGFXIO.addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer );
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   FAnimations.addAnimation( TDoomAnimateItem.Create( aDuration, aDelay, aItem.UID, aValue ) );
 end;
 
 procedure TDoomGFXIO.addKillAnimation( aDuration : DWord; aDelay : DWord; aBeing : TThing );
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   if SF_PAINANIM in aBeing.Sprite.Flags then
     FAnimations.addAnimation( TDoomAnimateKill.Create( aDuration, aDelay, aBeing.UID ) );
 end;
@@ -462,7 +462,7 @@ procedure TDoomGFXIO.addMissileAnimation(aDuration: DWord; aDelay: DWord; aSourc
   aTarget: TCoord2D; aColor: Byte; aPic: Char; aDrawDelay: Word;
   aSprite: TSprite; aRay: Boolean);
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   FAnimations.addAnimation(
     TDoomMissile.Create( aDuration, aDelay, aSource,
       aTarget, aDrawDelay, aSprite, aRay ) );
@@ -471,20 +471,20 @@ end;
 procedure TDoomGFXIO.addMarkAnimation(aDuration: DWord; aDelay: DWord;
   aCoord: TCoord2D; aSprite : TSprite; aColor: Byte; aPic: Char);
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   FAnimations.addAnimation( TDoomMark.Create(aDuration, aDelay, aCoord, aSprite ) )
 end;
 
 procedure TDoomGFXIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   if aSoundID > 0 then
     FAnimations.addAnimation( TDoomSoundEvent.Create( aDelay, aPosition, aSoundID ) )
 end;
 
 procedure TDoomGFXIO.addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
 begin
-  if Doom.State <> DSPlaying then Exit;
+  if DRL.State <> DSPlaying then Exit;
   if (not Setting_GamepadRumble) or (not IsGamepad ) then Exit;
   if aDelay = 0
     then IO.Driver.Rumble( aLow, aHigh, aDuration )
@@ -687,7 +687,7 @@ begin
     if FTargeting
       then SpriteMap.Marker := SpriteMap.Target + FGPLeftDir
       else if FGPRTrigger
-        then SpriteMap.Marker := Doom.Targeting.List.Current + FGPLeftDir
+        then SpriteMap.Marker := DRL.Targeting.List.Current + FGPLeftDir
         else SpriteMap.Marker := Player.Position + FGPLeftDir;
   end
   else
@@ -705,7 +705,7 @@ begin
   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
   FProjection := GLCreateOrtho( 0, iSizeX, iSizeY, 0, -16384, 16384 );
 
-  if (Doom <> nil) and (Doom.State = DSPlaying) then
+  if (DRL <> nil) and (DRL.State = DSPlaying) then
   begin
     if FConsoleWindow = nil then
        FConsole.HideCursor;
@@ -742,7 +742,7 @@ begin
   if Setting_BloodPulse then
   begin
     iBloodTarget := FBloodValueTarget;
-    if (Doom <> nil) and (Doom.State = DSPlaying) then
+    if (DRL <> nil) and (DRL.State = DSPlaying) then
     begin
       iBloodValue := 0;
 
@@ -761,7 +761,7 @@ begin
     if FBloodValueTarget > 0 then
       FBloodValueTarget -= Minf( FBloodValueTarget, aMSec / 500 );
 
-    if (Doom <> nil) and (Doom.State = DSPlaying) and (FBloodValue > 0.02) then
+    if (DRL <> nil) and (DRL.State = DSPlaying) and (FBloodValue > 0.02) then
     begin
       FPostSheet.PushTexturedQuad(
         GLVec2i(1,1), GLVec2i( FIODriver.GetSizeX, FIODriver.GetSizeY ),
@@ -867,7 +867,7 @@ begin
     FMouseLock     := False;
 
     if ( iEvent.EType = VEVENT_MOUSEMOVE ) and ( VMB_BUTTON_MIDDLE in iEvent.MouseMove.ButtonState ) then
-        if ( Doom.State = DSPlaying ) and ( not isModal ) then
+        if ( DRL.State = DSPlaying ) and ( not isModal ) then
         begin
           SpriteMap.NewShift := Clamp(
             Vec2i(
