@@ -1,5 +1,5 @@
 -- ----------------------------------------------------------------------
---  This is the DoomRL initialization file. Modify at your own risk :). 
+--  This is the DRL initialization file. Modify at your own risk :). 
 --  If you mess up something overwrite with a new godmode.lua.
 -- ----------------------------------------------------------------------
 

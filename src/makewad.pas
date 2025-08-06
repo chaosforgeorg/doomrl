@@ -1,4 +1,4 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
 program makewad;
 uses Classes,SysUtils, strutils, vlog, vpkg,vdf, vutil, dfdata, idea;
 

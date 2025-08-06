@@ -31,7 +31,6 @@ const TIG_EV_NONE      = 0;
 type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
 
-type TDoomOnProgress      = procedure ( aProgress : DWord ) of object;
 type TASCIIImageMap       = specialize TGObjectHashMap<TUIStringArray>;
 type TInterfaceLayerStack = specialize TGArray<TInterfaceLayer>;
 type TStringHashMap       = specialize TGHashMap< AnsiString >;
@@ -349,7 +348,7 @@ begin
 end;
 
 {
-procedure TDoomUI.SlideDown(DelayTime : word; var NewScreen : TGFXScreen);
+procedure TDRLIO.SlideDown(DelayTime : word; var NewScreen : TGFXScreen);
 var Pos  : array[1..80] of Byte;
     cn,t, vx,vy : byte;
   procedure MoveColumn(x : byte);

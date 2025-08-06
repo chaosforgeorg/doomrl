@@ -93,14 +93,14 @@ makefile = {
 		install = function() makefile.commands.installhq() end,
 		installhq = function()
 			if OS == "WINDOWS" then	
-				make.generate_iss( "doomrl.iss", "hq", PUBLISH_DIR ) 
+				make.generate_iss( "drl.iss", "hq", PUBLISH_DIR ) 
 			elseif OS == "MACOSX" then
 				make.generate_bundle( "hq", PUBLISH_DIR ) 
 			end
 		end,
 		installlq = function()
 			if OS == "WINDOWS" then	
-				make.generate_iss( "doomrl.iss", "lq", PUBLISH_DIR ) 
+				make.generate_iss( "drl.iss", "lq", PUBLISH_DIR ) 
 			elseif OS == "MACOSX" then
 				make.generate_bundle( "lq", PUBLISH_DIR ) 
 			end

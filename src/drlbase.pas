@@ -265,8 +265,8 @@ begin
 end;
 
 procedure TDRL.Load;
-var iDoomLua : TDRLLua;
-    i        : Integer;
+var iLua : TDRLLua;
+    i    : Integer;
 begin
   FreeAndNil( Config );
   IO.LoadStart;
@@ -281,8 +281,8 @@ begin
   Help := THelp.Create;
 
   SetState( DSLoading );
-  iDoomLua   := TDRLLua.Create();
-  LuaSystem := Systems.Add( iDoomLua ) as TLuaSystem;
+  iLua := TDRLLua.Create();
+  LuaSystem := Systems.Add( iLua ) as TLuaSystem;
   LuaSystem.CallDefaultResult := True;
 //  Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
@@ -1595,7 +1595,7 @@ end;
 destructor TDRL.Destroy;
 begin
   UnLoad;
-  Log('Doom destroyed.');
+  Log('DRL destroyed.');
   FreeAndNil( FTargeting );
   FreeAndNil( IO );
   inherited Destroy;

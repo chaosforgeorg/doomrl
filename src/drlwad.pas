@@ -1,4 +1,4 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
 program drlwad;
 uses Classes, SysUtils, strutils, vpkg, vdf, vutil, dfdata;
 

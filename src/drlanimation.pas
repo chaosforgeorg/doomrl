@@ -81,7 +81,7 @@ private
   FGColor   : TColor;
 end;
 
-{ TDoomMark }
+{ TRumbleEventAnimation }
 
 TRumbleEventAnimation = class(TAnimation)
   constructor Create( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );

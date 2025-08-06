@@ -54,7 +54,7 @@ implementation
 
 uses sysutils, vluatable, vdf, dfdata;
 
-function DoomModuleCompare( const A, B : TDRLModule ) : Integer;
+function DRLModuleCompare( const A, B : TDRLModule ) : Integer;
 begin
   Exit( B.LoadPriority - A.LoadPriority );
 end;
@@ -99,7 +99,7 @@ begin
     FreeAndNil( iLua );
   end;
 
-  FModules.Sort( @DoomModuleCompare );
+  FModules.Sort( @DRLModuleCompare );
   for iModule in FModules do
     if ( ( iModule.BaseRequired = aCoreModuleID ) or ( iModule.BaseRequired = '' ) )
     and ( ( not iModule.IsBase ) or ( iModule.ID = aCoreModuleID ) ) then
