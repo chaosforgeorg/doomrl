@@ -864,8 +864,36 @@ begin
   Result := 0;
 end;
 
-const lua_player_lib : array[0..14] of luaL_Reg = (
+function lua_player_store_inc_stat(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iID    : Ansistring;
+begin
+  if GodMode then Exit(0);
+  iState.Init(L);
+  if (iState.ToObject(1) as TPlayer) = nil then Exit(0);
+  iID := iState.ToString(2);
+  if Doom.Store.IncStat( iID ) then
+    Log( LOGINFO, 'lua: store_inc_stat('+iID+') succeeded!');
+  Result := 0;
+end;
+
+function lua_player_store_mark_stat(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+    iID    : Ansistring;
+begin
+  if GodMode then Exit(0);
+  iState.Init(L);
+  if (iState.ToObject(1) as TPlayer) = nil then Exit(0);
+  iID := iState.ToString(2);
+  if Doom.Store.MarkStat( iID ) then
+    Log( LOGINFO, 'lua: store_mark_stat('+iID+') succeeded!');
+  Result := 0;
+end;
+
+const lua_player_lib : array[0..16] of luaL_Reg = (
       ( name : 'set_achievement'; func : @lua_player_set_achievement),
+      ( name : 'store_inc_stat';  func : @lua_player_store_inc_stat),
+      ( name : 'store_mark_stat'; func : @lua_player_store_mark_stat),
       ( name : 'add_exp';         func : @lua_player_add_exp),
       ( name : 'has_won';         func : @lua_player_has_won),
       ( name : 'get_trait';       func : @lua_player_get_trait),
