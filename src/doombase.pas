@@ -112,7 +112,7 @@ var Lua : TDoomLua;
 implementation
 
 uses  {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
-     Classes, SysUtils, FileUtil,
+     Classes, SysUtils,
      vdebug, viotypes,
      dfmap, dfbeing,
      doomio, doomgfxio, doomtextio, zstream,
@@ -1516,6 +1516,29 @@ begin
     (IO as TDoomTextIO).SetTextMap( FLevel );
 end;
 
+// TODO: cleanup and remove
+function CopyFileSimple( const aSrc, aDest: Ansistring ): Boolean;
+var aInS, aOutS: TFileStream;
+begin
+  Result := False;
+  try
+    aInS  := TFileStream.Create(aSrc,  fmOpenRead or fmShareDenyWrite);
+    try
+      aOutS := TFileStream.Create(aDest, fmCreate);
+      try
+        aOutS.CopyFrom(aInS, 0);
+        Result := True;
+      finally
+        aOutS.Free;
+      end;
+    finally
+      aInS.Free;
+    end;
+  except
+  end;
+end;
+
+
 procedure TDoom.WriteSaveFile( aCrash : Boolean );
 var Stream : TStream;
 begin
@@ -1548,7 +1571,7 @@ begin
   FreeAndNil( Stream );
   FLevel.Clear;
   if ForceShop then
-    FileUtil.CopyFile( ModuleUserPath + 'save', ModuleUserPath + 'savedemo' );
+    CopyFileSimple( ModuleUserPath + 'save', ModuleUserPath + 'savedemo' );
 end;
 
 function TDoom.SaveExists : Boolean;
