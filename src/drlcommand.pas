@@ -1,5 +1,5 @@
 {$INCLUDE drl.inc}
-unit doomcommand;
+unit drlcommand;
 interface
 uses vrltools, dfitem, dfdata;
 

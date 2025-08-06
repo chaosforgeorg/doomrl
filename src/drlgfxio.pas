@@ -8,7 +8,7 @@ unit drlgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
      vrltools, vutil, vtextures, vvector,
-     drlio, doomspritemap, doomanimation, doomminimap, dfdata, dfthing;
+     drlio, doomspritemap, doomanimation, drlminimap, dfdata, dfthing;
 
 type
 
@@ -107,7 +107,7 @@ type
     FLastMouseTime : QWord;
     FMouseLock     : Boolean;
     FMCursor       : TDoomMouseCursor;
-    FMinimap       : TDoomMinimap;
+    FMinimap       : TMinimap;
 
     FAnimations     : TAnimationManager;
     FTextures       : TTextureManager;
@@ -300,7 +300,7 @@ begin
 
   iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
 
-  FMinimap      := TDoomMinimap.Create;
+  FMinimap      := TMinimap.Create;
   RecalculateScaling( True );
 
   CalculateConsoleParams;

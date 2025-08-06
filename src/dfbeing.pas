@@ -10,7 +10,7 @@ interface
 uses Classes, SysUtils,
      vluatable, vnode, vpath, vmath, vutil, vrltools,
      dfdata, dfthing, dfitem, dfaffect,
-     drlinventory, doomcommand;
+     drlinventory, drlcommand;
 
 type TMoveResult = ( MoveOk, MoveBlock, MoveDoor, MoveBeing );
 

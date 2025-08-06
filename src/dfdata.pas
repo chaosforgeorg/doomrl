@@ -9,7 +9,7 @@ unit dfdata;
 interface
 uses Classes, SysUtils, idea,
      vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable, vioevent, vvector,
-     doomconfig, drlkeybindings;
+     drlconfig, drlkeybindings;
 
 const CoreModuleID      : AnsiString = '';
       ConfigurationPath : AnsiString = 'config.lua';
@@ -120,7 +120,7 @@ const
   GameRealTime    : Comp = 0;
   ProgramRealTime : Comp = 0;
 
-  Config       : TDoomConfig = nil;
+  Config       : TDRLConfig = nil;
 
 const
   AnimationSpeedMove   = 125;

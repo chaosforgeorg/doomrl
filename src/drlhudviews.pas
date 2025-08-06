@@ -115,7 +115,7 @@ end;
 
 implementation
 
-uses sysutils, vtig, vvision, dfplayer, dflevel, drlbase, drlio, doomcommand, doomspritemap;
+uses sysutils, vtig, vvision, dfplayer, dflevel, drlbase, drlio, drlcommand, doomspritemap;
 
 constructor TLookModeView.Create;
 begin

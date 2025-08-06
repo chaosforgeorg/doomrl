@@ -9,7 +9,7 @@ interface
 
 uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent, vstoreinterface,
      dflevel, dfdata, dfhof, dfitem,
-     drlhooks, drlua, doomcommand, drlkeybindings;
+     drlhooks, drlua, drlcommand, drlkeybindings;
 
 type TTargeting = class
   constructor Create;
@@ -124,7 +124,7 @@ uses  {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
      doomspritemap, // remove
      drlplayerview, drlingamemenuview, drlhelpview, drlassemblyview,
      drlpagedview, drlrankupview, drlmainmenuview, drlhudviews, drlmessagesview,
-     drlconfiguration, drlhelp, doomconfig, dfplayer;
+     drlconfiguration, drlhelp, drlconfig, dfplayer;
 
 const PAD_REPEAT_START = 400;
       PAD_REPEAT       = 100;
@@ -271,7 +271,7 @@ begin
   FreeAndNil( Config );
   IO.LoadStart;
   ColorOverrides := TIntHashMap.Create( );
-  Config := TDoomConfig.Create( ConfigurationPath, True );
+  Config := TDRLConfig.Create( ConfigurationPath, True );
   IO.Configure( Config, True );
   FCoreHooks := [];
   FModuleHooks := [];

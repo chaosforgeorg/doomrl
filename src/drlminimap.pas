@@ -4,11 +4,11 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomminimap;
+unit drlminimap;
 interface
 uses vrltools, vcolor, vvector, vimage, vglquadrenderer;
 
-type TDoomMinimap = class
+type TMinimap = class
   constructor Create;
   procedure Redraw;
   procedure Render( aTarget : TGLQuadList );
@@ -30,7 +30,7 @@ implementation
 
 uses math, sysutils, viotypes, vglimage, dfdata, dfitem, dfbeing, dfmap, drlbase;
 
-constructor TDoomMinimap.Create;
+constructor TMinimap.Create;
 begin
   FOpacity  := 2;
   FScale    := 0;
@@ -40,7 +40,7 @@ begin
   FImage.Fill( NewColor( 0,0,0,0 ) );
 end;
 
-procedure TDoomMinimap.Redraw;
+procedure TMinimap.Redraw;
 var x, y : DWord;
 begin
   if DRL.State = DSPlaying then
@@ -54,7 +54,7 @@ begin
   end;
 end;
 
-procedure TDoomMinimap.Render( aTarget : TGLQuadList );
+procedure TMinimap.Render( aTarget : TGLQuadList );
 const UnitTex : TVec2f = ( Data : ( 1, 1 ) );
       ZeroTex : TVec2f = ( Data : ( 0, 0 ) );
 begin
@@ -63,29 +63,29 @@ begin
     FGLPos + Vec2i( FScale*128, FScale*32 ), ZeroTex, UnitTex, FTexture );
 end;
 
-procedure TDoomMinimap.SetScale( aScale : Byte );
+procedure TMinimap.SetScale( aScale : Byte );
 begin
   FScale := aScale;
 end;
 
-procedure TDoomMinimap.SetOpacity( aOpacity : Byte );
+procedure TMinimap.SetOpacity( aOpacity : Byte );
 begin
   FOpacity := aOpacity;
   Redraw;
 end;
 
-procedure TDoomMinimap.SetPosition( aPos : TVec2i );
+procedure TMinimap.SetPosition( aPos : TVec2i );
 begin
   FGLPos := aPos;
 end;
 
-destructor TDoomMinimap.Destroy;
+destructor TMinimap.Destroy;
 begin
   FreeAndNil( FImage );
   inherited Destroy;
 end;
 
-function TDoomMinimap.GetColor ( aCoord : TCoord2D ) : TColor;
+function TMinimap.GetColor ( aCoord : TCoord2D ) : TColor;
 const DefColor : TColor = ( R : 0; G : 0; B : 0; A : 100 );
 var iColor : Byte;
     iItem  : TItem;

@@ -8,7 +8,7 @@ unit doommodule;
 interface
 uses vlua, vutil, vnode, vgenerics;
 
-type TDoomModule = class
+type TDRLModule = class
     ID           : Ansistring;
     Version      : Ansistring;
     Path         : Ansistring;
@@ -20,9 +20,9 @@ type TDoomModule = class
     IsBase       : Boolean;
   end;
 
-type TModuleArray = specialize TGObjectArray< TDoomModule >;
-     TModuleList  = specialize TGArray< TDoomModule >;
-     TModuleHash  = specialize TGHashMap< TDoomModule >;
+type TModuleArray = specialize TGObjectArray< TDRLModule >;
+     TModuleList  = specialize TGArray< TDRLModule >;
+     TModuleHash  = specialize TGHashMap< TDRLModule >;
 
 
 
@@ -40,7 +40,7 @@ private
   FModuleMap     : TModuleHash;
   FCoreModuleID  : Ansistring;
 private
-  function ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDoomModule;
+  function ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDRLModule;
   procedure ReadMetaFromWAD( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
   procedure ReadMetaFromFolder( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
 public
@@ -54,7 +54,7 @@ implementation
 
 uses sysutils, vluatable, vdf, dfdata;
 
-function DoomModuleCompare( const A, B : TDoomModule ) : Integer;
+function DoomModuleCompare( const A, B : TDRLModule ) : Integer;
 begin
   Exit( B.LoadPriority - A.LoadPriority );
 end;
@@ -69,7 +69,7 @@ end;
 
 procedure TDoomModules.ScanModules( const aCoreModuleID : Ansistring );
 var iInfo   : TSearchRec;
-    iModule : TDoomModule;
+    iModule : TDRLModule;
     iLua    : TLua;
 begin
   FCoreModuleID := aCoreModuleID;
@@ -109,11 +109,11 @@ begin
     end;
 end;
 
-function TDoomModules.ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDoomModule;
-var iModule : TDoomModule;
+function TDoomModules.ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDRLModule;
+var iModule : TDRLModule;
     i       : Integer;
 begin
-  iModule := TDoomModule.Create;
+  iModule := TDRLModule.Create;
   try
     iModule.ID := 'unknown';
     with TLuaTable.Create( aLua.NativeState, 'meta' ) do
@@ -164,7 +164,7 @@ end;
 
 procedure TDoomModules.ReadMetaFromWAD( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
 var iData   : TVDataFile;
-    iModule : TDoomModule;
+    iModule : TDRLModule;
 begin
   Log( LOGINFO, 'found WAD module "%s"...', [aPath] );
   try
@@ -183,7 +183,7 @@ begin
 end;
 
 procedure TDoomModules.ReadMetaFromFolder( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
-var iModule : TDoomModule;
+var iModule : TDRLModule;
 begin
   Log( LOGINFO, 'found module "%s"...', [aPath] );
   if FileExists( aPath + 'meta.lua' ) then

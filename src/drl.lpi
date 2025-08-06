@@ -52,7 +52,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="49">
+    <Units Count="50">
       <Unit0>
         <Filename Value="drl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -122,7 +122,7 @@
         <IsPartOfProject Value="True"/>
       </Unit16>
       <Unit17>
-        <Filename Value="doomconfig.pas"/>
+        <Filename Value="drlconfig.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit17>
       <Unit18>
@@ -146,7 +146,7 @@
         <IsPartOfProject Value="True"/>
       </Unit22>
       <Unit23>
-        <Filename Value="doomaudio.pas"/>
+        <Filename Value="drlaudio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit23>
       <Unit24>
@@ -230,7 +230,7 @@
         <IsPartOfProject Value="True"/>
       </Unit43>
       <Unit44>
-        <Filename Value="doomminimap.pas"/>
+        <Filename Value="drlminimap.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit44>
       <Unit45>
@@ -249,6 +249,10 @@
         <Filename Value="drldecals.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit48>
+      <Unit49>
+        <Filename Value="drlcommand.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit49>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

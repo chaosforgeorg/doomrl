@@ -341,7 +341,7 @@ end;
 
 procedure TDRLLua.ReadWad;
 var iProgBase    : DWord;
-    iModule      : TDoomModule;
+    iModule      : TDRLModule;
     iData        : TVDataFile;
 begin
   IO.LoadStart;

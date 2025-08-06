@@ -24,7 +24,7 @@ uses SysUtils, vsystems,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
      vdebug, drlbase, vlog, vutil, vos, vparams,
-     dfdata, drlio, doomconfig, drlconfiguration, vstoreinterface;
+     dfdata, drlio, drlconfig, drlconfiguration, vstoreinterface;
 
 {$IFDEF WINDOWS}
 var Handle : HWND;
@@ -96,7 +96,7 @@ try
         then Configuration.Read( SettingsPath )
         else Configuration.Write( SettingsPath );
 
-      Config := TDoomConfig.Create( ConfigurationPath, False );
+      Config := TDRLConfig.Create( ConfigurationPath, False );
       DataPath     := Config.Configure( 'DataPath', DataPath );
       WritePath    := Config.Configure( 'WritePath', WritePath );
       ScorePath    := Config.Configure( 'ScorePath', ScorePath );

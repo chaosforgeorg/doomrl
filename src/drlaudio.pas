@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomaudio;
+unit drlaudio;
 interface
 uses classes, vgenerics, vrltools, vluaconfig, vdf;
 
@@ -29,7 +29,7 @@ type TAudioRegistry   = specialize TGArray< TAudioEntry >;
      TSoundEventHeap  = specialize TGHeap< TSoundEvent >;
 
 
-type TDoomAudio = class
+type TDRLAudio = class
   constructor Create;
   procedure Reconfigure;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False );
@@ -66,16 +66,16 @@ uses sysutils, math,
      vdebug, vutil, vsystems, vmath, vsound, vfmodsound, vsdlsound,
      drlio, drlconfiguration, dfplayer, dfdata;
 
-function DoomSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
+function DRLSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
 begin
        if Item1.Time < Item2.Time then Exit(1)
   else if Item1.Time > Item2.Time then Exit(-1)
   else Exit(0);
 end;
 
-constructor TDoomAudio.Create;
+constructor TDRLAudio.Create;
 begin
-  FSoundEvents := TSoundEventHeap.Create( @DoomSoundEventCompare );
+  FSoundEvents := TSoundEventHeap.Create( @DRLSoundEventCompare );
   FTime        := 0;
   FLastMusic   := '';
 
@@ -84,7 +84,7 @@ begin
   FMusicCount    := 0;
 end;
 
-procedure TDoomAudio.Reconfigure;
+procedure TDRLAudio.Reconfigure;
 var iOldMusic : Integer;
 begin
   if not Assigned( Sound ) then Exit;
@@ -104,7 +104,7 @@ begin
        PlayMusic( FLastMusic );
 end;
 
-procedure TDoomAudio.Update( aMSec : DWord );
+procedure TDRLAudio.Update( aMSec : DWord );
 var iSoundEvent : TSoundEvent;
 begin
   FTime += aMSec;
@@ -115,7 +115,7 @@ begin
   end;
 end;
 
-procedure TDoomAudio.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
+procedure TDRLAudio.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
 begin
   FSoundEvents.Clear;
   if SoundVersion and (Option_SoundEngine <> 'NONE') then
@@ -134,7 +134,7 @@ begin
   end;
 end;
 
-function TDoomAudio.LoadBindingFile( const aFile, aRoot : Ansistring ) : Boolean;
+function TDRLAudio.LoadBindingFile( const aFile, aRoot : Ansistring ) : Boolean;
 var iState : TLuaConfig;
 begin
   FCurrentData := nil;
@@ -151,7 +151,7 @@ begin
   Result := True;
 end;
 
-function TDoomAudio.LoadBindingDataFile( aData : TVDataFile; const aFile, aRoot : Ansistring ) : Boolean;
+function TDRLAudio.LoadBindingDataFile( aData : TVDataFile; const aFile, aRoot : Ansistring ) : Boolean;
 var iStream : TStream;
     iSize   : Integer;
     iState  : TLuaConfig;
@@ -174,7 +174,7 @@ begin
 end;
 
 
-procedure TDoomAudio.Load;
+procedure TDRLAudio.Load;
 var iCount   : DWord;
     iProgress: DWord;
     iProgMod : Single;
@@ -242,7 +242,7 @@ begin
   IO.LoadProgress( 100 );
 end;
 
-procedure TDoomAudio.SoundQuery(nkey,nvalue : Variant);
+procedure TDRLAudio.SoundQuery(nkey,nvalue : Variant);
 var iKey, iValue : AnsiString;
 begin
   iKey   := LowerCase(nKey);
@@ -250,7 +250,7 @@ begin
   Register( iKey, iValue, False, FRoot );
 end;
 
-procedure TDoomAudio.MusicQuery(nkey,nvalue : Variant);
+procedure TDRLAudio.MusicQuery(nkey,nvalue : Variant);
 var iKey, iValue : AnsiString;
 begin
   iKey   := LowerCase(nKey);
@@ -258,7 +258,7 @@ begin
   Register( iKey, iValue, True, FRoot );
 end;
 
-procedure TDoomAudio.Register( const aID, aFileName : AnsiString; aMusic : Boolean; const aRoot : AnsiString );
+procedure TDRLAudio.Register( const aID, aFileName : AnsiString; aMusic : Boolean; const aRoot : AnsiString );
 var iIndex : Integer;
     iEntry : TAudioEntry;
 begin
@@ -288,7 +288,7 @@ begin
   end;
 end;
 
-procedure TDoomAudio.PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
+procedure TDRLAudio.PlaySound( aSoundID : Word; aCoord : TCoord2D; aDelay : DWord = 0 );
 var iVolume     : Byte;
     iPan        : Byte;
     iDist       : Word;
@@ -319,7 +319,7 @@ begin
 end;
 
 
-function TDoomAudio.ResolveSoundID(const ResolveIDs: array of AnsiString): Word;
+function TDRLAudio.ResolveSoundID(const ResolveIDs: array of AnsiString): Word;
 var c : DWord;
 begin
   if (not SoundVersion) or (not Option_Sound) or SoundOff then Exit(0);
@@ -332,13 +332,13 @@ begin
   Exit(0);
 end;
 
-function TDoomAudio.GetSampleID( const aID: AnsiString ) : Word;
+function TDRLAudio.GetSampleID( const aID: AnsiString ) : Word;
 begin
   if (not SoundVersion) or (not Option_Sound) or SoundOff then Exit(0);
   Exit( Sound.GetSampleID( aID ) );
 end;
 
-procedure TDoomAudio.PlayMusic(const MusicID : Ansistring; aNotFound : Boolean = False );
+procedure TDRLAudio.PlayMusic(const MusicID : Ansistring; aNotFound : Boolean = False );
 begin
   FLastMusic := MusicID;
   if (not SoundVersion) or (not Option_Music) or ( Setting_MusicVolume = 0 ) then Exit;
@@ -359,7 +359,7 @@ begin
   end;
 end;
 
-procedure TDoomAudio.PlayMusicOnce(const MusicID : Ansistring);
+procedure TDRLAudio.PlayMusicOnce(const MusicID : Ansistring);
 begin
   if (not SoundVersion) or (not Option_Music) or ( Setting_MusicVolume = 0 )  then Exit;
   try
@@ -375,7 +375,7 @@ begin
   end;
 end;
 
-destructor TDoomAudio.Destroy;
+destructor TDRLAudio.Destroy;
 begin
   FreeAndNil( FSoundEvents );
   FreeAndNil( FAudioRegistry );

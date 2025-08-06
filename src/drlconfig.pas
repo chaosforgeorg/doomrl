@@ -4,16 +4,16 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomconfig;
+unit drlconfig;
 interface
 
 uses Classes, SysUtils, vluaconfig;
 
 type
 
-{ TDoomConfig }
+{ TDRLConfig }
 
-TDoomConfig = class(TLuaConfig)
+TDRLConfig = class(TLuaConfig)
   constructor Create( const FileName : Ansistring; Reload : Boolean );
 end;
 
@@ -23,9 +23,9 @@ implementation
 uses vsystems, dfdata, drlio;
 
 
-{ TDoomConfig }
+{ TDRLConfig }
 
-constructor TDoomConfig.Create( const FileName : Ansistring; Reload : Boolean );
+constructor TDRLConfig.Create( const FileName : Ansistring; Reload : Boolean );
 begin
   inherited Create;
 

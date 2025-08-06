@@ -9,7 +9,7 @@ interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vmessages, vtextures,
      vuitypes, vluastate,  viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
-     dfdata, dfthing, doomspritemap, doomaudio, drlkeybindings, drlloadingview;
+     dfdata, dfthing, doomspritemap, drlaudio, drlkeybindings, drlloadingview;
 
 const TIG_EV_NONE      = 0;
       TIG_EV_DROP      = 1;
@@ -133,7 +133,7 @@ protected
   function BBScreenShotCallback( aEvent : TIOEvent ) : Boolean;
   function Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
 protected
-  FAudio       : TDoomAudio;
+  FAudio       : TDRLAudio;
   FMessages    : TMessages;
   FTime        : QWord;
   FLoading     : TLoadingView;
@@ -164,7 +164,7 @@ protected
 
 public
   property KeyCode     : TIOKeyCode     read FKeyCode    write FKeyCode;
-  property Audio       : TDoomAudio     read FAudio;
+  property Audio       : TDRLAudio     read FAudio;
   property MTarget     : TCoord2D       read FMTarget    write FMTarget;
   property ASCII       : TASCIIImageMap read FASCII;
   property HintOverlay : AnsiString     read FHintOverlay write FHintOverlay;
@@ -394,7 +394,7 @@ begin
   FLoading := nil;
   IO := Self;
   FTime := 0;
-  FAudio    := TDoomAudio.Create;
+  FAudio    := TDRLAudio.Create;
   FMessages := TMessages.Create( 2, 77, @IO.EventMore, Option_MessageBuffer );
   FMessages.GroupMultiple := Setting_GroupMessages;
   FASCII    := TASCIIImageMap.Create( True );

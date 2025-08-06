@@ -115,7 +115,7 @@ implementation
 uses sysutils, math, variants,
      vutil, vtig, vtigio, vluasystem,
      dfplayer,
-     doomcommand, drlbase, drlinventory;
+     drlcommand, drlbase, drlinventory;
 
 constructor TPlayerView.Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
 begin
