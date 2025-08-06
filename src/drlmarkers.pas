@@ -1,4 +1,9 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
+{
+ ----------------------------------------------------
+Copyright (c) 2002-2025 by Kornel Kisielewicz
+----------------------------------------------------
+}
 unit drlmarkers;
 interface
 uses classes, vutil, vnode, vrltools, vgenerics, dfdata;

@@ -1,7 +1,8 @@
+{$INCLUDE drl.inc}
 {
 -------------------------------------------------------
 DRL.PAS -- Main Program
-Copyright (c) 2002-2006 by Kornel "Anubis" Kisielewicz
+Copyright (c) 2002-2025 by Kornel Kisielewicz
 -------------------------------------------------------
 }
 {
@@ -17,8 +18,6 @@ Copyright (c) 2002-2006 by Kornel "Anubis" Kisielewicz
 [todo] Copy configs from DataPath to ConfigurationPath if not present
 [todo] Set proper paths on unix, create directories if needed
 }
-
-{$INCLUDE doomrl.inc}
 
 program drl;
 uses SysUtils, vsystems,

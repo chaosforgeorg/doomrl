@@ -1,8 +1,8 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
 {
 ----------------------------------------------------
-DFBEING.PAS -- Creature control and data in DownFall
-Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
+DFBEING.PAS -- Creature control and data in DRL
+Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
 unit dfbeing;

@@ -1,8 +1,8 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
 {
 ----------------------------------------------------
-DFTHING.PAS -- Basic Thing object for DownFall
-Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
+DFTHING.PAS -- Basic Thing object for DRL
+Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
 unit dfthing;

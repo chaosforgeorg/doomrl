@@ -1,5 +1,9 @@
-
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
+{
+----------------------------------------------------
+Copyright (c) 2002-2025 by Kornel Kisielewicz
+----------------------------------------------------
+}
 unit dfplayer;
 interface
 uses classes, sysutils,

@@ -1,3 +1,6 @@
+0.9.9.8 -> 0.10.0
+ * This document is horribly out of date now, time to start fresh :(
+
 0.9.9.7 -> 0.9.9.8
  * play_sound takes last optional parameter delay - if > 0 then sound will be delayed
  * "res_" properties removed.  Use new resist table to access resistances. (e.g. resist.bullet)

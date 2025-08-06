@@ -1,8 +1,11 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
+{
+ ----------------------------------------------------
+Copyright (c) 2002-2025 by Kornel Kisielewicz
+----------------------------------------------------
+}
 unit doomanimation;
-
 interface
-
 uses
   Classes, SysUtils, math,
   vnode, vutil, vcolor, vmath, vvector, vrltools, vvision, vanimation,

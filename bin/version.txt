@@ -516,7 +516,7 @@
 [fix] -- TR#168: proper error messages if missing files
 [fix] -- TR#---: no more cannot resume dead coroutine on program error
 [fix] -- TR#265: error and assert can be normally used in modules
-[fix] -- TR#105: DoomRL will give now a meaningfull error if console is too small
+[fix] -- TR#105: DRL will give now a meaningfull error if console is too small
 [fix] -- TR#---: error reports will properly report params passed
 [fix] -- TR#---: Linux 64 and Mac OS X player.wad fix
 
@@ -572,7 +572,7 @@
 [add] -- TR#---: Of Skull And Bone by Simon Volpert added as City of Skulls soundtrack
 [add] -- TR#---: three new level events, one of them really fun!
 [add] -- TR#---: reintroducing Angel of Darkness!
-[add] -- TR#---: doom menu sound! :P (can be turned off in config.lua)
+[add] -- TR#---: d menu sound! :P (can be turned off in config.lua)
 [add] -- TR#---: ASCII art for AoD, Revenant, Arch-Vile, Pain elemental, Mancubus (tehtmi)
 [add] -- TR#---: 10 new assemblies
 [add] -- TR#---: 8 new exotics, 2 new uniques!
@@ -660,7 +660,7 @@
 [mod] -- TR#---: AoPu Hell Armory always spawns a non-schematic reward
 [mod] -- TR#---: quick level skips noted in player history
 [mod] -- TR#---: UV+ spawns sergeants inside not outside base entry
-[fix] -- TR#184: DoomRL is again Windows 95/98 compatible!
+[fix] -- TR#184: DRL is again Windows 95/98 compatible!
 [fix] -- TR#---: all corpses are now gibbable
 [fix] -- TR#---: fists no longer use wielded weapon attack time
 [fix] -- TR#175: the player will no longer teleport or spawn in a locked vault
@@ -723,9 +723,9 @@
 [add] -- TR#032: Hellgate added!
 [add] -- TR#098: Lesser uniques made non-unique Exotics!
 [add] -- TR#033: Experimental GMF support
-                 ("doomrl -record filename.gmf")
+                 ("drl -record filename.gmf")
 [add] -- TR#---: Experimental sandbox level support
-                 ("doomrl -sandbox sandbox/sandbox_arena.lua")
+                 ("drl -sandbox sandbox/sandbox_arena.lua")
 [add] -- TR#---: [secret feature]
 [add] -- TR#---: added two exotic weapons (shotgun and chain)
 [add] -- TR#093: Gibbing! Massive damage (nukes included) doesn't leave corpses,
@@ -747,7 +747,7 @@
 [mod] -- TR#124: message on all wall destroying lever
 [mod] -- TR#093: Nightmare! is Fast -- monsters move faster, shoot more often
 [mod] -- TR#116: you can now escape out of the mod menu
-[mod] -- TR#---: DoomRL now blocks the close window button and doesn't react for
+[mod] -- TR#---: DRL now blocks the close window button and doesn't react for
                  Ctrl-C (Windows only)
 [mod] -- TR#136: LockClose and LockBreak options added to ini
 [mod] -- TR#112: ESCAPE and OK ini-settings now correctly recognized
@@ -1041,8 +1041,8 @@
 [add] -- Added two new screens to Show Player Data
 [add] -- small screenshot in mortem
 [add] -- message buffer ("P") and last messages in mortem.txt
-[add] -- message coloring system (see doomrl.ini)
-[add] -- optional archivising of all mortem.txt's in mortem dir (see doomrl.ini)
+[add] -- message coloring system (see drl.ini)
+[add] -- optional archivising of all mortem.txt's in mortem dir (see drl.ini)
 [mod] -- guaranteed knife on level 1 on the Berserk challenge
 [mod] -- Computer Maps now light only blocked cells
 [mod] -- played around with music bindings for special levels
@@ -1139,7 +1139,7 @@
 [add] -- SOUND! Yeah, now hell is getting real ;-)
 [add] -- MUSIC! Let the party begin!
 [add] -- Possibility to bind MP3Files instead
-[add] -- Prepared bindings for MP3's from www.sirgalahad.org/paul/doom/
+[add] -- Prepared bindings for MP3's from www.sirgalahad.org/paul/
 [add] -- Saving on crash, finally! (greetings to R. Dan Henry)
 [add] -- new level TYPE! (dedicated to Archibald ;-) ). 
 [add] -- another deadly level TYPE!
@@ -1205,7 +1205,7 @@
 0.9.6 (beta)
 (16.I.2005)
 (14 bugfixes, 7 modifications, 11 additions)
-[add] -- added two monsters (from DoomII ;-) )
+[add] -- added two monsters (from DII ;-) )
 [add] -- barrels can be pushed ;-)
 [add] -- added knockback! Shotgun keeps their distance ;-)
 [add] -- corpses ;-)
@@ -1245,10 +1245,10 @@
 [add] -- added a first run screen
 [add] -- bloodtracks ;-)
 [add] -- finally added levers! 'u'se them to activate :D
-[add] -- added another CRAZY feature - only for Doom geeks ;)
+[add] -- added another CRAZY feature - only for D geeks ;)
 [add] -- added tactics -- use [TAB] to switch tactic
 [add] -- added a new CRAZY item ;)
-[add] -- added the Doom Virtual Machine (ROTFL ;)
+[add] -- added the D Virtual Machine (ROTFL ;)
 [add] -- added traits!
 [add] -- new special level...
 [add] -- added quit messages.
@@ -1274,7 +1274,7 @@
 [add] -- BFG 9000 is to be found :) At last some true cleaning...
 [add] -- added ability to use fixed levels. Added first level
 [mod] -- you hear explosions that you don't see
-[mod] -- moved all help and data files into a single file -- doomrl.wad ;)
+[mod] -- moved all help and data files into a single file -- drl.wad ;)
 [mod] -- extended drop (allows you to automaticaly drop items to near squares)
 [mod] -- tweaked rarities a bit
 [fix] -- no more stupid Lava/Acid damage to flying/hovering creatures ;)

@@ -1,4 +1,9 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
+{
+ ----------------------------------------------------
+Copyright (c) 2002-2025 by Kornel Kisielewicz
+----------------------------------------------------
+}
 unit doomgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,

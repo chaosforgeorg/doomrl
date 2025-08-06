@@ -1,4 +1,9 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
+{
+ ----------------------------------------------------
+Copyright (c) 2002-2025 by Kornel Kisielewicz
+----------------------------------------------------
+}
 unit doomhudviews;
 interface
 uses vutil, vgenerics, vcolor, vioevent, vrltools, dfdata, dfitem, doomkeybindings;

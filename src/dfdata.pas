@@ -1,8 +1,8 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
 {
 ----------------------------------------------------
-DFDATA.PAS -- Data for Downfall
-Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
+DFDATA.PAS -- Data for DRL
+Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
 unit dfdata;

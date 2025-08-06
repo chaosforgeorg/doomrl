@@ -1,8 +1,8 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
 {
 ----------------------------------------------------
-DFLEVEL.PAS -- Level data and handling for Downfall
-Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
+DFLEVEL.PAS -- Level data and handling for DRL
+Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
 unit dflevel;
