@@ -94,6 +94,7 @@ TDoom = class(TSystem)
        FPadMoveActive   : Boolean;
        FPadMoveNext     : QWord;
        FStore           : TStoreInterface;
+       FPadMoved        : Boolean;
      public
        property Store : TStoreInterface read FStore;
        property Level : TLevel read FLevel;
@@ -332,6 +333,7 @@ begin
   DataLoaded := False;
   CrashSave  := False;
   FTargeting := TTargeting.Create;
+  FPadMoved  := False;
   SetState( DSStart );
   FModuleHooks := [];
   FChallengeHooks := [];
@@ -971,7 +973,7 @@ begin
   if aEvent.Pad.Pressed then // normal mode
   begin
     if IO.GetPadLDir.NotZero
-      then Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ) )
+      then begin FPadMoved := True; Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ) ); end
       else Result := HandleCommand( TCommand.Create( COMMAND_WAIT ) );
     FPadMoveNext := IO.Time + PAD_REPEAT_START;
   end
@@ -1035,10 +1037,10 @@ begin
                                 else Exit( HandleSwapWeaponCommand );
     VPAD_BUTTON_LEFTSHOULDER  : begin IO.SetAutoTarget( FTargeting.List.Prev ); Exit( False ); end;
     VPAD_BUTTON_RIGHTSHOULDER : begin IO.SetAutoTarget( FTargeting.List.Next ); Exit( False ); end;
-    VPAD_BUTTON_DPAD_UP    : Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0,-1 ) ) );
-    VPAD_BUTTON_DPAD_DOWN  : Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0, 1 ) ) );
-    VPAD_BUTTON_DPAD_LEFT  : Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D(-1, 0 ) ) );
-    VPAD_BUTTON_DPAD_RIGHT : Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 1, 0 ) ) );
+    VPAD_BUTTON_DPAD_UP    : if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0,-1 ) ) );
+    VPAD_BUTTON_DPAD_DOWN  : if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0, 1 ) ) );
+    VPAD_BUTTON_DPAD_LEFT  : if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D(-1, 0 ) ) );
+    VPAD_BUTTON_DPAD_RIGHT : if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 1, 0 ) ) );
   end;
   Exit( False );
 end;
@@ -1496,6 +1498,7 @@ begin
       raise EException.Create('Player in save file is dead anyway.');
     LoadChallenge;
     LoadSaveFile := True;
+    FPadMoved    := True;
   except
     on e : Exception do
     begin
