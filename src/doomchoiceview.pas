@@ -28,11 +28,13 @@ protected
   FCancel   : Variant;
   FFirst    : Boolean;
   FEscape   : Boolean;
+  FDelay    : Integer;
 public
   property Title  : AnsiString read FTitle  write FTitle;
   property Header : AnsiString read FHeader write FHeader;
   property Cancel : Variant    read FCancel write FCancel;
   property Escape : Boolean    read FEscape write FEscape;
+  property Delay  : Integer    read FDelay  write FDelay;
 protected
   class var FResult : Variant;
 public
@@ -53,6 +55,7 @@ begin
   FTitle    := '';
   FHeader   := '';
   FCancel   := 0;
+  FDelay    := 0;
   FEscape   := True;
   FChoices  := TChoiceArray.Create;
 end;
@@ -62,7 +65,7 @@ var iRect : TRectangle;
     i     : Byte;
 begin
   if IsFinished then Exit;
-
+  if FDelay > 0 then FDelay -= aDTime;
   if FTitle <> ''
     then VTIG_BeginWindow( FTitle, 'choice_menu', FSize )
     else VTIG_Begin('choice_menu', FSize );
@@ -72,11 +75,11 @@ begin
     VTIG_Text( '' );
   end;
   for i := 0 to FChoices.Size - 1 do
-    if VTIG_Selectable( FChoices[i].Name, FChoices[i].Enabled ) then
-    begin
-      FFinished := True;
-      FResult   := FChoices[i].Value;
-    end;
+    if VTIG_Selectable( FChoices[i].Name, ( FDelay <= 0 ) and FChoices[i].Enabled ) then
+        begin
+          FFinished := True;
+          FResult   := FChoices[i].Value;
+        end;
   if FChoices[0].Desc <> '' then
   begin
     VTIG_Ruler;

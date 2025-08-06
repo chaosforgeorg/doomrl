@@ -1384,6 +1384,7 @@ begin
       iView := TChoiceView.Create;
       if IsString('title')      then iView.Title  := GetString( 'title' );
       if IsString('header')     then iView.Header := GetString( 'header' );
+      if IsNumber('delay')      then iView.Delay  := GetInteger( 'delay' );
       if not IsNil('cancel')    then iView.Cancel := GetValue( 'cancel' );
       if not IsNil('escape')    then iView.Escape := GetBoolean( 'escape' );
       if not IsTable('entries') then State.Error('Choice call without entries!');
@@ -1475,7 +1476,18 @@ begin
   Result := 1;
 end;
 
-const lua_ui_lib : array[0..17] of luaL_Reg = (
+function lua_ui_save_and_quit(L: Plua_State): Integer; cdecl;
+var iState : TDoomLuaState;
+begin
+  iState.Init(L);
+  ForceShop := iState.ToBoolean(1);
+  IO.FadeOut(0.5);
+  Doom.SetState( DSSaving );
+  Result := 0;
+end;
+
+
+const lua_ui_lib : array[0..18] of luaL_Reg = (
       ( name : 'msg';           func : @lua_ui_msg ),
       ( name : 'msg_clear';     func : @lua_ui_msg_clear ),
       ( name : 'msg_enter';     func : @lua_ui_msg_enter ),
@@ -1493,6 +1505,7 @@ const lua_ui_lib : array[0..17] of luaL_Reg = (
       ( name : 'update_styles';     func : @lua_ui_update_styles ),
       ( name : 'is_pad';            func : @lua_ui_is_pad ),
       ( name : 'get_rank';          func : @lua_ui_get_rank ),
+      ( name : 'save_and_quit';     func : @lua_ui_save_and_quit ),
       ( name : nil;          func : nil; )
 );
 

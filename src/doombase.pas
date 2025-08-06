@@ -111,7 +111,7 @@ var Lua : TDoomLua;
 implementation
 
 uses  {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
-     Classes, SysUtils,
+     Classes, SysUtils, FileUtil,
      vdebug, viotypes,
      dfmap, dfbeing,
      doomio, doomgfxio, doomtextio, zstream,
@@ -1544,6 +1544,8 @@ begin
 
   FreeAndNil( Stream );
   FLevel.Clear;
+  if ForceShop then
+    FileUtil.CopyFile( ModuleUserPath + 'save', ModuleUserPath + 'savedemo' );
 end;
 
 function TDoom.SaveExists : Boolean;

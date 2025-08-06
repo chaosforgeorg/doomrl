@@ -137,6 +137,16 @@ begin
 
       FFirst := AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetFirstText'], [] ) );
       if FFirst = '' then FMode := MAINMENU_INTRO;
+
+      if not DemoVersion then
+      begin
+        if FileExists( ModuleUserPath + 'savedemo' ) then
+        begin
+          if ( not FileExists( ModuleUserPath + 'save' ) )
+            then RenameFile( ModuleUserPath + 'savedemo', ModuleUserPath + 'save' )
+            else DeleteFile( ModuleUserPath + 'savedemo' );
+        end;
+      end;
     end
     else
       FMode := MAINMENU_INTRO;
@@ -323,6 +333,13 @@ begin
       then begin FMode := MAINMENU_DONE; FResult.Quit := True; end
       else VTIG_ResetSelect( MAINMENU_ID, iCount );
   end;
+
+  if ForceShop then
+  begin
+    Doom.OpenJHCPage;
+    ForceShop := False;
+  end;
+
 end;
 
 procedure TMainMenuView.UpdateBadSave;

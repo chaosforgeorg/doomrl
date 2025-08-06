@@ -102,6 +102,7 @@ const
   CRASHMODE       : Boolean = False;
   EXCEPTEMMITED   : Boolean = False;
   DemoVersion     : Boolean = False;
+  ForceShop       : Boolean = False;
   GraphicsVersion : Boolean = True;
   SoundVersion    : Boolean = True;
   ForceNoAudio    : Boolean = False;
