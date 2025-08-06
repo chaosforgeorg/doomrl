@@ -124,7 +124,7 @@ var SpriteMap : TDoomSpriteMap = nil;
 implementation
 
 uses math, vmath, viotypes, vvision, vgl3library,
-     doomio, doomgfxio, drlbase,
+     drlio, drlgfxio, drlbase,
      dfmap, dfitem, dfplayer, drlmarkers, drldecals;
 
 function SpritePartSetFill( aPart : TSpritePart ) : TSpritePartSet;
@@ -175,7 +175,7 @@ begin
     TVec2i.Create(aPoint.x+FSize,aPoint.y+FSize),
     iColor,
     TVec2f.Create(0,0), TVec2f.Create(1,1),
-    (IO as TDoomGFXIO).Textures[ FTextureID ].GLTexture
+    (IO as TDRLGFXIO).Textures[ FTextureID ].GLTexture
     );
 end;
 
@@ -252,7 +252,7 @@ VVerticBlurFragmentShader : Ansistring =
 { TDoomSpriteMap }
 
 constructor TDoomSpriteMap.Create;
-var iIO : TDoomGFXIO;
+var iIO : TDRLGFXIO;
 begin
   FTargeting := False;
   FTargetList := TCoord2DArray.Create();
@@ -265,7 +265,7 @@ begin
   FAutoTarget.Create(0,0);
   FMarker.Create(-1,-1);
 
-  iIO := (IO as TDoomGFXIO);
+  iIO := (IO as TDRLGFXIO);
 
   FFramebuffer := TGLFramebuffer.Create;
   FFramebuffer.AddAttachment( RGBA8, False );
@@ -290,9 +290,9 @@ begin
 end;
 
 procedure TDoomSpriteMap.Recalculate;
-var iIO : TDoomGFXIO;
+var iIO : TDRLGFXIO;
 begin
-  iIO := (IO as TDoomGFXIO);
+  iIO := (IO as TDRLGFXIO);
   FSpriteEngine.SetScale( iIO.TileScale );
   FMinShift := Vec2i(0,0);
   FMaxShift := Vec2i(
@@ -339,10 +339,10 @@ end;
 procedure TDoomSpriteMap.Update ( aTime : DWord; aProjection : TMatrix44 ) ;
 var iShift : Single;
     iPixel : Integer;
-    iIO    : TDoomGFXIO;
+    iIO    : TDRLGFXIO;
     iMark  : TMarker;
 begin
-  iIO := IO as TDoomGFXIO;
+  iIO := IO as TDRLGFXIO;
   FShift := FNewShift;
   {$PUSH}
   {$Q-}
@@ -411,7 +411,7 @@ end;
 procedure TDoomSpriteMap.Draw;
 var iPoint   : TPoint;
     iCoord   : TCoord2D;
-    iIO      : TDoomGFXIO;
+    iIO      : TDRLGFXIO;
 const TargetSprite : TSprite = (
   Color     : (R:0;G:0;B:0;A:255);
   OverColor : (R:0;G:0;B:0;A:0);
@@ -425,7 +425,7 @@ const TargetSprite : TSprite = (
 
 begin
   TargetSprite.SpriteID[0] := HARDSPRITE_SELECT;
-  iIO := IO as TDoomGFXIO;
+  iIO := IO as TDRLGFXIO;
   FSpriteEngine.Position := FShift + FOffset;
 
   if iIO.MCursor.Active and iIO.Driver.GetMousePos( iPoint ) then
@@ -916,15 +916,15 @@ end;
 procedure TDoomSpriteMap.ApplyEffect;
 begin
   case StatusEffect of
-    StatusRed    : FLutTexture := (IO as TDoomGFXIO).Textures['lut_berserk'].GLTexture;
-    StatusGreen  : FLutTexture := (IO as TDoomGFXIO).Textures['lut_enviro'].GLTexture;
-    StatusBlue   : FLutTexture := (IO as TDoomGFXIO).Textures['lut_stealth'].GLTexture;
-    StatusInvert : FLutTexture := (IO as TDoomGFXIO).Textures['lut_iddqd'].GLTexture;
-    StatusMagenta: FLutTexture := (IO as TDoomGFXIO).Textures['lut_rage'].GLTexture;
+    StatusRed    : FLutTexture := (IO as TDRLGFXIO).Textures['lut_berserk'].GLTexture;
+    StatusGreen  : FLutTexture := (IO as TDRLGFXIO).Textures['lut_enviro'].GLTexture;
+    StatusBlue   : FLutTexture := (IO as TDRLGFXIO).Textures['lut_stealth'].GLTexture;
+    StatusInvert : FLutTexture := (IO as TDRLGFXIO).Textures['lut_iddqd'].GLTexture;
+    StatusMagenta: FLutTexture := (IO as TDRLGFXIO).Textures['lut_rage'].GLTexture;
     else
     begin
       if Setting_Glow
-        then FLutTexture := (IO as TDoomGFXIO).Textures['lut_clear'].GLTexture
+        then FLutTexture := (IO as TDRLGFXIO).Textures['lut_clear'].GLTexture
         else FLutTexture := 0;
     end;
   end;
@@ -1168,7 +1168,7 @@ begin
       iBeing := DRL.Level.Being[FAutoTarget];
       iV     := Vec2i( FAutoTarget.X-1, FAutoTarget.Y-1 ) * FSpriteEngine.Grid;
       if ( iBeing <> nil ) and ( iBeing.AnimCount > 0 ) then
-         (IO as TDoomGFXIO).getUIDPosition( iBeing.UID, iV );
+         (IO as TDRLGFXIO).getUIDPosition( iBeing.UID, iV );
       with FSpriteEngine.Layers[ HARDSPRITE_SELECT div 100000 ] do
         PushXY( HARDSPRITE_SELECT mod 100000, 1, iV, ColorWhite, NewColor( Yellow ), ColorZero, DRL_Z_FX );
     end;

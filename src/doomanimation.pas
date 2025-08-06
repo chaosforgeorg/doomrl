@@ -185,7 +185,7 @@ implementation
 
 uses viotypes, vuid, vlog, vdebug,
      dfbeing, dfthing,
-     drlbase, doomgfxio, doomio, doomspritemap;
+     drlbase, drlgfxio, drlio, doomspritemap;
 
 { TDoomMissile }
 
@@ -344,7 +344,7 @@ end;
 procedure TDoomBlink.OnDraw;
 begin
   if GraphicsVersion then
-    (IO as TDoomGFXIO).PostSheet.PushColoredQuad( TVec2i.Create(0,0), TVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
+    (IO as TDRLGFXIO).PostSheet.PushColoredQuad( TVec2i.Create(0,0), TVec2i.Create(IO.Driver.GetSizeX,IO.Driver.GetSizeY), TVec4f.Create(FGColor.R,FGColor.G,FGColor.B,0.7) );
 end;
 
 { TDoomRumbleEvent }

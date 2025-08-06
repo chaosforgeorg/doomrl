@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit doommoreview;
 interface
-uses vutil, doomio, dfdata;
+uses vutil, drlio, dfdata;
 
 type TMoreView = class( TInterfaceLayer )
   constructor Create( aSid : Ansistring );

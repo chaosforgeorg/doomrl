@@ -4,12 +4,12 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomtextio;
+unit drltextio;
 interface
 
-uses doomio, vrltools, vtextmap, dfdata;
+uses vrltools, vtextmap, drlio, dfdata;
 
-type TDoomTextIO = class( TDoomIO )
+type TDRLTextIO = class( TDRLIO )
     constructor Create; reintroduce;
     destructor Destroy; override;
     procedure Update( aMSec : DWord ); override;
@@ -50,7 +50,7 @@ uses sysutils,
      drlbase, doomanimation,
      dflevel, dfplayer;
 
-constructor TDoomTextIO.Create;
+constructor TDRLTextIO.Create;
 begin
   {$IFDEF WINDOWS}
   FIODriver := TTextIODriver.Create( 80, 25 );
@@ -68,13 +68,13 @@ begin
   inherited Create;
 end;
 
-destructor TDoomTextIO.Destroy;
+destructor TDRLTextIO.Destroy;
 begin
   FreeAndNil( FTextMap );
   inherited Destroy;
 end;
 
-procedure TDoomTextIO.Update( aMSec : DWord );
+procedure TDRLTextIO.Update( aMSec : DWord );
 begin
   FTextMap.Update( aMSec );
   if FTargeting and FLayers.IsEmpty
@@ -82,24 +82,24 @@ begin
   inherited Update( aMSec );
 end;
 
-procedure TDoomTextIO.WaitForAnimation;
+procedure TDRLTextIO.WaitForAnimation;
 begin
   inherited WaitForAnimation;
   FTextMap.ClearAnimations;
 end;
 
-function TDoomTextIO.AnimationsRunning : Boolean;
+function TDRLTextIO.AnimationsRunning : Boolean;
 begin
   if DRL.State <> DSPlaying then Exit(False);
   Exit( not FTextMap.AnimationsFinished );
 end;
 
-procedure TDoomTextIO.AnimationWipe;
+procedure TDRLTextIO.AnimationWipe;
 begin
   FTextMap.ClearAnimations;
 end;
 
-procedure TDoomTextIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0 );
+procedure TDRLTextIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0 );
 var iChr : Char;
 begin
   if Option_HighASCII then iChr := Chr(219) else iChr := '#';
@@ -107,7 +107,7 @@ begin
     FTextMap.AddAnimation( TTextBlinkAnimation.Create( IOGylph( iChr, aColor ), aDuration, aDelay ) );
 end;
 
-procedure TDoomTextIO.addMissileAnimation(aDuration: DWord; aDelay: DWord; aSource,
+procedure TDRLTextIO.addMissileAnimation(aDuration: DWord; aDelay: DWord; aSource,
   aTarget: TCoord2D; aColor: Byte; aPic: Char; aDrawDelay: Word;
   aSprite: TSprite; aRay: Boolean);
 begin
@@ -117,25 +117,25 @@ begin
     else FTextMap.AddAnimation( TTextBulletAnimation.Create( DRL.Level, aSource, aTarget, IOGylph( aPic, aColor ), aDuration, aDelay, Player.Vision ) );
 end;
 
-procedure TDoomTextIO.addMarkAnimation(aDuration: DWord; aDelay: DWord;
+procedure TDRLTextIO.addMarkAnimation(aDuration: DWord; aDelay: DWord;
   aCoord: TCoord2D; aSprite : TSprite; aColor: Byte; aPic: Char);
 begin
   if DRL.State <> DSPlaying then Exit;
   FTextMap.AddAnimation( TTextMarkAnimation.Create( aCoord, IOGylph( aPic, aColor ), aDuration, aDelay ) );
 end;
 
-procedure TDoomTextIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);
+procedure TDRLTextIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);
 begin
   if DRL.State <> DSPlaying then Exit;
   FTextMap.AddAnimation( TDoomSoundEvent.Create( aDelay, aPosition, aSoundID ) )
 end;
 
-procedure TDoomTextIO.ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord );
+procedure TDRLTextIO.ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord );
 begin
   FTextMap.AddAnimation( TTextExplosionAnimation.Create( aCoord, '*', FExpl, aDelay ) );
 end;
 
-procedure TDoomTextIO.SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte );
+procedure TDRLTextIO.SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte );
 begin
   FTargetEnabled := True;
   FTarget        := aTarget;
@@ -145,7 +145,7 @@ begin
   IO.Console.MoveCursor( aTarget.x+1, aTarget.y+2 );
 end;
 
-procedure TDoomTextIO.SetAutoTarget( aTarget : TCoord2D );
+procedure TDRLTextIO.SetAutoTarget( aTarget : TCoord2D );
 begin
   inherited SetAutoTarget( aTarget );
   if not FTargetEnabled then
@@ -156,7 +156,7 @@ begin
   end;
 end;
 
-procedure TDoomTextIO.DrawHud;
+procedure TDRLTextIO.DrawHud;
 var iColor      : TIOColor;
     iCurrent    : TCoord2D;
     iLevel      : TLevel;
@@ -200,12 +200,12 @@ begin
   end;
 end;
 
-procedure TDoomTextIO.SetTextMap( aMap : ITextMap );
+procedure TDRLTextIO.SetTextMap( aMap : ITextMap );
 begin
   FTextMap.SetMap( aMap );
 end;
 
-procedure TDoomTextIO.Explosion( aDelay : Integer; aWhere: TCoord2D; aData : TExplosionData );
+procedure TDRLTextIO.Explosion( aDelay : Integer; aWhere: TCoord2D; aData : TExplosionData );
 begin
   FTextMap.FreezeMarks;
   FExpl := nil;

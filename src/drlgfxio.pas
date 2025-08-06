@@ -4,17 +4,17 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomgfxio;
+unit drlgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
      vrltools, vutil, vtextures, vvector,
-     doomio, doomspritemap, doomanimation, doomminimap, dfdata, dfthing;
+     drlio, doomspritemap, doomanimation, doomminimap, dfdata, dfthing;
 
 type
 
-{ TDoomGFXIO }
+{ TDRLGFXIO }
 
- TDoomGFXIO = class( TDoomIO )
+ TDRLGFXIO = class( TDRLIO )
     constructor Create; reintroduce;
     procedure Reconfigure( aConfig : TLuaConfig ); override;
     procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
@@ -139,7 +139,7 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
 var ConsoleSizeX : Integer = 80;
     ConsoleSizeY : Integer = 25;
 
-procedure TDoomGFXIO.RecalculateScaling( aInitialize : Boolean );
+procedure TDRLGFXIO.RecalculateScaling( aInitialize : Boolean );
 var iWidth        : Integer;
     iHeight       : Integer;
     iOldFontMult  : Integer;
@@ -204,7 +204,7 @@ begin
   end;
 end;
 
-constructor TDoomGFXIO.Create;
+constructor TDRLGFXIO.Create;
 var iCoreData   : TVDataFile;
     iImage      : TImage;
     iFontTexture: TTextureID;
@@ -329,7 +329,7 @@ begin
   FAnimations := TAnimationManager.Create;
 end;
 
-procedure TDoomGFXIO.Reconfigure(aConfig: TLuaConfig);
+procedure TDRLGFXIO.Reconfigure(aConfig: TLuaConfig);
 var iWidth   : Integer;
     iHeight  : Integer;
     iOpacity : Integer;
@@ -356,7 +356,7 @@ begin
   inherited Reconfigure(aConfig);
 end;
 
-destructor TDoomGFXIO.Destroy;
+destructor TDRLGFXIO.Destroy;
 begin
   FreeAndNil( FMCursor );
   FreeAndNil( FQuadSheet );
@@ -373,30 +373,30 @@ begin
   inherited Destroy;
 end;
 
-procedure TDoomGFXIO.WaitForAnimation;
+procedure TDRLGFXIO.WaitForAnimation;
 begin
   inherited WaitForAnimation;
   FAnimations.Clear;
 end;
 
-function TDoomGFXIO.AnimationsRunning : Boolean;
+function TDRLGFXIO.AnimationsRunning : Boolean;
 begin
   if DRL.State <> DSPlaying then Exit(False);
   Exit( not FAnimations.Finished );
 end;
 
-procedure TDoomGFXIO.AnimationWipe;
+procedure TDRLGFXIO.AnimationWipe;
 begin
   FAnimations.Clear;
 end;
 
-procedure TDoomGFXIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
+procedure TDRLGFXIO.Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0);
 begin
   if Setting_Flash then
     FAnimations.AddAnimation( TDoomBlink.Create(aDuration,aDelay,aColor) );
 end;
 
-procedure TDoomGFXIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
+procedure TDRLGFXIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
 begin
   if DRL.State <> DSPlaying then Exit;
   if Setting_ScreenShake then
@@ -404,13 +404,13 @@ begin
       FAnimations.addAnimation( TDoomScreenShake.Create( aDuration, aDelay, aStrength, aDirection ) );
 end;
 
-procedure TDoomGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean );
+procedure TDRLGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean );
 begin
   if DRL.State <> DSPlaying then Exit;
   FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, aBeing ));
 end;
 
-procedure TDoomGFXIO.addBumpAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aAmount : Single );
+procedure TDRLGFXIO.addBumpAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aAmount : Single );
 begin
   if DRL.State <> DSPlaying then Exit;
   FAnimations.AddAnimation(TDoomMove.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, True, aAmount ));
@@ -418,7 +418,7 @@ begin
   if Player.UID = aUID then WaitForAnimation;
 end;
 
-function TDoomGFXIO.getUIDPosition( aUID : TUID; var aPosition : TVec2i ) : Boolean;
+function TDRLGFXIO.getUIDPosition( aUID : TUID; var aPosition : TVec2i ) : Boolean;
 var iAnimation : TAnimation;
 begin
   for iAnimation in FAnimations.Animations do
@@ -431,26 +431,26 @@ begin
   Exit( False );
 end;
 
-procedure TDoomGFXIO.addScreenMoveAnimation(aDuration: DWord; aTo: TCoord2D);
+procedure TDRLGFXIO.addScreenMoveAnimation(aDuration: DWord; aTo: TCoord2D);
 begin
   if DRL.State <> DSPlaying then Exit;
   if not TDoomScreenMove.Update( aDuration, aTo ) then
     FAnimations.addAnimation( TDoomScreenMove.Create( aDuration, aTo ) );
 end;
 
-procedure TDoomGFXIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+procedure TDRLGFXIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
 begin
   if DRL.State <> DSPlaying then Exit;
   FAnimations.addAnimation( TDoomAnimateCell.Create( aDuration, aDelay, aCoord, aSprite, aValue ) );
 end;
 
-procedure TDoomGFXIO.addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer );
+procedure TDRLGFXIO.addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer );
 begin
   if DRL.State <> DSPlaying then Exit;
   FAnimations.addAnimation( TDoomAnimateItem.Create( aDuration, aDelay, aItem.UID, aValue ) );
 end;
 
-procedure TDoomGFXIO.addKillAnimation( aDuration : DWord; aDelay : DWord; aBeing : TThing );
+procedure TDRLGFXIO.addKillAnimation( aDuration : DWord; aDelay : DWord; aBeing : TThing );
 begin
   if DRL.State <> DSPlaying then Exit;
   if SF_PAINANIM in aBeing.Sprite.Flags then
@@ -458,7 +458,7 @@ begin
 end;
 
 
-procedure TDoomGFXIO.addMissileAnimation(aDuration: DWord; aDelay: DWord; aSource,
+procedure TDRLGFXIO.addMissileAnimation(aDuration: DWord; aDelay: DWord; aSource,
   aTarget: TCoord2D; aColor: Byte; aPic: Char; aDrawDelay: Word;
   aSprite: TSprite; aRay: Boolean);
 begin
@@ -468,21 +468,21 @@ begin
       aTarget, aDrawDelay, aSprite, aRay ) );
 end;
 
-procedure TDoomGFXIO.addMarkAnimation(aDuration: DWord; aDelay: DWord;
+procedure TDRLGFXIO.addMarkAnimation(aDuration: DWord; aDelay: DWord;
   aCoord: TCoord2D; aSprite : TSprite; aColor: Byte; aPic: Char);
 begin
   if DRL.State <> DSPlaying then Exit;
   FAnimations.addAnimation( TDoomMark.Create(aDuration, aDelay, aCoord, aSprite ) )
 end;
 
-procedure TDoomGFXIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);
+procedure TDRLGFXIO.addSoundAnimation(aDelay: DWord; aPosition: TCoord2D; aSoundID: DWord);
 begin
   if DRL.State <> DSPlaying then Exit;
   if aSoundID > 0 then
     FAnimations.addAnimation( TDoomSoundEvent.Create( aDelay, aPosition, aSoundID ) )
 end;
 
-procedure TDoomGFXIO.addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
+procedure TDRLGFXIO.addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
 begin
   if DRL.State <> DSPlaying then Exit;
   if (not Setting_GamepadRumble) or (not IsGamepad ) then Exit;
@@ -491,29 +491,29 @@ begin
     else FAnimations.addAnimation( TDoomRumbleEvent.Create( aDelay, aLow, aHigh, aDuration ) );
 end;
 
-procedure TDoomGFXIO.PulseBlood( aValue : Single );
+procedure TDRLGFXIO.PulseBlood( aValue : Single );
 begin
   if Setting_BloodPulse and ( aValue > FBloodValueTarget ) then
     FBloodValueTarget := aValue;
 end;
 
-procedure TDoomGFXIO.ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord );
+procedure TDRLGFXIO.ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord );
 begin
   FAnimations.AddAnimation( TDoomExplodeMark.Create(aDuration,aDelay,aCoord,aColor) )
 end;
 
-procedure TDoomGFXIO.SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte );
+procedure TDRLGFXIO.SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte );
 begin
   SpriteMap.SetTarget( aTarget, NewColor( aColor ), True )
 end;
 
-procedure TDoomGFXIO.SetAutoTarget( aTarget : TCoord2D );
+procedure TDRLGFXIO.SetAutoTarget( aTarget : TCoord2D );
 begin
   inherited SetAutoTarget( aTarget );
   SpriteMap.SetAutoTarget( aTarget )
 end;
 
-procedure TDoomGFXIO.Focus( aCoord : TCoord2D );
+procedure TDRLGFXIO.Focus( aCoord : TCoord2D );
 var iDiff     : TCoord2D;
 const RangeX = 9;
       RangeY = 7;
@@ -531,33 +531,33 @@ begin
   end;
 end;
 
-procedure TDoomGFXIO.FinishTargeting;
+procedure TDRLGFXIO.FinishTargeting;
 begin
   inherited FinishTargeting;
   SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
 end;
 
-function TDoomGFXIO.GetPadLTrigger : Boolean;
+function TDRLGFXIO.GetPadLTrigger : Boolean;
 begin
   Exit( FGPLTrigger );
 end;
 
-function TDoomGFXIO.GetPadRTrigger : Boolean;
+function TDRLGFXIO.GetPadRTrigger : Boolean;
 begin
   Exit( FGPRTrigger );
 end;
 
-function TDoomGFXIO.GetPadLDir     : TCoord2D;
+function TDRLGFXIO.GetPadLDir     : TCoord2D;
 begin
   Exit( FGPLeftDir );
 end;
 
-function TDoomGFXIO.IsGamepad      : Boolean;
+function TDRLGFXIO.IsGamepad      : Boolean;
 begin
   Exit( FGPDetected );
 end;
 
-procedure TDoomGFXIO.FadeIn( aForce : Boolean = False );
+procedure TDRLGFXIO.FadeIn( aForce : Boolean = False );
 begin
   if not Setting_Fade then
   begin
@@ -570,7 +570,7 @@ begin
   if aForce then FFadeAlpha := 0.0;
 end;
 
-procedure TDoomGFXIO.FadeOut( aTime : Single = 0.5; aWait : Boolean = False );
+procedure TDRLGFXIO.FadeOut( aTime : Single = 0.5; aWait : Boolean = False );
 begin
   if not Setting_Fade then
   begin
@@ -587,7 +587,7 @@ begin
   end;
 end;
 
-procedure TDoomGFXIO.FadeReset;
+procedure TDRLGFXIO.FadeReset;
 begin
   FFadeTimer     := 0.0;
   FFadeDirection := 0;
@@ -595,7 +595,7 @@ begin
   FFadeTime      := 0.5;
 end;
 
-procedure TDoomGFXIO.FadeWait;
+procedure TDRLGFXIO.FadeWait;
 var iTime : DWord;
 begin
   if FFadeDirection < 0 then
@@ -606,7 +606,7 @@ begin
   end;
 end;
 
-procedure TDoomGFXIO.Configure( aConfig : TLuaConfig; aReload : Boolean = False );
+procedure TDRLGFXIO.Configure( aConfig : TLuaConfig; aReload : Boolean = False );
 begin
   inherited Configure( aConfig, aReload );
 
@@ -615,7 +615,7 @@ begin
   DeviceChanged;
 end;
 
-procedure TDoomGFXIO.Update( aMSec : DWord );
+procedure TDRLGFXIO.Update( aMSec : DWord );
 var iMousePoint : TIOPoint;
     iMousePos   : TVec2i;
     iMax        : TVec2i;
@@ -793,7 +793,7 @@ begin
   if  FPostSheet <> nil             then FQuadRenderer.Render( FPostSheet );
 end;
 
-procedure TDoomGFXIO.ResetVideoMode;
+procedure TDRLGFXIO.ResetVideoMode;
 var iSDLFlags   : TSDLIOFlags;
     iWidth      : Integer;
     iHeight     : Integer;
@@ -814,19 +814,19 @@ begin
     SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
 end;
 
-function TDoomGFXIO.FullScreenCallback ( aEvent : TIOEvent ) : Boolean;
+function TDRLGFXIO.FullScreenCallback ( aEvent : TIOEvent ) : Boolean;
 begin
   FFullscreen := not TSDLIODriver(FIODriver).FullScreen;
   ResetVideoMode;
   Exit( True );
 end;
 
-procedure TDoomGFXIO.CalculateConsoleParams;
+procedure TDRLGFXIO.CalculateConsoleParams;
 begin
   FLineSpace := Max((FIODriver.GetSizeY - ConsoleSizeY*FFontSizeY*FFontMult - 2*FVPadding) div ConsoleSizeY div FFontMult,0);
 end;
 
-function TDoomGFXIO.OnEvent( const iEvent : TIOEvent ) : Boolean;
+function TDRLGFXIO.OnEvent( const iEvent : TIOEvent ) : Boolean;
 var iValue : Integer;
 begin
   if ( iEvent.EType = VEVENT_PADAXIS ) then
@@ -887,7 +887,7 @@ begin
   Exit( inherited OnEvent( iEvent ) )
 end;
 
-function TDoomGFXIO.PushLayer(  aLayer : TInterfaceLayer ) : TInterfaceLayer;
+function TDRLGFXIO.PushLayer(  aLayer : TInterfaceLayer ) : TInterfaceLayer;
 begin
   if FMCursor <> nil then
   begin
@@ -898,12 +898,12 @@ begin
   Result := inherited PushLayer( aLayer );
 end;
 
-procedure TDoomGFXIO.UpdateMinimap;
+procedure TDRLGFXIO.UpdateMinimap;
 begin
   FMinimap.Redraw;
 end;
 
-procedure TDoomGFXIO.SetMinimapScale ( aScale : Byte ) ;
+procedure TDRLGFXIO.SetMinimapScale ( aScale : Byte ) ;
 begin
   FMinimap.SetScale( aScale );
   FMinimap.SetPosition( Vec2i(
@@ -913,7 +913,7 @@ begin
   FMinimap.Redraw;
 end;
 
-procedure TDoomGFXIO.DeviceChanged;
+procedure TDRLGFXIO.DeviceChanged;
 begin
   FadeReset;
   FUIRoot.DeviceChanged;
@@ -921,7 +921,7 @@ begin
   FCellY := (FConsole.GetDeviceArea.Dim.Y) div (FConsole.SizeY);
 end;
 
-function TDoomGFXIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
+function TDRLGFXIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
 begin
   aCoord := aCoord - FConsole.GetDeviceArea.Pos;
   aCoord.x := ( aCoord.x div FCellX );
@@ -929,7 +929,7 @@ begin
   Exit( PointUnit + aCoord );
 end;
 
-function TDoomGFXIO.ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
+function TDRLGFXIO.ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
 begin
   aCoord := aCoord - PointUnit;
   aCoord.x := ( aCoord.x * FCellX );
@@ -937,7 +937,7 @@ begin
   Exit( FConsole.GetDeviceArea.Pos + aCoord );
 end;
 
-procedure TDoomGFXIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
+procedure TDRLGFXIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
 var iP1,iP2 : TIOPoint;
 begin
   iP1 := ConsoleCoordToDeviceCoord( aUL + PointUnit );
@@ -945,7 +945,7 @@ begin
   QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,aOpacity ), aZ );
 end;
 
-procedure TDoomGFXIO.RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 );
+procedure TDRLGFXIO.RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 );
 var iImage          : TImage;
     iMin, iMax      : TGLVec2f;
     iSize, iSz, iTC : TGLVec2f;

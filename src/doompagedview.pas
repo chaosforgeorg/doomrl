@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit doompagedview;
 interface
-uses vutil, doomio, dfdata, vgenerics;
+uses vutil, drlio, dfdata, vgenerics;
 
 type TPagedView = class( TInterfaceLayer )
   constructor Create( aPages : TPagedReport; aInitialPage : AnsiString = '' );

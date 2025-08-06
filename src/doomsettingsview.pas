@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit doomsettingsview;
 interface
-uses viotypes, vioevent, vconfiguration, doomio, dfdata;
+uses viotypes, vioevent, vconfiguration, drlio, dfdata;
 
 type TSettingsViewState = (
   SETTINGSVIEW_GENERAL,

@@ -120,7 +120,7 @@ uses  {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
      Classes, SysUtils,
      vdebug, viotypes,
      dfmap, dfbeing,
-     doomio, doomgfxio, doomtextio, zstream,
+     drlio, drlgfxio, drltextio, zstream,
      doomspritemap, // remove
      doomplayerview, doomingamemenuview, doomhelpview, doomassemblyview,
      doompagedview, doomrankupview, doommainmenuview, doomhudviews, doommessagesview,
@@ -292,14 +292,14 @@ begin
   Reconfigure;
 
   if GraphicsVersion then
-    (IO as TDoomGFXIO).Textures.Upload;
+    (IO as TDRLGFXIO).Textures.Upload;
 
   if GodMode and FileExists( WritePath + 'god.lua') then
     Lua.LoadFile( WritePath + 'god.lua');
   HOF.Init;
   FLevel := TLevel.Create;
   if not GraphicsVersion then
-    (IO as TDoomTextIO).SetTextMap( FLevel );
+    (IO as TDRLTextIO).SetTextMap( FLevel );
 
   HARDSPRITE_HIGHLIGHT := Lua.Get( 'HARDSPRITE_HIGHLIGHT' );
   HARDSPRITE_EXPL      := Lua.Get( 'HARDSPRITE_EXPL' );
@@ -354,7 +354,7 @@ end;
 procedure TDRL.Reconfigure;
 begin
   if Assigned( IO ) then
-    (IO as TDoomIO).Reconfigure( Config );
+    (IO as TDRLIO).Reconfigure( Config );
   Setting_AlwaysRandomName := Configuration.GetBoolean( 'always_random_name' );
   Setting_NoIntro          := Configuration.GetBoolean( 'skip_intro' );
   Setting_Flash            := Configuration.GetBoolean( 'flashing_fx' );
@@ -377,11 +377,11 @@ end;
 procedure TDRL.CreateIO;
 begin
   if GraphicsVersion
-    then IO := TDoomGFXIO.Create
-    else IO := TDoomTextIO.Create;
+    then IO := TDRLGFXIO.Create
+    else IO := TDRLTextIO.Create;
   ProgramRealTime := MSecNow();
   IO.Configure( Config );
-  (IO as TDoomIO).Reconfigure( Config );
+  (IO as TDRLIO).Reconfigure( Config );
 end;
 
 procedure TDRL.Apply ( aResult : TMenuResult ) ;
@@ -416,7 +416,7 @@ begin
   IO.Focus( Player.Position );
   Player.UpdateVisual;
   if GraphicsVersion then
-    (IO as TDoomGFXIO).UpdateMinimap;
+    (IO as TDRLGFXIO).UpdateMinimap;
   Player.PreAction;
   FTargeting.Update( Player.Vision );
   IO.SetAutoTarget( FTargeting.List.Current );
@@ -1518,7 +1518,7 @@ begin
     end;
   end;
   if not GraphicsVersion then
-    (IO as TDoomTextIO).SetTextMap( FLevel );
+    (IO as TDRLTextIO).SetTextMap( FLevel );
 end;
 
 // TODO: cleanup and remove

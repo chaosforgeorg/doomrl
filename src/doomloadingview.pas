@@ -25,7 +25,7 @@ end;
 
 implementation
 
-uses sysutils, math, vtig, doomio, doomgfxio, vgltypes;
+uses sysutils, math, vtig, drlio, drlgfxio, vgltypes;
 
 constructor TLoadingView.Create( aMax : DWord );
 begin
@@ -46,7 +46,7 @@ begin
   if FMax = 0 then Exit;
   if GraphicsVersion then
   begin
-    with IO as TDoomGFXIO do
+    with IO as TDRLGFXIO do
     begin
       iSize.Init( Driver.GetSizeX, Driver.GetSizeY );
       iStep.Init( iSize.X div 15, iSize.Y div 15 );

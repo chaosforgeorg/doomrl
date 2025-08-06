@@ -47,7 +47,7 @@ implementation
 uses typinfo, variants,
      vnode, vdebug, vluatools, vsystems, vluadungen, vluaentitynode,
      vmath, vtextures, vimage, vtigstyle, vvector,
-     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, drlbase, doomio, doomgfxio, doomspritemap;
+     dfplayer, dflevel, dfmap, doomhooks, doomhelp, dfhof, drlbase, drlio, drlgfxio, doomspritemap;
 
 var SpriteSheetCounter : Integer = -1;
 
@@ -287,7 +287,7 @@ var State    : TDRLLuaState;
 begin
   State.Init(L);
   if not GraphicsVersion then Exit( 0 );
-  iTexture := (IO as TDoomGFXIO).Textures.Textures[ State.ToString(1) ];
+  iTexture := (IO as TDRLGFXIO).Textures.Textures[ State.ToString(1) ];
   if iTexture = nil then State.Error( 'Texture not found: '+State.ToString(1) );
   if State.IsBoolean( 2 ) and State.ToBoolean( 2 ) then iTexture.Blend := True;
   if State.IsBoolean( 3 ) and State.ToBoolean( 3 ) then iTexture.is3D  := True;
@@ -307,7 +307,7 @@ var State     : TDRLLuaState;
   function LoadTexture( aIndex : Integer ) : TTexture;
   begin
     if not State.IsString( aIndex ) then Exit( nil );
-    LoadTexture := (IO as TDoomGFXIO).Textures.Textures[ State.ToString( aIndex ) ];
+    LoadTexture := (IO as TDRLGFXIO).Textures.Textures[ State.ToString( aIndex ) ];
     if LoadTexture = nil then State.Error( 'register_sprite_sheet - texture not found : "'+State.ToString( aIndex )+'"!');
     if LoadTexture.GLTexture = 0 then
       LoadTexture.Upload;
@@ -366,7 +366,7 @@ begin
       iData.Load('ascii');
       if GraphicsVersion then
       begin
-        iData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDoomGFXIO).Textures.LoadTextureCallback));
+        iData.RegisterLoader(FILETYPE_IMAGE ,@((IO as TDRLGFXIO).Textures.LoadTextureCallback));
         iData.Load('graphics');
       end;
       IO.Audio.LoadBindingDataFile( iData, 'audio.lua', DataPath );
@@ -382,7 +382,7 @@ begin
       LoadFiles( iModule.Path + 'help', @Help.StreamLoader, '*.hlp' );
       LoadFiles( iModule.Path + 'ascii', @IO.ASCIILoader, '*.asc' );
       if GraphicsVersion then
-        (IO as TDoomGFXIO).Textures.LoadTextureFolder( iModule.Path + 'graphics' );
+        (IO as TDRLGFXIO).Textures.LoadTextureFolder( iModule.Path + 'graphics' );
       // temporary hack, remove once drllq and drlhq are modules
       IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua', iModule.Path );
     end;
@@ -523,7 +523,7 @@ begin
   SetValue('GRAPHICSVERSION',GraphicsVersion);
 
   for Count := 0 to 15 do SetValue(ColorNames[Count],Count);
-  TDoomIO.RegisterLuaAPI( State );
+  TDRLIO.RegisterLuaAPI( State );
 
   Register( 'statistics', lua_statistics_lib );
   RegisterMetaTable('statistics',@lua_statistics_get, @lua_statistics_set );

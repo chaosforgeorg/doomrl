@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit doomhelpview;
 interface
-uses vutil, doomio, doomhelp, dfdata;
+uses vutil, drlio, doomhelp, dfdata;
 
 type THelpView = class( TInterfaceLayer )
   constructor Create;

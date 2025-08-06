@@ -48,7 +48,7 @@ end;
 
 implementation
 
-uses sysutils, vdebug, vtig, drlbase, doomio;
+uses sysutils, vdebug, vtig, drlbase, drlio;
 
 constructor TChoiceView.Create;
 begin

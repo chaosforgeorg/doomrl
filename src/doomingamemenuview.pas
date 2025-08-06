@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit doomingamemenuview;
 interface
-uses doomio, doomconfirmview, dfdata;
+uses drlio, doomconfirmview, dfdata;
 
 type TInGameMenuView = class( TInterfaceLayer )
   constructor Create;

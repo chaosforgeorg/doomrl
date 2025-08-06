@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit doommainmenuview;
 interface
-uses viotypes, vgenerics, vtextures, dfdata, doomio;
+uses viotypes, vgenerics, vtextures, dfdata, drlio;
 
 type TMainMenuViewMode = (
   MAINMENU_FIRST, MAINMENU_INTRO, MAINMENU_MENU,
@@ -81,7 +81,7 @@ implementation
 uses math, sysutils,
      vutil, vtig, vtigstyle, vtigio, vimage, vgltypes, vluasystem, vluavalue, vsound,
      dfhof,
-     drlbase, doomgfxio, doomplayerview, doomhelpview, doomsettingsview, doompagedview;
+     drlbase, drlgfxio, doomplayerview, doomhelpview, doomsettingsview, doompagedview;
 
 var ChallengeType : array[1..4] of TMainMenuEntry =
 ((
@@ -167,8 +167,8 @@ begin
 
   if GraphicsVersion then
   begin
-    FBGTexture   := (IO as TDoomGFXIO).Textures.TextureID['background'];
-    FLogoTexture := (IO as TDoomGFXIO).Textures.TextureID[AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetLogoTexture'], [] ) )];
+    FBGTexture   := (IO as TDRLGFXIO).Textures.TextureID['background'];
+    FLogoTexture := (IO as TDRLGFXIO).Textures.TextureID[AnsiString( LuaSystem.ProtectedCall( [CoreModuleID,'GetLogoTexture'], [] ) )];
   end;
 
   if FMode = MAINMENU_MENU then
@@ -716,12 +716,12 @@ end;
 
 
 procedure TMainMenuView.Render;
-var iIO             : TDoomGFXIO;
+var iIO             : TDRLGFXIO;
     iMin, iMax      : TGLVec2f;
     iSize, iSz, iTC : TGLVec2f;
     iImage          : TImage;
 begin
-  iIO := IO as TDoomGFXIO;
+  iIO := IO as TDRLGFXIO;
   Assert( iIO <> nil );
   iSize.Init( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
   iIO.RenderUIBackground( FBGTexture );

@@ -20,7 +20,7 @@ end;
 
 implementation
 
-uses vsystems, dfdata, doomio;
+uses vsystems, dfdata, drlio;
 
 
 { TDoomConfig }
@@ -107,7 +107,7 @@ begin
       else GraphicsVersion := False;
   end;
 
-  TDoomIO.RegisterLuaAPI( State );
+  TDRLIO.RegisterLuaAPI( State );
 end;
 
 end.

@@ -34,7 +34,7 @@ end;
 
 implementation
 
-uses vtig, drlbase, doomio;
+uses vtig, drlbase, drlio;
  
 constructor TConfirmView.Create;
 begin

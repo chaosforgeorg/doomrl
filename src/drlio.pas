@@ -4,7 +4,7 @@
 Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
-unit doomio;
+unit drlio;
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vmessages, vtextures,
@@ -36,7 +36,7 @@ type TASCIIImageMap       = specialize TGObjectHashMap<TUIStringArray>;
 type TInterfaceLayerStack = specialize TGArray<TInterfaceLayer>;
 type TStringHashMap       = specialize TGHashMap< AnsiString >;
 
-type TDoomIO = class( TIO )
+type TDRLIO = class( TIO )
   constructor Create; reintroduce;
   procedure Reconfigure( aConfig : TLuaConfig ); virtual;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
@@ -177,7 +177,7 @@ public
   property TargetLast    : Boolean        read FTargetLast    write FTargetLast;
 end;
 
-var IO : TDoomIO;
+var IO : TDRLIO;
 
 procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 
@@ -208,7 +208,7 @@ end;
 //var  GFXCapture : TGFXScreen;
 
 
-procedure TDoomIO.BloodSlideDown( aDelayTime : Word );
+procedure TDRLIO.BloodSlideDown( aDelayTime : Word );
 {
 const BloodPic : TPictureRec = (Picture : ' '; Color : 16*Red);
 var Temp  : TGFXScreen;
@@ -229,7 +229,7 @@ begin
 }
 end;
 
-procedure TDoomIO.WaitForAnimation;
+procedure TDRLIO.WaitForAnimation;
 var iTime : DWord;
 begin
   if FWaiting then Exit;
@@ -249,53 +249,53 @@ begin
   DRL.Level.RevealBeings;
 end;
 
-procedure TDoomIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
+procedure TDRLIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection );
 begin
 
 end;
 
-procedure TDoomIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single );
+procedure TDRLIO.addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single );
 begin
   addScreenShakeAnimation( aDuration, aDelay, aStrength, NewDirection(0) );
 end;
 
-procedure TDoomIO.addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean );
+procedure TDRLIO.addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean );
 begin
 
 end;
 
-procedure TDoomIO.addBumpAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aAmount : Single );
+procedure TDRLIO.addBumpAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aAmount : Single );
 begin
 
 end;
 
-procedure TDoomIO.addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D );
+procedure TDRLIO.addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D );
 begin
 
 end;
 
-procedure TDoomIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
+procedure TDRLIO.addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer );
 begin
 
 end;
 
-procedure TDoomIO.addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer );
+procedure TDRLIO.addItemAnimation( aDuration : DWord; aDelay : DWord; aItem : TThing; aValue : Integer );
 begin
 
 end;
 
-procedure TDoomIO.addKillAnimation( aDuration : DWord; aDelay : DWord; aBeing : TThing );
+procedure TDRLIO.addKillAnimation( aDuration : DWord; aDelay : DWord; aBeing : TThing );
 begin
 
 end;
 
-procedure TDoomIO.addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
+procedure TDRLIO.addRumbleAnimation( aDelay : DWord; aLow, aHigh : Word; aDuration : DWord );
 begin
   if (not Setting_GamepadRumble) or (not IsGamepad ) then Exit;
     IO.Driver.Rumble( aLow, aHigh, aDuration );
 end;
 
-procedure TDoomIO.Explosion( aDelay : Integer; aWhere: TCoord2D; aData : TExplosionData );
+procedure TDRLIO.Explosion( aDelay : Integer; aWhere: TCoord2D; aData : TExplosionData );
 var iCoord    : TCoord2D;
     iDistance : Byte;
     iVisible  : boolean;
@@ -343,7 +343,7 @@ begin
     IO.Msg( 'You hear an explosion!' );
 end;
 
-procedure TDoomIO.PulseBlood( aValue : Single );
+procedure TDRLIO.PulseBlood( aValue : Single );
 begin
 
 end;
@@ -376,7 +376,7 @@ begin
 
 end;
 }
-procedure TDoomIO.UpdateStyles;
+procedure TDRLIO.UpdateStyles;
 begin
   TIGStyleColored   := VTIGDefaultStyle;
   TIGStyleColored.Color[ VTIG_TEXT_COLOR ] := VTIGDefaultStyle.Color[ VTIG_FOOTER_COLOR ];
@@ -386,9 +386,9 @@ begin
   TIGStyleFrameless.Frame[ VTIG_BORDER_FRAME ] := '';
 end;
 
-{ TDoomIO }
+{ TDRLIO }
 
-constructor TDoomIO.Create;
+constructor TDRLIO.Create;
 var iStyle      : TUIStyle;
 begin
   FLoading := nil;
@@ -462,7 +462,7 @@ begin
   FLastTarget.Create(0,0);
 end;
 
-function TDoomIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
+function TDRLIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
 begin
   FHintOverlay := '';
   FConsole.HideCursor;
@@ -470,12 +470,12 @@ begin
   Result := aLayer;
 end;
 
-function TDoomIO.IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
+function TDRLIO.IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
 begin
   Exit( ( FLayers.Size > 0 ) and ( FLayers.Top = aLayer ) );
 end;
 
-function TDoomIO.IsModal : Boolean;
+function TDRLIO.IsModal : Boolean;
 var iLayer : TInterfaceLayer;
 begin
   for iLayer in FLayers do
@@ -483,13 +483,13 @@ begin
   Exit( False );
 end;
 
-procedure TDoomIO.PreAction;
+procedure TDRLIO.PreAction;
 begin
   FCachedAmmo := -1;
   FLastTarget.Create(0,0);
 end;
 
-procedure TDoomIO.Clear;
+procedure TDRLIO.Clear;
 var iLayer : TInterfaceLayer;
 begin
   FCachedAmmo := -1;
@@ -498,7 +498,7 @@ begin
   FLayers.Clear;
 end;
 
-function TDoomIO.OnEvent( const event : TIOEvent ) : Boolean;
+function TDRLIO.OnEvent( const event : TIOEvent ) : Boolean;
 var i      : Integer;
     iEvent : TIOEvent;
     iWide  : WideString;
@@ -590,85 +590,85 @@ begin
   Exit( False );
 end;
 
-function TDoomIO.GetPadLTrigger : Boolean;
+function TDRLIO.GetPadLTrigger : Boolean;
 begin
   Exit( False );
 end;
 
-function TDoomIO.GetPadRTrigger : Boolean;
+function TDRLIO.GetPadRTrigger : Boolean;
 begin
   Exit( False );
 end;
 
-function TDoomIO.GetPadLDir     : TCoord2D;
+function TDRLIO.GetPadLDir     : TCoord2D;
 begin
   Result.Create(0,0);
 end;
 
-function TDoomIO.IsGamepad      : Boolean;
+function TDRLIO.IsGamepad      : Boolean;
 begin
   Exit( False );
 end;
 
-procedure TDoomIO.FadeIn( aForce : Boolean = False );
+procedure TDRLIO.FadeIn( aForce : Boolean = False );
 begin
   // noop
 end;
 
-procedure TDoomIO.FadeOut( aTime : Single = 0.5; aWait : Boolean = False );
+procedure TDRLIO.FadeOut( aTime : Single = 0.5; aWait : Boolean = False );
 begin
   // noop
 end;
 
-procedure TDoomIO.FadeReset;
+procedure TDRLIO.FadeReset;
 begin
   // noop
 end;
 
-procedure TDoomIO.FadeWait;
+procedure TDRLIO.FadeWait;
 begin
   // noop
 end;
 
-function TDoomIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
+function TDRLIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
 begin
   Exit( aCoord );
 end;
 
-function TDoomIO.ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
+function TDRLIO.ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
 begin
   Exit( aCoord );
 end;
 
-procedure TDoomIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
+procedure TDRLIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
 begin
   // noop
 end;
 
-procedure TDoomIO.RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 );
+procedure TDRLIO.RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 );
 begin
   // noop
 end;
 
-procedure TDoomIO.FullLook( aID : Ansistring );
+procedure TDRLIO.FullLook( aID : Ansistring );
 begin
   FConsole.HideCursor;
   PushLayer( TMoreView.Create( aID ) );
 end;
 
-procedure TDoomIO.SetAutoTarget( aTarget : TCoord2D );
+procedure TDRLIO.SetAutoTarget( aTarget : TCoord2D );
 begin
   FHintTarget := DRL.Level.GetTargetDescription( aTarget );
 end;
 
-function TDoomIO.ResolveSub( const aID : Ansistring ) : Ansistring;
+function TDRLIO.ResolveSub( const aID : Ansistring ) : Ansistring;
 begin
   if IsGamepad
     then Exit( FPadSubMap.Get(aID, '') )
     else Exit( FKeySubMap.Get(aID, '') );
 end;
 
-procedure TDoomIO.Reconfigure( aConfig : TLuaConfig );
+procedure TDRLIO.Reconfigure( aConfig : TLuaConfig );
 var iInput : TInputKey;
     procedure CtrlAssign( aWhat : TInputKey; aFrom : TInputKey );
     var iKey : TIOKeyCode;
@@ -744,7 +744,7 @@ begin
   FPadSubMap['input_inventory'] := 'Start';
 end;
 
-procedure TDoomIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
+procedure TDRLIO.Configure ( aConfig : TLuaConfig; aReload : Boolean ) ;
 begin
   // TODO : configurable
 
@@ -762,7 +762,7 @@ begin
     aConfig.EntryFeed( 'Messages', @FMessages.AddHighlightCallback );
 end;
 
-procedure TDoomIO.WaitForLayer( aHideHUD : Boolean );
+procedure TDRLIO.WaitForLayer( aHideHUD : Boolean );
 begin
   if aHideHUD then
     FHudEnabled := False;
@@ -775,7 +775,7 @@ begin
     FHudEnabled := True;
 end;
 
-procedure TDoomIO.FullUpdate;
+procedure TDRLIO.FullUpdate;
 begin
   VTIG_NewFrame;
   if FHudEnabled then
@@ -783,7 +783,7 @@ begin
   inherited FullUpdate;
 end;
 
-destructor TDoomIO.Destroy;
+destructor TDRLIO.Destroy;
 var iLayer : TInterfaceLayer;
 begin
   FreeAndNil( FAudio );
@@ -801,7 +801,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TDoomIO.Screenshot ( aBB : Boolean );
+procedure TDRLIO.Screenshot ( aBB : Boolean );
 var iFName : AnsiString;
     iName  : AnsiString;
     iExt   : AnsiString;
@@ -838,7 +838,7 @@ begin
              else UI.Msg('Screenshot created.');}
 end;
 
-procedure TDoomIO.DrawHud;
+procedure TDRLIO.DrawHud;
 var iCon        : TUIConsole;
     iWeapon     : TItem;
     i, iP       : Integer;
@@ -1006,29 +1006,29 @@ begin
   end;
 end;
 
-procedure TDoomIO.SetHint ( const aText : AnsiString ) ;
+procedure TDRLIO.SetHint ( const aText : AnsiString ) ;
 begin
   FHint       := aText;
 end;
 
-procedure TDoomIO.ColorQuery(nkey,nvalue : Variant);
+procedure TDRLIO.ColorQuery(nkey,nvalue : Variant);
 begin
     ColorOverrides[nkey] := nvalue;
 end;
 
-function TDoomIO.ScreenShotCallback ( aEvent : TIOEvent ) : Boolean;
+function TDRLIO.ScreenShotCallback ( aEvent : TIOEvent ) : Boolean;
 begin
   ScreenShot( False );
   Exit(True);
 end;
 
-function TDoomIO.BBScreenShotCallback ( aEvent : TIOEvent ) : Boolean;
+function TDRLIO.BBScreenShotCallback ( aEvent : TIOEvent ) : Boolean;
 begin
   ScreenShot( True );
   Exit(True);
 end;
 
-function TDoomIO.Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
+function TDRLIO.Chunkify( const aString : AnsiString; aStart : Integer; aColor : TIOColor ) : TUIChunkBuffer;
 var iCon       : TUIConsole;
     iChunkList : TUIChunkList;
     iPosition  : TUIPoint;
@@ -1042,7 +1042,7 @@ begin
   Exit( iCon.LinifyChunkList( iChunkList ) );
 end;
 
-procedure TDoomIO.ASCIILoader ( aStream : TStream; aName : Ansistring; aSize : DWord ) ;
+procedure TDRLIO.ASCIILoader ( aStream : TStream; aName : Ansistring; aSize : DWord ) ;
 var iNewImage   : TUIStringArray;
     iIdent      : Ansistring;
 begin
@@ -1054,7 +1054,7 @@ begin
   FASCII.Items[iIdent] := iNewImage;
 end;
 
-procedure TDoomIO.EventMore;
+procedure TDRLIO.EventMore;
 begin
   if Option_MorePrompt then
   begin
@@ -1063,25 +1063,25 @@ begin
   end;
 end;
 
-procedure TDoomIO.LoadStart;
+procedure TDRLIO.LoadStart;
 begin
   if FLoading = nil then
     FLoading := PushLayer( TLoadingView.Create( 100 ) ) as TLoadingView;
 end;
 
-function TDoomIO.LoadCurrent : DWord;
+function TDRLIO.LoadCurrent : DWord;
 begin
   if Assigned( FLoading ) then Exit( FLoading.Current );
   Exit( 0 );
 end;
 
-procedure TDoomIO.LoadProgress ( aProgress : DWord ) ;
+procedure TDRLIO.LoadProgress ( aProgress : DWord ) ;
 begin
   if Assigned( FLoading ) then FLoading.Current := aProgress;
   FullUpdate;
 end;
 
-procedure TDoomIO.LoadStop;
+procedure TDRLIO.LoadStop;
 begin
   if Assigned( FLoading ) then
   begin
@@ -1090,7 +1090,7 @@ begin
   end;
 end;
 
-procedure TDoomIO.Update( aMSec : DWord );
+procedure TDRLIO.Update( aMSec : DWord );
 var iLayer  : TInterfaceLayer;
     iMEvent : TIOEvent;
 
@@ -1155,7 +1155,7 @@ begin
     VTIG_EventClear;
 end;
 
-function TDoomIO.EventToInput( const aEvent : TIOEvent ) : TInputKey;
+function TDRLIO.EventToInput( const aEvent : TIOEvent ) : TInputKey;
 begin
   if ( aEvent.EType = VEVENT_SYSTEM ) and ( aEvent.System.Code = VIO_SYSEVENT_QUIT ) then
     if Option_LockClose
@@ -1192,7 +1192,7 @@ begin
   Exit( INPUT_NONE );
 end;
 
-function TDoomIO.CommandEventPending : Boolean;
+function TDRLIO.CommandEventPending : Boolean;
 var iEvent : TIOEvent;
 begin
   repeat
@@ -1214,12 +1214,12 @@ begin
   Exit( iEvent.EType in [ VEVENT_KEYDOWN, VEVENT_MOUSEDOWN, VEVENT_PADDOWN ] );
 end;
 
-procedure TDoomIO.Focus(aCoord: TCoord2D);
+procedure TDRLIO.Focus(aCoord: TCoord2D);
 begin
   FConsole.MoveCursor(aCoord.x+1,aCoord.y+2);
 end;
 
-procedure TDoomIO.FinishTargeting;
+procedure TDRLIO.FinishTargeting;
 begin
   MsgUpDate;
   FConsole.HideCursor;
@@ -1228,7 +1228,7 @@ begin
   FTargetEnabled := False;
 end;
 
-procedure TDoomIO.LookDescription(aWhere: TCoord2D);
+procedure TDRLIO.LookDescription(aWhere: TCoord2D);
 var LookDesc : string;
 begin
   LookDesc := DRL.Level.GetLookDescription( aWhere );
@@ -1240,34 +1240,34 @@ begin
   FHintOverlay := LookDesc;
 end;
 
-procedure TDoomIO.Msg( const aText : AnsiString );
+procedure TDRLIO.Msg( const aText : AnsiString );
 begin
   if FMessages <> nil then FMessages.Add(aText);
 end;
 
-procedure TDoomIO.Msg( const aText : AnsiString; const aParams : array of const );
+procedure TDRLIO.Msg( const aText : AnsiString; const aParams : array of const );
 begin
   Msg( Format( aText, aParams ) );
 end;
 
-function TDoomIO.MsgGetRecent : TMessageBuffer;
+function TDRLIO.MsgGetRecent : TMessageBuffer;
 begin
   Exit( FMessages.Content );
 end;
 
-procedure TDoomIO.MsgReset;
+procedure TDRLIO.MsgReset;
 begin
   FMessages.Reset;
   FMessages.Update;
 end;
 
-procedure TDoomIO.MsgUpDate;
+procedure TDRLIO.MsgUpDate;
 begin
   FMessages.Update;
   FHintOverlay := '';
 end;
 
-procedure TDoomIO.ErrorReport(const aText: AnsiString);
+procedure TDRLIO.ErrorReport(const aText: AnsiString);
 begin
   Msg('{RError:} '+aText);
   PushLayer( TMoreLayer.Create( False ) );
@@ -1275,7 +1275,7 @@ begin
   Msg('{yError written to error.log, please report!}');
 end;
 
-procedure TDoomIO.ClearAllMessages;
+procedure TDRLIO.ClearAllMessages;
 begin
   FMessages.Clear;
 end;
@@ -1514,7 +1514,7 @@ const lua_ui_lib : array[0..18] of luaL_Reg = (
       ( name : nil;          func : nil; )
 );
 
-class procedure TDoomIO.RegisterLuaAPI( State : TLuaState );
+class procedure TDRLIO.RegisterLuaAPI( State : TLuaState );
 begin
   State.Register( 'ui', lua_ui_lib );
 end;

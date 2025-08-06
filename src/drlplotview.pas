@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlplotview;
 interface
-uses vutil, vtextures, doomio, dfdata;
+uses vutil, vtextures, drlio, dfdata;
 
 type TPlotView = class( TInterfaceLayer )
   constructor Create( const aMessage : AnsiString; aColor : DWord; const aBackground : Ansistring = '' );
@@ -26,7 +26,7 @@ end;
 
 implementation
 
-uses vtig, doomgfxio;
+uses vtig, drlgfxio;
 
 constructor TPlotView.Create( const aMessage : AnsiString; aColor : DWord; const aBackground : Ansistring = '' );
 begin
@@ -40,9 +40,9 @@ begin
   FBoost     := False;
   FBGTexture := 0;
   if GraphicsVersion and ( aBackground <> '' ) then
-    with (IO as TDoomGFXIO) do
+    with (IO as TDRLGFXIO) do
       if Textures.Exists(aBackground)
-         then FBGTexture := (IO as TDoomGFXIO).Textures.TextureID[aBackground]
+         then FBGTexture := (IO as TDRLGFXIO).Textures.TextureID[aBackground]
          else Log( LOGERROR, 'Texture not found - "'+aBackground+'"');
 end;
 

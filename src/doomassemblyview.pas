@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit doomassemblyview;
 interface
-uses vutil, doomio, dfdata;
+uses vutil, drlio, dfdata;
 
 type TAssemblyView = class( TInterfaceLayer )
   constructor Create;

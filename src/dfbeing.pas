@@ -212,7 +212,7 @@ implementation
 uses math, vlualibrary, vluaentitynode, vuid, vdebug, vvision, vluasystem,
      vluatools, vcolor, vvector,
      dfplayer, dflevel, dfmap, doomhooks,
-     drlua, drlbase, doomio;
+     drlua, drlbase, drlio;
 
 const PAIN_DURATION = 500;
 

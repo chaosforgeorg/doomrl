@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit doomrankupview;
 interface
-uses vutil, doomio, dfdata;
+uses vutil, drlio, dfdata;
 
 type TRankUpView = class( TInterfaceLayer )
   constructor Create( aRank : THOFRank );

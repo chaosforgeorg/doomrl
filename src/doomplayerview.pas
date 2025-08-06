@@ -8,7 +8,7 @@ unit doomplayerview;
 interface
 uses viotypes, vgenerics,
      dfitem, dfdata,
-     doomio, doomtrait, doomconfirmview;
+     drlio, doomtrait, doomconfirmview;
 
 type TPlayerViewState = (
   PLAYERVIEW_INVENTORY,

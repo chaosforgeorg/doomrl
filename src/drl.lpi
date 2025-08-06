@@ -138,7 +138,7 @@
         <IsPartOfProject Value="True"/>
       </Unit20>
       <Unit21>
-        <Filename Value="doomio.pas"/>
+        <Filename Value="drlio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit21>
       <Unit22>
@@ -150,11 +150,11 @@
         <IsPartOfProject Value="True"/>
       </Unit23>
       <Unit24>
-        <Filename Value="doomgfxio.pas"/>
+        <Filename Value="drlgfxio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit24>
       <Unit25>
-        <Filename Value="doomtextio.pas"/>
+        <Filename Value="drltextio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit25>
       <Unit26>

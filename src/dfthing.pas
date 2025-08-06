@@ -45,7 +45,7 @@ implementation
 
 uses typinfo, variants,
      vluasystem, vdebug,
-     drlbase, doomio;
+     drlbase, drlio;
 
 constructor TThing.Create( const aID : AnsiString );
 begin
