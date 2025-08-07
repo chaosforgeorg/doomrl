@@ -16,6 +16,8 @@ type
 
  TDRLGFXIO = class( TDRLIO )
     constructor Create; reintroduce;
+    procedure Reset; override;
+    procedure Initialize; override;
     procedure Reconfigure( aConfig : TLuaConfig ); override;
     procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
     procedure Update( aMSec : DWord ); override;
@@ -116,6 +118,9 @@ type
     FFadeAlpha      : Single;
     FFadeTime       : Single;
     FFadeTimer      : Single;
+
+    FConsoleSizeX : Integer;
+    FConsoleSizeY : Integer;
   public
     property QuadSheet   : TGLQuadList read FQuadSheet;
     property TextSheet   : TGLQuadList read FTextSheet;
@@ -136,8 +141,6 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
      dfplayer,
      drlbase, drlconfiguration;
 
-var ConsoleSizeX : Integer = 80;
-    ConsoleSizeY : Integer = 25;
 
 procedure TDRLGFXIO.RecalculateScaling( aInitialize : Boolean );
 var iWidth        : Integer;
@@ -200,47 +203,16 @@ begin
   if FFontMult <> iOldFontMult then
   begin
     CalculateConsoleParams;
-    TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - ConsoleSizeX*FFontSizeX*FFontMult) div 2, 0, FLineSpace, FFontMult );
+    TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - FConsoleSizeX*FFontSizeX*FFontMult) div 2, 0, FLineSpace, FFontMult );
   end;
 end;
 
 constructor TDRLGFXIO.Create;
-var iCoreData   : TVDataFile;
-    iImage      : TImage;
-    iFontTexture: TTextureID;
-    iFont       : TBitmapFont;
-    iStream     : TStream;
-    iSDLFlags   : TSDLIOFlags;
+var iSDLFlags   : TSDLIOFlags;
     iMode       : TIODisplayMode;
-    iFontName   : Ansistring;
-    iFontFormat : Ansistring;
     iWidth      : Integer;
     iHeight     : Integer;
-
 begin
-  FadeReset;
-  FLastMouseTime := 0;
-  FMouseLock     := True;
-  FGPDetected    := DRL.Store.IsSteamDeck;
-
-  FLoading := nil;
-  IO := Self;
-
-  FVPadding := 0;
-  FFontMult := 1;
-  FTileMult := 1;
-  FMCursor  := nil;
-  FTextures := nil;
-  FBloodValue       := 0;
-  FBloodValueTarget := 0;
-
-  FGPRight.Init();
-  FGPLeft.Init();
-  FGPLeftDir.Create(0,0);
-  FGPLTrigger := False;
-  FGPRTrigger := False;
-  FGPCamera := 0.0;
-
   {$IFDEF WINDOWS}
   if not GodMode then
   begin
@@ -269,7 +241,62 @@ begin
   end;
 
   FTextures  := TTextureManager.Create( Option_Blending );
+  SpriteMap  := TDRLSpriteMap.Create( Vec2i( iWidth, iHeight ) );
+  TSDLIODriver( FIODriver ).ShowMouse( False );
 
+  FMCursor   := TDRLMouseCursor.Create;
+  FQuadSheet := TGLQuadList.Create;
+  FTextSheet := TGLQuadList.Create;
+  FPostSheet := TGLQuadList.Create;
+  FQuadRenderer := TGLQuadRenderer.Create;
+
+  FAnimations := TAnimationManager.Create;
+
+  inherited Create;
+end;
+
+procedure TDRLGFXIO.Reset;
+begin
+  inherited Reset;
+  FTextures.Clear;
+  FAnimations.Clear;
+  FMCursor.Reset;
+
+  FadeReset;
+  FLastMouseTime := 0;
+  FMouseLock     := True;
+  FGPDetected    := False;
+
+  FLoading := nil;
+  IO := Self;
+
+  FVPadding := 0;
+  FFontMult := 1;
+  FTileMult := 1;
+  FBloodValue       := 0;
+  FBloodValueTarget := 0;
+  FConsoleSizeX     := 80;
+  FConsoleSizeY     := 25;
+
+  FGPRight.Init();
+  FGPLeft.Init();
+  FGPLeftDir.Create(0,0);
+  FGPLTrigger := False;
+  FGPRTrigger := False;
+  FGPCamera := 0.0;
+end;
+
+procedure TDRLGFXIO.Initialize;
+var iCoreData   : TVDataFile;
+    iImage      : TImage;
+    iFontTexture: TTextureID;
+    iFont       : TBitmapFont;
+    iRenderer   : TGLConsoleRenderer;
+    iStream     : TStream;
+    iFontName   : Ansistring;
+    iFontFormat : Ansistring;
+begin
+  FGPDetected := DRL.Store.IsSteamDeck;
   if Option_ForceRaw then
   begin
     iFontFormat := ReadFileString( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + 'default' );
@@ -283,7 +310,7 @@ begin
     FreeAndNil( iStream );
   end;
 
-  SScanf( iFontFormat, '%s %d %d %d %d', [@iFontName, @FFontSizeX, @FFontSizeY, @ConsoleSizeX, @ConsoleSizeY ] );
+  SScanf( iFontFormat, '%s %d %d %d %d', [@iFontName, @FFontSizeX, @FFontSizeY, @FConsoleSizeX, @FConsoleSizeY ] );
 
   if Option_ForceRaw then
     iImage := LoadImage( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + iFontName )
@@ -304,29 +331,19 @@ begin
   RecalculateScaling( True );
 
   CalculateConsoleParams;
-  FConsole := TGLConsoleRenderer.Create( iFont, ConsoleSizeX, ConsoleSizeY, FLineSpace, [VIO_CON_CURSOR, VIO_CON_BGCOLOR, VIO_CON_EXTCOLOR ] );
-  TGLConsoleRenderer( FConsole ).GlyphStretch := True;
+  iRenderer := TGLConsoleRenderer.Create( iFont, FConsoleSizeX, FConsoleSizeY, FLineSpace, [VIO_CON_CURSOR, VIO_CON_BGCOLOR, VIO_CON_EXTCOLOR ] );
+  TGLConsoleRenderer( iRenderer ).GlyphStretch := True;
 
-  TGLConsoleRenderer( FConsole ).SetPositionScale(
-    (FIODriver.GetSizeX - ConsoleSizeX*FFontSizeX*FFontMult) div 2,
+  TGLConsoleRenderer( iRenderer ).SetPositionScale(
+    (FIODriver.GetSizeX - FConsoleSizeX*FFontSizeX*FFontMult) div 2,
     0,
     FLineSpace,
     FFontMult
   );
-  SpriteMap  := TDRLSpriteMap.Create;
-  TSDLIODriver( FIODriver ).ShowMouse( False );
-                                                    //RRGGBBAA
-  inherited Create;
-  FMCursor      := TDRLMouseCursor.Create;
 
-  FQuadSheet := TGLQuadList.Create;
-  FTextSheet := TGLQuadList.Create;
-  FPostSheet := TGLQuadList.Create;
-  FQuadRenderer := TGLQuadRenderer.Create;
+  inherited Initialize( iRenderer );
 
   SetMinimapScale( FMiniScale );
-
-  FAnimations := TAnimationManager.Create;
 end;
 
 procedure TDRLGFXIO.Reconfigure(aConfig: TLuaConfig);
@@ -632,7 +649,7 @@ var iMousePoint : TIOPoint;
 begin
   if not Assigned( FQuadRenderer ) then Exit;
 
-  if FMCursor.Active and (FTime - FLastMouseTime > 3000) then
+  if (FMCursor <> nil) and FMCursor.Active and (FTime - FLastMouseTime > 3000) then
   begin
     FMCursor.Active := False;
     if not isModal then
@@ -722,7 +739,7 @@ begin
   begin
     FMinimap.Render( FQuadSheet );
 
-    iAbsolute := vutil.Rectangle( 1,1,ConsoleSizeX,ConsoleSizeY );
+    iAbsolute := vutil.Rectangle( 1,1,FConsoleSizeX,FConsoleSizeY );
     iP1 := ConsoleCoordToDeviceCoord( iAbsolute.Pos );
     iP2 := ConsoleCoordToDeviceCoord( vutil.Point( iAbsolute.x2+1, iAbsolute.y+2 ) );
     QuadSheet.PushColoredQuad( TGLVec2i.Create( iP1.x, iP1.y ), TGLVec2i.Create( iP2.x, iP2.y ), TGLVec4f.Create( 0,0,0,0.8 ) );
@@ -805,7 +822,7 @@ begin
   TSDLIODriver(FIODriver).ResetVideoMode( iWidth, iHeight, 32, iSDLFlags );
   RecalculateScaling( True );
   CalculateConsoleParams;
-  TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - ConsoleSizeX*FFontSizeX*FFontMult) div 2, 0, FLineSpace, FFontMult );
+  TGLConsoleRenderer( FConsole ).SetPositionScale( (FIODriver.GetSizeX - FConsoleSizeX*FFontSizeX*FFontMult) div 2, 0, FLineSpace, FFontMult );
   TGLConsoleRenderer( FConsole ).HideCursor;
   SetMinimapScale(FMiniScale);
   DeviceChanged;
@@ -823,7 +840,7 @@ end;
 
 procedure TDRLGFXIO.CalculateConsoleParams;
 begin
-  FLineSpace := Max((FIODriver.GetSizeY - ConsoleSizeY*FFontSizeY*FFontMult - 2*FVPadding) div ConsoleSizeY div FFontMult,0);
+  FLineSpace := Max((FIODriver.GetSizeY - FConsoleSizeY*FFontSizeY*FFontMult - 2*FVPadding) div FConsoleSizeY div FFontMult,0);
 end;
 
 function TDRLGFXIO.OnEvent( const iEvent : TIOEvent ) : Boolean;
@@ -891,7 +908,7 @@ function TDRLGFXIO.PushLayer(  aLayer : TInterfaceLayer ) : TInterfaceLayer;
 begin
   if FMCursor <> nil then
   begin
-    if FMCursor.Size = 0 then
+    if ( FMCursor.Size = 0 ) and ( FTextures.Exists('cursor') ) then
       FMCursor.SetTextureID( FTextures.TextureID['cursor'], 32 );
     FMCursor.Active := Setting_Mouse;
   end;

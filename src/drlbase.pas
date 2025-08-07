@@ -44,12 +44,12 @@ TDRL = class(TSystem)
        DataLoaded    : Boolean;
        GameWon       : Boolean;
        CrashSave     : Boolean;
-       NVersion      : TVersion;
        ModuleID      : AnsiString;
 
        constructor Create; override;
+       procedure Reset;
        procedure Reconfigure;
-       procedure CreateIO;
+       procedure Initialize;
        procedure Apply( aResult : TMenuResult );
        procedure Load;
        procedure UnLoad;
@@ -333,28 +333,50 @@ end;
 constructor TDRL.Create;
 begin
   inherited Create;
-  ModuleID   := CoreModuleID;
-  GameWon    := False;
-  DataLoaded := False;
-  CrashSave  := False;
   FTargeting := TTargeting.Create;
-  FPadMoved  := False;
-  SetState( DSStart );
-  FModuleHooks := [];
-  FChallengeHooks := [];
-  NVersion := ArrayToVersion(VERSION_ARRAY);
-  FLastInputTime := 0;
-  FPlayerView := nil;
-  FPadMoveActive := False;
-  Log( VersionToString( NVersion ) );
-  FStore := TStoreInterface.Get;
+  Reset;
+  FStore     := TStoreInterface.Get;
+  Log( VersionToString( ArrayToVersion(VERSION_ARRAY) ) );
   Reconfigure;
+  if GraphicsVersion
+    then IO := TDRLGFXIO.Create
+    else IO := TDRLTextIO.Create;
+end;
+
+procedure TDRL.Reset;
+begin
+  FreeAndNil( FLevel );
+
+  SetState( DSStart );
+  FTargeting.Clear;
+  Difficulty := 0;
+  Challenge  := '';
+  SChallenge := '';
+  ArchAngel  := False;
+  DataLoaded := False;
+  GameWon    := False;
+  CrashSave  := False;
+  ModuleID   := '';
+
+  FLastInputTime   := 0;
+  FDamagedLastTurn := False;
+  FPadMoveNext     := 0;
+  FPadMoved        := False;
+  FCoreHooks       := [];;
+  FModuleHooks     := [];
+  FChallengeHooks  := [];
+  FSChallengeHooks := [];
+  FLastInputTime   := 0;
+  FPlayerView      := nil;
+  FPadMoveActive   := False;
+
+  if IO <> nil then IO.Reset;
 end;
 
 procedure TDRL.Reconfigure;
 begin
   if Assigned( IO ) then
-    (IO as TDRLIO).Reconfigure( Config );
+    IO.Reconfigure( Config );
   Setting_AlwaysRandomName := Configuration.GetBoolean( 'always_random_name' );
   Setting_NoIntro          := Configuration.GetBoolean( 'skip_intro' );
   Setting_Flash            := Configuration.GetBoolean( 'flashing_fx' );
@@ -374,14 +396,12 @@ begin
   Setting_Fade             := Configuration.GetBoolean( 'fade_fx' );
 end;
 
-procedure TDRL.CreateIO;
+procedure TDRL.Initialize;
 begin
-  if GraphicsVersion
-    then IO := TDRLGFXIO.Create
-    else IO := TDRLTextIO.Create;
+  IO.Initialize;
   ProgramRealTime := MSecNow();
   IO.Configure( Config );
-  (IO as TDRLIO).Reconfigure( Config );
+  IO.Reconfigure( Config );
 end;
 
 procedure TDRL.Apply ( aResult : TMenuResult ) ;

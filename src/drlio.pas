@@ -37,6 +37,9 @@ type TStringHashMap       = specialize TGHashMap< AnsiString >;
 
 type TDRLIO = class( TIO )
   constructor Create; reintroduce;
+  procedure Reset; virtual;
+  procedure Initialize; virtual; abstract;
+  procedure Initialize( iRenderer : TIOConsoleRenderer );
   procedure Reconfigure( aConfig : TLuaConfig ); virtual;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
   procedure WaitForLayer( aHideHUD : Boolean );
@@ -388,25 +391,51 @@ end;
 { TDRLIO }
 
 constructor TDRLIO.Create;
-var iStyle      : TUIStyle;
 begin
   FLoading := nil;
-  IO := Self;
-  FTime := 0;
   FAudio    := TDRLAudio.Create;
   FMessages := TMessages.Create( 2, 77, @IO.EventMore, Option_MessageBuffer );
   FMessages.GroupMultiple := Setting_GroupMessages;
   FASCII    := TASCIIImageMap.Create( True );
   FLayers   := TInterfaceLayerStack.Create;
 
-  FWaiting    := False;
-  FHudEnabled := False;
-  FTargeting  := False;
-  FNarrowMode := False;
-  FHint       := '';
-
   FIODriver.SetTitle('DRL','DRL');
 
+  FKeySubMap := TStringHashMap.Create;
+  FPadSubMap := TStringHashMap.Create;
+
+  inherited Create( FIODriver, nil, nil );
+  Reset;
+end;
+
+procedure TDRLIO.Reset;
+begin
+  VTIG_Shutdown;
+  FLoading := nil;
+  IO := Self;
+  FTime := 0;
+  FLayers.Clear;
+  FASCII.Clear;
+  FAudio.Reset;
+  FWaiting     := False;
+  FHudEnabled  := False;
+  FTargeting   := False;
+  FNarrowMode  := False;
+  FHint        := '';
+  FHintOverlay := '';
+
+  FConsoleWindow := nil;
+  FTargetEnabled := False;
+  FTargetLast    := False;
+  FCachedAmmo    := -1;
+  FLastTarget.Create(0,0);
+  FUIMouseLast := Point(-1,-1);
+  FUIMouse     := Point(-1,-1);
+end;
+
+procedure TDRLIO.Initialize( iRenderer : TIOConsoleRenderer );
+var iStyle      : TUIStyle;
+begin
   iStyle := TUIStyle.Create('default');
   iStyle.Add('','fore_color', LightGray );
   iStyle.Add('','selected_color', Yellow );
@@ -435,30 +464,18 @@ begin
   iStyle.Add('text','fore_color', LightGray );
   iStyle.Add('text','back_color', ColorNone );
 
-  VTIG_Initialize( FConsole, FIODriver, False );
+  VTIG_Initialize( iRenderer, FIODriver, False );
   VTIG_SetSubCallback( @TIGSubCallback );
 
   UpdateStyles;
 
-  FKeySubMap := TStringHashMap.Create;
-  FPadSubMap := TStringHashMap.Create;
-
-  inherited Create( FIODriver, FConsole, iStyle );
-  LoadStart;
-  FUIMouseLast := Point(-1,-1);
-  FUIMouse     := Point(-1,-1);
-
-  IO := Self;
-  FConsole.Clear;
-  FConsole.HideCursor;
-  FConsoleWindow := nil;
+  inherited Initialize( iRenderer, iStyle );
+  iRenderer.Clear;
+  iRenderer.HideCursor;
   FUIRoot.UpdateOnRender := False;
   FullUpdate;
 
-  FTargetEnabled := False;
-  FTargetLast    := False;
-  FCachedAmmo    := -1;
-  FLastTarget.Create(0,0);
+  LoadStart;
 end;
 
 function TDRLIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
@@ -796,6 +813,7 @@ begin
     for iLayer in FLayers do
       iLayer.Free;
   FreeAndNil( FLayers );
+  VTIG_Shutdown;
   IO := nil;
   inherited Destroy;
 end;

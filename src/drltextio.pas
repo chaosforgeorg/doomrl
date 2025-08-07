@@ -11,6 +11,8 @@ uses vrltools, vtextmap, drlio, dfdata;
 
 type TDRLTextIO = class( TDRLIO )
     constructor Create; reintroduce;
+    procedure Reset; override;
+    procedure Initialize; override;
     destructor Destroy; override;
     procedure Update( aMSec : DWord ); override;
 
@@ -59,13 +61,26 @@ begin
   {$ENDIF}
   if (FIODriver.GetSizeX < 80) or (FIODriver.GetSizeY < 25) then
     raise EIOException.Create('Too small console available, resize your console to 80x25!');
-  {$IFDEF WINDOWS}
-  FConsole  := TTextConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
-  {$ELSE}
-  FConsole  := TCursesConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
-  {$ENDIF}
-  FTextMap       := TTextMap.Create( FConsole, Rectangle( 2,3,MAXX,MAXY ) );
   inherited Create;
+end;
+
+procedure TDRLTextIO.Reset;
+begin
+  inherited Reset;
+  FTarget.Create(0,0);
+  FTargetRange  := 0;
+end;
+
+procedure TDRLTextIO.Initialize;
+var iRenderer : TIOConsoleRenderer;
+begin
+  {$IFDEF WINDOWS}
+  iRenderer := TTextConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
+  {$ELSE}
+  iRenderer := TCursesConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
+  {$ENDIF}
+  inherited Initialize( iRenderer );
+  FTextMap       := TTextMap.Create( FConsole, Rectangle( 2,3,MAXX,MAXY ) );
 end;
 
 destructor TDRLTextIO.Destroy;

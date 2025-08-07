@@ -110,12 +110,27 @@ try
       Free;
     end;
 
+    {$IFDEF HEAPTRACE}
+    SetHeapTraceOutput( WritePath + 'heap.txt');
+    {$ENDIF}
+
+    Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, WritePath + 'runtime.log', False ) );
+    LogSystemInfo();
+    Logger.Log( LOGINFO, 'Log path set to - ' + WritePath );
+
+    ErrorLogFileName := WritePath + 'error.log';
+    Randomize;
+
+    drlbase.DRL := Systems.Add(TDRL.Create) as TDRL;
+
+//    repeat
     if CoreModuleID = '' then
     begin
       if FileExists( WritePath + 'module' )
         then CoreModuleID := ReadFileString( WritePath + 'module' )
         else CoreModuleID := VERSION_CORE;
     end;
+    drlbase.DRL.ModuleID := CoreModuleID;
 
     begin // Make and assign directories
       if not DirectoryExists( WritePath + 'user' ) then CreateDir( WritePath + 'user' );
@@ -126,20 +141,8 @@ try
       if not DirectoryExists( ModuleUserPath + 'backup' ) then CreateDir( ModuleUserPath + 'backup' );
     end;
 
-    {$IFDEF HEAPTRACE}
-    SetHeapTraceOutput( WritePath + 'heap.txt');
-    {$ENDIF}
+    drlbase.DRL.Initialize;
 
-    Logger.AddSink( TTextFileLogSink.Create( LOGDEBUG, WritePath + 'runtime.log', False ) );
-    LogSystemInfo();
-    Logger.Log( LOGINFO, 'Log path set to - ' + WritePath );
-
-    ErrorLogFileName := WritePath + 'error.log';
-
-    drlbase.DRL := Systems.Add(TDRL.Create) as TDRL;
-
-    Randomize;
-    drlbase.DRL.CreateIO;
     {$IFDEF WINDOWS}
     if not GraphicsVersion then
     begin
@@ -157,6 +160,9 @@ try
     end;
     {$ENDIF}
     drlbase.DRL.Run;
+
+//    drlbase.DRL.Reset;
+//  until False;
   finally
     FreeAndNil( Configuration );
     FreeAndNil( Systems );

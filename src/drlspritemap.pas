@@ -48,7 +48,7 @@ type
 { TDRLSpriteMap }
 
  TDRLSpriteMap = class( TVObject )
-  constructor Create;
+  constructor Create( aFramebuffer : TVec2i );
   procedure Recalculate;
   procedure Update( aTime : DWord; aProjection : TMatrix44 );
   procedure Draw;
@@ -257,8 +257,7 @@ VVerticBlurFragmentShader : Ansistring =
 
 { TDRLSpriteMap }
 
-constructor TDRLSpriteMap.Create;
-var iIO : TDRLGFXIO;
+constructor TDRLSpriteMap.Create( aFramebuffer : TVec2i );
 begin
   FTargeting := False;
   FTargetList := TCoord2DArray.Create();
@@ -271,28 +270,24 @@ begin
   FAutoTarget.Create(0,0);
   FMarker.Create(-1,-1);
 
-  iIO := (IO as TDRLGFXIO);
-
   FFramebuffer := TGLFramebuffer.Create;
   FFramebuffer.AddAttachment( RGBA8, False );
   FFramebuffer.AddAttachment( RGBA8, False );
   FFramebuffer.AddDepthBuffer;
-  FFramebuffer.Resize( IO.Driver.GetSizeX, IO.Driver.GetSizeY );
+  FFramebuffer.Resize( aFramebuffer.X, aFramebuffer.Y );
 
   FHBFramebuffer := TGLFramebuffer.Create;
   FHBFramebuffer.AddAttachment( RGBA8, False );
-  FHBFramebuffer.Resize( iIO.ScaledScreen.X, iIO.ScaledScreen.Y );
+  FHBFramebuffer.Resize( aFramebuffer.X, aFramebuffer.Y );
 
   FVBFramebuffer:= TGLFramebuffer.Create;
   FVBFramebuffer.AddAttachment( RGBA8, False );
-  FVBFramebuffer.Resize( iIO.ScaledScreen.X, iIO.ScaledScreen.Y );
+  FVBFramebuffer.Resize( aFramebuffer.X, aFramebuffer.Y );
 
   FPostProgram  := TGLProgram.Create(VCleanVertexShader, VPostFragmentShader);
   FHBlurProgram := TGLProgram.Create(VCleanVertexShader, VHorizBlurFragmentShader);
   FVBlurProgram := TGLProgram.Create(VCleanVertexShader, VVerticBlurFragmentShader);
   FFullscreen   := TGLFullscreenTriangle.Create;
-
-  Recalculate;
 end;
 
 procedure TDRLSpriteMap.Recalculate;
