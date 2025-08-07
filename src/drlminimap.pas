@@ -81,6 +81,7 @@ end;
 
 destructor TMinimap.Destroy;
 begin
+  UnUploadImage( FTexture );
   FreeAndNil( FImage );
   inherited Destroy;
 end;
