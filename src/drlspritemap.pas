@@ -28,6 +28,7 @@ type TDRLMouseCursor = class( TVObject )
   constructor Create;
   procedure SetTextureID( aTexture : TTextureID; aSize : DWord );
   procedure Draw( aPoint : TPoint; aTicks : DWord; aTarget : TGLQuadList );
+  procedure Reset;
 private
   FTextureID : TTextureID;
   FSize      : DWord;
@@ -154,8 +155,7 @@ end;
 constructor TDRLMouseCursor.Create;
 begin
   inherited Create;
-  FActive := True;
-  FSize   := 0;
+  Reset;
 end;
 
 procedure TDRLMouseCursor.SetTextureID ( aTexture : TTextureID; aSize : DWord ) ;
@@ -179,6 +179,12 @@ begin
     );
 end;
 
+procedure TDRLMouseCursor.Reset;
+begin
+  FActive    := False;
+  FSize      := 0;
+  FTextureID := 0;
+end;
 
 const
 VCleanVertexShader : Ansistring =
