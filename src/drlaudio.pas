@@ -122,7 +122,7 @@ begin
   begin
     if Option_Music or Option_Sound then
     begin
-      if not aReload then
+      if (not aReload) and ( not Assigned( Sound ) ) then
       begin
         if Option_SoundEngine = 'FMOD'
           then Sound := Systems.Add( TFMODSound.Create ) as TSound
