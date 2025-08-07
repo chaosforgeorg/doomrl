@@ -848,7 +848,7 @@ begin
     ReadSprite          := True;
   end;
   if aTable.IsTable( 'sflags' ) then
-    aSprite.Flags     := aTable.getFlags('sflags');
+    aSprite.Flags     := aTable.getFlags('sflags',[]);
   if aTable.IsNumber( 'sframes' ) then
     aSprite.Frames    := aTable.getInteger('sframes',0);
   if aTable.IsNumber( 'sftime' ) then
@@ -899,7 +899,7 @@ begin
   aExplosion.Delay      := aTable.getInteger('delay',0);
   aExplosion.Color      := aTable.getInteger('color',0);
   aExplosion.SoundID    := aTable.getString('sound_id','');
-  aExplosion.Flags      := ExplosionFlagsFromFlags( aTable.getFlags('flags') );
+  aExplosion.Flags      := ExplosionFlagsFromFlags( aTable.getFlags('flags',[]) );
   aExplosion.Damage     := NewDiceRoll( aTable.getString('damage','') );
   aExplosion.DamageType := TDamageType( aTable.getInteger('damage_type',LongInt( DAMAGE_FIRE ) ) );
   if aTable.IsNumber('content') then
