@@ -323,7 +323,6 @@ begin
   DataLoaded := False;
   HOF.Done;
   FreeAndNil(LuaSystem);
-  FreeAndNil(Config);
   FreeAndNil(Help);
   FreeAndNil(FLevel);
   FreeAndNil(ColorOverrides);
@@ -1492,6 +1491,7 @@ begin
       SaveVersionModule := '';
       SaveModString     := '';
 
+      FreeAndNil( UIDs );
       UIDs            := TUIDStore.CreateFromStream( iStream );
       GameWon         := iStream.ReadByte <> 0;
       Difficulty      := iStream.ReadByte;
@@ -1615,6 +1615,7 @@ destructor TDRL.Destroy;
 begin
   UnLoad;
   Log('DRL destroyed.');
+  FreeAndNil( Config );
   FreeAndNil( FTargeting );
   FreeAndNil( IO );
   FreeAndNil( UIDs );

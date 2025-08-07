@@ -251,6 +251,7 @@ begin
   FQuadRenderer := TGLQuadRenderer.Create;
 
   FAnimations := TAnimationManager.Create;
+  FMinimap    := TMinimap.Create;
 
   inherited Create;
 end;
@@ -327,7 +328,6 @@ begin
 
   iFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
 
-  FMinimap      := TMinimap.Create;
   RecalculateScaling( True );
 
   CalculateConsoleParams;
