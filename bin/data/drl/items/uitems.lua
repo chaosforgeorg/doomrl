@@ -126,6 +126,7 @@ function drl.register_unique_items()
 
 	register_item "ubutcher"
 	{
+		sound_id = "knife",
 		name     = "Butcher's Cleaver",
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_CLEAVER,
@@ -157,6 +158,7 @@ function drl.register_unique_items()
 
 	register_item "umjoll"
 	{
+		sound_id = "knife",
 		name     = "Mjollnir",
 		color    = LIGHTGREEN,
 		sprite   = SPRITE_CLEAVER,
