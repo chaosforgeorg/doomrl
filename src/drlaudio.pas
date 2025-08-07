@@ -31,6 +31,7 @@ type TAudioRegistry   = specialize TGArray< TAudioEntry >;
 
 type TDRLAudio = class
   constructor Create;
+  procedure Reset;
   procedure Reconfigure;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False );
   function LoadBindingFile( const aFile, aRoot : Ansistring ) : Boolean;
@@ -75,13 +76,27 @@ end;
 
 constructor TDRLAudio.Create;
 begin
-  FSoundEvents := TSoundEventHeap.Create( @DRLSoundEventCompare );
-  FTime        := 0;
-  FLastMusic   := '';
-
+  FSoundEvents   := TSoundEventHeap.Create( @DRLSoundEventCompare );
   FAudioRegistry := TAudioRegistry.Create;
   FAudioLookup   := TAudioLookup.Create;
-  FMusicCount    := 0;
+  Reset;
+end;
+
+procedure TDRLAudio.Reset;
+begin
+  if Assigned( Sound ) then
+  begin
+    Sound.Silence;
+    Sound.Reset;
+  end;
+  FSoundEvents.Clear;
+  FAudioRegistry.Clear;
+  FAudioLookup.Clear;
+  FCurrentData := nil;
+  FTime        := 0;
+  FMusicCount  := 0;
+  FRoot        := '';
+  FLastMusic   := '';
 end;
 
 procedure TDRLAudio.Reconfigure;
