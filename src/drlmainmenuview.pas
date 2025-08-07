@@ -800,7 +800,6 @@ begin
   for iTable in LuaSystem.ITables('diff') do
   with iTable do
   begin
-    FillChar( iEntry, Sizeof(iEntry), 0 );
     iEntry.Allow := True;
     if (FResult.Challenge <> '') and (not GetBoolean( 'challenge' )) then Continue;
     if GetInteger('req_skill',0) > iSkill then iEntry.Allow := Setting_UnlockAll;

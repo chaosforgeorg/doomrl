@@ -44,7 +44,7 @@ uses SysUtils, vutil, vtig;
 
 constructor THelpEntry.Create;
 begin
-  FText := TUIStringArray.Create;
+  FText := nil;
 end;
 
 destructor THelpEntry.Destroy;

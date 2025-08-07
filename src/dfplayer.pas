@@ -463,6 +463,7 @@ begin
   FreeAndNil( FStatistics );
   FreeAndNil( FKills );
   FreeAndNil( FMultiMove );
+  FreeAndNil( FTraits );
   inherited Destroy;
 end;
 

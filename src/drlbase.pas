@@ -1617,6 +1617,7 @@ begin
   Log('DRL destroyed.');
   FreeAndNil( FTargeting );
   FreeAndNil( IO );
+  FreeAndNil( UIDs );
   inherited Destroy;
 end;
 
