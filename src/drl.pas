@@ -117,8 +117,6 @@ try
         else CoreModuleID := VERSION_CORE;
     end;
 
-    if ScorePath = '' then ScorePath := WritePath;
-
     begin // Make and assign directories
       if not DirectoryExists( WritePath + 'user' ) then CreateDir( WritePath + 'user' );
       if not DirectoryExists( WritePath + 'user' + PathDelim + CoreModuleID ) then CreateDir( WritePath + 'user' + PathDelim + CoreModuleID );
@@ -126,7 +124,6 @@ try
       if not DirectoryExists( ModuleUserPath + 'screenshot' ) then CreateDir( ModuleUserPath + 'screenshot' );
       if not DirectoryExists( ModuleUserPath + 'mortem' ) then CreateDir( ModuleUserPath + 'mortem' );
       if not DirectoryExists( ModuleUserPath + 'backup' ) then CreateDir( ModuleUserPath + 'backup' );
-      if ScorePath = WritePath then ScorePath := ModuleUserPath;
     end;
 
     {$IFDEF HEAPTRACE}

@@ -727,10 +727,13 @@ begin
 end;
 
 procedure THOF.Init;
+var iScorePath : Ansistring;
 begin
-  FScore := TScoreFile.Create( ScorePath + ScoreFile, MaxHOFEntries );
+  iScorePath := ScorePath;
+  if iScorePath = '' then iScorePath := ModuleUserPath;
+  FScore := TScoreFile.Create( iScorePath + ScoreFile, MaxHOFEntries );
   FScore.SetCRC( '344ef'+{ModuleID+}'3321', '738af'+{ModuleID+}'92-5' );
-  FScore.SetBackup(  ScorePath+'backup'+PathDelim, Option_ScoreBackups );
+  FScore.SetBackup( iScorePath+'backup'+PathDelim, Option_ScoreBackups );
   FScore.Lock;
   try
     FScore.Load;
