@@ -18,11 +18,9 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="9"/>
-      <RevisionNr Value="9"/>
-      <BuildNr Value="8"/>
+      <MinorVersionNr Value="10"/>
       <CharSet Value="0000"/>
-      <StringTable CompanyName="ChaosForge" FileDescription="D**m, the Roguelike" LegalCopyright="(c) 2002-2024 by Kornel Kisielewicz" ProductName="D**m, the Roguelike"/>
+      <StringTable CompanyName="ChaosForge" FileDescription="DRL" LegalCopyright="(c) 2002-2025 by Kornel Kisielewicz" ProductName="DRL"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="default" Default="True"/>
