@@ -45,7 +45,7 @@ end;
 implementation
 
 uses typinfo, variants,
-     vnode, vdebug, vluatools, vsystems, vluadungen, vluaentitynode,
+     vnode, vdebug, vluatools, vluadungen, vluaentitynode,
      vmath, vtextures, vimage, vtigstyle, vvector,
      dfplayer, dflevel, dfmap, drlhooks, drlhelp, dfhof, drlbase, drlio, drlgfxio, drlspritemap;
 

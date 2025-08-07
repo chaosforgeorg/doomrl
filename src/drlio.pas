@@ -7,7 +7,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 unit drlio;
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
-     vio, vsystems, vrltools, vluaconfig, vglquadrenderer, vmessages, vtextures,
+     vio, vrltools, vluaconfig, vglquadrenderer, vmessages, vtextures,
      vuitypes, vluastate,  viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
      dfdata, dfthing, drlspritemap, drlaudio, drlkeybindings, drlloadingview;
 

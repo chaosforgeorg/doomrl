@@ -20,7 +20,7 @@ end;
 
 implementation
 
-uses vsystems, dfdata, drlio;
+uses dfdata, drlio;
 
 
 { TDRLConfig }

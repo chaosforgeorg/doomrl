@@ -64,7 +64,7 @@ end;
 implementation
 
 uses sysutils, math,
-     vdebug, vutil, vsystems, vmath, vsound, vfmodsound, vsdlsound,
+     vdebug, vutil, vmath, vsound, vfmodsound, vsdlsound,
      drlio, drlconfiguration, dfplayer, dfdata;
 
 function DRLSoundEventCompare( const Item1, Item2: TSoundEvent ): Integer;
@@ -140,8 +140,8 @@ begin
       if (not aReload) and ( not Assigned( Sound ) ) then
       begin
         if Option_SoundEngine = 'FMOD'
-          then Sound := Systems.Add( TFMODSound.Create ) as TSound
-          else Sound := Systems.Add( TSDLSound.Create ) as TSound;
+          then Sound := TFMODSound.Create
+          else Sound := TSDLSound.Create;
       end
       else
         Sound.Reset;
@@ -395,6 +395,7 @@ begin
   FreeAndNil( FSoundEvents );
   FreeAndNil( FAudioRegistry );
   FreeAndNil( FAudioLookup );
+  FreeAndNil( Sound );
 end;
 
 end.

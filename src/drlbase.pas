@@ -7,7 +7,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 unit drlbase;
 interface
 
-uses vsystems, vsystem, vutil, vuid, vrltools, vluasystem, vioevent, vstoreinterface,
+uses vnode, vutil, vuid, vrltools, vluasystem, vioevent, vstoreinterface,
      dflevel, dfdata, dfhof, dfitem,
      drlhooks, drlua, drlcommand, drlkeybindings;
 
@@ -36,7 +36,7 @@ type
 
 { TDRL }
 
-TDRL = class(TSystem)
+TDRL = class(TVObject)
        Difficulty    : Byte;
        Challenge     : AnsiString;
        SChallenge    : AnsiString;
@@ -46,7 +46,7 @@ TDRL = class(TSystem)
        CrashSave     : Boolean;
        ModuleID      : AnsiString;
 
-       constructor Create; override;
+       constructor Create;
        procedure Reset;
        procedure Reconfigure;
        procedure Initialize;
@@ -282,7 +282,7 @@ begin
 
   SetState( DSLoading );
   iLua := TDRLLua.Create();
-  LuaSystem := Systems.Add( iLua ) as TLuaSystem;
+  LuaSystem := iLua;
   LuaSystem.CallDefaultResult := True;
 //  Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
@@ -332,7 +332,6 @@ end;
 
 constructor TDRL.Create;
 begin
-  inherited Create;
   FTargeting := TTargeting.Create;
   Reset;
   FStore     := TStoreInterface.Get;
@@ -1448,7 +1447,7 @@ var iTraitID : AnsiString;
     iTrait   : Byte;
 begin
   FreeAndNil( UIDs );
-  UIDs := Systems.Add(TUIDStore.Create) as TUIDStore;
+  UIDs := TUIDStore.Create;
   Player := TPlayer.Create;
   FLevel.Place( Player, NewCoord2D(4,4) );
   Player.Klass := aResult.Klass;

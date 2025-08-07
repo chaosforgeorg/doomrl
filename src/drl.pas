@@ -20,7 +20,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 
 program drl;
-uses SysUtils, vsystems,
+uses SysUtils,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
      vdebug, drlbase, vlog, vutil, vos, vparams,
@@ -121,7 +121,7 @@ try
     ErrorLogFileName := WritePath + 'error.log';
     Randomize;
 
-    drlbase.DRL := Systems.Add(TDRL.Create) as TDRL;
+    drlbase.DRL := TDRL.Create;
 
 //    repeat
     if CoreModuleID = '' then
@@ -160,12 +160,13 @@ try
     end;
     {$ENDIF}
     drlbase.DRL.Run;
+    drlbase.DRL.UnLoad;
 
 //    drlbase.DRL.Reset;
 //  until False;
   finally
     FreeAndNil( Configuration );
-    FreeAndNil( Systems );
+    FreeAndNil( drlbase.DRL );
   end;
 except on e : Exception do
   begin
