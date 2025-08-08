@@ -434,42 +434,13 @@ begin
 end;
 
 procedure TDRLIO.Initialize( iRenderer : TIOConsoleRenderer );
-var iStyle      : TUIStyle;
 begin
-  iStyle := TUIStyle.Create('default');
-  iStyle.Add('','fore_color', LightGray );
-  iStyle.Add('','selected_color', Yellow );
-  iStyle.Add('','inactive_color', DarkGray );
-  iStyle.Add('','selinactive_color', Yellow );
-
-  iStyle.Add('menu','fore_color', Red );
-  iStyle.Add('plot_viewer','fore_color', Red );
-  iStyle.Add('','back_color', Black );
-  iStyle.Add('','scroll_chars', '^v' );
-  iStyle.Add('','icon_color', White );
-  iStyle.Add('','opaque', False );
-  iStyle.Add('','frame_color', DarkGray );
-  if (not Option_HighASCII) and ( not GraphicsVersion )
-     then iStyle.Add('','frame_chars', '-|-|/\\/-|^v' )
-     else iStyle.Add('','frame_chars', #196+#179+#196+#179+#218+#191+#192+#217+#196+#179+'^v' );
-  iStyle.Add('window','fore_color', Red );
-  iStyle.Add('','frame_color', Red );
-  iStyle.Add('full_window','fore_color', LightRed );
-  iStyle.Add('full_window','frame_color', Red );
-  iStyle.Add('full_window','fore_color', LightRed );
-  iStyle.Add('full_window','title_color', LightRed );
-  iStyle.Add('full_window','footer_color', LightRed );
-  iStyle.Add('input','fore_color', LightBlue );
-  iStyle.Add('input','back_color', Blue );
-  iStyle.Add('text','fore_color', LightGray );
-  iStyle.Add('text','back_color', ColorNone );
-
   VTIG_Initialize( iRenderer, FIODriver, False );
   VTIG_SetSubCallback( @TIGSubCallback );
 
   UpdateStyles;
 
-  inherited Initialize( iRenderer, iStyle );
+  inherited Initialize( iRenderer, nil );
   iRenderer.Clear;
   iRenderer.HideCursor;
   FUIRoot.UpdateOnRender := False;
