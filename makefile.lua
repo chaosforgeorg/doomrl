@@ -70,7 +70,6 @@ makefile = {
 				MACOSX  = { "unix_notes.txt" },
 			},
 			other = { "jhc.wad", "core.wad" },
-			create = { { "module", "jhc" } },
 		}
 	},
 	commands = {
