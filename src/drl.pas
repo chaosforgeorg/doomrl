@@ -123,7 +123,11 @@ try
 
     drlbase.DRL := TDRL.Create;
 
-    //drlbase.DRL.RunModuleChoice;
+    if CoreModuleID <> '' then
+      CoreModuleID := drlbase.DRL.Modules.CoreModuleID;
+
+    if CoreModuleID = '' then
+      drlbase.DRL.RunModuleChoice;
 
     repeat
       ForceRestart := False;

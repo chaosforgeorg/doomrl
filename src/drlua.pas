@@ -27,7 +27,6 @@ TDRLLua = class(TLuaSystem)
        procedure LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );
      private
        FOpenData : TVDataFileArray;
-       FModules  : TDRLModules;
      end;
 
 type
@@ -348,7 +347,7 @@ begin
   iProgBase := IO.LoadCurrent;
   IO.LoadProgress(iProgBase);
 
-  for iModule in FModules.ActiveModules do
+  for iModule in DRL.Modules.ActiveModules do
   begin
     iData := nil;
     if iModule.Path.EndsWith( '.wad' ) then
@@ -436,7 +435,6 @@ begin
   for iData in FOpenData do
     iData.Free;
   FreeAndNil( FOpenData );
-  FreeAndNil( FModules );
   inherited Destroy;
 end;
 
@@ -496,9 +494,6 @@ begin
   if GodMode
     then inherited Create( Config.Raw )
     else inherited Create( nil );
-
-  FModules := TDRLModules.Create;
-  FModules.ScanModules( CoreModuleID );
 
   FOpenData := TVDataFileArray.Create;
 

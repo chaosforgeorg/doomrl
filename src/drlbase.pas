@@ -9,7 +9,7 @@ interface
 
 uses vnode, vutil, vuid, vrltools, vluasystem, vioevent, vstoreinterface,
      dflevel, dfdata, dfhof, dfitem,
-     drlhooks, drlua, drlcommand, drlkeybindings;
+     drlhooks, drlua, drlcommand, drlkeybindings, drlmodule;
 
 type TTargeting = class
   constructor Create;
@@ -101,8 +101,10 @@ TDRL = class(TVObject)
        FPadMoveNext     : QWord;
        FStore           : TStoreInterface;
        FPadMoved        : Boolean;
+       FModules         : TDRLModules;
      public
        property Store : TStoreInterface read FStore;
+       property Modules : TDRLModules read FModules;
        property Level : TLevel read FLevel;
        property ChalHooks : TFlags read FChallengeHooks;
        property ModuleHooks : TFlags read FModuleHooks;
@@ -340,6 +342,9 @@ begin
   if GraphicsVersion
     then IO := TDRLGFXIO.Create
     else IO := TDRLTextIO.Create;
+
+  FModules := TDRLModules.Create;
+  FModules.ScanModules;
 end;
 
 procedure TDRL.RunModuleChoice;
@@ -403,6 +408,7 @@ end;
 
 procedure TDRL.Initialize;
 begin
+  FModules.ActivateModules( CoreModuleID );
   IO.Initialize;
   IO.LoadStart;
   ProgramRealTime := MSecNow();
@@ -1622,11 +1628,12 @@ end;
 destructor TDRL.Destroy;
 begin
   UnLoad;
-  Log('DRL destroyed.');
+  FreeAndNil( FModules );
   FreeAndNil( Config );
   FreeAndNil( FTargeting );
   FreeAndNil( IO );
   FreeAndNil( UIDs );
+  Log('DRL destroyed.');
   inherited Destroy;
 end;
 

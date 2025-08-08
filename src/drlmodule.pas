@@ -10,6 +10,7 @@ uses vlua, vutil, vnode, vgenerics;
 
 type TDRLModule = class
     ID           : Ansistring;
+    Name         : Ansistring;
     Version      : Ansistring;
     Path         : Ansistring;
     BaseRequired : AnsiString;
@@ -32,12 +33,14 @@ type
 
 TDRLModules = class(TVObject)
   constructor Create;
-  procedure ScanModules( const aCoreModuleID : Ansistring );
+  procedure ScanModules;
+  procedure ActivateModules( const aCoreModuleID : Ansistring );
   destructor Destroy; override;
 private
-  FActiveModules : TModuleList;
   FModules       : TModuleArray;
   FModuleMap     : TModuleHash;
+  FCoreModules   : TModuleList;
+  FActiveModules : TModuleList;
   FCoreModuleID  : Ansistring;
 private
   function ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDRLModule;
@@ -45,6 +48,7 @@ private
   procedure ReadMetaFromFolder( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
 public
   property ActiveModules : TModuleList read FActiveModules;
+  property CoreModules : TModuleList   read FCoreModules;
   property CoreModuleID  : Ansistring  read FCoreModuleID;
 end;
 
@@ -64,17 +68,18 @@ begin
   FModules       := TModuleArray.Create( True );
   FModuleMap     := TModuleHash.Create;
   FActiveModules := TModuleList.Create;
+  FCoreModules   := TModuleList.Create;
   FCoreModuleID  := '';
 end;
 
-procedure TDRLModules.ScanModules( const aCoreModuleID : Ansistring );
+procedure TDRLModules.ScanModules;
 var iInfo   : TSearchRec;
     iModule : TDRLModule;
     iLua    : TLua;
 begin
-  FCoreModuleID := aCoreModuleID;
   FModules.Clear;
   FModuleMap.Clear;
+  FCoreModules.Clear;
   FActiveModules.Clear;
   try
     iLua := TLua.Create;
@@ -98,8 +103,24 @@ begin
   finally
     FreeAndNil( iLua );
   end;
-
   FModules.Sort( @DRLModuleCompare );
+
+  for iModule in FModules do
+    if iModule.IsBase then
+    begin
+      FCoreModules.Push( iModule );
+      Log( 'found base module %s (%s)', [ iModule.ID, iModule.Path ] );
+    end;
+
+  if FCoreModules.Size = 1 then
+     FCoreModuleID := FCoreModules[0].ID;
+end;
+
+procedure TDRLModules.ActivateModules( const aCoreModuleID : Ansistring );
+var iModule : TDRLModule;
+begin
+  FCoreModuleID := aCoreModuleID;
+  FActiveModules.Clear;
   for iModule in FModules do
     if ( ( iModule.BaseRequired = aCoreModuleID ) or ( iModule.BaseRequired = '' ) )
     and ( ( not iModule.IsBase ) or ( iModule.ID = aCoreModuleID ) ) then
@@ -119,6 +140,7 @@ begin
     with TLuaTable.Create( aLua.NativeState, 'meta' ) do
     try
       iModule.ID           := GetString( 'id' );
+      iModule.Name         := GetString( 'name', iModule.ID );
       iModule.Version      := GetString( 'version', '' );
       iModule.Path         := '';
       iModule.BaseRequired := GetString( 'base_required', '' );
@@ -197,9 +219,10 @@ end;
 
 destructor TDRLModules.Destroy;
 begin
-  FreeAndNil( FModules );
-  FreeAndNil( FModuleMap );
   FreeAndNil( FActiveModules );
+  FreeAndNil( FCoreModules );
+  FreeAndNil( FModuleMap );
+  FreeAndNil( FModules );
   inherited Destroy;
 end;
 

@@ -19,7 +19,7 @@ end;
 
 implementation
 
-uses vtig;
+uses vtig, drlbase, drlmodule;
 
 constructor TModuleChoiceView.Create;
 begin
@@ -27,14 +27,26 @@ begin
 end;
 
 procedure TModuleChoiceView.Update( aDTime : Integer );
+var iResult : Ansistring;
+    iModule : TDRLModule;
 begin
+  iResult := '';
   VTIG_Clear;
   IO.Root.Console.HideCursor;
-  VTIG_Begin( 'core_module_choice', Point( 30, 10 ) );
-     VTIG_Selectable('drl');
-     VTIG_Selectable('jhc');
-     if VTIG_Selectable('cancel') then FFinished := True;
+  VTIG_BeginWindow( 'DRL module choice', 'core_module_choice', Point( 40, -1 ) );
+  VTIG_Text( 'Select core module to run' );
+  VTIG_Ruler;
+  for iModule in DRL.Modules.CoreModules do
+     if VTIG_Selectable( iModule.Name ) then
+       iResult := iModule.ID;
+  VTIG_Ruler;
+  VTIG_Text( 'You can set your default core module in Settings!' );
   VTIG_End;
+  if iResult <> '' then
+  begin
+    CoreModuleID := iResult;
+    FFinished := True;
+  end;
 end;
 
 function TModuleChoiceView.IsFinished : Boolean;
