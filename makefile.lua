@@ -33,7 +33,7 @@ makefile = {
 	publish = {
 		lq = {
 			exec = { "drl" },
-			files = { "config.lua" },
+			files = { "config.lua", "font.dat" },
 			os = {
 				WINDOWS = { "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "drl_console.bat" },
 				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm", dos2unix = true, },
@@ -48,7 +48,7 @@ makefile = {
 		},
 		hq = {
 			exec = { "drl" },
-			files = { "config.lua" },
+			files = { "config.lua", "font.dat" },
 			os = {
 				WINDOWS = { "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "drl_console.bat" },
 				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm",  dos2unix = true, },
@@ -63,7 +63,7 @@ makefile = {
 		},
 		jhc = {
 			exec = { "drl" },
-			files = { "config.lua" },
+			files = { "config.lua", "font.dat" },
 			os = {
 				WINDOWS = { "steam_api64.dll", "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "drl_console.bat" },
 				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm",  dos2unix = true, },

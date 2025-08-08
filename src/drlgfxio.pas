@@ -7,7 +7,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 unit drlgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
-     vrltools, vutil, vtextures, vvector,
+     vrltools, vutil, vtextures, vvector, vbitmapfont,
      drlio, drlspritemap, drlanimation, drlminimap, dfdata, dfthing;
 
 type
@@ -66,8 +66,8 @@ type
     procedure FadeOut( aTime : Single = 0.5; aWait : Boolean = False ); override;
     procedure FadeReset; override;
     procedure FadeWait; override;
-
  protected
+    procedure ReadDefaultFont;
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
     procedure ResetVideoMode;
@@ -110,6 +110,7 @@ type
     FMouseLock     : Boolean;
     FMCursor       : TDRLMouseCursor;
     FMinimap       : TMinimap;
+    FDefaultFont   : TBitmapFont;
 
     FAnimations     : TAnimationManager;
     FTextures       : TTextureManager;
@@ -130,6 +131,7 @@ type
     property ScaledScreen: TGLVec2i    read FScaledScreen;
     property MCursor     : TDRLMouseCursor read FMCursor;
     property Textures    : TTextureManager read FTextures;
+    property DefaultFont : TBitmapFont read FDefaultFont;
   end;
 
 implementation
@@ -137,7 +139,7 @@ implementation
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
      vdebug, vlog, vmath, vdf, vgl3library, vsdl2library,
-     vglimage, vsdlio, vbitmapfont, vcolor, vglconsole, vioconsole,
+     vglimage, vsdlio, vcolor, vglconsole, vioconsole,
      dfplayer,
      drlbase, drlconfiguration;
 
@@ -252,14 +254,16 @@ begin
 
   FAnimations := TAnimationManager.Create;
   FMinimap    := TMinimap.Create;
-
+  FDefaultFont:= nil;
   inherited Create;
 end;
 
 procedure TDRLGFXIO.Reset;
+var iImage : TImage;
 begin
   inherited Reset;
   FTextures.Clear;
+  ReadDefaultFont;
   FAnimations.Clear;
   FMCursor.Reset;
 
@@ -285,6 +289,19 @@ begin
   FGPLTrigger := False;
   FGPRTrigger := False;
   FGPCamera := 0.0;
+end;
+
+procedure TDRLGFXIO.ReadDefaultFont;
+var iImage       : TImage;
+    iFontTexture : TTextureID;
+begin
+  FreeAndNil( FDefaultFont );
+  iImage := LoadImage( 'font.dat' );
+  iImage.SubstituteColor( ColorBlack, ColorZero );
+  iFontTexture := FTextures.AddImage( 'default_font', iImage, False );
+  FTextures[ iFontTexture ].Image.SubstituteColor( ColorBlack, ColorZero );
+  FTextures[ iFontTexture ].Upload;
+  FDefaultFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
 end;
 
 procedure TDRLGFXIO.Initialize;
@@ -375,6 +392,7 @@ end;
 
 destructor TDRLGFXIO.Destroy;
 begin
+  FreeAndNil( FDefaultFont );
   FreeAndNil( FMCursor );
   FreeAndNil( FQuadSheet );
   FreeAndNil( FTextSheet );
