@@ -126,6 +126,7 @@ type TDRLIO = class( TIO )
   procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
   procedure SetAutoTarget( aTarget : TCoord2D ); virtual;
   function ResolveSub( const aID : Ansistring ) : Ansistring;
+  procedure RunModuleChoice; virtual;
 protected
   procedure UpdateStyles;
   procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); virtual; abstract;
@@ -189,7 +190,7 @@ uses math, video, dateutils, variants,
      vsound, vluasystem, vuid, vlog, vdebug, vuiconsole, vmath, vtigstyle,
      vsdlio, vglconsole, vtig, vtigio, vvector,
      dflevel, dfplayer, dfitem, dfbeing, dfhof,
-     drlconfiguration, drlbase, drlmoreview, drlchoiceview, drlua,
+     drlconfiguration, drlbase, drlmoreview, drlchoiceview, drlua, drlmodulechoiceview,
      drlhudviews, drlplotview;
 
 function TIGSubCallback( const aID : Ansistring ) : Ansistring;
@@ -435,18 +436,19 @@ end;
 
 procedure TDRLIO.Initialize( iRenderer : TIOConsoleRenderer );
 begin
-  VTIG_Initialize( iRenderer, FIODriver, False );
-  VTIG_SetSubCallback( @TIGSubCallback );
-
-  UpdateStyles;
-
+  VTIG_Shutdown;
+  if iRenderer <> nil then
+  begin
+    VTIG_Initialize( iRenderer, FIODriver, False );
+    VTIG_SetSubCallback( @TIGSubCallback );
+    UpdateStyles;
+  end;
   inherited Initialize( iRenderer, nil );
+  if iRenderer = nil then Exit;
   iRenderer.Clear;
   iRenderer.HideCursor;
   FUIRoot.UpdateOnRender := False;
   FullUpdate;
-
-  LoadStart;
 end;
 
 function TDRLIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
@@ -968,7 +970,7 @@ begin
   if GraphicsVersion and ( FHint <> '' ) then
     VTIG_FreeLabel( ' '+FHint+' ', Point( 20, 4 ), Yellow );
 
-  if DRL.Level.Boss <> 0 then
+  if ( DRL.Level <> nil ) and ( DRL.Level.Boss <> 0 ) then
   begin
     iBoss := UIDs.Get( DRL.Level.Boss ) as TBeing;
     if iBoss <> nil then
@@ -1139,8 +1141,8 @@ begin
 
   VTIG_EndFrame;
   VTIG_Render;
-  if aMSec > 200 then
-    VTIG_EventClear;
+ // if aMSec > 200 then
+ //   VTIG_EventClear;
 end;
 
 function TDRLIO.EventToInput( const aEvent : TIOEvent ) : TInputKey;
@@ -1153,23 +1155,25 @@ begin
   begin
     if not Setting_Mouse then Exit( INPUT_NONE );
     FMTarget := SpriteMap.DevicePointToCoord( aEvent.MouseMove.Pos );
-    if DRL.Level.isProperCoord( FMTarget ) then
-      Exit( INPUT_MMOVE );
+    if DRL.Level <> nil then
+      if DRL.Level.isProperCoord( FMTarget ) then
+        Exit( INPUT_MMOVE );
   end;
   if aEvent.EType = VEVENT_MOUSEDOWN then
   begin
     if not Setting_Mouse then Exit( INPUT_NONE );
     FMTarget := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
-    if DRL.Level.isProperCoord( FMTarget ) then
-    begin
-      case aEvent.Mouse.Button of
-        VMB_BUTTON_LEFT     : Exit( INPUT_MLEFT );
-        VMB_BUTTON_MIDDLE   : Exit( INPUT_MMIDDLE );
-        VMB_BUTTON_RIGHT    : Exit( INPUT_MRIGHT );
-        VMB_WHEEL_UP        : Exit( INPUT_MSCRUP );
-        VMB_WHEEL_DOWN      : Exit( INPUT_MSCRDOWN );
+    if DRL.Level <> nil then
+      if DRL.Level.isProperCoord( FMTarget ) then
+      begin
+        case aEvent.Mouse.Button of
+          VMB_BUTTON_LEFT     : Exit( INPUT_MLEFT );
+          VMB_BUTTON_MIDDLE   : Exit( INPUT_MMIDDLE );
+          VMB_BUTTON_RIGHT    : Exit( INPUT_MRIGHT );
+          VMB_WHEEL_UP        : Exit( INPUT_MSCRUP );
+          VMB_WHEEL_DOWN      : Exit( INPUT_MSCRDOWN );
+        end;
       end;
-    end;
   end;
   if aEvent.EType = VEVENT_KEYDOWN then
   begin
@@ -1501,6 +1505,12 @@ const lua_ui_lib : array[0..18] of luaL_Reg = (
       ( name : 'save_and_quit';     func : @lua_ui_save_and_quit ),
       ( name : nil;          func : nil; )
 );
+
+procedure TDRLIO.RunModuleChoice;
+begin
+  PushLayer( TModuleChoiceView.Create );
+  WaitForLayer( True );
+end;
 
 class procedure TDRLIO.RegisterLuaAPI( State : TLuaState );
 begin

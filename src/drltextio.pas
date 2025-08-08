@@ -28,6 +28,8 @@ type TDRLTextIO = class( TDRLIO )
     procedure SetTextMap( aMap : ITextMap );
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
     procedure SetAutoTarget( aTarget : TCoord2D ); override;
+
+    procedure RunModuleChoice; override;
   protected
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     procedure DrawHud; override;
@@ -54,6 +56,7 @@ uses sysutils,
 
 constructor TDRLTextIO.Create;
 begin
+  FTextMap  := nil;
   {$IFDEF WINDOWS}
   FIODriver := TTextIODriver.Create( 80, 25 );
   {$ELSE}
@@ -91,10 +94,12 @@ end;
 
 procedure TDRLTextIO.Update( aMSec : DWord );
 begin
-  FTextMap.Update( aMSec );
+  if FTextMap <> nil then
+    FTextMap.Update( aMSec );
   if FTargeting and FLayers.IsEmpty
      then FConsole.ShowCursor;
   inherited Update( aMSec );
+  VTIG_EventClear;
 end;
 
 procedure TDRLTextIO.WaitForAnimation;
@@ -169,6 +174,20 @@ begin
       IO.Console.ShowCursor;
     IO.Console.MoveCursor( aTarget.x+1, aTarget.y+2 );
   end;
+end;
+
+procedure TDRLTextIO.RunModuleChoice;
+var iRenderer : TIOConsoleRenderer;
+begin
+  {$IFDEF WINDOWS}
+  iRenderer := TTextConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
+  {$ELSE}
+  iRenderer := TCursesConsoleRenderer.Create( 80, 25, [VIO_CON_BGCOLOR, VIO_CON_CURSOR] );
+  {$ENDIF}
+  inherited Initialize( iRenderer );
+  inherited RunModuleChoice;
+  inherited Initialize( nil );
+  Reset;
 end;
 
 procedure TDRLTextIO.DrawHud;

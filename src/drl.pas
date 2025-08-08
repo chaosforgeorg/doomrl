@@ -123,47 +123,51 @@ try
 
     drlbase.DRL := TDRL.Create;
 
-//    repeat
-    if CoreModuleID = '' then
-    begin
-      if FileExists( WritePath + 'module' )
-        then CoreModuleID := ReadFileString( WritePath + 'module' )
-        else CoreModuleID := VERSION_CORE;
-    end;
-    drlbase.DRL.ModuleID := CoreModuleID;
+    //drlbase.DRL.RunModuleChoice;
 
-    begin // Make and assign directories
-      if not DirectoryExists( WritePath + 'user' ) then CreateDir( WritePath + 'user' );
-      if not DirectoryExists( WritePath + 'user' + PathDelim + CoreModuleID ) then CreateDir( WritePath + 'user' + PathDelim + CoreModuleID );
-      ModuleUserPath := WritePath + 'user' + PathDelim + CoreModuleID + PathDelim;
-      if not DirectoryExists( ModuleUserPath + 'screenshot' ) then CreateDir( ModuleUserPath + 'screenshot' );
-      if not DirectoryExists( ModuleUserPath + 'mortem' ) then CreateDir( ModuleUserPath + 'mortem' );
-      if not DirectoryExists( ModuleUserPath + 'backup' ) then CreateDir( ModuleUserPath + 'backup' );
-    end;
+    repeat
+      ForceRestart := False;
 
-    drlbase.DRL.Initialize;
-
-    {$IFDEF WINDOWS}
-    if not GraphicsVersion then
-    begin
-      if Option_LockBreak then
+      if CoreModuleID = '' then
       begin
-        SetConsoleCtrlHandler(nil, False);
-        SetConsoleCtrlHandler(@ConsoleEventProc, True);
+        if FileExists( WritePath + 'module' )
+          then CoreModuleID := ReadFileString( WritePath + 'module' )
+          else CoreModuleID := VERSION_CORE;
       end;
-      if Option_LockClose then
-      begin
-        Handle := FindWindow(nil, PChar(Title));
-        RemoveMenu(GetSystemMenu( Handle, FALSE), SC_CLOSE , MF_GRAYED);
-        DrawMenuBar(FindWindow(nil, PChar(Title)));
-      end;
-    end;
-    {$ENDIF}
-    drlbase.DRL.Run;
-    drlbase.DRL.UnLoad;
+      drlbase.DRL.ModuleID := CoreModuleID;
 
-//    drlbase.DRL.Reset;
-//  until False;
+      begin // Make and assign directories
+        if not DirectoryExists( WritePath + 'user' ) then CreateDir( WritePath + 'user' );
+        if not DirectoryExists( WritePath + 'user' + PathDelim + CoreModuleID ) then CreateDir( WritePath + 'user' + PathDelim + CoreModuleID );
+        ModuleUserPath := WritePath + 'user' + PathDelim + CoreModuleID + PathDelim;
+        if not DirectoryExists( ModuleUserPath + 'screenshot' ) then CreateDir( ModuleUserPath + 'screenshot' );
+        if not DirectoryExists( ModuleUserPath + 'mortem' ) then CreateDir( ModuleUserPath + 'mortem' );
+        if not DirectoryExists( ModuleUserPath + 'backup' ) then CreateDir( ModuleUserPath + 'backup' );
+      end;
+
+      drlbase.DRL.Initialize;
+
+      {$IFDEF WINDOWS}
+      if not GraphicsVersion then
+      begin
+        if Option_LockBreak then
+        begin
+          SetConsoleCtrlHandler(nil, False);
+          SetConsoleCtrlHandler(@ConsoleEventProc, True);
+        end;
+        if Option_LockClose then
+        begin
+          Handle := FindWindow(nil, PChar(Title));
+          RemoveMenu(GetSystemMenu( Handle, FALSE), SC_CLOSE , MF_GRAYED);
+          DrawMenuBar(FindWindow(nil, PChar(Title)));
+        end;
+      end;
+      {$ENDIF}
+      drlbase.DRL.Run;
+      drlbase.DRL.UnLoad;
+
+      drlbase.DRL.Reset;
+    until not ForceRestart;
   finally
     FreeAndNil( Configuration );
     FreeAndNil( drlbase.DRL );

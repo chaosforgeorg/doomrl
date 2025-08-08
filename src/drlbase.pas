@@ -47,6 +47,7 @@ TDRL = class(TVObject)
        ModuleID      : AnsiString;
 
        constructor Create;
+       procedure RunModuleChoice;
        procedure Reset;
        procedure Reconfigure;
        procedure Initialize;
@@ -341,6 +342,12 @@ begin
     else IO := TDRLTextIO.Create;
 end;
 
+procedure TDRL.RunModuleChoice;
+begin
+  IO.RunModuleChoice;
+end;
+
+
 procedure TDRL.Reset;
 begin
   FreeAndNil( FLevel );
@@ -397,6 +404,7 @@ end;
 procedure TDRL.Initialize;
 begin
   IO.Initialize;
+  IO.LoadStart;
   ProgramRealTime := MSecNow();
   IO.Configure( Config );
   IO.Reconfigure( Config );

@@ -108,6 +108,7 @@ const
   ForceNoAudio    : Boolean = False;
   ForceConsole    : Boolean = False;
   ForceGraphics   : Boolean = False;
+  ForceRestart    : Boolean = False;
   VisionBaseValue : Byte = 8;
 
   ThisSeed       : Cardinal = 0;

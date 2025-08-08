@@ -66,8 +66,10 @@ type
     procedure FadeOut( aTime : Single = 0.5; aWait : Boolean = False ); override;
     procedure FadeReset; override;
     procedure FadeWait; override;
+
+    procedure RunModuleChoice; override;
  protected
-    procedure ReadDefaultFont;
+    function ReadDefaultFont : TBitmapFont;
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
     procedure ResetVideoMode;
@@ -110,7 +112,6 @@ type
     FMouseLock     : Boolean;
     FMCursor       : TDRLMouseCursor;
     FMinimap       : TMinimap;
-    FDefaultFont   : TBitmapFont;
 
     FAnimations     : TAnimationManager;
     FTextures       : TTextureManager;
@@ -131,7 +132,6 @@ type
     property ScaledScreen: TGLVec2i    read FScaledScreen;
     property MCursor     : TDRLMouseCursor read FMCursor;
     property Textures    : TTextureManager read FTextures;
-    property DefaultFont : TBitmapFont read FDefaultFont;
   end;
 
 implementation
@@ -140,6 +140,7 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
      vdebug, vlog, vmath, vdf, vgl3library, vsdl2library,
      vglimage, vsdlio, vcolor, vglconsole, vioconsole,
+     vtig, vtigstyle,
      dfplayer,
      drlbase, drlconfiguration;
 
@@ -254,16 +255,13 @@ begin
 
   FAnimations := TAnimationManager.Create;
   FMinimap    := TMinimap.Create;
-  FDefaultFont:= nil;
   inherited Create;
 end;
 
 procedure TDRLGFXIO.Reset;
-var iImage : TImage;
 begin
   inherited Reset;
   FTextures.Clear;
-  ReadDefaultFont;
   FAnimations.Clear;
   FMCursor.Reset;
 
@@ -291,17 +289,16 @@ begin
   FGPCamera := 0.0;
 end;
 
-procedure TDRLGFXIO.ReadDefaultFont;
+function TDRLGFXIO.ReadDefaultFont : TBitmapFont;
 var iImage       : TImage;
     iFontTexture : TTextureID;
 begin
-  FreeAndNil( FDefaultFont );
   iImage := LoadImage( 'font.dat' );
   iImage.SubstituteColor( ColorBlack, ColorZero );
   iFontTexture := FTextures.AddImage( 'default_font', iImage, False );
   FTextures[ iFontTexture ].Image.SubstituteColor( ColorBlack, ColorZero );
   FTextures[ iFontTexture ].Upload;
-  FDefaultFont := TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 );
+  Exit( TBitmapFont.CreateFromGrid( iFontTexture, 32, 256-32, 32 ) );
 end;
 
 procedure TDRLGFXIO.Initialize;
@@ -392,7 +389,6 @@ end;
 
 destructor TDRLGFXIO.Destroy;
 begin
-  FreeAndNil( FDefaultFont );
   FreeAndNil( FMCursor );
   FreeAndNil( FQuadSheet );
   FreeAndNil( FTextSheet );
@@ -1014,6 +1010,31 @@ begin
     aZ
   );
 end;
+
+procedure TDRLGFXIO.RunModuleChoice;
+var iRenderer : TGLConsoleRenderer;
+    iTIGStyle : TTIGStyle;
+begin
+  RecalculateScaling( True );
+  FConsoleSizeY := 25;
+  FFontSizeY    := 19;
+  FConsoleSizeX := 80;
+  FFontSizeX    := 10;
+  CalculateConsoleParams;
+  iTIGStyle := VTIGDefaultStyle;
+  iRenderer := TGLConsoleRenderer.Create( ReadDefaultFont, 80, 25, 0, [VIO_CON_CURSOR, VIO_CON_BGCOLOR, VIO_CON_EXTCOLOR ] );
+  iRenderer.SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
+  iRenderer.GlyphStretch := True;
+  inherited Initialize( iRenderer );
+  DeviceChanged;
+  iTIGStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := DarkGray;
+  VTIG_PushStyle( @iTIGStyle );
+  inherited RunModuleChoice;
+  VTIG_PopStyle;
+  inherited Initialize( nil );
+  Reset;
+end;
+
 
 end.
 
