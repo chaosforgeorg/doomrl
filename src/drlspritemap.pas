@@ -49,6 +49,7 @@ type
 
  TDRLSpriteMap = class( TVObject )
   constructor Create( aFramebuffer : TVec2i );
+  procedure Reset;
   procedure Recalculate;
   procedure Update( aTime : DWord; aProjection : TMatrix44 );
   procedure Draw;
@@ -290,6 +291,11 @@ begin
   FFullscreen   := TGLFullscreenTriangle.Create;
 end;
 
+procedure TDRLSpriteMap.Reset;
+begin
+  FSpriteEngine.Reset;
+end;
+
 procedure TDRLSpriteMap.Recalculate;
 var iIO : TDRLGFXIO;
 begin
@@ -468,6 +474,7 @@ begin
         FHBFramebuffer.BindAndClear;
         FFullscreen.Render;
         FHBFramebuffer.UnBind;
+        glBindTexture( GL_TEXTURE_2D, 0 );
       FHBlurProgram.UnBind;
 
       FVBlurProgram.Bind;
@@ -476,6 +483,7 @@ begin
         FVBFramebuffer.BindAndClear;
         FFullscreen.Render;
         FVBFramebuffer.UnBind;
+        glBindTexture( GL_TEXTURE_2D, 0 );
       FVBlurProgram.UnBind;
 
       glEnable( GL_BLEND );
@@ -498,7 +506,8 @@ begin
       glActiveTexture( GL_TEXTURE1 );
       glBindTexture( GL_TEXTURE_3D, 0 );
       glActiveTexture( GL_TEXTURE2 );
-      glBindTexture( GL_TEXTURE_3D, 0 );
+      glBindTexture( GL_TEXTURE_2D, 0 );
+      glActiveTexture( GL_TEXTURE0 );
     FPostProgram.UnBind;
   end
   else

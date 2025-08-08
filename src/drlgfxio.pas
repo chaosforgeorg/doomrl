@@ -264,6 +264,7 @@ begin
   FTextures.Clear;
   FAnimations.Clear;
   FMCursor.Reset;
+  SpriteMap.Reset;
 
   FadeReset;
   FLastMouseTime := 0;
@@ -280,6 +281,10 @@ begin
   FBloodValueTarget := 0;
   FConsoleSizeX     := 80;
   FConsoleSizeY     := 25;
+
+  FQuadSheet.Reset;
+  FTextSheet.Reset;
+  FPostSheet.Reset;
 
   FGPRight.Init();
   FGPLeft.Init();

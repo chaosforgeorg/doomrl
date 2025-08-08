@@ -53,7 +53,12 @@ protected
   FKey         : Word;
   FResInput    : Boolean;
   FResolutions : array of Ansistring;
+  FModInput    : Boolean;
+  FModValue    : Integer;
+  FModules     : array of Ansistring;
+  FModCurrent  : Ansistring;
   FWarning     : Ansistring;
+  FRestart     : Ansistring;
 end;
 
 implementation
@@ -100,7 +105,9 @@ begin
 
   FCapture  := False;
   FResInput := False;
+  FModInput := False;
   FWarning  := '';
+  FRestart  := '';
 
 
   if GraphicsVersion then
@@ -111,6 +118,25 @@ begin
     for i := 1 to iCount do
       with IO.Driver.DisplayModes[i-1] do
         FResolutions[i] := IntToStr( Width ) + 'x' + IntToStr( Height )
+  end;
+
+  SetLength( FModules, DRL.Modules.CoreModules.Size + 1 );
+  FModCurrent := Configuration.GetString('default_module');
+  FModules[0] := 'Ask on launch';
+  FModValue := -1;
+  for i := 1 to DRL.Modules.CoreModules.Size do
+    with DRL.Modules.CoreModules[i-1] do
+    begin
+      if FModCurrent = ID then
+        FModValue := i;
+      FModules[i] := Name;
+    end;
+  if FModCurrent = '' then FModValue := 0;
+  if FModValue = -1 then
+  begin
+    FModValue := DRL.Modules.CoreModules.Size + 1;
+    SetLength( FModules, FModValue + 1 );
+    FModules[FModValue] := FModCurrent+' (missing)';
   end;
 end;
 
@@ -125,6 +151,7 @@ var iSelected : Integer;
     iHover    : TConfigurationEntry;
     iMode     : TIntegerConfigurationEntry;
     i         : Integer;
+    iRResult  : ( None, Cancel, Confirm );
 begin
   if ( FState = SETTINGSVIEW_DONE ) then Exit;
   if ( FWarning <> '' ) then
@@ -137,6 +164,30 @@ begin
 
     if VTIG_EventCancel or VTIG_EventConfirm then
       FWarning := '';
+    Exit;
+  end;
+
+  if ( FRestart <> '' ) then
+  begin
+    iRResult := None;
+    VTIG_BeginWindow( 'Restart?', 'settings_restart', FWSize );
+    FWRect := VTIG_GetWindowRect;
+    VTIG_Text('This is a different core mod then the current one. Restart with new core mod?');
+    VTIG_Text( '' );
+    if VTIG_Selectable( 'Restart' ) then iRResult := Confirm;
+    if VTIG_Selectable( 'Cancel' )  then iRResult := Cancel;
+    IO.RenderUIBackground( FWRect.TopLeft, FWRect.BottomRight - PointUnit );
+    if VTIG_EventCancel then iRResult := Cancel;
+
+    if iRResult <> None then
+    begin
+      if iRResult = Confirm then
+      begin
+        ForceRestart := FRestart;
+        FState := SETTINGSVIEW_DONE;
+      end;
+      FRestart := '';
+    end;
     Exit;
   end;
 
@@ -225,6 +276,22 @@ begin
           for iEntry in iGroup.Entries do
             if iEntry.Name <> '' then
             begin
+              if iEntry.ID = 'default_module' then
+              begin
+                if VTIG_EnumInput( @FModValue, iSelected = i, @FModInput, FModules ) then
+                  with iEntry as TStringConfigurationEntry do
+                  begin
+                    if FModValue = 0 then Value := ''
+                    else if FModValue >= (DRL.Modules.CoreModules.Size+1)
+                      then Value := FModCurrent
+                      else Value := DRL.Modules.CoreModules[FModValue-1].ID;
+                    if ( DRL.State = DSMenu ) and ( Value <> '' ) and ( Value <> CoreModuleID ) then
+                    begin
+                      FRestart := Value;
+                    end;
+                  end;
+              end
+              else
               if iEntry is TIntegerConfigurationEntry then
               begin
                 with iEntry as TIntegerConfigurationEntry do

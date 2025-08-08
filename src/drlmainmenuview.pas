@@ -345,6 +345,11 @@ begin
     ForceShop := False;
   end;
 
+  if ForceRestart <> '' then
+  begin
+    FMode := MAINMENU_DONE;
+    FResult.Quit := True;
+  end;
 end;
 
 procedure TMainMenuView.UpdateBadSave;

@@ -101,6 +101,8 @@ try
       WritePath    := Config.Configure( 'WritePath', WritePath );
       ScorePath    := Config.Configure( 'ScorePath', ScorePath );
 
+      CoreModuleID := Configuration.GetString('default_module');
+
       if isSet('datapath')   then DataPath          := get('datapath');
       if isSet('writepath')  then WritePath         := get('writepath');
       if isSet('scorepath')  then ScorePath         := get('scorepath');
@@ -123,14 +125,12 @@ try
 
     drlbase.DRL := TDRL.Create;
 
-    if CoreModuleID <> '' then
-      CoreModuleID := drlbase.DRL.Modules.CoreModuleID;
-
-    if CoreModuleID = '' then
-      drlbase.DRL.RunModuleChoice;
-
     repeat
-      ForceRestart := False;
+      if ForceRestart <> '' then CoreModuleID := ForceRestart;
+      ForceRestart := '';
+      CoreModuleID := drlbase.DRL.Modules.Validate( CoreModuleID );
+      if CoreModuleID = '' then
+        drlbase.DRL.RunModuleChoice;
 
       begin // Make and assign directories
         if not DirectoryExists( WritePath + 'user' ) then CreateDir( WritePath + 'user' );
@@ -163,7 +163,7 @@ try
       drlbase.DRL.UnLoad;
 
       drlbase.DRL.Reset;
-    until not ForceRestart;
+    until ForceRestart = '';
   finally
     FreeAndNil( Configuration );
     FreeAndNil( drlbase.DRL );

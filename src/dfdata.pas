@@ -106,7 +106,7 @@ const
   ForceNoAudio    : Boolean = False;
   ForceConsole    : Boolean = False;
   ForceGraphics   : Boolean = False;
-  ForceRestart    : Boolean = False;
+  ForceRestart    : Ansistring = '';
   VisionBaseValue : Byte = 8;
 
   ThisSeed       : Cardinal = 0;

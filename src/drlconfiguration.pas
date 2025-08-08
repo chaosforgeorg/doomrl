@@ -43,6 +43,10 @@ begin
     .SetName('Skip intro')
     .SetDescription('Setting to {!Enabled} will skip the plot intro text before playing.')
     ;
+  iGroup.AddString( 'default_module', '' )
+    .SetName('Default module')
+    .SetDescription('Select module to skip module selection screen on launch, or {!Ask} to ask at launch.')
+    ;
 
   iGroup := AddGroup( 'display' );
   iGroup.AddInteger( 'display_mode', 0 );

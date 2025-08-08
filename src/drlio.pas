@@ -7,7 +7,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 unit drlio;
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
-     vio, vrltools, vluaconfig, vglquadrenderer, vmessages, vtextures,
+     vio, vrltools, vluaconfig, vglquadrenderer, vmessages, vtextures, vtigstyle,
      vuitypes, vluastate,  viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
      dfdata, dfthing, drlspritemap, drlaudio, drlkeybindings, drlloadingview;
 
@@ -165,6 +165,7 @@ protected
   FKeySubMap      : TStringHashMap;
   FPadSubMap      : TStringHashMap;
 
+  FTIGDefault     : TTIGStyle;
 public
   property KeyCode     : TIOKeyCode     read FKeyCode    write FKeyCode;
   property Audio       : TDRLAudio     read FAudio;
@@ -187,7 +188,7 @@ procedure EmitCrashInfo( const aInfo : AnsiString; aInGame : Boolean  );
 implementation
 
 uses math, video, dateutils, variants,
-     vsound, vluasystem, vuid, vlog, vdebug, vuiconsole, vmath, vtigstyle,
+     vsound, vluasystem, vuid, vlog, vdebug, vuiconsole, vmath,
      vsdlio, vglconsole, vtig, vtigio, vvector,
      dflevel, dfplayer, dfitem, dfbeing, dfhof,
      drlconfiguration, drlbase, drlmoreview, drlchoiceview, drlua, drlmodulechoiceview,
@@ -404,7 +405,7 @@ begin
 
   FKeySubMap := TStringHashMap.Create;
   FPadSubMap := TStringHashMap.Create;
-
+  FTIGDefault := VTIGDefaultStyle;
   inherited Create( FIODriver, nil, nil );
   Reset;
 end;
@@ -412,6 +413,7 @@ end;
 procedure TDRLIO.Reset;
 begin
   VTIG_Shutdown;
+  VTIGDefaultStyle := FTIGDefault;
   FLoading := nil;
   IO := Self;
   FTime := 0;

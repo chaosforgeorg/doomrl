@@ -34,6 +34,7 @@ type
 TDRLModules = class(TVObject)
   constructor Create;
   procedure ScanModules;
+  function Validate( const aCoreModuleID : Ansistring ) : Ansistring;
   procedure ActivateModules( const aCoreModuleID : Ansistring );
   destructor Destroy; override;
 private
@@ -117,6 +118,19 @@ begin
 
   if FCoreModules.Size = 1 then
      FCoreModuleID := FCoreModules[0].ID;
+end;
+
+function TDRLModules.Validate( const aCoreModuleID : Ansistring ) : Ansistring;
+var iModule : TDRLModule;
+begin
+  if aCoreModuleID <> '' then
+    for iModule in FCoreModules do
+      if iModule.ID = aCoreModuleID then
+      begin
+        FCoreModuleID := iModule.ID;
+        Break;
+      end;
+  Exit( FCoreModuleID );
 end;
 
 procedure TDRLModules.ActivateModules( const aCoreModuleID : Ansistring );
