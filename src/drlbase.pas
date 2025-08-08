@@ -44,7 +44,6 @@ TDRL = class(TVObject)
        DataLoaded    : Boolean;
        GameWon       : Boolean;
        CrashSave     : Boolean;
-       ModuleID      : AnsiString;
 
        constructor Create;
        procedure RunModuleChoice;
@@ -188,14 +187,14 @@ end;
 
 procedure TDRL.ModuleMainHook(Hook: AnsiString; const Params: array of const);
 begin
-  if not LuaSystem.Defined([ ModuleID, Hook ]) then Exit;
-  Lua.ProtectedCall( [ ModuleID, Hook ], Params );
+  if not LuaSystem.Defined([ CoreModuleID, Hook ]) then Exit;
+  Lua.ProtectedCall( [ CoreModuleID, Hook ], Params );
 end;
 
 
 procedure TDRL.CallHook( Hook : Byte; const Params : array of const ) ;
 begin
-  if (Hook in FModuleHooks) then LuaSystem.ProtectedCall([ModuleID,HookNames[Hook]],Params);
+  if (Hook in FModuleHooks) then LuaSystem.ProtectedCall([CoreModuleID,HookNames[Hook]],Params);
   if (Challenge <> '')  and (Hook in FChallengeHooks) then LuaSystem.ProtectedCall(['chal',Challenge,HookNames[Hook]],Params);
   if (SChallenge <> '') and (Hook in FSChallengeHooks) then LuaSystem.ProtectedCall(['chal',SChallenge,HookNames[Hook]],Params);
   if (Hook in FCoreHooks) then LuaSystem.ProtectedCall(['core',HookNames[Hook]],Params);
@@ -206,7 +205,7 @@ begin
   if (Hook in FCoreHooks) then if not LuaSystem.ProtectedCall(['core',HookNames[Hook]],Params) then Exit( False );
   if (Challenge <> '') and (Hook in FChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',Challenge,HookNames[Hook]],Params) then Exit( False );
   if (SChallenge <> '') and (Hook in FSChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',SChallenge,HookNames[Hook]],Params) then Exit( False );
-  if Hook in FModuleHooks then if not LuaSystem.ProtectedCall([ModuleID,HookNames[Hook]],Params) then Exit( False );
+  if Hook in FModuleHooks then if not LuaSystem.ProtectedCall([CoreModuleID,HookNames[Hook]],Params) then Exit( False );
   Exit( True );
 end;
 
@@ -289,7 +288,6 @@ begin
   LuaSystem.CallDefaultResult := True;
 //  Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
-  ModuleID := CoreModuleID;
 
   LoadModule( True );
   Reconfigure;
@@ -366,7 +364,6 @@ begin
   DataLoaded := False;
   GameWon    := False;
   CrashSave  := False;
-  ModuleID   := '';
 
   FLastInputTime   := 0;
   FDamagedLastTurn := False;
@@ -424,7 +421,6 @@ begin
   Challenge      := aResult.Challenge;
   ArchAngel      := aResult.ArchAngel;
   SChallenge     := aResult.SChallenge;
-  ModuleID       := aResult.ModuleID;
 
   {
   if aResult.Module <> nil then
@@ -1487,6 +1483,7 @@ end;
 function TDRL.LoadSaveFile: Boolean;
 var iStream    : TStream;
     iRecreate  : Boolean;
+    iModule    : Ansistring;
 begin
   SaveVersionModule := '';
   SaveModString     := '';
@@ -1495,10 +1492,11 @@ begin
     try
       iStream := TGZFileStream.Create( ModuleUserPath + 'save',gzOpenRead );
       //      Stream := TDebugStream.Create( Stream );
-      ModuleID          := iStream.ReadAnsiString;
+      iModule           := iStream.ReadAnsiString;
+      if (iModule <> CoreModuleID) then Exit( False );
       SaveVersionModule := iStream.ReadAnsiString;
       SaveModString     := iStream.ReadAnsiString;
-      if ( SaveVersionModule <> VersionModuleSave ) or ( SaveModString <> ModString ) then
+      if ( SaveVersionModule <> VersionModuleSave ) or ( SaveModString <> DRL.Modules.ModString ) then
       begin
         Exit( False );
       end;
@@ -1587,9 +1585,9 @@ begin
   Stream := TGZFileStream.Create( ModuleUserPath + 'save',gzOpenWrite );
   //      Stream := TDebugStream.Create( Stream );
 
-  Stream.WriteAnsiString( ModuleID );
+  Stream.WriteAnsiString( CoreModuleID );
   Stream.WriteAnsiString( VersionModuleSave );
-  Stream.WriteAnsiString( ModString );
+  Stream.WriteAnsiString( FModules.ModString );
   UIDs.WriteToStream( Stream );
   if GameWon   then Stream.WriteByte( 1 ) else Stream.WriteByte( 0 );
   Stream.WriteByte( Difficulty );

@@ -42,14 +42,16 @@ private
   FCoreModules   : TModuleList;
   FActiveModules : TModuleList;
   FCoreModuleID  : Ansistring;
+  FModString     : Ansistring;
 private
   function ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDRLModule;
   procedure ReadMetaFromWAD( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
   procedure ReadMetaFromFolder( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
 public
   property ActiveModules : TModuleList read FActiveModules;
-  property CoreModules : TModuleList   read FCoreModules;
+  property CoreModules   : TModuleList read FCoreModules;
   property CoreModuleID  : Ansistring  read FCoreModuleID;
+  property ModString     : Ansistring  read FModString;
 end;
 
 var Modules : TDRLModules;
@@ -70,6 +72,7 @@ begin
   FActiveModules := TModuleList.Create;
   FCoreModules   := TModuleList.Create;
   FCoreModuleID  := '';
+  FModString     := '';
 end;
 
 procedure TDRLModules.ScanModules;
@@ -120,14 +123,23 @@ procedure TDRLModules.ActivateModules( const aCoreModuleID : Ansistring );
 var iModule : TDRLModule;
 begin
   FCoreModuleID := aCoreModuleID;
+  FModString    := '';
   FActiveModules.Clear;
+
   for iModule in FModules do
     if ( ( iModule.BaseRequired = aCoreModuleID ) or ( iModule.BaseRequired = '' ) )
     and ( ( not iModule.IsBase ) or ( iModule.ID = aCoreModuleID ) ) then
     begin
       FActiveModules.Push( iModule );
+      if ( not iModule.IsBase ) and ( not iModule.SaveAgnostic ) then
+      begin
+        if FModString <> '' then FModString += ' ';
+        FModString += iModule.ID;
+        if iModule.SaveVersion > 0 then FModString += IntToStr( iModule.SaveVersion );
+      end;
       Log( 'activating module %s (%s)', [ iModule.ID, iModule.Path ] );
     end;
+  Log( 'mod_string generated "%s"', [ FModString ] );
 end;
 
 function TDRLModules.ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDRLModule;

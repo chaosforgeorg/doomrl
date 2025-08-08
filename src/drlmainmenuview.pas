@@ -377,7 +377,7 @@ begin
   begin
     VTIG_Text('Save file uses different mods!');
     VTIG_Text('Save file IDs : {!'+SaveModString+'}' );
-    VTIG_Text('Current IDs   : {!'+ModString+'}' );
+    VTIG_Text('Current IDs   : {!'+DRL.Modules.ModString+'}' );
     VTIG_Text('');
     VTIG_Text('You can exit the game and try to match the mods or delete the save file now.');
   end;

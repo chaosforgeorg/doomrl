@@ -132,14 +132,6 @@ try
     repeat
       ForceRestart := False;
 
-      if CoreModuleID = '' then
-      begin
-        if FileExists( WritePath + 'module' )
-          then CoreModuleID := ReadFileString( WritePath + 'module' )
-          else CoreModuleID := VERSION_CORE;
-      end;
-      drlbase.DRL.ModuleID := CoreModuleID;
-
       begin // Make and assign directories
         if not DirectoryExists( WritePath + 'user' ) then CreateDir( WritePath + 'user' );
         if not DirectoryExists( WritePath + 'user' + PathDelim + CoreModuleID ) then CreateDir( WritePath + 'user' + PathDelim + CoreModuleID );

@@ -21,7 +21,6 @@ const CoreModuleID      : AnsiString = '';
 
       VersionModule     : Ansistring = '';
       VersionModuleSave : Ansistring = '';
-      ModString         : AnsiString = '';
       SaveVersionModule : Ansistring = '';
       SaveModString     : Ansistring = '';
 
@@ -71,7 +70,6 @@ type TMenuResult = class
   Challenge  : AnsiString;
   SChallenge : AnsiString;
   Difficulty : Byte;
-  ModuleID   : AnsiString;
   Klass      : Byte;
   Trait      : Byte;
   Name       : AnsiString;
@@ -531,7 +529,6 @@ begin
   ArchAngel  := False;
   Klass      := 0;
   Trait      := 0;
-  ModuleID   := CoreModuleID;
   Name       := '';
 end;
 

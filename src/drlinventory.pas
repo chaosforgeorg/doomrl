@@ -160,8 +160,8 @@ var iAmount   : Word;
     iAmmoItem : TItem;
     iAmmoMax  : Word;
 begin
-  if LuaSystem.Defined([ DRL.ModuleID, 'GetAmmoMax' ])
-    then iAmmoMax := LuaSystem.ProtectedCall([ DRL.ModuleID, 'GetAmmoMax' ], [aAmmoID] )
+  if LuaSystem.Defined([ CoreModuleID, 'GetAmmoMax' ])
+    then iAmmoMax := LuaSystem.ProtectedCall([ CoreModuleID, 'GetAmmoMax' ], [aAmmoID] )
     else iAmmoMax := LuaSystem.Get(['items',aAmmoID,'ammomax']);
   iAmmoItem := SeekAmmo(aAmmoID);
 
