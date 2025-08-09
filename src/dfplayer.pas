@@ -551,6 +551,12 @@ begin
     ScoreCRC(FScore);
   end;
   if GodMode then FScore := 0;
+  if FScore > 0 then
+  begin
+    DRL.Store.IncStat('drl_kills', FKills.Count );
+    if FHP <= 0    then DRL.Store.IncStat( 'drl_deaths' );
+    if DRL.GameWon then DRL.Store.IncStat( 'drl_wins' );
+  end;
 
   HOF.Add(Name,FScore,FKilledBy,FExpLevel,FLevelIndex,DRL.Challenge,DRL.Level.Abbr);
 
