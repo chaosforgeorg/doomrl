@@ -8,7 +8,6 @@
 
 music = {
 	start     = "music/d_the_roguelike.mp3",
-	interlude = "music/d1inter.mp3",
 	bunny     = "music/d1end.mp3",
 	intro     = "music/cde1m1.mp3",
 	hellgate  = "music/cde1m8.mp3",

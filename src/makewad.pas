@@ -52,6 +52,16 @@ begin
     WAD.Add(Path+'music/*.mp3',FILETYPE_RAW,[], 'music' );
     WAD.Add(Path+'music/*.mid',FILETYPE_RAW,[vdfCompressed], 'music' );
 
+    if ParamStr(2) <> '' then
+    begin
+      Path := 'data/' + ParamStr(2) + '/';
+      WAD.Add(Path+'audio.lua',FILETYPE_LUA,[vdfCompressed,vdfEncrypted], '' );
+      WAD.Add(Path+'sound/*.wav',FILETYPE_RAW,[vdfCompressed], 'sound' );
+      WAD.Add(Path+'music/*.ogg',FILETYPE_RAW,[], 'music' );
+      WAD.Add(Path+'music/*.mp3',FILETYPE_RAW,[], 'music' );
+      WAD.Add(Path+'music/*.mid',FILETYPE_RAW,[vdfCompressed], 'music' );
+    end;
+
     FreeAndNil(WAD);
   end;
 end.
