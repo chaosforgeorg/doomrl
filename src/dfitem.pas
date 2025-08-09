@@ -103,7 +103,7 @@ procedure SwapItem(var a, b: TItem);
 
 implementation
 
-uses vnode, drlua, drlio, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, dfplayer, drlbase, vmath, drlhooks;
+uses vnode, drlua, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, drlbase, vmath, drlhooks;
 
 procedure SwapItem(var a, b: TItem);
 var c : TItem;

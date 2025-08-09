@@ -53,7 +53,7 @@ TInventory = class( TVObject )
 
 implementation
 
-uses vmath, vluasystem, drlio, drlkeybindings, dfplayer, drlbase;
+uses vmath, vluasystem, drlio, drlkeybindings, dfplayer;
 
 { TInventoryEnumerator }
 

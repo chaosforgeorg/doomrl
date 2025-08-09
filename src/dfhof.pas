@@ -960,6 +960,9 @@ begin
   if NoPlayerRecord then Exit( False );
 
   iSize := LuaSystem.GetTableSize( 'ranks' );
+
+  Initialize( aResult );
+  Initialize( iValues );
   SetLength( aResult.Data, iSize );
   SetLength( iValues, iSize );
 

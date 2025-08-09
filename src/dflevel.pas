@@ -1269,18 +1269,17 @@ begin
 end;
 
 procedure TLevel.NukeTick;
-var Nuke : DWord;
-    cn   : Word;
+var iNuke : DWord;
 begin
   if Player.NukeActivated <> 0 then
   begin
     Dec(Player.NukeActivated);
     if (Player.NukeActivated <> 0) then
     begin
-      Nuke := Player.NukeActivated;
-      if (Nuke <= 100)   then begin if (Nuke mod 10  = 0) then IO.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
-      if (Nuke <= 10*60) then begin if (Nuke mod 100 = 0) then IO.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
-      if (Nuke mod (10*60) = 0) then IO.Msg('Warning! Explosion in %d minutes!',[Player.NukeActivated div 600]);
+      iNuke := Player.NukeActivated;
+      if (iNuke <= 100)   then begin if (iNuke mod 10  = 0) then IO.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
+      if (iNuke <= 10*60) then begin if (iNuke mod 100 = 0) then IO.Msg('Warning! Explosion in %d seconds!',[Player.NukeActivated div 10]); end else
+      if (iNuke mod (10*60) = 0) then IO.Msg('Warning! Explosion in %d minutes!',[Player.NukeActivated div 600]);
     end
     else
     begin

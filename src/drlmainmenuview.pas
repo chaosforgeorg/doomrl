@@ -79,7 +79,7 @@ end;
 implementation
 
 uses math, sysutils,
-     vutil, vtig, vtigstyle, vtigio, vimage, vgltypes, vluasystem, vluavalue, vsound,
+     vutil, vtig, vtigstyle, vtigio, vgltypes, vluasystem, vluavalue, vsound,
      dfhof,
      drlbase, drlgfxio, drlplayerview, drlhelpview, drlsettingsview, drlpagedview;
 
