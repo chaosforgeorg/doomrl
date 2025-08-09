@@ -107,7 +107,7 @@ const MAINMENU_ID = 'mainmenu';
 const CTYPE_ANGEL  = 1;
       CTYPE_DANGEL = 2;
       CTYPE_AANGEL = 3;
-      CTYPE_CUSTOM = 4;
+//      CTYPE_CUSTOM = 4;
 
       CTYPE_SECOND = 10;
 
@@ -721,10 +721,9 @@ end;
 
 
 procedure TMainMenuView.Render;
-var iIO             : TDRLGFXIO;
-    iMin, iMax      : TGLVec2f;
-    iSize, iSz, iTC : TGLVec2f;
-    iImage          : TImage;
+var iIO        : TDRLGFXIO;
+    iMin, iMax : TGLVec2f;
+    iSize      : TGLVec2f;
 begin
   iIO := IO as TDRLGFXIO;
   Assert( iIO <> nil );
@@ -737,7 +736,6 @@ begin
   if ( FMode in [MAINMENU_INTRO,MAINMENU_MENU,MAINMENU_DIFFICULTY,MAINMENU_KLASS,MAINMENU_FAIR,MAINMENU_NAME,MAINMENU_CTYPE] )
     and IO.IsTopLayer( Self ) then
   begin
-    iImage := iIO.Textures.Texture[ FLogoTexture ].Image;
     iMin.Y  := Floor(iSize.Y / 25) * (-8);
     if (FMode <> MAINMENU_INTRO)
       then begin iMax.Y  := Floor(iSize.Y / 25) * 24; iMin.Y := Floor(iSize.Y / 25) * (-10); end
