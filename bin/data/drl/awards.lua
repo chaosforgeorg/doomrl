@@ -783,6 +783,10 @@ function drl.award_badges()
 				if statistics.damage_taken < 200 then player:add_badge("demonic5") end
 				if is_zerodmg and is_maxkills    then player:add_badge("demonic6") end
 			end
+			player:set_achievement("drl_legacy_2")
+			if DIFFICULTY >= DIFF_HARD then
+				player:set_achievement("drl_legacy_3")
+			end
 		end
 		--[[
 		if CHALLENGE == CHALLENGE_HASTE then

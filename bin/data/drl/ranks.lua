@@ -183,7 +183,8 @@ function drl.register_ranks()
 		reqs = {
 			{ req = "aquire_badges", param = 3, amount = 15 },
 			{ req = "aquire_badges", param = 4, amount = 3 }
-		}
+		},
+		achievement = "drl_legacy_4",
 	}
 
 	register_rank "skill"
@@ -219,7 +220,8 @@ function drl.register_ranks()
 		reqs = {
 			{ req = "aquire_badges", param = 4, amount = 12 },
 			{ req = "aquire_badges", param = 5, amount = 5 }
-		}
+		},
+		achievement = "drl_legacy_5",
 	}
 
 	register_rank "skill"

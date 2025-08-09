@@ -209,6 +209,7 @@ register_level "intro"
 		end
 
 		level:player(4,10)
+		player:set_achievement("drl_legacy_1")
 	end,
 
 	OnTick = function ()
