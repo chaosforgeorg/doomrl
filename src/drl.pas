@@ -24,7 +24,7 @@ uses SysUtils,
      {$IFDEF HEAPTRACE} heaptrc, {$ENDIF}
      {$IFDEF WINDOWS}   windows, {$ENDIF}
      vdebug, drlbase, vlog, vutil, vos, vparams,
-     dfdata, drlio, drlconfig, drlconfiguration, vstoreinterface;
+     dfdata, drlio, drlconfig, drlconfiguration, drlworkshop;
 
 {$IFDEF WINDOWS}
 var Handle : HWND;
@@ -39,7 +39,8 @@ end;
 
 {$ENDIF}
 
-var RootPath : AnsiString = '';
+var RootPath   : AnsiString = '';
+    WorkshopID : Ansistring = '';
 
 begin
 try
@@ -80,7 +81,13 @@ try
         ConfigurationPath := RootPath + 'godmode.lua';
       end;
       if isSet('config')     then ConfigurationPath := get('config');
-      if isSet('nosound')    then ForceNoAudio    := True;
+      if isSet('publish')    then
+      begin
+        WorkshopID        := get('publish');
+        if WorkshopID <> '' then
+          Logger.AddSink( TConsoleLogSink.Create( LOGINFO, True ) );
+      end;
+      if isSet('nosound')    then ForceNoAudio      := True;
       if isSet('graphics')   then
       begin
         GraphicsVersion := True;
@@ -122,6 +129,13 @@ try
 
     ErrorLogFileName := WritePath + 'error.log';
     Randomize;
+
+    if WorkshopID <> '' then
+    begin
+      WorkshopPublish( WorkShopID );
+      FreeAndNil( Configuration );
+      Exit;
+    end;
 
     drlbase.DRL := TDRL.Create;
 

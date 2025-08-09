@@ -14,11 +14,12 @@ type TDRLModule = class
     Version      : Ansistring;
     Path         : Ansistring;
     BaseRequired : AnsiString;
-    WorkshopID   : QWord;
+    WorkshopID   : AnsiString;
     LoadPriority : Integer;
     SaveVersion  : Integer;
     SaveAgnostic : Boolean;
     IsBase       : Boolean;
+    Source       : ( DRLMWAD, DRLMSOURCE, DRLMSTEAM );
   end;
 
 type TModuleArray = specialize TGObjectArray< TDRLModule >;
@@ -36,6 +37,7 @@ TDRLModules = class(TVObject)
   procedure ScanModules;
   function Validate( const aCoreModuleID : Ansistring ) : Ansistring;
   procedure ActivateModules( const aCoreModuleID : Ansistring );
+  function GetModuleInfo( const aModuleID : Ansistring ) : TDRLModule;
   destructor Destroy; override;
 private
   FModules       : TModuleArray;
@@ -63,7 +65,9 @@ uses sysutils, vluatable, vdf, dfdata;
 
 function DRLModuleCompare( const A, B : TDRLModule ) : Integer;
 begin
-  Exit( B.LoadPriority - A.LoadPriority );
+  if B.LoadPriority <> A.LoadPriority then
+    Exit( B.LoadPriority - A.LoadPriority );
+  Exit( CompareStr( A.ID, B.ID ) );
 end;
 
 constructor TDRLModules.Create;
@@ -170,7 +174,7 @@ begin
       iModule.Version      := GetString( 'version', '' );
       iModule.Path         := '';
       iModule.BaseRequired := GetString( 'base_required', '' );
-      iModule.WorkshopID   := GetQWord( 'workshop_id', 0 );
+      iModule.WorkshopID   := GetString( 'workshop_id', '' );
       iModule.LoadPriority := GetInteger( 'load_priority', 0 );
       iModule.SaveVersion  := GetInteger( 'save_version', 0 );
       iModule.SaveAgnostic := GetBoolean( 'save_agnostic', False );
@@ -223,7 +227,10 @@ begin
       aLua.LoadStream( iData, 'meta.lua' );
       iModule := ReadMetaFromModule( aLua, aOverride );
       if iModule <> nil then
-        iModule.Path := aPath;
+      begin
+        iModule.Path   := aPath;
+        iModule.Source := DRLMWAD;
+      end;
     end;
   finally
     iData.Free;
@@ -239,8 +246,20 @@ begin
     aLua.LoadFile( aPath + 'meta.lua' );
     iModule := ReadMetaFromModule( aLua, aOverride );
     if iModule <> nil then
-      iModule.Path := aPath;
+    begin
+      iModule.Path   := aPath;
+      iModule.Source := DRLMSOURCE;
+    end;
   end;
+end;
+
+function TDRLModules.GetModuleInfo( const aModuleID : Ansistring ) : TDRLModule;
+var iModule : TDRLModule;
+begin
+  for iModule in FModules do
+    if iModule.ID = aModuleID then
+      Exit( iModule );
+  Exit( nil );
 end;
 
 destructor TDRLModules.Destroy;
