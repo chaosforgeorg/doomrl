@@ -342,6 +342,11 @@ procedure TDRLLua.ReadWad;
 var iProgBase    : DWord;
     iModule      : TDRLModule;
     iData        : TVDataFile;
+  procedure CheckID( iID : Ansistring );
+  begin
+    if ( iID <> 'core' ) and ( iID <> 'drl' ) and ( iID <> 'jhc' ) then
+      ModdedGame := True;
+  end;
 begin
   IO.LoadStart;
   iProgBase := IO.LoadCurrent;
@@ -350,8 +355,6 @@ begin
   for iModule in DRL.Modules.ActiveModules do
   begin
     iData := nil;
-    if (iModule.ID <> 'core') and LuaSystem.RawDefined( iModule.ID ) then
-      raise Exception.Create('Module ID "'+iModule.ID+'" redefined!');
 
     if iModule.Path.EndsWith( '.wad' ) then
     begin
@@ -361,6 +364,7 @@ begin
       begin
         RegisterModule( iModule.ID, iData );
         LoadStream( iData,'','main.lua' );
+        CheckID( iModule.ID );
       end;
       iData.RegisterLoader( FILETYPE_RAW, @Help.StreamLoader );
       iData.Load('help');
@@ -380,6 +384,7 @@ begin
       begin
         RegisterModule( iModule.ID, iModule.Path );
         LoadFile( iModule.Path + 'main.lua' );
+        CheckID( iModule.ID );
       end;
       LoadFiles( iModule.Path + 'help', @Help.StreamLoader, '*.hlp' );
       LoadFiles( iModule.Path + 'ascii', @IO.ASCIILoader, '*.asc' );
@@ -400,6 +405,8 @@ begin
 
   ModuleOption_KlassAchievements := LuaSystem.Get( ['core','options','klass_achievements'], False );
   ModuleOption_NewMenu           := LuaSystem.Get( ['core','options','new_menu'], False );
+
+  if ModdedGame then Log( LOGINFO, 'Game is modded.');
 end;
 
 procedure TDRLLua.LoadFiles( const aDirectory : AnsiString; aLoader : TVDFLoader; aWildcard : AnsiString = '*' );

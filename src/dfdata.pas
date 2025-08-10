@@ -106,6 +106,7 @@ const
   ForceNoAudio    : Boolean = False;
   ForceConsole    : Boolean = False;
   ForceGraphics   : Boolean = False;
+  ModdedGame      : Boolean = False;
   ForceRestart    : Ansistring = '';
   VisionBaseValue : Byte = 8;
 
