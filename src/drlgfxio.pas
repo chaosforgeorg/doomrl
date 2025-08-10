@@ -142,7 +142,7 @@ uses {$IFDEF WINDOWS}windows,{$ENDIF}
      vglimage, vsdlio, vcolor, vglconsole, vioconsole,
      vtig, vtigstyle,
      dfplayer,
-     drlbase, drlconfiguration;
+     drlbase, drlconfiguration, drlmodule;
 
 
 procedure TDRLGFXIO.RecalculateScaling( aInitialize : Boolean );
@@ -315,15 +315,19 @@ var iCoreData   : TVDataFile;
     iStream     : TStream;
     iFontName   : Ansistring;
     iFontFormat : Ansistring;
+    iReadRaw    : Boolean;
+    iModule     : TDRLModule;
 begin
   FGPDetected := DRL.Store.IsSteamDeck;
-  if Option_ForceRaw then
+  iModule     := DRL.Modules.CoreModule;
+  iReadRaw    := not iModule.Path.EndsWith('.wad');
+  if iReadRaw then
   begin
-    iFontFormat := ReadFileString( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + 'default' );
+    iFontFormat := ReadFileString( iModule.Path + 'fonts' + DirectorySeparator + 'default' );
   end
   else
   begin
-    iCoreData := TVDataFile.Create( DataPath + CoreModuleID + '.wad');
+    iCoreData := TVDataFile.Create( iModule.Path );
     iCoreData.DKKey := LoveLace;
     iStream := iCoreData.GetFile( 'default', 'fonts' );
     iFontFormat := ReadFileString( iStream, iCoreData.GetFileSize( 'default', 'fonts' ) );
@@ -332,8 +336,8 @@ begin
 
   SScanf( iFontFormat, '%s %d %d %d %d', [@iFontName, @FFontSizeX, @FFontSizeY, @FConsoleSizeX, @FConsoleSizeY ] );
 
-  if Option_ForceRaw then
-    iImage := LoadImage( 'data' + DirectorySeparator + CoreModuleID + DirectorySeparator + 'fonts' + DirectorySeparator + iFontName )
+  if iReadRaw then
+    iImage := LoadImage( iModule.Path + 'fonts' + DirectorySeparator + iFontName )
   else
   begin
     iStream := iCoreData.GetFile( iFontName, 'fonts' );

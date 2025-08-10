@@ -350,6 +350,9 @@ begin
   for iModule in DRL.Modules.ActiveModules do
   begin
     iData := nil;
+    if (iModule.ID <> 'core') and LuaSystem.RawDefined( iModule.ID ) then
+      raise Exception.Create('Module ID "'+iModule.ID+'" redefined!');
+
     if iModule.Path.EndsWith( '.wad' ) then
     begin
       iData := TVDataFile.Create( iModule.Path );
@@ -385,6 +388,8 @@ begin
       // temporary hack, remove once drllq and drlhq are modules
       IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua', iModule.Path );
     end;
+    if LuaSystem.RawDefined( iModule.ID ) then
+      iModule.Hooks := LoadHooks( [ iModule.ID ], ModuleHooks );
   end;
 
   IO.LoadProgress(iProgBase + 50);

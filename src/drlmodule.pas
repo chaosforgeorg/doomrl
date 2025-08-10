@@ -19,7 +19,9 @@ type TDRLModule = class
     SaveVersion  : Integer;
     SaveAgnostic : Boolean;
     IsBase       : Boolean;
+
     Source       : ( DRLMWAD, DRLMSOURCE, DRLMSTEAM );
+    Hooks        : TFlags;
   end;
 
 type TModuleArray = specialize TGObjectArray< TDRLModule >;
@@ -44,15 +46,18 @@ private
   FModuleMap     : TModuleHash;
   FCoreModules   : TModuleList;
   FActiveModules : TModuleList;
+  FCoreModule    : TDRLModule;
   FCoreModuleID  : Ansistring;
   FModString     : Ansistring;
 private
   function ReadMetaFromModule( aLua : TLua; aOverride : Boolean ) : TDRLModule;
   procedure ReadMetaFromWAD( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
   procedure ReadMetaFromFolder( aLua : TLua; const aPath : Ansistring; aOverride : Boolean = True );
+  procedure ReadMetaFromSteamFolder( aLua : TLua; const aPath : Ansistring );
 public
   property ActiveModules : TModuleList read FActiveModules;
   property CoreModules   : TModuleList read FCoreModules;
+  property CoreModule    : TDRLModule  read FCoreModule;
   property CoreModuleID  : Ansistring  read FCoreModuleID;
   property ModString     : Ansistring  read FModString;
 end;
@@ -61,7 +66,7 @@ var Modules : TDRLModules;
 
 implementation
 
-uses sysutils, vluatable, vdf, dfdata;
+uses sysutils, vluatable, vdf, vstoreinterface, dfdata;
 
 function DRLModuleCompare( const A, B : TDRLModule ) : Integer;
 begin
@@ -76,6 +81,7 @@ begin
   FModuleMap     := TModuleHash.Create;
   FActiveModules := TModuleList.Create;
   FCoreModules   := TModuleList.Create;
+  FCoreModule    := nil;
   FCoreModuleID  := '';
   FModString     := '';
 end;
@@ -84,11 +90,15 @@ procedure TDRLModules.ScanModules;
 var iInfo   : TSearchRec;
     iModule : TDRLModule;
     iLua    : TLua;
+    iStore  : TStoreInterface;
+    iSMods  : TModArray;
+    iSMInfo : TModInfo;
 begin
   FModules.Clear;
   FModuleMap.Clear;
   FCoreModules.Clear;
   FActiveModules.Clear;
+  FCoreModule := nil;
   try
     iLua := TLua.Create;
 
@@ -106,6 +116,23 @@ begin
       until FindNext(iInfo) <> 0;
     end;
     FindClose(iInfo);
+
+    iStore := TStoreInterface.Get;
+    if iStore.IsSteam and iStore.IsInitialized then
+    begin
+      iSMods := iStore.GetMods;
+      if iSMods <> nil then
+      begin
+        Log( 'found %d Steam Workshop mods.', [ iSMods.Size ] );
+        for iSMInfo in iSMods do
+        begin
+          Log( 'found Workshop module %d', [ iSMInfo.ID ] );
+          ReadMetaFromSteamFolder( iLua, iSMInfo.Folder+PathDelim );
+        end;
+      end
+      else
+      Log( 'no Steam Workshop mods found.' );
+    end;
 
     // Add steam workshop folders support
   finally
@@ -132,6 +159,7 @@ begin
       if iModule.ID = aCoreModuleID then
       begin
         FCoreModuleID := iModule.ID;
+        FCoreModule   := iModule;
         Break;
       end;
   Exit( FCoreModuleID );
@@ -141,6 +169,7 @@ procedure TDRLModules.ActivateModules( const aCoreModuleID : Ansistring );
 var iModule : TDRLModule;
 begin
   FCoreModuleID := aCoreModuleID;
+  FCoreModule   := nil;
   FModString    := '';
   FActiveModules.Clear;
 
@@ -149,6 +178,7 @@ begin
     and ( ( not iModule.IsBase ) or ( iModule.ID = aCoreModuleID ) ) then
     begin
       FActiveModules.Push( iModule );
+      if iModule.IsBase then FCoreModule := iModule;
       if ( not iModule.IsBase ) and ( not iModule.SaveAgnostic ) then
       begin
         if FModString <> '' then FModString += ' ';
@@ -179,6 +209,7 @@ begin
       iModule.SaveVersion  := GetInteger( 'save_version', 0 );
       iModule.SaveAgnostic := GetBoolean( 'save_agnostic', False );
       iModule.IsBase       := GetBoolean( 'is_base', False );
+      iModule.Hooks        := [];
     finally
       Free;
     end;
@@ -249,6 +280,27 @@ begin
     begin
       iModule.Path   := aPath;
       iModule.Source := DRLMSOURCE;
+    end;
+  end;
+end;
+
+procedure TDRLModules.ReadMetaFromSteamFolder( aLua : TLua; const aPath : Ansistring );
+var iModule : TDRLModule;
+begin
+  Log( LOGINFO, 'found Workshop path "%s"...', [aPath] );
+  if FileExists( aPath + 'meta.lua' ) then
+  begin
+    aLua.LoadFile( aPath + 'meta.lua' );
+    iModule := ReadMetaFromModule( aLua, False );
+    if iModule <> nil then
+    begin
+      iModule.Path   := aPath;
+      iModule.Source := DRLMSTEAM;
+      if FileExists( aPath + iModule.ID + '.wad' ) then
+      begin
+        Log( LOGINFO, 'Workshop module "%s" registered as WAD module.', [iModule.ID] );
+        iModule.Path := aPath + iModule.ID + '.wad';
+      end;
     end;
   end;
 end;

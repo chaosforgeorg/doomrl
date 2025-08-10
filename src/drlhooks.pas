@@ -89,6 +89,8 @@ var   BeingHooks    : TFlags;
       ChainedHooks  : TFlags;
       LevelHooks    : TFlags;
       GlobalHooks   : TFlags;
+      ModuleHooks   : TFlags;
+
 
 const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'OnCreate', 'OnAction', 'OnAttacked', 'OnUseActive', 'OnDie', 'OnDieCheck',
@@ -107,19 +109,25 @@ const HookNames : array[ 0..HookAmount-1 ] of AnsiString = (
       'getDamageMul', 'getFireCostMul', 'getAmmoCostMul', 'getReloadCostMul'
       );
 
-function LoadHooks( const Table : array of Const ) : TFlags;
+function LoadHooks( const aTable : array of Const ) : TFlags;
+function LoadHooks( const aTable : array of Const; aHooks : TFlags ) : TFlags;
 
 implementation
 
 uses vluasystem;
 
-function LoadHooks ( const Table : array of Const ) : TFlags;
+function LoadHooks ( const aTable : array of Const ) : TFlags;
+begin
+  Exit( LoadHooks( aTable, AllHooks ) );
+end;
+
+function LoadHooks ( const aTable : array of Const; aHooks : TFlags ) : TFlags;
 var Hook  : Byte;
 begin
-  with LuaSystem.GetTable( Table ) do
+  with LuaSystem.GetTable( aTable ) do
   try
     LoadHooks := [];
-    for Hook in AllHooks do
+    for Hook in aHooks do
       if isFunction(HookNames[Hook]) then
         Include(LoadHooks,Hook);
   finally
@@ -150,6 +158,7 @@ GlobalHooks  := LevelHooks + [ Hook_OnEnterLevel, Hook_OnKill, Hook_OnExit, Hook
   Hook_OnLoad, Hook_OnLoaded, Hook_OnUnLoad, Hook_OnCreatePlayer, Hook_OnLevelUp,
   Hook_OnPreLevelUp, Hook_OnWinGame, Hook_OnMortem, Hook_OnMortemPrint, Hook_OnCreateEpisode,
   Hook_OnIntro, Hook_OnGenerate ];
+ModuleHooks  := [ Hook_OnLoad ];
 
 end.
 

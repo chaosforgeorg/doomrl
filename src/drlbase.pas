@@ -37,45 +37,35 @@ type
 { TDRL }
 
 TDRL = class(TVObject)
-       Difficulty    : Byte;
-       Challenge     : AnsiString;
-       SChallenge    : AnsiString;
-       ArchAngel     : Boolean;
-       DataLoaded    : Boolean;
-       GameWon       : Boolean;
-       CrashSave     : Boolean;
-
        constructor Create;
        procedure RunModuleChoice;
        procedure Reset;
        procedure Reconfigure;
        procedure Initialize;
-       procedure Apply( aResult : TMenuResult );
        procedure Load;
        procedure UnLoad;
        function LoadSaveFile : Boolean;
        procedure WriteSaveFile( aCrash : Boolean );
        function SaveExists : Boolean;
-       procedure SetupLuaConstants;
        function Action( aInput : TInputKey ) : Boolean;
+       procedure Run;
+       destructor Destroy; override;
+       procedure CallHook( Hook : Byte; const Params : array of Const );
+       function  CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
+       procedure CallModuleHook( aHook : Byte; const aParams : array of Const );
+       procedure SetState( aNewState : TDRLState );
+       procedure ClearPlayerView;
+       procedure OpenJHCPage;
+       function HandleUnloadCommand( aItem : TItem ) : Boolean;
+       function HandleCommand( aCommand : TCommand ) : Boolean;
        function HandleActionCommand( aInput : TInputKey ) : Boolean;
        function HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
        function HandleMoveCommand( aInput : TInputKey ) : Boolean;
        function HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean; aPad : Boolean ) : Boolean;
-       function HandleUnloadCommand( aItem : TItem ) : Boolean;
        function HandleSwapWeaponCommand : Boolean;
        function HandlePickupCommand( aAlt : Boolean ) : Boolean;
-       function HandleCommand( aCommand : TCommand ) : Boolean;
-       procedure Run;
-       destructor Destroy; override;
-       procedure ModuleMainHook( Hook : AnsiString; const Params : array of Const );
-       procedure CallHook( Hook : Byte; const Params : array of Const );
-       function  CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
-       procedure LoadChallenge;
-       procedure SetState( aNewState : TDRLState );
-       procedure ClearPlayerView;
-       procedure OpenJHCPage;
      private
+       procedure Apply( aResult : TMenuResult );
        procedure ResetAutoTarget;
        function HandleMouseEvent( aEvent : TIOEvent ) : Boolean;
        function HandleKeyEvent( aEvent : TIOEvent ) : Boolean;
@@ -83,15 +73,10 @@ TDRL = class(TVObject)
        function HandlePadEvent( aEvent : TIOEvent ) : Boolean;
        function MoveTargetEvent( aCoord : TCoord2D ) : Boolean;
        procedure PreAction;
-       procedure LoadModule( Base : Boolean );
        procedure CreatePlayer( aResult : TMenuResult );
      private
        FState           : TDRLState;
        FLevel           : TLevel;
-       FCoreHooks       : TFlags;
-       FChallengeHooks  : TFlags;
-       FSChallengeHooks : TFlags;
-       FModuleHooks     : TFlags;
        FLastInputTime   : QWord;
        FTargeting       : TTargeting;
        FDamagedLastTurn : Boolean;
@@ -101,12 +86,28 @@ TDRL = class(TVObject)
        FStore           : TStoreInterface;
        FPadMoved        : Boolean;
        FModules         : TDRLModules;
+
+       FCoreHooks       : TFlags;
+       FChallengeHooks  : TFlags;
+       FSChallengeHooks : TFlags;
+       FModuleHooks     : TFlags;
+
+       FDifficulty      : Byte;
+       FChallenge       : AnsiString;
+       FSChallenge      : AnsiString;
+       FArchAngel       : Boolean;
+       FDataLoaded      : Boolean;
+       FGameWon         : Boolean;
+       FCrashSave       : Boolean;
      public
+       property GameWon : Boolean read FGameWon write FGameWon;
+       property Difficulty : Byte read FDifficulty;
+       property Challenge  : Ansistring read FChallenge;
+       property SChallenge : Ansistring read FSChallenge;
+
        property Store : TStoreInterface read FStore;
        property Modules : TDRLModules read FModules;
        property Level : TLevel read FLevel;
-       property ChalHooks : TFlags read FChallengeHooks;
-       property ModuleHooks : TFlags read FModuleHooks;
        property State : TDRLState read FState;
        property Targeting : TTargeting read FTargeting;
        property DamagedLastTurn : Boolean read FDamagedLastTurn write FDamagedLastTurn;
@@ -185,38 +186,29 @@ begin
   inherited Destroy;
 end;
 
-procedure TDRL.ModuleMainHook(Hook: AnsiString; const Params: array of const);
-begin
-  if not LuaSystem.Defined([ CoreModuleID, Hook ]) then Exit;
-  Lua.ProtectedCall( [ CoreModuleID, Hook ], Params );
-end;
-
-
 procedure TDRL.CallHook( Hook : Byte; const Params : array of const ) ;
 begin
   if (Hook in FModuleHooks) then LuaSystem.ProtectedCall([CoreModuleID,HookNames[Hook]],Params);
-  if (Challenge <> '')  and (Hook in FChallengeHooks) then LuaSystem.ProtectedCall(['chal',Challenge,HookNames[Hook]],Params);
-  if (SChallenge <> '') and (Hook in FSChallengeHooks) then LuaSystem.ProtectedCall(['chal',SChallenge,HookNames[Hook]],Params);
+  if (FChallenge <> '')  and (Hook in FChallengeHooks) then LuaSystem.ProtectedCall(['chal',FChallenge,HookNames[Hook]],Params);
+  if (FSChallenge <> '') and (Hook in FSChallengeHooks) then LuaSystem.ProtectedCall(['chal',FSChallenge,HookNames[Hook]],Params);
   if (Hook in FCoreHooks) then LuaSystem.ProtectedCall(['core',HookNames[Hook]],Params);
 end;
 
 function TDRL.CallHookCheck ( Hook : Byte; const Params : array of const ) : Boolean;
 begin
   if (Hook in FCoreHooks) then if not LuaSystem.ProtectedCall(['core',HookNames[Hook]],Params) then Exit( False );
-  if (Challenge <> '') and (Hook in FChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',Challenge,HookNames[Hook]],Params) then Exit( False );
-  if (SChallenge <> '') and (Hook in FSChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',SChallenge,HookNames[Hook]],Params) then Exit( False );
+  if (FChallenge <> '') and (Hook in FChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',FChallenge,HookNames[Hook]],Params) then Exit( False );
+  if (FSChallenge <> '') and (Hook in FSChallengeHooks) then if not LuaSystem.ProtectedCall(['chal',FSChallenge,HookNames[Hook]],Params) then Exit( False );
   if Hook in FModuleHooks then if not LuaSystem.ProtectedCall([CoreModuleID,HookNames[Hook]],Params) then Exit( False );
   Exit( True );
 end;
 
-procedure TDRL.LoadChallenge;
+procedure TDRL.CallModuleHook( aHook : Byte; const aParams : array of const ) ;
+var iModule : TDRLModule;
 begin
-  FChallengeHooks := [];
-  FSChallengeHooks := [];
-  if Challenge <> '' then
-    FChallengeHooks := LoadHooks( ['chal',Challenge] ) * GlobalHooks;
-  if SChallenge <> '' then
-    FSChallengeHooks := LoadHooks( ['chal',SChallenge] ) * GlobalHooks;
+  for iModule in FModules.ActiveModules do
+    if aHook in iModule.Hooks then
+      LuaSystem.ProtectedCall([iModule.ID,HookNames[aHook]],aParams);
 end;
 
 procedure TDRL.SetState( aNewState: TDRLState );
@@ -259,13 +251,6 @@ begin
   {$ENDIF}
 end;
 
-procedure TDRL.LoadModule( Base : Boolean );
-begin
-//  if ModuleID <> 'drl' then Lua.LoadModule( Module );
-  FModuleHooks := LoadHooks( [CoreModuleID] ) * GlobalHooks;
-  CallHook( Hook_OnLoad, [] );
-end;
-
 procedure TDRL.Load;
 var iLua : TDRLLua;
     i    : Integer;
@@ -287,9 +272,10 @@ begin
   LuaSystem := iLua;
   LuaSystem.CallDefaultResult := True;
 //  Modules.RegisterAwards( LuaSystem.Raw );
-  FCoreHooks := LoadHooks( [ 'core' ] ) * GlobalHooks;
+  FCoreHooks   := LoadHooks( [ 'core' ] ) * GlobalHooks;
+  FModuleHooks := LoadHooks( [CoreModuleID] ) * GlobalHooks;
+  CallModuleHook( Hook_OnLoad, [] );
 
-  LoadModule( True );
   Reconfigure;
 
   if GraphicsVersion then
@@ -313,21 +299,21 @@ begin
     HARDSPRITE_DECAL_WALL_BLOOD[i] := 0;
   end;
 
-  if Lua.Get( 'HARDSPRITE_DECAL_BLOOD_1' ) <> 0 then
+  if Lua.RawDefined( 'HARDSPRITE_DECAL_BLOOD_1' ) then
     for i := 0 to 3 do
       HARDSPRITE_DECAL_BLOOD[i] := Lua.Get( 'HARDSPRITE_DECAL_BLOOD_'+IntToStr(i+1), 0 );
 
-  if Lua.Get( 'HARDSPRITE_DECAL_WALL_BLOOD_1' ) <> 0 then
+  if Lua.RawDefined( 'HARDSPRITE_DECAL_WALL_BLOOD_1' ) then
     for i := 0 to 3 do
       HARDSPRITE_DECAL_WALL_BLOOD[i] := Lua.Get( 'HARDSPRITE_DECAL_WALL_BLOOD_'+IntToStr(i+1), 0 );
 
-  DataLoaded := True;
+  FDataLoaded := True;
   IO.LoadStop;
 end;
 
 procedure TDRL.UnLoad;
 begin
-  DataLoaded := False;
+  FDataLoaded := False;
   HOF.Done;
   FreeAndNil(LuaSystem);
   FreeAndNil(Help);
@@ -363,13 +349,13 @@ begin
 
   SetState( DSStart );
   FTargeting.Clear;
-  Difficulty := 0;
-  Challenge  := '';
-  SChallenge := '';
-  ArchAngel  := False;
-  DataLoaded := False;
-  GameWon    := False;
-  CrashSave  := False;
+  FDifficulty := 0;
+  FChallenge  := '';
+  FSChallenge := '';
+  FArchAngel  := False;
+  FDataLoaded := False;
+  FGameWon    := False;
+  FCrashSave  := False;
 
   FLastInputTime   := 0;
   FDamagedLastTurn := False;
@@ -423,23 +409,20 @@ procedure TDRL.Apply ( aResult : TMenuResult ) ;
 begin
   if aResult.Quit   then SetState( DSQuit );
   if aResult.Loaded then Exit;
-  Difficulty     := aResult.Difficulty;
-  Challenge      := aResult.Challenge;
-  ArchAngel      := aResult.ArchAngel;
-  SChallenge     := aResult.SChallenge;
+  FDifficulty     := aResult.Difficulty;
+  FChallenge      := aResult.Challenge;
+  FArchAngel      := aResult.ArchAngel;
+  FSChallenge     := aResult.SChallenge;
 
-  {
-  if aResult.Module <> nil then
-  begin
-    NoPlayerRecord := True;
-    NoScoreRecord  := True;
-    Module := aResult.Module;
-  end;
-  }
+  LuaSystem.SetValue('DIFFICULTY', FDifficulty);
+  LuaSystem.SetValue('CHALLENGE',  FChallenge);
+  LuaSystem.SetValue('SCHALLENGE', FSChallenge);
+  LuaSystem.SetValue('ARCHANGEL', FArchAngel);
 
-  // Set Klass   Klass      : Byte;
-  // Upgrade trait -- Trait : Byte;
-  // Set Name    Name       : AnsiString;
+  FChallengeHooks := [];
+  FSChallengeHooks := [];
+  if FChallenge  <> '' then FChallengeHooks  := LoadHooks( ['chal',FChallenge] ) * GlobalHooks;
+  if FSChallenge <> '' then FSChallengeHooks := LoadHooks( ['chal',FSChallenge] ) * GlobalHooks;
 end;
 
 procedure TDRL.PreAction;
@@ -1209,16 +1192,16 @@ begin
   IO.WaitForLayer( True );
   if FState <> DSQuit then
 repeat
-  if not DataLoaded then
+  if not FDataLoaded then
     DRL.Load;
   IO.LoadStop;
 
   StatusEffect   := StatusNormal;
-  Difficulty     := 2;
-  ArchAngel      := False;
-  Challenge      := '';
-  SChallenge     := '';
-  GameWon        := False;
+  FDifficulty    := 2;
+  FArchAngel     := False;
+  FChallenge     := '';
+  FSChallenge    := '';
+  FGameWon       := False;
   NoPlayerRecord := False;
   NoScoreRecord  := False;
 
@@ -1235,15 +1218,12 @@ repeat
 
   if iResult.Loaded then
   begin
-    if CrashSave
+    if FCrashSave
       then SetState( DSCrashLoading )
       else SetState( DSLoading );
-    SetupLuaConstants;
   end
   else
   begin
-    SetupLuaConstants;
-    LoadChallenge;
     CreatePlayer( iResult );
   end;
 
@@ -1393,7 +1373,7 @@ repeat
     if State <> DSSaving then
     begin
       Player.Score := Player.Score + 1000;
-      if GameWon and (State <> DSNextLevel) then Player.WriteMemorial;
+      if FGameWon and (State <> DSNextLevel) then Player.WriteMemorial;
       FLevel.Clear;
     end;
     IO.SetHint('');
@@ -1402,7 +1382,7 @@ repeat
   begin
     EmitCrashInfo( e.Message, True );
     EXCEPTEMMITED := True;
-    if Option_SaveOnCrash and ((Player.Statistics['crash_count'] = 0) or{thelaptop: Vengeance is MINE} (DRL.Difficulty < DIFF_NIGHTMARE)) then
+    if Option_SaveOnCrash and ((Player.Statistics['crash_count'] = 0) or{thelaptop: Vengeance is MINE} (FDifficulty < DIFF_NIGHTMARE)) then
     begin
       if Player.Level_Index <> 1 then Player.NextLevelIndex;
       Player.Statistics.Increase('crash_count');
@@ -1420,7 +1400,7 @@ repeat
 
   if State = DSFinished then
   begin
-    if GameWon then
+    if FGameWon then
     begin
       IO.Audio.PlayMusic('victory');
       CallHookCheck(Hook_OnWinGame,[]);
@@ -1444,7 +1424,7 @@ repeat
       IO.WaitForLayer( True );
     end;
     iChalAbbr := '';
-    if Challenge <> '' then iChalAbbr := LuaSystem.Get(['chal',Challenge,'abbr']);
+    if FChallenge <> '' then iChalAbbr := LuaSystem.Get(['chal',FChallenge,'abbr']);
     IO.PushLayer( TPagedView.Create( HOF.GetPagedScoreReport, iChalAbbr ) );
     IO.WaitForLayer( True );
   end;
@@ -1510,17 +1490,17 @@ begin
       SaveModString     := '';
 
       FreeAndNil( UIDs );
-      UIDs            := TUIDStore.CreateFromStream( iStream );
-      GameWon         := iStream.ReadByte <> 0;
-      Difficulty      := iStream.ReadByte;
-      Challenge       := iStream.ReadAnsiString;
-      ArchAngel       := iStream.ReadByte <> 0;
-      SChallenge      := iStream.ReadAnsiString;
+      UIDs             := TUIDStore.CreateFromStream( iStream );
+      FGameWon         := iStream.ReadByte <> 0;
+      FDifficulty      := iStream.ReadByte;
+      FChallenge       := iStream.ReadAnsiString;
+      FArchAngel       := iStream.ReadByte <> 0;
+      FSChallenge      := iStream.ReadAnsiString;
 
       Player := TPlayer.CreateFromStream( iStream );
-      CrashSave := iStream.ReadByte <> 0;
+      FCrashSave := iStream.ReadByte <> 0;
 
-      if not CrashSave then
+      if not FCrashSave then
       begin
         FreeAndNil( FLevel );
         iRecreate := True;
@@ -1538,7 +1518,6 @@ begin
 
     if Player.Dead then
       raise EException.Create('Player in save file is dead anyway.');
-    LoadChallenge;
     LoadSaveFile := True;
     FPadMoved    := True;
   except
@@ -1595,11 +1574,11 @@ begin
   Stream.WriteAnsiString( VersionModuleSave );
   Stream.WriteAnsiString( FModules.ModString );
   UIDs.WriteToStream( Stream );
-  if GameWon   then Stream.WriteByte( 1 ) else Stream.WriteByte( 0 );
-  Stream.WriteByte( Difficulty );
-  Stream.WriteAnsiString( Challenge );
-  if ArchAngel then Stream.WriteByte( 1 ) else Stream.WriteByte( 0 );
-  Stream.WriteAnsiString( SChallenge );
+  if FGameWon   then Stream.WriteByte( 1 ) else Stream.WriteByte( 0 );
+  Stream.WriteByte( FDifficulty );
+  Stream.WriteAnsiString( FChallenge );
+  if FArchAngel then Stream.WriteByte( 1 ) else Stream.WriteByte( 0 );
+  Stream.WriteAnsiString( FSChallenge );
 
   Player.WriteToStream(Stream);
   Player.Detach;
@@ -1619,14 +1598,6 @@ end;
 function TDRL.SaveExists : Boolean;
 begin
   Exit( FileExists( ModuleUserPath + 'save' ) );
-end;
-
-procedure TDRL.SetupLuaConstants;
-begin
-  LuaSystem.SetValue('DIFFICULTY', Difficulty);
-  LuaSystem.SetValue('CHALLENGE',  Challenge);
-  LuaSystem.SetValue('SCHALLENGE', SChallenge);
-  LuaSystem.SetValue('ARCHANGEL', ArchAngel);
 end;
 
 destructor TDRL.Destroy;
