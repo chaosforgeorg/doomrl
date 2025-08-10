@@ -3,6 +3,8 @@ xpcall( function() dofile( "config.lua") end, function() end )
 VALKYRIE_ROOT = VALKYRIE_ROOT or os.getenv("FPCVALKYRIE_ROOT") or "../fpcvalkyrie/"
 dofile (VALKYRIE_ROOT.."scripts/lua_make.lua")
 
+local BUILT = false
+
 makefile = {
 	name = "drl",
 	fpc_params = {
@@ -27,7 +29,6 @@ makefile = {
 		--make.svncheck(s)
 	end,
 	post_build = function()
-		os.execute_in_dir( "makewad", "bin" )
 	end,
 	source_files = { "drl.pas", "makewad.pas", "drlwad.pas" },
 	publish = {
@@ -84,13 +85,30 @@ makefile = {
 			make.steam( path, os.pwd().."\\bin\\data\\jhc\\setup\\app_build_3126530.vdf" )
 		end,
 		lq = function()
+			if not BUILT then
+				os.execute_in_dir( "makewad", "bin" )
+				BUILT = true
+			end
 			make.package( make.publish( (OS_VER_PREFIX or "")..make.version_name().."-lq", "lq" ), PUBLISH_DIR )
 		end,
 		hq = function()
+			if not BUILT then
+				os.execute_in_dir( "makewad", "bin" )
+				BUILT = true
+			end
 			make.package( make.publish( (OS_VER_PREFIX or "")..make.version_name(), "hq" ), PUBLISH_DIR )
+		end,
+		drl_mod = function()
+			os.execute_in_dir( "makewad drl drlhq", "bin" )
+			os.copy( "bin/drl.wad", "bin/deploy/drl/drl.wad" )
+			os.execute_in_dir( "drl -publish drl -god", "bin" )
 		end,
 		install = function() makefile.commands.installhq() end,
 		installhq = function()
+			if not BUILT then
+				os.execute_in_dir( "makewad", "bin" )
+				BUILT = true
+			end
 			if OS == "WINDOWS" then	
 				make.generate_iss( "drl.iss", "hq", PUBLISH_DIR ) 
 			elseif OS == "MACOSX" then
@@ -98,6 +116,10 @@ makefile = {
 			end
 		end,
 		installlq = function()
+			if not BUILT then
+				os.execute_in_dir( "makewad", "bin" )
+				BUILT = true
+			end
 			if OS == "WINDOWS" then	
 				make.generate_iss( "drl.iss", "lq", PUBLISH_DIR ) 
 			elseif OS == "MACOSX" then

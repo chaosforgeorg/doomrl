@@ -87,6 +87,7 @@ begin
     else
       iWID := StrToQWord(iModule.WorkshopID);
 
+    Log( LOGINFO,'Workshop ID = ' + IntToStr(iWID) + ' ' + Iif( iModule.Source = DRLMSOURCE, 'source', 'WAD' ) + ' deploy initialized.' );
     if iModule.Source = DRLMSOURCE
       then iSteam.ModUpdate( iModule.Path, iWID )
       else iSteam.ModUpdate( ExpandFileName( DataPath+'/deploy/'+iModule.ID+'/'), iWID );
