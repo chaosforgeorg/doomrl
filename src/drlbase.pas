@@ -433,11 +433,13 @@ end;
 procedure TDRL.Apply ( aResult : TMenuResult ) ;
 begin
   if aResult.Quit   then SetState( DSQuit );
-  if aResult.Loaded then Exit;
-  FDifficulty     := aResult.Difficulty;
-  FChallenge      := aResult.Challenge;
-  FArchAngel      := aResult.ArchAngel;
-  FSChallenge     := aResult.SChallenge;
+  if not aResult.Loaded then
+  begin
+    FDifficulty     := aResult.Difficulty;
+    FChallenge      := aResult.Challenge;
+    FArchAngel      := aResult.ArchAngel;
+    FSChallenge     := aResult.SChallenge;
+  end;
 
   LuaSystem.SetValue('DIFFICULTY', FDifficulty);
   LuaSystem.SetValue('CHALLENGE',  FChallenge);

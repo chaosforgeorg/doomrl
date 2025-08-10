@@ -74,6 +74,11 @@ makefile = {
 		}
 	},
 	commands = {
+		jhc_demo_test = function()
+			os.execute_in_dir( "makewad jhc", "bin" )
+			local path = make.publish( "deploy", "jhc" )
+			make.steam( path, os.pwd().."\\bin\\data\\jhc\\setup\\demo\\app_build_3256910.vdf" )
+		end,
 		jhc_demo = function()
 			os.execute_in_dir( "makewad jhc demo.txt", "bin" )
 			local path = make.publish( "deploy", "jhc" )
