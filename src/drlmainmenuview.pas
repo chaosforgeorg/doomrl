@@ -51,6 +51,7 @@ protected
   procedure ReloadArrays;
   procedure ReloadChallenge( aType : Byte );
   procedure RenderASCIILogo;
+  procedure UpdateModErrors;
 protected
   FSize        : TIOPoint;
   FRect        : TIORect;
@@ -196,6 +197,12 @@ begin
     Exit;
   end;
   SetSoundCallback;
+
+  if ModErrors.Size > 0 then
+  begin
+    UpdateModErrors;
+    Exit;
+  end;
 
   if not GraphicsVersion then
     if FMode in [MAINMENU_INTRO,MAINMENU_MENU,MAINMENU_DIFFICULTY,MAINMENU_KLASS,MAINMENU_FAIR,MAINMENU_CTYPE,MAINMENU_NAME] then
@@ -345,10 +352,14 @@ begin
     ForceShop := False;
   end;
 
+  if VTIG_Event( TIG_EV_RESTART ) then
+    ForceRestart := CoreModuleID;
+
   if ForceRestart <> '' then
   begin
     FMode := MAINMENU_DONE;
-    FResult.Quit := True;
+    DRL.SetState( DSQUIT );
+    if FResult <> nil then FResult.Quit := True;
   end;
 end;
 
@@ -914,6 +925,35 @@ begin
     finally
       Free;
     end;
+end;
+
+procedure TMainMenuView.UpdateModErrors;
+var iRect : TRectangle;
+    i, iM : Integer;
+begin
+  VTIG_BeginWindow('Mod loading errors', Point( 70, -1 ) );
+  VTIG_Text('{!There were errors while loading mods - fix, remove or disable!} ');
+  VTIG_Text('');
+  iM := Min( ModErrors.Size, 8 );
+  for i := 0 to iM - 1 do
+    VTIG_Text(ModErrors[i], LIGHTRED );
+  if ModErrors.Size > 12
+    then VTIG_Text('... and '+IntToStr( ModErrors.Size - 8 )+' more error line(s).' );
+  VTIG_Text('');
+  VTIG_Text('You can ignore and proceed the errors are just version compatibility errors, otherwise the game might be unstable.');
+  VTIG_Text('If you''re working on a mod, you can edit it and press {!Ctrl}+{!F1} to reload.');
+  iRect := VTIG_GetWindowRect;
+  VTIG_End('Press <{!{$input_escape}}> to continue...');
+  IO.RenderUIBackground( iRect.TopLeft, iRect.BottomRight - PointUnit );
+  if VTIG_Event( TIG_EV_RESTART ) then
+  begin
+    ForceRestart := CoreModuleID;
+    FMode := MAINMENU_MENU;
+    ModErrors.Clear;
+  end;
+
+  if VTIG_EventCancel then
+    ModErrors.Clear;
 end;
 
 procedure TMainMenuView.RenderASCIILogo;

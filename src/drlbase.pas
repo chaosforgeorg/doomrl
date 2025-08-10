@@ -53,6 +53,7 @@ TDRL = class(TVObject)
        procedure CallHook( Hook : Byte; const Params : array of Const );
        function  CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
        procedure CallModuleHook( aHook : Byte; const aParams : array of Const );
+       procedure SafeCallModuleHook( aHook : Byte; const aParams : array of Const );
        procedure SetState( aNewState : TDRLState );
        procedure ClearPlayerView;
        procedure OpenJHCPage;
@@ -211,6 +212,28 @@ begin
       LuaSystem.ProtectedCall([iModule.ID,HookNames[aHook]],aParams);
 end;
 
+procedure TDRL.SafeCallModuleHook( aHook : Byte; const aParams : array of const ) ;
+var iModule : TDRLModule;
+begin
+  for iModule in FModules.ActiveModules do
+    if aHook in iModule.Hooks then
+    try
+      LuaSystem.ProtectedCall([iModule.ID,HookNames[aHook]],aParams);
+    except
+      on E : Exception do
+      begin
+        if ModdedGame then
+        begin
+          ModErrors.Push('Error : Mod "'+iModule.ID+'" failed to execute '+HookNames[aHook]+'!');
+          ModErrors.Push('Path  : '+iModule.Path);
+          ModErrors.Push( E.Message );
+          ModErrors.Push( '' );
+        end
+        else raise;
+      end;
+    end;
+end;
+
 procedure TDRL.SetState( aNewState: TDRLState );
 begin
   if ( FState = aNewState ) then Exit;
@@ -274,8 +297,8 @@ begin
 //  Modules.RegisterAwards( LuaSystem.Raw );
   FCoreHooks   := LoadHooks( [ 'core' ] ) * GlobalHooks;
   FModuleHooks := LoadHooks( [CoreModuleID] ) * GlobalHooks;
-  CallModuleHook( Hook_OnLoad, [] );
 
+  SafeCallModuleHook( Hook_OnLoad, [] );
   Reconfigure;
 
   if GraphicsVersion then
@@ -332,6 +355,8 @@ begin
   if GraphicsVersion
     then IO := TDRLGFXIO.Create
     else IO := TDRLTextIO.Create;
+
+  ModErrors := TStringGArray.Create;
 
   FModules := TDRLModules.Create;
   FModules.ScanModules;
@@ -1603,6 +1628,7 @@ end;
 destructor TDRL.Destroy;
 begin
   UnLoad;
+  FreeAndNil( ModErrors );
   FreeAndNil( FModules );
   FreeAndNil( Config );
   FreeAndNil( FTargeting );

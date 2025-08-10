@@ -140,7 +140,11 @@ try
     drlbase.DRL := TDRL.Create;
 
     repeat
-      if ForceRestart <> '' then CoreModuleID := ForceRestart;
+      if ForceRestart <> '' then
+      begin
+        drlbase.DRL.Modules.ScanModules;
+        CoreModuleID := ForceRestart;
+      end;
       ForceRestart := '';
       CoreModuleID := drlbase.DRL.Modules.Validate( CoreModuleID );
       if CoreModuleID = '' then

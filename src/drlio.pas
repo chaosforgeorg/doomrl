@@ -28,6 +28,8 @@ const TIG_EV_NONE      = 0;
       TIG_EV_QUICK_8   = 18;
       TIG_EV_QUICK_9   = 19;
 
+      TIG_EV_RESTART   = 100;
+
 type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
 
@@ -528,6 +530,7 @@ begin
       VKEY_7      : VTIG_GetIOState.EventState.SetState( VTIG_IE_7, event.Key.Pressed );
       VKEY_8      : VTIG_GetIOState.EventState.SetState( VTIG_IE_8, event.Key.Pressed );
       VKEY_9      : VTIG_GetIOState.EventState.SetState( VTIG_IE_9, event.Key.Pressed );
+      VKEY_F1     : if ModdedGame then VTIG_GetIOState.EventState.SetState( TIG_EV_RESTART, event.Key.Pressed and ( VKMOD_CTRL in event.Key.ModState ) );
     end;
   end;
 

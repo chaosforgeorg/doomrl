@@ -342,12 +342,23 @@ procedure TDRLLua.ReadWad;
 var iProgBase    : DWord;
     iModule      : TDRLModule;
     iData        : TVDataFile;
-  procedure CheckID( iID : Ansistring );
+  function CheckID( const iID : Ansistring ) : Boolean;
   begin
-    if ( iID <> 'core' ) and ( iID <> 'drl' ) and ( iID <> 'jhc' ) then
-      ModdedGame := True;
+    Exit( ( iID <> 'core' ) and ( iID <> 'drl' ) and ( iID <> 'jhc' ) );
   end;
+  procedure SetupBase;
+  begin
+    VersionModule     := LuaSystem.Get( 'VERSION_MODULE' );
+    VersionModuleSave := LuaSystem.Get( 'VERSION_MODULE_SAVE' );
+    DemoVersion       := False;
+    if LuaSystem.RawDefined( 'DEMO' ) then
+      DemoVersion := LuaSystem.Get( 'DEMO' );
+  end;
+
 begin
+  VersionModule     := '';
+  VersionModuleSave := '';
+  DemoVersion       := False;
   IO.LoadStart;
   iProgBase := IO.LoadCurrent;
   IO.LoadProgress(iProgBase);
@@ -356,6 +367,14 @@ begin
   begin
     iData := nil;
 
+    if ( not iModule.IsBase ) and ( iModule.BaseVersion <> '' ) then
+      if iModule.BaseVersion <> VersionModuleSave then
+      begin
+        ModErrors.Push('Error   : Mod "'+iModule.ID+'" version mismatch!');
+        ModErrors.Push('Expects : '+iModule.BaseVersion);
+        ModErrors.Push('');
+      end;
+
     if iModule.Path.EndsWith( '.wad' ) then
     begin
       iData := TVDataFile.Create( iModule.Path );
@@ -363,8 +382,12 @@ begin
       if iData.FileExists( 'main.lua' ) then
       begin
         RegisterModule( iModule.ID, iData );
+        if CheckID( iModule.ID ) then
+        begin
+          if DemoVersion then Halt(0);
+          ModdedGame := True;
+        end;
         LoadStream( iData,'','main.lua' );
-        CheckID( iModule.ID );
       end;
       iData.RegisterLoader( FILETYPE_RAW, @Help.StreamLoader );
       iData.Load('help');
@@ -381,27 +404,45 @@ begin
     else
     begin
       if FileExists( iModule.Path + 'main.lua' ) then
-      begin
-        RegisterModule( iModule.ID, iModule.Path );
-        LoadFile( iModule.Path + 'main.lua' );
-        CheckID( iModule.ID );
+      try
+        begin
+          if CheckID( iModule.ID ) then
+          begin
+            if DemoVersion then Continue;
+            ModdedGame := True;
+          end;
+          RegisterModule( iModule.ID, iModule.Path );
+          LoadFile( iModule.Path + 'main.lua' );
+          LoadFiles( iModule.Path + 'help', @Help.StreamLoader, '*.hlp' );
+          LoadFiles( iModule.Path + 'ascii', @IO.ASCIILoader, '*.asc' );
+          if GraphicsVersion then
+            (IO as TDRLGFXIO).Textures.LoadTextureFolder( iModule.Path + 'graphics' );
+          // temporary hack, remove once drllq and drlhq are modules
+          IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua', iModule.Path );
+        end;
+      except
+        on E : Exception do
+        begin
+          if ModdedGame then
+          begin
+            ModErrors.Push('Error : Mod "'+iModule.ID+'" failed to load!');
+            ModErrors.Push('Path  : '+iModule.Path);
+            ModErrors.Push( E.Message );
+            ModErrors.Push( '' );
+          end
+          else raise;
+        end;
       end;
-      LoadFiles( iModule.Path + 'help', @Help.StreamLoader, '*.hlp' );
-      LoadFiles( iModule.Path + 'ascii', @IO.ASCIILoader, '*.asc' );
-      if GraphicsVersion then
-        (IO as TDRLGFXIO).Textures.LoadTextureFolder( iModule.Path + 'graphics' );
-      // temporary hack, remove once drllq and drlhq are modules
-      IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua', iModule.Path );
+
     end;
     if LuaSystem.RawDefined( iModule.ID ) then
       iModule.Hooks := LoadHooks( [ iModule.ID ], ModuleHooks );
+    if iModule.IsBase then
+      SetupBase;
   end;
 
   IO.LoadProgress(iProgBase + 50);
   IO.Audio.Load;
-  VersionModule     := LuaSystem.Get( 'VERSION_MODULE' );
-  VersionModuleSave := LuaSystem.Get( 'VERSION_MODULE_SAVE' );
-  DemoVersion       := LuaSystem.Get( 'DEMO', False );
 
   ModuleOption_KlassAchievements := LuaSystem.Get( ['core','options','klass_achievements'], False );
   ModuleOption_NewMenu           := LuaSystem.Get( ['core','options','new_menu'], False );

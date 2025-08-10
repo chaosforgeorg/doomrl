@@ -11,9 +11,9 @@ uses vlua, vutil, vnode, vgenerics;
 type TDRLModule = class
     ID           : Ansistring;
     Name         : Ansistring;
-    Version      : Ansistring;
     Path         : Ansistring;
     BaseRequired : AnsiString;
+    BaseVersion  : Ansistring;
     WorkshopID   : AnsiString;
     LoadPriority : Integer;
     SaveVersion  : Integer;
@@ -201,7 +201,7 @@ begin
     try
       iModule.ID           := GetString( 'id' );
       iModule.Name         := GetString( 'name', iModule.ID );
-      iModule.Version      := GetString( 'version', '' );
+      iModule.BaseVersion  := GetString( 'base_version', '' );
       iModule.Path         := '';
       iModule.BaseRequired := GetString( 'base_required', '' );
       iModule.WorkshopID   := GetString( 'workshop_id', '' );

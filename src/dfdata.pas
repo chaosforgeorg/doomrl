@@ -108,6 +108,7 @@ const
   ForceGraphics   : Boolean = False;
   ModdedGame      : Boolean = False;
   ForceRestart    : Ansistring = '';
+  ModErrors       : TStringGArray = nil;
   VisionBaseValue : Byte = 8;
 
   ThisSeed       : Cardinal = 0;
