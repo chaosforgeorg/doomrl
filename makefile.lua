@@ -3,6 +3,8 @@ xpcall( function() dofile( "config.lua") end, function() end )
 VALKYRIE_ROOT = VALKYRIE_ROOT or os.getenv("FPCVALKYRIE_ROOT") or "../fpcvalkyrie/"
 dofile (VALKYRIE_ROOT.."scripts/lua_make.lua")
 
+local BUILT = false
+
 makefile = {
 	name = "drl",
 	fpc_params = {
@@ -22,69 +24,109 @@ makefile = {
 	pre_build = function()
 		local v = make.readversion( "bin/version.txt" )
 		local s = make.gitrevision()
+		v.core = "drl"
 		make.writeversion( "src/version.inc", v, s )
 		--make.svncheck(s)
 	end,
 	post_build = function()
-		os.execute_in_dir( "makewad", "bin" )
 	end,
 	source_files = { "drl.pas", "makewad.pas", "drlwad.pas" },
 	publish = {
 		lq = {
 			exec = { "drl" },
-			files = { "config.lua" },
+			files = { "config.lua", "font.dat" },
 			os = {
 				WINDOWS = { "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "drl_console.bat" },
-				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm" },
+				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm", dos2unix = true, },
 				MACOSX  = { "unix_notes.txt" },
 			},
 			subdirs = {
-				backup     = "!readme.txt",
-				mortem     = "!readme.txt",
-				screenshot = "!readme.txt",
-				modules    = "!readme.txt",
-				wav        = "*.wav",
-				music      = "*.mid",
+				["data/drllq/sound"] = "*.wav",
+				["data/drllq/music"] = "*.mid",
+				["data/drllq"] = "*.lua",
 			},
-			other = { "colors.lua", "sound.lua", "music.lua", "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
+			other = { "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
 		},
 		hq = {
 			exec = { "drl" },
-			files = { { "confighq.lua", "config.lua" } },
+			files = { "config.lua", "font.dat" },
 			os = {
 				WINDOWS = { "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "drl_console.bat" },
-				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm" },
+				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm",  dos2unix = true, },
 				MACOSX  = { "unix_notes.txt" },
 			},
 			subdirs = {
-				backup     = "!readme.txt",
-				mortem     = "!readme.txt",
-				screenshot = "!readme.txt",
-				modules    = "!readme.txt",
-				wavhq      = "*.wav",
-				mp3        = "*.mp3",
+				["data/drlhq/sound"] = "*.wav",
+				["data/drlhq/music"] = "*.mp3",
+				["data/drlhq"] = "*.lua",
 			},
-			other = { "colors.lua", "soundhq.lua", "musichq.lua", "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
+			other = { "manual.txt", "version.txt", "version_api.txt", "drl.wad", "core.wad" },
+		},
+		jhc = {
+			exec = { "drl" },
+			files = { "config.lua", "font.dat" },
+			os = {
+				WINDOWS = { "steam_api64.dll", "fmod64.dll", "lua5.1.dll", "SDL2.dll", "SDL2_image.dll", "SDL2_mixer.dll", "drl_console.bat" },
+				LINUX   = { "unix_notes.txt", "drl_gnome-terminal", "drl_konsole", "drl_xterm",  dos2unix = true, },
+				MACOSX  = { "unix_notes.txt" },
+			},
+			other = { "jhc.wad", "core.wad" },
 		}
 	},
 	commands = {
+		jhc_demo_test = function()
+			os.execute_in_dir( "makewad jhc", "bin" )
+			local path = make.publish( "deploy", "jhc" )
+			make.steam( path, os.pwd().."\\bin\\data\\jhc\\setup\\demo\\app_build_3256910.vdf" )
+		end,
+		jhc_demo = function()
+			os.execute_in_dir( "makewad jhc demo.txt", "bin" )
+			local path = make.publish( "deploy", "jhc" )
+			make.steam( path, os.pwd().."\\bin\\data\\jhc\\setup\\demo\\app_build_3256910.vdf" )
+		end,
+		jhc = function()
+			os.execute_in_dir( "makewad jhc", "bin" )
+			local path = make.publish( "deploy", "jhc" )
+			make.steam( path, os.pwd().."\\bin\\data\\jhc\\setup\\app_build_3126530.vdf" )
+		end,
 		lq = function()
+			if not BUILT then
+				os.execute_in_dir( "makewad", "bin" )
+				BUILT = true
+			end
 			make.package( make.publish( (OS_VER_PREFIX or "")..make.version_name().."-lq", "lq" ), PUBLISH_DIR )
 		end,
 		hq = function()
+			if not BUILT then
+				os.execute_in_dir( "makewad", "bin" )
+				BUILT = true
+			end
 			make.package( make.publish( (OS_VER_PREFIX or "")..make.version_name(), "hq" ), PUBLISH_DIR )
+		end,
+		drl_mod = function()
+			os.execute_in_dir( "makewad drl drlhq", "bin" )
+			os.copy( "bin/drl.wad", "bin/deploy/drl/drl.wad" )
+			os.execute_in_dir( "drl -publish drl -god", "bin" )
 		end,
 		install = function() makefile.commands.installhq() end,
 		installhq = function()
+			if not BUILT then
+				os.execute_in_dir( "makewad", "bin" )
+				BUILT = true
+			end
 			if OS == "WINDOWS" then	
-				make.generate_iss( "doomrl.iss", "hq", PUBLISH_DIR ) 
+				make.generate_iss( "drl.iss", "hq", PUBLISH_DIR ) 
 			elseif OS == "MACOSX" then
 				make.generate_bundle( "hq", PUBLISH_DIR ) 
 			end
 		end,
 		installlq = function()
+			if not BUILT then
+				os.execute_in_dir( "makewad", "bin" )
+				BUILT = true
+			end
 			if OS == "WINDOWS" then	
-				make.generate_iss( "doomrl.iss", "lq", PUBLISH_DIR ) 
+				make.generate_iss( "drl.iss", "lq", PUBLISH_DIR ) 
 			elseif OS == "MACOSX" then
 				make.generate_bundle( "lq", PUBLISH_DIR ) 
 			end

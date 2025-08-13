@@ -18,11 +18,9 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="9"/>
-      <RevisionNr Value="9"/>
-      <BuildNr Value="8"/>
+      <MinorVersionNr Value="10"/>
       <CharSet Value="0000"/>
-      <StringTable CompanyName="ChaosForge" FileDescription="D**m, the Roguelike" LegalCopyright="(c) 2002-2024 by Kornel Kisielewicz" ProductName="D**m, the Roguelike"/>
+      <StringTable CompanyName="ChaosForge" FileDescription="DRL" LegalCopyright="(c) 2002-2025 by Kornel Kisielewicz" ProductName="DRL"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="default" Default="True"/>
@@ -32,17 +30,17 @@
     </PublishOptions>
     <RunParams>
       <local>
-        <CommandLineParams Value="-god -nosound"/>
+        <CommandLineParams Value="-god"/>
         <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
-        <WorkingDirectory Value="D:\doomrl\bin"/>
+        <WorkingDirectory Value="..\bin"/>
       </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
           <local>
-            <CommandLineParams Value="-god -nosound"/>
+            <CommandLineParams Value="-god"/>
             <LaunchingApplication PathPlusParams="C:\Windows\system32\cmd.exe /C &quot;${TargetCmdLine}&quot;"/>
-            <WorkingDirectory Value="D:\doomrl\bin"/>
+            <WorkingDirectory Value="..\bin"/>
           </local>
         </Mode0>
       </Modes>
@@ -52,17 +50,17 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="40">
+    <Units Count="52">
       <Unit0>
         <Filename Value="drl.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="doomlua.pas"/>
+        <Filename Value="drlua.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit1>
       <Unit2>
-        <Filename Value="doomrl.inc"/>
+        <Filename Value="drl.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit2>
       <Unit3>
@@ -98,11 +96,11 @@
         <IsPartOfProject Value="True"/>
       </Unit10>
       <Unit11>
-        <Filename Value="doombase.pas"/>
+        <Filename Value="drlbase.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit11>
       <Unit12>
-        <Filename Value="doomhelp.pas"/>
+        <Filename Value="drlhelp.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit12>
       <Unit13>
@@ -110,7 +108,7 @@
         <IsPartOfProject Value="True"/>
       </Unit13>
       <Unit14>
-        <Filename Value="doomtrait.pas"/>
+        <Filename Value="drltraits.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
       <Unit15>
@@ -118,101 +116,149 @@
         <IsPartOfProject Value="True"/>
       </Unit15>
       <Unit16>
-        <Filename Value="doomanimation.pas"/>
+        <Filename Value="drlanimation.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit16>
       <Unit17>
-        <Filename Value="doomconfig.pas"/>
+        <Filename Value="drlconfig.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit17>
       <Unit18>
-        <Filename Value="doommodule.pas"/>
+        <Filename Value="..\bin\version_api.txt"/>
         <IsPartOfProject Value="True"/>
       </Unit18>
       <Unit19>
-        <Filename Value="..\bin\version_api.txt"/>
+        <Filename Value="drlinventory.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit19>
       <Unit20>
-        <Filename Value="doominventory.pas"/>
+        <Filename Value="drlhooks.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit20>
       <Unit21>
-        <Filename Value="doomhooks.pas"/>
+        <Filename Value="drlio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit21>
       <Unit22>
-        <Filename Value="doomio.pas"/>
+        <Filename Value="drlspritemap.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit22>
       <Unit23>
-        <Filename Value="doomviews.pas"/>
+        <Filename Value="drlaudio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit23>
       <Unit24>
-        <Filename Value="doommenuview.pas"/>
+        <Filename Value="drlgfxio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit24>
       <Unit25>
-        <Filename Value="doomtextures.pas"/>
+        <Filename Value="drltextio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit25>
       <Unit26>
-        <Filename Value="doomspritemap.pas"/>
+        <Filename Value="drlplayerview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit26>
       <Unit27>
-        <Filename Value="..\bin\core\constants.lua"/>
+        <Filename Value="drlingamemenuview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit27>
       <Unit28>
-        <Filename Value="doomaudio.pas"/>
+        <Filename Value="drlmoreview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit28>
       <Unit29>
-        <Filename Value="doomgfxio.pas"/>
+        <Filename Value="drlhelpview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit29>
       <Unit30>
-        <Filename Value="doomtextio.pas"/>
+        <Filename Value="drlassemblyview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit30>
       <Unit31>
-        <Filename Value="doomplayerview.pas"/>
+        <Filename Value="drlconfirmview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit31>
       <Unit32>
-        <Filename Value="doomingamemenuview.pas"/>
+        <Filename Value="drlconfiguration.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit32>
       <Unit33>
-        <Filename Value="doommoreview.pas"/>
+        <Filename Value="drlsettingsview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit33>
       <Unit34>
-        <Filename Value="doomhelpview.pas"/>
+        <Filename Value="drlkeybindings.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit34>
       <Unit35>
-        <Filename Value="doomassemblyview.pas"/>
+        <Filename Value="drlpagedview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit35>
       <Unit36>
-        <Filename Value="doomconfirmview.pas"/>
+        <Filename Value="drlrankupview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit36>
       <Unit37>
-        <Filename Value="doomconfiguration.pas"/>
+        <Filename Value="drlmainmenuview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit37>
       <Unit38>
-        <Filename Value="doomsettingsview.pas"/>
+        <Filename Value="drlloadingview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit38>
       <Unit39>
-        <Filename Value="doomkeybindings.pas"/>
+        <Filename Value="drlchoiceview.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit39>
+      <Unit40>
+        <Filename Value="drlhudviews.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit40>
+      <Unit41>
+        <Filename Value="drlplotview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit41>
+      <Unit42>
+        <Filename Value="drlmessagesview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit42>
+      <Unit43>
+        <Filename Value="drlmodule.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit43>
+      <Unit44>
+        <Filename Value="drlminimap.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit44>
+      <Unit45>
+        <Filename Value="drlstatistics.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit45>
+      <Unit46>
+        <Filename Value="drlmultimove.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit46>
+      <Unit47>
+        <Filename Value="drlmarkers.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit47>
+      <Unit48>
+        <Filename Value="drldecals.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit48>
+      <Unit49>
+        <Filename Value="drlcommand.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit49>
+      <Unit50>
+        <Filename Value="drlmodulechoiceview.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit50>
+      <Unit51>
+        <Filename Value="drlworkshop.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit51>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -222,7 +268,7 @@
       <Filename Value="..\bin\drl"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="..\bin;..\bin\lua;..\..\fpcvalkyrie\libs;..\..\fpcvalkyrie\src;$(ProjOutDir)"/>
+      <IncludeFiles Value="..\bin;..\..\fpcvalkyrie\libs;..\..\fpcvalkyrie\src;$(ProjOutDir)"/>
       <OtherUnitFiles Value="..\..\fpcvalkyrie\libs;..\..\fpcvalkyrie\src"/>
       <UnitOutputDirectory Value="..\tmp"/>
     </SearchPaths>

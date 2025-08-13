@@ -5,9 +5,9 @@ register_level "phobos_arena"
   welcome = "You enter a big arena. There's blood everywhere. You hear heavy mechanical footsteps...",
 
   Create = function ()
-    generator.fill( "wall", area.FULL )
-    generator.fill( "floor", area.FULL_SHRINKED )
-    local scatter_area = area.new( 5,3,68,15 )
+    level:fill( "wall" )
+    level:fill( "floor", area.FULL_SHRINKED )
+    local scatter_area = area( 5,3,68,15 )
     local translation = {
         ['.'] = { "floor", flags = { LFBLOOD } },
         ['#'] = "gwall",

@@ -1,0 +1,428 @@
+{
+    // Base templates: https://gist.github.com/pakLebah/dab98067e9a388a3a8d2f5c0b44a7d3f#file-tasks-json, https://gist.github.com/stepbester/96e6310e7e94cd7c64b54f9efa38489f
+    // VSCode integration instructions: https://stephan-bester.medium.com/free-pascal-in-visual-studio-code-e1e0a240a430
+    // fpc documentation: https://downloads.freepascal.org/fpc/docs-pdf/user.pdf (Chapter 5: Compiler Configuration)
+    "version": "2.0.0",
+    "options": {
+        "cwd": "${workspaceFolder}",
+        //Storing env parameters in settings.json because linux and Windows behave differently.
+    },
+    "tasks": [
+        {
+            "label": "Unit test build scripts",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                 "Build makewad.exe (debug)",
+                 "Build drl.wad, core.wad",
+                 "Syntax Check (debug)",
+                 "Build drl.exe (debug)",
+                 "Build drl.exe (release)",
+                 "Build the release package (all)"
+            ]
+        },
+        {
+            "label": "Build drl.exe (debug)",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "${config:fpcPath}",
+            "args": [ //This command definition matches the Lazarus drl.lpi build execution
+                "-Px86_64", //Set target CPU to be x86_64
+                "-Mobjfpc", //Switch on some Delphi extensions
+                "-Scgi", //Support C-style operators, label and goto commands, INLINE
+                "-Cirot", //Generate I/O checking code, Range checking code, Integer overflow checking code, Stack checking code
+                "-O1", //Level 1 optimizations (quick and debugger-friendly)
+                "-gw3", //Dwarf debugging info (version 3)
+                "-gl", //Lineinfo debugging
+                "-l", //Print a line stating which program this is and its version
+                "-vewnhibq", //Be verbose, showing errors, warnings, notes, hints, informational messages, all procedural declarations if an overload occurs, message numbers
+                "-vm6058", //Suppress message 6058
+                "-vm5024", //Suppress message 5024
+                "-vm4105", //Suppress message 4105
+                "-vm4104", //Suppress message 4104
+                "-vm4081", //Suppress message 4081
+                "-vm4080", //Suppress message 4080
+                "-vm4079", //Suppress message 4079
+                "-vm4056", //Suppress message 4056
+                "-vm4055", //Suppress message 4055
+                "-vm3250", //Suppress message 3250
+                "-Fi${config:drlBasePath}\\${config:debugPath}", //Include file search path. Might not be necessary?
+                "-Fi${config:valkyrieSourcePath}\\libs", //Include file search path
+                "-Fi${config:valkyrieSourcePath}\\src", //Include file search path
+                "-Fu${config:valkyrieSourcePath}\\libs", //Include unit search path
+                "-Fu${config:valkyrieSourcePath}\\src", //Include unit search path
+                "-Fu${config:lazarusPath}\\lcl\\units\\x86_64-win64\\win32", //Include unit search path
+                "-Fu${config:lazarusPath}\\lcl\\units\\x86_64-win64", //Include unit search path
+                "-Fu${config:lazarusPath}\\components\\freetype\\lib\\x86_64-win64", //Include unit search path
+                "-Fu${config:lazarusPath}\\components\\lazutils\\lib\\x86_64-win64", //Include unit search path
+                "-Fu${config:lazarusPath}\\packager\\units\\x86_64-win64", //Include unit search path
+                "-Fu${config:drlBasePath}\\src", //Include unit search path
+                "-FU${config:drlBasePath}\\${config:tmpPath}", //Write units to this folder
+//                "-FE${config:debugPath}",  //This option writes units and executables to this location. However units is overriden by FU and executable is overriden by o so parameter is not required.
+                "-o${config:drlBasePath}\\${config:debugPath}\\${config:drlExe}", //Executable location
+                "-dLCL", //Enables conditional compilation of this symbol
+                "-dLCLwin32", //Enables conditional compilation of this symbol
+                "${config:drlMainFile}" //The compilation file
+            ],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "objectpascal",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "kind": "location",
+                    "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5,
+                    "loop": true
+                }
+            }
+        },
+        {
+            "label": "Build drl.exe (release)",
+            "type": "shell",
+            "group": "build",
+            "command": "${config:fpcPath}",
+            "args": [
+                "${config:drlMainFile}", //The compilation file
+                "-Px86_64", //Set target CPU to be x86_64
+                "-Mobjfpc", //Switch on some Delphi extensions
+                "-CX", //Only link referenced application components, excluding unused code
+                "-O3", //Level 3 optimisation
+                "-XXs", //Strip symbols from the executable
+                "-B", //Recompile all used units (make clean)
+                "-v", //Be verbose
+                "-FU${config:drlBasePath}\\${config:tmpPath}", //Write units to this folder
+                "-FE${config:drlBasePath}\\${config:releasePath}" //The target folder for the executable
+            ],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "objectpascal",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "kind": "location",
+                    "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5,
+                    "loop": true
+                }
+            }
+        },
+        {
+            "label": "Syntax Check (debug)",
+            "type": "shell",
+            "group": "build",
+            "command": "${config:fpcPath}",
+            "args": [
+                "${config:drlMainFile}", //The compilation file
+                "-Px86_64", //Set target CPU to be x86_64
+                "-Mobjfpc", //Switch on some Delphi extensions
+                "-Se99", //Stop on the 99th error
+                "-B", //Recompile all used units (make clean)
+                "-v", //Be verbose
+                "-s", //Do not call the assembler and linker
+                "-Fi${config:drlBasePath}\\${config:debugPath}", //Include file search path. Might not be necessary?
+                "-Fi${config:valkyrieSourcePath}\\libs", //Include file search path
+                "-Fi${config:valkyrieSourcePath}\\src", //Include file search path
+                "-Fu${config:valkyrieSourcePath}\\libs", //Include unit search path
+                "-Fu${config:valkyrieSourcePath}\\src", //Include unit search path
+                "-Fu${config:lazarusPath}\\lcl\\units\\x86_64-win64\\win32", //Include unit search path
+                "-Fu${config:lazarusPath}\\lcl\\units\\x86_64-win64", //Include unit search path
+                "-Fu${config:lazarusPath}\\components\\freetype\\lib\\x86_64-win64", //Include unit search path
+                "-Fu${config:lazarusPath}\\components\\lazutils\\lib\\x86_64-win64", //Include unit search path
+                "-Fu${config:lazarusPath}\\packager\\units\\x86_64-win64", //Include unit search path
+                "-Fu${config:drlBasePath}\\src", //Include unit search path
+                "-o${config:drlBasePath}\\${config:debugPath}\\${config:drlExe}", //Executable location
+                "-FU${config:drlBasePath}\\${config:tmpPath}", //Write units to this folder
+            ],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "objectpascal",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "kind": "location",
+                    "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5,
+                    "loop": true
+                }
+            }
+        },
+        {
+            "label": "Run (no compilation)",
+            "type": "shell",
+            "group": "test",
+            "command": "${config:instantFpcPath}",
+            "args": [
+                "${config:drlMainFile}", //The compilation file
+                "-B" //Full recompile
+            ],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "objectpascal",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "kind": "location",
+                    "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5,
+                    "loop": true
+                }
+            }
+        },
+        {
+            "label": "Run drl.exe (debug)",
+            "type": "shell",
+            "group": {
+                "kind": "test",
+            },
+            "command": "${config:drlBasePath}\\${config:debugPath}\\${config:drlExe}",
+            "args": [],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Prepare Build Folders",
+            "type": "shell",
+            "command": "mkdir",
+            "args": [
+                "-ErrorAction",
+                "SilentlyContinue",
+                "${config:drlBasePath}\\${config:tmpPath}"
+            ],
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean Build Folders",
+            "type": "shell",
+            "command": "del",
+            "args": [
+                "-ErrorAction",
+                "SilentlyContinue",
+                "-Force",
+                "${config:drlBasePath}\\${config:tmpPath}\\*"
+            ],
+            "presentation": {
+                "focus": "true"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build makewad.exe (debug)",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+            },
+            "command": "${config:fpcPath}",
+            "args": [ //This command definition matches the Lazarus makewad.lpi build execution
+                "-Px86_64", //Set target CPU to be x86_64
+                "-Mobjfpc", //Switch on some Delphi extensions
+                "-Scgi", //Support C-style operators, label and goto commands, INLINE
+                "-Cirot", //Generate I/O checking code, Range checking code, Integer overflow checking code, Stack checking code
+                "-O1", //Level 1 optimizations (quick and debugger-friendly)
+                "-gw3", //Dwarf debugging info (version 3)
+                "-gl", //Lineinfo debugging
+                "-l", //Print a line stating which program this is and its version
+                "-vewnhibq", //Be verbose, showing errors, warnings, notes, hints, informational messages, all procedural declarations if an overload occurs, message numbers
+                "-Fu${config:valkyrieSourcePath}\\libs", //Include unit search path
+                "-Fu${config:valkyrieSourcePath}\\src", //Include unit search path
+                "-Fu${config:lazarusPath}\\lcl\\units\\x86_64-win64\\win32", //Include unit search path
+                "-Fu${config:lazarusPath}\\lcl\\units\\x86_64-win64", //Include unit search path
+                "-Fu${config:lazarusPath}\\components\\freetype\\lib\\x86_64-win64", //Include unit search path
+                "-Fu${config:lazarusPath}\\components\\lazutils\\lib\\x86_64-win64", //Include unit search path
+                "-Fu${config:lazarusPath}\\packager\\units\\x86_64-win64", //Include unit search path
+                "-FU${config:drlBasePath}\\${config:tmpPath}", //Write units to this folder
+                "-o${config:drlBasePath}\\${config:debugPath}\\${config:makewadExe}", //Executable location
+                "-dLCL", //Enables conditional compilation of this symbol
+                "-dLCLwin32", //Enables conditional compilation of this symbol
+                "${config:makewadMainFile}" //The compilation file
+            ],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "objectpascal",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "kind": "location",
+                    "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5,
+                    "loop": true
+                }
+            }
+       },
+       {
+            "label": "Build drl.wad, core.wad",
+            "type": "shell",
+            "options": {
+                "cwd": "${config:drlBasePath}\\${config:debugPath}"
+            },
+            "group": {
+                "kind": "build",
+            },
+            "command": "./${config:makewadExe}",
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build the release package (lq)",
+            "type": "shell",
+            "options": {
+                "cwd": "${config:drlBasePath}"
+            },
+            "command": "${config:luaPath}",
+            "args": [
+                "makefile.lua",
+                "lq"
+            ],
+           "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build the release package (hq)",
+            "type": "shell",
+            "options": {
+                "cwd": "${config:drlBasePath}"
+            },
+            "command": "${config:luaPath}",
+            "args": [
+                "makefile.lua",
+                "hq"
+            ],
+           "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build the release package (install)",
+            "type": "shell",
+            "options": {
+                "cwd": "${config:drlBasePath}"
+            },
+            "command": "${config:luaPath}",
+            "args": [
+                "makefile.lua",
+                "install"
+            ],
+           "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build the release package (install+lq)",
+            "type": "shell",
+            "options": {
+                "cwd": "${config:drlBasePath}"
+            },
+            "command": "${config:luaPath}",
+            "args": [
+                "makefile.lua",
+                "installlq"
+            ],
+           "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build the release package (install+hq)",
+            "type": "shell",
+            "options": {
+                "cwd": "${config:drlBasePath}"
+            },
+            "command": "${config:luaPath}",
+            "args": [
+                "makefile.lua",
+                "installhq"
+            ],
+           "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build the release package (all)",
+            "type": "shell",
+            "options": {
+                "cwd": "${config:drlBasePath}"
+            },
+            "command": "${config:luaPath}",
+            "args": [
+                "makefile.lua",
+                "all"
+            ],
+           "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build the release package (all+lq)",
+            "type": "shell",
+            "options": {
+                "cwd": "${config:drlBasePath}"
+            },
+            "command": "${config:luaPath}",
+            "args": [
+                "makefile.lua",
+                "alllq"
+            ],
+           "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+
+    ]
+}

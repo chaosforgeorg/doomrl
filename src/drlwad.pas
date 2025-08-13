@@ -1,6 +1,6 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
 program drlwad;
-uses Classes, SysUtils, strutils, vpkg, vdf, vutil, dfdata, doommodule;
+uses Classes, SysUtils, strutils, vpkg, vdf, vutil, dfdata;
 
 var WAD         : TVDataCreator;
     ModuleID    : AnsiString;
@@ -29,7 +29,6 @@ begin
 
   if FileExists( ModuleFile ) then DeleteFile( ModuleFile );
 
-  WADMAKE := True;
   WAD := TVDataCreator.Create(ModuleFile);
 
   WAD.Add(Path+'/*.lua',FILETYPE_LUA,[vdfCompressed], '' );

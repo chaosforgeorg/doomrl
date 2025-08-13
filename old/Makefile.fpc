@@ -1,0 +1,31 @@
+[target]
+programs=doomrl makewad
+
+[prerules]
+VALKYRIEPATH := ../../fpcvalkyrie/src/
+LIBSPATH := ../../fpcvalkyrie/libs/
+LUAPATH := ../../fpcvalkyrie/lua/
+
+[require]
+packages=
+
+[install]
+fpcpackage=n
+
+[compiler]
+unitdir=$(VALKYRIEPATH) $(LUAPATH) $(LIBSPATH)
+unittargetdir=../tmp
+includedir=../bin
+options=-O2 -S2
+targetdir=../bin
+version=3.2.2
+options=-gl -Mobjfpc
+
+[dist]
+destdir=../
+zipname=doomrl
+ziptarget=all
+
+[clean]
+files=$(wildcard *$(OEXT)) $(wildcard *$(PPUEXT)) $(wildcard *$(RSTEXT)) \
+	  $(wildcard ../tmp/*$(OEXT)) $(wildcard ../tmp/*$(PPUEXT)) $(wildcard ../tmp/*$(RSTEXT)) \

@@ -1,31 +1,31 @@
 =============================================================================
 
-                ##           #           #               #
-                ######     #####       #####    #       ##
-                ######### ########   ######## ####    ####
-                ### ##### ###  #### ####  ### #####  #####
-                ###   ### ###   ### ###   ### ############
-                ###   ### ###   ### ###   ### ### #### ###
-                ###   ### ###   ### ###   ### ###  ##  ###
-                ###   ### ###   ### ###   ### ###      ###
-                ###  ###  #### #### #### #### ###      ###
-                ### ###    ######     ######   ##      ###
-                #####        ##         ##      #      ###
-                ###                                    ###
-                #         Doom, the Roguelike            #
-                           Version 0.9.9.8
-                   (c) 2002-2024 by Kornel Kisielewicz
+                ##       
+                ######   
+                #########
+                ### #####
+                ###   ###
+                ###   ###
+                ###   ###
+                ###   ###
+                ###  ### 
+                ### ###  
+                #####    
+                ###                                  
+                #          DRL, the Roguelike        
+                           Version 0.10.0
+                   (c) 2002-2025 by Kornel Kisielewicz
 
 
 =============================================================================
 
 Introduction
 
-DRL (abbr. for Doom, the Roguelike) is, as the name implies, a
+DRL (abbr. for D, the Roguelike) is, as the name implies, a
 roguelike game. If you don't know what a roguelike is... checkout 
 wikipedia -- http://en.wikipedia.org/wiki/Roguelike.
 
-DRL is based on the world from id Software's(tm) game Doom(tm). You're
+DRL is inspired by a famous 1993 FPS hellish shooter. You're
 the sole surviving marine from a squad sent to investigate a distress call
 from the moonbase of Phobos.  It turns out that all hell has broken loose
 on the plant... literally.
@@ -99,7 +99,7 @@ be greeted with something like this (ASCII map is present if playing in
 ASCII mode):
 
 ---------------------------------------------------------------------------
- Welcome to the Doom Roguelike...
+ Welcome to DRL...
  ##########
  #@.........
  #..........
@@ -120,7 +120,7 @@ ASCII mode):
 
 
 
- Doomguy                    Armor : none
+ DRLguy                     Armor : none
  Health: 100% Exp:  1/0%    Weapon: pistol (2d4) [6/6]
  cautious                                                  Phobos Base Entry
 ---------------------------------------------------------------------------
@@ -145,11 +145,11 @@ a certain experience amount needed to achieve it.
 
 Below your health and experience is "tactics". By default your tactic is
 "cautious". This tactic gives no benefits or disadvantages. If you press
-TAB once, it will change to "running" (note that changing tactics takes
+X once, it will change to "running" (note that changing tactics takes
 some in-game time). With this tactic you have increased movement speed,
 dodge chance, and defense bonus, but have a smaller chance to hit and
 reduced melee damage. After some time spent running (or after pressing
-TAB again), you will get "tired". Being tired has no effects, positive
+X again), you will get "tired". Being tired has no effects, positive
 or negative (like cautious), but while tired, you can't run again. You can
 return to the cautious tactic by leveling up, gaining health by most
 methods, or descending to next level. Since running is limited in this way,
@@ -187,7 +187,7 @@ inventory screen to drop items.
 
 Along the way, you're bound to run into levers ("&") and barrels ("0"). To
 pull a lever, stand on it and press "SPACE" to use them. The effects are
-random, so pull them at your own peril!  And if you've ever played Doom,
+random, so pull them at your own peril! And if you've ever played a shooter
 you know what to expect with barrels: They all explode quite nicely, but
 with varying effects depending on the barrel. (Be aware that levers are
 activated with the same button as using items -- in this case, open up
@@ -198,13 +198,11 @@ As you go deeper into the base, you'll also find some power-ups ("^"). They
 are used as soon as you pick them up, and several contain powerful effect,
 so use them wisely.
 
-Oh, I almost forgot! To shoot, just press "f" -- you'll be asked for a
-target (if you have a gun and proper ammo, that is...). Use the arrow keys
-to choose a target, and press "f" again to fire. Or, you can press "m" to
-see an ASCII image and description of what you are aiming at. You can also
-press TAB (when targeting) to toggle between the targets. Some weapons
-allow an alternative fire mode, such as the chainfiring mode of the
-chaingun.
+Oh, I almost forgot! To shoot, just press "f" to fire at the currently 
+selected target! You can swap between visible targets using "TAB", or 
+hold "Ctrl" to move the target reticule manually with the arrow keys.
+Some weapons allow an alternative fire mode, such as the chainfiring 
+mode of the chaingun - to use it, press "SHIFT-f".
 
 Ok, I hear you cry -- "Out of ammo!" Don't panic. Press "r" to reload your
 weapon (Some weapons allow you an alternative reload by pressing SHIFT-r).
@@ -303,62 +301,34 @@ Controls
   following set describes the standard layout, and does not reflect
   any changes you may have made to your keybindings.
 
-  Escape  -- exit menu, or show game menu (Save, Quit, Help, Settings)
-  Arrows  -- Walking around (also PgUp, PgDn, Home, End -- diagonally)
-  .(period)- Wait
+  Escape      -- Exit menu, or show game menu (Save/Quit/Help/etc)
+  Arrows      -- Walking around (PgUp, PgDn, Home, End diagonally!)
+  Arrows+Ctrl -- Manually move target reticule
+  TAB         -- Switch between targets
+  
   h       -- Run on-line help
   SPACE   -- Action - open doors, close doors, use levers/switches or 
             go down stairs (you won't be able to come back!)
   g       -- Pick up item from floor
   SHIFT-g -- Use/wield/wear item from floor/pull lever/switch
-  z       -- Swap weapon (with prepared weapon)
-  i       -- Show inventory
-  e       -- Show or change equipment/show traits
-  l       -- Toggle LookMode (Escape to exit)
   f       -- Fire of equipped weapon
   SHIFT-f -- Alternative Fire of equipped weapon (if available)
   r       -- Reload equipped weapon
   SHIFT-r -- Special reload weapon (depending on weapon)
+  z       -- Swap weapon (with prepared weapon)
+  w       -- Wait
+  i       -- Show inventory
+  e       -- Show or change equipment/show traits
+  l       -- Toggle LookMode (Escape to exit)
   u       -- Unload weapon from inventory/from ground
   p       -- Show screen with character info (parameters of player
             and his equipment)
-  t       -- Show character traits
+  y       -- Show character traits
   a       -- Show known assemblies
   s       -- Show previous messages
-  ,(comma)-- Run command
-  TAB     -- change tactic
+  ,(comma)-- repeat move command (also, SHIFT-direction, or SHIFT-w)
+  x       -- change tactic
   1..9 -- weapon quick keys, set them up in the inventory screen
-
-Keys while targeting
-   
-  Arrows      -- move target line
-  TAB         -- toggle target
-  m           -- more information
-  f,SPACE,LMB -- fire
-  RMB,Escape  -- cancel
-
-
-Mouse (in graphics mode)
-
-LMB, MMB, RMB is left/middle/right mouse button:
-
-  LMB             -- travel to given destination, open door if next to it, 
-                     melee attack if on enemy and next to him. Travel needs
-                     to target explored square, and is automatic as long as
-                     there are no enemies in sight, otherwise just one move
-  LMB on self     -- if on stairs, descend, if on lever - pull, if on item
-                     then pickup, else inventory
-  Alt-LMB on self -- inventory
-
-  RMB             -- fire at the targeted square or enemy, reload if 
-                     magazine empty
-  RMB on self     -- reload
-
-  MMB             -- swap weapon
-  MMB on self     -- equipment
-
-  SCROLLWHEEL     -- change weapon (enters quick weapon choice)
-
 
 Inventory screen
 
@@ -377,6 +347,18 @@ Equipment screen
   Backspace -- drop selected item
   Tab       -- swap item with item in inventory
   
+Manual targeting (legacy option)
+
+  t       -- Manual targeting of equipped weapon
+  SHIFT-r -- Alternative manual targeting of equipped weapon (if available)
+
+Keys while manual targeting
+   
+  Arrows      -- move target line
+  TAB         -- toggle target
+  m           -- more information
+  f,SPACE,LMB -- fire
+  RMB,Escape  -- cancel
 
 
 =============================================================================
@@ -451,11 +433,11 @@ especially AI and bugfixing!
 Big thanks to Simon Volpert for the DRL special level music tracks, and
 Game Hunter for the youtube DRL tutorials!
 
-High quality remixes of the original Doom music used in the graphical 
+High quality remixes of the original D music used in the graphical 
 version are a courtesy of Sonic Clang ( http://sonicclang.ringdev.com/ ) 
 used with permission.
 
-High quality recreation of the original Doom sounds used in the graphical 
+High quality recreation of the original D sounds used in the graphical 
 version is a courtesy of Per Kristian Risvik ( http://www.perkristian.net )
 used with permission.
 
@@ -475,9 +457,9 @@ Also big thanks goes to MaiZure for his help with marketing and PR :)
 Finally a big thanks to Gargulec, for PR, press releases, ideas, motivation
 kicks and being epic in general!
 
-And of course a *huge* thanks to id Software, who created the original 
-Doom, which in many was (as seen here) provides us with tons of 
-entertainment even almost 20 years after it's release...
+And of course a *huge* thanks to the company, who created the original D,
+which in many was (as seen here) provides us with tons of entertainment
+even more than 30 years after it's release...
 
 He's the list of the TOP 15 people who keep ChaosForge running, based on 
 donations:
@@ -562,10 +544,6 @@ magazine, I'd be happy to receive a complementary copy in return.
 
 THERE IS NO WARRANTY OF ANY KIND. I TAKE NO RESPONSIBILTY FOR ANY DAMAGE
 CAUSED BY THIS SOFTWARE. USE IT AT YOUR OWN RISK.
-
-Doom(tm) is a trademark of id Software. Many of the names in this game may
-be trademarks of id Software. Using them in this free public production is
-not supposed to challenge the rights of id Software.
 
 
 =============================================================================

@@ -1,21 +1,29 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
 {
 ----------------------------------------------------
-DFDATA.PAS -- Data for Downfall
-Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
+DFDATA.PAS -- Data for DRL
+Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
 unit dfdata;
 interface
 uses Classes, SysUtils, idea,
-     vgenerics, vcolor, vutil, vrltools, vuitypes, vluatable,
-     doomconfig, doomkeybindings;
+     vgenerics, vcolor, vutil, vrltools, vtigstyle, vluatable, vioevent, vvector,
+     drlconfig, drlkeybindings;
 
-const ConfigurationPath : AnsiString = 'config.lua';
+const CoreModuleID      : AnsiString = '';
+      ConfigurationPath : AnsiString = 'config.lua';
+      ModuleUserPath    : AnsiString = '';
       DataPath          : AnsiString = '';
       WritePath         : AnsiString = '';
       ScorePath         : AnsiString = '';
       SettingsPath      : AnsiString = 'settings.lua';
+
+      VersionModule     : Ansistring = '';
+      VersionModuleSave : Ansistring = '';
+      SaveVersionModule : Ansistring = '';
+      SaveModString     : Ansistring = '';
+
 
 {$INCLUDE version.inc}
 
@@ -34,38 +42,73 @@ type
   EDunGenException    = class(EException);
   EItemException      = class(EException);
 
-type
-  TUIHOFCallback = function ( aFilter : char; out aFilterName : AnsiString ) : TUIStringArray of object;
-  TUIHOFReport   = record
-    Title    : TUIString;
-    Footer   : TUIString;
-    Filters  : TUIString;
-    Callback : TUIHOFCallback;
-  end;
+type TPageArray = specialize TGObjectArray< TStringGArray >;
 
-  TUIPageArray   = specialize TGObjectArray< TUIStringArray >;
-  TUIPagedReport = record
-    Pages   : TUIPageArray;
-    Titles  : TUIStringArray;
-    Headers : TUIStringArray;
-    Title   : TUIString;
-  end;
+type TPagedReport = class
+  constructor Create( aTitle : Ansistring; aStyled : Boolean );
+  function Add( aTitle : Ansistring; aHeader : Ansistring = '' ) : TStringGArray;
+  procedure Add( aPage : TStringGArray; aTitle : Ansistring; aHeader : Ansistring = '' );
+  destructor Destroy; override;
+protected
+  FPages   : TPageArray;
+  FTitles  : TStringGArray;
+  FHeaders : TStringGArray;
+  FTitle   : AnsiString;
+  FStyled  : Boolean;
+public
+  property Pages   : TPageArray    read FPages;
+  property Titles  : TStringGArray read FTitles;
+  property Headers : TStringGArray read FHeaders;
+  property Title   : AnsiString    read FTitle;
+  property Styled  : Boolean       read FStyled;
+end;
 
-  THOFRank = record
-    ExpRank   : DWord;
-    SkillRank : DWord;
-  end;
+type TMenuResult = class
+  Quit       : Boolean;
+  Loaded     : Boolean;
+  ArchAngel  : Boolean;
+  Challenge  : AnsiString;
+  SChallenge : AnsiString;
+  Difficulty : Byte;
+  Klass      : Byte;
+  Trait      : Byte;
+  Name       : AnsiString;
+
+  constructor Create;
+  procedure Reset;
+end;
+
+type TInterfaceLayer = class
+  procedure Update( aDTime : Integer ); virtual; abstract;
+  function IsFinished : Boolean; virtual; abstract;
+  function IsModal : Boolean; virtual;
+  function HandleEvent( const aEvent : TIOEvent ) : Boolean; virtual;
+  function HandleInput( aInput : TInputKey ) : Boolean; virtual;
+end;
+
+type THOFRankEntry = record
+  ID    : Ansistring;
+  Value : Integer;
+end;
+
+type THOFRank = record
+  Data : array of THOFRankEntry;
+end;
 
 const
   DEBUG           : Boolean = False;
-  WADMAKE         : Boolean = False;
   CRASHMODE       : Boolean = False;
   EXCEPTEMMITED   : Boolean = False;
+  DemoVersion     : Boolean = False;
+  ForceShop       : Boolean = False;
   GraphicsVersion : Boolean = True;
   SoundVersion    : Boolean = True;
   ForceNoAudio    : Boolean = False;
   ForceConsole    : Boolean = False;
   ForceGraphics   : Boolean = False;
+  ModdedGame      : Boolean = False;
+  ForceRestart    : Ansistring = '';
+  ModErrors       : TStringGArray = nil;
   VisionBaseValue : Byte = 8;
 
   ThisSeed       : Cardinal = 0;
@@ -78,40 +121,54 @@ const
   GameRealTime    : Comp = 0;
   ProgramRealTime : Comp = 0;
 
-  Config       : TDoomConfig = nil;
+  Config       : TDRLConfig = nil;
 
+const
+  AnimationSpeedMove   = 125;
+  AnimationSpeedPush   = 200;
+  AnimationSpeedAttack = 100;
 
 type
-    TDoomGameType   = ( GameStandard, GameSingle, GameEpisode, GameTotal );
-    TItemType       = ( ItemType_None, ItemType_Ranged, ItemType_NRanged, ItemType_Armor, ItemType_Melee, ItemType_Ammo, ItemType_Pack, ItemType_Power, ItemType_Boots, ItemType_Tele, ItemType_Lever, ItemType_AmmoPack );
+    TItemType       = ( ItemType_None, ItemType_Ranged, ItemType_NRanged, ItemType_Armor, ItemType_Melee, ItemType_Ammo, ItemType_Pack, ItemType_Power, ItemType_Boots, ItemType_Tele, ItemType_Lever, ItemType_Feature, ItemType_AmmoPack );
     TBodyTarget     = ( Target_Internal, Target_Torso, Target_Feet );
     TEqSlot         = ( efTorso, efWeapon, efBoots, efWeapon2 );
     TStatusEffect   = ( StatusNormal, StatusInvert, StatusRed, StatusGreen, StatusBlue, StatusCyan, StatusMagenta, StatusYellow, StatusGray, StatusWhite );
-    TDamageType     = ( Damage_Bullet, Damage_Melee, Damage_Sharpnel, Damage_Acid, Damage_Fire, Damage_Plasma, Damage_SPlasma, Damage_IgnoreArmor );
-    TAltFire        = ( ALT_NONE, ALT_CHAIN, ALT_THROW, ALT_SCRIPT, ALT_AIMED, ALT_SINGLE );
-    TAltReload      = ( RELOAD_NONE, RELOAD_SCRIPT, RELOAD_FULL, RELOAD_DUAL, RELOAD_SINGLE );
-    TExplosionFlag  = ( efSelfHalf, efSelfKnockback, efSelfSafe, efAfterBlink, efChain, efHalfKnock, efNoKnock, efRandomContent, efNoDistanceDrop );
-    TResistance     = ( Resist_Bullet, Resist_Melee, Resist_Shrapnel, Resist_Acid, Resist_Fire, Resist_Plasma );
+    TDamageType     = ( Damage_Bullet, Damage_Melee, Damage_Sharpnel, Damage_Acid, Damage_Fire, Damage_Cold, Damage_Poison, Damage_Plasma, Damage_SPlasma, Damage_IgnoreArmor );
+    TAltFire        = ( ALT_NONE, ALT_CHAIN, ALT_THROW, ALT_SCRIPT, ALT_TARGETSCRIPT, ALT_AIMED, ALT_SINGLE );
+    TAltReload      = ( RELOAD_NONE, RELOAD_SCRIPT, RELOAD_DUAL, RELOAD_SINGLE );
+    TExplosionFlag  = ( efSelfHalf, efSelfKnockback, efSelfSafe, efAfterBlink, efChain, efHalfKnock, efNoKnock, efRandomContent, efNoDistanceDrop, efAlwaysVisible );
+    TResistance     = ( Resist_Bullet, Resist_Melee, Resist_Shrapnel, Resist_Acid, Resist_Fire, Resist_Plasma, Resist_Cold, Resist_Poison );
 
 
 const
-{$include ../bin/core/constants.lua}
+{$include ../bin/data/core/constants.lua}
 {$include ../bin/dkey.inc}
 
 const
   COMMAND_NONE     = 0;
+  COMMAND_SKIP     = 250;
 
   KnockbackValue = 7;
 
 const
   Setting_AlwaysRandomName : Boolean = False;
   Setting_NoIntro          : Boolean = False;
-  Setting_NoFlash          : Boolean = False;
   Setting_RunOverItems     : Boolean = False;
   Setting_HideHints        : Boolean = False;
   Setting_EmptyConfirm     : Boolean = False;
   Setting_UnlockAll        : Boolean = False;
   Setting_MenuSound        : Boolean = False;
+  Setting_MouseEdgePan     : Boolean = False;
+  Setting_Mouse            : Boolean = True;
+  Setting_GamepadRumble    : Boolean = True;
+  Setting_Flash            : Boolean = True;
+  Setting_Glow             : Boolean = True;
+  Setting_Fade             : Boolean = True;
+  Setting_ScreenShake      : Boolean = True;
+  Setting_BloodPulse       : Boolean = True;
+  Setting_ItemDropAnimation: Boolean = True;
+  Setting_AutoTarget       : Boolean = True;
+  Setting_GroupMessages    : Boolean = True;
   Setting_MusicVolume      : Byte = 25;
   Setting_SoundVolume      : Byte = 25;
 
@@ -130,6 +187,7 @@ const
   Option_ColoredInventory : Boolean = True;
   Option_LockBreak        : Boolean = True;
   Option_LockClose        : Boolean = True;
+  Option_ForceRaw         : Boolean = True;
   Option_MessageBuffer    : DWord = 100;
   Option_MaxRun           : DWord = 100;
   Option_MaxWait          : DWord = 20;
@@ -146,27 +204,62 @@ const
   Option_IntuitionChar    : Char = '.';
 
 var
+  ModuleOption_KlassAchievements : Boolean = False;
+  ModuleOption_NewMenu           : Boolean = False;
+
+
+var
+  HARDSPRITE_HIGHLIGHT        : DWord = 0;
+  HARDSPRITE_EXPL             : DWord = 0;
+  HARDSPRITE_SELECT           : DWord = 0;
+  HARDSPRITE_MARK             : DWord = 0;
+  HARDSPRITE_GRID             : DWord = 0;
+  HARDSPRITE_DECAL_BLOOD      : array[0..3] of DWord = ( 0,0,0,0 );
+  HARDSPRITE_DECAL_WALL_BLOOD : array[0..3] of DWord = ( 0,0,0,0 );
+
+var
   SoundOff  : boolean = False;
   MusicOff  : boolean = False;
 
   // 0-25 range
 
 const
-{$include ../bin/core/commands.lua}
+{$include ../bin/data/core/commands.lua}
   INPUT_MOVE        = [INPUT_WALKUP,     INPUT_WALKDOWN,
                        INPUT_WALKRIGHT,  INPUT_WALKLEFT,
                        INPUT_WALKUPRIGHT,INPUT_WALKDOWNRIGHT,
                        INPUT_WALKUPLEFT, INPUT_WALKDOWNLEFT];
+  INPUT_MULTIMOVE   = [INPUT_RUNUP,     INPUT_RUNDOWN,
+                       INPUT_RUNRIGHT,  INPUT_RUNLEFT,
+                       INPUT_RUNUPRIGHT,INPUT_RUNDOWNRIGHT,
+                       INPUT_RUNUPLEFT, INPUT_RUNDOWNLEFT];
+  INPUT_TARGETMOVE  = [INPUT_TARGETUP,     INPUT_TARGETDOWN,
+                       INPUT_TARGETRIGHT,  INPUT_TARGETLEFT,
+                       INPUT_TARGETUPRIGHT,INPUT_TARGETDOWNRIGHT,
+                       INPUT_TARGETUPLEFT, INPUT_TARGETDOWNLEFT];
 
 type TCellSet = set of Byte;
      TExplosionFlags = set of TExplosionFlag;
      TSprite = record
        Color     : TColor;
+       OverColor : TColor;
        GlowColor : TColor;
-       SpriteID  : DWord;
-       Flags     : TFlags;
+       SpriteID  : array[0..7] of DWord;
+       SCount    : Word;
        Frames    : Word;
        Frametime : Word;
+       Flags     : TFlags;
+     end;
+     TExplosionData = record
+       Range     : Integer;
+       Delay     : Integer;
+       Color     : Byte;
+       Flags     : TExplosionFlags;
+       Damage    : TDiceRoll;
+       DamageType: TDamageType;
+       ContentID : Word;
+       SoundID   : string[16];
+       Sprite    : TSprite;
      end;
 
 function NewSprite( ID : DWord ) : TSprite;
@@ -177,45 +270,39 @@ const
   ActionCostDrop   = 500;
   ActionCostAct    = 500;
   ActionCostReload = 1000;
-  ActionCostWear   = 1000;
   ActionCostMove   = 1000;
   ActionCostFire   = 1000;
-  ActionCostTactic = 100;
 
   ActSoundChance    = 30;
 
 type
   TShotgunData = record
     Range      : Byte;
-    MaxRange   : Byte;
     Spread     : Byte;
     Reduce     : Real;
-    DamageType : TDamageType
+    HitSprite  : TSprite;
   end;
 
   TMissileData = record
     SoundID    : string[20];
     Sprite     : TSprite;
+    HitSprite  : TSprite;
     Picture    : Char;
     Color      : Byte;
     Delay      : Byte;
     MissBase   : Byte;
     MissDist   : Byte;
-    ExplDelay  : Byte;
-    ExplColor  : Byte;
-    ExplFlags  : TExplosionFlags;
-    RayDelay   : Byte;
     Range      : Byte;
-    MaxRange   : Byte;
     Flags      : TFlags;
-    Content    : Byte;
+    Explosion  : TExplosionData;
   end;
 
   TAffectData = record
     Name       : Ansistring;
     Color      : Byte;
     Color_exp  : Byte;
-    Hooks      : set of (AffectHookOnAdd,AffectHookOnTick,AffectHookOnRemove);
+    AffHooks   : set of (AffectHookOnAdd,AffectHookOnUpdate,AffectHookOnRemove);
+    Hooks      : TFlags;
     StatusEff  : TStatusEffect;
     StatusStr  : DWord;
   end;
@@ -249,9 +336,12 @@ type TItemProperties = record
          ItemType_Armor,ItemType_Boots : (
            Durability : Word;
            MaxDurability : Word;
-           MoveMod  : Integer;
-		   DodgeMod : Integer;
-           KnockMod : Integer;
+           MoveMod    : Integer;
+	   DodgeMod   : Integer;
+           KnockMod   : Integer;
+           SpriteMod  : Integer;
+           PCosColor  : TColor;
+           PGlowColor : TColor;
          );
          ItemType_Ammo,
          ItemType_Melee,
@@ -261,7 +351,7 @@ type TItemProperties = record
            AmmoID      : Byte;
            Ammo        : Word;
            AmmoMax     : Word;
-           Acc         : ShortInt;
+           Acc         : Integer;
            Damage      : TDiceRoll;
            Missile     : Byte;
            BlastRadius : Byte;
@@ -277,12 +367,6 @@ type TItemProperties = record
 
 const MaxPlayerLevel = 26;
 
-type  TTactic = (tacticNormal,tacticRunning,tacticTired);
-const TacticName : array[TTactic] of string =
-                   ('cautious','running','tired');
-      TacticColor: array[TTactic] of byte =
-                   (lightgray,yellow,darkgray);
-
 const ExpTable : array[1..MaxPlayerLevel] of LongInt =
               (     0,    500,   1500,
                  4000,   7000,  11000,
@@ -295,11 +379,13 @@ const ExpTable : array[1..MaxPlayerLevel] of LongInt =
                900000,10000000);
                
 function Roll(stat : Integer) : Integer;
+function ApplyMul( aBase, aMul : Integer ) : Integer;
 function InputDirection( aInput : TInputKey ) : TDirection;
 function DirectionToInput(Dir : TDirection) : TInputKey;
 function TwoInt(x : integer) : string;
 function ToProperFilename(s : string) : string;
-function toHitPercent(EffSkill : ShortInt) : string;
+function toHitToChance( aEffSkill : Integer ) : Integer;
+function toHitPercent( aEffSkill : Integer ) : string;
 function BonusStr(i : integer) : string;
 function UnitsToPercent(Value : Integer) : string;
 function Percent(Value : Integer) : string;
@@ -311,14 +397,142 @@ function MSecNow : Comp;
 function DurationString( aSeconds : int64 ) : Ansistring;
 function BlindCoord( const where : TCoord2D ) : string;
 function SlotName(slot : TEqSlot) : string;
+function DamageTypeName( aDamageType : TDamageType ) : Ansistring;
 function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
+function ReadSprite( aTable : TLuaTable; const aName : Ansistring; var aSprite : TSprite ) : Boolean;
+function ReadExplosion( aTable : TLuaTable; const aName : Ansistring; var aExplosion : TExplosionData ) : Boolean;
+function ReadExplosion( aTable : TLuaTable; var aExplosion : TExplosionData ) : Boolean;
+function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
+function ReadFileString( const aFileName : Ansistring ) : Ansistring;
+function WriteFileString( const aFileName, aText : Ansistring ) : Boolean;
+function ReadLineFromStream( aStream : TStream; aSize : Integer = -1 ) : AnsiString;
+function AxisToDirection( aAxis : TVec2f ) : TCoord2D;
+function SmoothFade( aElapsed, aDuration : Single; aFadeIn : Boolean ) : Single;
 
 var ColorOverrides : TIntHashMap;
 
 function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; PreferStrings: Boolean = True): Variant;
 
+var TIGStyleColored   : TTIGStyle;
+    TIGStyleFrameless : TTIGStyle;
+
 implementation
-uses typinfo, strutils, math, vdebug, dfitem;
+uses typinfo, strutils, math, vmath, vdebug, vluasystem;
+
+function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
+begin
+  SetLength( Result, aSize );
+  if aStream.Size > 0 then aStream.ReadBuffer( Result[1], aSize );
+end;
+
+function ReadFileString( const aFileName : Ansistring ) : Ansistring;
+var iTextFile : Text;
+begin
+  {$PUSH}
+  {$I-}
+  Assign(iTextFile,aFileName);
+  Reset(iTextFile);
+  Readln(iTextFile,Result);
+  Close(iTextFile);
+  {$POP} {restore $I}
+  if IOResult <> 0 then Exit('');
+end;
+
+function WriteFileString( const aFileName, aText : Ansistring ) : Boolean;
+var iTextFile : Text;
+begin
+  {$PUSH}
+  {$I-}
+  Assign(iTextFile,aFileName);
+  Rewrite(iTextFile);
+  Writeln(iTextFile,aText);
+  Close(iTextFile);
+  {$POP} {restore $I}
+  Exit( IOResult <> 0 );
+end;
+
+function ReadLineFromStream( aStream : TStream; aSize : Integer = -1 ) : AnsiString;
+var iChar : Char;
+    iLine : Ansistring;
+begin
+  if aSize < 0 then aSize := aStream.Size;
+  iLine := '';
+  while aStream.Read( iChar, SizeOf(iChar) ) = SizeOf(iChar) do
+  begin
+    if iChar = #10 then Break;
+    if iChar <> #13 then iLine := iLine + iChar;
+  end;
+
+  if (iLine = '') and ( aStream.Position >= aSize )
+    then Result := ''
+    else Result := iLine;
+end;
+
+function TInterfaceLayer.IsModal : Boolean;
+begin
+  Exit( False );
+end;
+
+function TInterfaceLayer.HandleEvent( const aEvent : TIOEvent ) : Boolean;
+begin
+  Exit( IsModal );
+end;
+
+function TInterfaceLayer.HandleInput( aInput : TInputKey ) : Boolean;
+begin
+  Exit( False );
+end;
+
+constructor TPagedReport.Create( aTitle : Ansistring; aStyled : Boolean );
+begin
+  FTitle := aTitle;
+  FPages   := TPageArray.Create;
+  FTitles  := TStringGArray.Create;
+  FHeaders := TStringGArray.Create;
+  FStyled  := aStyled;
+end;
+
+function TPagedReport.Add( aTitle : Ansistring; aHeader : Ansistring = '' ) : TStringGArray;
+begin
+  Result := TStringGArray.Create;
+  FTitles.Push( aTitle );
+  FHeaders.Push( aHeader );
+  FPages.Push( Result );
+end;
+
+procedure TPagedReport.Add( aPage : TStringGArray; aTitle : Ansistring; aHeader : Ansistring = '' );
+begin
+  FTitles.Push( aTitle );
+  FHeaders.Push( aHeader );
+  FPages.Push( aPage );
+end;
+
+destructor TPagedReport.Destroy;
+begin
+  FreeAndNil( FPages );
+  FreeAndNil( FTitles );
+  FreeAndNil( FHeaders );
+end;
+
+{ TMenuResult }
+
+constructor TMenuResult.Create;
+begin
+  Reset;
+end;
+
+procedure TMenuResult.Reset;
+begin
+  Quit       := False;
+  Loaded     := False;
+  Difficulty := 0;
+  Challenge  := '';
+  SChallenge := '';
+  ArchAngel  := False;
+  Klass      := 0;
+  Trait      := 0;
+  Name       := '';
+end;
 
 // change also in mortem lua!
 function SlotName(slot : TEqSlot) : string;
@@ -329,6 +543,22 @@ begin
     efWeapon  : Exit('[ Weapon     ]');
     efBoots   : Exit('[ Boots      ]');
     efWeapon2 : Exit('[ Prepared   ]');
+  end;
+end;
+
+function DamageTypeName( aDamageType : TDamageType ) : Ansistring;
+begin
+  case aDamageType of
+    Damage_Bullet  : Exit('bullet');
+    Damage_Melee   : Exit('melee');
+    Damage_Sharpnel: Exit('shred');
+    Damage_Acid    : Exit('acid');
+    Damage_Fire    : Exit('fire');
+    Damage_Cold    : Exit('cold');
+    Damage_Poison  : Exit('poison');
+    Damage_Plasma  : Exit('plasma');
+    Damage_SPlasma : Exit('plasma');
+    Damage_IgnoreArmor : Exit('heavy');
   end;
 end;
 
@@ -387,7 +617,7 @@ function RotateTowards( aSource, aTarget1, aTarget2: TCoord2D; aAmount : Real ):
 var iVector1, iVector2 : TCoord2D;
     iCos, iSin, iAngle : Float;
     iAT1, iAT2         : Float;
-    iSign              : ShortInt;
+    iSign              : Integer;
 begin
   if aTarget1 = aTarget2 then Exit( aTarget2 );
   iVector1  := aTarget1 - aSource;
@@ -453,15 +683,32 @@ end;
 function InputDirection(aInput : TInputKey) : TDirection;
 begin
   case aInput of
-    INPUT_WALKLEFT      : InputDirection.Create(4);
-    INPUT_WALKRIGHT     : InputDirection.Create(6);
-    INPUT_WALKUP        : InputDirection.Create(8);
-    INPUT_WALKDOWN      : InputDirection.Create(2);
-    INPUT_WALKUPLEFT    : InputDirection.Create(7);
-    INPUT_WALKUPRIGHT   : InputDirection.Create(9);
-    INPUT_WALKDOWNLEFT  : InputDirection.Create(1);
-    INPUT_WALKDOWNRIGHT : InputDirection.Create(3);
-    INPUT_WAIT          : InputDirection.Create(5);
+    INPUT_WALKLEFT        : InputDirection.Create(4);
+    INPUT_WALKRIGHT       : InputDirection.Create(6);
+    INPUT_WALKUP          : InputDirection.Create(8);
+    INPUT_WALKDOWN        : InputDirection.Create(2);
+    INPUT_WALKUPLEFT      : InputDirection.Create(7);
+    INPUT_WALKUPRIGHT     : InputDirection.Create(9);
+    INPUT_WALKDOWNLEFT    : InputDirection.Create(1);
+    INPUT_WALKDOWNRIGHT   : InputDirection.Create(3);
+    INPUT_WAIT            : InputDirection.Create(5);
+    INPUT_RUNLEFT         : InputDirection.Create(4);
+    INPUT_RUNRIGHT        : InputDirection.Create(6);
+    INPUT_RUNUP           : InputDirection.Create(8);
+    INPUT_RUNDOWN         : InputDirection.Create(2);
+    INPUT_RUNUPLEFT       : InputDirection.Create(7);
+    INPUT_RUNUPRIGHT      : InputDirection.Create(9);
+    INPUT_RUNDOWNLEFT     : InputDirection.Create(1);
+    INPUT_RUNDOWNRIGHT    : InputDirection.Create(3);
+    INPUT_RUNWAIT         : InputDirection.Create(5);
+    INPUT_TARGETLEFT      : InputDirection.Create(4);
+    INPUT_TARGETRIGHT     : InputDirection.Create(6);
+    INPUT_TARGETUP        : InputDirection.Create(8);
+    INPUT_TARGETDOWN      : InputDirection.Create(2);
+    INPUT_TARGETUPLEFT    : InputDirection.Create(7);
+    INPUT_TARGETUPRIGHT   : InputDirection.Create(9);
+    INPUT_TARGETDOWNLEFT  : InputDirection.Create(1);
+    INPUT_TARGETDOWNRIGHT : InputDirection.Create(3);
     else InputDirection.Create(0);
   end;
 end;
@@ -484,19 +731,19 @@ end;
 
 function NewSprite ( ID : DWord ) : TSprite;
 begin
-  NewSprite.Flags     := [];
-  NewSprite.SpriteID  := ID;
-  NewSprite.Frames    := 0;
-  NewSprite.Frametime := 0;
+  NewSprite.Flags       := [];
+  NewSprite.SpriteID[0] := ID;
+  NewSprite.Frames      := 0;
+  NewSprite.Frametime   := 0;
 end;
 
 function NewSprite ( ID : DWord; Color : TColor ) : TSprite;
 begin
-  NewSprite.Flags     := [ SF_COSPLAY ];
-  NewSprite.Color     := Color;
-  NewSprite.SpriteID  := ID;
-  NewSprite.Frames    := 0;
-  NewSprite.Frametime := 0;
+  NewSprite.Flags       := [ SF_COSPLAY ];
+  NewSprite.Color       := Color;
+  NewSprite.SpriteID[0] := ID;
+  NewSprite.Frames      := 0;
+  NewSprite.Frametime   := 0;
 end;
 
 function Roll(stat : Integer) : Integer;
@@ -512,6 +759,12 @@ begin
   Roll := stat - DieRoll;
 end;
 
+function ApplyMul( aBase, aMul : Integer ) : Integer;
+begin
+  if aMul = 0 then Exit( aBase );
+  Result := Round( ( ( 100 + aMul ) / 100.0 ) * aBase );
+end;
+
 { TStringList }
 
 
@@ -524,11 +777,11 @@ begin
     ToProperFilename += IIf( ch in good, ch, '-' );
 end;
 
-function toHitPercent(EffSkill: ShortInt): string;
+function toHitPercent( aEffSkill : Integer ): string;
 begin
-  if EffSkill <= 3  then Exit('1%');
-  if EffSkill >= 16 then Exit('98%');
-  case EffSkill of
+  if aEffSkill <= 3  then Exit('1%');
+  if aEffSkill >= 16 then Exit('98%');
+  case aEffSkill of
     4 : Exit('2%');
     5 : Exit('5%');
     6 : Exit('9%');
@@ -544,6 +797,26 @@ begin
   end;
 end;
 
+function toHitToChance( aEffSkill : Integer ) : Integer;
+begin
+  if aEffSkill <= 3  then Exit(1);
+  if aEffSkill >= 16 then Exit(98);
+  case aEffSkill of
+    4 : Exit(2);
+    5 : Exit(5);
+    6 : Exit(9);
+    7 : Exit(16);
+    8 : Exit(26);
+    9 : Exit(38);
+   10 : Exit(50);
+   11 : Exit(62);
+   12 : Exit(74);
+   13 : Exit(84);
+   14 : Exit(91);
+   15 : Exit(95);
+  end;
+end;
+
 function BonusStr(i: integer): string;
 begin
   if i < 0 then BonusStr := IntToStr(i)
@@ -552,15 +825,30 @@ end;
 
 function ReadSprite( aTable : TLuaTable; var aSprite : TSprite ) : Boolean;
 var iTable : TLuaTable;
+    iPair  : TLuaIndexValue;
 begin
   ReadSprite := False;
   if aTable.IsNumber( 'sprite' ) then
   begin
-    aSprite.SpriteID  := aTable.getInteger('sprite',0);
-    ReadSprite        := True;
+    aSprite.SCount      := 1;
+    aSprite.SpriteID[0] := aTable.getInteger('sprite',0);
+    ReadSprite          := True;
+  end;
+  if aTable.IsTable( 'sprites' ) then
+  begin
+    aSprite.SCount  := aTable.GetTableSize( 'sprites' );
+    Assert( aSprite.SCount > 0, '!' );
+    try
+      iTable := aTable.GetTable( 'sprites' );
+      for iPair in iTable.IPairs do
+        aSprite.SpriteID[iPair.Index-1] := iPair.Value.ToInteger;
+    finally
+      iTable.Free;
+    end;
+    ReadSprite          := True;
   end;
   if aTable.IsTable( 'sflags' ) then
-    aSprite.Flags     := aTable.getFlags('sflags');
+    aSprite.Flags     := aTable.getFlags('sflags',[]);
   if aTable.IsNumber( 'sframes' ) then
     aSprite.Frames    := aTable.getInteger('sframes',0);
   if aTable.IsNumber( 'sftime' ) then
@@ -568,7 +856,7 @@ begin
   if not aTable.isNil( 'overlay' ) then
   begin
     Include( aSprite.Flags, SF_OVERLAY );
-    aSprite.Color := NewColor( aTable.GetVec4f('overlay' ) );
+    aSprite.OverColor := NewColor( aTable.GetVec4f('overlay' ) );
   end;
   if not aTable.isNil( 'coscolor' ) then
   begin
@@ -576,10 +864,8 @@ begin
     aSprite.Color := NewColor( aTable.GetVec4f('coscolor' ) );
   end;
   if not aTable.isNil( 'glow' ) then
-  begin
-    Include( aSprite.Flags, SF_GLOW );
     aSprite.GlowColor := NewColor( aTable.GetVec4f('glow' ) );
-  end;
+
   // so we can later move to in-sprite table sprite info definitions slowly
   if aTable.IsTable( 'sprite' ) then
   begin
@@ -587,6 +873,103 @@ begin
     Result := ReadSprite( iTable, aSprite );
     iTable.Free;
   end;
+end;
+
+function ReadSprite( aTable : TLuaTable; const aName : Ansistring; var aSprite : TSprite ) : Boolean;
+var iTable : TLuaTable;
+begin
+  ReadSprite := False;
+  if aTable.IsNumber( aName ) then
+  begin
+    aSprite.SCount      := 1;
+    aSprite.SpriteID[0] := aTable.getInteger( aName , 0 );
+    ReadSprite          := True;
+  end
+  else if aTable.IsTable( aName ) then
+  begin
+    iTable := aTable.GetTable( aName );
+    Result := ReadSprite( iTable, aSprite );
+    iTable.Free;
+  end;
+end;
+
+function ReadExplosion( aTable : TLuaTable; var aExplosion : TExplosionData ) : Boolean;
+begin
+  aExplosion.Range      := aTable.getInteger('range',0);
+  aExplosion.Delay      := aTable.getInteger('delay',0);
+  aExplosion.Color      := aTable.getInteger('color',0);
+  aExplosion.SoundID    := aTable.getString('sound_id','');
+  aExplosion.Flags      := ExplosionFlagsFromFlags( aTable.getFlags('flags',[]) );
+  aExplosion.Damage     := NewDiceRoll( aTable.getString('damage','') );
+  aExplosion.DamageType := TDamageType( aTable.getInteger('damage_type',LongInt( DAMAGE_FIRE ) ) );
+  if aTable.IsNumber('content') then
+    aExplosion.ContentID  := aTable.getInteger('content',0)
+  else if aTable.IsString('content') then
+  begin
+    aExplosion.ContentID := LuaSystem.Defines[ aTable.getString( 'content' ) ];
+    if aExplosion.ContentID = 0 then
+      Log( LOGERROR, 'unknown define ('+aTable.getString( 'content' ) +')!' );
+  end
+  else
+    aExplosion.ContentID := 0;
+  FillChar( aExplosion.Sprite, SizeOf( TSprite ), 0 );
+  ReadSprite( aTable, 'sprite', aExplosion.Sprite );
+  ReadExplosion := aExplosion.Color > 0;
+end;
+
+function ReadExplosion( aTable : TLuaTable; const aName : Ansistring; var aExplosion : TExplosionData ) : Boolean;
+var iTable : TLuaTable;
+begin
+  ReadExplosion                 := False;
+  FillChar( aExplosion, SizeOf(TExplosionData), 0 );
+  if aTable.IsTable( aName ) then
+  begin
+    iTable := aTable.GetTable( aName );
+    Result := ReadExplosion( iTable, aExplosion );
+    iTable.Free;
+  end;
+end;
+
+
+function AxisToDirection( aAxis : TVec2f ) : TCoord2D;
+const DeadZoneSquared = 0.4*0.4;
+const KDirection8: array[0..7] of TCoord2D = (
+    (x:  1; y:  0),  // Right
+    (x:  1; y: -1),  // Up-Right
+    (x:  0; y: -1),  // Up
+    (x: -1; y: -1),  // Up-Left
+    (x: -1; y:  0),  // Left
+    (x: -1; y:  1),  // Down-Left
+    (x:  0; y:  1),  // Down
+    (x:  1; y:  1)   // Down-Right
+  );
+var iAngle      : Single;
+    iSectorSize : Single;
+begin
+  if aAxis.X * aAxis.X + aAxis.Y * aAxis.Y < DeadZoneSquared then
+    Exit(NewCoord2D(0,0));
+
+  iAngle := ArcTan2(-aAxis.y, aAxis.x); // returns [-Pi..Pi]
+  if iAngle < 0 then
+    iAngle := iAngle + 2 * Pi;
+
+  iSectorSize := Pi / 4;
+  Result := KDirection8[Round(iAngle / iSectorSize) mod 8];
+end;
+
+function SmoothFade( aElapsed, aDuration : Single; aFadeIn : Boolean ) : Single;
+var iNorm  : Single;
+    iEased : Single;
+begin
+  if aDuration <= 0.0 then
+    if aFadeIn then Exit( 1.0 ) else Exit( 0.0 );
+
+  iNorm  := Clampf( aElapsed / aDuration, 0.0, 1.0 );
+  iEased := iNorm * iNorm * (3.0 - 2.0 * iNorm);
+
+  if aFadeIn
+    then Exit( iEased )
+    else Exit( 1.0 - iEased );
 end;
 
 end.

@@ -1,17 +1,17 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
 {
 ----------------------------------------------------
-DFMAP.PAS -- Map data and handling for DownFall
-Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
+DFMAP.PAS -- Map data and handling for DRL
+Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
 unit dfmap;
 interface
 uses vutil, vmath, dfdata;
 
-type TCellHook  = (CellHook_OnEnter, CellHook_OnExit, CellHook_OnAct, CellHook_OnDescribe, CellHook_OnDestroy);
+type TCellHook  = (CellHook_OnEnter, CellHook_OnExit, CellHook_OnAct, CellHook_OnDescribe, CellHook_OnHazardQuery, CellHook_OnDestroy);
      TCellHooks = set of TCellHook;
-const CellHooks : array[TCellHook] of string = ('OnEnter', 'OnExit', 'OnAct', 'OnDescribe', 'OnDestroy');
+const CellHooks : array[TCellHook] of string = ('OnEnter', 'OnExit', 'OnAct', 'OnDescribe', 'OnHazardQuery', 'OnDestroy');
 
 type TMap = object
        Overlay  : array[ 1..MaxX, 1..MaxY ] of Byte;
@@ -24,7 +24,7 @@ type TCell = class
   PicChr      : Char;
   PicLow      : Char;
   Sprite      : array[0..15] of TSprite;
-  Deco        : array[1..7]  of TSprite;
+  Deco        : array[1..16] of TSprite;
   BloodSprite : TSprite;
   LightColor  : array[0..15] of Byte;
   DarkColor   : Byte;
@@ -35,6 +35,7 @@ type TCell = class
   HP          : Byte;
   Flags       : TFlags;
   Hooks       : TCellHooks;
+  MoveCost    : Single;
   bloodto     : AnsiString;
   destroyto   : AnsiString;
   raiseto     : AnsiString;
@@ -62,7 +63,7 @@ var Cells : TCells;
 
 implementation
 
-uses SysUtils, vluasystem, vcolor, vdebug;
+uses SysUtils, vluasystem, vdebug;
 
 procedure TCells.RegisterCell( aCellNum : byte );
 var iColorID : AnsiString;
@@ -87,8 +88,8 @@ begin
   try
     iColorID := getString('id');
     if IsString('color_id') then iColorID := getString('color_id');
-    
-   iCell.Hooks := [];
+
+    iCell.Hooks := [];
     for iHook in TCellHooks do
       if isFunction( CellHooks[ iHook ] ) then
         Include( iCell.Hooks,iHook );
@@ -125,6 +126,7 @@ begin
     iCell.bloodto   := getString('bloodto');
     iCell.destroyto := getString('destroyto');
     iCell.raiseto   := getString('raiseto');
+    iCell.MoveCost  := getFloat('move_cost', 1.0 );
     FillChar( iCell.Sprite,      SizeOf(iCell.Sprite),      0 );
     FillChar( iCell.BloodSprite, SizeOf(iCell.BloodSprite), 0 );
     FillChar( iCell.Deco,        SizeOf(iCell.Deco),        0 );
@@ -142,7 +144,7 @@ begin
         begin
           iSprite := iBase;
           if IsNumber( i ) then
-            iSprite.SpriteID := GetValue( i )
+            iSprite.SpriteID[0] := GetValue( i )
           else
           begin
             iSubTable := iTable.GetTable( ['sprite',i] );
@@ -157,7 +159,7 @@ begin
     end
     else
       iCell.Sprite[0] := iBase;
-    iCell.BloodSprite.SpriteID := getInteger('blsprite',0);
+    iCell.BloodSprite.SpriteID[0] := getInteger('blsprite',0);
     if iTable.IsTable( 'deco' ) then
     begin
       iSize := iTable.GetTableSize( 'deco' );
@@ -170,7 +172,7 @@ begin
         begin
           iSprite := iCell.Deco[ i ];
           if IsNumber( i ) then
-            iSprite.SpriteID := GetValue( i )
+            iSprite.SpriteID[0] := GetValue( i )
           else
           begin
             iSubTable := iTable.GetTable( ['deco',i] );

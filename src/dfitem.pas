@@ -1,19 +1,13 @@
-{$INCLUDE doomrl.inc}
+{$INCLUDE drl.inc}
 {
 ----------------------------------------------------
-DFITEM.PAS -- Items data and handling for Downfall
-Copyright (c) 2002 by Kornel "Anubis" Kisielewicz
+DFITEM.PAS -- Items data and handling for DRL
+Copyright (c) 2002-2025 by Kornel Kisielewicz
 ----------------------------------------------------
 }
 unit dfitem;
 interface
-uses Classes, SysUtils, dfthing, dfdata, vrltools, vluatable, math;
-
-type TItemSounds = record
-  Pickup     : Word;
-  Reload     : Word;
-  Fire       : Word;
-end;
+uses Classes, SysUtils, dfthing, dfdata, vrltools, vluatable, vcolor, math;
 
 type TItemRecharge = record
   Delay   : Byte;
@@ -30,32 +24,33 @@ TItem  = class( TThing )
 
     constructor Create( const anid : AnsiString; onFloor : boolean = False ); overload;
     constructor Create(anid : byte; onFloor : boolean = False); overload;
-    constructor CreateFromStream( Stream: TStream ); override;
-    procedure WriteToStream( Stream: TStream ); override;
+    constructor CreateFromStream( aStream: TStream ); override;
+    procedure WriteToStream( aStream: TStream ); override;
 
     function    rollDamage : Integer;
     function    maxDamage : Integer;
     function    GetName(known : boolean) : string;
+    function    GetExtName( aLyingHere : Boolean ) : Ansistring;
     function    GetProtection : Byte;
     function    GetResistance( const aResistance : AnsiString ) : Integer;
     function    Description : Ansistring;
-    function    DescriptionBox( aNewFormat : Boolean = False ) : Ansistring;
+    function    DescriptionBox : Ansistring;
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
-    function    CanMod(aModChar : char) : Boolean;
-    function    AddMod(aModChar : char) : Boolean;
     function    eqSlot : TEqSlot;
-    function    isAmmo : boolean;
-    function    isMelee : boolean;
-    function    isRanged : boolean;
-    function    isWeapon : boolean;
-    function    isTele : boolean;
-    function    isLever : boolean;
-    function    isPower : boolean;
-    function    isPack : boolean;
-    function    isAmmoPack : boolean;
-    function    isWearable : boolean;
-    function    canFire : boolean;
+    function    isAmmo : Boolean;
+    function    isMelee : Boolean;
+    function    isRanged : Boolean;
+    function    isWeapon : Boolean;
+    function    isTele : Boolean;
+    function    isLever : Boolean;
+    function    isPower : Boolean;
+    function    isPack : Boolean;
+    function    isAmmoPack : Boolean;
+    function    isFeature : Boolean;
+    function    isWearable : Boolean;
+    function    isPickupable : Boolean;
+    function    canFire : Boolean;
     function MenuColor : byte;
     procedure RechargeReset;
     procedure Tick( Owner : TThing );
@@ -64,17 +59,16 @@ TItem  = class( TThing )
     class procedure RegisterLuaAPI();
     private
     FRecharge : TItemRecharge;
-    FSounds   : TItemSounds;
-    FArmor    : Byte;
     FNID      : Byte;
     FProps    : TItemProperties;
     FMods     : array[Ord('A')..Ord('Z')] of Byte;
+    FAppear   : Integer;
     procedure LuaLoad( Table : TLuaTable; onFloor: boolean ); reintroduce;
     public
-    property NID           : Byte        read FNID;
-    property Sounds        : TItemSounds read FSounds;
+    property PGlowColor     : TColor      read FProps.PGlowColor     write FProps.PGlowColor;
+    property PCosColor      : TColor      read FProps.PCosColor      write FProps.PCosColor;
     published
-    property Armor          : Byte        read FArmor                write FArmor;
+    property NID            : Byte        read FNID;
     property RechargeDelay  : Byte        read FRecharge.Delay       write FRecharge.Delay;
     property RechargeAmount : Byte        read FRecharge.Amount      write FRecharge.Amount;
     property RechargeLimit  : Byte        read FRecharge.Limit       write FRecharge.Limit;
@@ -84,10 +78,11 @@ TItem  = class( TThing )
     property MoveMod        : Integer     read FProps.MoveMod        write FProps.MoveMod;
     property DodgeMod       : Integer     read FProps.DodgeMod       write FProps.DodgeMod;
     property KnockMod       : Integer     read FProps.KnockMod       write FProps.KnockMod;
+    property SpriteMod      : Integer     read FProps.SpriteMod      write FProps.SpriteMod;
     property AmmoID         : Byte        read FProps.AmmoID         write FProps.AmmoID;
     property Ammo           : Word        read FProps.Ammo           write FProps.Ammo;
     property AmmoMax        : Word        read FProps.AmmoMax        write FProps.AmmoMax;
-    property Acc            : ShortInt    read FProps.Acc            write FProps.Acc;
+    property Acc            : Integer     read FProps.Acc            write FProps.Acc;
     property Damage_Dice    : Word        read FProps.Damage.Amount  write FProps.Damage.Amount;
     property Damage_Sides   : Word        read FProps.Damage.Sides   write FProps.Damage.Sides;
     property Damage_Add     : Integer     read FProps.Damage.Bonus   write FProps.Damage.Bonus;
@@ -100,6 +95,7 @@ TItem  = class( TThing )
     property DamageType     : TDamageType read FProps.DamageType     write FProps.DamageType;
     property AltFire        : TAltFire    read FProps.AltFire        write FProps.AltFire;
     property AltReload      : TAltReload  read FProps.AltReload      write FProps.AltReload;
+    property Appear         : Integer     read FAppear               write FAppear;
     property Desc           : AnsiString  read Description;
   end;
 
@@ -107,7 +103,7 @@ procedure SwapItem(var a, b: TItem);
 
 implementation
 
-uses doomlua, doomio, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, dfplayer, doombase, vmath, doomhooks;
+uses vnode, drlua, vluasystem, vluaentitynode, vutil, vdebug, dfbeing, drlbase, vmath, drlhooks;
 
 procedure SwapItem(var a, b: TItem);
 var c : TItem;
@@ -163,47 +159,54 @@ begin
   FreeAndNil( Table );
 end;
 
-constructor TItem.CreateFromStream ( Stream : TStream ) ;
+constructor TItem.CreateFromStream ( aStream : TStream ) ;
+var i, iCount : Word;
 begin
-  inherited CreateFromStream ( Stream ) ;
+  inherited CreateFromStream ( aStream ) ;
 
-  Stream.Read( FRecharge, SizeOf( FRecharge ) );
-  Stream.Read( FSounds,   SizeOf( FSounds ) );
-  Stream.Read( FMods,     SizeOf( FMods ) );
-  Stream.Read( FProps,    SizeOf( FProps ) );
+  aStream.Read( FRecharge, SizeOf( FRecharge ) );
+  aStream.Read( FMods,     SizeOf( FMods ) );
+  aStream.Read( FProps,    SizeOf( FProps ) );
+  aStream.Read( FAppear,   SizeOf( FAppear ) );
 
-  FArmor := Stream.ReadByte();
-  FNID   := Stream.ReadByte();
+  FNID   := aStream.ReadByte();
+  iCount := aStream.ReadWord();
+  if iCount = 0 then Exit;
+  for i := 1 to iCount do
+    Add( TItem.CreateFromStream( aStream ) );
 end;
 
-procedure TItem.WriteToStream ( Stream : TStream ) ;
+procedure TItem.WriteToStream ( aStream : TStream ) ;
+var iNode : TNode;
 begin
-  inherited WriteToStream ( Stream ) ;
+  inherited WriteToStream ( aStream ) ;
 
-  Stream.Write( FRecharge, SizeOf( FRecharge ) );
-  Stream.Write( FSounds,   SizeOf( FSounds ) );
-  Stream.Write( FMods,     SizeOf( FMods ) );
-  Stream.Write( FProps,    SizeOf( FProps ) );
+  aStream.Write( FRecharge, SizeOf( FRecharge ) );
+  aStream.Write( FMods,     SizeOf( FMods ) );
+  aStream.Write( FProps,    SizeOf( FProps ) );
+  aStream.Write( FAppear,   SizeOf( FAppear ) );
 
-  Stream.WriteByte( FArmor );
-  Stream.WriteByte( FNID );
+  aStream.WriteByte( FNID );
+
+  aStream.WriteWord( ChildCount );
+  if ChildCount = 0 then Exit;
+
+  for iNode in Self do
+     if iNode is TItem then
+       iNode.WriteToStream( aStream );
 end;
 
 procedure TItem.LuaLoad( Table : TLuaTable; onFloor: boolean );
-var cnt : byte;
-    soundID : string[20];
+var i : Byte;
 begin
   inherited LuaLoad( Table );
   FHooks := FHooks * ItemHooks;
 
   FProps.itype:= TItemType( Table.getInteger('type') );
-  FSounds.Pickup := 0;
-  FSounds.Reload := 0;
-  FSounds.Fire   := 0;
-  
-  for cnt := Ord('A') to Ord('Z') do FMods[cnt] := 0;
 
-  FArmor           := Table.getInteger('armor',0);
+  for i := Ord('A') to Ord('Z') do FMods[i] := 0;
+
+  FAppear          := 0;
   FNID             := Table.getInteger('nid');
   FRecharge.Delay  := Table.getInteger('rechargedelay',0);
   FRecharge.Amount := Table.getInteger('rechargeamount',0);
@@ -212,43 +215,36 @@ begin
 
    case FProps.IType of
      ITEMTYPE_TELE,
-     ITEMTYPE_LEVER :
-       begin
-         soundid := Table.getString('sound_id','');
-         if soundid = '' then soundid := ID;
-         FSounds.Fire := IO.Audio.ResolveSoundID([ID+'.use',soundid+'.use','use']);
-       end;
+     ITEMTYPE_LEVER,
+     ITEMTYPE_PACK,
+     ITEMTYPE_FEATURE,
+     ITEMTYPE_POWER : ;
      ITEMTYPE_ARMOR,
      ITEMTYPE_BOOTS :
        begin
+         FProps.PCosColor := ColorZero;
+         if not Table.isNil( 'pcoscolor' ) then
+           FProps.PCosColor := NewColor( Table.GetVec4f('pcoscolor' ) );
+         FProps.PGlowColor := ColorZero;
+         if not Table.isNil( 'pglow' ) then
+           FProps.PGlowColor := NewColor( Table.GetVec4f('pglow' ) );
          FProps.Durability := Table.getInteger('durability');
          if FProps.Durability = 0 then FProps.Durability := 100;
          FProps.MaxDurability := FProps.Durability;
          FProps.MoveMod  := Table.getInteger('movemod');
          FProps.DodgeMod  := Table.getInteger('dodgemod');
          FProps.KnockMod := Table.getInteger('knockmod');
-         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
-       end;
-     ITEMTYPE_PACK,
-     ITEMTYPE_POWER :
-       begin
-         if FProps.IType = ITEMTYPE_POWER
-           then FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.activate','activate'])
-           else FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.use','use']);
-         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
+         FProps.SpriteMod := Table.GetInteger('spritemod',0);
        end;
      ITEMTYPE_AMMO, ITEMTYPE_AMMOPACK :
        begin
          FProps.Ammo        := Table.getInteger('ammo');
          FProps.AmmoMax     := Table.getInteger('ammomax');
          FProps.AmmoID      := Table.getInteger('ammo_id',0);
-         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
        end;
      ITEMTYPE_MELEE :
        begin
          FProps.Damage      := NewDiceRoll( Table.getInteger('damage_dice'), Table.getInteger('damage_sides'), Table.getInteger('damage_bonus') );
-         FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.attack','attack']);
-         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup','pickup']);
          FProps.DamageType  := TDamageType( Table.getInteger('damagetype') );
          FProps.Acc         := Table.getInteger('acc');
          FProps.UseTime     := Table.getInteger('fire');
@@ -271,16 +267,11 @@ begin
          FProps.AltFire     := TAltFire( Table.getInteger('altfire',0) );
          FProps.AltReload   := TAltReload( Table.getInteger('altreload',0) );
          FProps.DamageType  := TDamageType( Table.getInteger('damagetype',0) );
-         soundid := Table.getString('sound_id','');
-         if soundid = '' then soundid := ID;
-         FSounds.Fire   := IO.Audio.ResolveSoundID([ID+'.fire', SoundID+'.fire', 'fire']);
-         FSounds.Pickup := IO.Audio.ResolveSoundID([ID+'.pickup', SoundID+'.pickup', 'pickup']);
-         FSounds.Reload := IO.Audio.ResolveSoundID([ID+'.reload', SoundID+'.reload', 'reload']);
        end;
   end;
 
   if onFloor and isAmmo then
-    FProps.Ammo := Round( FProps.Ammo * Double(LuaSystem.Get([ 'diff', Doom.Difficulty, 'ammofactor' ])) );
+    FProps.Ammo := Round( FProps.Ammo * Double(LuaSystem.Get([ 'diff', DRL.Difficulty, 'ammofactor' ])) );
 
   CallHook( Hook_OnCreate, [] );
 end;
@@ -344,7 +335,9 @@ var FlagStr : string[10];
 begin
   Description := Name;
   case FProps.IType of
-    ITEMTYPE_LEVER    : Exit(Description);
+    ITEMTYPE_LEVER,
+    ITEMTYPE_TELE,
+    ITEMTYPE_FEATURE  : Exit(Description);
     ITEMTYPE_AMMO     : if FProps.Ammo > 1 then Description += ' (x'+IntToStr(FProps.Ammo)+')';
     ITEMTYPE_AMMOPACK : Description += ' (x'+IntToStr(FProps.Ammo)+')';
     ITEMTYPE_MELEE :
@@ -381,7 +374,7 @@ begin
               FlagStr := '';
               for Count := Ord('A') to Ord('Z') do
               if FMods[Count] > 0 then
-                FlagStr += Chr(Count) + IntToStr(FMods[Count]);
+                FlagStr += Chr(Count) + Iif( FMods[Count] > 1, IntToStr(FMods[Count]), '' );
               if FlagStr <> '' then Description += ' ('+FlagStr+')';
             end;
             Description += ResistDescriptionShort;
@@ -389,7 +382,7 @@ begin
   end;
 end;
 
-function TItem.DescriptionBox( aNewFormat : Boolean = False ): Ansistring;
+function TItem.DescriptionBox: Ansistring;
   function Iff(expr : Boolean; str : Ansistring) : Ansistring;
   begin
     if expr then exit(str) else exit('');
@@ -410,80 +403,46 @@ function TItem.DescriptionBox( aNewFormat : Boolean = False ): Ansistring;
     AltReloadName := LuaSystem.Get([ 'items', ID, 'altreloadname' ], '');
     if AltReloadName <> '' then Exit;
     case aValue of
-      RELOAD_FULL        : Exit('full');
       RELOAD_DUAL        : Exit('dual');
       RELOAD_SINGLE      : Exit('single');
     end;
   end;
 begin
-  if aNewFormat then
-  begin
-    DescriptionBox := '';
-    case FProps.IType of
-      ITEMTYPE_ARMOR, ITEMTYPE_BOOTS : DescriptionBox :=
-        'Durability  : {!'+IntToStr(FProps.MaxDurability)+'}'#10+
-        'Move speed  : {!'+Percent(FProps.MoveMod)+'}'#10+
-        'Knockback   : {!'+Percent(FProps.KnockMod)+'}'#10+
-        Iff(FProps.DodgeMod <> 0,'Dodge rate  : {!'+Percent(FProps.DodgeMod)+'}'#10);
-      ITEMTYPE_RANGED : DescriptionBox :=
-        'Fire time   : {!'+Seconds(FProps.UseTime)+'}'#10+
-        'Reload time : {!'+Seconds(FProps.ReloadTime)+'}'#10+
-        'Accuracy    : {!'+BonusStr(FProps.Acc)+'}'#10+
-        Iff(FProps.Shots       <> 0,'Shots       : {!'+IntToStr(FProps.Shots)+'}'#10)+
-        Iff(FProps.ShotCost    <> 0,'Shot cost   : {!'+IntToStr(FProps.ShotCost)+'}'#10)+
-        Iff(FProps.BlastRadius <> 0,'Expl.radius : {!'+IntToStr(FProps.BlastRadius)+'}'#10)+
-        Iff(FProps.AltFire   <> ALT_NONE   ,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10)+
-        Iff(FProps.AltReload <> RELOAD_NONE,'Alt. reload : {!'+AltReloadName( FProps.AltReload )+'}'#10);
-      ITEMTYPE_MELEE : DescriptionBox :=
-        'Attack time : {!'+Seconds(FProps.UseTime)+'}'#10+
-        Iff(FProps.Acc     <> 0,'Accuracy    : {!' + BonusStr(FProps.Acc)+'}'#10)+
-        Iff(FProps.AltFire <> ALT_NONE,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10);
-    end;
-    DescriptionBox +=
-        Iff(GetResistance('bullet')   <> 0,'Bullet res. : {!' + BonusStr(GetResistance('bullet'))+'}'#10)+
-        Iff(GetResistance('melee')    <> 0,'Melee res.  : {!' + BonusStr(GetResistance('melee'))+'}'#10)+
-        Iff(GetResistance('shrapnel') <> 0,'Shrapnel res: {!' + BonusStr(GetResistance('shrapnel'))+'}'#10)+
-        Iff(GetResistance('acid')     <> 0,'Acid res.   : {!' + BonusStr(GetResistance('acid'))+'}'#10)+
-        Iff(GetResistance('fire')     <> 0,'Fire res.   : {!' + BonusStr(GetResistance('fire'))+'}'#10)+
-        Iff(GetResistance('plasma')   <> 0,'Plasma res. : {!' + BonusStr(GetResistance('plasma'))+'}'#10);
-  end
-  else
-  begin
-    DescriptionBox := '';
-    case FProps.IType of
-      ITEMTYPE_ARMOR, ITEMTYPE_BOOTS : DescriptionBox :=
-        'Durability  : @<'+IntToStr(FProps.MaxDurability)+'@>'#10+
-        'Move speed  : @<'+Percent(FProps.MoveMod)+'@>'#10+
-        'Knockback   : @<'+Percent(FProps.KnockMod)+'@>'#10+
-        Iff(FProps.DodgeMod <> 0,'Dodge rate  : @<'+Percent(FProps.DodgeMod)+'@>'#10);
-      ITEMTYPE_RANGED : DescriptionBox :=
-        'Fire time   : @<'+Seconds(FProps.UseTime)+'@>'#10+
-        'Reload time : @<'+Seconds(FProps.ReloadTime)+'@>'#10+
-        'Accuracy    : @<'+BonusStr(FProps.Acc)+'@>'#10+
-        Iff(FProps.Shots       <> 0,'Shots       : @<'+IntToStr(FProps.Shots)+'@>'#10)+
-        Iff(FProps.ShotCost    <> 0,'Shot cost   : @<'+IntToStr(FProps.ShotCost)+'@>'#10)+
-        Iff(FProps.BlastRadius <> 0,'Expl.radius : @<'+IntToStr(FProps.BlastRadius)+'@>'#10)+
-        Iff(FProps.AltFire   <> ALT_NONE   ,'Alt. fire   : @<'+AltFireName( FProps.AltFire )+'@>'#10)+
-        Iff(FProps.AltReload <> RELOAD_NONE,'Alt. reload : @<'+AltReloadName( FProps.AltReload )+'@>'#10);
-      ITEMTYPE_MELEE : DescriptionBox :=
-        'Attack time : @<'+Seconds(FProps.UseTime)+'@>'#10+
-        Iff(FProps.Acc     <> 0,'Accuracy    : @<' + BonusStr(FProps.Acc)+'@>'#10)+
-        Iff(FProps.AltFire <> ALT_NONE,'Alt. fire   : @<'+AltFireName( FProps.AltFire )+'@>'#10);
-    end;
-    DescriptionBox +=
-        Iff(GetResistance('bullet')   <> 0,'Bullet res. : @<' + BonusStr(GetResistance('bullet'))+'@>'#10)+
-        Iff(GetResistance('melee')    <> 0,'Melee res.  : @<' + BonusStr(GetResistance('melee'))+'@>'#10)+
-        Iff(GetResistance('shrapnel') <> 0,'Shrapnel res: @<' + BonusStr(GetResistance('shrapnel'))+'@>'#10)+
-        Iff(GetResistance('acid')     <> 0,'Acid res.   : @<' + BonusStr(GetResistance('acid'))+'@>'#10)+
-        Iff(GetResistance('fire')     <> 0,'Fire res.   : @<' + BonusStr(GetResistance('fire'))+'@>'#10)+
-        Iff(GetResistance('plasma')   <> 0,'Plasma res. : @<' + BonusStr(GetResistance('plasma'))+'@>'#10);
+  DescriptionBox := '';
+  case FProps.IType of
+    ITEMTYPE_ARMOR, ITEMTYPE_BOOTS : DescriptionBox :=
+      'Durability  : {!'+IntToStr(FProps.MaxDurability)+'}'#10+
+      'Move speed  : {!'+Percent(FProps.MoveMod)+'}'#10+
+      'Knockback   : {!'+Percent(FProps.KnockMod)+'}'#10+
+      Iff(FProps.DodgeMod <> 0,'Dodge rate  : {!'+Percent(FProps.DodgeMod)+'}'#10);
+    ITEMTYPE_RANGED : DescriptionBox :=
+      'Fire time   : {!'+Seconds(FProps.UseTime)+'}'#10+
+      'Reload time : {!'+Seconds(FProps.ReloadTime)+'}'#10+
+      'Accuracy    : {!'+BonusStr(FProps.Acc)+'}'#10+
+      'Damage type : {!'+DamageTypeName(FProps.DamageType)+'}'#10+
+      Iff(FProps.Shots       <> 0,'Shots       : {!'+IntToStr(FProps.Shots)+'}'#10)+
+      Iff(FProps.ShotCost    <> 0,'Shot cost   : {!'+IntToStr(FProps.ShotCost)+'}'#10)+
+      Iff(FProps.BlastRadius <> 0,'Expl.radius : {!'+IntToStr(FProps.BlastRadius)+'}'#10)+
+      Iff(FProps.AltFire   <> ALT_NONE   ,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10)+
+      Iff(FProps.AltReload <> RELOAD_NONE,'Alt. reload : {!'+AltReloadName( FProps.AltReload )+'}'#10);
+    ITEMTYPE_MELEE : DescriptionBox :=
+      'Attack time : {!'+Seconds(FProps.UseTime)+'}'#10+
+      Iff(FProps.Acc     <> 0,'Accuracy    : {!' + BonusStr(FProps.Acc)+'}'#10)+
+      Iff(FProps.AltFire <> ALT_NONE,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10);
   end;
- end;
+  DescriptionBox +=
+      Iff(GetResistance('bullet')   <> 0,'Bullet res. : {!' + BonusStr(GetResistance('bullet'))+'}'#10)+
+      Iff(GetResistance('melee')    <> 0,'Melee res.  : {!' + BonusStr(GetResistance('melee'))+'}'#10)+
+      Iff(GetResistance('shrapnel') <> 0,'Shrapnel res: {!' + BonusStr(GetResistance('shrapnel'))+'}'#10)+
+      Iff(GetResistance('acid')     <> 0,'Acid res.   : {!' + BonusStr(GetResistance('acid'))+'}'#10)+
+      Iff(GetResistance('fire')     <> 0,'Fire res.   : {!' + BonusStr(GetResistance('fire'))+'}'#10)+
+      Iff(GetResistance('plasma')   <> 0,'Plasma res. : {!' + BonusStr(GetResistance('plasma'))+'}'#10);
+end;
 
 function TItem.ResistDescriptionShort: AnsiString;
-const ResLetter : array[Low(TResistance)..High(TResistance)] of Char = ( 'b','m','s','a','f','p' );
+const ResLetter : array[Low(TResistance)..High(TResistance)] of Char = ( 'b','m','s','a','f','p','c','o' );
 const ResID   : array[Low(TResistance)..High(TResistance)] of AnsiString =
-   ( 'bullet', 'melee', 'shrapnel', 'acid', 'fire', 'plasma' );
+   ( 'bullet', 'melee', 'shrapnel', 'acid', 'fire', 'plasma', 'cold', 'poison' );
 var Resistance : TResistance;
     iValue : LongInt;
 begin
@@ -497,49 +456,6 @@ begin
       ResistDescriptionShort += '-'+ResLetter[ Resistance ];
   end;
   if ResistDescriptionShort = '' then Exit('') else Exit(' {'+ResistDescriptionShort+'}')
-end;
-
-function TItem.CanMod(aModChar: char): Boolean;
-var iSum   : Word;
-    iCount : Byte;
-    iMax   : Byte;
-begin
-  if not (aModChar in ['A'..'Z']) then Exit(false);
-  if (IF_UNIQUE in FFlags) and (not (IF_MODABLE in FFlags)) then Exit(False);
-  if IF_NONMODABLE in FFlags then Exit(False);
-  if (not Player.Flags[BF_MODEXPERT]) and ( IF_UNIQUE in FFlags ) then Exit( False );
-
-  iSum := 0;
-  for iCount := Ord('A') to Ord('Z') do iSum += FMods[iCount];
-
-  if (IF_ASSEMBLED in FFlags) then
-    if Player.TechBonus < (iSum + 2) then
-      Exit( False );
-
-  if (IF_SINGLEMOD in FFlags) and (iSum > 0) then Exit(False);
-
-  if FProps.IType = ITEMTYPE_RANGED
-    then iMax := 1 + 2* Player.TechBonus
-    else iMax := 1 + Player.TechBonus;
-
-  if iSum >= iMax then Exit(false);
-
-  case FProps.IType of
-    ITEMTYPE_RANGED :
-        if FMods[Ord(aModChar)] > 2 then Exit(False);
-    ITEMTYPE_MELEE, ITEMTYPE_ARMOR, ITEMTYPE_BOOTS :
-        if FMods[Ord(aModChar)] > 0 then Exit(False);
-    else Exit(False);
-  end;
-  Exit(True);
-end;
-
-function TItem.AddMod(aModChar: char): Boolean;
-begin
-  if not (CanMod(aModChar)) then Exit( false );
-  Include(FFlags,IF_MODIFIED);
-  Inc(FMods[Ord(aModChar)]);
-  Exit(True);
 end;
 
 function TItem.Preposition( const Item : AnsiString ) : string;
@@ -556,8 +472,26 @@ begin
   case FProps.IType of
     ITEMTYPE_AMMO : if FProps.Ammo > 1 then Exit(Description);
   end;
+  if Flags[ IF_UNIQUENAME ] then Exit( Description );
   if known then Exit('the '+Description)
            else Exit(Preposition(Description)+Description);
+end;
+
+function TItem.GetExtName( aLyingHere : Boolean ) : Ansistring;
+var iName : AnsiString;
+begin
+  iName := '';
+  if Hook_OnDescribe in FHooks then
+  begin
+    iName := LuaSystem.ProtectedRunHook( Self, HookNames[Hook_OnDescribe], [] );
+  end;
+  if iName = '' then iName := GetName( False );
+
+  if not aLyingHere then Exit( iName );
+
+  if Flags[ IF_FEATURENAME ] then Exit( Format('There is a %s here.', [ iName ] ) );
+  if Flags[ IF_PLURALNAME ]  then Exit( Format('There are %s lying here.', [ iName ] ) );
+  Exit( Format('There is %s lying here.', [ iName ] ) );
 end;
 
 destructor  TItem.Destroy;
@@ -610,9 +544,19 @@ begin
   Exit(FProps.IType = ITEMTYPE_AMMOPACK);
 end;
 
+function TItem.isFeature : Boolean;
+begin
+  Exit(FProps.IType = ITEMTYPE_FEATURE);
+end;
+
 function TItem.isWearable : boolean;
 begin
   Exit(FProps.IType in [ITEMTYPE_RANGED,ITEMTYPE_NRANGED,ITEMTYPE_ARMOR,ITEMTYPE_MELEE,ITEMTYPE_BOOTS,ITEMTYPE_AMMOPACK]);
+end;
+
+function TItem.isPickupable : Boolean;
+begin
+  Exit( not ( FProps.IType in [ ITEMTYPE_FEATURE, ITEMTYPE_TELE, ITEMTYPE_LEVER ] ) );
 end;
 
 function TItem.canFire: boolean;
@@ -623,7 +567,6 @@ begin
     if Ammo = 0        then Exit( False );
     if Ammo < ShotCost then Exit( False );
   end;
-  if Flags[ IF_CHAMBEREMPTY ] then Exit( False );
   Exit( True );
 end;
 
@@ -659,7 +602,7 @@ begin
 end;
 
 function lua_item_new(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
+var State : TDRLLuaState;
     Item  : TItem;
 begin
   State.Init(L);
@@ -668,54 +611,30 @@ begin
   Result := 1;
 end;
 
-function lua_item_add_mod(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
-begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  State.Push( Item.AddMod( State.ToChar(2) ));
-  Result := 1;
-end;
-
-function lua_item_can_mod(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
-begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  State.Push( Item.CanMod( State.ToChar(2) ));
-  Result := 1;
-end;
-
 function lua_item_get_mod(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
+var iState : TDRLLuaState;
+    iItem  : TItem;
 begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  State.Push( Item.FMods[ Ord(State.ToChar(2))]);
+  iState.Init(L);
+  iItem := iState.ToObject(1) as TItem;
+  iState.Push( iItem.FMods[ Ord(iState.ToChar(2))]);
   Result := 1;
 end;
 
-function lua_item_clear_mods(L: Plua_State): Integer; cdecl;
-var State : TDoomLuaState;
-    Item  : TItem;
-    Cnt   : Byte;
+function lua_item_set_mod(L: Plua_State): Integer; cdecl;
+var iState : TDRLLuaState;
+    iItem  : TItem;
 begin
-  State.Init(L);
-  Item := State.ToObject(1) as TItem;
-  for Cnt := Ord('A') to Ord('Z') do
-    Item.FMods[Cnt] := 0;
+  iState.Init(L);
+  iItem := iState.ToObject(1) as TItem;
+  iItem.FMods[ Ord(iState.ToChar(2))] := iState.ToInteger(3);
   Result := 0;
 end;
 
-const lua_item_lib : array[0..5] of luaL_Reg = (
+const lua_item_lib : array[0..3] of luaL_Reg = (
       ( name : 'new';        func : @lua_item_new),
-      ( name : 'add_mod';    func : @lua_item_add_mod),
-      ( name : 'can_mod';    func : @lua_item_can_mod),
       ( name : 'get_mod';    func : @lua_item_get_mod),
-      ( name : 'clear_mods'; func : @lua_item_clear_mods),
+      ( name : 'set_mod';    func : @lua_item_set_mod),
       ( name : nil;          func : nil; )
 );
 

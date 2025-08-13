@@ -1,0 +1,20 @@
+{rMouse controls}
+
+LMB, MMB, RMB is left/middle/right mouse button:
+
+  {!LMB}             -- travel to given destination, open door if next to it, 
+                     melee attack if on enemy and next to him. Travel needs
+                     to target explored square, and is automatic as long as
+                     there are no enemies in sight, otherwise just one move
+  {!LMB} on {!self}     -- if on stairs, descend, if on lever - pull, if on item
+                     then pickup, else inventory
+  {!Alt-LMB} on {!self} -- inventory
+
+  {!RMB}             -- fire at the targeted square or enemy, reload if 
+                     magazine empty
+  {!RMB} on {!self}     -- reload
+
+  {!MMB}             -- hold to pan view
+  {!MMB} on {!self}     -- swap weapons
+
+  {!SCROLLWHEEL}     -- change weapon (enters quick weapon choice)
