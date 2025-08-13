@@ -622,7 +622,7 @@ function drl.OnCreateEpisode()
 end
 
 function drl.GetMOTD()
-	return "{BSupport the game by {Lwishlisting} the DRL expansion at {Ljupiterhellclassic.com}!}"
+	return "{BSupport the game by buying the {LDRL expansion} at {Ljupiterhellclassic.com}!}"
 end
 
 function drl.GetLogoTexture()
@@ -639,15 +639,15 @@ end
 
 function drl.GetLogoText()
 	return
-[[{rAdd. coding : {ytehtmi}, {yGame Hunter}, {yshark20061} and {yadd}
+[[{rAdd. coding : {ytehtmi}, {yGame Hunter}, {yshark20061}, {yadd} and {ybrisbang}
 Music tracks: {ySonic Clang} (remixes), {ySimon Volpert} (special levels)
 HQ SFX      : {yPer Kristian Risvik}
 
 Major changes since last version (see {yversion.txt} for full list)
-{R  * start of UX overhaul, save/load at any point, settings menu!
-  * new sprites, new tilesets, basic animation!
-  * tons of minor features, bugfixes and balance changes}
-
+{R  * tons of UI and UX changes, a lot new visual effects!
+  * new L4 special levels by brisbang, two new environment fluids!
+  * enrage mechanic, infighting, more nightmare variants, tons little stuff!
+  
 {B facebook.com/ChaosForge  x.com/chaosforge_org  discord.gg/jupiterhell}
                                        Press <{y{$input_ok}}> to continue...}
 ]]

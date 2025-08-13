@@ -1,145 +1,85 @@
-0.10.0 RC
-[new] -- GH#189: Gamepad support!
-[new] -- GH#313: x1.5 tile scaling added (fuzzy, but playable!)
-[new] -- GH#224: low health and damage blood pulse effect
-[new] -- GH#310: messages will group (x2) if the same - can be turned off in options
-[new] -- GH#000: fadein/fadeout on level change
-[new] -- GH#000: tohit chance is visible on the UI
-[mod] -- GH#304: Shift-Backspace will drop and unload weapon from inv/eq
-[mod] -- GH#293: weapon mods won't print the count if one (so (AP2) for example)
-[mod] -- GH#293: item names will be truncated to available space if too long
-[mod] -- GH#279: no-drop is now per item, not per-enemy, so rezzed enemies pickups will drop
-[mod] -- GH#274: improved nuke and nuke escape FX
-[mod] -- GH#274: 1/3rd hit flash will now base on MaxHP instead of nominal
-[mod] -- RCMOD : infighting won't happen between same enemies
-[mod] -- RCMOD : vile-likes and bosses won't trigger retaliation
-[mod] -- RCMOD : when beings are revealed, auto-target range is higher
-[mod] -- RCMOD : when beings are revealed, targeting remembers out of vision enemies
-[mod] -- GH#000: difficulty dependent attempt for a safe zone for spawning
-[fix] -- GH#294: improved filtering of WM/System events while multi-move stop
-[fix] -- RCFIX : House of Pain locks fixed [brisbang]
-[fix] -- GH#295: grappling armor assembly won't be affected by mod order
-[fix] -- GH#295: grappling boots move penalty removed
-[fix] -- RCFIX : fixed order of awarding badges (fixes Tech, Armorer and Heroic badges)
-[fix] -- GH#296: the UV+ barons in The Vaults spawn wearing red armor
-[fix] -- RCFIX : fix item seek case when standing on item (fixes item camping)
-[fix] -- RCFIX : fixed coloring (check your config.lua for color definition order!)
-[fix] -- GH#274: fixed consecutive flashes not queueing properly
-[fix] -- GH#274: fixed flashes not appearing if framerate is low
-[fix] -- RCFIX : Acid Spitter reload and Lava Armor regen works again
-[fix] -- RCFIX : corpseless enemies no longer will leave invisible corpses
-[fix] -- RCFIX : assignment of music for the two new levels
-[fix] -- RCFIX : shotgun pumping will no longer happen in the prepared slot
-[fix] -- RCFIX : cleaner Assemlies reqs
-[fix] -- RCFIX : fixed bug with animation blinking on high resolutions
-[fix] -- RCFIX : fixed dual weapon action time
-[fix] -- GH#313: fixed X-interpolation for large tiles on smaller screens
-
-0.9.9.9 BETA 8
+0.10.0
+[new] -- GH#189: G-version - Gamepad support!
+[new] -- GH#313: G-version - x1.5 tile scaling added (fuzzy, but playable!)
+[new] -- GH#224: G-version - low health and damage blood pulse effect
+[new] -- GH#000: G-version - fadein/fadeout on level change
+[new] -- GH#152: G-version - explosions trigger screenshake (can be turned off in options)
+[new] -- GH#217: infighting is back, baby!
 [new] -- GH#222: new L4 special level - Central Processing [brisbang]
 [new] -- GH#222: new L4 special level - Toxin Refinery [brisbang]
+[new] -- GH#177: new lategame environment fluid - blood (plasma, damages ONLY player!)
+[new] -- GH#177: Limbo uses blood instead of lava
+[new] -- GH#177: new early game environment fluid - mud - like water but slows by 40%
+[new] -- GH#177: one new late-game exotic boots added
+[new] -- GH#177: all fluids slow down the player by 20%
+[new] -- GH#252: staying too long on a level will enrage the enemies
+[new] -- GH#094: barrels can be moved much more freely now!
 [new] -- GH#222: assembly schematics found in specific levels in each episode per level
-[new] -- GH#000: added damage type to weapon descriptions
+[new] -- GH#128: grappling armor assembly added (BA) - -50 knockback, +30% melee res
+[new] -- GH#218: nightmare souls, nightmare knights and nightmare elementals added
+[new] -- GH#218: nightmare revenants and nightmare mancubi added
+[new] -- GH#218: several new Ao100+ enemy group randomization entries added for levels 30+
+[new] -- GH#310: UI - messages will group (x2) if the same - can be turned off in options
+[new] -- GH#000: UI - tohit chance is visible on the UI
+[new] -- GH#000: UI - added damage type to weapon descriptions
+[new] -- GH#092: UI - Jupiter Hell style auto-target/fire (f, old pick target is t)
+[new] -- GH#094: G-version - you move with the barrel now!
+[new] -- GH#000: G-version - mouse edge pan is disabled by default, use MMB to pan!
+[new] -- GH#159: G-version - mimimap - better visibility of important stuff
+[new] -- GH#159: G-version - mimimap - configurable opacity
+[new] -- GH#056: G-version - smoother keyboard response and non-blocking animations
+[new] -- GH#227: UI - Ctrl+Arrows will manually move the auto-target reticule!
+[new] -- GH#142: UI - nicer item modding interface
+[new] -- GH#179: UI - info on total ammo after weapon name
+[new] -- GH#150: UI - holding direction/wait will repeat nicely and break on enemy visible
+[new] -- GH#056: UI - SHIFT-direction will perform a run
+[new] -- GH#129: UI - post mortem view colored and highlighted
+[new] -- GH#142: UI - several UI improvements
+[new] -- GH#149: settings - you can now clear a keybinding using Backspace
+[new] -- GH#188: settings - you can now disable mouse rendering and interaction
+[new] -- GH#157: settings - new scheme for audio configuration
+[mod] -- GH#274: G-version - improved nuke and nuke escape FX
+[mod] -- GH#000: G-version - improved ray shot effect
+[mod] -- GH#000: G-version - DRL engine is now DPI aware which should prevent resolution issues
+[mod] -- GH#197: G-version - added self-illumination to several sprites
+[mod] -- GH#197: G-version - glow is calculated live and tied to self-illumination
+[mod] -- GH#192: G-version - auto-target reticle now follows enemy sprite
+[mod] -- GH#193: G-version - melee bump animation added
+[mod] -- GH#193: G-version - smooth barrel movement
+[mod] -- GH#177: G-version - sprite movement speed dependent on ingame speed
+[mod] -- GH#172: G-version - when targeting/looking with the keyboard the map will scroll
+[mod] -- GH#164: all % kill requirements (including 100%) now wont count respawns
+[mod] -- GH#164: added info on kill % to both mortem and level/char info
+[mod] -- GH#164: N! - enemies will not respawn in vision range
+[mod] -- GH#164: Respawns (N! and Archvile) will not drop items
+[mod] -- GH#142: minor improvements in level generation
+[mod] -- GH#279: no-drop is now per item, not per-enemy, so rezzed enemies pickups will drop
+[mod] -- GH#000: difficulty dependent attempt for a safe zone for spawning
 [mod] -- GH#114: improved bridge placement 
-[mod] -- GH#000: improved ray shot effect
-[mod] -- GH#000: DRL engine is now DPI aware which should prevent resolution issues
 [mod] -- GH#267: captains now have 40 ammo [brisbang]
 [mod] -- GH#267: nightmare viles explosion size 2 [brisbang]
 [mod] -- GH#269: Frag shotgun is now a 6d3, 0.5s shotty with level 10 and weight 3 [brisbang]
 [mod] -- GH#104: Mt. Erebus prevents teleporting into the mountain
-[mod] -- GH#264: resistances will only show up if non-zero
-[fix] -- GH#000: fixed locked vaults - will appear again
-[fix] -- GH#272: full reload will take time again
-[fix] -- GH#271: fixed combat shotgun chamber empty not clearing on 0 ammo load
-[fix] -- GH#275: fix bulletdance pick crash
-[fix] -- GH#000: fixed armor sprite when no weapon present
-[fix] -- GH#000: fixed trait data not wiped between runs
-[fix] -- GH#000: cleaned up old color formatting errors
-[fix] -- GH#000: fix removal of corrupted/old save files
-[fix] -- GH#000: beings idle-animate while moving
-[fix] -- GH#256: fixed on pickup shenanigans (no longer "no chainsaw" on pickup) [brisbang]
-[fix] -- GH#278: fixed a crash when fast enemies were double enraged (speed overflow)
-[fix] -- GH#277: fixed HUNTING behaviour for AI's that didn't have them yet
-
-0.9.9.9 BETA 7
-[new] -- GH#252: staying too long on a level will enrage the enemies
 [mod] -- GH#252: only some enemies keep to their patrol area
 [mod] -- GH#000: enemy melee damage now randomized
 [mod] -- GH#000: Malicious Blades will double damage of thrown knives
-[fix] -- GH#241: clearing of level feeling on death/restart [brisbang]
-[fix] -- GH#113: thermonuclear explosions on Abyssal Plains/Containment area count also clear the traps [brisbang]
-[fix] -- GH#232: fixed Abyssal Plains trap not always triggering [brisbang]
-[fix] -- GH#100: completion of Ao666 reports 666 levels completed [brisbang]
-[mod] -- GH#104: remove soft locking for Containment Area and The Wall [brisbang]
-
-0.9.9.9 BETA 6d
-[mod] -- RCMOD : gun kata move firetime bonus is now 50%
-[fix] -- RCFIX : fix pinkie AI crash
-[fix] -- RCFIX : clear message for abyssal plains added
-[fix] -- RCFIX : fix gun kata firetime bonus sometimes persisting
-
-0.9.9.9 BETA 6c
-[fix] -- GH#233: flying enemies will not drag blood
-[fix] -- RCFIX : fix pursuing AI after knockback
-[fix] -- RCFIX : flock AI on_attacked fixed
-[fix] -- RCFIX : potential fix for charge AI aggressiveness
-
-0.9.9.9 BETA 6b
-[fix] -- RCFIX : fixed crash in shambler/lavael AI
-[fix] -- RCFIX : demon ai properly resets boredom on player disappearing
-[fix] -- RCFIX : retaliation engages pathfinding properly
-
-0.9.9.9 BETA 6
-[new] -- GH#227: Ctrl+Arrows will manually move the auto-target reticule!
-[new] -- GH#217: infighting is back, baby!
 [mod] -- GH#217: all AI's got a refactor, might behave differently
 [mod] -- GH#161: drop item action continues if no enemy/damage is present
 [mod] -- GH#226: enemies keep to their patrol area (spawn area)
 [mod] -- GH#230: Gun Kata - 1/5th time to fire after any move!
 [mod] -- GH#230: finesse bonus 15%->10%, dualgunner penalty 20%->0%
-[fix] -- GH#098: fixes Mastermind AI getting stuck
-[fix] -- GH#000: emergency animation break added
-[fix] -- GH#228: explode wall levers leave debris
-[fix] -- GH#229: explode wall levers destroy doors
-[fix] -- GH#229: City of Skulls - lever can't be destroyed
-[fix] -- GH#223: Abyssal Plains raising walls will clear tiles and destroy items
-[fix] -- RCFIX : fixed multi-melee animations
-
-0.9.9.9 BETA 5
-[new] -- GH#129: post mortem view colored and highlighted
-[new] -- GH#128: grappling armor assembly added (BA) - -50 knockback, +30% melee res
-[new] -- GH#218: nightmare souls, nightmare knights and nightmare elementals added
-[new] -- GH#218: nightmare revenants and nightmare mancubi added
-[new] -- GH#218: several new Ao100+ enemy group randomization entries added for levels 30+
 [mod] -- GH#218: several Ao100+only enemies have their min-level reduced
 [mod] -- GH#218: nightmare cacodemons stronger
 [mod] -- GH#000: spawned enemies (lever/summon) will now "wake up" faster
-[mod] -- GH#000: cleaned up tactic/running - now running/tired is a regular affect
-[mod] -- GH#000: changed the display of affects to full words
 [mod] -- GH#000: dodge bonus from armor additive, not multiplicative
 [mod] -- GH#208: right Vault on UV+ has 4 barons, 4 armors
-[mod] -- GH#212: kill weapon groups displayed in mortem
 [mod] -- GH#118: Deimos/Armory - schematic drop is independent, rare mod/carmor always drops
-[mod] -- GH#020: mouse pathing will be done through hazardous fluids if player is immune/100res
 [mod] -- GH#128: cerberus boots/armor won't reduce item resistances if base item had better
 [mod] -- GH#128: nano-shrapnel is a master assembly requiring an extra power mod
-[fix] -- GH#000: thrown weapons will respect berserk damage multiplier
-[fix] -- GH#201: fixed flickering on Linux ncurses build
-[fix] -- GH#201: fixed explosion refresh issues when running in console mode 
-[fix] -- GH#000: MAJOR - dodge chance was calculated wrong (too high), fixed
-[fix] -- GH#175: projectiles will no longer pass through walls at weird angles
-[fix] -- RCFIX : feature items fade light-wise the same as the level
-[fix] -- RCFIX : enemies fade light-wise a bit with distance
-[fix] -- RCFIX : assembly eligibility tested before item filter (fixes demo ammo)
-[fix] -- RCFIX : item reveal state doesn't reveal feature items (trees, barrels, etc)
-[fix] -- RCFIX : fixed lingering glow color on player armor
-[fix] -- RCFIX : emissive on glowing items should be more noticable
-[fix] -- RCFIX : restore explosion color (needs a better solution)
-
-0.9.9.9 BETA 4
-[mod] -- GH#197: G-version - added self-illumination to several sprites
-[mod] -- GH#197: G-version - glow is calculated live and tied to self-illumination
-[new] -- GH#000: G-version - mouse edge pan is disabled by default, use MMB to pan!
+[mod] -- GH#017: you can invoke the combat translocator to self-phase for a higher cost
+[mod] -- GH#177: plasma resistance added to several boots
+[mod] -- GH#177: much more fluid variety in Ao100+ (including blood)
+[mod] -- GH#030: locked doors will behave like doors, not wall tiles
 [mod] -- GH#206: balance - Vampyre no longer overheals, blocks TaN instead of SoB
 [mod] -- GH#206: balance - Ammochain blocks Ironman instead of SoG
 [mod] -- GH#206: balance - Army of the Dead blocks SoB instead of HR
@@ -154,79 +94,53 @@
 [mod] -- GH#206: balance - berserk resistance boost 60%->50%
 [mod] -- GH#206: balance - TaN grants 10% fire/acid/plasma resists per level
 [mod] -- GH#206: balance - decreased movement penalty on heavier boots
-[mod] -- RCFIX : blood boots - rarity 4->3, min level 25->20
-[fix] -- RCFIX : fixed Gunrunner not working
-[fix] -- RCFIX : fix for L2 intuition markers
-[fix] -- RCFIX : fix for weapon kill count
-[fix] -- RCFIX : players can no longer spawn in liquid
-[fix] -- RCFIX : fixed edge mud sprite
-[fix] -- RCFIX : don't spawn barrels on liquids
-[fix] -- RCFIX : fix for assembly item color in inventory
-
-0.9.9.9 BETA 3
-[new] -- GH#149: settings - you can now clear a keybinding using Backspace
-[new] -- GH#188: settings - you can now disable mouse rendering and interaction
-[new] -- GH#094: barrels can be moved much more freely now!
-[new] -- GH#094: you move with the barrel now!
-[mod] -- GH#192: G-version - auto-target reticle now follows enemy sprite
-[mod] -- GH#193: G-version - melee bump animation added
-[mod] -- GH#193: G-version - smooth barrel movement
-[mod] -- GH#017: you can invoke the combat translocator to self-phase for a higher cost
+[mod] -- GH#304: UI - Shift-Backspace will drop and unload weapon from inv/eq
+[mod] -- GH#293: UI - weapon mods won't print the count if one (so (AP2) for example)
+[mod] -- GH#293: UI - item names will be truncated to available space if too long
+[mod] -- GH#274: UI - 1/3rd hit flash will now base on MaxHP instead of nominal
+[mod] -- GH#264: UI - resistances will only show up if non-zero
+[mod] -- GH#000: UI - cleaned up tactic/running - now running/tired is a regular affect
+[mod] -- GH#000: UI - changed the display of affects to full words
+[mod] -- GH#212: UI - kill weapon groups displayed in mortem
+[mod] -- GH#020: UI - mouse pathing will be done through hazardous fluids if player is immune/100res
+[mod] -- GH#174: UI - rocket jump altfire will fire at any target and shorten it to range 1
+[mod] -- GH#154: UI - fire will retarget last out of vision tile if repeatedly firing
+[mod] -- GH#142: UI - modding interface informs of potential assemblies
+[fix] -- GH#000: fixed locked vaults - will appear again
+[fix] -- GH#295: grappling armor assembly won't be affected by mod order
+[fix] -- GH#295: grappling boots move penalty removed
+[fix] -- GH#296: the UV+ barons in The Vaults spawn wearing red armor
+[fix] -- GH#294: G-version - improved filtering of WM/System events while multi-move stop
+[fix] -- GH#274: G-version - fixed consecutive flashes not queueing properly
+[fix] -- GH#274: G-version - fixed flashes not appearing if framerate is low
+[fix] -- GH#313: G-version - fixed X-interpolation for large tiles on smaller screens
+[fix] -- GH#000: G-version - emergency animation break added
+[fix] -- GH#228: G-version - explode wall levers leave debris
+[fix] -- GH#191: G-version - fixed overdraw on diagonal movement
+[fix] -- GH#197: G-version - fixed lut correction
+[fix] -- GH#153: G-version - mouse will be properly updated during animations
+[fix] -- GH#000: G-version - beings idle-animate while moving
+[fix] -- GH#272: full reload will take time again
+[fix] -- GH#271: fixed combat shotgun chamber empty not clearing on 0 ammo load
+[fix] -- GH#275: fix bulletdance pick crash
+[fix] -- GH#232: fixed Abyssal Plains trap not always triggering [brisbang]
+[fix] -- GH#100: completion of Ao666 reports 666 levels completed [brisbang]
+[fix] -- GH#233: flying enemies will not drag blood
+[fix] -- GH#098: fixes Mastermind AI getting stuck
+[fix] -- GH#229: explode wall levers destroy doors
+[fix] -- GH#229: City of Skulls - lever can't be destroyed
+[fix] -- GH#223: Abyssal Plains raising walls will clear tiles and destroy items
+[fix] -- GH#000: thrown weapons will respect berserk damage multiplier
+[fix] -- GH#201: fixed flickering on Linux ncurses build
+[fix] -- GH#201: fixed explosion refresh issues when running in console mode 
+[fix] -- GH#000: MAJOR - dodge chance was calculated wrong (too high), fixed
+[fix] -- GH#175: projectiles will no longer pass through walls at weird angles
 [fix] -- GH#018: player info will show level name instead of "level X of Phobos Base"
-[fix] -- GH#191: fixed overdraw on diagonal movement
-[fix] -- GH#197: fixed lut correction
 [fix] -- GH#183: fixed melee kill counting (fixes Lightfoot Badges)
-
-0.9.9.9 BETA 2b
-[fix] -- RCFIX : fix for locked doors ai loop error
-[fix] -- RCFIX : play locked door sound only for player
-[fix] -- RCFIX : fixed reset of item resistances on items without initial resists
-[fix] -- RCFIX : shamblers have their own sound set
-
-0.9.9.9 BETA 2
-[new] -- GH#177: new lategame environment fluid - blood (plasma, damages ONLY player!)
-[new] -- GH#177: new early game environment fluid - mud - like water but slows by 40%
-[new] -- GH#177: Limbo uses blood instead of lava
-[new] -- GH#159: G-version - mimimap - better visibility of important stuff
-[new] -- GH#159: G-version - mimimap - configurable opacity
-[new] -- GH#177: one new late-game exotic boots added
-[new] -- GH#177: all fluids slow down the player by 20%
-[mod] -- GH#177: G-version - sprite movement speed dependent on ingame speed
-[mod] -- GH#177: plasma resistance added to several boots
-[mod] -- GH#177: much more fluid variety in Ao100+ (including blood)
-[mod] -- GH#030: locked doors will behave like doors, not wall tiles
-[mod] -- GH#157: new scheme for audio configuration
-[mod] -- GH#172: G-version - when targeting/looking with the keyboard the map will scroll
-[mod] -- GH#174: rocket jump altfire will fire at any target and shorten it to range 1
 [fix] -- GH#170: dropped corpses remove "permanent" cell status - should fix ungibbable corpses
 [fix] -- GH#156: changing sound assignments wont break save file audio anymore
 [fix] -- GH#186: quickslot will weapon swap if the quick item is a prepared weapon
 [fix] -- GH#186: equiping items will have sounds again
-[fix] -- RCFIX : EXPERIMENTAL - kills outside of the player turn are marked as "other"
-[fix] -- RCFIX : ALT_SCRIPT turns off autofire (fixes DS crash)
-[fix] -- RCFIX : ALT_SCRIPT altfire name fixed
-[fix] -- RCFIX : fixed screenshot functionality
-[fix] -- RCFIX : properly display bulk mod speed effect
-[fix] -- RCFIX : don't show mod stats if only assembly is possible
-
-0.9.9.9 BETA 1
-[new] -- GH#092: Jupiter Hell style auto-target/fire (f, old pick target is t)
-[new] -- GH#142: several UI improvements
-[new] -- GH#152: explosions trigger screenshake (can be turned off in options)
-[new] -- GH#150: holding direction/wait will repeat nicely and break on enemy visible
-[new] -- GH#056: SHIFT-direction will perform a run
-[new] -- GH#056: smoother keyboard response and non-blocking animations
-[new] -- GH#142: nicer item modding interface
-[new] -- GH#179: info on total ammo after weapon name
-[mod] -- GH#164: all % kill requirements (including 100%) now wont count respawns
-[mod] -- GH#164: added info on kill % to both mortem and level/char info
-[mod] -- GH#164: N! - enemies will not respawn in vision range
-[mod] -- GH#164: Respawns (N! and Archvile) will not drop items
-[mod] -- GH#154: fire will retarget last out of vision tile if repeatedly firing
-[mod] -- GH#142: modding interface informs of potential assemblies
-[mod] -- GH#142: minor improvements in level generation
-[fix] -- GH#153: mouse will be properly updated during animations
-[fix] -- GH#166: fixed permanent berserk effect
 [fix] -- GH#167: fixed Halls of Carnage flood not working half the time
 [fix] -- GH#168: House of Pain is marked a NORESPAWN zone to prevent N! lock
 [fix] -- GH#169: resistances are reset before constructing an assembly
