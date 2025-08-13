@@ -1,14 +1,14 @@
 # drl
 
-DRL a.k.a. "That Trademark", the Roguelike, version 0.9.9.8
+DRL a.k.a. "That Trademark", the Roguelike, version 0.10.0
 http://drl.chaosforge.org/
 
 ## Foreword
-This release is dedicated to Jupiter Hell Classic, the newly announced commercial remake/expansion to DRL:
+This release is dedicated to Jupiter Hell Classic, the commercial remake/expansion to DRL:
 
 https://store.steampowered.com/app/3126530/Jupiter_Hell_Classic/
 
-If you enjoy this Open Source release, please consider wishlisting and later buying Jupiter Hell Classic! Also, you might be interested in DRL's modern 3D spiritual successor, Jupiter Hell (yes, it's still turn-based :P):
+If you enjoy this Open Source release, please consider buying Jupiter Hell Classic! Also, you might be interested in DRL's modern 3D spiritual successor, Jupiter Hell (yes, it's still turn-based :P):
 
 https://store.steampowered.com/app/811320/Jupiter_Hell/
 
@@ -16,7 +16,7 @@ Parts of this codebase date back to 2002, please do not judge! :P
 
 ## Source
 
-This FreePascal source code release is provided as is. You can try compiling it using the latest version of Lazarus ( http://www.lazarus-ide.org/ ). You will also need the FPC Valkyrie library ( https://github.com/ChaosForge/fpcvalkyrie/ ), version 0.9.0. You will also probably need the binary files of the full game downloadable from http://drl.chaosforge.org/ (in particular the sound, soundhq, music and mp3 folder contents, and the premade drl.wad and core.wad if you don't want to create it yourself).
+This FreePascal source code release is provided as is. You can try compiling it using the latest version of Lazarus ( http://www.lazarus-ide.org/ ). You will also need the FPC Valkyrie library ( https://github.com/ChaosForge/fpcvalkyrie/ ), version 0.10.0. You will also probably need the binary files of the full game downloadable from http://drl.chaosforge.org/ (in particular the sound, soundhq, music and mp3 folder contents, and the premade drl.wad and core.wad if you don't want to create it yourself).
 
 There are two IDEs available: Visual Studio Code and Lazarus. You should only need one of them.
 
@@ -33,12 +33,9 @@ There are two IDEs available: Visual Studio Code and Lazarus. You should only ne
   * SDL_mixer.dll (true source: https://github.com/libsdl-org/SDL_mixer/releases/tag/release-2.6.3)
   * SDL_image.dll (true source: https://github.com/libsdl-org/SDL_image/releases/tag/release-2.8.5)
   * fmod64.dll (true source: www.fmod.com/download)
-  * (if referencing v0.9.9.8 or less) mp3\\* to (bin\\)data\\drlhq\\music
-  * (if referencing v0.9.9.8 or less) wavhq\\* to (bin\\)data\\drlhq\\sound
-  * (if referencing v0.9.9.8 or less) wavhq\\* to (bin\\)data\\drllq\\sound
-  * (if referencing v0.9.9.9 or higher) data\\drlhq\music\\* to (bin\\)data\\drlhq\\music
-  * (if referencing v0.9.9.9 or higher) data\\drlhq\sounds\\* to (bin\\)data\\drlhq\\sound
-  * (if referencing v0.9.9.9 or higher) data\\drlhq\sounds\\* to (bin\\)data\\drllq\\sound
+  * data\\drlhq\music\\* to (bin\\)data\\drlhq\\music
+  * data\\drlhq\sounds\\* to (bin\\)data\\drlhq\\sound
+  * data\\drlhq\sounds\\* to (bin\\)data\\drllq\\sound
 4. Download fpcvalkyrie from https://github.com/ChaosForge/fpcvalkyrie/ to a folder at the same level as the DRL source
 5. Ensure drl and fpcvalkyrie are on the same release branch (e.g. master or development)
 
@@ -143,11 +140,11 @@ The Lazarus installation is preferred for VS Code (compared with the simpler fpc
 6. To build the packages, open a command prompt at the drl root folder and run "lua5.1 makefile.lua all". There are also options for lq and hq if you want to change the asset quality.
 
 ## Author's notes
-All code is (C) 2003-2024 Kornel Kisielewicz
+All code is (C) 2003-2025 Kornel Kisielewicz
 
 Code is distributed under the GPL 2.0 license (see LICENSE file in this folder)
 
-Original art and sprites (0.9.9.7) by Derek Yu, (C) 2003-2024, licensed under CC BY-SA 4.0. Modified version and additions (0.9.9.8+) by Łukasz Śliwiński, (C) 2024, licensed under CC BY-SA 4.0.
+Original art and sprites (0.9.9.7) by Derek Yu, (C) 2003-2025, licensed under CC BY-SA 4.0. Modified version and additions (0.9.9.8+) by Łukasz Śliwiński, (C) 2025, licensed under CC BY-SA 4.0.
 
 All art is distributed under the CC-BY-SA 4.0 license (see LICENSE file in bin/data/drl/graphics).
 
