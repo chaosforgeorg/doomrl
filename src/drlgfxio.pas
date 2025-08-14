@@ -1034,6 +1034,7 @@ begin
   iRenderer := TGLConsoleRenderer.Create( ReadDefaultFont, 80, 25, 0, [VIO_CON_CURSOR, VIO_CON_BGCOLOR, VIO_CON_EXTCOLOR ] );
   iRenderer.SetPositionScale( (FIODriver.GetSizeX - 80*10*FFontMult) div 2, 0, FLineSpace, FFontMult );
   iRenderer.GlyphStretch := True;
+  TSDLIODriver(FIODriver).GamePadSupport := DRL.Store.IsSteamDeck or Configuration.GetBoolean( 'enable_gamepad' );
   inherited Initialize( iRenderer );
   DeviceChanged;
   iTIGStyle.Color[ VTIG_SELECTED_BACKGROUND_COLOR ] := DarkGray;
