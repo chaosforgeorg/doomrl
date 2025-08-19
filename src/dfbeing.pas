@@ -1653,9 +1653,9 @@ begin
   end;
 
   if aOverkill then
-    iLevel.playSound( 'gib',FPosition )
+    iLevel.playSound( 'gib',FPosition, Random(400) )
   else
-    playSound( 'die' );
+    playSound( 'die', Random(400) );
 
   IO.addKillAnimation( 400, aDelay, Self );
 

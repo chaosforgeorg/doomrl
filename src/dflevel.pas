@@ -79,7 +79,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function isEmpty( const coord : TCoord2D; EmptyFlags : TFlags32 = []) : Boolean; override;
     function cellFlagSet( coord : TCoord2D; Flag : byte) : Boolean;
     procedure playSound( const aSoundID : DWord; aCoord : TCoord2D; aDelay : DWord = 0 ); overload;
-    procedure playSound( const SoundID : string; coord : TCoord2D ); overload;
+    procedure playSound( const SoundID : string; coord : TCoord2D; aDelay : DWord = 0 ); overload;
     procedure playSound( const BaseID,SoundID : string; coord : TCoord2D ); overload;
     function GetEnemiesVisible : Word;
 
@@ -286,9 +286,9 @@ begin
   IO.Audio.PlaySound(aSoundID, aCoord, aDelay);
 end;
 
-procedure TLevel.playSound(const SoundID: string; coord : TCoord2D );
+procedure TLevel.playSound(const SoundID: string; coord : TCoord2D; aDelay : DWord = 0 );
 begin
-  IO.Audio.PlaySound(IO.Audio.ResolveSoundID([SoundID]), coord );
+  IO.Audio.PlaySound(IO.Audio.ResolveSoundID([SoundID]), coord, aDelay );
 end;
 
 procedure TLevel.playSound(const BaseID, SoundID: string; coord : TCoord2D );

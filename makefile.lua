@@ -5,6 +5,27 @@ dofile (VALKYRIE_ROOT.."scripts/lua_make.lua")
 
 local BUILT = false
 
+function set_demo(path, value)
+    local new_value = value and "true" or "false"
+
+    local f = assert(io.open(path, "r"))
+    local content = f:read("*a")
+    f:close()
+
+    local new_content, n = content:gsub(
+        'core%.declare%s*%(%s*"DEMO"%s*,%s*%a+%s*%)',
+        'core.declare( "DEMO", ' .. new_value .. ' )'
+    )
+
+    if n == 0 then
+        error("No matching DEMO declaration found in " .. path)
+    end
+
+	f = assert(io.open(path, "w"))
+    f:write(new_content)
+    f:close()
+end
+
 makefile = {
 	name = "drl",
 	fpc_params = {
@@ -80,7 +101,9 @@ makefile = {
 			make.steam( path, os.pwd().."\\bin\\data\\jhc\\setup\\demo\\app_build_3256910.vdf" )
 		end,
 		jhc_demo = function()
+			set_demo("bin/data/jhc/main.lua", true)
 			os.execute_in_dir( "makewad jhc demo.txt", "bin" )
+			set_demo("bin/data/jhc/main.lua", false)
 			local path = make.publish( "deploy", "jhc" )
 			make.steam( path, os.pwd().."\\bin\\data\\jhc\\setup\\demo\\app_build_3256910.vdf" )
 		end,

@@ -106,6 +106,7 @@ const
   ForceNoAudio    : Boolean = False;
   ForceConsole    : Boolean = False;
   ForceGraphics   : Boolean = False;
+  ForceWindowed   : Boolean = False;
   ModdedGame      : Boolean = False;
   ForceRestart    : Ansistring = '';
   ModErrors       : TStringGArray = nil;

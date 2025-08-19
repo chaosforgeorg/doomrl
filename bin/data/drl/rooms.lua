@@ -142,6 +142,7 @@ function drl.register_rooms()
 		setup       = function ( room, room_meta, room_list )
 			local fill, keypos
 			local space = 1
+			room_meta.used = true
 			local room2 = generator.get_room( room_list, 4,100,100)
 			if room_meta.dims.x > 10 and room_meta.dims.y > 10 and math.random(2) == 1 then
 				space = 2

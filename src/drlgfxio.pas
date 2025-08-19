@@ -228,6 +228,7 @@ begin
   end;
   {$ENDIF}
   FFullscreen := Configuration.GetBoolean( 'fullscreen' );
+  if ForceWindowed then FFullscreen := False;
   iWidth      := Configuration.GetInteger( 'screen_width' );
   iHeight     := Configuration.GetInteger( 'screen_height' );
 
@@ -382,7 +383,7 @@ begin
 
   if ( ( iWidth > 0 ) and ( iWidth <> FIODriver.GetSizeX ) ) or
      ( ( iHeight > 0 ) and ( iHeight <> FIODriver.GetSizeY ) ) or
-     ( Configuration.GetBoolean('fullscreen') <> FFullscreen ) then
+     ( ( not ForceWindowed) and  ( Configuration.GetBoolean('fullscreen') <> FFullscreen ) ) then
   begin
     FFullscreen := Configuration.GetBoolean('fullscreen');
     ResetVideoMode;
