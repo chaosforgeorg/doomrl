@@ -88,6 +88,7 @@ try
           Logger.AddSink( TConsoleLogSink.Create( LOGINFO, True ) );
       end;
       if isSet('nosound')    then ForceNoAudio      := True;
+      if isSet('window')     then ForceWindowed     := True;
       if isSet('graphics')   then
       begin
         GraphicsVersion := True;
