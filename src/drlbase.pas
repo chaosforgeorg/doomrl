@@ -1234,7 +1234,7 @@ repeat
 
   IO.ClearAllMessages;
 
-  IO.Audio.PlayMusicOnce('start');
+  IO.Audio.PlayMusic('start');
   SetState( DSMenu );
   iResult.Reset; // TODO : could reuse for same game!
 

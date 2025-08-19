@@ -403,8 +403,8 @@ begin
     end
     else
     begin
-      if FileExists( iModule.Path + 'main.lua' ) then
       try
+        if FileExists( iModule.Path + 'main.lua' ) then
         begin
           if CheckID( iModule.ID ) then
           begin
@@ -413,13 +413,13 @@ begin
           end;
           RegisterModule( iModule.ID, iModule.Path );
           LoadFile( iModule.Path + 'main.lua' );
-          LoadFiles( iModule.Path + 'help', @Help.StreamLoader, '*.hlp' );
-          LoadFiles( iModule.Path + 'ascii', @IO.ASCIILoader, '*.asc' );
-          if GraphicsVersion then
-            (IO as TDRLGFXIO).Textures.LoadTextureFolder( iModule.Path + 'graphics' );
-          // temporary hack, remove once drllq and drlhq are modules
-          IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua', iModule.Path );
         end;
+        LoadFiles( iModule.Path + 'help', @Help.StreamLoader, '*.hlp' );
+        LoadFiles( iModule.Path + 'ascii', @IO.ASCIILoader, '*.asc' );
+        if GraphicsVersion then
+          (IO as TDRLGFXIO).Textures.LoadTextureFolder( iModule.Path + 'graphics' );
+        // temporary hack, remove once drllq and drlhq are modules
+        IO.Audio.LoadBindingFile( iModule.Path + 'audio.lua', iModule.Path );
       except
         on E : Exception do
         begin
