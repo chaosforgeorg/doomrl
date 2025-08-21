@@ -44,7 +44,7 @@ type TDRLIO = class( TIO )
   procedure Reconfigure( aConfig : TLuaConfig ); virtual;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
   procedure WaitForLayer( aHideHUD : Boolean ); reintroduce;
-  procedure FullUpdate; override;
+  procedure PreUpdate; override;
   destructor Destroy; override;
   procedure Screenshot( aBB : Boolean );
 
@@ -404,7 +404,6 @@ begin
   FPadSubMap := TStringHashMap.Create;
   FTIGDefault := VTIGDefaultStyle;
   inherited Create( FIODriver, nil, nil );
-  FNoConsoleUpdate := True;
   Reset;
 end;
 
@@ -436,15 +435,10 @@ end;
 
 procedure TDRLIO.Initialize( iRenderer : TIOConsoleRenderer );
 begin
-  VTIG_Shutdown;
-  if iRenderer <> nil then
-  begin
-    VTIG_Initialize( iRenderer, FIODriver, False );
-    VTIG_SetSubCallback( @TIGSubCallback );
-    UpdateStyles;
-  end;
-  inherited Initialize( iRenderer, nil );
+  inherited Initialize( iRenderer, nil, True );
   if iRenderer = nil then Exit;
+  VTIG_SetSubCallback( @TIGSubCallback );
+  UpdateStyles;
   iRenderer.Clear;
   iRenderer.HideCursor;
   FUIRoot.UpdateOnRender := False;
@@ -733,12 +727,10 @@ begin
   if aHideHUD then FHudEnabled := True;
 end;
 
-procedure TDRLIO.FullUpdate;
+procedure TDRLIO.PreUpdate;
 begin
-  VTIG_NewFrame;
-  if FHudEnabled then
-    DrawHud;
-  inherited FullUpdate;
+  if FHudEnabled then DrawHud;
+  inherited PreUpdate;
 end;
 
 destructor TDRLIO.Destroy;
@@ -748,8 +740,6 @@ begin
   FreeAndNil( FASCII );
   FreeAndNil( FKeySubMap );
   FreeAndNil( FPadSubMap );
-
-  VTIG_Shutdown;
   IO := nil;
   inherited Destroy;
 end;
@@ -1077,9 +1067,6 @@ begin
   FAudio.Update( aMSec );
 
   inherited Update( aMSec );
-
-  VTIG_EndFrame;
-  VTIG_Render;
  // if aMSec > 200 then
  //   VTIG_EventClear;
 end;
