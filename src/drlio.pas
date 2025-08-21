@@ -34,7 +34,6 @@ type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
 
 type TASCIIImageMap       = specialize TGObjectHashMap<TUIStringArray>;
-type TInterfaceLayerStack = specialize TGArray<TInterfaceLayer>;
 type TStringHashMap       = specialize TGHashMap< AnsiString >;
 
 type TDRLIO = class( TIO )
@@ -101,8 +100,8 @@ type TDRLIO = class( TIO )
 
   class procedure RegisterLuaAPI( State : TLuaState );
 
-  function PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer; virtual;
-  function IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
+  function PushLayer( aLayer : TIOLayer ) : TIOLayer; virtual;
+  function IsTopLayer( aLayer :  TIOLayer ) : Boolean;
   function IsModal : Boolean;
   procedure PreAction;
   procedure Clear;
@@ -455,7 +454,7 @@ begin
   FullUpdate;
 end;
 
-function TDRLIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
+function TDRLIO.PushLayer( aLayer : TIOLayer ) : TIOLayer;
 begin
   FHintOverlay := '';
   FConsole.HideCursor;
@@ -463,13 +462,13 @@ begin
   Result := aLayer;
 end;
 
-function TDRLIO.IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
+function TDRLIO.IsTopLayer( aLayer : TIOLayer ) : Boolean;
 begin
   Exit( ( FLayers.Size > 0 ) and ( FLayers.Top = aLayer ) );
 end;
 
 function TDRLIO.IsModal : Boolean;
-var iLayer : TInterfaceLayer;
+var iLayer : TIOLayer;
 begin
   for iLayer in FLayers do
     if iLayer.IsModal then Exit( True );
@@ -483,7 +482,7 @@ begin
 end;
 
 procedure TDRLIO.Clear;
-var iLayer : TInterfaceLayer;
+var iLayer : TIOLayer;
 begin
   FCachedAmmo := -1;
   for iLayer in FLayers do
@@ -572,7 +571,7 @@ begin
     if not FLayers.IsEmpty then
       for i := FLayers.Size - 1 downto 0 do
         if not FLayers[i].isFinished then
-          if FLayers[i].HandleInput( iInput ) then
+          if FLayers[i].HandleInput( Integer( iInput ) ) then
             Exit( True );
 
   if not FLayers.IsEmpty then
@@ -778,7 +777,7 @@ begin
 end;
 
 destructor TDRLIO.Destroy;
-var iLayer : TInterfaceLayer;
+var iLayer : TIOLayer;
 begin
   FreeAndNil( FAudio );
   FreeAndNil( FMessages );
@@ -1086,7 +1085,7 @@ begin
 end;
 
 procedure TDRLIO.Update( aMSec : DWord );
-var iLayer  : TInterfaceLayer;
+var iLayer  : TIOLayer;
     iMEvent : TIOEvent;
 
   procedure ClearFinished;

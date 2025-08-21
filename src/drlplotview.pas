@@ -6,9 +6,9 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlplotview;
 interface
-uses vutil, vtextures, drlio, dfdata;
+uses vutil, vio, vtextures, drlio, dfdata;
 
-type TPlotView = class( TInterfaceLayer )
+type TPlotView = class( TIOLayer )
   constructor Create( const aMessage : AnsiString; aColor : DWord; const aBackground : Ansistring = '' );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;

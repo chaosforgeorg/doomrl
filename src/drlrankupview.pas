@@ -6,9 +6,9 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlrankupview;
 interface
-uses vutil, drlio, dfdata;
+uses vutil, vio, drlio, dfdata;
 
-type TRankUpView = class( TInterfaceLayer )
+type TRankUpView = class( TIOLayer )
   constructor Create( aRank : THOFRank );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;

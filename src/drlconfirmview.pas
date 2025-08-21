@@ -6,12 +6,12 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlconfirmview;
 interface
-uses vutil, dfdata;
+uses vutil, vio, dfdata;
 
 type TOnConfirmObjectCallback = procedure of object;
      TOnConfirmRawCallback    = procedure;
 
-type TConfirmView = class( TInterfaceLayer )
+type TConfirmView = class( TIOLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;

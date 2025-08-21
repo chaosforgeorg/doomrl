@@ -6,9 +6,9 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlmodulechoiceview;
 interface
-uses vutil, drlio, dfdata;
+uses vio, vutil, drlio, dfdata;
 
-type TModuleChoiceView = class( TInterfaceLayer )
+type TModuleChoiceView = class( TIOLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;

@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlmainmenuview;
 interface
-uses viotypes, vgenerics, vtextures, dfdata, drlio;
+uses vio, viotypes, vgenerics, vtextures, dfdata, drlio;
 
 type TMainMenuViewMode = (
   MAINMENU_FIRST, MAINMENU_INTRO, MAINMENU_MENU,
@@ -26,7 +26,7 @@ end;
 
 type TMainMenuEntryArray = specialize TGArray< TMainMenuEntry >;
 
-type TMainMenuView = class( TInterfaceLayer )
+type TMainMenuView = class( TIOLayer )
   constructor Create( aInitial : TMainMenuViewMode = MAINMENU_FIRST; aResult : TMenuResult = nil );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;

@@ -6,9 +6,9 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlloadingview;
 interface
-uses vutil, dfdata;
+uses vutil, vio, dfdata;
        
-type TLoadingView = class( TInterfaceLayer )
+type TLoadingView = class( TIOLayer )
   constructor Create( aMax : DWord );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;

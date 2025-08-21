@@ -6,14 +6,15 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlhudviews;
 interface
-uses vutil, vgenerics, vcolor, vioevent, vrltools, dfdata, dfitem, drlkeybindings;
+uses vutil, vio, vgenerics, vcolor, vioevent, vrltools,
+     dfdata, dfitem, drlkeybindings;
 
-type TLookModeView = class( TInterfaceLayer )
+type TLookModeView = class( TIOLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
-  function HandleInput( aInput : TInputKey ) : Boolean; override;
+  function HandleInput( aInput : Integer ) : Boolean; override;
 protected
   procedure UpdateTarget;
 protected
@@ -22,12 +23,12 @@ protected
   FTarget   : TCoord2D;
 end;
 
-type TDirectionQueryLayer = class( TInterfaceLayer )
+type TDirectionQueryLayer = class( TIOLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
-  function HandleInput( aInput : TInputKey ) : Boolean; override;
+  function HandleInput( aInput : Integer ) : Boolean; override;
   function HandleEvent( const aEvent : TIOEvent ) : Boolean; override;
 protected
   procedure Finalize( aDir : TDirection ); virtual; abstract;
@@ -56,12 +57,12 @@ protected
   FFlag : Byte;
 end;
 
-type TMoreLayer = class( TInterfaceLayer )
+type TMoreLayer = class( TIOLayer )
   constructor Create( aMore : Boolean = True );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
-  function HandleInput( aInput : TInputKey ) : Boolean; override;
+  function HandleInput( aInput : Integer ) : Boolean; override;
   function HandleEvent( const aEvent : TIOEvent ) : Boolean; override;
 protected
   FPrompt   : AnsiString;
@@ -69,12 +70,12 @@ protected
   FFinished : Boolean;
 end;
 
-type TTargetModeView = class( TInterfaceLayer )
+type TTargetModeView = class( TIOLayer )
   constructor Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte; aPadMode : Boolean );
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
-  function HandleInput( aInput : TInputKey ) : Boolean; override;
+  function HandleInput( aInput : Integer ) : Boolean; override;
   function HandleEvent( const aEvent : TIOEvent ) : Boolean; override;
 protected
   procedure HandleFire;
@@ -100,12 +101,12 @@ end;
 
 type TScrollItemArray = specialize TGArray< TItem >;
 
-type TScrollSwapLayer = class( TInterfaceLayer )
+type TScrollSwapLayer = class( TIOLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
-  function HandleInput( aInput : TInputKey ) : Boolean; override;
+  function HandleInput( aInput : Integer ) : Boolean; override;
   destructor Destroy; override;
 protected
   FFinished : Boolean;
@@ -140,30 +141,32 @@ begin
   Exit( True );
 end;
 
-function TLookModeView.HandleInput( aInput : TInputKey ) : Boolean;
+function TLookModeView.HandleInput( aInput : Integer ) : Boolean;
 var iLevel : TLevel;
     iDir   : TDirection;
+    iInput : TInputKey;
 begin
-  if aInput in [ INPUT_ESCAPE, INPUT_MRIGHT, INPUT_QUIT, INPUT_HARDQUIT ] then
+  iInput := TInputKey( aInput );
+  if iInput in [ INPUT_ESCAPE, INPUT_MRIGHT, INPUT_QUIT, INPUT_HARDQUIT ] then
   begin
     IO.FinishTargeting;
     FFinished := true;
     Exit( True );
   end;
 
-  if (aInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
-  if aInput in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then FTarget := IO.MTarget;
+  if (iInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
+  if iInput in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then FTarget := IO.MTarget;
   iLevel := DRL.Level;
-  if aInput <> INPUT_MORE then
+  if iInput <> INPUT_MORE then
   begin
-    iDir := InputDirection( aInput );
+    iDir := InputDirection( iInput );
     if iLevel.isProperCoord( FTarget + iDir ) then
     begin
       FTarget += iDir;
       UpdateTarget;
     end;
    end;
-   if (aInput in [ INPUT_MORE, INPUT_MLEFT ]) and iLevel.isVisible( FTarget ) then
+   if (iInput in [ INPUT_MORE, INPUT_MLEFT ]) and iLevel.isVisible( FTarget ) then
    begin
      with iLevel do
        if Being[FTarget] <> nil then
@@ -201,17 +204,19 @@ begin
   Exit( True );
 end;
 
-function TDirectionQueryLayer.HandleInput( aInput : TInputKey ) : Boolean;
+function TDirectionQueryLayer.HandleInput( aInput : Integer ) : Boolean;
+var iInput : TInputKey;
 begin
-  if aInput in [ INPUT_ESCAPE, INPUT_MRIGHT, INPUT_QUIT, INPUT_HARDQUIT ] then
+  iInput := TInputKey( aInput );
+  if iInput in [ INPUT_ESCAPE, INPUT_MRIGHT, INPUT_QUIT, INPUT_HARDQUIT ] then
   begin
     FFinished := True;
     Exit( True );
   end;
-  if aInput in INPUT_MOVE+[INPUT_WAIT] then
+  if iInput in INPUT_MOVE+[INPUT_WAIT] then
   begin
     FFinished := True;
-    Finalize( InputDirection( aInput ) );
+    Finalize( InputDirection( iInput ) );
     Exit( True );
   end;
   Exit( True );
@@ -288,9 +293,9 @@ begin
   Exit( True );
 end;
 
-function TMoreLayer.HandleInput( aInput : TInputKey ) : Boolean;
+function TMoreLayer.HandleInput( aInput : Integer ) : Boolean;
 begin
-  if aInput in [ INPUT_OK, INPUT_MLEFT, INPUT_QUIT, INPUT_HARDQUIT ] then
+  if TInputKey( aInput ) in [ INPUT_OK, INPUT_MLEFT, INPUT_QUIT, INPUT_HARDQUIT ] then
     FFinished := True;
   Exit( True );
 end;
@@ -339,25 +344,27 @@ begin
   Exit( True );
 end;
 
-function TTargetModeView.HandleInput( aInput : TInputKey ) : Boolean;
+function TTargetModeView.HandleInput( aInput : Integer ) : Boolean;
 var iDir        : TDirection;
     iDist       : Byte;
     iTargetLine : TVisionRay;
+    iInput      : TInputKey;
 begin
-  if aInput in [ INPUT_ESCAPE, INPUT_MRIGHT, INPUT_QUIT, INPUT_HARDQUIT ] then
+  iInput := TInputKey( aInput );
+  if iInput in [ INPUT_ESCAPE, INPUT_MRIGHT, INPUT_QUIT, INPUT_HARDQUIT ] then
   begin
     Finalize;
     Exit( True );
   end;
 
-  if (aInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
-  if aInput = INPUT_TARGETNEXT then
+  if (iInput = INPUT_TOGGLEGRID) and GraphicsVersion then SpriteMap.ToggleGrid;
+  if iInput = INPUT_TARGETNEXT then
   begin
     FTarget := FTargets.Next;
     UpdateTarget;
   end;
 
-  if aInput in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then
+  if iInput in [ INPUT_MMOVE, INPUT_MRIGHT, INPUT_MLEFT ] then
   begin
     FTarget := IO.MTarget;
     iDist   := Distance( FTarget, FPosition );
@@ -376,13 +383,13 @@ begin
     end;
     UpdateTarget;
   end;
-  if aInput in INPUT_MOVE then
+  if iInput in INPUT_MOVE then
   begin
-    iDir := InputDirection( aInput );
+    iDir := InputDirection( iInput );
     MoveTarget( FTarget + iDir );
   end;
 
-  if aInput = INPUT_MORE then
+  if iInput = INPUT_MORE then
   begin
     with DRL.Level do
      if Being[FTarget] <> nil then
@@ -390,7 +397,7 @@ begin
     UpdateTarget;
   end;
 
-  if aInput in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_TARGET, INPUT_ALTTARGET, INPUT_MLEFT ] then
+  if iInput in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_TARGET, INPUT_ALTTARGET, INPUT_MLEFT ] then
     HandleFire;
 
   Exit( True );
@@ -548,19 +555,21 @@ begin
   Exit( True );
 end;
 
-function TScrollSwapLayer.HandleInput( aInput : TInputKey ) : Boolean;
+function TScrollSwapLayer.HandleInput( aInput : Integer ) : Boolean;
+var iInput : TInputKey;
 begin
-  if aInput in [ INPUT_MRIGHT, INPUT_ESCAPE, INPUT_QUIT, INPUT_HARDQUIT ] then
+  iInput := TInputKey( aInput );
+  if iInput in [ INPUT_MRIGHT, INPUT_ESCAPE, INPUT_QUIT, INPUT_HARDQUIT ] then
   begin
     IO.HintOverlay := '';
     FFinished := True;
     Exit( True );
   end;
 
-  if aInput = INPUT_MSCRUP   then if FIndex = 0 then FIndex := FArray.Size-1 else FIndex -= 1;
-  if aInput = INPUT_MSCRDOWN then FIndex := (FIndex + 1) mod FArray.Size;
+  if iInput = INPUT_MSCRUP   then if FIndex = 0 then FIndex := FArray.Size-1 else FIndex -= 1;
+  if iInput = INPUT_MSCRDOWN then FIndex := (FIndex + 1) mod FArray.Size;
 
-  if aInput in [INPUT_MLEFT, INPUT_OK ] then
+  if iInput in [INPUT_MLEFT, INPUT_OK ] then
   begin
     IO.HintOverlay := '';
     FFinished      := True;

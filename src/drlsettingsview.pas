@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlsettingsview;
 interface
-uses viotypes, vioevent, vconfiguration, drlio, dfdata;
+uses vio, viotypes, vioevent, vconfiguration, drlio, dfdata;
 
 type TSettingsViewState = (
   SETTINGSVIEW_GENERAL,
@@ -32,7 +32,7 @@ const SETTINGSVIEW_KEYS : set of TSettingsViewState = [
   SETTINGSVIEW_KEYLEGACY
 ];
 
-type TSettingsView = class( TInterfaceLayer )
+type TSettingsView = class( TIOLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;

@@ -7,7 +7,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 unit drlbase;
 interface
 
-uses vnode, vutil, vuid, vrltools, vluasystem, vioevent, vstoreinterface,
+uses vnode, vutil, vuid, vio, vrltools, vluasystem, vioevent, vstoreinterface,
      dflevel, dfdata, dfhof, dfitem,
      drlhooks, drlua, drlcommand, drlkeybindings, drlmodule;
 
@@ -81,7 +81,7 @@ TDRL = class(TVObject)
        FLastInputTime   : QWord;
        FTargeting       : TTargeting;
        FDamagedLastTurn : Boolean;
-       FPlayerView      : TInterfaceLayer;
+       FPlayerView      : TIOLayer;
        FPadMoveActive   : Boolean;
        FPadMoveNext     : QWord;
        FStore           : TStoreInterface;

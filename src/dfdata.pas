@@ -78,14 +78,6 @@ type TMenuResult = class
   procedure Reset;
 end;
 
-type TInterfaceLayer = class
-  procedure Update( aDTime : Integer ); virtual; abstract;
-  function IsFinished : Boolean; virtual; abstract;
-  function IsModal : Boolean; virtual;
-  function HandleEvent( const aEvent : TIOEvent ) : Boolean; virtual;
-  function HandleInput( aInput : TInputKey ) : Boolean; virtual;
-end;
-
 type THOFRankEntry = record
   ID    : Ansistring;
   Value : Integer;
@@ -467,21 +459,6 @@ begin
   if (iLine = '') and ( aStream.Position >= aSize )
     then Result := ''
     else Result := iLine;
-end;
-
-function TInterfaceLayer.IsModal : Boolean;
-begin
-  Exit( False );
-end;
-
-function TInterfaceLayer.HandleEvent( const aEvent : TIOEvent ) : Boolean;
-begin
-  Exit( IsModal );
-end;
-
-function TInterfaceLayer.HandleInput( aInput : TInputKey ) : Boolean;
-begin
-  Exit( False );
 end;
 
 constructor TPagedReport.Create( aTitle : Ansistring; aStyled : Boolean );

@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlchoiceview;
 interface
-uses vgenerics, vutil, dfdata;
+uses vio, vgenerics, vutil, dfdata;
 
 type TChoiceViewChoice = record
   Name    : AnsiString;
@@ -17,7 +17,7 @@ end;
 
 type TChoiceArray = specialize TGArray< TChoiceViewChoice >;
 
-type TChoiceView = class( TInterfaceLayer )
+type TChoiceView = class( TIOLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;

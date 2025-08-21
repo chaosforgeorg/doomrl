@@ -6,9 +6,9 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlingamemenuview;
 interface
-uses drlio, drlconfirmview, dfdata;
+uses vio, drlio, drlconfirmview, dfdata;
 
-type TInGameMenuView = class( TInterfaceLayer )
+type TInGameMenuView = class( TIOLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;

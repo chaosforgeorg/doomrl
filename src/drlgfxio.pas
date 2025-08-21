@@ -7,7 +7,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 unit drlgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
-     vrltools, vutil, vtextures, vvector, vbitmapfont,
+     vrltools, vutil, vtextures, vvector, vbitmapfont, vio,
      drlio, drlspritemap, drlanimation, drlminimap, dfdata, dfthing;
 
 type
@@ -21,7 +21,7 @@ type
     procedure Reconfigure( aConfig : TLuaConfig ); override;
     procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
     procedure Update( aMSec : DWord ); override;
-    function PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer; override;
+    function PushLayer( aLayer : TIOLayer ) : TIOLayer; override;
     function OnEvent( const iEvent : TIOEvent ) : Boolean; override;
     procedure UpdateMinimap;
     destructor Destroy; override;
@@ -928,7 +928,7 @@ begin
   Exit( inherited OnEvent( iEvent ) )
 end;
 
-function TDRLGFXIO.PushLayer(  aLayer : TInterfaceLayer ) : TInterfaceLayer;
+function TDRLGFXIO.PushLayer(  aLayer : TIOLayer ) : TIOLayer;
 begin
   if FMCursor <> nil then
   begin

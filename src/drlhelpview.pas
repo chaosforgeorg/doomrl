@@ -6,9 +6,9 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlhelpview;
 interface
-uses vutil, drlio, drlhelp, dfdata;
+uses vutil, vio, drlio, drlhelp, dfdata;
 
-type THelpView = class( TInterfaceLayer )
+type THelpView = class( TIOLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;

@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlplayerview;
 interface
-uses viotypes, vgenerics,
+uses viotypes, vgenerics, vio,
      dfitem, dfdata,
      drlio, drltraits, drlconfirmview;
 
@@ -45,7 +45,7 @@ end;
 
 type TTraitViewArray = specialize TGArray< TTraitViewEntry >;
 
-type TPlayerView = class( TInterfaceLayer )
+type TPlayerView = class( TIOLayer )
   constructor Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
   constructor CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0 );
   constructor CreateCommand( aCommand : Byte; aScavenger : Boolean = False );

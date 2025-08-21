@@ -6,9 +6,9 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlassemblyview;
 interface
-uses vutil, drlio, dfdata;
+uses vutil, vio, drlio, dfdata;
 
-type TAssemblyView = class( TInterfaceLayer )
+type TAssemblyView = class( TIOLayer )
   constructor Create;
   procedure Update( aDTime : Integer ); override;
   function IsFinished : Boolean; override;
