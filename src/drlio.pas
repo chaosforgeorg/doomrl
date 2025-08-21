@@ -43,7 +43,7 @@ type TDRLIO = class( TIO )
   procedure Initialize( iRenderer : TIOConsoleRenderer );
   procedure Reconfigure( aConfig : TLuaConfig ); virtual;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
-  procedure WaitForLayer( aHideHUD : Boolean );
+  procedure WaitForLayer( aHideHUD : Boolean ); reintroduce;
   procedure FullUpdate; override;
   destructor Destroy; override;
   procedure Screenshot( aBB : Boolean );
@@ -100,11 +100,9 @@ type TDRLIO = class( TIO )
 
   class procedure RegisterLuaAPI( State : TLuaState );
 
-  function PushLayer( aLayer : TIOLayer ) : TIOLayer; virtual;
-  function IsTopLayer( aLayer :  TIOLayer ) : Boolean;
-  function IsModal : Boolean;
+  function PushLayer( aLayer : TIOLayer ) : TIOLayer; override;
   procedure PreAction;
-  procedure Clear;
+  procedure Clear; override;
   function OnEvent( const event : TIOEvent ) : Boolean; override;
 
   // Gamepad
@@ -145,7 +143,6 @@ protected
   FLastTarget  : TCoord2D;
   FKeyCode     : TIOKeyCode;
   FASCII       : TASCIIImageMap;
-  FLayers      : TInterfaceLayerStack;
   FUIMouseLast : TIOPoint;
   FUIMouse     : TIOPoint;
 
@@ -400,7 +397,6 @@ begin
   FMessages := TMessages.Create( 2, 77, @IO.EventMore, Option_MessageBuffer );
   FMessages.GroupMultiple := Setting_GroupMessages;
   FASCII    := TASCIIImageMap.Create( True );
-  FLayers   := TInterfaceLayerStack.Create;
 
   FIODriver.SetTitle('DRL','DRL');
 
@@ -408,17 +404,19 @@ begin
   FPadSubMap := TStringHashMap.Create;
   FTIGDefault := VTIGDefaultStyle;
   inherited Create( FIODriver, nil, nil );
+  FNoConsoleUpdate := True;
   Reset;
 end;
 
 procedure TDRLIO.Reset;
 begin
+  Clear;
+  IO := Self;
+  FConsoleWindow := nil;
   VTIG_Shutdown;
   VTIGDefaultStyle := FTIGDefault;
   FLoading := nil;
-  IO := Self;
   FTime := 0;
-  FLayers.Clear;
   FASCII.Clear;
   FAudio.Reset;
   FWaiting     := False;
@@ -428,7 +426,6 @@ begin
   FHint        := '';
   FHintOverlay := '';
 
-  FConsoleWindow := nil;
   FTargetEnabled := False;
   FTargetLast    := False;
   FCachedAmmo    := -1;
@@ -458,21 +455,7 @@ function TDRLIO.PushLayer( aLayer : TIOLayer ) : TIOLayer;
 begin
   FHintOverlay := '';
   FConsole.HideCursor;
-  FLayers.Push( aLayer );
-  Result := aLayer;
-end;
-
-function TDRLIO.IsTopLayer( aLayer : TIOLayer ) : Boolean;
-begin
-  Exit( ( FLayers.Size > 0 ) and ( FLayers.Top = aLayer ) );
-end;
-
-function TDRLIO.IsModal : Boolean;
-var iLayer : TIOLayer;
-begin
-  for iLayer in FLayers do
-    if iLayer.IsModal then Exit( True );
-  Exit( False );
+  Exit( inherited PushLayer( aLayer ) );
 end;
 
 procedure TDRLIO.PreAction;
@@ -482,12 +465,9 @@ begin
 end;
 
 procedure TDRLIO.Clear;
-var iLayer : TIOLayer;
 begin
   FCachedAmmo := -1;
-  for iLayer in FLayers do
-    iLayer.Free;
-  FLayers.Clear;
+  inherited Clear;
 end;
 
 function TDRLIO.OnEvent( const event : TIOEvent ) : Boolean;
@@ -568,19 +548,10 @@ begin
 
   iInput := EventToInput( event );
   if iInput <> INPUT_NONE then
-    if not FLayers.IsEmpty then
-      for i := FLayers.Size - 1 downto 0 do
-        if not FLayers[i].isFinished then
-          if FLayers[i].HandleInput( Integer( iInput ) ) then
-            Exit( True );
+    if HandleInput( Integer( iInput ) ) then
+      Exit( True );
 
-  if not FLayers.IsEmpty then
-    for i := FLayers.Size - 1 downto 0 do
-      if not FLayers[i].isFinished then
-        if FLayers[i].HandleEvent( event ) then
-          Exit( True );
-
-  Exit( False );
+  Exit( inherited OnEvent( event ) );
 end;
 
 function TDRLIO.GetPadLTrigger : Boolean;
@@ -757,15 +728,9 @@ end;
 
 procedure TDRLIO.WaitForLayer( aHideHUD : Boolean );
 begin
-  if aHideHUD then
-    FHudEnabled := False;
-  repeat
-    Sleep(10);
-    FullUpdate;
-    HandleEvents;
-  until FLayers.IsEmpty or (not IsModal);
-  if aHideHUD then
-    FHudEnabled := True;
+  if aHideHUD then FHudEnabled := False;
+  inherited WaitForLayer;
+  if aHideHUD then FHudEnabled := True;
 end;
 
 procedure TDRLIO.FullUpdate;
@@ -777,7 +742,6 @@ begin
 end;
 
 destructor TDRLIO.Destroy;
-var iLayer : TIOLayer;
 begin
   FreeAndNil( FAudio );
   FreeAndNil( FMessages );
@@ -785,11 +749,6 @@ begin
   FreeAndNil( FKeySubMap );
   FreeAndNil( FPadSubMap );
 
-
-  if FLayers <> nil then
-    for iLayer in FLayers do
-      iLayer.Free;
-  FreeAndNil( FLayers );
   VTIG_Shutdown;
   IO := nil;
   inherited Destroy;
@@ -1085,26 +1044,7 @@ begin
 end;
 
 procedure TDRLIO.Update( aMSec : DWord );
-var iLayer  : TIOLayer;
-    iMEvent : TIOEvent;
-
-  procedure ClearFinished;
-  var i,j : Integer;
-  begin
-    i := 0;
-    while i < FLayers.Size do
-      if FLayers[i].IsFinished then
-      begin
-        FLayers[i].Free;
-        if i < FLayers.Size - 1 then
-          for j := i to FLayers.Size - 2 do
-            FLayers[j] := FLayers[j + 1];
-        FLayers.Pop;
-      end
-      else
-        Inc( i );
-  end;
-
+var iMEvent : TIOEvent;
 begin
   if Assigned( Sound ) then
     Sound.Update;
@@ -1133,15 +1073,10 @@ begin
     FLastTarget.Create(0,0);
   end;
 
-  ClearFinished;
-  for iLayer in FLayers do
-    iLayer.Update( Integer( aMSec ) );
-  ClearFinished;
-
   FTime += aMSec;
   FAudio.Update( aMSec );
-  FUIRoot.OnUpdate( aMSec );
-  FUIRoot.Render;
+
+  inherited Update( aMSec );
 
   VTIG_EndFrame;
   VTIG_Render;
