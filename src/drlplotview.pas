@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlplotview;
 interface
-uses vutil, vio, vtextures, drlio, dfdata;
+uses vutil, viotypes, vtextures, drlio, dfdata;
 
 type TPlotView = class( TIOLayer )
   constructor Create( const aMessage : AnsiString; aColor : DWord; const aBackground : Ansistring = '' );

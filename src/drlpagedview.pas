@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlpagedview;
 interface
-uses vutil, vio, drlio, dfdata, vgenerics;
+uses vutil, viotypes, drlio, dfdata, vgenerics;
 
 type TPagedView = class( TIOLayer )
   constructor Create( aPages : TPagedReport; aInitialPage : AnsiString = '' );

@@ -465,8 +465,7 @@ begin
 end;
 
 function TDRLIO.OnEvent( const event : TIOEvent ) : Boolean;
-var i      : Integer;
-    iEvent : TIOEvent;
+var iEvent : TIOEvent;
     iWide  : WideString;
     iInput : TInputKey;
 begin

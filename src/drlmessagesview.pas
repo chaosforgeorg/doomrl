@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlmessagesview;
 interface
-uses vutil, vio, vmessages, drlio, dfdata;
+uses vutil, viotypes, vmessages, drlio, dfdata;
 
 type TMessagesView = class( TIOLayer )
   constructor Create( aContent : TMessageBuffer );

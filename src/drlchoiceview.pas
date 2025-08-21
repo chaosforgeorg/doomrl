@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlchoiceview;
 interface
-uses vio, vgenerics, vutil, dfdata;
+uses viotypes, vgenerics, vutil, dfdata;
 
 type TChoiceViewChoice = record
   Name    : AnsiString;

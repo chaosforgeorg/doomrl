@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlloadingview;
 interface
-uses vutil, vio, dfdata;
+uses vutil, viotypes, dfdata;
        
 type TLoadingView = class( TIOLayer )
   constructor Create( aMax : DWord );

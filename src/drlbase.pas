@@ -7,7 +7,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 unit drlbase;
 interface
 
-uses vnode, vutil, vuid, vio, vrltools, vluasystem, vioevent, vstoreinterface,
+uses vnode, vutil, vuid, viotypes, vrltools, vluasystem, vioevent, vstoreinterface,
      dflevel, dfdata, dfhof, dfitem,
      drlhooks, drlua, drlcommand, drlkeybindings, drlmodule;
 
@@ -122,7 +122,7 @@ implementation
 
 uses  {$IFDEF WINDOWS}Windows,{$ELSE}Unix,{$ENDIF}
      Classes, SysUtils,
-     vdebug, viotypes,
+     vdebug,
      dfmap, dfbeing,
      drlio, drlgfxio, drltextio, zstream,
      drlspritemap, // remove

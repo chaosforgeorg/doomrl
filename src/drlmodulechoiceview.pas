@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlmodulechoiceview;
 interface
-uses vio, vutil, drlio, dfdata;
+uses viotypes, vutil, drlio, dfdata;
 
 type TModuleChoiceView = class( TIOLayer )
   constructor Create;

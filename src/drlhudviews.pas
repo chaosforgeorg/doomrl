@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlhudviews;
 interface
-uses vutil, vio, vgenerics, vcolor, vioevent, vrltools,
+uses vutil, viotypes, vgenerics, vcolor, vioevent, vrltools,
      dfdata, dfitem, drlkeybindings;
 
 type TLookModeView = class( TIOLayer )

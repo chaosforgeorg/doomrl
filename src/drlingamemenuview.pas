@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlingamemenuview;
 interface
-uses vio, drlio, drlconfirmview, dfdata;
+uses viotypes, drlio, drlconfirmview, dfdata;
 
 type TInGameMenuView = class( TIOLayer )
   constructor Create;

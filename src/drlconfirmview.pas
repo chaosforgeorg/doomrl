@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlconfirmview;
 interface
-uses vutil, vio, dfdata;
+uses vutil, viotypes, dfdata;
 
 type TOnConfirmObjectCallback = procedure of object;
      TOnConfirmRawCallback    = procedure;

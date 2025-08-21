@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlhelpview;
 interface
-uses vutil, vio, drlio, drlhelp, dfdata;
+uses vutil, viotypes, drlio, drlhelp, dfdata;
 
 type THelpView = class( TIOLayer )
   constructor Create;
