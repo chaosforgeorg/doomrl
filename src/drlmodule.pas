@@ -104,7 +104,8 @@ begin
 
     if FindFirst( DataPath + '*.wad', faAnyFile, iInfo ) = 0 then
     repeat
-       ReadMetaFromWAD( iLua, DataPath + iInfo.Name );
+       if ( iInfo.Name <> 'player.wad' ) and ( iInfo.Name <> 'score.wad' ) then
+         ReadMetaFromWAD( iLua, DataPath + iInfo.Name );
     until FindNext(iInfo) <> 0;
     FindClose(iInfo);
 
