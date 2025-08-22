@@ -411,7 +411,6 @@ procedure TDRLIO.Reset;
 begin
   Clear;
   IO := Self;
-  FConsoleWindow := nil;
   VTIG_Shutdown;
   VTIGDefaultStyle := FTIGDefault;
   FLoading := nil;

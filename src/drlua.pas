@@ -560,7 +560,6 @@ begin
   RegisterWeightTableClass( Raw );
 
   LuaSystem := Self;
-  SetPrintFunction( @IO.ConsolePrint );
 
   ErrorFunc := @OnError;
   

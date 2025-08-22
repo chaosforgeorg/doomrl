@@ -748,7 +748,7 @@ begin
 
   if (DRL <> nil) and (DRL.State = DSPlaying) then
   begin
-    if FConsoleWindow = nil then
+    if FTIGConsoleView = nil then
        FConsole.HideCursor;
     //if not UI.AnimationsRunning then SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
 
