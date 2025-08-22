@@ -492,6 +492,7 @@ begin
       VKEY_SPACE  : VTIG_GetIOState.EventState.SetState( VTIG_IE_SELECT, event.Key.Pressed );
       VKEY_BACK   : VTIG_GetIOState.EventState.SetState( VTIG_IE_BACKSPACE, event.Key.Pressed );
       VKEY_TAB    : VTIG_GetIOState.EventState.SetState( VTIG_IE_TAB, event.Key.Pressed );
+      VKEY_DELETE : VTIG_GetIOState.EventState.SetState( VTIG_IE_DELETE, event.Key.Pressed );
       VKEY_0      : VTIG_GetIOState.EventState.SetState( VTIG_IE_0, event.Key.Pressed );
       VKEY_1      : VTIG_GetIOState.EventState.SetState( VTIG_IE_1, event.Key.Pressed );
       VKEY_2      : VTIG_GetIOState.EventState.SetState( VTIG_IE_2, event.Key.Pressed );
@@ -503,6 +504,8 @@ begin
       VKEY_8      : VTIG_GetIOState.EventState.SetState( VTIG_IE_8, event.Key.Pressed );
       VKEY_9      : VTIG_GetIOState.EventState.SetState( VTIG_IE_9, event.Key.Pressed );
       VKEY_F1     : if ModdedGame then VTIG_GetIOState.EventState.SetState( TIG_EV_RESTART, event.Key.Pressed and ( VKMOD_CTRL in event.Key.ModState ) );
+      VKEY_C      : VTIG_GetIOState.EventState.SetState( VTIG_IE_COPY,  event.Key.Pressed and ( VKMOD_CTRL in event.Key.ModState ) );
+      VKEY_V      : VTIG_GetIOState.EventState.SetState( VTIG_IE_PASTE, event.Key.Pressed and ( VKMOD_CTRL in event.Key.ModState ) );
     end;
   end;
 
