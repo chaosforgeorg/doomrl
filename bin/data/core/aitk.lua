@@ -568,7 +568,7 @@ function aitk.ranged_hunt( self )
     local target = target.position
     if dist < 6 and math.random(3) > 1 then
         for _=1,3 do
-            local c = area.around( self.position, 1 ):random_coord() 
+            local c = area.around( self.position, 1 ):clamped( area.FULL ):random_coord() 
             if level:is_passable( c ) then
                 target = c
                 break

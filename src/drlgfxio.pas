@@ -138,7 +138,7 @@ implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
-     vdebug, vlog, vmath, vdf, vgl3library, vsdl2library,
+     vdebug, vlog, vmath, vdf, vgl3library,
      vglimage, vsdlio, vcolor, vglconsole, vioconsole,
      vtig, vtigstyle,
      dfplayer,
