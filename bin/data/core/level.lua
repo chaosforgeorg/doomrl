@@ -40,6 +40,9 @@ function level:get_item_table( dlevel, weights, reqs, global )
 	local danger       = dlevel or self.danger_level
 	local allow_exotic = self.danger_level > DIFFICULTY
 	local allow_unique = self.danger_level > DIFFICULTY+3
+	if reqs and reqs.tags and reqs.tags == "special" then
+		allow_exotic = true
+	end
 	local list         = weight_table.new()
 	local greqs        = nil
 	local gweights	   = nil
