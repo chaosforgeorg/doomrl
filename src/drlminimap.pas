@@ -106,7 +106,9 @@ begin
       iOMult := 2;
       if iBeing.isPlayer
         then iColor := LightGreen
-        else iColor := LightRed;
+        else if iBeing.Flags[ BF_FRIENDLY ]
+          then iColor := Green
+          else iColor := LightRed;
     end
     else if ItemVisible( aCoord, iItem ) or ItemExplored( aCoord, iItem ) then
     begin

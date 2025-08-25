@@ -121,7 +121,7 @@ begin
   FMode       := aInitial;
   FResult     := aResult;
   FSaveExists := False;
-  FJHCLink    := (CoreModuleID = 'drl');
+  FJHCLink    := (CoreModuleID = 'drl') and ( not DRL.Store.IsSteam );
   if (not FJHCLink) and DemoVersion then
     FJHCLink := True;
   FArrayCType := nil;
