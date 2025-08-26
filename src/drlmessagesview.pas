@@ -36,8 +36,9 @@ end;
 procedure TMessagesView.Update( aDTime : Integer; aActive : Boolean );
 var i : Integer;
 begin
+  VTIG_PushStyle( @TIGStylePadless );
   VTIG_BeginWindow('Past messages', 'messages_view', FSize );
-  VTIG_AdjustPadding( Point(-1,0) );
+  VTIG_PopStyle();
   if FContent.Size > 0 then
     for i := 0 to FContent.Size-1 do
       if FContent[i] <> '' then

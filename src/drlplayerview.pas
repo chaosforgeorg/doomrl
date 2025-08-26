@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlplayerview;
 interface
-uses viotypes, vgenerics, vio,
+uses viotypes, vgenerics, vio, vtigstyle,
      dfitem, dfdata,
      drlio, drltraits, drlconfirmview;
 
@@ -76,6 +76,7 @@ protected
   FInv         : TItemViewArray;
   FEq          : TItemViewArray;
   FCharacter   : TStringGArray;
+  FTraitsStyle : TTIGStyle;
   FAction      : AnsiString;
   FITitle      : AnsiString;
   FCTitle      : AnsiString;
@@ -152,6 +153,8 @@ end;
 
 procedure TPlayerView.Initialize;
 begin
+  FTraitsStyle := TIGStylePadless;
+  FTraitsStyle.Padding[ VTIG_WINDOW_PADDING ].X := 1;
   VTIG_EventClear;
   VTIG_ResetSelect( 'inventory' );
   VTIG_ResetSelect( 'equipment' );
@@ -569,12 +572,13 @@ var iSelected : Integer;
     iEntry    : TTraitViewEntry;
 begin
   if FTraits = nil then ReadTraits( Player.Klass );
+  VTIG_PushStyle( @FTraitsStyle );
   if FTraitMode
     then VTIG_BeginWindow('Select trait to upgrade', 'traits', FSize )
     else VTIG_BeginWindow('Traits', 'traits', FSize );
+  VTIG_PopStyle();
 
   VTIG_BeginGroup( 23 );
-    VTIG_AdjustPadding( Point(0,-1) );
     for iEntry in FTraits do
       if iEntry.Available
         then VTIG_Selectable( iEntry.Entry, True, LightRed )
@@ -585,6 +589,7 @@ begin
   VTIG_BeginGroup;
   if iSelected >= 0 then
   begin
+    VTIG_Text('');
     VTIG_Text( FTraits[iSelected].Name, LightRed );
     VTIG_Ruler;
     if FTraits[iSelected].Quote <> '' then
