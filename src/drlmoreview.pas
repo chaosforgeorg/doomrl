@@ -44,9 +44,8 @@ procedure TMoreView.Update( aDTime : Integer; aActive : Boolean );
 var iString : Ansistring;
     iCount  : Integer;
 begin
-  VTIG_ClipHack := True;
+  VTIG_PresetPadding('more_view', Point(0,0) );
   VTIG_BeginWindow(FName, 'more_view', FSize );
-  VTIG_ClipHack := False;
   iCount := 0;
   if IO.Ascii.Exists(FASCII) then
     for iString in IO.Ascii[FASCII] do
