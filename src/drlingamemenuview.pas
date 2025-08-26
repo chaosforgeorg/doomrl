@@ -10,7 +10,7 @@ uses viotypes, drlio, drlconfirmview, dfdata;
 
 type TInGameMenuView = class( TIOLayer )
   constructor Create;
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
 protected
@@ -37,7 +37,7 @@ begin
   FFinished := False;
 end;
 
-procedure TInGameMenuView.Update( aDTime : Integer );
+procedure TInGameMenuView.Update( aDTime : Integer; aActive : Boolean );
 var iRect : TRectangle;
 begin
   if IsFinished or (DRL.State <> DSPlaying) then Exit;

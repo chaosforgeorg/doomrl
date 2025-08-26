@@ -10,7 +10,7 @@ uses vutil, viotypes, vtextures, drlio, dfdata;
 
 type TPlotView = class( TIOLayer )
   constructor Create( const aMessage : AnsiString; aColor : DWord; const aBackground : Ansistring = '' );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
 protected
@@ -46,7 +46,7 @@ begin
          else Log( LOGERROR, 'Texture not found - "'+aBackground+'"');
 end;
 
-procedure TPlotView.Update( aDTime : Integer );
+procedure TPlotView.Update( aDTime : Integer; aActive : Boolean );
 var iRate : DWord;
 begin
   iRate := 40;

@@ -11,7 +11,7 @@ uses vutil, viotypes, vgenerics, vcolor, vioevent, vrltools,
 
 type TLookModeView = class( TIOLayer )
   constructor Create;
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   function HandleInput( aInput : Integer ) : Boolean; override;
@@ -25,7 +25,7 @@ end;
 
 type TDirectionQueryLayer = class( TIOLayer )
   constructor Create;
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   function HandleInput( aInput : Integer ) : Boolean; override;
@@ -59,7 +59,7 @@ end;
 
 type TMoreLayer = class( TIOLayer )
   constructor Create( aMore : Boolean = True );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   function HandleInput( aInput : Integer ) : Boolean; override;
@@ -72,7 +72,7 @@ end;
 
 type TTargetModeView = class( TIOLayer )
   constructor Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte; aPadMode : Boolean );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   function HandleInput( aInput : Integer ) : Boolean; override;
@@ -103,7 +103,7 @@ type TScrollItemArray = specialize TGArray< TItem >;
 
 type TScrollSwapLayer = class( TIOLayer )
   constructor Create;
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   function HandleInput( aInput : Integer ) : Boolean; override;
@@ -125,7 +125,7 @@ begin
   IO.Targeting := True;
 end;
 
-procedure TLookModeView.Update( aDTime : Integer );
+procedure TLookModeView.Update( aDTime : Integer; aActive : Boolean );
 begin
   if FFirst then UpdateTarget;
   VTIG_FreeLabel( ' = LOOK MODE =', Point( -15, 1 ), Yellow )
@@ -189,7 +189,7 @@ begin
   FPrompt := '';
 end;
 
-procedure TDirectionQueryLayer.Update( aDTime : Integer );
+procedure TDirectionQueryLayer.Update( aDTime : Integer; aActive : Boolean );
 begin
   VTIG_FreeLabel( FPrompt + ', choose direction...', Point( 0, 2 ), Yellow )
 end;
@@ -278,7 +278,7 @@ begin
   FLength := VTIG_Length( FPrompt );
 end;
 
-procedure TMoreLayer.Update( aDTime : Integer );
+procedure TMoreLayer.Update( aDTime : Integer; aActive : Boolean );
 begin
   VTIG_FreeLabel( FPrompt, Point( 3, 2 ), Yellow )
 end;
@@ -328,7 +328,7 @@ begin
   IO.Targeting  := True;
 end;
 
-procedure TTargetModeView.Update( aDTime : Integer );
+procedure TTargetModeView.Update( aDTime : Integer; aActive : Boolean );
 begin
   if FFirst then UpdateTarget;
   VTIG_FreeLabel( FActionName, Point( 0, 2 ), Yellow )
@@ -539,7 +539,7 @@ begin
   if Player.Inv.Slot[ efWeapon ] = nil then FIndex := 0;
 end;
 
-procedure TScrollSwapLayer.Update( aDTime : Integer );
+procedure TScrollSwapLayer.Update( aDTime : Integer; aActive : Boolean );
 begin
   VTIG_FreeLabel( 'Scroll, <{!LMB}> wield, <{!RMB}> cancel:', Point( 0, 2 ), Yellow );
   IO.HintOverlay := FArray[ FIndex ].Description;

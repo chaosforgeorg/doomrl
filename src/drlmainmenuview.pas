@@ -28,7 +28,7 @@ type TMainMenuEntryArray = specialize TGArray< TMainMenuEntry >;
 
 type TMainMenuView = class( TIOLayer )
   constructor Create( aInitial : TMainMenuViewMode = MAINMENU_FIRST; aResult : TMenuResult = nil );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   destructor Destroy; override;
@@ -178,7 +178,7 @@ begin
   end;
 end;
 
-procedure TMainMenuView.Update( aDTime : Integer );
+procedure TMainMenuView.Update( aDTime : Integer; aActive : Boolean );
 begin
   if FMode = MAINMENU_KLASS then
   begin

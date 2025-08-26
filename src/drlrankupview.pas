@@ -10,7 +10,7 @@ uses vutil, viotypes, drlio, dfdata;
 
 type TRankUpView = class( TIOLayer )
   constructor Create( aRank : THOFRank );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
 protected
@@ -60,7 +60,7 @@ begin
   SetLength( FLines, iSize );
 end;
 
-procedure TRankUpView.Update( aDTime : Integer );
+procedure TRankUpView.Update( aDTime : Integer; aActive : Boolean );
 var i : Integer;
 begin
   VTIG_BeginWindow('Congratulations!', 'rank_up_view', FSize );

@@ -10,7 +10,7 @@ uses vutil, viotypes, vmessages, drlio, dfdata;
 
 type TMessagesView = class( TIOLayer )
   constructor Create( aContent : TMessageBuffer );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
 protected
@@ -34,7 +34,7 @@ begin
   FFirst     := True;
 end;
 
-procedure TMessagesView.Update( aDTime : Integer );
+procedure TMessagesView.Update( aDTime : Integer; aActive : Boolean );
 var i : Integer;
 begin
   VTIG_BeginWindow('Past messages', 'messages_view', FSize );
@@ -53,7 +53,7 @@ begin
   if FFirst then
   begin
     FFirst := False;
-    Update( aDTime );
+    Update( aDTime, aActive );
     Exit;
   end;
 

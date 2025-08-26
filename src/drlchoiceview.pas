@@ -19,7 +19,7 @@ type TChoiceArray = specialize TGArray< TChoiceViewChoice >;
 
 type TChoiceView = class( TIOLayer )
   constructor Create;
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   procedure Add( const aEntry : TChoiceViewChoice );
@@ -65,7 +65,7 @@ begin
   FChoices  := TChoiceArray.Create;
 end;
 
-procedure TChoiceView.Update( aDTime : Integer );
+procedure TChoiceView.Update( aDTime : Integer; aActive : Boolean );
 var iRect : TRectangle;
     i     : Byte;
 begin

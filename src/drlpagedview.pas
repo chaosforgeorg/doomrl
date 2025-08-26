@@ -10,7 +10,7 @@ uses vutil, viotypes, drlio, dfdata, vgenerics;
 
 type TPagedView = class( TIOLayer )
   constructor Create( aPages : TPagedReport; aInitialPage : AnsiString = '' );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   destructor Destroy; override;
@@ -41,7 +41,7 @@ begin
         FPage := i;
 end;
 
-procedure TPagedView.Update( aDTime : Integer );
+procedure TPagedView.Update( aDTime : Integer; aActive : Boolean );
 var iString     : Ansistring;
     iTitle      : Ansistring;
 begin

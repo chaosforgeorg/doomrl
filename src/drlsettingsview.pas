@@ -34,7 +34,7 @@ const SETTINGSVIEW_KEYS : set of TSettingsViewState = [
 
 type TSettingsView = class( TIOLayer )
   constructor Create;
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   function HandleEvent( const aEvent : TIOEvent ) : Boolean; override;
@@ -140,7 +140,7 @@ begin
   end;
 end;
 
-procedure TSettingsView.Update( aDTime : Integer );
+procedure TSettingsView.Update( aDTime : Integer; aActive : Boolean );
 var iSelected : Integer;
     iNext     : TSettingsViewState;
     iApply    : Boolean;

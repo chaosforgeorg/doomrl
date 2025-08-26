@@ -10,7 +10,7 @@ uses vutil, viotypes, drlio, drlhelp, dfdata;
 
 type THelpView = class( TIOLayer )
   constructor Create;
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   destructor Destroy; override;
@@ -56,7 +56,7 @@ begin
   end;
 end;
 
-procedure THelpView.Update( aDTime : Integer );
+procedure THelpView.Update( aDTime : Integer; aActive : Boolean );
 begin
        if FMode = HELPVIEW_MENU then UpdateMenu
   else if FMode = HELPVIEW_READ then UpdateRead;

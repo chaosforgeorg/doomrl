@@ -10,7 +10,7 @@ uses viotypes, vutil, drlio, dfdata;
 
 type TModuleChoiceView = class( TIOLayer )
   constructor Create;
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
 protected
@@ -26,7 +26,7 @@ begin
   FFinished := False;
 end;
 
-procedure TModuleChoiceView.Update( aDTime : Integer );
+procedure TModuleChoiceView.Update( aDTime : Integer; aActive : Boolean );
 var iResult : Ansistring;
     iModule : TDRLModule;
 begin

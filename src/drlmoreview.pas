@@ -10,7 +10,7 @@ uses vutil, viotypes, drlio, dfdata;
 
 type TMoreView = class( TIOLayer )
   constructor Create( aSid : Ansistring );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
 protected
@@ -40,7 +40,7 @@ begin
   FSize      := Point( 80, 25 );
 end;
 
-procedure TMoreView.Update( aDTime : Integer );
+procedure TMoreView.Update( aDTime : Integer; aActive : Boolean );
 var iString : Ansistring;
     iCount  : Integer;
 begin

@@ -13,7 +13,7 @@ type TOnConfirmObjectCallback = procedure of object;
 
 type TConfirmView = class( TIOLayer )
   constructor Create;
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
 protected
@@ -54,7 +54,7 @@ begin
   FMessage := '';
 end;
 
-procedure TConfirmView.Update( aDTime : Integer );
+procedure TConfirmView.Update( aDTime : Integer; aActive : Boolean );
 var iRect   : TRectangle;
     iResult : ( None, Cancel, Confirm );
 begin
@@ -70,6 +70,8 @@ begin
   VTIG_End;
 
   IO.RenderUIBackground( iRect.TopLeft, iRect.BottomRight - PointUnit );
+
+  if not aActive then Exit;
 
   if VTIG_EventCancel then iResult := Cancel;
   case iResult of

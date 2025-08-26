@@ -49,7 +49,7 @@ type TPlayerView = class( TIOLayer )
   constructor Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
   constructor CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0 );
   constructor CreateCommand( aCommand : Byte; aScavenger : Boolean = False );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   procedure Retain;
@@ -173,7 +173,7 @@ begin
   FTraitPick   := 255;
 end;
 
-procedure TPlayerView.Update( aDTime : Integer );
+procedure TPlayerView.Update( aDTime : Integer; aActive : Boolean );
 var iTraitFirst : Boolean;
 begin
   if IsFinished or (FState = PLAYERVIEW_CLOSING) or (FState = PLAYERVIEW_PENDING) then Exit;

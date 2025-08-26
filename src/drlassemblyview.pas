@@ -10,7 +10,7 @@ uses vutil, viotypes, drlio, dfdata;
 
 type TAssemblyView = class( TIOLayer )
   constructor Create;
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   destructor Destroy; override;
@@ -33,7 +33,7 @@ begin
   FSize      := Point( 80, 25 );
 end;
 
-procedure TAssemblyView.Update( aDTime : Integer );
+procedure TAssemblyView.Update( aDTime : Integer; aActive : Boolean );
 var iString : Ansistring;
 begin
   if FContent = nil then ReadAssemblies;
