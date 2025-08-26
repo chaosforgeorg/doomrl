@@ -6,17 +6,16 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlmoreview;
 interface
-uses vutil, drlio, dfdata;
+uses vutil, viotypes, drlio, dfdata;
 
-type TMoreView = class( TInterfaceLayer )
+type TMoreView = class( TIOLayer )
   constructor Create( aSid : Ansistring );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
 protected
   FFinished : Boolean;
   FSize     : TPoint;
-  FRect     : TRectangle;
   FSID      : Ansistring;
   FName     : Ansistring;
   FDesc     : Ansistring;
@@ -40,13 +39,13 @@ begin
   FSize      := Point( 80, 25 );
 end;
 
-procedure TMoreView.Update( aDTime : Integer );
+procedure TMoreView.Update( aDTime : Integer; aActive : Boolean );
 var iString : Ansistring;
     iCount  : Integer;
 begin
-  VTIG_ClipHack := True;
+  VTIG_PushStyle(@TIGStylePadless);
   VTIG_BeginWindow(FName, 'more_view', FSize );
-  VTIG_ClipHack := False;
+  VTIG_PopStyle();
   iCount := 0;
   if IO.Ascii.Exists(FASCII) then
     for iString in IO.Ascii[FASCII] do
@@ -61,11 +60,9 @@ begin
   VTIG_Text( FDesc );
   VTIG_End;
 
-  FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!{$input_escape}},{!{$input_ok}}> exit}');
   if VTIG_EventCancel or VTIG_EventConfirm then
     FFinished := True;
-  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 

@@ -7,7 +7,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 unit drlgfxio;
 interface
 uses vglquadrenderer, vgltypes, vluaconfig, vioevent, viotypes, vuielement, vimage,
-     vrltools, vutil, vtextures, vvector, vbitmapfont,
+     vrltools, vutil, vtextures, vvector, vbitmapfont, vio,
      drlio, drlspritemap, drlanimation, drlminimap, dfdata, dfthing;
 
 type
@@ -21,7 +21,7 @@ type
     procedure Reconfigure( aConfig : TLuaConfig ); override;
     procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); override;
     procedure Update( aMSec : DWord ); override;
-    function PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer; override;
+    function PushLayer( aLayer : TIOLayer ) : TIOLayer; override;
     function OnEvent( const iEvent : TIOEvent ) : Boolean; override;
     procedure UpdateMinimap;
     destructor Destroy; override;
@@ -47,7 +47,7 @@ type
     procedure DeviceChanged;
     function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; override;
     function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; override;
-    procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 ); override;
+    procedure RenderUIBackgroundBlock( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 ); override;
     procedure RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 ); override;
 
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
@@ -748,7 +748,7 @@ begin
 
   if (DRL <> nil) and (DRL.State = DSPlaying) then
   begin
-    if FConsoleWindow = nil then
+    if FTIGConsoleView = nil then
        FConsole.HideCursor;
     //if not UI.AnimationsRunning then SpriteMap.NewShift := SpriteMap.ShiftValue( Player.Position );
 
@@ -928,7 +928,7 @@ begin
   Exit( inherited OnEvent( iEvent ) )
 end;
 
-function TDRLGFXIO.PushLayer(  aLayer : TInterfaceLayer ) : TInterfaceLayer;
+function TDRLGFXIO.PushLayer(  aLayer : TIOLayer ) : TIOLayer;
 begin
   if FMCursor <> nil then
   begin
@@ -978,7 +978,7 @@ begin
   Exit( FConsole.GetDeviceArea.Pos + aCoord );
 end;
 
-procedure TDRLGFXIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
+procedure TDRLGFXIO.RenderUIBackgroundBlock( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
 var iP1,iP2 : TIOPoint;
 begin
   iP1 := ConsoleCoordToDeviceCoord( aUL + PointUnit );

@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlplayerview;
 interface
-uses viotypes, vgenerics,
+uses viotypes, vgenerics, vio, vtigstyle,
      dfitem, dfdata,
      drlio, drltraits, drlconfirmview;
 
@@ -45,11 +45,11 @@ end;
 
 type TTraitViewArray = specialize TGArray< TTraitViewEntry >;
 
-type TPlayerView = class( TInterfaceLayer )
+type TPlayerView = class( TIOLayer )
   constructor Create( aInitialState : TPlayerViewState = PLAYERVIEW_INVENTORY );
   constructor CreateTrait( aFirstTrait : Boolean; aKlass : Byte = 0 );
   constructor CreateCommand( aCommand : Byte; aScavenger : Boolean = False );
-  procedure Update( aDTime : Integer ); override;
+  procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
   procedure Retain;
@@ -76,6 +76,7 @@ protected
   FInv         : TItemViewArray;
   FEq          : TItemViewArray;
   FCharacter   : TStringGArray;
+  FTraitsStyle : TTIGStyle;
   FAction      : AnsiString;
   FITitle      : AnsiString;
   FCTitle      : AnsiString;
@@ -86,7 +87,6 @@ protected
   FSSlot       : TEqSlot;
   FTraits      : TTraitViewArray;
   FCommandMode : Byte;
-  FRect        : TIORect;
 
   class var FTraitPick : Byte;
 public
@@ -153,6 +153,8 @@ end;
 
 procedure TPlayerView.Initialize;
 begin
+  FTraitsStyle := TIGStylePadless;
+  FTraitsStyle.Padding[ VTIG_WINDOW_PADDING ].X := 1;
   VTIG_EventClear;
   VTIG_ResetSelect( 'inventory' );
   VTIG_ResetSelect( 'equipment' );
@@ -173,7 +175,7 @@ begin
   FTraitPick   := 255;
 end;
 
-procedure TPlayerView.Update( aDTime : Integer );
+procedure TPlayerView.Update( aDTime : Integer; aActive : Boolean );
 var iTraitFirst : Boolean;
 begin
   if IsFinished or (FState = PLAYERVIEW_CLOSING) or (FState = PLAYERVIEW_PENDING) then Exit;
@@ -220,8 +222,6 @@ begin
           FTraitPick := 255;
         end;
   end;
-
-  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 function TPlayerView.IsFinished : Boolean;
@@ -290,7 +290,6 @@ var iEntry    : TItemViewEntry;
 begin
   if FInv = nil then ReadInv;
   VTIG_BeginWindow( FITitle, 'inventory', FSize );
-    FRect := VTIG_GetWindowRect;
     VTIG_BeginGroup( 50 );
     for iEntry in FInv do
       if iEntry.QSlot <> 0
@@ -426,7 +425,6 @@ var iEntry            : TItemViewEntry;
 begin
   if FEq = nil then ReadEq;
   VTIG_BeginWindow('Equipment', 'equipment', FSize );
-    FRect := VTIG_GetWindowRect;
     VTIG_BeginGroup( 10, True );
 
       VTIG_BeginGroup( 50 );
@@ -557,7 +555,6 @@ var iString : Ansistring;
 begin
   if FCharacter = nil then ReadCharacter;
   VTIG_BeginWindow(FCTitle, 'character', FSize );
-  FRect := VTIG_GetWindowRect;
   iCount := 0;
   if Assigned( IO.Ascii[Player.ASCIIMoreCode] ) then
     for iString in IO.Ascii[Player.ASCIIMoreCode] do
@@ -575,13 +572,13 @@ var iSelected : Integer;
     iEntry    : TTraitViewEntry;
 begin
   if FTraits = nil then ReadTraits( Player.Klass );
+  VTIG_PushStyle( @FTraitsStyle );
   if FTraitMode
     then VTIG_BeginWindow('Select trait to upgrade', 'traits', FSize )
     else VTIG_BeginWindow('Traits', 'traits', FSize );
-  FRect := VTIG_GetWindowRect;
+  VTIG_PopStyle();
 
   VTIG_BeginGroup( 23 );
-    VTIG_AdjustPadding( Point(0,-1) );
     for iEntry in FTraits do
       if iEntry.Available
         then VTIG_Selectable( iEntry.Entry, True, LightRed )
@@ -592,6 +589,7 @@ begin
   VTIG_BeginGroup;
   if iSelected >= 0 then
   begin
+    VTIG_Text('');
     VTIG_Text( FTraits[iSelected].Name, LightRed );
     VTIG_Ruler;
     if FTraits[iSelected].Quote <> '' then

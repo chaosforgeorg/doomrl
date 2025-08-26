@@ -34,7 +34,6 @@ type TCommandSet = set of Byte;
      TKeySet     = set of Byte;
 
 type TASCIIImageMap       = specialize TGObjectHashMap<TUIStringArray>;
-type TInterfaceLayerStack = specialize TGArray<TInterfaceLayer>;
 type TStringHashMap       = specialize TGHashMap< AnsiString >;
 
 type TDRLIO = class( TIO )
@@ -44,8 +43,8 @@ type TDRLIO = class( TIO )
   procedure Initialize( iRenderer : TIOConsoleRenderer );
   procedure Reconfigure( aConfig : TLuaConfig ); virtual;
   procedure Configure( aConfig : TLuaConfig; aReload : Boolean = False ); virtual;
-  procedure WaitForLayer( aHideHUD : Boolean );
-  procedure FullUpdate; override;
+  procedure WaitForLayer( aHideHUD : Boolean ); reintroduce;
+  procedure PreUpdate; override;
   destructor Destroy; override;
   procedure Screenshot( aBB : Boolean );
 
@@ -57,7 +56,7 @@ type TDRLIO = class( TIO )
   procedure LoadStop;
   procedure Update( aMSec : DWord ); override;
 
-  function EventToInput( const aEvent : TIOEvent ) : TInputKey;
+  function EventToUIInput( const aEvent : TIOEvent ) : Integer; override;
   function CommandEventPending : Boolean;
 
   procedure SetHint( const aText : AnsiString );
@@ -101,11 +100,9 @@ type TDRLIO = class( TIO )
 
   class procedure RegisterLuaAPI( State : TLuaState );
 
-  function PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer; virtual;
-  function IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
-  function IsModal : Boolean;
+  function PushLayer( aLayer : TIOLayer ) : TIOLayer; override;
   procedure PreAction;
-  procedure Clear;
+  procedure Clear; override;
   function OnEvent( const event : TIOEvent ) : Boolean; override;
 
   // Gamepad
@@ -120,9 +117,7 @@ type TDRLIO = class( TIO )
   procedure FadeReset; virtual;
   procedure FadeWait; virtual;
 
-  function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
-  function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; virtual;
-  procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 ); virtual;
+  procedure RenderUIBackgroundBlock( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 ); virtual;
   procedure RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 ); virtual;
   procedure FullLook( aID : Ansistring );
   procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
@@ -146,9 +141,6 @@ protected
   FLastTarget  : TCoord2D;
   FKeyCode     : TIOKeyCode;
   FASCII       : TASCIIImageMap;
-  FLayers      : TInterfaceLayerStack;
-  FUIMouseLast : TIOPoint;
-  FUIMouse     : TIOPoint;
 
   FHudEnabled  : Boolean;
   FWaiting     : Boolean;
@@ -390,6 +382,9 @@ begin
 
   TIGStyleFrameless := VTIGDefaultStyle;
   TIGStyleFrameless.Frame[ VTIG_BORDER_FRAME ] := '';
+
+  TIGStylePadless   := VTIGDefaultStyle;
+  TIGStylePadless.Padding[ VTIG_WINDOW_PADDING ] := Point(0,0);
 end;
 
 { TDRLIO }
@@ -401,7 +396,6 @@ begin
   FMessages := TMessages.Create( 2, 77, @IO.EventMore, Option_MessageBuffer );
   FMessages.GroupMultiple := Setting_GroupMessages;
   FASCII    := TASCIIImageMap.Create( True );
-  FLayers   := TInterfaceLayerStack.Create;
 
   FIODriver.SetTitle('DRL','DRL');
 
@@ -414,12 +408,12 @@ end;
 
 procedure TDRLIO.Reset;
 begin
+  Clear;
+  IO := Self;
   VTIG_Shutdown;
   VTIGDefaultStyle := FTIGDefault;
   FLoading := nil;
-  IO := Self;
   FTime := 0;
-  FLayers.Clear;
   FASCII.Clear;
   FAudio.Reset;
   FWaiting     := False;
@@ -429,51 +423,29 @@ begin
   FHint        := '';
   FHintOverlay := '';
 
-  FConsoleWindow := nil;
   FTargetEnabled := False;
   FTargetLast    := False;
   FCachedAmmo    := -1;
   FLastTarget.Create(0,0);
-  FUIMouseLast := Point(-1,-1);
-  FUIMouse     := Point(-1,-1);
 end;
 
 procedure TDRLIO.Initialize( iRenderer : TIOConsoleRenderer );
 begin
-  VTIG_Shutdown;
-  if iRenderer <> nil then
-  begin
-    VTIG_Initialize( iRenderer, FIODriver, False );
-    VTIG_SetSubCallback( @TIGSubCallback );
-    UpdateStyles;
-  end;
-  inherited Initialize( iRenderer, nil );
+  inherited Initialize( iRenderer, nil, True );
   if iRenderer = nil then Exit;
+  VTIG_SetSubCallback( @TIGSubCallback );
+  UpdateStyles;
   iRenderer.Clear;
   iRenderer.HideCursor;
   FUIRoot.UpdateOnRender := False;
   FullUpdate;
 end;
 
-function TDRLIO.PushLayer( aLayer : TInterfaceLayer ) : TInterfaceLayer;
+function TDRLIO.PushLayer( aLayer : TIOLayer ) : TIOLayer;
 begin
   FHintOverlay := '';
   FConsole.HideCursor;
-  FLayers.Push( aLayer );
-  Result := aLayer;
-end;
-
-function TDRLIO.IsTopLayer( aLayer : TInterfaceLayer ) : Boolean;
-begin
-  Exit( ( FLayers.Size > 0 ) and ( FLayers.Top = aLayer ) );
-end;
-
-function TDRLIO.IsModal : Boolean;
-var iLayer : TInterfaceLayer;
-begin
-  for iLayer in FLayers do
-    if iLayer.IsModal then Exit( True );
-  Exit( False );
+  Exit( inherited PushLayer( aLayer ) );
 end;
 
 procedure TDRLIO.PreAction;
@@ -483,105 +455,23 @@ begin
 end;
 
 procedure TDRLIO.Clear;
-var iLayer : TInterfaceLayer;
 begin
   FCachedAmmo := -1;
-  for iLayer in FLayers do
-    iLayer.Free;
-  FLayers.Clear;
+  inherited Clear;
 end;
 
 function TDRLIO.OnEvent( const event : TIOEvent ) : Boolean;
-var i      : Integer;
-    iEvent : TIOEvent;
-    iWide  : WideString;
-    iInput : TInputKey;
 begin
-  if ( event.EType = VEVENT_TEXT ) then
-  begin
-    iWide := UTF8Decode( UTF8String( event.Text.Text ) );
-    VTIG_GetIOState.EventState.AppendText( PWideChar( iWide ) );
-  end;
+  if ( event.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
+    if not Setting_Mouse then
+      Exit( False );
 
   if ( event.EType = VEVENT_KEYDOWN ) or ( event.EType = VEVENT_KEYUP ) and ( not event.Key.Repeated ) then
-  begin
-    VTIG_GetIOState.EventState.SetState( VTIG_IE_SHIFT, VKMOD_SHIFT in event.Key.ModState );
-    case event.Key.Code of
-      VKEY_UP     : VTIG_GetIOState.EventState.SetState( VTIG_IE_UP, event.Key.Pressed );
-      VKEY_DOWN   : VTIG_GetIOState.EventState.SetState( VTIG_IE_DOWN, event.Key.Pressed );
-      VKEY_LEFT   : VTIG_GetIOState.EventState.SetState( VTIG_IE_LEFT, event.Key.Pressed );
-      VKEY_RIGHT  : VTIG_GetIOState.EventState.SetState( VTIG_IE_RIGHT, event.Key.Pressed );
-      VKEY_HOME   : VTIG_GetIOState.EventState.SetState( VTIG_IE_HOME, event.Key.Pressed );
-      VKEY_END    : VTIG_GetIOState.EventState.SetState( VTIG_IE_END, event.Key.Pressed );
-      VKEY_PGUP   : VTIG_GetIOState.EventState.SetState( VTIG_IE_PGUP, event.Key.Pressed );
-      VKEY_PGDOWN : VTIG_GetIOState.EventState.SetState( VTIG_IE_PGDOWN, event.Key.Pressed );
-      VKEY_ESCAPE : VTIG_GetIOState.EventState.SetState( VTIG_IE_CANCEL, event.Key.Pressed );
-      VKEY_ENTER  : VTIG_GetIOState.EventState.SetState( VTIG_IE_CONFIRM, event.Key.Pressed );
-      VKEY_SPACE  : VTIG_GetIOState.EventState.SetState( VTIG_IE_SELECT, event.Key.Pressed );
-      VKEY_BACK   : VTIG_GetIOState.EventState.SetState( VTIG_IE_BACKSPACE, event.Key.Pressed );
-      VKEY_TAB    : VTIG_GetIOState.EventState.SetState( VTIG_IE_TAB, event.Key.Pressed );
-      VKEY_0      : VTIG_GetIOState.EventState.SetState( VTIG_IE_0, event.Key.Pressed );
-      VKEY_1      : VTIG_GetIOState.EventState.SetState( VTIG_IE_1, event.Key.Pressed );
-      VKEY_2      : VTIG_GetIOState.EventState.SetState( VTIG_IE_2, event.Key.Pressed );
-      VKEY_3      : VTIG_GetIOState.EventState.SetState( VTIG_IE_3, event.Key.Pressed );
-      VKEY_4      : VTIG_GetIOState.EventState.SetState( VTIG_IE_4, event.Key.Pressed );
-      VKEY_5      : VTIG_GetIOState.EventState.SetState( VTIG_IE_5, event.Key.Pressed );
-      VKEY_6      : VTIG_GetIOState.EventState.SetState( VTIG_IE_6, event.Key.Pressed );
-      VKEY_7      : VTIG_GetIOState.EventState.SetState( VTIG_IE_7, event.Key.Pressed );
-      VKEY_8      : VTIG_GetIOState.EventState.SetState( VTIG_IE_8, event.Key.Pressed );
-      VKEY_9      : VTIG_GetIOState.EventState.SetState( VTIG_IE_9, event.Key.Pressed );
-      VKEY_F1     : if ModdedGame then VTIG_GetIOState.EventState.SetState( TIG_EV_RESTART, event.Key.Pressed and ( VKMOD_CTRL in event.Key.ModState ) );
-    end;
+  case event.Key.Code of
+    VKEY_F1     : if ModdedGame then VTIG_GetIOState.EventState.SetState( TIG_EV_RESTART, event.Key.Pressed and ( VKMOD_CTRL in event.Key.ModState ) );
   end;
 
-  // TODO: auto-repeat
-  if ( event.EType = VEVENT_PADDOWN ) or ( event.EType = VEVENT_PADUP ) then
-  begin
-    case event.Pad.Button of
-      VPAD_BUTTON_DPAD_UP    : VTIG_GetIOState.EventState.SetState( VTIG_IE_UP, event.Pad.Pressed );
-      VPAD_BUTTON_DPAD_DOWN  : VTIG_GetIOState.EventState.SetState( VTIG_IE_DOWN, event.Pad.Pressed );
-      VPAD_BUTTON_DPAD_LEFT  : VTIG_GetIOState.EventState.SetState( VTIG_IE_LEFT, event.Pad.Pressed );
-      VPAD_BUTTON_DPAD_RIGHT : VTIG_GetIOState.EventState.SetState( VTIG_IE_RIGHT, event.Pad.Pressed );
-      VPAD_BUTTON_B          : VTIG_GetIOState.EventState.SetState( VTIG_IE_CANCEL, event.Pad.Pressed );
-      VPAD_BUTTON_A          : VTIG_GetIOState.EventState.SetState( VTIG_IE_CONFIRM, event.Pad.Pressed );
-      VPAD_BUTTON_LEFTSHOULDER  : VTIG_GetIOState.EventState.SetState( VTIG_IE_LEFT, event.Pad.Pressed );
-      VPAD_BUTTON_RIGHTSHOULDER : VTIG_GetIOState.EventState.SetState( VTIG_IE_RIGHT, event.Pad.Pressed );
-      VPAD_BUTTON_Y          : VTIG_GetIOState.EventState.SetState( VTIG_IE_BACKSPACE, event.Pad.Pressed );
-      VPAD_BUTTON_X          : VTIG_GetIOState.EventState.SetState( VTIG_IE_TAB, event.Pad.Pressed );
-    end;
-  end;
-
-  if ( event.EType in [ VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
-  begin
-    if not Setting_Mouse then Exit( False );
-    iEvent := event;
-    iEvent.Mouse.Pos := DeviceCoordToConsoleCoord( event.Mouse.Pos );
-    VTIG_GetIOState.MouseState.HandleEvent( iEvent );
-    if ( event.EType = VEVENT_MOUSEDOWN ) and ( event.Mouse.Button = VMB_BUTTON_LEFT ) then
-      VTIG_GetIOState.EventState.SetState( VTIG_IE_MCONFIRM, True );
-  end;
-
-  if ( event.EType in [ VEVENT_MOUSEMOVE ] ) then
-  begin
-    if not Setting_Mouse then Exit( False );
-    FUIMouse := DeviceCoordToConsoleCoord( event.MouseMove.Pos );
-  end;
-
-  iInput := EventToInput( event );
-  if iInput <> INPUT_NONE then
-    if not FLayers.IsEmpty then
-      for i := FLayers.Size - 1 downto 0 do
-        if not FLayers[i].isFinished then
-          if FLayers[i].HandleInput( iInput ) then
-            Exit( True );
-
-  if not FLayers.IsEmpty then
-    for i := FLayers.Size - 1 downto 0 do
-      if not FLayers[i].isFinished then
-        if FLayers[i].HandleEvent( event ) then
-          Exit( True );
-
-  Exit( False );
+  Exit( inherited OnEvent( event ) );
 end;
 
 function TDRLIO.GetPadLTrigger : Boolean;
@@ -624,17 +514,8 @@ begin
   // noop
 end;
 
-function TDRLIO.DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint;
-begin
-  Exit( aCoord );
-end;
 
-function TDRLIO.ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint;
-begin
-  Exit( aCoord );
-end;
-
-procedure TDRLIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
+procedure TDRLIO.RenderUIBackgroundBlock( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
 begin
   // noop
 end;
@@ -758,40 +639,24 @@ end;
 
 procedure TDRLIO.WaitForLayer( aHideHUD : Boolean );
 begin
-  if aHideHUD then
-    FHudEnabled := False;
-  repeat
-    Sleep(10);
-    FullUpdate;
-    HandleEvents;
-  until FLayers.IsEmpty or (not IsModal);
-  if aHideHUD then
-    FHudEnabled := True;
+  if aHideHUD then FHudEnabled := False;
+  inherited WaitForLayer;
+  if aHideHUD then FHudEnabled := True;
 end;
 
-procedure TDRLIO.FullUpdate;
+procedure TDRLIO.PreUpdate;
 begin
-  VTIG_NewFrame;
-  if FHudEnabled then
-    DrawHud;
-  inherited FullUpdate;
+  if FHudEnabled then DrawHud;
+  inherited PreUpdate;
 end;
 
 destructor TDRLIO.Destroy;
-var iLayer : TInterfaceLayer;
 begin
   FreeAndNil( FAudio );
   FreeAndNil( FMessages );
   FreeAndNil( FASCII );
   FreeAndNil( FKeySubMap );
   FreeAndNil( FPadSubMap );
-
-
-  if FLayers <> nil then
-    for iLayer in FLayers do
-      iLayer.Free;
-  FreeAndNil( FLayers );
-  VTIG_Shutdown;
   IO := nil;
   inherited Destroy;
 end;
@@ -1086,39 +951,11 @@ begin
 end;
 
 procedure TDRLIO.Update( aMSec : DWord );
-var iLayer  : TInterfaceLayer;
-    iMEvent : TIOEvent;
-
-  procedure ClearFinished;
-  var i,j : Integer;
-  begin
-    i := 0;
-    while i < FLayers.Size do
-      if FLayers[i].IsFinished then
-      begin
-        FLayers[i].Free;
-        if i < FLayers.Size - 1 then
-          for j := i to FLayers.Size - 2 do
-            FLayers[j] := FLayers[j + 1];
-        FLayers.Pop;
-      end
-      else
-        Inc( i );
-  end;
-
 begin
   if Assigned( Sound ) then
     Sound.Update;
   if Assigned( DRL ) then
     DRL.Store.Update;
-
-  if FUIMouse <> FUIMouseLast then
-  begin
-    iMEvent.EType:= VEVENT_MOUSEMOVE;
-    iMEvent.MouseMove.Pos := FUIMouse;
-    FUIMouseLast := FUIMouse;
-    VTIG_GetIOState.MouseState.HandleEvent( iMEvent );
-  end;
 
   if GetPadRTrigger and (DRL <> nil) and (DRL.State = DSPlaying)
     and (FTargeting or ( not isModal)) and ( FLastTarget <> DRL.Targeting.List.Current ) then
@@ -1134,49 +971,41 @@ begin
     FLastTarget.Create(0,0);
   end;
 
-  ClearFinished;
-  for iLayer in FLayers do
-    iLayer.Update( Integer( aMSec ) );
-  ClearFinished;
-
   FTime += aMSec;
   FAudio.Update( aMSec );
-  FUIRoot.OnUpdate( aMSec );
-  FUIRoot.Render;
 
-  VTIG_EndFrame;
-  VTIG_Render;
+  inherited Update( aMSec );
  // if aMSec > 200 then
  //   VTIG_EventClear;
 end;
 
-function TDRLIO.EventToInput( const aEvent : TIOEvent ) : TInputKey;
+function TDRLIO.EventToUIInput( const aEvent : TIOEvent ) : Integer;
 begin
   if ( aEvent.EType = VEVENT_SYSTEM ) and ( aEvent.System.Code = VIO_SYSEVENT_QUIT ) then
     if Option_LockClose
-       then Exit( INPUT_QUIT )
-       else Exit( INPUT_HARDQUIT );
+       then Exit( Integer( INPUT_QUIT ) )
+       else Exit( Integer( INPUT_HARDQUIT ) );
   if (aEvent.EType = VEVENT_MOUSEMOVE) then
   begin
-    if not Setting_Mouse then Exit( INPUT_NONE );
+    if not Setting_Mouse then Exit( Integer( INPUT_NONE ) );
     FMTarget := SpriteMap.DevicePointToCoord( aEvent.MouseMove.Pos );
     if DRL.Level <> nil then
       if DRL.Level.isProperCoord( FMTarget ) then
-        Exit( INPUT_MMOVE );
+        Exit( Integer( INPUT_MMOVE ) );
   end;
   if aEvent.EType = VEVENT_MOUSEDOWN then
   begin
-    if not Setting_Mouse then Exit( INPUT_NONE );
+    if not Setting_Mouse then Exit( Integer( INPUT_NONE ) );
     FMTarget := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
     if DRL.Level <> nil then
       if DRL.Level.isProperCoord( FMTarget ) then
       begin
         case aEvent.Mouse.Button of
-          VMB_BUTTON_LEFT     : Exit( INPUT_MLEFT );
-          VMB_BUTTON_MIDDLE   : Exit( INPUT_MMIDDLE );
-          VMB_BUTTON_RIGHT    : Exit( INPUT_MRIGHT );
-          VMB_WHEEL_UP        : Exit( INPUT_MSCRUP );
-          VMB_WHEEL_DOWN      : Exit( INPUT_MSCRDOWN );
+          VMB_BUTTON_LEFT     : Exit( Integer( INPUT_MLEFT ) );
+          VMB_BUTTON_MIDDLE   : Exit( Integer( INPUT_MMIDDLE ) );
+          VMB_BUTTON_RIGHT    : Exit( Integer( INPUT_MRIGHT ) );
+          VMB_WHEEL_UP        : Exit( Integer( INPUT_MSCRUP ) );
+          VMB_WHEEL_DOWN      : Exit( Integer( INPUT_MSCRDOWN ) );
         end;
       end;
   end;
@@ -1184,9 +1013,9 @@ begin
   begin
     FKeyCode := IOKeyEventToIOKeyCode( aEvent.Key );
     if (FKeyCode mod 256) <> 0
-      then Exit( TInputKey( Config.Commands[ FKeyCode ] ) );
+      then Exit( Config.Commands[ FKeyCode ] );
   end;
-  Exit( INPUT_NONE );
+  Exit( inherited EventToUIInput( aEvent ) );
 end;
 
 function TDRLIO.CommandEventPending : Boolean;
