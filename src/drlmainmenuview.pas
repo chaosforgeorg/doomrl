@@ -54,7 +54,6 @@ protected
   procedure UpdateModErrors;
 protected
   FSize        : TIOPoint;
-  FRect        : TIORect;
   FMode        : TMainMenuViewMode;
   FFirst       : Ansistring;
   FIntro1      : Ansistring;
@@ -76,7 +75,7 @@ protected
 
   FBGTexture   : TTextureID;
   FLogoTexture : TTextureID;
-  FName        : array[0..47] of Char;
+  FName        : array[0..48] of Char;
 end;
 
 implementation
@@ -271,15 +270,15 @@ begin
 end;
 
 const
-  TextContinueGame  = '{b--} Continue game {b---}';
-  TextNewGame       = '{b-----} New game {b-----}';
-  TextChallengeGame = '{b--} Challenge game {b--}';
-  TextJHC           = '{B=}{^ Buy JHC on Steam!}{B=}';
-  TextShowHighscore = '{b-} Show highscores {b--}';
-  TextShowPlayer    = '{b---} Show player {b----}';
-  TextExit          = '{b------} Exit {b--------}';
-  TextHelp          = '{b------} Help {b--------}';
-  TextSettings      = '{b----} Settings {b------}';
+  TextContinueGame  = ' {b--} Continue game {b---}';
+  TextNewGame       = ' {b-----} New game {b-----}';
+  TextChallengeGame = ' {b--} Challenge game {b--}';
+  TextJHC           = ' {B=}{^ Buy JHC on Steam!}{B=}';
+  TextShowHighscore = ' {b-} Show highscores {b--}';
+  TextShowPlayer    = ' {b---} Show player {b----}';
+  TextExit          = ' {b------} Exit {b--------}';
+  TextHelp          = ' {b------} Help {b--------}';
+  TextSettings      = ' {b----} Settings {b------}';
 
 procedure TMainMenuView.UpdateMenu;
 var iSize  : TIOPoint;
@@ -375,7 +374,6 @@ begin
   VTIG_BeginWindow('Corrupted save file', Point( 42, 13 ), Point(19,8) );
   VTIG_Text('Save file is {!corrupted}, or from a'+#10+'{!previous version}!'+#10+#10+'Version compatibility will be maintained between big versions.'+#10+#10+'{!Removed} corrupted save file, we''re sorry :(. Player and score data are {!intact}.');
   VTIG_End('Press <{!{$input_ok},{$input_escape}}> to continue...');
-  IO.RenderUIBackground( Point(18,7), Point(60,20), 0.7 );
   if VTIG_EventCancel or VTIG_EventConfirm then
   begin
     FSaveExists := False;
@@ -415,7 +413,6 @@ begin
   end;
 
   VTIG_End;
-  IO.RenderUIBackground( Point(18,3), Point(60,23), 0.7 );
   if VTIG_EventCancel then
     FMode := MAINMENU_MENU;
 end;
@@ -434,7 +431,6 @@ begin
     FMode := MAINMENU_DIFFICULTY;
   VTIG_PopStyle;
   VTIG_End();
-  IO.RenderUIBackground( Point(20,13), Point(60,22), 0.7 );
   if VTIG_EventCancel then
   begin
     OnCancel;
@@ -446,12 +442,12 @@ procedure TMainMenuView.UpdateName;
 var iStoreText   : Ansistring;
     iStoreCancel : Boolean;
 begin
-  VTIG_PushStyle( @TIGStyleFrameless );
-  VTIG_Begin( 'mainmenu_name', Point( 34, 4 ), Point(25,18) );
+  VTIG_PushStyle( @FWindowStyle );
+  VTIG_Begin( 'mainmenu_name', Point( 36, 4 ), Point(23,18) );
   VTIG_PopStyle;
   VTIG_PushStyle( @TIGStyleColored );
   VTIG_Text('Type a name for your character');
-  if VTIG_Input(@FName[0],47) then
+  if VTIG_Input(@FName[0],48) then
   begin
     FResult.Name := AnsiString(FName);
     IO.Driver.StopTextInput;
@@ -475,7 +471,6 @@ begin
   end;
   VTIG_PopStyle;
   VTIG_End();
-  IO.RenderUIBackground( Point(22,17), Point(58,21), 0.7 );
 
   if VTIG_EventCancel then
   begin
@@ -531,9 +526,6 @@ begin
       iSelected := VTIG_Selected;
       VTIG_PopStyle;
     VTIG_End;
-
-    IO.RenderUIBackground(  Point(8,15), Point(25,17+FArrayDiff.Size), 0.7 );
-    IO.RenderUIBackground( Point(28,15), Point(77,15+iLines), 0.7 );
   end
   else
   begin
@@ -551,7 +543,6 @@ begin
         end;
       VTIG_PopStyle;
     VTIG_End;
-    IO.RenderUIBackground( Point(23,15), Point(57,22), 0.7 );
   end;
 
   if VTIG_EventCancel then
@@ -566,10 +557,10 @@ var iSelected, i, iLines : Integer;
 begin
   iSelected := VTIG_Selected('mainmenu_klass');
   if ( iSelected < 0 ) or (iSelected >= FArrayKlass.Size) then iSelected := 0;
-  iLines := 8;
+  iLines := 9;
   if Length( FArrayKlass[iSelected].Desc ) > 200 then iLines := 13;
   VTIG_PushStyle( @FWindowStyle );
-  VTIG_Begin( 'mainmenu_klass_desc', Point( 47, iLines ), Point( 30, 16 ) );
+  VTIG_Begin( 'mainmenu_klass_desc', Point( 49, iLines ), Point( 29, 16 ) );
   VTIG_PopStyle;
     VTIG_PushStyle( @TIGStyleColored );
     VTIG_Text( Padded( '- {!' + FArrayKlass[iSelected].Name + ' }', 48, '-' ) );
@@ -603,8 +594,6 @@ begin
     VTIG_PopStyle;
   VTIG_End;
 
-  IO.RenderUIBackground(  Point(9,15), Point(25,17+FArrayKlass.Size), 0.7 );
-  IO.RenderUIBackground( Point(28,15), Point(77,16+iLines), 0.7 );
   if VTIG_EventCancel then
   begin
     FMode := MAINMENU_MENU;
@@ -617,8 +606,8 @@ var iSelected, i : Integer;
 begin
   iSelected := VTIG_Selected('mainmenu_ctype');
   if ( iSelected < 0 ) or (iSelected >= FArrayCType.Size) then iSelected := 0;
-  VTIG_PushStyle( @TIGStyleFrameless );
-  VTIG_Begin( 'mainmenu_ctype_desc', Point( 47, 8 ), Point( 30, 16 ) );
+  VTIG_PushStyle( @FWindowStyle );
+  VTIG_Begin( 'mainmenu_ctype_desc', Point( 49, 8 ), Point( 29, 16 ) );
   VTIG_PopStyle;
     VTIG_PushStyle( @TIGStyleColored );
     VTIG_Text( Padded( '- {!' + FArrayCType[iSelected].Name + ' }', 48, '-' ) );
@@ -647,8 +636,6 @@ begin
     VTIG_PopStyle;
   VTIG_End;
 
-  IO.RenderUIBackground(  Point(8,17), Point(27,23), 0.7 );
-  IO.RenderUIBackground( Point(28,15), Point(77,24), 0.7 );
   if VTIG_EventCancel then
   begin
     FMode := MAINMENU_MENU;
@@ -691,7 +678,6 @@ begin
       end;
       VTIG_EndGroup;
 
-  FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!{$input_up}},{!{$input_down}}> select, <{!{$input_ok}}> select, <{!{$input_escape}}> cancel}');
 
   if VTIG_EventCancel then
@@ -709,7 +695,6 @@ begin
     end;
     ReloadArrays;
   end;
-  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 procedure TMainMenuView.OnCancel;
@@ -749,7 +734,7 @@ begin
   iIO.RenderUIBackground( FBGTexture );
 
   if FMode = MAINMENU_FIRST then
-    IO.RenderUIBackground( Point(4,1), Point(76,24), 0.7 );
+    IO.RenderUIBackgroundBlock( Point(4,1), Point(76,24), 0.7 );
 
   if ( FMode in [MAINMENU_INTRO,MAINMENU_MENU,MAINMENU_DIFFICULTY,MAINMENU_KLASS,MAINMENU_FAIR,MAINMENU_NAME,MAINMENU_CTYPE] )
     and IO.IsTopLayer( Self ) then
@@ -770,14 +755,11 @@ begin
 
     case FMode of
       MAINMENU_INTRO : begin
-        IO.RenderUIBackground( Point(25,9), Point(55,13), 0.7 );
-        IO.RenderUIBackground( Point(1,14), Point(79,25), 0.7 );
+        IO.RenderUIBackgroundBlock( Point(25,9), Point(55,13), 0.7 );
+        IO.RenderUIBackgroundBlock( Point(1,14), Point(79,25), 0.7 );
       end;
       MAINMENU_MENU : begin
-        if FJHCLink
-          then IO.RenderUIBackground( Point(23,13), Point(57,23), 0.7 )
-          else IO.RenderUIBackground( Point(23,13), Point(57,22), 0.7 );
-        IO.RenderUIBackground( Point(0,24),  Point(80,25), 0.7 );
+        IO.RenderUIBackgroundBlock( Point(0,24),  Point(80,25), 0.7 );
       end;
     end;
 
@@ -935,8 +917,7 @@ begin
 end;
 
 procedure TMainMenuView.UpdateModErrors;
-var iRect : TRectangle;
-    i, iM : Integer;
+var i, iM : Integer;
 begin
   VTIG_BeginWindow('Mod loading errors', Point( 70, -1 ) );
   VTIG_Text('{!There were errors while loading mods - fix, remove or disable!} ');
@@ -949,9 +930,7 @@ begin
   VTIG_Text('');
   VTIG_Text('You can ignore and proceed the errors are just version compatibility errors, otherwise the game might be unstable.');
   VTIG_Text('If you''re working on a mod, you can edit it and press {!Ctrl}+{!F1} to reload.');
-  iRect := VTIG_GetWindowRect;
   VTIG_End('Press <{!{$input_escape}}> to continue...');
-  IO.RenderUIBackground( iRect.TopLeft, iRect.BottomRight - PointUnit );
   if VTIG_Event( TIG_EV_RESTART ) then
   begin
     ForceRestart := CoreModuleID;

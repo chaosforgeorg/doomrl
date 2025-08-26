@@ -55,8 +55,7 @@ begin
 end;
 
 procedure TConfirmView.Update( aDTime : Integer; aActive : Boolean );
-var iRect   : TRectangle;
-    iResult : ( None, Cancel, Confirm );
+var iResult : ( None, Cancel, Confirm );
 begin
   if IsFinished then Exit;
 
@@ -64,12 +63,9 @@ begin
   VTIG_Begin('confirm_menu', FSize );
   VTIG_Text( FMessage );
   VTIG_Text( '' );
-  iRect := VTIG_GetWindowRect;
   if VTIG_Selectable( FCancel )  then iResult := Cancel;
   if VTIG_Selectable( FConfirm ) then iResult := Confirm;
   VTIG_End;
-
-  IO.RenderUIBackground( iRect.TopLeft, iRect.BottomRight - PointUnit );
 
   if not aActive then Exit;
 

@@ -47,7 +47,7 @@ type
     procedure DeviceChanged;
     function DeviceCoordToConsoleCoord( aCoord : TIOPoint ) : TIOPoint; override;
     function ConsoleCoordToDeviceCoord( aCoord : TIOPoint ) : TIOPoint; override;
-    procedure RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 ); override;
+    procedure RenderUIBackgroundBlock( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 ); override;
     procedure RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 ); override;
 
     procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); override;
@@ -978,7 +978,7 @@ begin
   Exit( FConsole.GetDeviceArea.Pos + aCoord );
 end;
 
-procedure TDRLGFXIO.RenderUIBackground( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
+procedure TDRLGFXIO.RenderUIBackgroundBlock( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 );
 var iP1,iP2 : TIOPoint;
 begin
   iP1 := ConsoleCoordToDeviceCoord( aUL + PointUnit );

@@ -16,7 +16,6 @@ type TRankUpView = class( TIOLayer )
 protected
   FFinished : Boolean;
   FSize     : TPoint;
-  FRect     : TRectangle;
   FLines    : array of Ansistring;
 end;
 
@@ -70,11 +69,9 @@ begin
 
   VTIG_FreeLabel( 'Press <{!{$input_ok}}>...', Point( 12, 8+High( FLines ) ) );
 
-  FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!{$input_ok},{$input_escape}}> continue}');
   if VTIG_EventCancel or VTIG_EventConfirm then
     FFinished := True;
-  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 

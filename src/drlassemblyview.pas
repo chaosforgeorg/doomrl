@@ -19,7 +19,6 @@ protected
 protected
   FFinished : Boolean;
   FSize     : TPoint;
-  FRect     : TRectangle;
   FContent  : TStringGArray;
 end;
 
@@ -41,11 +40,9 @@ begin
   for iString in FContent do
     VTIG_Text( iString );
   VTIG_Scrollbar;
-  FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!{$input_up},{$input_down}}> scroll, <{!{$input_ok},{$input_escape}}> return}');
   if VTIG_EventCancel or VTIG_EventConfirm then
     FFinished := True;
-  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 

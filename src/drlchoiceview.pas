@@ -66,8 +66,7 @@ begin
 end;
 
 procedure TChoiceView.Update( aDTime : Integer; aActive : Boolean );
-var iRect : TRectangle;
-    i     : Byte;
+var i : Byte;
 begin
   if IsFinished then Exit;
   if FDelay > 0 then FDelay -= aDTime;
@@ -90,10 +89,7 @@ begin
     VTIG_Ruler;
     VTIG_Text( FChoices[VTIG_Selected].Desc );
   end;
-  iRect := VTIG_GetWindowRect;
   VTIG_End;
-
-  IO.RenderUIBackground( iRect.TopLeft, iRect.BottomRight - PointUnit );
 
   if FEscape and VTIG_EventCancel then
   begin

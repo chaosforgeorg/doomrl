@@ -60,7 +60,6 @@ procedure THelpView.Update( aDTime : Integer; aActive : Boolean );
 begin
        if FMode = HELPVIEW_MENU then UpdateMenu
   else if FMode = HELPVIEW_READ then UpdateRead;
-  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 function THelpView.IsFinished : Boolean;

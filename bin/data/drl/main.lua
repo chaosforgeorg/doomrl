@@ -116,6 +116,7 @@ function drl.OnLoad()
 
 	if GRAPHICSVERSION then
 		ui.set_style_color( VTIG_BACKGROUND_COLOR, { 16, 0, 0, 0 } )
+		ui.set_style_color( VTIG_WINDOW_BACKGROUND_COLOR, { 1, 1, 1, 200 } )
 		ui.set_style_color( VTIG_SELECTED_BACKGROUND_COLOR, { 68, 34, 34, 255 } )
 		ui.set_style_color( VTIG_INPUT_TEXT_COLOR, LIGHTGRAY )
 		ui.set_style_color( VTIG_INPUT_BACKGROUND_COLOR, {68, 34, 34, 255} )

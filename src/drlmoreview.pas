@@ -16,7 +16,6 @@ type TMoreView = class( TIOLayer )
 protected
   FFinished : Boolean;
   FSize     : TPoint;
-  FRect     : TRectangle;
   FSID      : Ansistring;
   FName     : Ansistring;
   FDesc     : Ansistring;
@@ -61,11 +60,9 @@ begin
   VTIG_Text( FDesc );
   VTIG_End;
 
-  FRect := VTIG_GetWindowRect;
   VTIG_End('{l<{!{$input_escape}},{!{$input_ok}}> exit}');
   if VTIG_EventCancel or VTIG_EventConfirm then
     FFinished := True;
-  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 

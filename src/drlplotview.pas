@@ -61,7 +61,7 @@ begin
   VTIG_SetMaxCharacters( FPosition );
   VTIG_FreeLabel( FMessage, Rectangle( 10, 5, 62, 15 ), FColor );
   IO.RenderUIBackground( FBGTexture, 1 );
-  IO.RenderUIBackground( PointZero, FSize, 0.5, 2 );
+  IO.RenderUIBackgroundBlock( PointZero, FSize, 0.5, 2 );
 
   if VTIG_EventCancel or VTIG_EventConfirm then
      if ( not FBoost ) and ( FPosition < ( Length(FMessage) * 0.8 ) )

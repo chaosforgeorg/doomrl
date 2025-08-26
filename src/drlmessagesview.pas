@@ -16,7 +16,6 @@ type TMessagesView = class( TIOLayer )
 protected
   FContent  : TMessageBuffer;
   FSize     : TPoint;
-  FRect     : TRectangle;
   FFinished : Boolean;
   FFirst    : Boolean;
 end;
@@ -44,7 +43,6 @@ begin
       if FContent[i] <> '' then
         VTIG_Text( FContent[i] );
   VTIG_Scrollbar( FFirst );
-  FRect := VTIG_GetWindowRect;
 
   if IO.IsGamepad
     then VTIG_End('{l<{!{$input_up},{$input_down}}> scroll, <{!{$input_ok},{$input_escape}}> continue}')
@@ -59,7 +57,6 @@ begin
 
   if VTIG_EventCancel or VTIG_EventConfirm then
     FFinished := True;
-  IO.RenderUIBackground( FRect.TopLeft, FRect.BottomRight - PointUnit );
 end;
 
 

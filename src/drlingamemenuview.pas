@@ -38,12 +38,10 @@ begin
 end;
 
 procedure TInGameMenuView.Update( aDTime : Integer; aActive : Boolean );
-var iRect : TRectangle;
 begin
   if IsFinished or (DRL.State <> DSPlaying) then Exit;
 
   VTIG_Begin('ingame_menu', Point( 30, 11 ) );
-  iRect := VTIG_GetWindowRect;
   if VTIG_Selectable( 'Continue' ) then
   begin
     FFinished := True;
@@ -80,8 +78,6 @@ begin
     DRL.SetState( DSSaving );
   end;
   VTIG_End;
-
-  IO.RenderUIBackground( iRect.TopLeft, iRect.BottomRight - PointUnit );
 
   if VTIG_EventCancel then FFinished := True;
 end;
