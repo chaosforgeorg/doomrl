@@ -408,6 +408,7 @@ function GetPropValueFixed(Instance: TObject; const PropName: Ansistring; Prefer
 
 var TIGStyleColored   : TTIGStyle;
     TIGStyleFrameless : TTIGStyle;
+    TIGStylePadless   : TTIGStyle;
 
 implementation
 uses typinfo, strutils, math, vmath, vdebug, vluasystem;

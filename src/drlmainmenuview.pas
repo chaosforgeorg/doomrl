@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlmainmenuview;
 interface
-uses vio, viotypes, vgenerics, vtextures, dfdata, drlio;
+uses vio, viotypes, vgenerics, vtextures, vtigstyle, dfdata, drlio;
 
 type TMainMenuViewMode = (
   MAINMENU_FIRST, MAINMENU_INTRO, MAINMENU_MENU,
@@ -71,6 +71,8 @@ protected
   FTitleChal   : Ansistring;
   FChallenges  : Boolean;
   FFKlassPick  : Boolean;
+  FMenuStyle   : TTIGStyle;
+  FWindowStyle : TTIGStyle;
 
   FBGTexture   : TTextureID;
   FLogoTexture : TTextureID;
@@ -80,7 +82,7 @@ end;
 implementation
 
 uses math, sysutils,
-     vutil, vtig, vtigstyle, vtigio, vgltypes, vluasystem, vluavalue, vsound,
+     vutil, vtig, vtigio, vgltypes, vluasystem, vluavalue, vsound,
      dfhof,
      drlbase, drlgfxio, drlplayerview, drlhelpview, drlsettingsview, drlpagedview;
 
@@ -115,6 +117,11 @@ const CTYPE_ANGEL  = 1;
 
 constructor TMainMenuView.Create( aInitial : TMainMenuViewMode = MAINMENU_FIRST; aResult : TMenuResult = nil );
 begin
+  FMenuStyle   := TIGStyleFrameless;
+  FMenuStyle.Padding[ VTIG_WINDOW_PADDING ]   := Point( 5, 1 );
+  FWindowStyle := TIGStyleFrameless;
+  FWindowStyle.Padding[ VTIG_WINDOW_PADDING ] := Point( 2, 1 );
+
   VTIG_EventClear;
   VTIG_ResetSelect( MAINMENU_ID );
 
@@ -279,15 +286,15 @@ var iSize  : TIOPoint;
     iCount : Byte;
 begin
   IO.Root.Console.HideCursor;
-  VTIG_PushStyle( @TIGStyleFrameless );
-  iSize := Point(24,8);
+  VTIG_PushStyle( @FMenuStyle );
+  iSize := Point(34,9);
   iCount := 6;
   if FJHCLink then
   begin
     Inc( iSize.Y );
     Inc( iCount );
   end;
-  VTIG_Begin( MAINMENU_ID, iSize, Point( 29, 14 ) );
+  VTIG_Begin( MAINMENU_ID, iSize, Point( 24, 14 ) );
   VTIG_PopStyle;
     VTIG_PushStyle( @TIGStyleColored );
     if FSaveExists then
@@ -491,7 +498,7 @@ begin
   end;
   if ModuleOption_NewMenu then
   begin
-    iLines := 12;
+    iLines := 13;
     if FArrayDiff[FArrayDiff.Size-1].Allow then iLines -= 2;
 
     if FResult.Challenge = ''
@@ -499,8 +506,8 @@ begin
       else iWindowID := 'mainmenu_difficulty_chal';
     iSelected := VTIG_Selected(iWindowID);
     if ( iSelected < 0 ) or (iSelected >= FArrayDiff.Size) then iSelected := 0;
-    VTIG_PushStyle( @TIGStyleFrameless );
-    VTIG_Begin( 'mainmenu_difficulty_desc', Point( 47, iLines ), Point( 30, 16 ) );
+    VTIG_PushStyle( @FWindowStyle );
+    VTIG_Begin( 'mainmenu_difficulty_desc', Point( 49, iLines ), Point( 29, 16 ) );
     VTIG_PopStyle;
       VTIG_PushStyle( @TIGStyleColored );
       VTIG_Text( Padded( '- {!' + FArrayDiff[iSelected].Name + ' }', 48, '-' ) );
@@ -526,7 +533,7 @@ begin
     VTIG_End;
 
     IO.RenderUIBackground(  Point(8,15), Point(25,17+FArrayDiff.Size), 0.7 );
-    IO.RenderUIBackground( Point(28,15), Point(77,16+iLines), 0.7 );
+    IO.RenderUIBackground( Point(28,15), Point(77,15+iLines), 0.7 );
   end
   else
   begin
@@ -561,7 +568,7 @@ begin
   if ( iSelected < 0 ) or (iSelected >= FArrayKlass.Size) then iSelected := 0;
   iLines := 8;
   if Length( FArrayKlass[iSelected].Desc ) > 200 then iLines := 13;
-  VTIG_PushStyle( @TIGStyleFrameless );
+  VTIG_PushStyle( @FWindowStyle );
   VTIG_Begin( 'mainmenu_klass_desc', Point( 47, iLines ), Point( 30, 16 ) );
   VTIG_PopStyle;
     VTIG_PushStyle( @TIGStyleColored );

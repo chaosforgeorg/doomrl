@@ -382,6 +382,9 @@ begin
 
   TIGStyleFrameless := VTIGDefaultStyle;
   TIGStyleFrameless.Frame[ VTIG_BORDER_FRAME ] := '';
+
+  TIGStylePadless   := VTIGDefaultStyle;
+  TIGStylePadless.Padding[ VTIG_WINDOW_PADDING ] := Point(0,0);
 end;
 
 { TDRLIO }
