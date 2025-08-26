@@ -56,7 +56,7 @@ type TDRLIO = class( TIO )
   procedure LoadStop;
   procedure Update( aMSec : DWord ); override;
 
-  function EventToInput( const aEvent : TIOEvent ) : TInputKey;
+  function EventToUIInput( const aEvent : TIOEvent ) : Integer; override;
   function CommandEventPending : Boolean;
 
   procedure SetHint( const aText : AnsiString );
@@ -466,7 +466,7 @@ end;
 function TDRLIO.OnEvent( const event : TIOEvent ) : Boolean;
 var iEvent : TIOEvent;
     iWide  : WideString;
-    iInput : TInputKey;
+    iInput : Integer;
 begin
   if ( event.EType = VEVENT_TEXT ) then
   begin
@@ -540,11 +540,6 @@ begin
     if not Setting_Mouse then Exit( False );
     FUIMouse := DeviceCoordToConsoleCoord( event.MouseMove.Pos );
   end;
-
-  iInput := EventToInput( event );
-  if iInput <> INPUT_NONE then
-    if HandleInput( Integer( iInput ) ) then
-      Exit( True );
 
   Exit( inherited OnEvent( event ) );
 end;
@@ -1072,33 +1067,33 @@ begin
  //   VTIG_EventClear;
 end;
 
-function TDRLIO.EventToInput( const aEvent : TIOEvent ) : TInputKey;
+function TDRLIO.EventToUIInput( const aEvent : TIOEvent ) : Integer;
 begin
   if ( aEvent.EType = VEVENT_SYSTEM ) and ( aEvent.System.Code = VIO_SYSEVENT_QUIT ) then
     if Option_LockClose
-       then Exit( INPUT_QUIT )
-       else Exit( INPUT_HARDQUIT );
+       then Exit( Integer( INPUT_QUIT ) )
+       else Exit( Integer( INPUT_HARDQUIT ) );
   if (aEvent.EType = VEVENT_MOUSEMOVE) then
   begin
-    if not Setting_Mouse then Exit( INPUT_NONE );
+    if not Setting_Mouse then Exit( Integer( INPUT_NONE ) );
     FMTarget := SpriteMap.DevicePointToCoord( aEvent.MouseMove.Pos );
     if DRL.Level <> nil then
       if DRL.Level.isProperCoord( FMTarget ) then
-        Exit( INPUT_MMOVE );
+        Exit( Integer( INPUT_MMOVE ) );
   end;
   if aEvent.EType = VEVENT_MOUSEDOWN then
   begin
-    if not Setting_Mouse then Exit( INPUT_NONE );
+    if not Setting_Mouse then Exit( Integer( INPUT_NONE ) );
     FMTarget := SpriteMap.DevicePointToCoord( aEvent.Mouse.Pos );
     if DRL.Level <> nil then
       if DRL.Level.isProperCoord( FMTarget ) then
       begin
         case aEvent.Mouse.Button of
-          VMB_BUTTON_LEFT     : Exit( INPUT_MLEFT );
-          VMB_BUTTON_MIDDLE   : Exit( INPUT_MMIDDLE );
-          VMB_BUTTON_RIGHT    : Exit( INPUT_MRIGHT );
-          VMB_WHEEL_UP        : Exit( INPUT_MSCRUP );
-          VMB_WHEEL_DOWN      : Exit( INPUT_MSCRDOWN );
+          VMB_BUTTON_LEFT     : Exit( Integer( INPUT_MLEFT ) );
+          VMB_BUTTON_MIDDLE   : Exit( Integer( INPUT_MMIDDLE ) );
+          VMB_BUTTON_RIGHT    : Exit( Integer( INPUT_MRIGHT ) );
+          VMB_WHEEL_UP        : Exit( Integer( INPUT_MSCRUP ) );
+          VMB_WHEEL_DOWN      : Exit( Integer( INPUT_MSCRDOWN ) );
         end;
       end;
   end;
@@ -1106,9 +1101,9 @@ begin
   begin
     FKeyCode := IOKeyEventToIOKeyCode( aEvent.Key );
     if (FKeyCode mod 256) <> 0
-      then Exit( TInputKey( Config.Commands[ FKeyCode ] ) );
+      then Exit( Config.Commands[ FKeyCode ] );
   end;
-  Exit( INPUT_NONE );
+  Exit( inherited EventToUIInput( aEvent ) );
 end;
 
 function TDRLIO.CommandEventPending : Boolean;
