@@ -603,6 +603,7 @@ core.type_name = {
 	[ITEMTYPE_NRANGED] = "natural ranged",
 	[ITEMTYPE_ARMOR]   = "armor",
 	[ITEMTYPE_MELEE]   = "melee weapon",
+	[ITEMTYPE_URANGED] = "usable weapon",
 	[ITEMTYPE_AMMO]    = "ammo",
 	[ITEMTYPE_AMMOPACK]= "ammo pack",
 	[ITEMTYPE_PACK]    = "pack",

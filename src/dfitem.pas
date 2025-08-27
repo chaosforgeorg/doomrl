@@ -38,7 +38,7 @@ TItem  = class( TThing )
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
     function    eqSlot : TEqSlot;
-    function    isAmmo : Boolean;
+    function    isStackable : Boolean;
     function    isUnloadable : Boolean;
     function    isMelee : Boolean;
     function    isRanged : Boolean;
@@ -66,11 +66,15 @@ TItem  = class( TThing )
     FProps    : TItemProperties;
     FMods     : array[Ord('A')..Ord('Z')] of Byte;
     FAppear   : Integer;
+    FAmount   : Integer;
+    FMax      : Integer;
     procedure LuaLoad( Table : TLuaTable; onFloor: boolean ); reintroduce;
     public
     property PGlowColor     : TColor      read FProps.PGlowColor     write FProps.PGlowColor;
     property PCosColor      : TColor      read FProps.PCosColor      write FProps.PCosColor;
     published
+    property Max            : Integer     read FMax;
+    property Amount         : Integer     read FAmount               write FAmount;
     property NID            : Byte        read FNID;
     property RechargeDelay  : Byte        read FRecharge.Delay       write FRecharge.Delay;
     property RechargeAmount : Byte        read FRecharge.Amount      write FRecharge.Amount;
@@ -171,6 +175,8 @@ begin
   aStream.Read( FMods,     SizeOf( FMods ) );
   aStream.Read( FProps,    SizeOf( FProps ) );
   aStream.Read( FAppear,   SizeOf( FAppear ) );
+  aStream.Read( FMax,      SizeOf( FMax ) );
+  aStream.Read( FAmount,   SizeOf( FAmount ) );
 
   FNID   := aStream.ReadByte();
   iCount := aStream.ReadWord();
@@ -188,6 +194,8 @@ begin
   aStream.Write( FMods,     SizeOf( FMods ) );
   aStream.Write( FProps,    SizeOf( FProps ) );
   aStream.Write( FAppear,   SizeOf( FAppear ) );
+  aStream.Write( FMax,      SizeOf( FMax ) );
+  aStream.Write( FAmount,   SizeOf( FAmount ) );
 
   aStream.WriteByte( FNID );
 
@@ -211,6 +219,9 @@ begin
 
   FAppear          := 0;
   FNID             := Table.getInteger('nid');
+  FMax             := Table.getInteger('max');
+  FAmount          := Table.getInteger('amount');
+
   FRecharge.Delay  := Table.getInteger('rechargedelay',0);
   FRecharge.Amount := Table.getInteger('rechargeamount',0);
   FRecharge.Limit  := Table.getInteger('rechargelimit',0);
@@ -239,7 +250,7 @@ begin
          FProps.KnockMod := Table.getInteger('knockmod');
          FProps.SpriteMod := Table.GetInteger('spritemod',0);
        end;
-     ITEMTYPE_AMMO, ITEMTYPE_AMMOPACK :
+     ITEMTYPE_AMMOPACK :
        begin
          FProps.Ammo        := Table.getInteger('ammo');
          FProps.AmmoMax     := Table.getInteger('ammomax');
@@ -273,8 +284,8 @@ begin
        end;
   end;
 
-  if onFloor and isAmmo then
-    FProps.Ammo := Round( FProps.Ammo * Double(LuaSystem.Get([ 'diff', DRL.Difficulty, 'ammofactor' ])) );
+  if onFloor and ( FProps.IType = ITEMTYPE_AMMO ) then
+    FAmount := Round( FAmount * Double(LuaSystem.Get([ 'diff', DRL.Difficulty, 'ammofactor' ])) );
 
   CallHook( Hook_OnCreate, [] );
 end;
@@ -309,8 +320,8 @@ begin
   if (FProps.IType in [ITEMTYPE_ARMOR,ITEMTYPE_BOOTS]) then
     case FProps.Durability of
       0         : GetProtection := 0;
-      1  .. 25  : GetProtection := Max( FArmor div 4, 1 );
-      26 .. 49  : GetProtection := Max( FArmor div 2, 1 );
+      1  .. 25  : GetProtection := math.Max( FArmor div 4, 1 );
+      26 .. 49  : GetProtection := math.Max( FArmor div 2, 1 );
       50 ..1000 : GetProtection := FArmor;
     end
   else Exit(FArmor);
@@ -325,8 +336,8 @@ begin
   if (FProps.IType in [ITEMTYPE_ARMOR,ITEMTYPE_BOOTS]) then
     case FProps.Durability of
       0         : GetResistance := 0;
-      1  .. 25  : GetResistance := Ceil( Max( iResist div 4, 1 ) );
-      26 .. 49  : GetResistance := Ceil( Max( iResist div 2, 1 ) );
+      1  .. 25  : GetResistance := Ceil( math.Max( iResist div 4, 1 ) );
+      26 .. 49  : GetResistance := Ceil( math.Max( iResist div 2, 1 ) );
       50 ..1000 : GetResistance := iResist;
     end
   else Exit(iResist);
@@ -341,7 +352,6 @@ begin
     ITEMTYPE_LEVER,
     ITEMTYPE_TELE,
     ITEMTYPE_FEATURE  : Exit(Description);
-    ITEMTYPE_AMMO     : if FProps.Ammo > 1 then Description += ' (x'+IntToStr(FProps.Ammo)+')';
     ITEMTYPE_AMMOPACK : Description += ' (x'+IntToStr(FProps.Ammo)+')';
     ITEMTYPE_MELEE :
     begin
@@ -387,6 +397,7 @@ begin
           Description += ' ('+FProps.Damage.toString+')';
       end;
   end;
+  if FMax > 1 then Description += ' (x'+IntToStr(FAmount)+')';
 end;
 
 function TItem.DescriptionBox: Ansistring;
@@ -479,9 +490,7 @@ end;
 
 function    TItem.GetName(known : boolean) : string;
 begin
-  case FProps.IType of
-    ITEMTYPE_AMMO : if FProps.Ammo > 1 then Exit(Description);
-  end;
+  if FAmount > 1 then Exit(Description);
   if Flags[ IF_UNIQUENAME ] then Exit( Description );
   if known then Exit('the '+Description)
            else Exit(Preposition(Description)+Description);
@@ -509,9 +518,9 @@ begin
   inherited Destroy;
 end;
 
-function TItem.isAmmo : boolean;
+function TItem.isStackable : boolean;
 begin
-  Exit(FProps.IType = ITEMTYPE_AMMO);
+  Exit(FMax > 1);
 end;
 
 function TItem.isUnloadable : boolean;

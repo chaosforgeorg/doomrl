@@ -435,7 +435,9 @@ core.register_blueprint "item"
 	firstmsg       = { false, core.TSTRING },
 	resist         = { false, core.TTABLE },
 	tags           = { false, core.TTABLE, {} },
-
+	max            = { false, core.TNUMBER, 1 },
+    amount         = { false, core.TNUMBER, 1 },
+    
 	type        = {{
 		[ITEMTYPE_ARMOR] = {
 			ascii      = { false, core.TSTRING, "[" },
@@ -477,8 +479,6 @@ core.register_blueprint "item"
 		[ITEMTYPE_AMMO]   = {
 			ascii   = { false, core.TSTRING, "|" },
 			desc    = { true, core.TSTRING },
-			ammo    = { true, core.TNUMBER },
-			ammomax = { true, core.TNUMBER  },
 		},
 		[ITEMTYPE_AMMOPACK] = {
 			ascii   = { false, core.TSTRING, "!" },

@@ -352,7 +352,7 @@ function drl.register_regular_items()
 			ui.msg("BackPack!")
 			ui.blink(YELLOW,50)
 			being:add_property( "BACKPACK", 4 )
-			being:resort_ammo()
+			being:resort_stacks()
 		end,
 	}
 
@@ -411,8 +411,8 @@ function drl.register_regular_items()
 		desc     = "10mm ammo, the backbone of your firepower.",
 
 		type    = ITEMTYPE_AMMO,
-		ammo    = 24,
-		ammomax = 100,
+		amount  = 24,
+		max     = 100,
 	}
 
 	register_item "shell"
@@ -426,8 +426,8 @@ function drl.register_regular_items()
 		desc     = "Food for your trusty shotguns.",
 
 		type    = ITEMTYPE_AMMO,
-		ammo    = 8,
-		ammomax = 50,
+		amount  = 8,
+		max     = 50,
 	}
 
 	register_item "rocket"
@@ -441,8 +441,8 @@ function drl.register_regular_items()
 		desc     = "Rockets -- heavy, big and go boom.",
 
 		type    = ITEMTYPE_AMMO,
-		ammo    = 3,
-		ammomax = 10,
+		amount  = 3,
+		max     = 10,
 	}
 
 	register_item "cell"
@@ -457,8 +457,8 @@ function drl.register_regular_items()
 		desc     = "Power cells, the peak of monster frying technology.",
 
 		type    = ITEMTYPE_AMMO,
-		ammo    = 20,
-		ammomax = 50,
+		amount  = 20,
+		max     = 50,
 	}
 
 	register_item "pammo"
