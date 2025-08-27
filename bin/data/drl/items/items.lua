@@ -352,7 +352,7 @@ function drl.register_regular_items()
 			ui.msg("BackPack!")
 			ui.blink(YELLOW,50)
 			being:add_property( "BACKPACK", 4 )
-			being:resort_ammo()
+			being:resort_stacks()
 		end,
 	}
 

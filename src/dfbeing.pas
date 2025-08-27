@@ -389,7 +389,7 @@ function TBeing.getAmmoItem ( Weapon : TItem ) : TItem;
 begin
   if Weapon = nil then Exit( nil );
   if ( Weapon = FInv.Slot[ efWeapon ] ) and canPackReload then Exit( FInv.Slot[ efWeapon2 ] );
-  Exit( FInv.SeekAmmo( Weapon.AmmoID ) );
+  Exit( FInv.SeekStack( Weapon.AmmoID ) );
 end;
 
 function TBeing.HandleShotgunFire( aTarget : TCoord2D; aShotGun : TItem; aAltFire : TAltFire; aShots : DWord ) : Boolean;
@@ -655,7 +655,7 @@ var iUnique : Boolean;
   var iItem : TItem;
   begin
     if ( iAmmo = 0 ) or ( iAmmoID = 0 ) then Exit;
-    iAmmo := Inv.AddAmmo(iAmmoID,iAmmo);
+    iAmmo := Inv.AddStack(iAmmoID,iAmmo);
     if ( iAmmo > 0 ) then
     try
        iItem := TItem.Create(iAmmoID);
@@ -918,9 +918,9 @@ begin
 
   Dec( FSpeedCount, getFireCost( iAltFire, False ) );
 
-  if ( not FireRanged( aTarget, aWeapon, iAltFire, aDelay )) or Player.Dead then Exit;
+  if ( not FireRanged( aTarget, aWeapon, iAltFire, aDelay )) or Player.Dead then Exit( True );
   if ( not aForceSingle ) and canDualWield and ( Inv.Slot[ efWeapon2 ].Ammo > 0 ) then
-    if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], iAltFire, aDelay + 100 )) or Player.Dead then Exit;
+    if ( not FireRanged( aTarget, Inv.Slot[ efWeapon2 ], iAltFire, aDelay + 100 )) or Player.Dead then Exit( True );
 
   Exit( True );
 end;
@@ -949,9 +949,21 @@ begin
     Exit( True );
   end;
 
-  if iItem.isAmmo then
+  if BF_IMPATIENT in FFlags then
+    if iItem.isUsable then
+      begin
+        if isPlayer then IO.Msg('No time to waste.');
+        CallHook( Hook_OnPickUpItem, [iItem] );
+        if iItem.isPack then Exit( ActionUse( iItem, FPosition ) );
+        if DRL.Targeting.List.Current <> FPosition
+          then Exit( ActionUse( iItem, DRL.Targeting.List.Current ) )
+          else Exit( Fail( 'No valid target!', [] ) );
+      end;
+
+  if iItem.isStackable then
   begin
-    iAmount := Inv.AddAmmo(iItem.NID,iItem.Amount);
+    if not iItem.CallHookCheck(Hook_OnPickupCheck,[Self]) then  Exit( False );
+    iAmount := Inv.AddStack(iItem.NID,iItem.Amount);
     if iAmount <> iItem.Amount then
     begin
       iItem.playSound( 'pickup', FPosition );
@@ -964,17 +976,6 @@ begin
       Exit( Success( 'You found %d of %s.',[iCount,iName],ActionCostPickup) );
     end else Exit( Fail('You don''t have enough room in your backpack.',[]) );
   end;
-
-  if BF_IMPATIENT in FFlags then
-    if iItem.isUsable then
-      begin
-        if isPlayer then IO.Msg('No time to waste.');
-        CallHook( Hook_OnPickUpItem, [iItem] );
-        if iItem.isPack then Exit( ActionUse( iItem, FPosition ) );
-        if DRL.Targeting.List.Current <> FPosition
-          then Exit( ActionUse( iItem, DRL.Targeting.List.Current ) )
-          else Exit( Fail( 'No valid target!', [] ) );
-      end;
 
   if Inv.isFull then Exit( Fail( 'You don''t have enough room in your backpack.', [] ) );
 
@@ -1071,7 +1072,11 @@ begin
     end
     else
       isUsedUp := aItem.CallHookCheck( Hook_OnUse,[Self] );
-    if isUsedUp and ((UIDs.Get( iUID ) <> nil)  and (isLever or isUsable)) then FreeAndNil( aItem );
+    if isUsedUp and ((UIDs.Get( iUID ) <> nil)  and (isLever or isUsable)) then
+    begin
+      aItem.Amount := aItem.Amount - 1;
+      if aItem.Amount < 1 then FreeAndNil( aItem );
+    end;
   end;
 
   if isURanged then Exit( Result );
@@ -1108,7 +1113,7 @@ begin
 
   aItem.PlaySound( 'reload', FPosition );
   iName   := aItem.Name;
-  iAmount := FInv.AddAmmo(aItem.AmmoID,aItem.Ammo);
+  iAmount := FInv.AddStack(aItem.AmmoID,aItem.Ammo);
   if iAmount = 0 then
   begin
     aItem.Ammo := 0;
@@ -1315,7 +1320,7 @@ begin
       begin
         if ( not aSingle ) and ( Inv.Slot[efWeapon].AmmoMax <> Inv.Slot[efWeapon].Ammo ) then
         begin
-          aAmmoItem := FInv.SeekAmmo(Inv.Slot[efWeapon].AmmoID);
+          aAmmoItem := FInv.SeekStack(Inv.Slot[efWeapon].AmmoID);
           if aAmmoItem <> nil then Continue;
         end;
       end;
@@ -1656,7 +1661,7 @@ begin
       iItem := FInv.Slot[ efWeapon ];
       if ( not iItem.Flags[IF_NODROP] ) and ( not iItem.Flags[IF_NOUNLOAD] )
         and iItem.isUnloadable and ( iItem.Ammo > 0 ) then
-        iItem.Ammo := FInv.AddAmmo(iItem.AmmoID,iItem.Ammo);
+        iItem.Ammo := FInv.AddStack(iItem.AmmoID,iItem.Ammo);
     end;
 
     for iItem in FInv do
@@ -2701,20 +2706,35 @@ begin
 end;
 
 function lua_being_add_inv_item(L: Plua_State): Integer; cdecl;
-var State   : TDRLLuaState;
-    Being   : TBeing;
-    Item    : TItem;
+var iState  : TDRLLuaState;
+    iBeing  : TBeing;
+    iItem   : TItem;
+    iAmount : Integer;
 begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  Item  := State.ToObject(2) as TItem;
+  iState.Init(L);
+  iBeing := iState.ToObject(1) as TBeing;
+  iItem  := iState.ToObject(2) as TItem;
 
-  if Being.FInv.isFull then
-    State.Push( False )
+  if iItem.isStackable then
+  begin
+    iAmount := iBeing.FInv.AddStack(iItem.NID,iItem.Amount);
+    if iAmount <> iItem.Amount then
+    begin
+      if iAmount = 0
+        then iItem.Free
+        else iItem.Amount := iAmount;
+      iState.Push( iAmount = 0 );
+    end
+    else
+      iState.Push( False );
+    Exit( 1 )
+  end;
+  if iBeing.FInv.isFull then
+    iState.Push( False )
   else
   begin
-    Being.FInv.Add(item);
-    State.Push( True );
+    iBeing.FInv.Add( iItem );
+    iState.Push( True );
   end;
   Result := 1;
 end;
@@ -2810,7 +2830,7 @@ begin
     if ( iWeapon <> nil ) and ( not iWeapon.Flags[ IF_RECHARGE ] ) then
     begin
       iItem := iState.ToObjectOrNil(2) as TItem;
-      if iItem = nil then iItem := iBeing.Inv.SeekAmmo( iWeapon.AmmoID );
+      if iItem = nil then iItem := iBeing.Inv.SeekStack( iWeapon.AmmoID );
       if (iItem = nil) and iBeing.canPackReload then
         iItem := iBeing.Inv.Slot[ efWeapon2 ];
       if iItem <> nil then

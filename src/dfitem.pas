@@ -38,7 +38,7 @@ TItem  = class( TThing )
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
     function    eqSlot : TEqSlot;
-    function    isAmmo : Boolean;
+    function    isStackable : Boolean;
     function    isUnloadable : Boolean;
     function    isMelee : Boolean;
     function    isRanged : Boolean;
@@ -284,7 +284,7 @@ begin
        end;
   end;
 
-  if onFloor and isAmmo then
+  if onFloor and ( FProps.IType = ITEMTYPE_AMMO ) then
     FAmount := Round( FAmount * Double(LuaSystem.Get([ 'diff', DRL.Difficulty, 'ammofactor' ])) );
 
   CallHook( Hook_OnCreate, [] );
@@ -352,7 +352,6 @@ begin
     ITEMTYPE_LEVER,
     ITEMTYPE_TELE,
     ITEMTYPE_FEATURE  : Exit(Description);
-    ITEMTYPE_AMMO     : if FAmount > 1 then Description += ' (x'+IntToStr(FAmount)+')';
     ITEMTYPE_AMMOPACK : Description += ' (x'+IntToStr(FProps.Ammo)+')';
     ITEMTYPE_MELEE :
     begin
@@ -398,6 +397,7 @@ begin
           Description += ' ('+FProps.Damage.toString+')';
       end;
   end;
+  if FMax > 1 then Description += ' (x'+IntToStr(FAmount)+')';
 end;
 
 function TItem.DescriptionBox: Ansistring;
@@ -490,9 +490,7 @@ end;
 
 function    TItem.GetName(known : boolean) : string;
 begin
-  case FProps.IType of
-    ITEMTYPE_AMMO : if FAmount > 1 then Exit(Description);
-  end;
+  if FAmount > 1 then Exit(Description);
   if Flags[ IF_UNIQUENAME ] then Exit( Description );
   if known then Exit('the '+Description)
            else Exit(Preposition(Description)+Description);
@@ -520,9 +518,9 @@ begin
   inherited Destroy;
 end;
 
-function TItem.isAmmo : boolean;
+function TItem.isStackable : boolean;
 begin
-  Exit(FProps.IType = ITEMTYPE_AMMO);
+  Exit(FMax > 1);
 end;
 
 function TItem.isUnloadable : boolean;

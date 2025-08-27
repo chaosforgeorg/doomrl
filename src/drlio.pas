@@ -798,7 +798,7 @@ begin
         if iWeapon.isRanged and ( not iWeapon.Flags[ IF_NOAMMO ] ) and ( not iWeapon.Flags[ IF_RECHARGE ] ) then
         begin
           if FCachedAmmo = -1 then
-            FCachedAmmo := Player.Inv.CountAmmo( iWeapon.AmmoID );
+            FCachedAmmo := Player.Inv.CountAmount( iWeapon.AmmoID );
           iDesc := Player.Inv.Slot[efWeapon].Description;
           if Length( iDesc ) > 42 then iDesc := Copy(iDesc, 1, 42 );
           VTIG_FreeLabel( iDesc, iPos + Point(31,1), WeaponColor(Player.Inv.Slot[efWeapon]) );

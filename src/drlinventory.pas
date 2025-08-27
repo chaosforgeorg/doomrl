@@ -24,9 +24,9 @@ TInventory = class( TVObject )
        procedure Sort( var aList : TItemList );
        function  Size : byte;
        procedure Add( aItem : TItem );
-       function  SeekAmmo( aAmmoID : DWord ) : TItem;
-       function  CountAmmo( aAmmoID : DWord ) : Integer;
-       function  AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
+       function  SeekStack( aID : DWord ) : TItem;
+       function  CountAmount( aID : DWord ) : Integer;
+       function  AddStack( aID : DWord; aCount : Integer ) : Integer;
        function  isFull : boolean;
        procedure RawSetSlot( aIndex : TEqSlot; aItem : TItem ); inline;
        procedure EqSwap( aSlot1, aSlot2 : TEqSlot );
@@ -126,60 +126,58 @@ begin
         SwapItem(aList[iCount2],aList[iCount2+1]);
 end;
 
-function TInventory.SeekAmmo( aAmmoID : DWord ) : TItem;
-var iAmmo      : TItem;
-    iAmmoCount : Integer;
+function TInventory.SeekStack( aID : DWord ) : TItem;
+var iItem  : TItem;
+    iCount : Integer;
 begin
-  SeekAmmo   := nil;
-  iAmmoCount := 65000;
+  SeekStack := nil;
+  iCount    := 99999;
 
-  for iAmmo in Self do
-     if iAmmo.isAmmo then
-       if iAmmo.NID = aAmmoID then
-       if iAmmo.Amount <= iAmmoCount then
-       begin
-         SeekAmmo   := iAmmo;
-         iAmmoCount := iAmmo.Amount;
-       end;
+  for iItem in Self do
+    if iItem.NID = aID then
+      if iItem.Amount <= iCount then
+      begin
+        SeekStack := iItem;
+        iCount    := iItem.Amount;
+      end;
 end;
 
-function TInventory.CountAmmo( aAmmoID : DWord ) : Integer;
-var iAmmo      : TItem;
+function TInventory.CountAmount( aID : DWord ) : Integer;
+var iItem : TItem;
 begin
-  CountAmmo := 0;
-  if aAmmoID = 0 then Exit( 0 );
-  for iAmmo in Self do
-     if iAmmo.isAmmo then
-       if iAmmo.NID = aAmmoID then
-         CountAmmo += iAmmo.Amount;
+  CountAmount := 0;
+  if aID = 0 then Exit( 0 );
+  for iItem in Self do
+    if iItem.NID = aID then
+      CountAmount += iItem.Amount;
 end;
 
 
-function TInventory.AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
-var iAmount   : Word;
-    iAmmoItem : TItem;
-    iMax      : Integer;
+function TInventory.AddStack( aID : DWord; aCount : Integer ) : Integer;
+var iAmount : Integer;
+    iItem   : TItem;
+    iMax    : Integer;
 begin
   if LuaSystem.Defined([ CoreModuleID, 'GetItemMax' ])
-    then iMax := LuaSystem.ProtectedCall([ CoreModuleID, 'GetItemMax' ], [aAmmoID] )
-    else iMax := LuaSystem.Get(['items',aAmmoID,'max']);
-  iAmmoItem := SeekAmmo(aAmmoID);
+    then iMax := LuaSystem.ProtectedCall([ CoreModuleID, 'GetItemMax' ], [aID] )
+    else iMax := LuaSystem.Get(['items',aID,'max']);
+  iItem := SeekStack(aID);
 
-  if iAmmoItem <> nil then
+  if iItem <> nil then
   begin
-    iAmount := Min(aCount,iMax-iAmmoItem.Amount);
-    aCount -= iAmount;
-    iAmmoItem.Amount := iAmmoItem.Amount + iAmount;
+    iAmount      := Min(aCount,iMax-iItem.Amount);
+    aCount       -= iAmount;
+    iItem.Amount := iItem.Amount + iAmount;
   end;
   if aCount = 0 then Exit(0);
 
   repeat
     if isFull then Exit(aCount);
 
-    iAmount := Min(aCount,iMax);
-    iAmmoItem := TItem.Create(aAmmoID);
-    iAmmoItem.Amount := iAmount;
-    Add(iAmmoItem);
+    iAmount      := Min(aCount,iMax);
+    iItem        := TItem.Create(aID);
+    iItem.Amount := iAmount;
+    Add(iItem);
     aCount -= iAmount;
   until aCount = 0;
   Exit(0);
