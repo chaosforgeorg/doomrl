@@ -31,7 +31,7 @@ type
     procedure AnimationWipe; override;
     procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); override;
     procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection ); override;
-    procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean ); override;
+    procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean; aWipeBump : Boolean ); override;
     procedure addBumpAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aAmount : Single ); override;
     procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); override;
     procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); override;
@@ -445,18 +445,27 @@ begin
       FAnimations.addAnimation( TGFXScreenShakeAnimation.Create( aDuration, aDelay, aStrength, aDirection ) );
 end;
 
-procedure TDRLGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean );
+procedure TDRLGFXIO.addMoveAnimation ( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean; aWipeBump : Boolean );
+var iCount : Integer;
 begin
   if DRL.State <> DSPlaying then Exit;
+  iCount := 0;
+  if aWipeBump then
+    with FAnimations do
+      if Animations.Size > 0 then
+      repeat
+        if ( Animations[iCount].UID = aUID ) and ( Animations[iCount] is TGFXBumpAnimation )
+          then Animations.Delete( iCount )
+          else Inc( iCount );
+      until iCount >= Animations.Size;
   FAnimations.AddAnimation(TGFXMoveAnimation.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, aBeing ));
 end;
 
 procedure TDRLGFXIO.addBumpAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aAmount : Single );
 begin
   if DRL.State <> DSPlaying then Exit;
-  FAnimations.AddAnimation(TGFXMoveAnimation.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, True, aAmount ));
-  FAnimations.AddAnimation(TGFXMoveAnimation.Create(aDuration, aDelay, aUID, aTo, aFrom, aSprite, True, -aAmount ));
-  if Player.UID = aUID then WaitForAnimation;
+  FAnimations.AddAnimation(TGFXBumpAnimation.Create(aDuration, aDelay, aUID, aFrom, aTo, aSprite, True, aAmount ));
+  FAnimations.AddAnimation(TGFXBumpAnimation.Create(aDuration, aDelay, aUID, aTo, aFrom, aSprite, True, -aAmount ));
 end;
 
 function TDRLGFXIO.getUIDPosition( aUID : TUID; var aPosition : TVec2i ) : Boolean;

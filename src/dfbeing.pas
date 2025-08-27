@@ -1109,7 +1109,7 @@ begin
     iVisualTime := Ceil( VisualTime( iMoveCost, AnimationSpeedMove ) * aVisualMultiplier );
     if isPlayer then
       IO.addScreenMoveAnimation( iVisualTime, aTarget );
-    IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite, True );
+    IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite, True, isPlayer and ( aMoveCost = 0 ) );
   end;
   Displace( aTarget );
   if aMoveCost = -1
@@ -1257,7 +1257,7 @@ begin
     if iLevel.AnimationVisible( FPosition, Self ) or iLevel.AnimationVisible( LastMove, Self ) then
     begin
       iVisualMult := ( 100.0 / FSpeed ) * ( iMoveCost / 1000.0 ) * aVisualMultiplier;
-      IO.addMoveAnimation( Ceil( iVisualMult * 100 ), 0, FUID,Position,LastMove,Sprite, True);
+      IO.addMoveAnimation( Ceil( iVisualMult * 100 ), 0, FUID,Position,LastMove,Sprite, True, False );
     end;
   Displace( FMovePos );
   if BF_WALKSOUND in FFlags then
@@ -1706,12 +1706,14 @@ var iSlot       : TEqSlot;
     iAttackCost : DWord;
     iLevel      : TLevel;
     iUID        : TUID;
+    iPosition   : TCoord2D;
 begin
   FMeleeAttack := True;
-  iSlot   := efTorso;
-  iWeapon := nil;
-  iUID    := FUID;
-  iLevel  := TLevel(Parent);
+  iSlot     := efTorso;
+  iWeapon   := nil;
+  iUID      := FUID;
+  iLevel    := TLevel(Parent);
+  iPosition := Position;
   if iLevel.Being[ aWhere ] <> nil then
     Result := Attack( iLevel.Being[ aWhere ] )
   else
@@ -1727,10 +1729,15 @@ begin
     iAttackCost := getFireCost( ALT_NONE, True );
 
     if DRL.Level.AnimationVisible( Position, Self ) then
-      IO.addBumpAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aWhere, Sprite, 0.5 );
+      IO.addBumpAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, iUID, iPosition, aWhere, Sprite, 0.5 );
 
     Result := iLevel.DamageTile( aWhere, rollMeleeDamage( iSlot ), Damage_Melee );
     Dec( FSpeedCount, iAttackCost )
+  end;
+  if iLevel.isAlive( iUID ) then
+  begin
+      if IsPlayer
+        then IO.WaitForAnimation;
   end;
 end;
 
@@ -2374,7 +2381,7 @@ begin
       if isPlayer then
         IO.addScreenMoveAnimation(100, iKnock );
       if iLevel.AnimationVisible( FPosition, Self ) or iLevel.AnimationVisible( iKnock, Self ) then
-        IO.addMoveAnimation(100,0,FUID,Position,iKnock,Sprite,True);
+        IO.addMoveAnimation(100,0,FUID,Position,iKnock,Sprite,True,True);
       if isPlayer then
         IO.addScreenShakeAnimation( 400, 0, Clampf( aStrength * 1.0, 2.0, 10.0 ) );
     end;
@@ -3200,7 +3207,10 @@ begin
   iAmount := iState.ToFloat( 3, 0.5 );
   with iBeing do
     if DRL.Level.AnimationVisible( Position, iBeing ) then
+    begin
       IO.addBumpAnimation( VisualTime( iState.ToInteger( 4, 1000 ) ) , 0, UID, Position, iCoord, Sprite, iAmount );
+      if iBeing.IsPlayer then IO.WaitForAnimation;
+    end;
 end;
 
 

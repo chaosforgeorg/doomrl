@@ -1474,7 +1474,7 @@ function TLevel.PushItem( aWho : TBeing; aWhat : TItem; aFrom, aTo : TCoord2D ) 
 var iItemOld : TItem;
 begin
   if ( aWho = nil ) or ( aWhat = nil ) or ( aWhat.Position <> aFrom ) then Exit( False );
-  IO.addMoveAnimation( aWho.VisualTime( aWho.getMoveCost, AnimationSpeedPush ), 0, aWhat.UID, aFrom, aTo, aWhat.Sprite, False );
+  IO.addMoveAnimation( aWho.VisualTime( aWho.getMoveCost, AnimationSpeedPush ), 0, aWhat.UID, aFrom, aTo, aWhat.Sprite, False, False );
   iItemOld := Item[ aTo ];
   SetItem( aTo, aWhat );
   SetItem( aFrom, nil );
