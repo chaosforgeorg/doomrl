@@ -158,16 +158,16 @@ end;
 function TInventory.AddAmmo( aAmmoID : DWord; aCount : Word ) : Word;
 var iAmount   : Word;
     iAmmoItem : TItem;
-    iAmmoMax  : Word;
+    iMax      : Integer;
 begin
-  if LuaSystem.Defined([ CoreModuleID, 'GetAmmoMax' ])
-    then iAmmoMax := LuaSystem.ProtectedCall([ CoreModuleID, 'GetAmmoMax' ], [aAmmoID] )
-    else iAmmoMax := LuaSystem.Get(['items',aAmmoID,'ammomax']);
+  if LuaSystem.Defined([ CoreModuleID, 'GetItemMax' ])
+    then iMax := LuaSystem.ProtectedCall([ CoreModuleID, 'GetItemMax' ], [aAmmoID] )
+    else iMax := LuaSystem.Get(['items',aAmmoID,'max']);
   iAmmoItem := SeekAmmo(aAmmoID);
 
   if iAmmoItem <> nil then
   begin
-    iAmount := Min(aCount,iAmmoMax-iAmmoItem.Ammo);
+    iAmount := Min(aCount,iMax-iAmmoItem.Ammo);
     aCount -= iAmount;
     iAmmoItem.Ammo := iAmmoItem.Ammo + iAmount;
   end;
@@ -176,7 +176,7 @@ begin
   repeat
     if isFull then Exit(aCount);
 
-    iAmount := Min(aCount,iAmmoMax);
+    iAmount := Min(aCount,iMax);
     iAmmoItem := TItem.Create(aAmmoID);
     iAmmoItem.Ammo := iAmount;
     Add(iAmmoItem);

@@ -239,11 +239,15 @@ begin
          FProps.KnockMod := Table.getInteger('knockmod');
          FProps.SpriteMod := Table.GetInteger('spritemod',0);
        end;
-     ITEMTYPE_AMMO, ITEMTYPE_AMMOPACK :
+     ITEMTYPE_AMMOPACK :
        begin
          FProps.Ammo        := Table.getInteger('ammo');
          FProps.AmmoMax     := Table.getInteger('ammomax');
          FProps.AmmoID      := Table.getInteger('ammo_id',0);
+       end;
+     ITEMTYPE_AMMO :
+       begin
+         FProps.Ammo        := Table.getInteger('ammo');
        end;
      ITEMTYPE_MELEE :
        begin

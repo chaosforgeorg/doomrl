@@ -412,7 +412,7 @@ function drl.register_regular_items()
 
 		type    = ITEMTYPE_AMMO,
 		ammo    = 24,
-		ammomax = 100,
+		max     = 100,
 	}
 
 	register_item "shell"
@@ -427,7 +427,7 @@ function drl.register_regular_items()
 
 		type    = ITEMTYPE_AMMO,
 		ammo    = 8,
-		ammomax = 50,
+		max     = 50,
 	}
 
 	register_item "rocket"
@@ -442,7 +442,7 @@ function drl.register_regular_items()
 
 		type    = ITEMTYPE_AMMO,
 		ammo    = 3,
-		ammomax = 10,
+		max     = 10,
 	}
 
 	register_item "cell"
@@ -458,7 +458,7 @@ function drl.register_regular_items()
 
 		type    = ITEMTYPE_AMMO,
 		ammo    = 20,
-		ammomax = 50,
+		max     = 50,
 	}
 
 	register_item "pammo"
