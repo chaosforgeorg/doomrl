@@ -105,6 +105,8 @@ type TDRLIO = class( TIO )
   procedure Clear; override;
   function OnEvent( const event : TIOEvent ) : Boolean; override;
 
+  function ShiftHeld      : Boolean;  virtual;
+
   // Gamepad
   function GetPadLTrigger : Boolean;  virtual;
   function GetPadRTrigger : Boolean;  virtual;
@@ -472,6 +474,11 @@ begin
   end;
 
   Exit( inherited OnEvent( event ) );
+end;
+
+function TDRLIO.ShiftHeld : Boolean;
+begin
+  Exit( VKMOD_SHIFT in FIODriver.GetModKeyState );
 end;
 
 function TDRLIO.GetPadLTrigger : Boolean;

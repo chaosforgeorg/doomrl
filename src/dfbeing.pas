@@ -44,7 +44,7 @@ TBeing = class(TThing,IPathQuery)
     procedure Ressurect( RRange : Byte );
     procedure Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem; aDelay : Integer ); virtual;
     procedure Blood( aFrom : TDirection; aAmount : LongInt );
-    function Attack( aWhere : TCoord2D ) : Boolean; overload;
+    function Attack( aWhere : TCoord2D; aMoveOnKill : Boolean ) : Boolean; overload;
     function Attack( aTarget : TBeing; aSecond : Boolean = False ) : Boolean; overload;
     function meleeWeaponSlot : TEqSlot;
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
@@ -1440,7 +1440,7 @@ begin
     COMMAND_WAIT         : Dec( FSpeedCount, 1000 );
     COMMAND_ACTION       : Result := ActionAction( aCommand.Target );
     COMMAND_ENTER        : TLevel( Parent ).CallHook( Position, CellHook_OnExit );
-    COMMAND_MELEE        : Attack( aCommand.Target );
+    COMMAND_MELEE        : Attack( aCommand.Target, aCommand.Alt );
     COMMAND_RELOAD       : Result := ActionReload;
     COMMAND_ALTRELOAD    : Result := ActionAltReload;
     COMMAND_FIRE         : Result := ActionFire( aCommand.Target, aCommand.Item );
@@ -1700,7 +1700,7 @@ begin
   rollMeleeDamage := iDamage;
 end;
 
-function TBeing.Attack( aWhere : TCoord2D ) : Boolean;
+function TBeing.Attack( aWhere : TCoord2D; aMoveOnKill : Boolean ) : Boolean;
 var iSlot       : TEqSlot;
     iWeapon     : TItem;
     iAttackCost : DWord;
@@ -1736,6 +1736,9 @@ begin
   end;
   if iLevel.isAlive( iUID ) then
   begin
+    if Result and aMoveOnKill and ( iPosition = Position ) then
+      ActionMove( aWhere, 1.0, 0 )
+    else
       if IsPlayer
         then IO.WaitForAnimation;
   end;
@@ -2738,7 +2741,7 @@ begin
   else
   begin
     if State.IsNil(2) then Exit(0);
-    Being.Attack( State.ToCoord(2) );
+    Being.Attack( State.ToCoord(2), State.ToBoolean(3) );
   end;
   Result := 1;
 end;
