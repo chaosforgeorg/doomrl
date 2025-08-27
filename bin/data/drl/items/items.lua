@@ -411,7 +411,7 @@ function drl.register_regular_items()
 		desc     = "10mm ammo, the backbone of your firepower.",
 
 		type    = ITEMTYPE_AMMO,
-		ammo    = 24,
+		amount  = 24,
 		max     = 100,
 	}
 
@@ -426,7 +426,7 @@ function drl.register_regular_items()
 		desc     = "Food for your trusty shotguns.",
 
 		type    = ITEMTYPE_AMMO,
-		ammo    = 8,
+		amount  = 8,
 		max     = 50,
 	}
 
@@ -441,7 +441,7 @@ function drl.register_regular_items()
 		desc     = "Rockets -- heavy, big and go boom.",
 
 		type    = ITEMTYPE_AMMO,
-		ammo    = 3,
+		amount  = 3,
 		max     = 10,
 	}
 
@@ -457,7 +457,7 @@ function drl.register_regular_items()
 		desc     = "Power cells, the peak of monster frying technology.",
 
 		type    = ITEMTYPE_AMMO,
-		ammo    = 20,
+		amount  = 20,
 		max     = 50,
 	}
 

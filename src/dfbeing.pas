@@ -659,7 +659,7 @@ var iUnique : Boolean;
     if ( iAmmo > 0 ) then
     try
        iItem := TItem.Create(iAmmoID);
-       iItem.Ammo := iAmmo;
+       iItem.Amount := iAmmo;
        TLevel(Parent).DropItem( iItem, FPosition, False, True )
     except
     on e : EPlacementException do iItem.Free
@@ -951,16 +951,16 @@ begin
 
   if iItem.isAmmo then
   begin
-    iAmount := Inv.AddAmmo(iItem.NID,iItem.Ammo);
-    if iAmount <> iItem.Ammo then
+    iAmount := Inv.AddAmmo(iItem.NID,iItem.Amount);
+    if iAmount <> iItem.Amount then
     begin
       iItem.playSound( 'pickup', FPosition );
       CallHook( Hook_OnPickUpItem, [iItem] );
       iName := iItem.Name;
-      iCount := iItem.Ammo-iAmount;
+      iCount := iItem.Amount-iAmount;
       if iAmount = 0 then
         TLevel(Parent).DestroyItem( FPosition )
-      else iItem.Ammo := iAmount;
+      else iItem.Amount := iAmount;
       Exit( Success( 'You found %d of %s.',[iCount,iName],ActionCostPickup) );
     end else Exit( Fail('You don''t have enough room in your backpack.',[]) );
   end;
@@ -1290,17 +1290,25 @@ end;
 procedure TBeing.Reload( aAmmoItem : TItem; aSingle : Boolean );
 var iAmmo  : Byte;
     iPack  : Boolean;
+    iCount : Integer;
 begin
   Inv.Slot[efWeapon].PlaySound( 'reload', FPosition );
 
   repeat
-    if aSingle then iAmmo := Min(aAmmoItem.Ammo,1)
-               else iAmmo := Min(aAmmoItem.Ammo,Inv.Slot[efWeapon].AmmoMax-Inv.Slot[efWeapon].Ammo);
+    iPack  := aAmmoItem.isAmmoPack;
+    iCount := aAmmoItem.Amount;
+    if iPack then iCount := aAmmoItem.Ammo;
 
-    aAmmoItem.Ammo := aAmmoItem.Ammo - iAmmo;
+    if aSingle then iAmmo := Min(iCount,1)
+               else iAmmo := Min(iCount,Inv.Slot[efWeapon].AmmoMax-Inv.Slot[efWeapon].Ammo);
+
+    iCount := iCount - iAmmo;
+    if iPack
+      then aAmmoItem.Ammo   := iCount
+      else aAmmoItem.Amount := iCount;
+
     Inv.Slot[efWeapon].Ammo := Inv.Slot[efWeapon].Ammo + iAmmo;
-    iPack := aAmmoItem.isAmmoPack;
-    if aAmmoItem.Ammo = 0 then
+    if iCount = 0 then
     begin
       FreeAndNil( aAmmoItem );
       if not iPack then

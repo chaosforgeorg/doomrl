@@ -136,10 +136,10 @@ begin
   for iAmmo in Self do
      if iAmmo.isAmmo then
        if iAmmo.NID = aAmmoID then
-       if iAmmo.Ammo <= iAmmoCount then
+       if iAmmo.Amount <= iAmmoCount then
        begin
          SeekAmmo   := iAmmo;
-         iAmmoCount := iAmmo.Ammo;
+         iAmmoCount := iAmmo.Amount;
        end;
 end;
 
@@ -151,7 +151,7 @@ begin
   for iAmmo in Self do
      if iAmmo.isAmmo then
        if iAmmo.NID = aAmmoID then
-         CountAmmo += iAmmo.Ammo;
+         CountAmmo += iAmmo.Amount;
 end;
 
 
@@ -167,9 +167,9 @@ begin
 
   if iAmmoItem <> nil then
   begin
-    iAmount := Min(aCount,iMax-iAmmoItem.Ammo);
+    iAmount := Min(aCount,iMax-iAmmoItem.Amount);
     aCount -= iAmount;
-    iAmmoItem.Ammo := iAmmoItem.Ammo + iAmount;
+    iAmmoItem.Amount := iAmmoItem.Amount + iAmount;
   end;
   if aCount = 0 then Exit(0);
 
@@ -178,7 +178,7 @@ begin
 
     iAmount := Min(aCount,iMax);
     iAmmoItem := TItem.Create(aAmmoID);
-    iAmmoItem.Ammo := iAmount;
+    iAmmoItem.Amount := iAmount;
     Add(iAmmoItem);
     aCount -= iAmount;
   until aCount = 0;
