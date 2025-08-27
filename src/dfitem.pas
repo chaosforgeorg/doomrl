@@ -48,6 +48,7 @@ TItem  = class( TThing )
     function    isLever : Boolean;
     function    isPower : Boolean;
     function    isPack : Boolean;
+    function    isUsable : Boolean;
     function    isAmmoPack : Boolean;
     function    isFeature : Boolean;
     function    isWearable : Boolean;
@@ -556,6 +557,11 @@ end;
 function TItem.isPack : boolean;
 begin
   Exit(FProps.IType = ITEMTYPE_PACK);
+end;
+
+function TItem.isUsable : boolean;
+begin
+  Exit(FProps.IType in [ITEMTYPE_PACK, ITEMTYPE_URANGED]);
 end;
 
 function TItem.isAmmoPack : boolean;

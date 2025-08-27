@@ -73,7 +73,7 @@ protected
 end;
 
 type TTargetModeView = class( TIOLayer )
-  constructor Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte; aPadMode : Boolean );
+  constructor Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString; aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );
   procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
@@ -88,7 +88,6 @@ protected
   FFirst      : Boolean;
   FFinished   : Boolean;
   FLimitRange : Boolean;
-  FPadMode    : Boolean;
   FTarget     : TCoord2D;
   FPosition   : TCoord2D;
   FColor      : Byte;
@@ -319,11 +318,10 @@ begin
 end;
 
 constructor TTargetModeView.Create( aItem : TItem; aCommand : Byte; aActionName : AnsiString;
-  aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte; aPadMode : Boolean );
+  aRange: byte; aLimitRange : Boolean; aTargets: TAutoTarget; aChainFire : Byte );
 begin
   FFirst        := True;
   FFinished     := False;
-  FPadMode      := aPadMode;
   FTargets      := aTargets;
   FTarget       := aTargets.Current;
   FActionName   := aActionName;
@@ -408,7 +406,7 @@ begin
     UpdateTarget;
   end;
 
-  if iInput in [ INPUT_FIRE, INPUT_ALTFIRE, INPUT_TARGET, INPUT_ALTTARGET, INPUT_MLEFT ] then
+  if ( iInput in [ INPUT_ACTION, INPUT_OK, INPUT_FIRE, INPUT_ALTFIRE, INPUT_TARGET, INPUT_ALTTARGET, INPUT_MLEFT ] ) then
     HandleFire;
 
   Exit( True );
