@@ -71,7 +71,7 @@ TLevel = class(TLuaMapNode, ITextMap)
     function CallHookCheck( Hook : Byte; const Params : array of Const ) : Boolean;
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
-    procedure DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
+    function DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType ) : Boolean;
     procedure Explosion( aDelay : Integer; aCoord : TCoord2D; aData : TExplosionData; aItem : TItem; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
     procedure Shotgun( aSource, aTarget : TCoord2D; aDamage : TDiceRoll; aDamageMul : Single; aDamageType : TDamageType; aShotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
@@ -812,13 +812,14 @@ begin
 end;
 
 
-procedure TLevel.DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType );
+function TLevel.DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType ) : Boolean;
 var iCellID  : Byte;
     iHeavy   : Boolean;
     iFeature : TItem;
     iNode    : TNode;
     iDamage  : Integer;
 begin
+  Result := False;
   if not isProperCoord( aCoord )      then Exit;
   if LightFlag[ aCoord, lfPermanent ] then Exit;
   if LightFlag[ aCoord, lfFresh ]     then Exit;
@@ -850,6 +851,7 @@ begin
         then Cell[ aCoord ] := FFloorCell
         else Cell[ aCoord ] := LuaSystem.Defines[ Cells[ iCellID ].destroyto ];
 
+      Result := True;
       CallHook( aCoord, iCellID, CellHook_OnDestroy );
     end;
   end;
@@ -859,6 +861,7 @@ begin
     iFeature.HP := iFeature.HP - ( aDamage - iFeature.Armor );
     if iFeature.HP <= 0 then
     begin
+      Result := True;
       SetItem( aCoord, nil );
       iFeature.Detach;
       iFeature.CallHook( Hook_OnDestroy, [ LuaCoord( aCoord ) ] );
@@ -1471,7 +1474,7 @@ function TLevel.PushItem( aWho : TBeing; aWhat : TItem; aFrom, aTo : TCoord2D ) 
 var iItemOld : TItem;
 begin
   if ( aWho = nil ) or ( aWhat = nil ) or ( aWhat.Position <> aFrom ) then Exit( False );
-  IO.addMoveAnimation( aWho.VisualTime( aWho.getMoveCost, AnimationSpeedPush ), 0, aWhat.UID, aFrom, aTo, aWhat.Sprite, False );
+  IO.addMoveAnimation( aWho.VisualTime( aWho.getMoveCost, AnimationSpeedPush ), 0, aWhat.UID, aFrom, aTo, aWhat.Sprite, False, False );
   iItemOld := Item[ aTo ];
   SetItem( aTo, aWhat );
   SetItem( aFrom, nil );

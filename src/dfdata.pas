@@ -199,6 +199,7 @@ const
 var
   ModuleOption_KlassAchievements : Boolean = False;
   ModuleOption_NewMenu           : Boolean = False;
+  ModuleOption_MeleeMoveOnKill   : Boolean = False;
 
 
 var

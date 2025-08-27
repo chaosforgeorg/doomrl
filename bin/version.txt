@@ -1,3 +1,6 @@
+0.11
+[mod] -- GH#---: level up happens after the player turn
+
 0.10.0e
 [new] -- GH#189: G-version - Gamepad support!
 [new] -- GH#313: G-version - x1.5 tile scaling added (fuzzy, but playable!)

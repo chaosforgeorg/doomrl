@@ -24,7 +24,7 @@ protected
 end;
 
 type TDirectionQueryLayer = class( TIOLayer )
-  constructor Create;
+  constructor Create( aAllowAlt : Boolean );
   procedure Update( aDTime : Integer; aActive : Boolean ); override;
   function IsFinished : Boolean; override;
   function IsModal : Boolean; override;
@@ -33,6 +33,8 @@ type TDirectionQueryLayer = class( TIOLayer )
 protected
   procedure Finalize( aDir : TDirection ); virtual; abstract;
 protected
+  FAlt      : Boolean;
+  FAllowAlt : Boolean;
   FPrompt   : AnsiString;
   FFinished : Boolean;
 end;
@@ -184,9 +186,11 @@ begin
   if SpriteMap <> nil then SpriteMap.SetTarget( FTarget, NewColor( White ), False );
 end;
 
-constructor TDirectionQueryLayer.Create;
+constructor TDirectionQueryLayer.Create( aAllowAlt : Boolean );
 begin
   FPrompt := '';
+  FAlt      := False;
+  FAllowAlt := aAllowAlt;
 end;
 
 procedure TDirectionQueryLayer.Update( aDTime : Integer; aActive : Boolean );
@@ -219,6 +223,13 @@ begin
     Finalize( InputDirection( iInput ) );
     Exit( True );
   end;
+  if FAllowAlt and ( iInput in INPUT_MULTIMOVE ) then
+  begin
+    FFinished := True;
+    FAlt := True;
+    Finalize( InputDirection( iInput ) );
+    Exit( True );
+  end;
   Exit( True );
 end;
 
@@ -236,7 +247,7 @@ end;
 
 constructor TRunModeView.Create;
 begin
-  inherited Create;
+  inherited Create( False );
   FPrompt := 'Run mode';
 end;
 
@@ -247,19 +258,19 @@ end;
 
 constructor TMeleeDirView.Create;
 begin
-  inherited Create;
+  inherited Create( ModuleOption_MeleeMoveOnKill );
   FPrompt := 'Melee attack';
 end;
 
 procedure TMeleeDirView.Finalize( aDir : TDirection );
 begin
   if aDir.code <> DIR_CENTER then
-    DRL.HandleCommand( TCommand.Create( COMMAND_MELEE, Player.Position + aDir ) );
+    DRL.HandleCommand( TCommand.Create( COMMAND_MELEE, Player.Position + aDir, ModuleOption_MeleeMoveOnKill and ( not FAlt ) ) );
 end;
 
 constructor TActionDirView.Create( aAction : Ansistring; aFlag : Byte );
 begin
-  inherited Create;
+  inherited Create( False );
   FPrompt := aAction;
   FFlag   := aFlag;
 end;

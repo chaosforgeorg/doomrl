@@ -111,6 +111,8 @@ public
   property LastPosition : TVec2i read FPosition;
 end;
 
+TGFXBumpAnimation = class(TGFXMoveAnimation);
+
 { TGFXScreenMoveAnimation }
 
 TGFXScreenMoveAnimation = class(TAnimation)
@@ -428,7 +430,7 @@ destructor TGFXMoveAnimation.Destroy;
 var iThing : TThing;
 begin
   iThing := UIDs.Get( FUID ) as TThing;
-  if iThing <> nil then iThing.AnimCount := Max( 0, iThing.AnimCount - 1 );
+  if Started and ( iThing <> nil ) then iThing.AnimCount := Max( 0, iThing.AnimCount - 1 );
   inherited Destroy;
 end;
 

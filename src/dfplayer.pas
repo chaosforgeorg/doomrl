@@ -256,12 +256,7 @@ procedure TPlayer.AddExp( aAmount : LongInt );
 begin
   if Dead then Exit;
   aAmount := Round( aAmount * FExpFactor );
-
   FExp += aAmount;
-
-  if FExpLevel >= MaxPlayerLevel - 1 then Exit;
-
-  while FExp >= ExpTable[ FExpLevel + 1 ] do LevelUp;
 end;
 
 procedure TPlayer.ApplyDamage(aDamage: LongInt; aTarget: TBodyTarget; aDamageType: TDamageType; aSource : TItem; aDelay : Integer );
@@ -394,6 +389,11 @@ end;
 
 procedure TPlayer.PostAction;
 begin
+  if not Dead then
+    if FExpLevel < MaxPlayerLevel - 1 then
+      while FExp >= ExpTable[ FExpLevel + 1 ] do
+        LevelUp;
+
   CallHook(Hook_OnPostAction,[]);
   if DRL.State <> DSPlaying then Exit;
   FLastTurnDodge := False;

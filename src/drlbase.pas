@@ -61,7 +61,7 @@ TDRL = class(TVObject)
        function HandleCommand( aCommand : TCommand ) : Boolean;
        function HandleActionCommand( aInput : TInputKey ) : Boolean;
        function HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
-       function HandleMoveCommand( aInput : TInputKey ) : Boolean;
+       function HandleMoveCommand( aInput : TInputKey; aAlt : Boolean ) : Boolean;
        function HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean; aPad : Boolean ) : Boolean;
        function HandleSwapWeaponCommand : Boolean;
        function HandlePickupCommand( aAlt : Boolean ) : Boolean;
@@ -469,9 +469,24 @@ begin
 end;
 
 function TDRL.Action( aInput : TInputKey ) : Boolean;
+var iDir : TDirection;
 begin
+  if aInput in [INPUT_RUNWAIT]+INPUT_MULTIMOVE then
+  begin
+    Player.MultiMove.Stop;
+    iDir    := InputDirection( aInput );
+    if ModuleOption_MeleeMoveOnKill and ( aInput <> INPUT_RUNWAIT ) then
+      if ( Player.TryMove( Player.Position + iDir ) in [ MoveBeing, MoveBlock ] )
+        then Exit( HandleMoveCommand( aInput, True ) );
+
+    if Player.EnemiesInVision > 0
+      then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
+      else Player.MultiMove.Start( iDir );
+    Exit;
+  end;
+
   if aInput in INPUT_MOVE then
-    Exit( HandleMoveCommand( aInput ) );
+    Exit( HandleMoveCommand( aInput, False ) );
 
   case aInput of
     INPUT_FIRE       : Exit( HandleFireCommand( False, False, Setting_AutoTarget, False ) );
@@ -598,7 +613,7 @@ begin
   Exit( False );
 end;
 
-function TDRL.HandleMoveCommand( aInput : TInputKey ) : Boolean;
+function TDRL.HandleMoveCommand( aInput : TInputKey; aAlt : Boolean ) : Boolean;
 var iDir        : TDirection;
     iTarget     : TCoord2D;
     iMoveResult : TMoveResult;
@@ -641,7 +656,7 @@ begin
          iBeing := Level.Being[ iTarget ];
          if iBeing.Flags[ BF_FRIENDLY ]
            then Exit( HandleCommand( TCommand.Create( COMMAND_SWAPPOSITION, iTarget ) ) )
-           else Exit( HandleCommand( TCommand.Create( COMMAND_MELEE, iTarget ) ) );
+           else Exit( HandleCommand( TCommand.Create( COMMAND_MELEE, iTarget, ModuleOption_MeleeMoveOnKill and (not aAlt) ) ) );
        end;
      MoveDoor  : Exit( HandleCommand( TCommand.Create( COMMAND_ACTION, iTarget ) ) );
      MoveOk    : Exit( HandleCommand( TCommand.Create( COMMAND_MOVE, iTarget ) ) );
@@ -950,7 +965,7 @@ begin
       end
       else
       if Distance( Player.Position, IO.MTarget ) = 1
-        then Exit( HandleMoveCommand( DirectionToInput( NewDirection( Player.Position, IO.MTarget ) ) ) )
+        then Exit( HandleMoveCommand( DirectionToInput( NewDirection( Player.Position, IO.MTarget ) ), IO.ShiftHeld ) )
         else if Level.isExplored( IO.MTarget ) then
         begin
           if not Player.RunPath( IO.MTarget ) then
@@ -1022,7 +1037,7 @@ begin
   if aEvent.Pad.Pressed then // normal mode
   begin
     if IO.GetPadLDir.NotZero
-      then begin FPadMoved := True; Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ) ); end
+      then begin FPadMoved := True; Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ), IO.GetPadLTrigger ); end
       else Result := HandleCommand( TCommand.Create( COMMAND_WAIT ) );
     FPadMoveNext := IO.Time + PAD_REPEAT_START;
   end
@@ -1035,7 +1050,7 @@ begin
       begin
         iCell := Level.getCell( iTarget );
         if not ( ( CellHook_OnHazardQuery in Cells[ iCell ].Hooks ) and  Level.CallHook( CellHook_OnHazardQuery, iCell, Player ) ) then
-          Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ) );
+          Result := HandleMoveCommand( DirectionToInput( NewDirection( IO.GetPadLDir ) ), IO.GetPadLTrigger );
       end;
     end;
     FPadMoveNext := IO.Time + PAD_REPEAT;
@@ -1116,15 +1131,6 @@ begin
   if iInput <> INPUT_NONE then
   begin
     // Handle commands that should be handled by the UI
-    // TODO: Fix
-    if iInput in [INPUT_RUNWAIT]+INPUT_MULTIMOVE then
-    begin
-      Player.MultiMove.Stop;
-      if Player.EnemiesInVision > 0
-        then IO.Msg( 'Can''t multi-move, there are enemies present.',[] )
-        else Player.MultiMove.Start( InputDirection( iInput ) );
-      Exit;
-    end;
 
     if iInput in INPUT_TARGETMOVE then
     begin

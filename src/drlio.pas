@@ -85,7 +85,7 @@ type TDRLIO = class( TIO )
   procedure Blink( aColor : Byte; aDuration : Word = 100; aDelay : DWord = 0); virtual; abstract;
   procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single; aDirection : TDirection ); virtual;
   procedure addScreenShakeAnimation( aDuration : DWord; aDelay : DWord; aStrength : Single );
-  procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean ); virtual;
+  procedure addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean; aWipeBump : Boolean ); virtual;
   procedure addBumpAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aAmount : Single ); virtual;
   procedure addScreenMoveAnimation( aDuration : DWord; aTo : TCoord2D ); virtual;
   procedure addCellAnimation( aDuration : DWord; aDelay : DWord; aCoord : TCoord2D; aSprite : TSprite; aValue : Integer ); virtual;
@@ -104,6 +104,8 @@ type TDRLIO = class( TIO )
   procedure PreAction;
   procedure Clear; override;
   function OnEvent( const event : TIOEvent ) : Boolean; override;
+
+  function ShiftHeld      : Boolean;  virtual;
 
   // Gamepad
   function GetPadLTrigger : Boolean;  virtual;
@@ -257,7 +259,7 @@ begin
   addScreenShakeAnimation( aDuration, aDelay, aStrength, NewDirection(0) );
 end;
 
-procedure TDRLIO.addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean );
+procedure TDRLIO.addMoveAnimation( aDuration : DWord; aDelay : DWord; aUID : TUID; aFrom, aTo : TCoord2D; aSprite : TSprite; aBeing : Boolean; aWipeBump : Boolean );
 begin
 
 end;
@@ -472,6 +474,11 @@ begin
   end;
 
   Exit( inherited OnEvent( event ) );
+end;
+
+function TDRLIO.ShiftHeld : Boolean;
+begin
+  Exit( VKMOD_SHIFT in FIODriver.GetModKeyState );
 end;
 
 function TDRLIO.GetPadLTrigger : Boolean;

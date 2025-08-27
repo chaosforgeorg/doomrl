@@ -16,6 +16,7 @@ core.options = {
 	auto_glow_items = true,
 	klass_achievements = false,
 	new_menu = false,
+	melee_move_on_kill = false,
 }
 
 module = false
