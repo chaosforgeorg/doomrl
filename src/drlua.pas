@@ -446,6 +446,7 @@ begin
 
   ModuleOption_KlassAchievements := LuaSystem.Get( ['core','options','klass_achievements'], False );
   ModuleOption_NewMenu           := LuaSystem.Get( ['core','options','new_menu'], False );
+  ModuleOption_MeleeMoveOnKill   := LuaSystem.Get( ['core','options','melee_move_on_kill'], False );
 
   if ModdedGame then Log( LOGINFO, 'Game is modded.');
 end;
