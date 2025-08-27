@@ -565,7 +565,7 @@ begin
     begin
       if FInv.Equipped( iItem )     then
       begin
-         if iItem.isWeapon and ( FInv.Slot[ efWeapon2 ] = iItem )
+         if iItem.isEqWeapon and ( FInv.Slot[ efWeapon2 ] = iItem )
            then Exit( ActionSwapWeapon )
            else Exit( Fail( 'You''re already using it!', [] ) );
       end;
@@ -605,7 +605,7 @@ begin
   iAmmo   := 0;
   iWeapon := nil;
   for iItem in Inv do
-    if iItem.isWeapon then
+    if iItem.isEqWeapon then
       if iItem.ID = aWeaponID then
       if iItem.Ammo >= iAmmo then
       begin
@@ -667,7 +667,7 @@ begin
   iUnique := aItem.Flags[ IF_UNIQUE ] or aItem.Flags[ IF_NODESTROY ];
   iAmmo   := 0;
   iAmmoID := 0;
-  if aUnload and aItem.isRanged and (not aItem.Flags[ IF_NOUNLOAD ] ) then
+  if aUnload and aItem.isRanged and aItem.isUnloadable and (not aItem.Flags[ IF_NOUNLOAD ] ) then
   begin
     iAmmo      := aItem.Ammo;
     iAmmoID    := aItem.AmmoID;
@@ -703,7 +703,7 @@ var iWeapon : Boolean;
 begin
   if aItem = nil then Exit( false );
   if not FInv.Contains( aItem ) then Exit( False );
-  iWeapon := aItem.isWeapon;
+  iWeapon := aItem.isEqWeapon;
 
   if Option_SoundEquipPickup
     then aItem.PlaySound( 'pickup', FPosition )
@@ -725,7 +725,7 @@ var iWeapon : Boolean;
 begin
   if aItem = nil then Exit( false );
   if not FInv.Contains( aItem ) then Exit( False );
-  iWeapon := aItem.isWeapon;
+  iWeapon := aItem.isEqWeapon;
 
   if Option_SoundEquipPickup
     then aItem.PlaySound( 'pickup', FPosition )
@@ -747,7 +747,7 @@ var iWeapon : Boolean;
 begin
   if (FInv.Slot[aSlot] = nil) or FInv.Slot[aSlot].Flags[ IF_CURSED ] then
     Exit( False );
-  iWeapon := FInv.Slot[aSlot].isWeapon;
+  iWeapon := FInv.Slot[aSlot].isEqWeapon;
   FInv.setSlot( aSlot, nil );
   if not ( iWeapon and Flags[BF_QUICKSWAP] ) then
   begin
@@ -1079,7 +1079,7 @@ begin
     Exit( Success( 'You disassemble the %s.',[iName], ActionCostReload ) );
   end;
 
-  if not (aItem.isRanged or aItem.isAmmoPack) then Exit( Fail( 'This item cannot be unloaded!', [] ) );
+  if not aItem.isUnloadable then Exit( Fail( 'This item cannot be unloaded!', [] ) );
   if aItem.Flags[ IF_NOUNLOAD ] then Exit( Fail( 'This weapon cannot be unloaded!', []) );
   if aItem.Flags[ IF_RECHARGE ] then Exit( Fail( 'This weapon is self powered!', []) );
   if aItem.Flags[ IF_NOAMMO ] then Exit( Fail( 'This weapon doesn''t use ammo!', []) );
@@ -1626,7 +1626,7 @@ begin
     begin
       iItem := FInv.Slot[ efWeapon ];
       if ( not iItem.Flags[IF_NODROP] ) and ( not iItem.Flags[IF_NOUNLOAD] )
-        and iItem.isRanged and ( iItem.Ammo > 0 ) then
+        and iItem.isUnloadable and ( iItem.Ammo > 0 ) then
         iItem.Ammo := FInv.AddAmmo(iItem.AmmoID,iItem.Ammo);
     end;
 

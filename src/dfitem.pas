@@ -39,9 +39,11 @@ TItem  = class( TThing )
     destructor  Destroy; override;
     function    eqSlot : TEqSlot;
     function    isAmmo : Boolean;
+    function    isUnloadable : Boolean;
     function    isMelee : Boolean;
     function    isRanged : Boolean;
     function    isWeapon : Boolean;
+    function    isEqWeapon : Boolean;
     function    isTele : Boolean;
     function    isLever : Boolean;
     function    isPower : Boolean;
@@ -251,7 +253,7 @@ begin
          FProps.AltFire     := TAltFire( Table.getInteger('altfire') );
          FProps.missile     := Table.getInteger('missile');
        end;
-     ITEMTYPE_RANGED, ITEMTYPE_NRANGED:
+     ITEMTYPE_RANGED, ITEMTYPE_NRANGED, ITEMTYPE_URANGED:
        begin
          FProps.Damage      := NewDiceRoll( Table.getInteger('damage_dice'), Table.getInteger('damage_sides'), Table.getInteger('damage_bonus') );
          FProps.AmmoID      := Table.getInteger('ammo_id',0);
@@ -379,6 +381,10 @@ begin
             end;
             Description += ResistDescriptionShort;
           end;
+    ITEMTYPE_URANGED: begin
+        if FProps.Damage.max > 0 then
+          Description += ' ('+FProps.Damage.toString+')';
+      end;
   end;
 end;
 
@@ -415,6 +421,9 @@ begin
       'Move speed  : {!'+Percent(FProps.MoveMod)+'}'#10+
       'Knockback   : {!'+Percent(FProps.KnockMod)+'}'#10+
       Iff(FProps.DodgeMod <> 0,'Dodge rate  : {!'+Percent(FProps.DodgeMod)+'}'#10);
+    ITEMTYPE_URANGED : DescriptionBox :=
+      'Damage type : {!'+DamageTypeName(FProps.DamageType)+'}'#10+
+      Iff(FProps.BlastRadius <> 0,'Expl.radius : {!'+IntToStr(FProps.BlastRadius)+'}'#10);
     ITEMTYPE_RANGED : DescriptionBox :=
       'Fire time   : {!'+Seconds(FProps.UseTime)+'}'#10+
       'Reload time : {!'+Seconds(FProps.ReloadTime)+'}'#10+
@@ -504,6 +513,11 @@ begin
   Exit(FProps.IType = ITEMTYPE_AMMO);
 end;
 
+function TItem.isUnloadable : boolean;
+begin
+  Exit(FProps.IType in [ITEMTYPE_RANGED,ITEMTYPE_AMMOPACK]);
+end;
+
 function TItem.isMelee : boolean;
 begin
   Exit(FProps.IType = ITEMTYPE_MELEE);
@@ -511,12 +525,17 @@ end;
 
 function TItem.isRanged : boolean;
 begin
-  Exit(FProps.IType in [ITEMTYPE_RANGED,ITEMTYPE_NRANGED]);
+  Exit(FProps.IType in [ITEMTYPE_RANGED,ITEMTYPE_NRANGED,ITEMTYPE_URANGED]);
 end;
 
 function TItem.isWeapon : boolean;
 begin
   Exit(isRanged or isMelee);
+end;
+
+function TItem.isEqWeapon : boolean;
+begin
+  Exit(FProps.IType in [ITEMTYPE_RANGED,ITEMTYPE_NRANGED,ITEMTYPE_MELEE]);
 end;
 
 function TItem.isTele : boolean;

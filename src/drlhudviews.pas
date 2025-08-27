@@ -530,10 +530,10 @@ begin
         Exit;
       end;
     end;
-    if (Slot[ efWeapon2 ] <> nil) and Slot[ efWeapon2 ].isWeapon then FArray.Push( Slot[ efWeapon2 ] );
+    if (Slot[ efWeapon2 ] <> nil) and Slot[ efWeapon2 ].isEqWeapon then FArray.Push( Slot[ efWeapon2 ] );
     for iItem in Player.Inv do
       if not Equipped( iItem ) then
-        if iItem.isWeapon then
+        if iItem.isEqWeapon then
           FArray.Push( iItem );
 
     if FArray.Size <= 1 then
