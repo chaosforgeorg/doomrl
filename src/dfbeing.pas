@@ -93,7 +93,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionAltReload : Boolean;
     function ActionFire( aTarget : TCoord2D; aWeapon : TItem; aAltFire : Boolean = False; aDelay : Integer = 0; aForceSingle : Boolean = False ) : Boolean;
     function ActionPickup : Boolean;
-    function ActionUse( aItem : TItem ) : Boolean;
+    function ActionUse( aItem : TItem; aTarget : TCoord2D ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
     function ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0; aMoveCost : Integer = -1 ) : Boolean;
     function ActionSwapPosition( aTarget : TCoord2D ) : Boolean;
@@ -565,7 +565,7 @@ begin
     begin
       if FInv.Equipped( iItem )     then
       begin
-         if iItem.isWeapon and ( FInv.Slot[ efWeapon2 ] = iItem )
+         if iItem.isEqWeapon and ( FInv.Slot[ efWeapon2 ] = iItem )
            then Exit( ActionSwapWeapon )
            else Exit( Fail( 'You''re already using it!', [] ) );
       end;
@@ -577,9 +577,13 @@ begin
   if iID <> '' then
   begin
     for iItem in Inv do
-      if iItem.isPack then
+      if iItem.isUsable then
         if iItem.id = iID then
-          Exit( ActionUse( iItem ) );
+        begin
+          if DRL.Targeting.List.Current <> FPosition
+            then Exit( ActionUse( iItem, DRL.Targeting.List.Current ) )
+            else Exit( Fail( 'No valid target!', [] ) );
+        end;
     Exit( Fail( 'You no longer have any item like that!', [] ) );
   end;
   Exit( Fail( 'Quickslot %d is unassigned!', [aIndex] ) );
@@ -605,7 +609,7 @@ begin
   iAmmo   := 0;
   iWeapon := nil;
   for iItem in Inv do
-    if iItem.isWeapon then
+    if iItem.isEqWeapon then
       if iItem.ID = aWeaponID then
       if iItem.Ammo >= iAmmo then
       begin
@@ -667,7 +671,7 @@ begin
   iUnique := aItem.Flags[ IF_UNIQUE ] or aItem.Flags[ IF_NODESTROY ];
   iAmmo   := 0;
   iAmmoID := 0;
-  if aUnload and aItem.isRanged and (not aItem.Flags[ IF_NOUNLOAD ] ) then
+  if aUnload and aItem.isRanged and aItem.isUnloadable and (not aItem.Flags[ IF_NOUNLOAD ] ) then
   begin
     iAmmo      := aItem.Ammo;
     iAmmoID    := aItem.AmmoID;
@@ -703,7 +707,7 @@ var iWeapon : Boolean;
 begin
   if aItem = nil then Exit( false );
   if not FInv.Contains( aItem ) then Exit( False );
-  iWeapon := aItem.isWeapon;
+  iWeapon := aItem.isEqWeapon;
 
   if Option_SoundEquipPickup
     then aItem.PlaySound( 'pickup', FPosition )
@@ -725,7 +729,7 @@ var iWeapon : Boolean;
 begin
   if aItem = nil then Exit( false );
   if not FInv.Contains( aItem ) then Exit( False );
-  iWeapon := aItem.isWeapon;
+  iWeapon := aItem.isEqWeapon;
 
   if Option_SoundEquipPickup
     then aItem.PlaySound( 'pickup', FPosition )
@@ -747,7 +751,7 @@ var iWeapon : Boolean;
 begin
   if (FInv.Slot[aSlot] = nil) or FInv.Slot[aSlot].Flags[ IF_CURSED ] then
     Exit( False );
-  iWeapon := FInv.Slot[aSlot].isWeapon;
+  iWeapon := FInv.Slot[aSlot].isEqWeapon;
   FInv.setSlot( aSlot, nil );
   if not ( iWeapon and Flags[BF_QUICKSWAP] ) then
   begin
@@ -879,7 +883,7 @@ begin
   
   if (not aWeapon.isRanged) then Exit( False );
 
-  if not aWeapon.Flags[ IF_NOAMMO ] then
+  if ( not aWeapon.Flags[ IF_NOAMMO ] ) and ( not aWeapon.isUsable ) then
   begin
     if aWeapon.Ammo = 0 then Exit( False );
     if aWeapon.Ammo < aWeapon.ShotCost then Exit( False );
@@ -962,11 +966,14 @@ begin
   end;
 
   if BF_IMPATIENT in FFlags then
-    if iItem.isPack then
+    if iItem.isUsable then
       begin
         if isPlayer then IO.Msg('No time to waste.');
         CallHook( Hook_OnPickUpItem, [iItem] );
-        Exit( ActionUse( iItem ) );
+        if iItem.isPack then Exit( ActionUse( iItem, FPosition ) );
+        if DRL.Targeting.List.Current <> FPosition
+          then Exit( ActionUse( iItem, DRL.Targeting.List.Current ) )
+          else Exit( Fail( 'No valid target!', [] ) );
       end;
 
   if Inv.isFull then Exit( Fail( 'You don''t have enough room in your backpack.', [] ) );
@@ -981,28 +988,32 @@ begin
   Exit( True );
 end;
 
-function TBeing.ActionUse ( aItem : TItem ) : Boolean;
+function TBeing.ActionUse ( aItem : TItem; aTarget : TCoord2D ) : Boolean;
 var isOnGround : Boolean;
     isLever    : Boolean;
-    isPack     : Boolean;
+    isUsable   : Boolean;
     isEquip    : Boolean;
     isPrepared : Boolean;
     isUse      : Boolean;
     isUsedUp   : Boolean;
     isFailed   : Boolean;
+    isURanged  : Boolean;
     iSlot      : TEqSlot;
     iUID       : TUID;
 	
 begin
+  Result := False;
   isFailed   := False;
   isOnGround := TLevel(Parent).Item[ FPosition ] = aItem;
   if aItem = nil then Exit( false );
-  if (not aItem.isLever) and (not aItem.isPack) and (not aItem.isAmmoPack) and (not aItem.isWearable) then Exit( False );
+  if (not aItem.isLever) and (not aItem.isUsable) and (not aItem.isAmmoPack) and (not aItem.isWearable) then Exit( False );
   if ((not aItem.isWearable) and (not aItem.CallHookCheck( Hook_OnUseCheck,[Self] ))) or (aItem.isWearable and ( (not aItem.CallHookCheck( Hook_OnEquipCheck,[Self] )) or (not aItem.CallHookCheck( Hook_OnPickupCheck,[Self] )) )) then Exit( False );
 
-  isLever := aItem.isLever;
-  isPack  := aItem.isPack;
-  isEquip := aItem.isWearable;
+  isLever   := aItem.isLever;
+  isUsable  := aItem.isUsable;
+  isEquip   := aItem.isWearable;
+  isURanged := aItem.IType = ITEMTYPE_URANGED;
+
   isUse   := not isEquip;
   iUID    := aItem.uid;
   if isOnGround then
@@ -1012,7 +1023,7 @@ begin
           Emote( 'You pull the lever...', 'pulls the lever...',[] );
           if isPlayer then Player.Statistics.Increase( 'levers_pulled' );
         end
-	  else if isPack then
+	  else if isUsable then
 	    begin
 		  Emote( 'You use %s from the ground.', 'uses %s.', [ aItem.GetName(false) ] );
 		end
@@ -1042,18 +1053,28 @@ begin
     aItem.PlaySound( 'pickup', FPosition );
     Inv.setSlot( iSlot, aItem );
   end;
-  if isUse then
+  if isUsable then
     aItem.PlaySound( 'use', FPosition );
-  if isEquip or isPack then
+  if isEquip or isUsable then
     begin
       CallHook( Hook_OnPickUpItem, [aItem] );
       aItem.CallHook( Hook_OnPickup,[Self] )
     end;
   if isUse then
   begin
-    isUsedUp := aItem.CallHookCheck( Hook_OnUse,[Self] );
-    if isUsedUp and ((UIDs.Get( iUID ) <> nil)  and (isLever or isPack)) then FreeAndNil( aItem );
+    if isURanged then
+    begin
+      isUsedUp := True;
+      aItem.Flags[ IF_NODESTROY ] := True;
+      Result := ActionFire( aTarget, aItem, False );
+      if UIDs.Get( iUID ) <> nil then aItem.Flags[ IF_NODESTROY ] := False;
+    end
+    else
+      isUsedUp := aItem.CallHookCheck( Hook_OnUse,[Self] );
+    if isUsedUp and ((UIDs.Get( iUID ) <> nil)  and (isLever or isUsable)) then FreeAndNil( aItem );
   end;
+
+  if isURanged then Exit( Result );
   
   if isUse then
     Dec(FSpeedCount,getUseCost)
@@ -1079,7 +1100,7 @@ begin
     Exit( Success( 'You disassemble the %s.',[iName], ActionCostReload ) );
   end;
 
-  if not (aItem.isRanged or aItem.isAmmoPack) then Exit( Fail( 'This item cannot be unloaded!', [] ) );
+  if not aItem.isUnloadable then Exit( Fail( 'This item cannot be unloaded!', [] ) );
   if aItem.Flags[ IF_NOUNLOAD ] then Exit( Fail( 'This weapon cannot be unloaded!', []) );
   if aItem.Flags[ IF_RECHARGE ] then Exit( Fail( 'This weapon is self powered!', []) );
   if aItem.Flags[ IF_NOAMMO ] then Exit( Fail( 'This weapon doesn''t use ammo!', []) );
@@ -1332,7 +1353,7 @@ begin
   if aAlt = ALT_SINGLE then iShots := 1;
 
   iFreeShot := False;
-  if aGun.Flags[ IF_NOAMMO ] then iFreeShot := true;
+  if aGun.Flags[ IF_NOAMMO ] or aGun.isUsable then iFreeShot := true;
 
   if not iFreeShot then
   begin
@@ -1432,7 +1453,7 @@ begin
   Result := True;
   case aCommand.Command of
     COMMAND_MOVE         : Result := ActionMove( aCommand.Target );
-    COMMAND_USE          : Result := ActionUse( aCommand.Item );
+    COMMAND_USE          : Result := ActionUse( aCommand.Item, aCommand.Target );
     COMMAND_DROP         : Result := ActionDrop( aCommand.Item, aCommand.Alt );
     COMMAND_WEAR         : Result := ActionWear( aCommand.Item );
     COMMAND_TAKEOFF      : Result := ActionTakeOff( aCommand.Slot );
@@ -1626,7 +1647,7 @@ begin
     begin
       iItem := FInv.Slot[ efWeapon ];
       if ( not iItem.Flags[IF_NODROP] ) and ( not iItem.Flags[IF_NOUNLOAD] )
-        and iItem.isRanged and ( iItem.Ammo > 0 ) then
+        and iItem.isUnloadable and ( iItem.Ammo > 0 ) then
         iItem.Ammo := FInv.AddAmmo(iItem.AmmoID,iItem.Ammo);
     end;
 
@@ -2848,7 +2869,7 @@ var State  : TDRLLuaState;
 begin
   State.Init(L);
   Being := State.ToObject(1) as TBeing;
-  State.Push( Being.ActionUse( State.ToObjectOrNil(2) as TItem ) );
+  State.Push( Being.ActionUse( State.ToObjectOrNil(2) as TItem, State.ToPosition(3,Being.TargetPos) ) );
   Result := 1;
 end;
 

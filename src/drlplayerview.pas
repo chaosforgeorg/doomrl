@@ -143,7 +143,7 @@ begin
   FState       := PLAYERVIEW_INVENTORY;
   ReadInv;
   case aCommand of
-    COMMAND_USE    : begin FAction := 'use';  FITitle := 'Choose item to use';  Filter( [ITEMTYPE_PACK] ); end;
+    COMMAND_USE    : begin FAction := 'use';  FITitle := 'Choose item to use';  Filter( [ITEMTYPE_PACK,ITEMTYPE_URANGED] ); end;
     COMMAND_DROP   : begin FAction := 'drop'; FITitle := 'Choose item to drop'; end;
     COMMAND_UNLOAD : if aScavenger
                        then begin FAction := 'unload/scavenge';  FITitle := 'Choose item to unload/scavenge';  Filter( [ITEMTYPE_RANGED, ITEMTYPE_AMMOPACK, ITEMTYPE_MELEE, ITEMTYPE_ARMOR, ITEMTYPE_BOOTS] ); end
@@ -272,7 +272,7 @@ var iEntry    : TItemViewEntry;
         ReadQuickslots;
         Exit( True );
       end;
-      if iItem.isPack then
+      if iItem.isUsable then
       begin
         if Player.FQuickSlots[ aValue ].ID = iItem.ID
           then Player.FQuickSlots[ aValue ].ID := ''
@@ -361,10 +361,12 @@ begin
         begin
           iCommand := COMMAND_NONE;
           if FInv[iSelected].Item.isWearable then iCommand := COMMAND_WEAR;
-          if FInv[iSelected].Item.isPack     then iCommand := COMMAND_USE;
+          if FInv[iSelected].Item.isUsable   then iCommand := COMMAND_USE;
           FState := PLAYERVIEW_CLOSING;
           if iCommand <> COMMAND_NONE then
-            DRL.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
+            if FInv[iSelected].Item.IType = ITEMTYPE_URANGED
+              then DRL.HandleUsableCommand( FInv[iSelected].Item )
+              else DRL.HandleCommand( TCommand.Create( iCommand, FInv[iSelected].Item ) );
           FState := PLAYERVIEW_DONE;
         end;
         if VTIG_Event( VTIG_IE_1 ) then MarkQSlot( iSelected, 1 );

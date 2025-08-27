@@ -63,6 +63,7 @@ TDRL = class(TVObject)
        function HandleActionCommand( aTarget : TCoord2D; aFlag : Byte ) : Boolean;
        function HandleMoveCommand( aInput : TInputKey; aAlt : Boolean ) : Boolean;
        function HandleFireCommand( aAlt : Boolean; aMouse : Boolean; aAuto : Boolean; aPad : Boolean ) : Boolean;
+       function HandleUsableCommand( aItem : TItem ) : Boolean;
        function HandleSwapWeaponCommand : Boolean;
        function HandlePickupCommand( aAlt : Boolean ) : Boolean;
      private
@@ -795,7 +796,7 @@ begin
     if iRange = 0 then iRange := Player.Vision;
     if iRange <> Player.Vision then
       FTargeting.Update( iRange );
-    IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, FTargeting.List, iChainFire, aPad ) );
+    IO.PushLayer( TTargetModeView.Create( iItem, iCommand, iFireTitle, iRange+1, iLimitRange, FTargeting.List, iChainFire ) );
     Exit( False );
   end;
 
@@ -813,6 +814,18 @@ begin
   Exit( HandleCommand( TCommand.Create( iCommand, iTarget, iItem ) ) )
 end;
 
+function TDRL.HandleUsableCommand( aItem : TItem ) : Boolean;
+var iRange      : Integer;
+    iLimitRange : Boolean;
+begin
+  iRange      := Missiles[ aItem.Missile ].Range;
+  if iRange = 0 then iRange := Player.Vision;
+  if iRange <> Player.Vision then
+    FTargeting.Update( iRange );
+  iLimitRange := MF_EXACT in Missiles[ aItem.Missile ].Flags;
+  IO.PushLayer( TTargetModeView.Create( aItem, COMMAND_USE, 'Choose target:', iRange+1, iLimitRange, FTargeting.List, 0 ) );
+  Exit( False );
+end;
 
 function TDRL.HandleUnloadCommand( aItem : TItem ) : Boolean;
 var iID         : AnsiString;
@@ -865,11 +878,13 @@ var iItem : TItem;
 begin
   if not aAlt then Exit( HandleCommand( TCommand.Create( COMMAND_PICKUP ) ) );
   iItem := Level.Item[ Player.Position ];
-  if ( iItem = nil ) or (not (iItem.isPickupable or iItem.isPack or iItem.isWearable) ) then
+  if ( iItem = nil ) or (not (iItem.isPickupable or iItem.isUsable or iItem.isWearable) ) then
   begin
     IO.Msg( 'There''s nothing to use on the ground!' );
     Exit( False );
   end;
+  if iItem.IType = ITEMTYPE_URANGED
+    then Exit( DRL.HandleUsableCommand( iItem ) );
   Exit( HandleCommand( TCommand.Create( COMMAND_USE, iItem ) ) );
 end;
 

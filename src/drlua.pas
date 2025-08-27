@@ -36,6 +36,7 @@ type
 TDRLLuaState = object(TLuaState)
   function ToId( aIndex : Integer) : DWord;
   function ToPosition( aIndex : Integer ) : TCoord2D;
+  function ToPosition( aIndex : Integer; aDefault : TCoord2D ) : TCoord2D;
   function ToIOColor( aIndex : Integer ) : TIOColor;
 end;
 
@@ -639,6 +640,15 @@ begin
      Exit( ToCoord( aIndex ) )
   else
      Exit( (ToObject( aIndex ) as TThing).Position );
+end;
+
+function TDRLLuaState.ToPosition( aIndex : Integer; aDefault : TCoord2D ) : TCoord2D;
+begin
+  if IsCoord( aIndex ) then
+     Exit( ToCoord( aIndex ) )
+  else if IsObject( aIndex ) then
+     Exit( (ToObject( aIndex ) as TThing).Position )
+  else Exit( aDefault );
 end;
 
 function TDRLLuaState.ToIOColor( aIndex : Integer ) : TIOColor;
