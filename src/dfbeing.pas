@@ -44,8 +44,8 @@ TBeing = class(TThing,IPathQuery)
     procedure Ressurect( RRange : Byte );
     procedure Kill( aBloodAmount : DWord; aOverkill : Boolean; aKiller : TBeing; aWeapon : TItem; aDelay : Integer ); virtual;
     procedure Blood( aFrom : TDirection; aAmount : LongInt );
-    procedure Attack( aWhere : TCoord2D ); overload;
-    procedure Attack( aTarget : TBeing; Second : Boolean = False ); overload;
+    function Attack( aWhere : TCoord2D ) : Boolean; overload;
+    function Attack( aTarget : TBeing; aSecond : Boolean = False ) : Boolean; overload;
     function meleeWeaponSlot : TEqSlot;
     function getTotalResistance( const aResistance : AnsiString; aTarget : TBodyTarget ) : Integer;
     procedure ApplyDamage( aDamage : LongInt; aTarget : TBodyTarget; aDamageType : TDamageType; aSource : TItem; aDelay : Integer ); virtual;
@@ -95,7 +95,7 @@ TBeing = class(TThing,IPathQuery)
     function ActionPickup : Boolean;
     function ActionUse( aItem : TItem ) : Boolean;
     function ActionUnLoad( aItem : TItem; aDisassembleID : AnsiString = '' ) : Boolean;
-    function ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0 ) : Boolean;
+    function ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0; aMoveCost : Integer = -1 ) : Boolean;
     function ActionSwapPosition( aTarget : TCoord2D ) : Boolean;
     function ActionActive : boolean;
     function ActionAction( aTarget : TCoord2D ) : Boolean;
@@ -1099,7 +1099,7 @@ begin
   Exit( Success( 'You partially unload the %s.', [ iName ], ActionCostReload ) );
 end;
 
-function TBeing.ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0 ) : Boolean;
+function TBeing.ActionMove( aTarget : TCoord2D; aVisualMultiplier : Single = 1.0; aMoveCost : Integer = -1 ) : Boolean;
 var iVisualTime : Integer;
     iMoveCost   : Integer;
 begin
@@ -1112,7 +1112,9 @@ begin
     IO.addMoveAnimation( iVisualTime, 0, FUID, Position, aTarget, Sprite, True );
   end;
   Displace( aTarget );
-  Dec( FSpeedCount, iMoveCost );
+  if aMoveCost = -1
+    then Dec( FSpeedCount, iMoveCost )
+    else Dec( FSpeedCount, aMoveCost );
   HandlePostDisplace;
   HandlePostMove;
   Exit( True );
@@ -1698,17 +1700,20 @@ begin
   rollMeleeDamage := iDamage;
 end;
 
-procedure TBeing.Attack( aWhere : TCoord2D );
+function TBeing.Attack( aWhere : TCoord2D ) : Boolean;
 var iSlot       : TEqSlot;
     iWeapon     : TItem;
     iAttackCost : DWord;
+    iLevel      : TLevel;
+    iUID        : TUID;
 begin
   FMeleeAttack := True;
-  iSlot := efTorso;
+  iSlot   := efTorso;
   iWeapon := nil;
-
-  if TLevel(Parent).Being[ aWhere ] <> nil then
-    Attack( TLevel(Parent).Being[ aWhere ] )
+  iUID    := FUID;
+  iLevel  := TLevel(Parent);
+  if iLevel.Being[ aWhere ] <> nil then
+    Result := Attack( iLevel.Being[ aWhere ] )
   else
   begin
     iSlot := meleeWeaponSlot;
@@ -1724,12 +1729,12 @@ begin
     if DRL.Level.AnimationVisible( Position, Self ) then
       IO.addBumpAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aWhere, Sprite, 0.5 );
 
-    TLevel(Parent).DamageTile( aWhere, rollMeleeDamage( iSlot ), Damage_Melee );
+    Result := iLevel.DamageTile( aWhere, rollMeleeDamage( iSlot ), Damage_Melee );
     Dec( FSpeedCount, iAttackCost )
   end;
 end;
 
-procedure TBeing.Attack( aTarget : TBeing; Second : Boolean = False );
+function TBeing.Attack( aTarget : TBeing; aSecond : Boolean = False ) : Boolean;
 var iName          : string;
     iDefenderName  : string;
     iResult        : string;
@@ -1743,6 +1748,7 @@ var iName          : string;
     iTargetUID     : TUID;
     iMissed        : Boolean;
 begin
+  Result := False;
   if BF_NOMELEE in FFlags then Exit;
   if aTarget = nil then Exit;
   FMeleeAttack := True;
@@ -1752,7 +1758,7 @@ begin
 
   // Choose weaponSlot
   iWeaponSlot := meleeWeaponSlot;
-  if Second then iWeaponSlot := efWeapon2;
+  if aSecond then iWeaponSlot := efWeapon2;
 
   iDamageType := Damage_Melee;
   if iWeaponSlot in [ efWeapon, efWeapon2 ] then
@@ -1776,11 +1782,11 @@ begin
   // Attack cost
   iAttackCost := getFireCost( ALT_NONE, True );
 
-  if not Second then
+  if not aSecond then
     if DRL.Level.AnimationVisible( FPosition, Self ) then
       IO.addBumpAnimation( VisualTime( iAttackCost, AnimationSpeedAttack ), 0, FUID, Position, aTarget.Position, Sprite, 0.5 );
 
-  if iDualAttack or Second
+  if iDualAttack or aSecond
     then Dec( FSpeedCount, iAttackCost div 2 )
     else Dec( FSpeedCount, iAttackCost );
 
@@ -1802,13 +1808,13 @@ begin
 
   if not iMissed then
   begin
-    if ( iWeapon <> nil ) then IO.addSoundAnimation( Iif( Second, 100, 30 ), aTarget.Position, IO.Audio.ResolveSoundID(['flesh_blade_hit']) );
+    if ( iWeapon <> nil ) then IO.addSoundAnimation( Iif( aSecond, 100, 30 ), aTarget.Position, IO.Audio.ResolveSoundID(['flesh_blade_hit']) );
     // Damage roll
     iDamage := rollMeleeDamage( iWeaponSlot );
 
     // Shake
     if isPlayer or aTarget.IsPlayer then
-      IO.addScreenShakeAnimation( 150, Iif( Second, 50, 0 ), Clampf( iDamage / 4, 3.0, 10.0 ), NewDirection( FPosition, aTarget.FPosition ) );
+      IO.addScreenShakeAnimation( 150, Iif( aSecond, 50, 0 ), Clampf( iDamage / 4, 3.0, 10.0 ), NewDirection( FPosition, aTarget.FPosition ) );
 
     // Hit message
     if IsPlayer then iResult := ' hit ' else iResult := ' hits ';
@@ -1818,12 +1824,14 @@ begin
     aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon, 0 );
   end;
 
-  if iWeapon <> nil then iWeapon.CallHook( Hook_OnFired, [ Self, Second ] );
-  CallHook( Hook_OnFired, [ iWeapon, Second ] );
+  if iWeapon <> nil then iWeapon.CallHook( Hook_OnFired, [ Self, aSecond ] );
+  CallHook( Hook_OnFired, [ iWeapon, aSecond ] );
+
+  Result := not TLevel(Parent).isAlive( iTargetUID );
 
   // Dualblade attack
-  if iDualAttack and (not Second) and TLevel(Parent).isAlive( iTargetUID ) then
-    Attack( aTarget, True );
+  if iDualAttack and (not aSecond) and (not Result) then
+    Exit( Attack( aTarget, True ) );
 end;
 
 function TBeing.meleeWeaponSlot: TEqSlot;
