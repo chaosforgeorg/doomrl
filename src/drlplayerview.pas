@@ -41,6 +41,7 @@ type TTraitViewEntry = record
   Available : Boolean;
   Value     : Byte;
   Index     : Byte;
+  Master    : Boolean;
 end;
 
 type TTraitViewArray = specialize TGArray< TTraitViewEntry >;
@@ -630,6 +631,17 @@ begin
       VTIG_Text( 'Requires : {0}',[FTraits[iSelected].Requires] );
     if FTraits[iSelected].Blocks <> '' then
       VTIG_Text( 'Blocks   : {0}',[FTraits[iSelected].Blocks] );
+    if FTraits[iSelected].Master then
+    begin
+      VTIG_Text( '' );
+      if ( not FTraitFirst ) and ( Player.Traits.Master > 0 ) then
+      begin
+        if FTraits[iSelected].Index <> Player.Traits.Master then
+          VTIG_Text( '{rYou can pick only one {RMaster} trait.}' );
+      end
+      else
+        VTIG_Text( 'You can pick only one {!Master} trait.' );
+    end;
   end;
   VTIG_EndGroup;
 
@@ -770,6 +782,7 @@ begin
     iEntry.Blocks   := '';
     with LuaSystem.GetTable(['klasses',iKlass,'trait',iTrait]) do
     try
+      iEntry.Master:= getBoolean( 'master', False );
       if GetTableSize('requires') > 0 then
       for iTable in ITables('requires') do
       begin
