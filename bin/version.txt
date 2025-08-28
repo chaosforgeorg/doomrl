@@ -1,4 +1,5 @@
 0.11
+[mod] -- GH#328: UI - inv/eq/trait/char keys are active when panel is up!
 [mod] -- GH#---: level up happens after the player turn
 [mod] -- GH#331: default swap time with prepared is 0.5 (down from 0.8)
 

@@ -206,9 +206,35 @@ begin
     begin
       if FState = PLAYERVIEW_TRAITS       then FState := Low( TPlayerViewState ) else FState := Succ( FState );
     end;
-    if ( FState <> PLAYERVIEW_DONE ) and VTIG_Event( [ TIG_EV_INVENTORY, TIG_EV_EQUIPMENT, TIG_EV_CHARACTER, TIG_EV_TRAITS ] ) then
+    if ( FState <> PLAYERVIEW_DONE ) then
     begin
-      FState := PLAYERVIEW_DONE;
+      if VTIG_Event( TIG_EV_INVENTORY ) then
+      begin
+        if FState = PLAYERVIEW_INVENTORY
+          then FState := PLAYERVIEW_DONE
+          else FState := PLAYERVIEW_INVENTORY;
+      end;
+
+      if VTIG_Event( TIG_EV_EQUIPMENT ) then
+      begin
+        if FState = PLAYERVIEW_EQUIPMENT
+          then FState := PLAYERVIEW_DONE
+          else FState := PLAYERVIEW_EQUIPMENT;
+      end;
+
+      if VTIG_Event( TIG_EV_CHARACTER ) then
+      begin
+        if FState = PLAYERVIEW_CHARACTER
+          then FState := PLAYERVIEW_DONE
+          else FState := PLAYERVIEW_CHARACTER;
+      end;
+
+      if VTIG_Event( TIG_EV_TRAITS ) then
+      begin
+        if FState = PLAYERVIEW_TRAITS
+          then FState := PLAYERVIEW_DONE
+          else FState := PLAYERVIEW_TRAITS;
+      end;
     end;
   end;
 
@@ -399,7 +425,6 @@ begin
     if VTIG_EventConfirm then
       FState := PLAYERVIEW_DONE;
   end;
-
 end;
 
 procedure TPlayerView.UpdateEquipment;

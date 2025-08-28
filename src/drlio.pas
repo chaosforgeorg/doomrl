@@ -12,21 +12,21 @@ uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      dfdata, dfthing, drlspritemap, drlaudio, drlkeybindings, drlloadingview;
 
 const TIG_EV_NONE      = 0;
-      TIG_EV_DROP      = 1;
+      //TIG_EV_DROP      = 1;
       TIG_EV_INVENTORY = 2;
       TIG_EV_EQUIPMENT = 3;
       TIG_EV_CHARACTER = 4;
       TIG_EV_TRAITS    = 5;
-      TIG_EV_QUICK_0   = 10;
-      TIG_EV_QUICK_1   = 11;
-      TIG_EV_QUICK_2   = 12;
-      TIG_EV_QUICK_3   = 13;
-      TIG_EV_QUICK_4   = 14;
-      TIG_EV_QUICK_5   = 15;
-      TIG_EV_QUICK_6   = 16;
-      TIG_EV_QUICK_7   = 17;
-      TIG_EV_QUICK_8   = 18;
-      TIG_EV_QUICK_9   = 19;
+      //TIG_EV_QUICK_0   = 10;
+      //TIG_EV_QUICK_1   = 11;
+      //TIG_EV_QUICK_2   = 12;
+      //TIG_EV_QUICK_3   = 13;
+      //TIG_EV_QUICK_4   = 14;
+      //TIG_EV_QUICK_5   = 15;
+      //TIG_EV_QUICK_6   = 16;
+      //TIG_EV_QUICK_7   = 17;
+      //TIG_EV_QUICK_8   = 18;
+      //TIG_EV_QUICK_9   = 19;
 
       TIG_EV_RESTART   = 100;
 
@@ -103,7 +103,7 @@ type TDRLIO = class( TIO )
   function PushLayer( aLayer : TIOLayer ) : TIOLayer; override;
   procedure PreAction;
   procedure Clear; override;
-  function OnEvent( const event : TIOEvent ) : Boolean; override;
+  function OnEvent( const aEvent : TIOEvent ) : Boolean; override;
 
   function ShiftHeld      : Boolean;  virtual;
 
@@ -462,18 +462,33 @@ begin
   inherited Clear;
 end;
 
-function TDRLIO.OnEvent( const event : TIOEvent ) : Boolean;
+function TDRLIO.OnEvent( const aEvent : TIOEvent ) : Boolean;
+var iInput : TInputKey;
+    iKey   : TIOKeyCode;
 begin
-  if ( event.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
+  if ( aEvent.EType in [ VEVENT_MOUSEMOVE, VEVENT_MOUSEDOWN, VEVENT_MOUSEUP ] ) then
     if not Setting_Mouse then
       Exit( False );
 
-  if ( event.EType = VEVENT_KEYDOWN ) or ( event.EType = VEVENT_KEYUP ) and ( not event.Key.Repeated ) then
-  case event.Key.Code of
-    VKEY_F1     : if ModdedGame then VTIG_GetIOState.EventState.SetState( TIG_EV_RESTART, event.Key.Pressed and ( VKMOD_CTRL in event.Key.ModState ) );
+  if ( aEvent.EType = VEVENT_KEYDOWN ) or ( aEvent.EType = VEVENT_KEYUP ) and ( not aEvent.Key.Repeated ) then
+  begin
+    case aEvent.Key.Code of
+      VKEY_F1     : if ModdedGame then VTIG_GetIOState.EventState.SetState( TIG_EV_RESTART, aEvent.Key.Pressed and ( VKMOD_CTRL in aEvent.Key.ModState ) );
+    end;
+    iKey := IOKeyEventToIOKeyCode( aEvent.Key );
+    if (iKey mod 256) <> 0 then
+    begin
+      iInput := TInputKey( Config.Commands[ iKey ] );
+      case iInput of
+        INPUT_INVENTORY  : VTIG_GetIOState.EventState.SetState( TIG_EV_INVENTORY, aEvent.Key.Pressed );
+        INPUT_EQUIPMENT  : VTIG_GetIOState.EventState.SetState( TIG_EV_EQUIPMENT, aEvent.Key.Pressed );
+        INPUT_TRAITS     : VTIG_GetIOState.EventState.SetState( TIG_EV_TRAITS,    aEvent.Key.Pressed );
+        INPUT_PLAYERINFO : VTIG_GetIOState.EventState.SetState( TIG_EV_CHARACTER, aEvent.Key.Pressed );
+      end;
+    end;
   end;
 
-  Exit( inherited OnEvent( event ) );
+  Exit( inherited OnEvent( aEvent ) );
 end;
 
 function TDRLIO.ShiftHeld : Boolean;
