@@ -1820,7 +1820,7 @@ begin
 
     // Apply damage
     aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon, 0 );
-    if ( DRL.State <> DSPlaying ) or (not iLevel.isAlive( iUID ) ) then Exit;
+    if ( DRL.State <> DSPlaying ) or ( not iLevel.isAlive( iUID ) ) then Exit;
   end;
 
   if iWeapon <> nil then iWeapon.CallHook( Hook_OnFired, [ Self, Second ] );
