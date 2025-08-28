@@ -1,5 +1,6 @@
 0.11
 [mod] -- GH#---: level up happens after the player turn
+[mod] -- GH#331: default swap time with prepared is 0.5 (down from 0.8)
 
 0.10.0e
 [new] -- GH#189: G-version - Gamepad support!

@@ -644,7 +644,7 @@ begin
 
   if ( BF_QUICKSWAP in FFlags ) or ( canDualWield )
     then Exit( Success( 'You swap your weapons instantly!',[] ) )
-    else Exit( Success( 'You swap your weapons.',[], Round(getWearCost*0.8) ) );
+    else Exit( Success( 'You swap your weapons.',[], Round(getWearCost*0.5) ) );
 end;
 
 function TBeing.ActionDrop ( aItem : TItem; aUnload : Boolean ) : boolean;
