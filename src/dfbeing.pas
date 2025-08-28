@@ -1971,6 +1971,7 @@ begin
       Damage_SPlasma     : iResist := getTotalResistance( 'plasma', aTarget );
       Damage_Bullet      : iResist := getTotalResistance( 'bullet', aTarget );
       Damage_Melee       : iResist := getTotalResistance( 'melee', aTarget );
+      Damage_Pierce      : iResist := 0;
     else iResist := 0;
     end;
     if iResist >= 100 then Exit;
@@ -2025,7 +2026,9 @@ begin
 
   if aDamageType = DAMAGE_SHARPNEL then iArmorValue := iArmorValue * 2;
   if aDamageType = DAMAGE_PLASMA   then iArmorValue := iArmorValue div 2;
+  if aDamageType = DAMAGE_PIERCE   then iArmorValue := iArmorValue div 2;
   if aDamageType = DAMAGE_SPLASMA  then iArmorValue := iArmorValue div 3;
+
 
   if aDamageType <> Damage_IgnoreArmor then
   begin
@@ -2045,6 +2048,7 @@ begin
     Damage_Fire    : iOverKillValue := FHPMax + FHPMax div 2;
     Damage_Acid    : iOverKillValue := FHPMax * 2;
     Damage_Plasma  : iOverKillValue := FHPMax * 2;
+    Damage_Pierce  : iOverKillValue := FHPMax * 2;
     Damage_SPlasma : iOverKillValue := FHPMax;
   else
     iOverKillValue := FHPMax * 4;
