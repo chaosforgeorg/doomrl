@@ -29,11 +29,11 @@ TItem  = class( TThing )
 
     function    rollDamage : Integer;
     function    maxDamage : Integer;
-    function    GetName(known : boolean) : string;
+    function    GetName( aKnown : boolean; aSingle : Boolean = False ) : Ansistring;
     function    GetExtName( aLyingHere : Boolean ) : Ansistring;
     function    GetProtection : Byte;
     function    GetResistance( const aResistance : AnsiString ) : Integer;
-    function    Description : Ansistring;
+    function    Description( aSingle : Boolean = False ) : Ansistring;
     function    DescriptionBox : Ansistring;
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
@@ -343,7 +343,7 @@ begin
   else Exit(iResist);
 end;
 
-function    TItem.Description : Ansistring;
+function    TItem.Description( aSingle : Boolean = False ) : Ansistring;
 var FlagStr : string[10];
     Count   : Byte;
 begin
@@ -397,7 +397,7 @@ begin
           Description += ' ('+FProps.Damage.toString+')';
       end;
   end;
-  if FMax > 1 then Description += ' (x'+IntToStr(FAmount)+')';
+  if ( FMax > 1 ) and ( not aSingle ) then Description += ' (x'+IntToStr(FAmount)+')';
 end;
 
 function TItem.DescriptionBox: Ansistring;
@@ -488,12 +488,12 @@ begin
   Exit('a ');
 end;
 
-function    TItem.GetName(known : boolean) : string;
+function    TItem.GetName( aKnown : boolean; aSingle : Boolean = False ) : Ansistring;
 begin
-  if FAmount > 1 then Exit(Description);
-  if Flags[ IF_UNIQUENAME ] then Exit( Description );
-  if known then Exit('the '+Description)
-           else Exit(Preposition(Description)+Description);
+  if FAmount > 1 then Exit( Description( aSingle ) );
+  if Flags[ IF_UNIQUENAME ] then Exit( Description( aSingle ) );
+  if aKnown then Exit('the '+Description( aSingle ))
+            else Exit(Preposition(Description( aSingle ))+Description( aSingle ));
 end;
 
 function TItem.GetExtName( aLyingHere : Boolean ) : Ansistring;

@@ -1026,7 +1026,7 @@ begin
         end
 	  else if isUsable then
 	    begin
-		  Emote( 'You use %s from the ground.', 'uses %s.', [ aItem.GetName(false) ] );
+		  Emote( 'You use %s from the ground.', 'uses %s.', [ aItem.GetName(False,True) ] );
 		end
 	  else if isEquip then
 	    begin
@@ -1045,7 +1045,7 @@ begin
 		end;
 	end
   else
-     Emote( 'You use %s.', 'uses %s.', [ aItem.GetName(false) ] );
+     Emote( 'You use %s.', 'uses %s.', [ aItem.GetName(False, True) ] );
   if isFailed then 
     Exit( False );
 
