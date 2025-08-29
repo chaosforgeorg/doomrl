@@ -218,6 +218,7 @@ core.register_blueprint "ai"
 
 	OnCreate    = { true,  core.TFUNC },
 	OnAttacked  = { true,  core.TFUNC },
+	OnAction    = { false, core.TFUNC },
 }
 
 core.register_blueprint "being"
