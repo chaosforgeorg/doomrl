@@ -580,7 +580,7 @@ begin
       if iItem.isUsable then
         if iItem.id = iID then
         begin
-          if DRL.Targeting.List.Current <> FPosition
+          if iItem.isPack or ( DRL.Targeting.List.Current <> FPosition )
             then Exit( ActionUse( iItem, DRL.Targeting.List.Current ) )
             else Exit( Fail( 'No valid target!', [] ) );
         end;

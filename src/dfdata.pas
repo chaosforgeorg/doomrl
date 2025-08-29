@@ -134,6 +134,9 @@ type
 
 
 const
+   PadQSlotChar : array[1..4] of Char = ( '^','<','>','v' );
+
+const
 {$include ../bin/data/core/constants.lua}
 {$include ../bin/dkey.inc}
 

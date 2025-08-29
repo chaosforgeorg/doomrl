@@ -1116,10 +1116,18 @@ begin
                                 else Exit( HandleSwapWeaponCommand );
     VPAD_BUTTON_LEFTSHOULDER  : begin IO.SetAutoTarget( FTargeting.List.Prev ); Exit( False ); end;
     VPAD_BUTTON_RIGHTSHOULDER : begin IO.SetAutoTarget( FTargeting.List.Next ); Exit( False ); end;
-    VPAD_BUTTON_DPAD_UP    : if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0,-1 ) ) );
-    VPAD_BUTTON_DPAD_DOWN  : if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0, 1 ) ) );
-    VPAD_BUTTON_DPAD_LEFT  : if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D(-1, 0 ) ) );
-    VPAD_BUTTON_DPAD_RIGHT : if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 1, 0 ) ) );
+    VPAD_BUTTON_DPAD_UP    : if IO.GetPadLTrigger
+      then Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '1' ) ) )
+      else if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0,-1 ) ) );
+    VPAD_BUTTON_DPAD_DOWN  : if IO.GetPadLTrigger
+      then Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '4' ) ) )
+      else if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 0, 1 ) ) );
+    VPAD_BUTTON_DPAD_LEFT  : if IO.GetPadLTrigger
+      then Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '2' ) ) )
+      else if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D(-1, 0 ) ) );
+    VPAD_BUTTON_DPAD_RIGHT : if IO.GetPadLTrigger
+      then Exit( HandleCommand( TCommand.Create( COMMAND_QUICKKEY, '3' ) ) )
+      else if FPadMoved then Exit( MoveTargetEvent( FTargeting.List.Current + NewCoord2D( 1, 0 ) ) );
   end;
   Exit( False );
 end;

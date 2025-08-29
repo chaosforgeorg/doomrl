@@ -24,6 +24,7 @@ TInventory = class( TVObject )
        procedure Sort( var aList : TItemList );
        function  Size : byte;
        procedure Add( aItem : TItem );
+       function  Find( const aID : Ansistring ) : TItem;
        function  SeekStack( aID : DWord ) : TItem;
        function  CountAmount( aID : DWord ) : Integer;
        function  AddStack( aID : DWord; aCount : Integer ) : Integer;
@@ -150,6 +151,15 @@ begin
   for iItem in Self do
     if iItem.NID = aID then
       CountAmount += iItem.Amount;
+end;
+
+function TInventory.Find( const aID : Ansistring ) : TItem;
+var iItem : TItem;
+begin
+  for iItem in Self do
+    if iItem.ID = aID then
+      Exit( iItem );
+  Exit( nil );
 end;
 
 

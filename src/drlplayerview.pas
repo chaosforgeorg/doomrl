@@ -314,13 +314,19 @@ var iEntry    : TItemViewEntry;
     end;
     Exit( False );
   end;
+  function QSlotChar( aQSlot : Byte ) : Char;
+  begin
+    if IO.IsGamepad and ( aQSlot < 5 ) and ( aQSlot > 0 ) then
+      Exit( PadQSlotChar[ aQSlot ] );
+    Exit( Chr(Ord('0') + iEntry.QSlot ) );
+  end;
 begin
   if FInv = nil then ReadInv;
   VTIG_BeginWindow( FITitle, 'inventory', FSize );
     VTIG_BeginGroup( 50 );
     for iEntry in FInv do
       if iEntry.QSlot <> 0
-        then VTIG_Selectable( '[{!{0}}] {1}',[Chr(Ord('0') + iEntry.QSlot), iEntry.Name], True, iEntry.Color )
+        then VTIG_Selectable( '[{!{0}}] {1}',[QSlotChar( iEntry.QSlot ), iEntry.Name], True, iEntry.Color )
         else VTIG_Selectable( iEntry.Name, True, iEntry.Color );
     iSelected := VTIG_Selected;
     if FInv.Size = 0 then
@@ -350,8 +356,9 @@ begin
       begin
         VTIG_Text( '<{!{$input_uidrop}}> drop' );
         VTIG_Text( '<{!{$input_uialtdrop}}>    unload and drop' );
-        if not IO.IsGamepad then
-          VTIG_Text( '<{!1-9}> mark quickslot' );
+        if IO.IsGamepad
+          then VTIG_Text( '<{!LTrigger+DPad}> mark quickslot' )
+          else VTIG_Text( '<{!1-9}> mark quickslot' );
       end;
     end;
 

@@ -69,6 +69,7 @@ type
 
     procedure RunModuleChoice; override;
  protected
+    procedure DrawHUD; override;
     function ReadDefaultFont : TBitmapFont;
     procedure ExplosionMark( aCoord : TCoord2D; aColor : Byte; aDuration : DWord; aDelay : DWord ); override;
     function FullScreenCallback( aEvent : TIOEvent ) : Boolean;
@@ -138,10 +139,10 @@ implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
-     vdebug, vlog, vmath, vdf, vgl3library,
+     vdebug, vlog, vmath, vdf, vgl3library, vuid,
      vglimage, vsdlio, vcolor, vglconsole, vioconsole,
-     vtig, vtigstyle,
-     dfplayer,
+     vtig, vtigstyle, vtigio,
+     dfplayer, dfitem,
      drlbase, drlconfiguration, drlmodule;
 
 
@@ -934,7 +935,48 @@ begin
           //while ( SDL_PeepEvents( @iDiscardEvent, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEMOTION) > 0 ) do;
         end;
   end;
+
+  if ( iEvent.EType = VEVENT_PADDOWN ) or ( iEvent.EType = VEVENT_PADUP ) then
+    case iEvent.Pad.Button of
+      VPAD_BUTTON_DPAD_UP     : begin VTIG_GetIOState.EventState.SetState( VTIG_IE_1, FGPLTrigger and iEvent.Pad.Pressed ); if FGPLTrigger and iEvent.Pad.Pressed then Exit( isModal ) end;
+      VPAD_BUTTON_DPAD_DOWN   : begin VTIG_GetIOState.EventState.SetState( VTIG_IE_4, FGPLTrigger and iEvent.Pad.Pressed ); if FGPLTrigger and iEvent.Pad.Pressed then Exit( isModal ) end;
+      VPAD_BUTTON_DPAD_LEFT   : begin VTIG_GetIOState.EventState.SetState( VTIG_IE_2, FGPLTrigger and iEvent.Pad.Pressed ); if FGPLTrigger and iEvent.Pad.Pressed then Exit( isModal ) end;
+      VPAD_BUTTON_DPAD_RIGHT  : begin VTIG_GetIOState.EventState.SetState( VTIG_IE_3, FGPLTrigger and iEvent.Pad.Pressed ); if FGPLTrigger and iEvent.Pad.Pressed then Exit( isModal ) end;
+    end;
+
   Exit( inherited OnEvent( iEvent ) )
+end;
+
+procedure TDRLGFXIO.DrawHUD;
+var i     : Byte;
+    iItem : TItem;
+    iPosX : Integer;
+    iPosY : Integer;
+begin
+  inherited DrawHUD;
+  if Player = nil then Exit;
+
+  if IsGamepad and FGPLTrigger and ( not isModal ) then
+  begin
+    iPosY := 4;
+    iPosX := 2;
+    if Player.Position.X < 20 then
+      iPosX := 40;
+    for i := 1 to 4 do
+    begin
+      iItem := nil;
+      with Player.FQuickSlots[ i ] do
+      begin
+             if UID <> 0 then iItem := UIDs[ UID ] as TItem
+        else if ID <> '' then iItem := Player.Inv.Find( ID );
+      end;
+      if iItem <> nil then
+      begin
+        VTIG_FreeLabel( '[{!{0}}] {1}', vutil.Point(iPosX,iPosY), [ PadQSlotChar[ i ], iItem.description ], iItem.MenuColor );
+        Inc( iPosY );
+      end;
+    end;
+  end;
 end;
 
 function TDRLGFXIO.PushLayer(  aLayer : TIOLayer ) : TIOLayer;
