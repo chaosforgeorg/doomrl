@@ -1733,6 +1733,7 @@ procedure TBeing.Attack( aTarget : TBeing; Second : Boolean = False );
 var iName          : string;
     iDefenderName  : string;
     iResult        : string;
+    iLevel         : TLevel;
     iDamage        : Integer;
     iWeaponSlot    : TEqSlot;
     iWeapon        : TItem;
@@ -1741,13 +1742,16 @@ var iName          : string;
     iDualAttack    : Boolean;
     iAttackCost    : DWord;
     iTargetUID     : TUID;
+    iUID           : TUID;
     iMissed        : Boolean;
 begin
   if BF_NOMELEE in FFlags then Exit;
   if aTarget = nil then Exit;
+  iLevel       := TLevel(Parent);
   FMeleeAttack := True;
   iDualAttack  := False;
   iTargetUID   := aTarget.UID;
+  iUID         := UID;
   iMissed      := False;
 
   // Choose weaponSlot
@@ -1816,13 +1820,14 @@ begin
 
     // Apply damage
     aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon, 0 );
+    if ( DRL.State <> DSPlaying ) or ( not iLevel.isAlive( iUID ) ) then Exit;
   end;
 
   if iWeapon <> nil then iWeapon.CallHook( Hook_OnFired, [ Self, Second ] );
   CallHook( Hook_OnFired, [ iWeapon, Second ] );
 
   // Dualblade attack
-  if iDualAttack and (not Second) and TLevel(Parent).isAlive( iTargetUID ) then
+  if iDualAttack and (not Second) and iLevel.isAlive( iTargetUID ) then
     Attack( aTarget, True );
 end;
 
