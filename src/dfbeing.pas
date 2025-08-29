@@ -1787,6 +1787,7 @@ function TBeing.Attack( aTarget : TBeing; aSecond : Boolean = False ) : Boolean;
 var iName          : string;
     iDefenderName  : string;
     iResult        : string;
+    iLevel         : TLevel;
     iDamage        : Integer;
     iWeaponSlot    : TEqSlot;
     iWeapon        : TItem;
@@ -1795,14 +1796,17 @@ var iName          : string;
     iDualAttack    : Boolean;
     iAttackCost    : DWord;
     iTargetUID     : TUID;
+    iUID           : TUID;
     iMissed        : Boolean;
 begin
   Result := False;
   if BF_NOMELEE in FFlags then Exit;
   if aTarget = nil then Exit;
+  iLevel       := TLevel(Parent);
   FMeleeAttack := True;
   iDualAttack  := False;
   iTargetUID   := aTarget.UID;
+  iUID         := UID;
   iMissed      := False;
 
   // Choose weaponSlot
@@ -1871,6 +1875,7 @@ begin
 
     // Apply damage
     aTarget.ApplyDamage( iDamage, Target_Torso, iDamageType, iWeapon, 0 );
+    if ( DRL.State <> DSPlaying ) or ( not iLevel.isAlive( iUID ) ) then Exit;
   end;
 
   if iWeapon <> nil then iWeapon.CallHook( Hook_OnFired, [ Self, aSecond ] );
