@@ -1634,6 +1634,7 @@ var iItem      : TItem;
     iBlood     : Byte;
     iDir       : TDirection;
     iLevel     : TLevel;
+    iMeleeKill : Boolean;
 begin
   iLevel := TLevel(Parent);
   if FDying then Exit;
@@ -1651,8 +1652,12 @@ begin
   if (aKiller <> nil) and (aWeapon <> nil) then
     aWeapon.CallHook(Hook_OnKill, [ aKiller, Self ]);
 
+  iMeleeKill := False;
   if (aKiller <> nil) then
-     aKiller.CallHook( Hook_OnKill, [ Self, aWeapon, aKiller.MeleeAttack ] );
+  begin
+    iMeleeKill := aKiller.MeleeAttack;
+    aKiller.CallHook( Hook_OnKill, [ Self, aWeapon, aKiller.MeleeAttack ] );
+  end;
 
   if not aOverkill then
   try
@@ -1680,7 +1685,7 @@ begin
   if aOverkill then iBlood *= 3;
   Blood(iDir,iBlood);
 
-  CallHook( Hook_OnDie, [ aOverkill ] );
+  CallHook( Hook_OnDie, [ aOverkill, iMeleeKill ] );
 
   if not aOverkill then
   begin
