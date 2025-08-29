@@ -1,4 +1,4 @@
-0.11
+0.10.1
 [new] -- GJ#144: UI - quickslot support for gamepad
 [mod] -- GH#328: UI - inv/eq/trait/char keys are active when panel is up!
 [mod] -- GH#---: level up happens after the player turn
