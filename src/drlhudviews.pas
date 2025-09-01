@@ -456,7 +456,7 @@ begin
     IO.Msg( 'Find a more constructive way to commit suicide.' )
   else
   begin
-    DRL.Targeting.OnTarget( FTarget );
+    DRL.Targeting.OnTarget( FTarget, False );
     Player.TargetPos := FTarget;
     Player.ChainFire := FChainFire;
     DRL.HandleCommand( TCommand.Create( FCommand, FTarget, FItem ) );
