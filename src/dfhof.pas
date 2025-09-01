@@ -1107,7 +1107,7 @@ var i    : Integer;
 begin
   for i := 1 to aRankLevel do
   begin
-    iAch := LuaSystem.Get( [ 'ranks', aRankArray, aRankLevel+1, 'achievement' ], '' );
+    iAch := LuaSystem.Get( [ 'ranks', aRankArray, i+1, 'achievement' ], '' );
     if iAch <> '' then
         if DRL.Store.SetAchievement( iAch ) then
           Log( LOGINFO, iAch+' awarded!');
