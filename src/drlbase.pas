@@ -16,7 +16,7 @@ type TTargeting = class
   procedure Clear;
   procedure ClearPosition;
   procedure Update( aRange : Integer );
-  procedure OnTarget( aTarget : TCoord2D );
+  procedure OnTarget( aTarget : TCoord2D; aMove : Boolean );
   destructor Destroy; override;
 private
   FList    : TAutoTarget;
@@ -170,13 +170,13 @@ begin
           FList.PriorityTarget( FLastPos );
 end;
 
-procedure TTargeting.OnTarget( aTarget : TCoord2D );
+procedure TTargeting.OnTarget( aTarget : TCoord2D; aMove : Boolean );
 begin
   if FLastPos.X*FLastPos.Y <> 0
     then FPrevPos := FLastPos
     else FPrevPos := aTarget;
   FLastUID := 0;
-  if (DRL.Level.Being[ aTarget ] <> nil) and ( DRL.Level.Flags[ LF_BEINGSVISIBLE ] or DRL.Level.isVisible(aTarget) ) then
+  if (not aMove) and (DRL.Level.Being[ aTarget ] <> nil) and ( DRL.Level.Flags[ LF_BEINGSVISIBLE ] or DRL.Level.isVisible(aTarget) ) then
     FLastUID := DRL.Level.Being[ aTarget ].UID;
   FLastPos := aTarget;
 end;
@@ -792,7 +792,7 @@ begin
       ResetAutoTarget;
       Exit( False );
     end;
-    FTargeting.OnTarget( iTarget );
+    FTargeting.OnTarget( iTarget, False );
   end;
 
   Exit( HandleCommand( TCommand.Create( iCommand, iTarget, iItem ) ) )
@@ -1193,7 +1193,7 @@ begin
   if FLevel.isProperCoord( aCoord ) then
   begin
     Player.TargetPos := aCoord;
-    FTargeting.OnTarget( aCoord );
+    FTargeting.OnTarget( aCoord, True );
     FTargeting.Update( Player.Vision );
     IO.SetAutoTarget( FTargeting.List.Current );
     Exit( True );
