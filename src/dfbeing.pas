@@ -1003,7 +1003,6 @@ var isOnGround : Boolean;
     iUID       : TUID;
 	
 begin
-  Result := False;
   isFailed   := False;
   isOnGround := TLevel(Parent).Item[ FPosition ] = aItem;
   if aItem = nil then Exit( false );
@@ -1044,7 +1043,7 @@ begin
 			end;
 		end;
 	end
-  else
+  else if not isURanged then
      Emote( 'You use %s.', 'uses %s.', [ aItem.GetName(False, True) ] );
   if isFailed then 
     Exit( False );
@@ -1054,7 +1053,7 @@ begin
     aItem.PlaySound( 'pickup', FPosition );
     Inv.setSlot( iSlot, aItem );
   end;
-  if isUsable then
+  if isUsable and (not isURanged) then
     aItem.PlaySound( 'use', FPosition );
   if isEquip or isUsable then
     begin
@@ -1065,10 +1064,13 @@ begin
   begin
     if isURanged then
     begin
-      isUsedUp := True;
       aItem.Flags[ IF_NODESTROY ] := True;
-      Result := ActionFire( aTarget, aItem, False );
+      isUsedUp := ActionFire( aTarget, aItem, False );
       if UIDs.Get( iUID ) <> nil then aItem.Flags[ IF_NODESTROY ] := False;
+      if isUsedUp
+        then Emote( 'You use %s.', 'uses %s.', [ aItem.GetName(False, True) ] )
+        else Exit( Fail( 'Out of range!', [] ) );
+      aItem.PlaySound( 'use', FPosition );
     end
     else
       isUsedUp := aItem.CallHookCheck( Hook_OnUse,[Self] );
@@ -1079,7 +1081,7 @@ begin
     end;
   end;
 
-  if isURanged then Exit( Result );
+  if isURanged then Exit( isUsedUp );
   
   if isUse then
     Dec(FSpeedCount,getUseCost)
