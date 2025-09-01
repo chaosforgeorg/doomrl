@@ -33,7 +33,8 @@ TItem  = class( TThing )
     function    GetExtName( aLyingHere : Boolean ) : Ansistring;
     function    GetProtection : Byte;
     function    GetResistance( const aResistance : AnsiString ) : Integer;
-    function    Description( aSingle : Boolean = False ) : Ansistring;
+    function    Description( aSingle : Boolean ) : Ansistring; overload;
+    function    Description : Ansistring; overload;
     function    DescriptionBox : Ansistring;
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
@@ -343,7 +344,12 @@ begin
   else Exit(iResist);
 end;
 
-function    TItem.Description( aSingle : Boolean = False ) : Ansistring;
+function TItem.Description : Ansistring;
+begin
+  Exit( Description( False ) );
+end;
+
+function TItem.Description( aSingle : Boolean ) : Ansistring;
 var FlagStr : string[10];
     Count   : Byte;
 begin
