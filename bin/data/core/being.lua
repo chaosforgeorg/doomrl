@@ -37,9 +37,9 @@ being.inv = {
 		for i in being.inv.items(self) do
 			if i.itype == ITEMTYPE_AMMO then
 				if i.nid == ammo_nid then
-					if i.ammo <= acount then
+					if i.amount <= acount then
 						ammo   = i
-						acount = i.ammo
+						acount = i.amount
 					end
 				end
 			end

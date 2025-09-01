@@ -50,7 +50,7 @@ function drl.register_beings()
 
 		OnCreate = function (self)
 			self.eq.weapon = "shotgun"
-			self.inv:add( "shell", { ammo = 30 } )
+			self.inv:add( "shell", { amount = 30 } )
 		end
 	}
 
@@ -76,7 +76,7 @@ function drl.register_beings()
 
 		OnCreate = function (self)
 			self.eq.weapon = "chaingun"
-			self.inv:add( "ammo", { ammo = 40 } )
+			self.inv:add( "ammo", { amount = 40 } )
 		end
 	}
 
@@ -616,7 +616,7 @@ function drl.register_beings()
 			self.eq.weapon = "ucpistol"
 			self.eq.weapon.flags[ IF_NODROP ] = true
 			self.eq.armor = "garmor"
-			self.inv:add( "ammo", { ammo = 48 } )
+			self.inv:add( "ammo", { amount = 48 } )
 			self.inv:add( "ammo" )
 		end
 	}
@@ -653,7 +653,7 @@ function drl.register_beings()
 				{"uashotgun", "shell"}
 			}
 			self.eq.weapon = wpammo[1]
-			self.inv:add( wpammo[2], { ammo = 60 } )
+			self.inv:add( wpammo[2], { amount = 60 } )
 			self.eq.weapon.flags[ IF_NODROP ] = true
 			self.eq.armor = "garmor"
 		end
@@ -690,7 +690,7 @@ function drl.register_beings()
 				{"ulaser",  "cell", 50 },
 			}
 			self.eq.weapon = wpammo[1]
-			self.inv:add( wpammo[2], { ammo = wpammo[3] } )
+			self.inv:add( wpammo[2], { amount = wpammo[3] } )
 			self.eq.weapon.flags[ IF_NODROP ] = true
 			self.eq.armor = "barmor"
 		end
@@ -727,7 +727,7 @@ function drl.register_beings()
 				{"unapalm",  "rocket", 12 },
 			}
 			self.eq.weapon = wpammo[1]
-			self.inv:add( wpammo[2], { ammo = wpammo[3] } )
+			self.inv:add( wpammo[2], { amount = wpammo[3] } )
 			self.eq.weapon.flags[ IF_NODROP ] = true
 			self.eq.armor = "barmor"
 		end
@@ -971,7 +971,7 @@ function drl.register_beings()
 		},
 
 		OnCreate = function (self)
-			self.inv:add( "cell", { ammo = 20 } )
+			self.inv:add( "cell", { amount = 20 } )
 		end
 	}
 
@@ -1451,7 +1451,7 @@ function drl.register_beings()
 		OnCreate = function (self)
 			self.eq.weapon = "bazooka"
 			for i=1,4 do
-				self.inv:add( "rocket", { ammo = 10 } )
+				self.inv:add( "rocket", { amount = 10 } )
 			end
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 10
 			self.hp = self.hpmax
@@ -1564,7 +1564,7 @@ function drl.register_beings()
 		OnCreate = function (self)
 			self.eq.weapon = "bazooka"
 			for i=1,3 do
-				self.inv:add( "rocket", { ammo = 10 } )
+				self.inv:add( "rocket", { amount = 10 } )
 			end
 
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 10

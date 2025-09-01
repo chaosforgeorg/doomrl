@@ -396,7 +396,7 @@ function level:drop_items( what )
 			local ammo = i.ammo
 			i.ammo = 0
 			local ia = self:drop_item( items[ i.ammoid ].id, what.position, true, true, true )
-			ia.ammo = ammo
+			ia.amount = ammo
 		end
 		self:drop_item( i, what.position, true, true, true )
 	end

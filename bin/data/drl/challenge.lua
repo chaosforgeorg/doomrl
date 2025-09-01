@@ -298,7 +298,7 @@ function drl.register_challenges()
 			player.inv:clear()
 			player.eq:clear()
 			player.eq.weapon = "shotgun"
-			player.inv:add( "shell", { ammo = 50 } )
+			player.inv:add( "shell", { amount = 50 } )
 			player.inv:add( "smed" )
 			player.inv:add( "smed" )
 			if player.klass == klasses.technician.nid then
@@ -507,11 +507,11 @@ function drl.register_challenges()
 			player.inv:clear()
 			if CHALLENGE ~= "challenge_aob" then
 				if CHALLENGE == "challenge_aosh" then
-					player.inv:add( "shell", { ammo = 50 } )
+					player.inv:add( "shell", { amount = 50 } )
 				elseif CHALLENGE == "challenge_aopc" then
 					player.inv:add( "nuke" )
 				else
-					player.inv:add( "ammo", { ammo = 100 } )
+					player.inv:add( "ammo", { amount = 100 } )
 				end
 			end
 			player.flags[ BF_IMPATIENT ] = true
@@ -591,10 +591,10 @@ function drl.register_challenges()
 			if CHALLENGE == "challenge_aob" then
 				player.inv:add( "chainsaw")
 			elseif CHALLENGE == "challenge_aomr" then
-				player.inv:add( "ammo", { ammo = 100 } )
+				player.inv:add( "ammo", { amount = 100 } )
 			elseif CHALLENGE == "challenge_aosh" then
 				player.inv:add( "shotgun" )
-				player.inv:add( "shell", { ammo = 50 } )
+				player.inv:add( "shell", { amount = 50 } )
 			elseif CHALLENGE == "challenge_aolt" then
 				player.eq.prepared = "pammo"
 				player.inv:add( "shotgun" )
@@ -605,8 +605,8 @@ function drl.register_challenges()
 				player.inv:add( "shotgun" )
 				player.inv:add( "chaingun" )
 				player.inv:add( "knife")
-				player.inv:add( "ammo", { ammo = 100 } )
-				player.inv:add( "shell", { ammo = 50 } )
+				player.inv:add( "ammo", { amount = 100 } )
+				player.inv:add( "shell", { amount = 50 } )
 			end
 			if CHALLENGE ~= "challenge_aoi" and CHALLENGE ~= "challenge_aoms" then
 				player.inv:add( "lmed" )
@@ -993,11 +993,11 @@ function drl.register_challenges()
 			player.inv:clear()
 			if CHALLENGE ~= "challenge_aob" then
 				if CHALLENGE == "challenge_aosh" then
-					player.inv:add( "shell", { ammo = 50 } )
+					player.inv:add( "shell", { amount = 50 } )
 				elseif CHALLENGE == "challenge_aopc" then
 					player.inv:add( "nuke" )
 				else
-					player.inv:add( "ammo", { ammo = 100 } )
+					player.inv:add( "ammo", { amount = 100 } )
 				end
 			end
 			if player.klass == klasses.technician.nid then
