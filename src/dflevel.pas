@@ -72,7 +72,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DropCorpse( aCoord : TCoord2D; CellID : Byte );
     function DamageTile( aCoord : TCoord2D; aDamage : Integer; aDamageType : TDamageType ) : Boolean;
-    procedure Explosion( aDelay : Integer; aCoord : TCoord2D; aData : TExplosionData; aItem : TItem; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+    procedure Explosion( aDelay : Integer; aCoord : TCoord2D; aData : TExplosionData; aItem : TItem; aKnockback : TDirection; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
     procedure Shotgun( aSource, aTarget : TCoord2D; aDamage : TDiceRoll; aDamageMul : Single; aDamageType : TDamageType; aShotgun : TShotgunData; aItem : TItem );
     procedure Respawn( aChance : byte );
     function isPassable( const aCoord : TCoord2D ) : Boolean; override;
@@ -936,7 +936,7 @@ begin
   end;
 end;
 
-procedure TLevel.Explosion( aDelay : Integer; aCoord : TCoord2D; aData : TExplosionData; aItem : TItem; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
+procedure TLevel.Explosion( aDelay : Integer; aCoord : TCoord2D; aData : TExplosionData; aItem : TItem; aKnockback : TDirection; aDirectHit : Boolean = False; aDamageMult : Single = 1.0 );
 var iC          : TCoord2D;
     iDamage     : Integer;
     iDir        : TDirection;
@@ -986,17 +986,19 @@ begin
           if (efSelfSafe in aData.Flags) and isActive then Continue;
           iPointDelay := aDelay + iDistance * aData.Delay;
           if efChain in aData.Flags then
-            Explosion( iPointDelay, iC, iChain, nil );
+            Explosion( iPointDelay, iC, iChain, nil, NewDirection(0) );
           iKnockback := KnockBackValue;
           if (efHalfKnock in aData.Flags) then iKnockback *= 2;
           if (efSelfKnockback in aData.Flags) and isActive then iKnockback := 2;
           if (iDamage >= iKnockBack) and (not (efNoKnock in aData.Flags) ) then
           begin
-            iDir.CreateSmooth( aCoord, iC );
+            if aCoord = iC
+              then iDir := aKnockback
+              else iDir.CreateSmooth( aCoord, iC );
             Knockback( iDir, iDamage div iKnockback );
           end;
           KnockBacked := True;
-          if (Flags[BF_SPLASHIMMUNE]) and (not aDirectHit) then Continue;
+          if (Flags[BF_SPLASHIMMUNE]) and (aCoord <> iC) then Continue;
           if (efSelfHalf in aData.Flags) and isActive then iDamage := iDamage div 2;
           if ( aItem <> nil ) and ( UIDs[ iItemUID ] = nil ) then aItem := nil;
           ApplyDamage( iDamage, Target_Torso, aData.DamageType, aItem, iPointDelay );
@@ -1004,7 +1006,7 @@ begin
         end;
         if ( iDamage > 10 ) and ( Item[iC] <> nil ) and (not Item[iC].isFeature) then
         begin
-          if efChain in aData.Flags then Explosion( iPointDelay, iC, iChain, nil );
+          if efChain in aData.Flags then Explosion( iPointDelay, iC, iChain, nil, NewDirection(0) );
           DestroyItem( iC );
         end;
         if (aData.ContentID <> 0) and isEmpty( iC, [ EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM ] ) then
@@ -1319,7 +1321,7 @@ begin
   iExplosion.Flags      := [ efAlwaysVisible ];
   for iCount := 1 to 10 do
   begin
-    Explosion( iCount*200, RandomCoord( [ EF_NOBLOCK ] ),iExplosion, nil );
+    Explosion( iCount*200, RandomCoord( [ EF_NOBLOCK ] ),iExplosion, nil, NewDirection(0) );
     if iCount mod 2 = 0 then
     begin
       IO.Blink( LightRed, 50, (iCount-1) * 200 );
@@ -1653,14 +1655,14 @@ begin
       iTable := iState.ToTable( 3 );
       ReadExplosion( iTable, iData );
       iTable.Free;
-      iLevel.Explosion( 0, iState.ToPosition(2), iData, iState.ToObjectOrNil(4) as TItem );
+      iLevel.Explosion( 0, iState.ToPosition(2), iData, iState.ToObjectOrNil(4) as TItem, NewDirection(0) );
     end
     else
     begin
       iTable := iState.ToTable( 4 );
       ReadExplosion( iTable, iData );
       iTable.Free;
-      iLevel.Explosion( iState.ToInteger(3), iState.ToPosition(2), iData, iState.ToObjectOrNil(5) as TItem );
+      iLevel.Explosion( iState.ToInteger(3), iState.ToPosition(2), iData, iState.ToObjectOrNil(5) as TItem, NewDirection(0) );
     end;
   end
   else

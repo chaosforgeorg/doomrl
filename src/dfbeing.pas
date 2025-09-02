@@ -2287,13 +2287,13 @@ begin
             end
             else IO.Msg('The missile hits '+iBeing.GetName(true)+'.');
 
-        if not ( MF_HARD in Missiles[iMissile].Flags ) then
-        begin
-          iDirection.CreateSmooth( Self.FPosition, iCoord );
-          iBeing.KnockBack( iDirection, iDamage div 12 );
-        end;
         if iRadius = 0 then
         begin
+          if not ( MF_HARD in Missiles[iMissile].Flags ) then
+          begin
+            iDirection.CreateSmooth( Self.FPosition, iCoord );
+            iBeing.KnockBack( iDirection, iDamage div 12 );
+          end;
           iRunDamage := True;
           if aItem.Hooks[ Hook_OnHitBeing ] then
           begin
@@ -2378,7 +2378,8 @@ begin
       else iExplosion.SoundID := Missiles[iMissile].soundID;
     iExplosion.Damage     := iRoll;
     iExplosion.DamageType := aItem.DamageType;
-    iLevel.Explosion( iDelay*(iSteps+(aShotCount*2)), iCoord, iExplosion, aItem, iDirectHit, iDamageMul );
+    iDirection.CreateSmooth( FPosition, iCoord );
+    iLevel.Explosion( iDelay*(iSteps+(aShotCount*2)), iCoord, iExplosion, aItem, iDirection, iDirectHit, iDamageMul );
   end;
   if (iAimedBeing = Player) and (iDodged) then Player.LastTurnDodge := True;
   Exit( UIDs[ iThisUID ] <> nil );
