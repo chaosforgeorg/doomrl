@@ -1457,6 +1457,7 @@ function drl.register_beings()
 			self.hp = self.hpmax
 
 			self:add_property( "master", true )
+			self:add_property( "is_boss", false )
 		end,
 
 		OnDie = function (self)
@@ -1522,12 +1523,12 @@ function drl.register_beings()
 			self.hp = self.hpmax
 
 			self:add_property( "master", true )
+			self:add_property( "is_boss", false )
 		end,
 
 		OnDie = function (self)
-			if self.flags[ BF_BOSS ] then
+			if self.is_boss then
 				level:explosion( self.position, { range = 17, delay = 40, color = RED, sound_id = "barrel.explode", flags = {EFALWAYSVISIBLE} } )
-				ui.msg_enter("Congratulations! You defeated the Spider Mastermind!")
 				self.expvalue = 0
 				if not level.flags[ LF_NUKED ] and statistics.damage_on_level == 0 then
 					player:add_medal("mastermind1")

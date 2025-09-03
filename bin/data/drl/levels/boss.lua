@@ -311,14 +311,21 @@ WWWWWWWWWWWWWWWWWWWWW...............####...............WWWWWWWWWWWWWWWWWWWWW
 			ui.msg("But... something's wrong!")
 			ui.msg("You sense a menace, a threat so evil it kills your mind!")
 			ui.msg("Was not all evil destroyed???")
-			player:continue_game()
 		end
 	end,
 
 	OnEnterLevel = function ()
 		local boss = level:drop_being("mastermind",coord(39,19))
-		boss.flags[ BF_BOSS ] = true
-	end
+		boss.is_boss = true
+	end,
+
+	OnKillAll = function ()
+		if not (level.flags[ LF_NUKED ] and player.flags[BF_INV]) then
+			ui.msg_enter("Congratulations! You defeated the Spider Mastermind!")
+			player:win()
+		end
+	end,
+
 }
 
 register_level "hell_fortress"
