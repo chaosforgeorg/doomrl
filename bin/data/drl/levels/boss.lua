@@ -374,7 +374,10 @@ register_level "hell_fortress"
 		else
 			boss = level:drop_being("jc",coord(76,11))
 		end
-		boss.flags[ BF_BOSS ] = true
+		boss.is_boss = true
 	end,
 
+	OnKillAll = function ()
+		player:win()
+	end,
 }

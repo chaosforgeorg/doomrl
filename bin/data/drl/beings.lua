@@ -1571,11 +1571,12 @@ function drl.register_beings()
 			self.hpmax = self.hpmax + DIFFICULTY * DIFFICULTY * 10
 			self.hp = self.hpmax
 
-			self:add_property( "master", true )
+			self:add_property( "master",  true )
+			self:add_property( "is_boss", false )
 		end,
 
 		OnDie = function (self)
-			if self.flags[BF_BOSS] then
+			if self.is_boss then
 				level:explosion( self.position, { range = 17, delay = 40, color = BLUE, sound_id = "barrel.explode", flags = {EFALWAYSVISIBLE} } )
 				for b in level:beings() do
 					if not ( b:is_player() ) and b.id ~= "jc" then
@@ -1648,6 +1649,7 @@ function drl.register_beings()
 		OnCreate = function (self)
 			level.flags[ LF_NONUKE ] = true
 			self:add_property( "master", true )
+			self:add_property( "is_boss", false )
 		end,
 
 		OnAction = function (self)
@@ -1670,7 +1672,7 @@ function drl.register_beings()
 			player:add_medal("dragonslayer2")
 			if CHALLENGE == "challenge_a100" then
 				level.map[ self.position ] = "stairs"
-			elseif self.flags[BF_BOSS] then
+			elseif self.is_boss then
 				level:explosion( self.position, { range = 17, delay = 40, color = RED, sound_id = "barrel.explode", flags = {EFALWAYSVISIBLE} } )
 				for b in level:beings() do
 					if not ( b:is_player() ) and b.id ~= "apostle" then

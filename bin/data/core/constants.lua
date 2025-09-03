@@ -55,7 +55,7 @@ CF_STAIRS     = 21;
 CF_RAISABLE   = 22;
 CF_STAIRSENSE = 23;
 
-BF_BOSS           = 1;
+
 BF_ENVIROSAFE     = 2;
 BF_CHARGE         = 3;
 BF_OPENDOORS      = 4;

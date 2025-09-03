@@ -1704,13 +1704,6 @@ begin
 
   if not (BF_NOEXP in FFlags) then Player.AddExp(FExpValue);
 
-  if BF_BOSS in FFlags then
-  begin
-    iLevel.Kill( Self );
-    DRL.GameWon := True;
-    DRL.SetState( DSFinished );
-    Exit;
-  end;
   iLevel.Kill( Self );
 end;
 
