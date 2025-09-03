@@ -1460,7 +1460,7 @@ function drl.register_beings()
 		end,
 
 		OnDie = function (self)
-			if level.id == "tower_of_babel" then
+			if self.is_boss then
 				level:explosion( self.position, { range = 17, delay = 40, color = RED, sound_id = "barrel.explode", flags = {EFALWAYSVISIBLE} } )
 				ui.msg_enter("The Cyberdemon is dead!")
 				if not level.flags[ LF_NUKED ] and statistics.damage_on_level == 0 then

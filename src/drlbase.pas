@@ -1327,7 +1327,12 @@ repeat
         if IsString('abbr')  then FLevel.Abbr  := getString('abbr');
 
         if Player.SpecExit <> ''
-          then FLevel.Flags[ LF_BONUS ] := True
+          then
+          begin
+            FLevel.Flags[ LF_BONUS ]         := True;
+            FLevel.Flags[ LF_NOITEMREVEAL ]  := True;
+            FLevel.Flags[ LF_NOBEINGREVEAL ] := True;
+          end
           else Player.SpecExit := getString('script','');
 
       finally

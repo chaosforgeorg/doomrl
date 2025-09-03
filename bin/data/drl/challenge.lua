@@ -1154,7 +1154,7 @@ function drl.register_challenges()
 			if ARCHANGEL then LevCount = 666 end
 
 			if l == LevCount and player.eq.armor and player.eq.armor.id == "uberarmor" then
-				level.flags[ LF_BOSS ] = true
+				level.flags[ LF_NOBEINGREVEAL ] = true
 				ui.msg_enter("Something is wrong... Something is really wrong here!")
 				for b in level:beings() do
 					if not b:is_player() then

@@ -128,8 +128,8 @@ register_level "hellgate"
 		generator.set_permanence( area( 51, 1, MAXX, MAXY ) )
 
 		level:player(2,10)
-		level.flags[ LF_NOHOMING ] = true
-		level.flags[ LF_BOSS     ] = true
+		level.flags[ LF_NOHOMING ]      = true
+		level.flags[ LF_NOBEINGREVEAL ] = true
 	end,
 
 	OnEnterLevel = function ()
@@ -202,13 +202,14 @@ register_level "tower_of_babel"
 ]]
 		,"floor",12)
 
-		level.flags[ LF_NOHOMING ] = true
-		level.flags[ LF_BOSS     ] = true
+		level.flags[ LF_NOHOMING      ] = true
+		level.flags[ LF_NOBEINGREVEAL ] = true
 		generator.scatter_blood(area.FULL_SHRINKED,"floor",100)
 	end,
 
 	OnEnterLevel = function ()
 		local boss = level:summon("cyberdemon")
+		boss.is_boss = true
 	end,
 
 	OnKillAll = function ()
@@ -293,8 +294,9 @@ WWWWWWWWWWWWWWWWWWWWW...............####...............WWWWWWWWWWWWWWWWWWWWW
 		generator.set_permanence( area( 1, 1, 10, MAXY ) )
 		generator.set_permanence( area( MAXX-10, 1, MAXX, MAXY ) )
 
-		level.flags[ LF_NOHOMING ] = true
-		level.flags[ LF_BOSS     ] = true
+		level.flags[ LF_NOHOMING      ] = true
+		level.flags[ LF_NOBEINGREVEAL ] = true
+
 		if math.random( 2 ) == 1 then
 			level:player(19,11)
 		else
@@ -355,8 +357,8 @@ register_level "hell_fortress"
 ]]
 		, 2,2 )
 
-		level.flags[ LF_NOHOMING ] = true
-		level.flags[ LF_BOSS     ] = true
+		level.flags[ LF_NOHOMING ]      = true
+		level.flags[ LF_NOBEINGREVEAL ] = true
 		level:player(2,10)
 
 		local boss

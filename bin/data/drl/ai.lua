@@ -291,6 +291,7 @@ register_ai "cyberdemon_ai"
 {
 	OnCreate = function( self )
 		aitk.basic_init( self, true, true )
+		self:add_property( "is_boss", false )
 		self:add_property( "sneakshot", true )
 		self:add_property( "ammo_regen", 0 )
 		self:add_property( "timer", 0 )
@@ -303,7 +304,7 @@ register_ai "cyberdemon_ai"
 
 	states = {
 		idle   = function( self ) 
-			if level.flags[ LF_BOSS ] then
+			if self.is_boss then
 				self.timer = self.timer + 1
 				if self.timer % 20 == 0 then self:play_sound( "act" ) end
 				if self.timer > 20 then

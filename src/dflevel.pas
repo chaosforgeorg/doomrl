@@ -1170,7 +1170,7 @@ begin
   if DRL.State <> DSPlaying then Exit;
 
   iEnemiesLeft := EnemiesLeft();
-  if ( iEnemiesLeft < 4 ) and ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
+  if ( iEnemiesLeft < 4 ) and ( not ( LF_NOBEINGREVEAL in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
     Include( FFlags, LF_BEINGSVISIBLE );
 
   if iEnemiesLeft = 0 then
@@ -1181,7 +1181,7 @@ begin
       if not (Hook_OnKillAll in FHooks) then
         IO.Msg('You feel relatively safe now.');
       FEmpty := True;
-      if ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
+      if ( not ( LF_NOITEMREVEAL in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
         Include( FFlags, LF_ITEMSVISIBLE );
     end;
   end;
