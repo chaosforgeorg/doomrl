@@ -1,7 +1,10 @@
+0.10.2
+[mod] -- GJ#165: direct hit damage calculated before knockback 
+[fix] -- GH#---: fixed several bugs related to checking if a level is nuked
+
 0.10.1
 [new] -- GJ#144: UI - quickslot support for gamepad
 [mod] -- GH#328: UI - inv/eq/trait/char keys are active when panel is up!
-[mod] -- GJ#165: direct hit damage calculated before knockback 
 [mod] -- GH#---: level up happens after the player turn
 [mod] -- GH#331: default swap time with prepared is 0.5 (down from 0.8)
 

@@ -1289,9 +1289,10 @@ begin
         Exit;
       end;
 
+      Include( FFlags, LF_NUKED );
+
       NukeRun;
 
-      Include( FFlags, LF_NUKED );
       Player.NukeActivated := 0;
       Player.ApplyDamage( 6000, Target_Internal, Damage_Plasma, nil, 0 );
 
