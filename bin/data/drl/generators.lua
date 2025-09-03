@@ -137,7 +137,7 @@ function drl.register_generators()
 			level.light[ area( center - hdim, center + hdim ) ][ LFNOSPAWN ] = true
 			
 			local linfo = player.episode[ level.index ]
-			if linfo.special and linfo.special ~= "" then
+			if linfo.special then
 				generator.generate_special_stairs( "rstairs", "You shiver from cold..." )
 			end
 		end,

@@ -571,19 +571,14 @@ function drl.register_challenges()
 		removemedals = { "icarus1", "icarus2", "explorer", "conqueror", "competn1", "competn2", "competn3", "untouchable1", "untouchable2", "untouchable3" },
 
 		OnCreateEpisode = function ()
-			local episode = player.episode
-			player.episode = {}
-			local LevCount = 17
-			for i=1,LevCount do
-				player.episode[i] = episode[i+8]
-			end
-			local SpecLevCount = 0
-			for i=1,LevCount-1 do
+			local slevcount = 0
+			for i=8,24 do
 				if player.episode[i].special then
-					SpecLevCount = SpecLevCount + 1
+					slevcount = slevcount + 1
 				end
 			end
-			statistics.bonus_levels_count = SpecLevCount
+			statistics.bonus_levels_count = slevcount
+			player.level_index = 8
 		end,
 
 		OnCreatePlayer = function ()
@@ -1452,19 +1447,14 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 		removemedals = { "icarus1", "icarus2", "explorer", "conqueror", "competn1", "competn2", "competn3", "untouchable1", "untouchable2", "untouchable3" },
 
 		OnCreateEpisode = function ()
-			local episode = player.episode
-			player.episode = {}
-			local LevCount = 9
-			for i=1,LevCount do
-				player.episode[i] = episode[i+16]
-			end
-			local SpecLevCount = 0
-			for i=1,LevCount-1 do
+			local slevcount = 0
+			for i=16,24 do
 				if player.episode[i].special then
-					SpecLevCount = SpecLevCount + 1
+					slevcount = slevcount + 1
 				end
 			end
-			statistics.bonus_levels_count = SpecLevCount
+			statistics.bonus_levels_count = slevcount
+			player.level_index = 16
 		end,
 
 		OnCreatePlayer = function ()
@@ -1633,7 +1623,15 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 					if not (level_proto.chance and (math.random(100) > level_proto.chance)) then
 						local lev = core.resolve_range(level_proto.level)
 						if lev % 2 == 0 then
-							player.episode[lev / 2].special = level_proto.id
+ 							local from = player.episode[lev / 2]
+							table.insert( player.episode, { 
+								script = level_proto.id,
+								style  = from.style,
+								danger = from.danger,
+								name   = level_proto.name,
+								exit   = (lev / 2) + 1,
+							} )
+							from.special = #player.episode
 						end
 					end
 				end

@@ -70,7 +70,7 @@ function generator.run( gen )
 	if gen.place_stairs then
 		generator.generate_stairs( "stairs" )
 		local linfo = player.episode[ level.index ]
-		if linfo.special and linfo.special ~= "" then
+		if linfo.special then
 			generator.generate_special_stairs( "rstairs", {
 				"You feel a breeze of morbid air...",
 				"You sense a passage to a place beyond...",

@@ -1238,6 +1238,7 @@ var iRank       : THOFRank;
     iInput      : TInputKey;
     iFullLoad   : Boolean;
     iChalAbbr   : Ansistring;
+    iScript     : Ansistring;
     iReport     : TPagedReport;
     iEnterNuke  : Boolean;
 begin
@@ -1310,9 +1311,7 @@ repeat
       end;
 
       Player.Statistics.Update;
-
-      if Player.SpecExit = '' then
-        Player.NextLevelIndex;
+      Player.NextLevelIndex;
 
       with LuaSystem.GetTable(['player','episode',Player.Level_Index]) do
       try
@@ -1323,17 +1322,14 @@ repeat
                    getInteger('danger',0));
         if IsString('sname') then FLevel.SName := getString('sname');
         if IsString('abbr')  then FLevel.Abbr  := getString('abbr');
-
-        if Player.SpecExit = '' then
-          Player.SpecExit := getString('script','');
-
+        iScript := getString('script','');
       finally
         Free;
       end;
 
-      if Player.SpecExit <> ''
+      if iScript <> ''
         then
-          FLevel.ScriptLevel(Player.SpecExit)
+          FLevel.ScriptLevel(iScript)
         else
         begin
           if FLevel.Name_Number <> 0
@@ -1342,7 +1338,6 @@ repeat
           CallHookCheck(Hook_OnGenerate,[]);
           FLevel.AfterGeneration( True );
         end;
-      Player.SpecExit := '';
     end;
     iFullLoad := State = DSLoading;
 
@@ -1438,7 +1433,6 @@ repeat
     begin
       if Player.Level_Index <> 1 then Player.NextLevelIndex;
       Player.Statistics.Increase('crash_count');
-      Player.SpecExit := '';
       WriteSaveFile( True );
     end;
     raise;

@@ -320,7 +320,8 @@ function drl.register_cells()
 		end,
 
 		OnExit = function(c)
-			player:exit( nil, 0.5 )
+			local linfo = player.episode[level.index]
+			player:exit( linfo.exit, 0.5 )
 		end,
 	}
 
@@ -335,7 +336,7 @@ function drl.register_cells()
 
 		OnEnter = function(c,being)
 			local linfo = player.episode[level.index]
-			being:msg("There are stairs leading to "..levels[linfo.special].name.." here.")
+			being:msg("There are stairs leading to "..player.episode[linfo.special].name.." here.")
 		end,
 
 		OnExit = function(c)
@@ -345,7 +346,7 @@ function drl.register_cells()
 
 		OnDescribe = function(c)
 			local linfo = player.episode[level.index]
-			return "stairs leading to "..levels[linfo.special].name
+			return "stairs leading to "..player.episode[linfo.special].name
 		end,
 	}
 

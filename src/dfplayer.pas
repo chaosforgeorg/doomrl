@@ -20,7 +20,6 @@ end;
 { TPlayer }
 
 type TPlayer = class(TBeing)
-  SpecExit        : string[20];
   NukeActivated   : Word;
 
   InventorySize   : Byte;
@@ -93,7 +92,7 @@ published
   property Klass           : Byte       read FKlass         write FKlass;
   property ExpFactor       : Real       read FExpFactor     write FExpFactor;
   property Score           : LongInt    read FScore         write FScore;
-  property Level_Index     : Integer    read FLevelIndex;
+  property Level_Index     : Integer    read FLevelIndex    write FLevelIndex;
   property EnemiesInVision : Word       read FEnemiesInVision;
 end;
 
@@ -122,7 +121,6 @@ begin
   StatusEffect  := StatusNormal;
   FStatistics   := TStatistics.Create;
   FScore        := 0;
-  SpecExit      := '';
   NukeActivated := 0;
   FExpLevel   := 1;
   FKlass      := 1;
@@ -158,7 +156,6 @@ procedure TPlayer.WriteToStream ( Stream : TStream ) ;
 begin
   inherited WriteToStream( Stream );
 
-  Stream.WriteAnsiString( SpecExit );
   Stream.Write( FLevelIndex, SizeOf( FLevelIndex ) );
   Stream.WriteWord( NukeActivated );
   Stream.WriteByte( InventorySize );
@@ -183,7 +180,6 @@ constructor TPlayer.CreateFromStream ( Stream : TStream ) ;
 begin
   inherited CreateFromStream( Stream );
 
-  SpecExit       := Stream.ReadAnsiString();
   Stream.Read( FLevelIndex, SizeOf( FLevelIndex ) );
   NukeActivated  := Stream.ReadWord();
   InventorySize  := Stream.ReadByte();
@@ -771,20 +767,10 @@ begin
     DRL.SetState( DSNextLevel );
   end;
   Player.FSpeedCount := 4000;
-  if iState.IsNil(2) then
-  begin
-    Player.SpecExit   := '';
-    Exit(0);
-  end;
+  if iState.IsNil(2) then Exit( 0 );
   if iState.IsNumber(2) then
   begin
-    Player.SpecExit    := '';
     Player.FLevelIndex := iState.ToInteger(2)-1;
-    Exit(0);
-  end;
-  if iState.IsString(2) then
-  begin
-    Player.SpecExit    := iState.ToString(2);
     Exit(0);
   end;
   iState.Error('Player.exit - bad parameters!');

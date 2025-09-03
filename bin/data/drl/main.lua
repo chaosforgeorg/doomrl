@@ -574,7 +574,6 @@ function drl.RunPrintMortem()
 end
 
 function drl.OnCreateEpisode()
-	local BOSS_LEVEL = 24
 	player.episode = {}
 	local paired = {
 		{"hells_arena"}, -- 2
@@ -599,27 +598,36 @@ function drl.OnCreateEpisode()
 	for i=9,16 do
 		player.episode[i] = { style = table.random_pick{2,6}, number = i-8, name = "Deimos", danger = i, deathname = "the Deimos base" }
 	end
-	for i=17,BOSS_LEVEL-1 do
+	for i=17,23 do
 		player.episode[i] = { style = table.random_pick{3,7}, number = i-16, name = "Hell", danger = i }
 	end
 	player.episode[8]            = { script = "hellgate", style = 4, deathname = "the Hellgate" }
 	player.episode[16]           = { script = "tower_of_babel", style = 9, deathname = "the Tower of Babel" }
-	player.episode[BOSS_LEVEL]   = { script = "dis", style = 4, deathname = "the City of Dis" }
-	player.episode[BOSS_LEVEL+1] = { script = "hell_fortress", style = 4, deathname = "the Hell Fortress" }
+	player.episode[24]           = { script = "dis", style = 4, deathname = "the City of Dis" }
+	player.episode[25]           = { script = "hell_fortress", style = 4, deathname = "the Hell Fortress" }
 
 	for _,pairing in ipairs(paired) do
 		local level_proto = levels[table.random_pick(pairing)]
 		if (not level_proto.canGenerate) or level_proto.canGenerate() then
-			player.episode[core.resolve_range(level_proto.level)].special = level_proto.id
+			local index = core.resolve_range(level_proto.level)
+			local from  = player.episode[index]
+			table.insert( player.episode, { 
+				script = level_proto.id,
+				style  = from.style,
+				danger = from.danger,
+				name   = level_proto.name,
+				exit   = index + 1,
+			} )
+			from.special = #player.episode
 		end
 	end
-	local SpecLevCount = 0
-	for i=2,BOSS_LEVEL-1 do
+	local slcount = 0
+	for i=2,23 do
 		if player.episode[i].special then
-			SpecLevCount = SpecLevCount + 1
+			slcount = slcount + 1
 		end
 	end
-	statistics.bonus_levels_count = SpecLevCount
+	statistics.bonus_levels_count = slcount
 end
 
 function drl.GetMOTD()
