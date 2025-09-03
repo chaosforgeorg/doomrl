@@ -23,7 +23,7 @@ type
 
 TLevel = class(TLuaMapNode, ITextMap)
     constructor Create; reintroduce;
-    procedure Init( nStyle : byte; nLNum : Word;nName : string; nSpecExit : string; aIndex : Integer; nDangerLevel : Word);
+    procedure Init( nStyle : byte; nLNum : Word;nName : string; aIndex : Integer; nDangerLevel : Word);
     procedure AfterGeneration( aGenerated : Boolean );
     procedure PreEnter;
     procedure RecalcFluids;
@@ -147,7 +147,6 @@ TLevel = class(TLuaMapNode, ITextMap)
     FFloorCell     : Word;
     FFloorStyle    : Byte;
     FFeeling       : AnsiString;
-    FSpecExit      : AnsiString;
     FMusicID       : AnsiString;
     FSName         : AnsiString;
     FAbbr          : AnsiString;
@@ -189,7 +188,6 @@ TLevel = class(TLuaMapNode, ITextMap)
     property Name_Number  : Word       read FLNum        write FLNum;
     property Danger_Level : Word       read FDangerLevel write FDangerLevel;
     property Style        : Byte       read FStyle;
-    property Special_Exit : AnsiString read FSpecExit;
     property Feeling      : AnsiString read FFeeling     write FFeeling;
     property id           : AnsiString read FID;
     property Music_ID     : AnsiString read FMusicID     write FMusicID;
@@ -459,7 +457,6 @@ begin
   FFloorStyle  := aStream.ReadByte();
   FID          := aStream.ReadAnsiString();
   FFeeling     := aStream.ReadAnsiString();
-  FSpecExit    := aStream.ReadAnsiString();
   FMusicID     := aStream.ReadAnsiString();
   FSName       := aStream.ReadAnsiString();
   FAbbr        := aStream.ReadAnsiString();
@@ -492,7 +489,6 @@ begin
   aStream.WriteByte( FFloorStyle );
   aStream.WriteAnsiString( aID );
   aStream.WriteAnsiString( FFeeling );
-  aStream.WriteAnsiString( FSpecExit );
   aStream.WriteAnsiString( FMusicID );
   aStream.WriteAnsiString( FSName );
   aStream.WriteAnsiString( FAbbr );
@@ -530,7 +526,7 @@ begin
   FIndex   := 0;
 end;
 
-procedure TLevel.Init(nStyle : byte; nLNum : Word; nName : string; nSpecExit : string; aIndex : Integer; nDangerLevel : Word);
+procedure TLevel.Init(nStyle : byte; nLNum : Word; nName : string; aIndex : Integer; nDangerLevel : Word);
 begin
   FActiveBeing := nil;
   FNextNode    := nil;
@@ -545,7 +541,6 @@ begin
   FSName := FName;
   FAbbr  := '';
   FDangerLevel := nDangerLevel;
-  FSpecExit := nSpecExit;
   FID := 'level'+IntToStr(FIndex);
   FFlags := [];
   FEmpty := False;

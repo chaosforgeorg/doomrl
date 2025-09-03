@@ -1321,7 +1321,6 @@ repeat
         FLevel.Init(getInteger('style',0),
                    getInteger('number',0),
                    getString('name',''),
-                   getString('special',''),
                    Player.Level_Index,
                    getInteger('danger',0));
         if IsString('sname') then FLevel.SName := getString('sname');
