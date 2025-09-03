@@ -99,7 +99,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DestroyItem( coord : TCoord2D );
     procedure Blood( coord : TCoord2D );
-    procedure Kill( aBeing : TBeing; Silent : Boolean = False );
+    procedure Kill( aBeing : TBeing );
     function ActiveBeing : TBeing;
     procedure CalculateVision( coord : TCoord2D );
 
@@ -1154,14 +1154,14 @@ begin
     else LightFlag[ coord, LFBLOOD ] := True;
 end;
 
-procedure TLevel.Kill ( aBeing : TBeing; Silent : Boolean ) ;
+procedure TLevel.Kill ( aBeing : TBeing ) ;
 var iEnemiesLeft : Integer;
 begin
   if aBeing = nil then Exit;
   if Being[ aBeing.Position ] = aBeing then
     SetBeing( aBeing.Position, nil );
 
-  if (DRL.State = DSPlaying) and (not Silent) then
+  if DRL.State = DSPlaying then
   begin
     CallHook(Hook_OnKill,[ aBeing ]);
   end;
@@ -1173,19 +1173,16 @@ begin
   if ( iEnemiesLeft < 4 ) and ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
     Include( FFlags, LF_BEINGSVISIBLE );
 
-  if not Silent then
+  if iEnemiesLeft = 0 then
   begin
-    if iEnemiesLeft = 0 then
+    CallHook(Hook_OnKillAll,[]);
+    if (not (LF_RESPAWN in FFlags)) and ( EnemiesLeft() = 0 ) then
     begin
-      CallHook(Hook_OnKillAll,[]);
-      if (not (LF_RESPAWN in FFlags)) and ( EnemiesLeft() = 0 ) then
-      begin
-        if not (Hook_OnKillAll in FHooks) then
-          IO.Msg('You feel relatively safe now.');
-        FEmpty := True;
-        if ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
-          Include( FFlags, LF_ITEMSVISIBLE );
-      end;
+      if not (Hook_OnKillAll in FHooks) then
+        IO.Msg('You feel relatively safe now.');
+      FEmpty := True;
+      if ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
+        Include( FFlags, LF_ITEMSVISIBLE );
     end;
   end;
 end;
@@ -1665,20 +1662,6 @@ begin
   Result := 0;
 end;
 
-function lua_level_clear_being(L: Plua_State): Integer; cdecl;
-var State : TDRLLuaState;
-    c  : TCoord2D;
-    Level : TLevel;
-begin
-  State.Init(L);
-  Level := State.ToObject(1) as TLevel;
-  if State.IsNil(2) then Exit(0);
-  c := State.ToCoord(2);
-  if Level.Being[c] <> nil then
-    Level.Kill(Level.Being[c],State.ToBoolean(3));
-  Result := 0;
-end;
-
 function lua_level_recalc_fluids(L: Plua_State): Integer; cdecl;
 var State : TDRLLuaState;
     Level : TLevel;
@@ -1866,14 +1849,13 @@ begin
   Exit( 0 );
 end;
 
-const lua_level_lib : array[0..19] of luaL_Reg = (
+const lua_level_lib : array[0..18] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
       ( name : 'play_sound'; func : @lua_level_play_sound),
       ( name : 'nuke';       func : @lua_level_nuke),
       ( name : 'explosion';  func : @lua_level_explosion),
-      ( name : 'clear_being';func : @lua_level_clear_being),
       ( name : 'recalc_fluids';func : @lua_level_recalc_fluids),
       ( name : 'animate_cell'; func : @lua_level_animate_cell),
       ( name : 'animate_item'; func : @lua_level_animate_item),
