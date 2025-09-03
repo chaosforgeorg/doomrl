@@ -621,13 +621,10 @@ end
 
 function generator.generate_special_stairs( stairs_id, feelings )
 	core.log("generator.generate_special_stairs()")
-	local pos
-	if level.special_exit ~= "" then
-		pos = generator.generate_stairs( stairs_id )
-		if feelings then
-			if type(feelings) == "string" then feelings = { feelings } end
-			ui.msg_feel( table.random_pick( feelings ) )
-		end
+	local pos = generator.generate_stairs( stairs_id )
+	if feelings then
+		if type(feelings) == "string" then feelings = { feelings } end
+		ui.msg_feel( table.random_pick( feelings ) )
 	end
 	return pos
 end

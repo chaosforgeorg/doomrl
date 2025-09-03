@@ -120,6 +120,7 @@ register_level "the_asmos_den"
 	end,
 
 	Create = function ()
+		core.special_create()
 		level:set_generator_style( 1 )
 		level:fill( "rwall" )
 		local asmosden_armor = {
@@ -211,6 +212,7 @@ register_level "the_asmos_den"
 			hell:kill()
 			ui.msg("I hope this damn armor was worth the trouble!")
 			player:add_history("He pilfered the treasure there.")
+			core.special_complete()
 		end
 	end,
 }

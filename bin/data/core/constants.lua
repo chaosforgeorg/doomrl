@@ -55,7 +55,7 @@ CF_STAIRS     = 21;
 CF_RAISABLE   = 22;
 CF_STAIRSENSE = 23;
 
-BF_BOSS           = 1;
+
 BF_ENVIROSAFE     = 2;
 BF_CHARGE         = 3;
 BF_OPENDOORS      = 4;
@@ -160,7 +160,7 @@ IF_UNIQUENAME     = 64;
 
 LF_NOHOMING       = 1;
 LF_UNIQUEITEM     = 2;
-LF_BONUS          = 3;
+
 LF_SCRIPT         = 4;
 LF_NORESPAWN      = 5;
 LF_NUKED          = 6;
@@ -169,8 +169,10 @@ LF_ITEMSVISIBLE   = 8;
 LF_BEINGSVISIBLE  = 9;
 LF_RESPAWN        = 10;
 LF_SHARPFLUID     = 11;
-LF_BOSS           = 12;
+
 LF_ENRAGE         = 13;
+LF_NOBEINGREVEAL  = 14;
+LF_NOITEMREVEAL   = 15;
 
 SF_LARGE      = 1;
 SF_OVERLAY    = 2;

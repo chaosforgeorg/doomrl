@@ -122,6 +122,7 @@ register_level "unholy_cathedral"
 	end,
 
 	Create = function ()
+		core.special_create()
 		level:set_generator_style( 1 )
 		level:fill( "rwall" )
 		local reward = "spear"
@@ -197,6 +198,7 @@ register_level "unholy_cathedral"
 			ui.msg("What would have followed if you had....")
 			player:add_history("He fled the Unholy Cathedral seeing no chance to win.")
 		else
+			core.special_complete()
 			ui.msg("Never again...")
 			player:add_history("He then destroyed the Unholy Cathedral!")
 			if not level.flags[ LF_NUKED ] then

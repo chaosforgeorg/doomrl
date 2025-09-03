@@ -425,12 +425,7 @@ function drl.RunPrintMortem()
 			player:mortem_print(" "..player_description)
 		end
 		local epi_name = player.episode[player.level_index].deathname or player.episode[player.level_index].name or "an Unknown Location"
-		local depth    = player.episode[player.level_index].number or 0
-		if depth ~= 0 then
-			player:mortem_print( " "..death_reason.." on level {!"..depth.."} of {!"..epi_name.."}." )
-		else
-			player:mortem_print( " "..death_reason.." at {!"..epi_name.."}." )
-		end
+		player:mortem_print( " "..death_reason.." at {!"..epi_name.."}." )
 	else
 		if game_module.OnMortemPrint then
 			game_module.OnMortemPrint(death_reason)
@@ -574,7 +569,6 @@ function drl.RunPrintMortem()
 end
 
 function drl.OnCreateEpisode()
-	local BOSS_LEVEL = 24
 	player.episode = {}
 	local paired = {
 		{"hells_arena"}, -- 2
@@ -591,35 +585,44 @@ function drl.OnCreateEpisode()
 		{"the_lava_pits","mt_erebus"},-- 22/6
 	}
 
-	player.episode[1] = { script = "intro", style = 1, deathname = "the Phobos base" }
-	player.episode[2] = { style = 1, number = 2, name = "Phobos", danger = 2, deathname = "the Phobos base" }
+	player.episode[1] = { script = "intro", style = 1, deathname = "level 1 of the Phobos base" }
+	player.episode[2] = { style = 1, name = "Phobos L2", danger = 2, deathname = "level 2 of the Phobos base" }
 	for i=3,8 do
-		player.episode[i] = { style = table.random_pick{1,5,8}, number = i, name = "Phobos", danger = i, deathname = "the Phobos base" }
+		player.episode[i] = { style = table.random_pick{1,5,8}, name = "Phobos L"..tostring(i), danger = i, deathname = "level "..tostring(i).." of the Phobos base" }
 	end
 	for i=9,16 do
-		player.episode[i] = { style = table.random_pick{2,6}, number = i-8, name = "Deimos", danger = i, deathname = "the Deimos base" }
+		player.episode[i] = { style = table.random_pick{2,6}, name = "Deimos L"..tostring(i-8), danger = i, deathname = "level "..tostring(i-8).." of the Deimos base" }
 	end
-	for i=17,BOSS_LEVEL-1 do
-		player.episode[i] = { style = table.random_pick{3,7}, number = i-16, name = "Hell", danger = i }
+	for i=17,23 do
+		player.episode[i] = { style = table.random_pick{3,7}, name = "Hell L"..tostring(i-16), danger = i, deathname = "level "..tostring(i-16).." of Hell" }
 	end
 	player.episode[8]            = { script = "hellgate", style = 4, deathname = "the Hellgate" }
 	player.episode[16]           = { script = "tower_of_babel", style = 9, deathname = "the Tower of Babel" }
-	player.episode[BOSS_LEVEL]   = { script = "dis", style = 4, deathname = "the City of Dis" }
-	player.episode[BOSS_LEVEL+1] = { script = "hell_fortress", style = 4, deathname = "the Hell Fortress" }
+	player.episode[24]           = { script = "dis", style = 4, deathname = "the City of Dis" }
+	player.episode[25]           = { script = "hell_fortress", style = 4, deathname = "the Hell Fortress" }
 
 	for _,pairing in ipairs(paired) do
 		local level_proto = levels[table.random_pick(pairing)]
 		if (not level_proto.canGenerate) or level_proto.canGenerate() then
-			player.episode[core.resolve_range(level_proto.level)].special = level_proto.id
+			local index = core.resolve_range(level_proto.level)
+			local from  = player.episode[index]
+			table.insert( player.episode, { 
+				script = level_proto.id,
+				style  = from.style,
+				danger = from.danger,
+				name   = level_proto.name,
+				exit   = index + 1,
+			} )
+			from.special = #player.episode
 		end
 	end
-	local SpecLevCount = 0
-	for i=2,BOSS_LEVEL-1 do
+	local slcount = 0
+	for i=2,23 do
 		if player.episode[i].special then
-			SpecLevCount = SpecLevCount + 1
+			slcount = slcount + 1
 		end
 	end
-	statistics.bonus_levels_count = SpecLevCount
+	statistics.bonus_levels_count = slcount
 end
 
 function drl.GetMOTD()

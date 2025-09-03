@@ -728,7 +728,6 @@ var iCon        : TUIConsole;
     iHPP        : Integer;
     iPos        : TIOPoint;
     iBottom     : Integer;
-    iLevelName  : string[64];
     iDesc       : Ansistring;
     iCNormal    : DWord;
     iCBold      : DWord;
@@ -833,10 +832,7 @@ begin
       else if DRL.Level.Flags[ LF_ENRAGE ]
         then iColor := LightMagenta;
 
-    iLevelName := DRL.Level.Name;
-    if DRL.Level.Name_Number > 0 then
-      iLevelName += ' Lev '+IntToStr( DRL.Level.Name_Number );
-    VTIG_FreeLabel( iLevelName, Point( -2-Length( iLevelName), iBottom ), iColor );
+    VTIG_FreeLabel( DRL.Level.Name, Point( -2-Length( DRL.Level.Name), iBottom ), iColor );
 
     iP := 0;
     for i := 1 to MAXAFFECT do

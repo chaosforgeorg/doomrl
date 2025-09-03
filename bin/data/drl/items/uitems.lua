@@ -86,7 +86,7 @@ function drl.register_unique_items()
 		OnHitBeing = function(self,being,target)
 			target:play_sound("phasing")
 			being:msg("Suddenly "..target:get_name(true,false).." crashes!")
-			if target.flags[ BF_BOSS ] then
+			if target:has_property("is_boss") and target.is_boss then
 				target.scount = math.max( target.scount - 500, 1000 )
 			else
 				target.scount = math.max( target.scount - 1000, 1000 )
@@ -409,7 +409,7 @@ function drl.register_unique_items()
 		missile       = "mchaingun",
 
 		OnKill = function (self,being,target)
-			if target.id == "mastermind" and target.flags[ BF_BOSS ] then
+			if target.id == "mastermind" and target.is_boss then
 				being:add_medal("cleric")
 			end
 		end,
@@ -1030,7 +1030,7 @@ function drl.register_unique_items()
 		end,
 
 		OnKill = function (self,being,target)
-			if target.id == "mastermind" and target.flags[ BF_BOSS ] then
+			if target.id == "mastermind" and target.is_boss then
 				being:add_medal("dragonslayer")
 			end
 		end,

@@ -208,6 +208,7 @@ register_level "the_chained_court"
 	end,
 
 	Create = function ()
+		core.special_create()
 		level:set_generator_style( 1 )
 		-- level.status 1 == chained court
 		-- level.status 0 == unchained court (w/ Arena Master)
@@ -319,6 +320,12 @@ register_level "the_chained_court"
 			ui.msg("A devilish voice booms:")
 			ui.msg("\"Come to think of it... I'd rather see you dead, mortal... prepare yourself!\"")
 			level:play_sound( "baron.act", player.position )
+		end
+	end,
+
+	OnExit = function ()
+		if level.status == 3 then
+			core.special_complete()
 		end
 	end,
 

@@ -23,7 +23,7 @@ type
 
 TLevel = class(TLuaMapNode, ITextMap)
     constructor Create; reintroduce;
-    procedure Init( nStyle : byte; nLNum : Word;nName : string; nSpecExit : string; aIndex : Integer; nDangerLevel : Word);
+    procedure Init( aStyle : byte; aName : Ansistring; aIndex : Integer; aDangerLevel : Word );
     procedure AfterGeneration( aGenerated : Boolean );
     procedure PreEnter;
     procedure RecalcFluids;
@@ -91,7 +91,6 @@ TLevel = class(TLuaMapNode, ITextMap)
     function isAlive( aUID : TUID ) : boolean;
 
     procedure ScriptLevel(script : string);
-    procedure SingleLevel(ModuleID : string);
 
     function RandomCoord( EmptyFlags : TFlags32 ) : TCoord2D; // raises EPlacementException
 
@@ -99,7 +98,7 @@ TLevel = class(TLuaMapNode, ITextMap)
 
     procedure DestroyItem( coord : TCoord2D );
     procedure Blood( coord : TCoord2D );
-    procedure Kill( aBeing : TBeing; Silent : Boolean = False );
+    procedure Kill( aBeing : TBeing );
     function ActiveBeing : TBeing;
     procedure CalculateVision( coord : TCoord2D );
 
@@ -134,7 +133,6 @@ TLevel = class(TLuaMapNode, ITextMap)
     FStyle         : Byte;
     FBoss          : TUID;
 
-    FLNum          : Word;
     FLTime         : DWord;
     FEmpty         : Boolean;
 
@@ -147,7 +145,6 @@ TLevel = class(TLuaMapNode, ITextMap)
     FFloorCell     : Word;
     FFloorStyle    : Byte;
     FFeeling       : AnsiString;
-    FSpecExit      : AnsiString;
     FMusicID       : AnsiString;
     FSName         : AnsiString;
     FAbbr          : AnsiString;
@@ -186,10 +183,8 @@ TLevel = class(TLuaMapNode, ITextMap)
     property Name         : AnsiString read FName        write FName;
     property SName        : AnsiString read FSName       write FSName;
     property Abbr         : AnsiString read FAbbr        write FAbbr;
-    property Name_Number  : Word       read FLNum        write FLNum;
     property Danger_Level : Word       read FDangerLevel write FDangerLevel;
     property Style        : Byte       read FStyle;
-    property Special_Exit : AnsiString read FSpecExit;
     property Feeling      : AnsiString read FFeeling     write FFeeling;
     property id           : AnsiString read FID;
     property Music_ID     : AnsiString read FMusicID     write FMusicID;
@@ -225,7 +220,6 @@ begin
     FSName  := GetString( 'sname','' );
     FAbbr   := GetString( 'abbr','' );
     if FSName = '' then FSName := FName;
-    FLNum   := 0;
     Call('Create',[]);
     Place( Player, DropCoord( NewCoord2D(LuaPlayerX,LuaPlayerY), [ EF_NOBEINGS ] ) );
     Include( FFlags, LF_SCRIPT );
@@ -233,18 +227,6 @@ begin
     Free;
   end;
   FHooks := LoadHooks( [ 'levels', script ] ) * LevelHooks;
-
-  AfterGeneration( False );
-end;
-
-procedure TLevel.SingleLevel(ModuleID : string);
-begin
-  FullClear;
-  LuaPlayerX := 2;
-  LuaPlayerY := 2;
-
-  LuaSystem.ProtectedCall([ModuleID,'run'],[]);
-  Place( Player, DropCoord( NewCoord2D(LuaPlayerX,LuaPlayerY), [ EF_NOBEINGS ] ) );
 
   AfterGeneration( False );
 end;
@@ -449,7 +431,6 @@ begin
   aStream.Read( FIndex, SizeOf( FIndex ) );
   FStatus := aStream.ReadWord();
   FStyle  := aStream.ReadByte();
-  FLNum   := aStream.ReadWord();
   FLTime  := aStream.ReadDWord();
   aStream.Read( FBoss, SizeOf( FBoss ) );
   aStream.Read( FEmpty, SizeOf( FEmpty ) );
@@ -459,7 +440,6 @@ begin
   FFloorStyle  := aStream.ReadByte();
   FID          := aStream.ReadAnsiString();
   FFeeling     := aStream.ReadAnsiString();
-  FSpecExit    := aStream.ReadAnsiString();
   FMusicID     := aStream.ReadAnsiString();
   FSName       := aStream.ReadAnsiString();
   FAbbr        := aStream.ReadAnsiString();
@@ -482,7 +462,6 @@ begin
   aStream.Write( FIndex, SizeOf( FIndex ) );
   aStream.WriteWord( FStatus );
   aStream.WriteByte( FStyle );
-  aStream.WriteWord( FLNum );
   aStream.WriteDWord( FLTime );
   aStream.Write( FBoss, SizeOf( FBoss ) );
   aStream.Write( FEmpty, SizeOf( FEmpty ) );
@@ -492,7 +471,6 @@ begin
   aStream.WriteByte( FFloorStyle );
   aStream.WriteAnsiString( aID );
   aStream.WriteAnsiString( FFeeling );
-  aStream.WriteAnsiString( FSpecExit );
   aStream.WriteAnsiString( FMusicID );
   aStream.WriteAnsiString( FSName );
   aStream.WriteAnsiString( FAbbr );
@@ -530,7 +508,7 @@ begin
   FIndex   := 0;
 end;
 
-procedure TLevel.Init(nStyle : byte; nLNum : Word; nName : string; nSpecExit : string; aIndex : Integer; nDangerLevel : Word);
+procedure TLevel.Init( aStyle : Byte; aName : Ansistring; aIndex : Integer; aDangerLevel : Word );
 begin
   FActiveBeing := nil;
   FNextNode    := nil;
@@ -538,14 +516,12 @@ begin
   FIndex := aIndex;
   FBoss := 0;
   FLTime  := 0;
-  FStyle := nstyle;
+  FStyle := aStyle;
   FullClear;
-  FLNum := nlnum;
-  FName := nname;
+  FName := aName;
   FSName := FName;
   FAbbr  := '';
-  FDangerLevel := nDangerLevel;
-  FSpecExit := nSpecExit;
+  FDangerLevel := aDangerLevel;
   FID := 'level'+IntToStr(FIndex);
   FFlags := [];
   FEmpty := False;
@@ -646,16 +622,7 @@ procedure TLevel.Leave;
 var TimeDiff : LongInt;
 begin
   CallHook(Hook_OnExit,[FIndex,FID, FStatus]);
-  if LF_BONUS in FFlags then
-    if Hook_OnCompletedCheck in FHooks then
-    begin
-      if RawCallHookCheck( Hook_OnCompletedCheck,[] ) then Player.Statistics.Increase('bonus_levels_completed');
-    end
-    else
-      if EnemiesLeft() = 0 then Player.Statistics.Increase('bonus_levels_completed');
-
-
-  if (not (LF_BONUS in FFlags)) and (Player.HP > 0) then
+  if ( Player.HP > 0 ) and ( not ( Hook_OnExit in FHooks ) ) then
   begin
     TimeDiff :=  Player.Statistics.GameTime - Player.Statistics['entry_time'];
     if TimeDiff < 100 then
@@ -1159,14 +1126,15 @@ begin
     else LightFlag[ coord, LFBLOOD ] := True;
 end;
 
-procedure TLevel.Kill ( aBeing : TBeing; Silent : Boolean ) ;
-var iEnemiesLeft : Integer;
+procedure TLevel.Kill ( aBeing : TBeing ) ;
+var iEnemiesLeft       : Integer;
+    iUniqueEnemiesLeft : Integer;
 begin
   if aBeing = nil then Exit;
   if Being[ aBeing.Position ] = aBeing then
     SetBeing( aBeing.Position, nil );
 
-  if (DRL.State = DSPlaying) and (not Silent) then
+  if DRL.State = DSPlaying then
   begin
     CallHook(Hook_OnKill,[ aBeing ]);
   end;
@@ -1174,23 +1142,26 @@ begin
   FreeAndNil(aBeing);
   if DRL.State <> DSPlaying then Exit;
 
-  iEnemiesLeft := EnemiesLeft();
-  if ( iEnemiesLeft < 4 ) and ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
+  iEnemiesLeft       := EnemiesLeft();
+  if ( iEnemiesLeft < 4 ) and ( not ( LF_NOBEINGREVEAL in FFlags ) ) then
     Include( FFlags, LF_BEINGSVISIBLE );
 
-  if not Silent then
+  if Hook_OnKillAll in FHooks then
   begin
-    if iEnemiesLeft = 0 then
+    iUniqueEnemiesLeft := 0;
+    if iEnemiesLeft > 0       then iUniqueEnemiesLeft := EnemiesLeft( True );
+    if iUniqueEnemiesLeft = 0 then CallHook( Hook_OnKillAll,[ Boolean( iEnemiesLeft = 0 ) ] );
+  end;
+
+  if iEnemiesLeft = 0 then
+  begin
+    if (not (LF_RESPAWN in FFlags)) and ( EnemiesLeft() = 0 ) then
     begin
-      CallHook(Hook_OnKillAll,[]);
-      if (not (LF_RESPAWN in FFlags)) and ( EnemiesLeft() = 0 ) then
-      begin
-        if not (Hook_OnKillAll in FHooks) then
-          IO.Msg('You feel relatively safe now.');
-        FEmpty := True;
-        if ( not ( LF_BONUS in FFlags ) ) and ( not ( LF_BOSS in FFlags ) ) then
-          Include( FFlags, LF_ITEMSVISIBLE );
-      end;
+      if not (Hook_OnKillAll in FHooks) then
+        IO.Msg('You feel relatively safe now.');
+      FEmpty := True;
+      if ( not ( LF_NOITEMREVEAL in FFlags ) ) then
+        Include( FFlags, LF_ITEMSVISIBLE );
     end;
   end;
 end;
@@ -1297,9 +1268,10 @@ begin
         Exit;
       end;
 
+      Include( FFlags, LF_NUKED );
+
       NukeRun;
 
-      Include( FFlags, LF_NUKED );
       Player.NukeActivated := 0;
       Player.ApplyDamage( 6000, Target_Internal, Damage_Plasma, nil, 0 );
 
@@ -1670,20 +1642,6 @@ begin
   Result := 0;
 end;
 
-function lua_level_clear_being(L: Plua_State): Integer; cdecl;
-var State : TDRLLuaState;
-    c  : TCoord2D;
-    Level : TLevel;
-begin
-  State.Init(L);
-  Level := State.ToObject(1) as TLevel;
-  if State.IsNil(2) then Exit(0);
-  c := State.ToCoord(2);
-  if Level.Being[c] <> nil then
-    Level.Kill(Level.Being[c],State.ToBoolean(3));
-  Result := 0;
-end;
-
 function lua_level_recalc_fluids(L: Plua_State): Integer; cdecl;
 var State : TDRLLuaState;
     Level : TLevel;
@@ -1871,6 +1829,16 @@ begin
   Exit( 0 );
 end;
 
+function lua_level_get_enemies_left(L: Plua_State): Integer; cdecl;
+var iState : TDRLLuaState;
+    iLevel : TLevel;
+begin
+  iState.Init(L);
+  iLevel := iState.ToObject(1) as TLevel;
+  iState.Push( LongInt( iLevel.EnemiesLeft( iState.ToBoolean(2, False) ) ) );
+  Exit( 1 );
+end;
+
 const lua_level_lib : array[0..19] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
@@ -1878,7 +1846,6 @@ const lua_level_lib : array[0..19] of luaL_Reg = (
       ( name : 'play_sound'; func : @lua_level_play_sound),
       ( name : 'nuke';       func : @lua_level_nuke),
       ( name : 'explosion';  func : @lua_level_explosion),
-      ( name : 'clear_being';func : @lua_level_clear_being),
       ( name : 'recalc_fluids';func : @lua_level_recalc_fluids),
       ( name : 'animate_cell'; func : @lua_level_animate_cell),
       ( name : 'animate_item'; func : @lua_level_animate_item),
@@ -1891,6 +1858,7 @@ const lua_level_lib : array[0..19] of luaL_Reg = (
       ( name : 'push_item';  func : @lua_level_push_item),
       ( name : 'reset';         func : @lua_level_reset),
       ( name : 'post_generate'; func : @lua_level_post_generate),
+      ( name : 'get_enemies_left'; func : @lua_level_get_enemies_left),
       ( name : nil;          func : nil; )
 );
 

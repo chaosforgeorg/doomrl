@@ -128,8 +128,8 @@ register_level "hellgate"
 		generator.set_permanence( area( 51, 1, MAXX, MAXY ) )
 
 		level:player(2,10)
-		level.flags[ LF_NOHOMING ] = true
-		level.flags[ LF_BOSS     ] = true
+		level.flags[ LF_NOHOMING ]      = true
+		level.flags[ LF_NOBEINGREVEAL ] = true
 	end,
 
 	OnEnterLevel = function ()
@@ -202,13 +202,14 @@ register_level "tower_of_babel"
 ]]
 		,"floor",12)
 
-		level.flags[ LF_NOHOMING ] = true
-		level.flags[ LF_BOSS     ] = true
+		level.flags[ LF_NOHOMING      ] = true
+		level.flags[ LF_NOBEINGREVEAL ] = true
 		generator.scatter_blood(area.FULL_SHRINKED,"floor",100)
 	end,
 
 	OnEnterLevel = function ()
 		local boss = level:summon("cyberdemon")
+		boss.is_boss = true
 	end,
 
 	OnKillAll = function ()
@@ -293,8 +294,9 @@ WWWWWWWWWWWWWWWWWWWWW...............####...............WWWWWWWWWWWWWWWWWWWWW
 		generator.set_permanence( area( 1, 1, 10, MAXY ) )
 		generator.set_permanence( area( MAXX-10, 1, MAXX, MAXY ) )
 
-		level.flags[ LF_NOHOMING ] = true
-		level.flags[ LF_BOSS     ] = true
+		level.flags[ LF_NOHOMING      ] = true
+		level.flags[ LF_NOBEINGREVEAL ] = true
+
 		if math.random( 2 ) == 1 then
 			level:player(19,11)
 		else
@@ -309,14 +311,21 @@ WWWWWWWWWWWWWWWWWWWWW...............####...............WWWWWWWWWWWWWWWWWWWWW
 			ui.msg("But... something's wrong!")
 			ui.msg("You sense a menace, a threat so evil it kills your mind!")
 			ui.msg("Was not all evil destroyed???")
-			player:continue_game()
 		end
 	end,
 
 	OnEnterLevel = function ()
 		local boss = level:drop_being("mastermind",coord(39,19))
-		boss.flags[ BF_BOSS ] = true
-	end
+		boss.is_boss = true
+	end,
+
+	OnKillAll = function ()
+		if not (level.flags[ LF_NUKED ] and player.flags[BF_INV]) then
+			ui.msg_enter("Congratulations! You defeated the Spider Mastermind!")
+			player:win()
+		end
+	end,
+
 }
 
 register_level "hell_fortress"
@@ -355,8 +364,8 @@ register_level "hell_fortress"
 ]]
 		, 2,2 )
 
-		level.flags[ LF_NOHOMING ] = true
-		level.flags[ LF_BOSS     ] = true
+		level.flags[ LF_NOHOMING ]      = true
+		level.flags[ LF_NOBEINGREVEAL ] = true
 		level:player(2,10)
 
 		local boss
@@ -365,7 +374,10 @@ register_level "hell_fortress"
 		else
 			boss = level:drop_being("jc",coord(76,11))
 		end
-		boss.flags[ BF_BOSS ] = true
+		boss.is_boss = true
 	end,
 
+	OnKillAll = function ()
+		player:win()
+	end,
 }

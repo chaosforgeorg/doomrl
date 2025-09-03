@@ -20,7 +20,6 @@ end;
 { TPlayer }
 
 type TPlayer = class(TBeing)
-  SpecExit        : string[20];
   NukeActivated   : Word;
 
   InventorySize   : Byte;
@@ -93,7 +92,7 @@ published
   property Klass           : Byte       read FKlass         write FKlass;
   property ExpFactor       : Real       read FExpFactor     write FExpFactor;
   property Score           : LongInt    read FScore         write FScore;
-  property Level_Index     : Integer    read FLevelIndex;
+  property Level_Index     : Integer    read FLevelIndex    write FLevelIndex;
   property EnemiesInVision : Word       read FEnemiesInVision;
 end;
 
@@ -122,7 +121,6 @@ begin
   StatusEffect  := StatusNormal;
   FStatistics   := TStatistics.Create;
   FScore        := 0;
-  SpecExit      := '';
   NukeActivated := 0;
   FExpLevel   := 1;
   FKlass      := 1;
@@ -158,7 +156,6 @@ procedure TPlayer.WriteToStream ( Stream : TStream ) ;
 begin
   inherited WriteToStream( Stream );
 
-  Stream.WriteAnsiString( SpecExit );
   Stream.Write( FLevelIndex, SizeOf( FLevelIndex ) );
   Stream.WriteWord( NukeActivated );
   Stream.WriteByte( InventorySize );
@@ -183,7 +180,6 @@ constructor TPlayer.CreateFromStream ( Stream : TStream ) ;
 begin
   inherited CreateFromStream( Stream );
 
-  SpecExit       := Stream.ReadAnsiString();
   Stream.Read( FLevelIndex, SizeOf( FLevelIndex ) );
   NukeActivated  := Stream.ReadWord();
   InventorySize  := Stream.ReadByte();
@@ -735,17 +731,6 @@ begin
   Result := 0;
 end;
 
-function lua_player_continue_game(L: Plua_State): Integer; cdecl;
-var State   : TDRLLuaState;
-    Being   : TBeing;
-begin
-  State.Init(L);
-  Being := State.ToObject(1) as TBeing;
-  if not (Being is TPlayer) then Exit(0);
-  DRL.SetState( DSPlaying );
-  Result := 0;
-end;
-
 function lua_player_choose_trait(L: Plua_State): Integer; cdecl;
 var State   : TDRLLuaState;
     Being   : TBeing;
@@ -782,20 +767,10 @@ begin
     DRL.SetState( DSNextLevel );
   end;
   Player.FSpeedCount := 4000;
-  if iState.IsNil(2) then
-  begin
-    Player.SpecExit   := '';
-    Exit(0);
-  end;
+  if iState.IsNil(2) then Exit( 0 );
   if iState.IsNumber(2) then
   begin
-    Player.SpecExit    := '';
     Player.FLevelIndex := iState.ToInteger(2)-1;
-    Exit(0);
-  end;
-  if iState.IsString(2) then
-  begin
-    Player.SpecExit    := iState.ToString(2);
     Exit(0);
   end;
   iState.Error('Player.exit - bad parameters!');
@@ -901,7 +876,7 @@ begin
   Result := 0;
 end;
 
-const lua_player_lib : array[0..16] of luaL_Reg = (
+const lua_player_lib : array[0..15] of luaL_Reg = (
       ( name : 'set_achievement'; func : @lua_player_set_achievement),
       ( name : 'store_inc_stat';  func : @lua_player_store_inc_stat),
       ( name : 'store_mark_stat'; func : @lua_player_store_mark_stat),
@@ -911,7 +886,6 @@ const lua_player_lib : array[0..16] of luaL_Reg = (
       ( name : 'get_trait_hist';  func : @lua_player_get_trait_hist),
       ( name : 'resort_stacks';   func : @lua_player_resort_stacks),
       ( name : 'win';             func : @lua_player_win),
-      ( name : 'continue_game';   func : @lua_player_continue_game),
       ( name : 'choose_trait';    func : @lua_player_choose_trait),
       ( name : 'level_up';        func : @lua_player_level_up),
       ( name : 'exit';            func : @lua_player_exit),
