@@ -132,6 +132,7 @@ register_level "central_processing"
 	end,
 
 	Create = function ()
+		core.special_create()
 		level:set_generator_style( 1 )
 		level:fill( "wall" )
 
@@ -318,9 +319,11 @@ register_level "central_processing"
 	end,
 
 	OnKillAll = function ()
-		level.data.kill_all  = true
-		ui.msg("The machinery falls silent")
-		level.status = 4
+		if not level.data.kill_all then
+			level.data.kill_all  = true
+			ui.msg("The machinery falls silent")
+			level.status = 4
+		end
 	end,
 
 	OnEnterLevel = function ()
@@ -374,6 +377,7 @@ register_level "central_processing"
 
 	OnExit = function ()
 		if level.data.kill_all  then
+			core.special_complete()
 			ui.msg("No meat left to process.")
 			player:add_history("Nothing stood in his way.")
 		else

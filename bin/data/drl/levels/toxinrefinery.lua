@@ -82,6 +82,7 @@ register_level "toxin_refinery"
 	end,
 	
 	Create = function ()
+		core.special_create()
 		level:set_generator_style( 1 )
 		level:fill( "wall" )
 		level.data.bridge               = area(36,11,36,14)
@@ -226,9 +227,11 @@ register_level "toxin_refinery"
 	end,
 
 	OnKillAll = function ()
-		level.data.kill_all  = true
-		ui.msg("The acrid smell begins to dissipate")
-		level.status = 4
+		if not level.data.kill_all then
+			level.data.kill_all  = true
+			ui.msg("The acrid smell begins to dissipate")
+			level.status = 4
+		end
 	end,
 
 	OnEnterLevel = function ()
@@ -265,6 +268,7 @@ register_level "toxin_refinery"
 
 	OnExit = function ()
 		if level.data.kill_all  then
+			core.special_complete()
 			ui.msg("You were a green machine.")
 			player:add_history("He was the antidote.")
 		else

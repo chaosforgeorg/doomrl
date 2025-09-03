@@ -383,7 +383,6 @@ core.register_blueprint "challenge"
 	OnFired          = { false, core.TFUNC },
 	OnExit           = { false, core.TFUNC },
 	OnTick           = { false, core.TFUNC },
-	OnCompletedCheck = { false, core.TFUNC },
 	OnLoad           = { false, core.TFUNC },
 	OnLoaded         = { false, core.TFUNC },
 	OnUnLoad         = { false, core.TFUNC },
@@ -641,7 +640,6 @@ core.register_blueprint "level"
 	OnFired          = { false, core.TFUNC },
 	OnExit           = { false, core.TFUNC },
 	OnTick           = { false, core.TFUNC },
-	OnCompletedCheck = { false, core.TFUNC },
 	OnNuked          = { false, core.TFUNC },
 }
 

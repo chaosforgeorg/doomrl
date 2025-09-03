@@ -628,16 +628,7 @@ procedure TLevel.Leave;
 var TimeDiff : LongInt;
 begin
   CallHook(Hook_OnExit,[FIndex,FID, FStatus]);
-  if LF_BONUS in FFlags then
-    if Hook_OnCompletedCheck in FHooks then
-    begin
-      if RawCallHookCheck( Hook_OnCompletedCheck,[] ) then Player.Statistics.Increase('bonus_levels_completed');
-    end
-    else
-      if EnemiesLeft() = 0 then Player.Statistics.Increase('bonus_levels_completed');
-
-
-  if (not (LF_BONUS in FFlags)) and (Player.HP > 0) then
+  if ( Player.HP > 0 ) and ( not ( Hook_OnExit in FHooks ) ) then
   begin
     TimeDiff :=  Player.Statistics.GameTime - Player.Statistics['entry_time'];
     if TimeDiff < 100 then
@@ -1850,7 +1841,7 @@ var iState : TDRLLuaState;
 begin
   iState.Init(L);
   iLevel := iState.ToObject(1) as TLevel;
-  iState.Push( iLevel.EnemiesLeft( iState.ToBoolean(2, False) ) ) );
+  iState.Push( LongInt( iLevel.EnemiesLeft( iState.ToBoolean(2, False) ) ) );
   Exit( 1 );
 end;
 

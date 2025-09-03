@@ -1312,9 +1312,7 @@ repeat
       Player.Statistics.Update;
 
       if Player.SpecExit = '' then
-        Player.NextLevelIndex
-      else
-        Player.Statistics.Increase('bonus_levels_visited');
+        Player.NextLevelIndex;
 
       with LuaSystem.GetTable(['player','episode',Player.Level_Index]) do
       try
@@ -1326,14 +1324,8 @@ repeat
         if IsString('sname') then FLevel.SName := getString('sname');
         if IsString('abbr')  then FLevel.Abbr  := getString('abbr');
 
-        if Player.SpecExit <> ''
-          then
-          begin
-            FLevel.Flags[ LF_BONUS ]         := True;
-            FLevel.Flags[ LF_NOITEMREVEAL ]  := True;
-            FLevel.Flags[ LF_NOBEINGREVEAL ] := True;
-          end
-          else Player.SpecExit := getString('script','');
+        if Player.SpecExit = '' then
+          Player.SpecExit := getString('script','');
 
       finally
         Free;

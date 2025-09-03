@@ -8,10 +8,6 @@ register_level "hells_arena"
 	welcome = "You enter Hell's Arena",
 	level = 2,
 
-	OnCompletedCheck = function ()
-		return level.status == 4
-	end,
-
 	OnRegister = function ()
 
 		register_medal "chessmaster1"
@@ -89,6 +85,7 @@ register_level "hells_arena"
 	end,
 
 	Create = function ()
+		core.special_create()
 		level:set_generator_style( 1 )
 		level:fill( "rwall" )
 		level:fill( "floor", area.FULL_SHRINKED )
@@ -304,6 +301,7 @@ register_level "hells_arena"
 
 		-- badges --
 		if result == 4 then
+			core.special_complete()
 			player:add_badge("arena1")
 			if DIFFICULTY >= DIFF_VERYHARD then
 				player:add_badge("arena2")

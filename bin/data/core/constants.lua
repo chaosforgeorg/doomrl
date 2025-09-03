@@ -160,7 +160,7 @@ IF_UNIQUENAME     = 64;
 
 LF_NOHOMING       = 1;
 LF_UNIQUEITEM     = 2;
-LF_BONUS          = 3;
+
 LF_SCRIPT         = 4;
 LF_NORESPAWN      = 5;
 LF_NUKED          = 6;

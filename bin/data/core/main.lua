@@ -681,7 +681,6 @@ function core.less_than_table( value, param )
 	return value[#value][2]
 end
 
-
 function core.ranged_table( value, param )
 	if type( value ) ~= "table" then return value end
 	local result = value[1]
@@ -698,6 +697,15 @@ function core.ranged_table( value, param )
 	return result
 end
 
+function core.special_create()
+	level.flags[ LF_NOBEINGREVEAL ] = true
+	level.flags[ LF_NOITEMREVEAL  ] = true
+	statistics.bonus_levels_visited = statistics.bonus_levels_visited + 1
+end
+
+function core.special_complete()
+	statistics.bonus_levels_completed = statistics.bonus_levels_completed + 1
+end
 
 setmetatable(_G, {
 	__newindex = function (_, n)
