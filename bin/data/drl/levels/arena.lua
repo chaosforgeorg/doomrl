@@ -213,7 +213,8 @@ register_level "hells_arena"
 		else                  ui.msg("The crowds cheer! \"Kill! Kill!\"") end
 	end,
 
-	OnKillAll = function ()
+	OnKillAll = function ( wipe )
+		if not wipe then return end
 		if level.status == 1 then
 			ui.continue("The voice booms:\n{R\"Not bad mortal! For the weakling that you are, you show some determination.\"}\nYou hear screams everywhere!\n{R\"More Blood! More BLOOD!\"}")
 			local choice = ui.query("The voice continues:\n{R\"I can now let you go free, or you may try to complete the challenge!\nDo you want to continue the fight?\"}" )

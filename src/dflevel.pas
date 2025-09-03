@@ -91,7 +91,6 @@ TLevel = class(TLuaMapNode, ITextMap)
     function isAlive( aUID : TUID ) : boolean;
 
     procedure ScriptLevel(script : string);
-    procedure SingleLevel(ModuleID : string);
 
     function RandomCoord( EmptyFlags : TFlags32 ) : TCoord2D; // raises EPlacementException
 
@@ -231,18 +230,6 @@ begin
     Free;
   end;
   FHooks := LoadHooks( [ 'levels', script ] ) * LevelHooks;
-
-  AfterGeneration( False );
-end;
-
-procedure TLevel.SingleLevel(ModuleID : string);
-begin
-  FullClear;
-  LuaPlayerX := 2;
-  LuaPlayerY := 2;
-
-  LuaSystem.ProtectedCall([ModuleID,'run'],[]);
-  Place( Player, DropCoord( NewCoord2D(LuaPlayerX,LuaPlayerY), [ EF_NOBEINGS ] ) );
 
   AfterGeneration( False );
 end;
@@ -1155,7 +1142,8 @@ begin
 end;
 
 procedure TLevel.Kill ( aBeing : TBeing ) ;
-var iEnemiesLeft : Integer;
+var iEnemiesLeft       : Integer;
+    iUniqueEnemiesLeft : Integer;
 begin
   if aBeing = nil then Exit;
   if Being[ aBeing.Position ] = aBeing then
@@ -1169,13 +1157,19 @@ begin
   FreeAndNil(aBeing);
   if DRL.State <> DSPlaying then Exit;
 
-  iEnemiesLeft := EnemiesLeft();
+  iEnemiesLeft       := EnemiesLeft();
   if ( iEnemiesLeft < 4 ) and ( not ( LF_NOBEINGREVEAL in FFlags ) ) then
     Include( FFlags, LF_BEINGSVISIBLE );
 
+  if Hook_OnKillAll in FHooks then
+  begin
+    iUniqueEnemiesLeft := 0;
+    if iEnemiesLeft > 0       then iUniqueEnemiesLeft := EnemiesLeft( True );
+    if iUniqueEnemiesLeft = 0 then CallHook( Hook_OnKillAll,[ Boolean( iEnemiesLeft = 0 ) ] );
+  end;
+
   if iEnemiesLeft = 0 then
   begin
-    CallHook(Hook_OnKillAll,[]);
     if (not (LF_RESPAWN in FFlags)) and ( EnemiesLeft() = 0 ) then
     begin
       if not (Hook_OnKillAll in FHooks) then
@@ -1850,7 +1844,17 @@ begin
   Exit( 0 );
 end;
 
-const lua_level_lib : array[0..18] of luaL_Reg = (
+function lua_level_get_enemies_left(L: Plua_State): Integer; cdecl;
+var iState : TDRLLuaState;
+    iLevel : TLevel;
+begin
+  iState.Init(L);
+  iLevel := iState.ToObject(1) as TLevel;
+  iState.Push( iLevel.EnemiesLeft( iState.ToBoolean(2, False) ) ) );
+  Exit( 1 );
+end;
+
+const lua_level_lib : array[0..19] of luaL_Reg = (
       ( name : 'drop_item';  func : @lua_level_drop_item),
       ( name : 'drop_being'; func : @lua_level_drop_being),
       ( name : 'player';     func : @lua_level_player),
@@ -1869,6 +1873,7 @@ const lua_level_lib : array[0..18] of luaL_Reg = (
       ( name : 'push_item';  func : @lua_level_push_item),
       ( name : 'reset';         func : @lua_level_reset),
       ( name : 'post_generate'; func : @lua_level_post_generate),
+      ( name : 'get_enemies_left'; func : @lua_level_get_enemies_left),
       ( name : nil;          func : nil; )
 );
 
