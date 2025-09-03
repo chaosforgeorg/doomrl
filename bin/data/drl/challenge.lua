@@ -1116,14 +1116,14 @@ function drl.register_challenges()
 			if ARCHANGEL then LevCount = 666 end
 
 			for i=1,LevD - 1 do
-				player.episode[i] = { style = table.random_pick{1,5,8}, number = i, name = "Phobos", danger = i, deathname = "the Phobos base" }
+				player.episode[i] = { style = table.random_pick{1,5,8}, name = "Phobos L"..tostring(i), danger = i, deathname = "level "..tostring(i).." of the Phobos base" }
 			end
 			for i=LevD, LevH - 1 do
-				player.episode[i] = { style = table.random_pick{2,6}, number = i, name = "Deimos", danger = i, deathname = "the Deimos base" }
+				player.episode[i] = { style = table.random_pick{2,6}, name = "Deimos L"..tostring(i), danger = i, deathname = "level "..tostring(i).." of the Deimos base" }
 			end
 			for i=LevH,LevCount-1 do
 				if i < 25 then
-					player.episode[i] = { style = table.random_pick{3,7}, number = i, name = "Hell", danger = i }
+					player.episode[i] = { style = table.random_pick{3,7}, name = "Hell L"..tostring(i), danger = i, deathname = "level "..tostring(i).." of Hell" }
 				else
 					local mod_value = {
 						{1,5,8},
@@ -1131,12 +1131,12 @@ function drl.register_challenges()
 						{3,7},
 					}
 					local list = mod_value[math.floor(i / 5) % 3 + 1]
-					player.episode[i] = { style = table.random_pick(list), number = i, name = "Beyond", danger = i }
+					player.episode[i] = { style = table.random_pick(list), name = "Beyond L"..tostring(i), danger = i, deathname = "level "..tostring(i).." of Beyond" }
 				end
 			end
 
 			-- Here is where we can add some Ao100 specific special levels like #88
-			player.episode[LevCount] = { style = 3, number = LevCount, name = "Hell", danger = LevCount*2 }
+			player.episode[LevCount] = { style = 3, name = "Hell L"..tostring(LevCount), danger = LevCount*2, deathname = "level "..tostring(LevCount).." of Hell" }
 			statistics.bonus_levels_count = 0
 		end,
 
@@ -1300,7 +1300,7 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 		end,
 
 		OnCreateEpisode = function ()
-			player.episode[1] = { style = 1, number = 1, name = "Phobos", danger = 2, deathname = "the Phobos base" }
+			player.episode[1] = { style = 1, name = "Phobos L1", danger = 2, deathname = "level 1 of the Phobos base" }
 		end,
 
 		OnUnLoad = function ()
@@ -1610,10 +1610,10 @@ You can rest easy knowing that you're Boss. Yet at the last level you sensed som
 			player.episode = {}
 
 			for i=1,LevH - 1 do
-				player.episode[i] = { style = 1, number = i, name = "Phobos Base", danger = i*2 }
+				player.episode[i] = { style = 1, name = "Phobos L"..tostring(i), danger = i*2, deathname = "level "..tostring(i).." of the Phobos base" }
 			end
 			for i=LevH,LevCount - 2 do
-				player.episode[i] = { style = 2, number = i-(LevH-1), name = "Phobos Hell", danger = i*2 }
+				player.episode[i] = { style = 2, name = "Phobos Hell L"..tostring(i), danger = i*2, deathname = "level "..tostring(i).." of Phobos Hell" }
 			end
 			player.episode[LevCount-1] = { script = "tower_of_babel" }
 			player.episode[LevCount]   = { script = "hell_fortress" }

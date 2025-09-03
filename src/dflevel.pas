@@ -23,7 +23,7 @@ type
 
 TLevel = class(TLuaMapNode, ITextMap)
     constructor Create; reintroduce;
-    procedure Init( nStyle : byte; nLNum : Word;nName : string; aIndex : Integer; nDangerLevel : Word);
+    procedure Init( aStyle : byte; aName : Ansistring; aIndex : Integer; aDangerLevel : Word );
     procedure AfterGeneration( aGenerated : Boolean );
     procedure PreEnter;
     procedure RecalcFluids;
@@ -133,7 +133,6 @@ TLevel = class(TLuaMapNode, ITextMap)
     FStyle         : Byte;
     FBoss          : TUID;
 
-    FLNum          : Word;
     FLTime         : DWord;
     FEmpty         : Boolean;
 
@@ -184,7 +183,6 @@ TLevel = class(TLuaMapNode, ITextMap)
     property Name         : AnsiString read FName        write FName;
     property SName        : AnsiString read FSName       write FSName;
     property Abbr         : AnsiString read FAbbr        write FAbbr;
-    property Name_Number  : Word       read FLNum        write FLNum;
     property Danger_Level : Word       read FDangerLevel write FDangerLevel;
     property Style        : Byte       read FStyle;
     property Feeling      : AnsiString read FFeeling     write FFeeling;
@@ -222,7 +220,6 @@ begin
     FSName  := GetString( 'sname','' );
     FAbbr   := GetString( 'abbr','' );
     if FSName = '' then FSName := FName;
-    FLNum   := 0;
     Call('Create',[]);
     Place( Player, DropCoord( NewCoord2D(LuaPlayerX,LuaPlayerY), [ EF_NOBEINGS ] ) );
     Include( FFlags, LF_SCRIPT );
@@ -434,7 +431,6 @@ begin
   aStream.Read( FIndex, SizeOf( FIndex ) );
   FStatus := aStream.ReadWord();
   FStyle  := aStream.ReadByte();
-  FLNum   := aStream.ReadWord();
   FLTime  := aStream.ReadDWord();
   aStream.Read( FBoss, SizeOf( FBoss ) );
   aStream.Read( FEmpty, SizeOf( FEmpty ) );
@@ -466,7 +462,6 @@ begin
   aStream.Write( FIndex, SizeOf( FIndex ) );
   aStream.WriteWord( FStatus );
   aStream.WriteByte( FStyle );
-  aStream.WriteWord( FLNum );
   aStream.WriteDWord( FLTime );
   aStream.Write( FBoss, SizeOf( FBoss ) );
   aStream.Write( FEmpty, SizeOf( FEmpty ) );
@@ -513,7 +508,7 @@ begin
   FIndex   := 0;
 end;
 
-procedure TLevel.Init(nStyle : byte; nLNum : Word; nName : string; aIndex : Integer; nDangerLevel : Word);
+procedure TLevel.Init( aStyle : Byte; aName : Ansistring; aIndex : Integer; aDangerLevel : Word );
 begin
   FActiveBeing := nil;
   FNextNode    := nil;
@@ -521,13 +516,12 @@ begin
   FIndex := aIndex;
   FBoss := 0;
   FLTime  := 0;
-  FStyle := nstyle;
+  FStyle := aStyle;
   FullClear;
-  FLNum := nlnum;
-  FName := nname;
+  FName := aName;
   FSName := FName;
   FAbbr  := '';
-  FDangerLevel := nDangerLevel;
+  FDangerLevel := aDangerLevel;
   FID := 'level'+IntToStr(FIndex);
   FFlags := [];
   FEmpty := False;

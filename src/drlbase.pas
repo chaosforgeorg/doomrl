@@ -1316,7 +1316,6 @@ repeat
       with LuaSystem.GetTable(['player','episode',Player.Level_Index]) do
       try
         FLevel.Init(getInteger('style',0),
-                   getInteger('number',0),
                    getString('name',''),
                    Player.Level_Index,
                    getInteger('danger',0));
@@ -1332,9 +1331,7 @@ repeat
           FLevel.ScriptLevel(iScript)
         else
         begin
-          if FLevel.Name_Number <> 0
-            then IO.Msg('You enter %s, level %d.',[ FLevel.Name, FLevel.Name_Number ])
-            else IO.Msg('You enter %s.',[ FLevel.Name ] );
+          IO.Msg('You enter %s.',[ FLevel.Name ] );
           CallHookCheck(Hook_OnGenerate,[]);
           FLevel.AfterGeneration( True );
         end;
