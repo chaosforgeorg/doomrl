@@ -1,4 +1,6 @@
 0.10.2
+[new] -- GJ#113: defence markers added (corneshooting indicator)
+[mod] -- GJ#166: phasing will try not to place the player on any liquid
 [mod] -- GJ#165: direct hit damage calculated before knockback 
 [mod] -- GH#---: on kill all special level trigger once each enemy is killed once
 [fix] -- GH#---: fixed several bugs related to checking if a level is nuked

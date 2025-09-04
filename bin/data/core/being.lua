@@ -180,7 +180,15 @@ function being:msg( msg_player, msg_being )
 end
 
 function being:phase( cell )
-	local target = level:random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_CANTELE }
+	local target
+	if self:is_player() then 
+		target = level:random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOLIQUID, EF_NOSPAWN, EF_CANTELE }
+	else
+		target = level:random_empty_coord{ EF_NOBEINGS, EF_NOITEMS, EF_NOSTAIRS, EF_NOBLOCK, EF_NOHARM, EF_NOSPAWN, EF_CANTELE }
+	end
+	if not target then
+		target = level:random_empty_coord{ EF_NOBEINGS, EF_NOBLOCK, EF_NOSPAWN, EF_CANTELE }
+	end
 	if cell then
 		cell = cells[ cell ].nid
 		local targets = {}
