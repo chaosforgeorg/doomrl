@@ -559,12 +559,38 @@ begin
 end;
 
 procedure TDRLGFXIO.SetAutoTarget( aTarget : TCoord2D );
-var iRay      : TBresenhamRay;
-    iCoord    : TCoord2D;
-    iBlock    : TCoord2D;
-    iSprite   : TSprite;
-    iLevel    : TLevel;
-    iFinalize : Boolean;
+var iLevel  : TLevel;
+    iSprite : TSprite;
+    iCoord  : TCoord2D;
+    iFirst  : TCoord2D;
+  procedure Trace( aT : TCoord2D; aMain : Boolean );
+  var iRay      : TBresenhamRay;
+      iBlock    : TCoord2D;
+      iFinalize : Boolean;
+  begin
+    iFinalize := False;
+    iRay.Init( aT, Player.Position );
+    repeat
+      iRay.Next;
+      if iRay.Done or ( not iLevel.isProperCoord( iRay.GetC ) ) then Break;
+      if iLevel.blocksVision( iRay.GetC ) then
+      begin
+        iBlock    := iRay.GetC;
+        iFinalize := True;
+      end
+      else
+        if iFinalize then Break;
+    until False;
+
+    if iFinalize then
+    begin
+      if aMain
+        then iSprite.Color       := ColorGreen
+        else iSprite.Color       := NewColor(128,128,128);
+      iLevel.Markers.Add( iBlock, iSprite, 0 );
+    end;
+  end;
+
 begin
   inherited SetAutoTarget( aTarget );
   SpriteMap.SetAutoTarget( aTarget );
@@ -574,35 +600,20 @@ begin
   if ( iLevel = nil )              then Exit;
   iLevel.Markers.Wipe(0);
   if ( aTarget = Player.Position ) or ( not iLevel.isProperCoord( aTarget ) ) then Exit;
+  FillChar( iSprite, SizeOf( iSprite ), 0 );
+  iSprite.SpriteID[0] := HARDSPRITE_SHIELD;
+  Include( iSprite.Flags, SF_COSPLAY );
   if iLevel.isVisible( aTarget ) then
-  begin
-    iFinalize := False;
-
-    iBlock.Create(-1,-1);
-    iRay.Init( aTarget, Player.Position );
-    repeat
-      iRay.Next;
-      iCoord := iRay.GetC;
-      if iRay.Done or ( not iLevel.isProperCoord( iCoord ) ) then Break;
-      if iLevel.blocksVision( iCoord ) then
-      begin
-        iBlock    := iCoord;
-        iFinalize := True;
-      end
-      else
-        if iFinalize then Break;
-    until False;
-
-    if iFinalize then
+    with DRL.Targeting do
     begin
-      FillChar( iSprite, SizeOf( iSprite ), 0 );
-      iSprite.SpriteID[0] := HARDSPRITE_SHIELD;
-      iSprite.Color       := ColorGreen;
-      iSprite.Color.A     := 170;
-      Include( iSprite.Flags, SF_COSPLAY );
-      iLevel.Markers.Add( iBlock, iSprite, 0 );
+      iFirst := List.Current;
+      repeat
+        iCoord := List.Next;
+        if ( iCoord <> Player.Position ) and ( iCoord <> aTarget ) then
+          Trace( iCoord, False );
+      until iCoord = iFirst;
+      Trace( aTarget, True );
     end;
-  end;
 end;
 
 procedure TDRLGFXIO.Focus( aCoord : TCoord2D );
