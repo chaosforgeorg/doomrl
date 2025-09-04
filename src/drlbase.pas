@@ -317,6 +317,7 @@ begin
   HARDSPRITE_SELECT    := Lua.Get( 'HARDSPRITE_SELECT' );
   HARDSPRITE_MARK      := Lua.Get( 'HARDSPRITE_MARK' );
   HARDSPRITE_GRID      := Lua.Get( 'HARDSPRITE_GRID' );
+  HARDSPRITE_SHIELD    := Lua.Get( 'HARDSPRITE_SHIELD' );
   for i := 0 to 3 do
   begin
     HARDSPRITE_DECAL_BLOOD[i]      := 0;

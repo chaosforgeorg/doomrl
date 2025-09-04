@@ -139,10 +139,10 @@ implementation
 
 uses {$IFDEF WINDOWS}windows,{$ENDIF}
      classes, sysutils, math,
-     vdebug, vlog, vmath, vdf, vgl3library, vuid,
+     vdebug, vlog, vmath, vdf, vgl3library, vuid, vvision,
      vglimage, vsdlio, vcolor, vglconsole, vioconsole,
      vtig, vtigstyle, vtigio,
-     dfplayer, dfitem,
+     dfplayer, dfitem, dflevel,
      drlbase, drlconfiguration, drlmodule;
 
 
@@ -559,9 +559,50 @@ begin
 end;
 
 procedure TDRLGFXIO.SetAutoTarget( aTarget : TCoord2D );
+var iRay      : TBresenhamRay;
+    iCoord    : TCoord2D;
+    iBlock    : TCoord2D;
+    iSprite   : TSprite;
+    iLevel    : TLevel;
+    iFinalize : Boolean;
 begin
   inherited SetAutoTarget( aTarget );
-  SpriteMap.SetAutoTarget( aTarget )
+  SpriteMap.SetAutoTarget( aTarget );
+
+  if ( DRL.State <> DSPlaying )    then Exit;
+  iLevel := DRL.Level;
+  if ( iLevel = nil )              then Exit;
+  iLevel.Markers.Wipe(0);
+  if ( aTarget = Player.Position ) or ( not iLevel.isProperCoord( aTarget ) ) then Exit;
+  if iLevel.isVisible( aTarget ) then
+  begin
+    iFinalize := False;
+
+    iBlock.Create(-1,-1);
+    iRay.Init( aTarget, Player.Position );
+    repeat
+      iRay.Next;
+      iCoord := iRay.GetC;
+      if iRay.Done or ( not iLevel.isProperCoord( iCoord ) ) then Break;
+      if iLevel.blocksVision( iCoord ) then
+      begin
+        iBlock    := iCoord;
+        iFinalize := True;
+      end
+      else
+        if iFinalize then Break;
+    until False;
+
+    if iFinalize then
+    begin
+      FillChar( iSprite, SizeOf( iSprite ), 0 );
+      iSprite.SpriteID[0] := HARDSPRITE_SHIELD;
+      iSprite.Color       := ColorGreen;
+      iSprite.Color.A     := 170;
+      Include( iSprite.Flags, SF_COSPLAY );
+      iLevel.Markers.Add( iBlock, iSprite, 0 );
+    end;
+  end;
 end;
 
 procedure TDRLGFXIO.Focus( aCoord : TCoord2D );

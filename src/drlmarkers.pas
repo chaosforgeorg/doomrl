@@ -42,7 +42,7 @@ end;
 
 implementation
 
-uses sysutils, vuid;
+uses sysutils;
 
 constructor TMarker.Create;
 begin
