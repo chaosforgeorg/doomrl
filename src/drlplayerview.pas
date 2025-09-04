@@ -436,8 +436,6 @@ begin
 end;
 
 procedure TPlayerView.UpdateEquipment;
-const ResNames : array[TResistance] of AnsiString = ('Bullet','Melee','Shrap','Acid','Fire','Plasma','Cold','Poison');
-      ResIDs   : array[TResistance] of AnsiString = ('bullet','melee','shrapnel','acid','fire','plasma','cold','poison');
 var iEntry            : TItemViewEntry;
     iSelected,iY      : Integer;
     iB, iA, iR, iK    : Integer;

@@ -35,7 +35,7 @@ TItem  = class( TThing )
     function    GetResistance( const aResistance : AnsiString ) : Integer;
     function    Description( aSingle : Boolean ) : Ansistring; overload;
     function    Description : Ansistring; overload;
-    function    DescriptionBox : Ansistring;
+    function    DescriptionBox( aShort : Boolean = False ) : Ansistring;
     function    ResistDescriptionShort : AnsiString;
     destructor  Destroy; override;
     function    eqSlot : TEqSlot;
@@ -383,7 +383,7 @@ begin
         if FlagStr <> '' then Description += ' ('+FlagStr+')';
         //Description += ResistDescriptionShort;
       end;
-    ITEMTYPE_RANGED: begin
+    ITEMTYPE_RANGED, ITEMTYPE_NRANGED : begin
             Description += ' ('+FProps.Damage.toString+')';
             if FProps.Shots <> 0 then Description += 'x' +IntToStr(FProps.Shots);
             if not ( IF_NOAMMO in FFlags ) then Description += ' ['+IntToStr(FProps.Ammo)+'/'+IntToStr(FProps.AmmoMax)+']';
@@ -406,7 +406,7 @@ begin
   if ( FMax > 1 ) and ( not aSingle ) then Description += ' (x'+IntToStr(FAmount)+')';
 end;
 
-function TItem.DescriptionBox: Ansistring;
+function TItem.DescriptionBox( aShort : Boolean = False ): Ansistring;
   function Iff(expr : Boolean; str : Ansistring) : Ansistring;
   begin
     if expr then exit(str) else exit('');
@@ -442,20 +442,20 @@ begin
     ITEMTYPE_URANGED : DescriptionBox :=
       'Damage type : {!'+DamageTypeName(FProps.DamageType)+'}'#10+
       Iff(FProps.BlastRadius <> 0,'Expl.radius : {!'+IntToStr(FProps.BlastRadius)+'}'#10);
-    ITEMTYPE_RANGED : DescriptionBox :=
+    ITEMTYPE_RANGED, ITEMTYPE_NRANGED : DescriptionBox :=
       'Fire time   : {!'+Seconds(FProps.UseTime)+'}'#10+
-      'Reload time : {!'+Seconds(FProps.ReloadTime)+'}'#10+
+      Iff(FProps.ReloadTime > 0, 'Reload time : {!'+Seconds(FProps.ReloadTime)+'}'#10)+
       'Accuracy    : {!'+BonusStr(FProps.Acc)+'}'#10+
       'Damage type : {!'+DamageTypeName(FProps.DamageType)+'}'#10+
       Iff(FProps.Shots       <> 0,'Shots       : {!'+IntToStr(FProps.Shots)+'}'#10)+
       Iff(FProps.ShotCost    <> 0,'Shot cost   : {!'+IntToStr(FProps.ShotCost)+'}'#10)+
       Iff(FProps.BlastRadius <> 0,'Expl.radius : {!'+IntToStr(FProps.BlastRadius)+'}'#10)+
-      Iff(FProps.AltFire   <> ALT_NONE   ,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10)+
-      Iff(FProps.AltReload <> RELOAD_NONE,'Alt. reload : {!'+AltReloadName( FProps.AltReload )+'}'#10);
+      Iff((not aShort) and (FProps.AltFire   <> ALT_NONE   ),'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10)+
+      Iff((not aShort) and (FProps.AltReload <> RELOAD_NONE),'Alt. reload : {!'+AltReloadName( FProps.AltReload )+'}'#10);
     ITEMTYPE_MELEE : DescriptionBox :=
       'Attack time : {!'+Seconds(FProps.UseTime)+'}'#10+
       Iff(FProps.Acc     <> 0,'Accuracy    : {!' + BonusStr(FProps.Acc)+'}'#10)+
-      Iff(FProps.AltFire <> ALT_NONE,'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10);
+      Iff((not aShort) and (FProps.AltFire <> ALT_NONE),'Alt. fire   : {!'+AltFireName( FProps.AltFire )+'}'#10);
   end;
   DescriptionBox +=
       Iff(GetResistance('bullet')   <> 0,'Bullet res. : {!' + BonusStr(GetResistance('bullet'))+'}'#10)+

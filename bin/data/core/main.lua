@@ -17,6 +17,7 @@ core.options = {
 	klass_achievements = false,
 	new_menu = false,
 	melee_move_on_kill = false,
+	full_being_description = false,
 }
 
 module = false
@@ -303,7 +304,7 @@ register_being         = core.register_storage( "beings", "being", function( bp 
 		if bp.weapon then
 			local wid = "nat_"..bp.id
 			local ip  = bp.weapon
-			ip.name   = wid
+			ip.name   = ip.name or "ranged attack"
 			ip.type   = ITEMTYPE_NRANGED
 			ip.weight = 0
 			ip.sprite = 0
