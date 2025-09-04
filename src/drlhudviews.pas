@@ -171,7 +171,7 @@ begin
    begin
      with iLevel do
        if Being[FTarget] <> nil then
-         IO.FullLook( Being[FTarget].ID );
+         IO.FullLook( Being[FTarget]);
      UpdateTarget;
    end;
    Exit( True );
@@ -402,7 +402,7 @@ begin
   begin
     with DRL.Level do
      if Being[FTarget] <> nil then
-       IO.FullLook( Being[FTarget].ID );
+       IO.FullLook( Being[FTarget] );
     UpdateTarget;
   end;
 
@@ -422,7 +422,7 @@ begin
     VPAD_BUTTON_Y : begin
       with DRL.Level do
          if Being[FTarget] <> nil then
-           IO.FullLook( Being[FTarget].ID );
+           IO.FullLook( Being[FTarget] );
       UpdateTarget;
       Exit( True );
     end;

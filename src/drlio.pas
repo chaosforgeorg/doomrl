@@ -9,7 +9,7 @@ interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils,
      vio, vrltools, vluaconfig, vglquadrenderer, vmessages, vtextures, vtigstyle,
      vuitypes, vluastate,  viotypes, vioevent, vioconsole, vuielement, vgenerics, vutil,
-     dfdata, dfthing, drlspritemap, drlaudio, drlkeybindings, drlloadingview;
+     dfdata, dfthing, dfbeing, drlspritemap, drlaudio, drlkeybindings, drlloadingview;
 
 const TIG_EV_NONE      = 0;
       //TIG_EV_DROP      = 1;
@@ -17,6 +17,7 @@ const TIG_EV_NONE      = 0;
       TIG_EV_EQUIPMENT = 3;
       TIG_EV_CHARACTER = 4;
       TIG_EV_TRAITS    = 5;
+      TIG_EV_MORE      = 6;
       //TIG_EV_QUICK_0   = 10;
       //TIG_EV_QUICK_1   = 11;
       //TIG_EV_QUICK_2   = 12;
@@ -121,7 +122,7 @@ type TDRLIO = class( TIO )
 
   procedure RenderUIBackgroundBlock( aUL, aBR : TIOPoint; aOpacity : Single = 0.85; aZ : Integer = 0 ); virtual;
   procedure RenderUIBackground( aTexture : TTextureID; aZ : Integer = 0 ); virtual;
-  procedure FullLook( aID : Ansistring );
+  procedure FullLook( aBeing : TBeing );
   procedure SetTarget( aTarget : TCoord2D; aColor : Byte; aRange : Byte ); virtual; abstract;
   procedure SetAutoTarget( aTarget : TCoord2D ); virtual;
   function ResolveSub( const aID : Ansistring ) : Ansistring;
@@ -186,7 +187,7 @@ implementation
 uses math, video, dateutils, variants,
      vsound, vluasystem, vuid, vlog, vdebug, vuiconsole, vmath,
      vsdlio, vglconsole, vtig, vtigio, vvector,
-     dflevel, dfplayer, dfitem, dfbeing, dfhof,
+     dflevel, dfplayer, dfitem, dfhof,
      drlconfiguration, drlbase, drlmoreview, drlchoiceview, drlua, drlmodulechoiceview,
      drlhudviews, drlplotview;
 
@@ -484,6 +485,7 @@ begin
         INPUT_EQUIPMENT  : VTIG_GetIOState.EventState.SetState( TIG_EV_EQUIPMENT, aEvent.Key.Pressed );
         INPUT_TRAITS     : VTIG_GetIOState.EventState.SetState( TIG_EV_TRAITS,    aEvent.Key.Pressed );
         INPUT_PLAYERINFO : VTIG_GetIOState.EventState.SetState( TIG_EV_CHARACTER, aEvent.Key.Pressed );
+        INPUT_MORE       : VTIG_GetIOState.EventState.SetState( TIG_EV_MORE,      aEvent.Key.Pressed );
       end;
     end;
   end;
@@ -547,10 +549,11 @@ begin
   // noop
 end;
 
-procedure TDRLIO.FullLook( aID : Ansistring );
+procedure TDRLIO.FullLook( aBeing : TBeing );
 begin
+  if aBeing = nil then Exit;
   FConsole.HideCursor;
-  PushLayer( TMoreView.Create( aID ) );
+  PushLayer( TMoreView.Create( aBeing ) );
 end;
 
 procedure TDRLIO.SetAutoTarget( aTarget : TCoord2D );

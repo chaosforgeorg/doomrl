@@ -200,9 +200,10 @@ const
   Option_IntuitionChar    : Char = '.';
 
 var
-  ModuleOption_KlassAchievements : Boolean = False;
-  ModuleOption_NewMenu           : Boolean = False;
-  ModuleOption_MeleeMoveOnKill   : Boolean = False;
+  ModuleOption_KlassAchievements    : Boolean = False;
+  ModuleOption_NewMenu              : Boolean = False;
+  ModuleOption_MeleeMoveOnKill      : Boolean = False;
+  ModuleOption_FullBeingDescription : Boolean = False;
 
 
 var
