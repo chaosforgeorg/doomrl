@@ -445,9 +445,11 @@ begin
   IO.LoadProgress(iProgBase + 50);
   IO.Audio.Load;
 
-  ModuleOption_KlassAchievements := LuaSystem.Get( ['core','options','klass_achievements'], False );
-  ModuleOption_NewMenu           := LuaSystem.Get( ['core','options','new_menu'], False );
-  ModuleOption_MeleeMoveOnKill   := LuaSystem.Get( ['core','options','melee_move_on_kill'], False );
+  ModuleOption_KlassAchievements    := LuaSystem.Get( ['core','options','klass_achievements'], False );
+  ModuleOption_NewMenu              := LuaSystem.Get( ['core','options','new_menu'], False );
+  ModuleOption_MeleeMoveOnKill      := LuaSystem.Get( ['core','options','melee_move_on_kill'], False );
+  ModuleOption_FullBeingDescription := LuaSystem.Get( ['core','options','full_being_description'], False );
+
 
   if ModdedGame then Log( LOGINFO, 'Game is modded.');
 end;
