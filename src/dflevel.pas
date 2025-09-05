@@ -1417,7 +1417,7 @@ var iCoord    : TCoord2D;
     iBeing    : TBeing;
     iLongMode : Boolean;
 begin
-  iLongMode := (aBeing = Player) and (LF_BEINGSVISIBLE in FFlags);
+  iLongMode := (aBeing = Player) and (LF_BEINGSVISIBLE in FFlags) and ( not Player.Flags[ BF_DARKNESS ] );
   aAutoTarget.Clear( aBeing.Position );
   if iLongMode then aRange += 2;
   for iCoord in NewArea( aBeing.Position, aRange ).Clamped( Area ) do

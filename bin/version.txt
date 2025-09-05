@@ -4,6 +4,7 @@
 [mod] -- GJ#165: direct hit damage calculated before knockback 
 [mod] -- GH#---: on kill all special level trigger once each enemy is killed once
 [fix] -- GH#---: fixed several bugs related to checking if a level is nuked
+[fix] -- GH#336: fixed auto-target behavior on darkness levels
 
 0.10.1
 [new] -- GJ#144: UI - quickslot support for gamepad
