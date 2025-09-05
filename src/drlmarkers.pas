@@ -10,7 +10,6 @@ uses classes, vutil, vnode, vrltools, vgenerics, dfdata;
 
 type TMarker = class( TVObject )
   constructor Create;
-private
   constructor CreateFromStream( aStream: TStream ); override;
   procedure WriteToStream( aStream: TStream ); override;
 private

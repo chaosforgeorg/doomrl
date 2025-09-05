@@ -1284,7 +1284,8 @@ procedure TLevel.NukeRun;
 var iCount     : Integer;
     iExplosion : TExplosionData;
 begin
-  FillChar( iExplosion, SizeOf( TExplosionData ), 0 );
+  Initialize( iExplosion );
+  iExplosion := Default( TExplosionData );
   iExplosion.Range      := 8;
   iExplosion.Delay      := 10;
   iExplosion.Color      := LightRed;
@@ -1625,6 +1626,7 @@ begin
     if iState.IsTable(3) then
     begin
       iTable := iState.ToTable( 3 );
+      Initialize( iData );
       ReadExplosion( iTable, iData );
       iTable.Free;
       iLevel.Explosion( 0, iState.ToPosition(2), iData, iState.ToObjectOrNil(4) as TItem, NewDirection(0) );

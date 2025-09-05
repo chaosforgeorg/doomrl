@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlrankupview;
 interface
-uses vutil, viotypes, drlio, dfdata;
+uses vutil, viotypes, dfdata;
 
 type TRankUpView = class( TIOLayer )
   constructor Create( aRank : THOFRank );

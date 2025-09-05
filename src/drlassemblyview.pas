@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlassemblyview;
 interface
-uses vutil, viotypes, drlio, dfdata;
+uses vutil, viotypes, dfdata;
 
 type TAssemblyView = class( TIOLayer )
   constructor Create;

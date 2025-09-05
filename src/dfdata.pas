@@ -427,6 +427,7 @@ uses typinfo, strutils, math, vmath, vdebug, vluasystem;
 
 function ReadFileString( aStream : TStream; aSize : Integer ) : Ansistring;
 begin
+  Initialize( Result );
   SetLength( Result, aSize );
   if aStream.Size > 0 then aStream.ReadBuffer( Result[1], aSize );
 end;
@@ -463,6 +464,7 @@ var iChar : Char;
 begin
   if aSize < 0 then aSize := aStream.Size;
   iLine := '';
+  Initialize( iChar );
   while aStream.Read( iChar, SizeOf(iChar) ) = SizeOf(iChar) do
   begin
     if iChar = #10 then Break;

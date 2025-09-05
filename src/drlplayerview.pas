@@ -6,7 +6,7 @@ Copyright (c) 2002-2025 by Kornel Kisielewicz
 }
 unit drlplayerview;
 interface
-uses viotypes, vgenerics, vio, vtigstyle,
+uses viotypes, vgenerics, vtigstyle,
      dfitem, dfdata,
      drlio, drltraits, drlconfirmview;
 

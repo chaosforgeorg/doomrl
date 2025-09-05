@@ -3247,7 +3247,7 @@ begin
   if iBeing = nil then Exit( 0 );
   iCoord := iState.ToPosition( 2 );
   if not iState.IsTable( 3 ) then Exit( 0 );
-  FillChar( iSprite, SizeOf( iSprite ), 0 );
+  Initialize( iSprite );
   iTable := iState.ToTable( 3 );
   try
     if ReadSprite( iTable, iSprite )
