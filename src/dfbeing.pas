@@ -1076,6 +1076,8 @@ begin
       isUsedUp := aItem.CallHookCheck( Hook_OnUse,[Self] );
     if isUsedUp and ((UIDs.Get( iUID ) <> nil)  and (isLever or isUsable)) then
     begin
+      if ( not isOnGround ) and ( aItem.Parent = Self ) then
+        aItem := FInv.SeekStack( aItem.NID );
       aItem.Amount := aItem.Amount - 1;
       if aItem.Amount < 1 then FreeAndNil( aItem );
     end;
