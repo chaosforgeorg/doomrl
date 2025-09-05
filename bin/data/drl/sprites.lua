@@ -218,4 +218,5 @@ function drl.register_sprites()
 	core.declare( "HARDSPRITE_MARK",      SPRITE_MARK )
 	core.declare( "HARDSPRITE_GRID",      SPRITE_GRID )
 	core.declare( "HARDSPRITE_SHIELD",    SPRITE_MARK )
+   	core.declare( "HARDSPRITE_SHIELD_COUNT", 1 )
 end

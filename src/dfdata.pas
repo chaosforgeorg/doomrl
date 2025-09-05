@@ -217,6 +217,7 @@ var
   HARDSPRITE_MARK             : DWord = 0;
   HARDSPRITE_GRID             : DWord = 0;
   HARDSPRITE_SHIELD           : DWord = 0;
+  HARDSPRITE_SHIELD_COUNT     : DWord = 0;
   HARDSPRITE_DECAL_BLOOD      : array[0..3] of DWord = ( 0,0,0,0 );
   HARDSPRITE_DECAL_WALL_BLOOD : array[0..3] of DWord = ( 0,0,0,0 );
 

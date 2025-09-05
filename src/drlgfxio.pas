@@ -585,8 +585,9 @@ var iLevel  : TLevel;
     if iFinalize then
     begin
       if aMain
-        then iSprite.Color       := ColorGreen
-        else iSprite.Color       := NewColor(128,128,128);
+        then begin iSprite.Color := NewColor(0,160,0); iSprite.Frames := HARDSPRITE_SHIELD_COUNT; end
+        else begin iSprite.Color := NewColor(64,64,64);iSprite.Frames := 1; end;
+
       iLevel.Markers.Add( iBlock, iSprite, 0 );
     end;
   end;
@@ -602,6 +603,9 @@ begin
   if ( aTarget = Player.Position ) or ( not iLevel.isProperCoord( aTarget ) ) then Exit;
   FillChar( iSprite, SizeOf( iSprite ), 0 );
   iSprite.SpriteID[0] := HARDSPRITE_SHIELD;
+  iSprite.Frames      := HARDSPRITE_SHIELD_COUNT;
+  iSprite.FrameTime   := 125;
+
   Include( iSprite.Flags, SF_COSPLAY );
   if iLevel.isVisible( aTarget ) then
     with DRL.Targeting do
